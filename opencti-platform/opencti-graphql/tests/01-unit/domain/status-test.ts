@@ -28,9 +28,13 @@ vi.mock('../../../src/database/redis', () => ({
   setEditContext: vi.fn(),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/modules/entitySetting/entitySetting-validators', () => ({
   validateSetting: vi.fn(),

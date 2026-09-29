@@ -25,6 +25,8 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import { buildHealthTooltipLines, type IngestionHealth } from '../../../../utils/IngestionHealth';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemCopy from '../../../../components/ItemCopy';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -56,6 +58,17 @@ const feedDetailSyncQuery = graphql`
         id
         name
       }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
+      }
     }
   }
 `;
@@ -78,6 +91,17 @@ const feedDetailRssQuery = graphql`
       user {
         id
         name
+      }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
       }
     }
   }
@@ -106,6 +130,17 @@ const feedDetailTaxiiQuery = graphql`
         id
         name
       }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
+      }
     }
   }
 `;
@@ -123,6 +158,17 @@ const feedDetailTaxiiPushQuery = graphql`
       user {
         id
         name
+      }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
       }
     }
   }
@@ -149,6 +195,17 @@ const feedDetailCsvQuery = graphql`
         id
         name
       }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
+      }
     }
   }
 `;
@@ -170,6 +227,17 @@ const feedDetailJsonQuery = graphql`
       user {
         id
         name
+      }
+      ingestion_health {
+        status
+        configuration_status
+        summary
+        since
+        checks {
+          code
+          severity
+          message
+        }
       }
     }
   }
@@ -207,6 +275,7 @@ export interface FeedDetailNode {
   created_at?: string | null;
   updated_at?: string | null;
   user?: { readonly id: string; readonly name: string } | null;
+  ingestion_health?: IngestionHealth | null;
 }
 
 type FeedKind = Exclude<BuiltInIntegrationKind, 'form'>;
@@ -518,6 +587,14 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           <Grid size={{ xs: 12, md: 5 }}>
             <Card title={t_i18n('Activity')}>
               <Grid container spacing={3}>
+                <DetailField label={t_i18n('Health')}>
+                  <div>
+                    <IngestionHealthChip health={node.ingestion_health} />
+                    {buildHealthTooltipLines(node.ingestion_health).slice(1).map((line) => (
+                      <div key={line} style={{ marginTop: 4 }}>{line}</div>
+                    ))}
+                  </div>
+                </DetailField>
                 {node.queue_messages != null && (
                   <DetailField label={t_i18n('Queued bundles')}>
                     {n(node.queue_messages)}

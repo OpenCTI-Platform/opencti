@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import type { IngestionHealth, RawIngestionHealth } from '../../../../utils/IngestionHealth';
+import { normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
@@ -37,6 +39,8 @@ export interface DeployedIntegrationItem {
   userName?: string | null;
   detailUrl: string;
   searchText: string;
+  // Resolved ingestion health, same shape for connectors and feeds.
+  health?: IngestionHealth | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
@@ -154,6 +158,7 @@ const useDeployedIntegrations = ({
         lastRunDate: null,
         updatedAt: connector.updated_at,
         isManaged: !!connector.is_managed,
+        health: normalizeIngestionHealth(state?.ingestion_health) ?? null,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
         connector: merged,
@@ -177,6 +182,7 @@ const useDeployedIntegrations = ({
         lastRunDate: (node.current_state_date as string | null) ?? null,
         updatedAt: null,
         isManaged: false,
+        health: normalizeIngestionHealth(node.ingestion_health) ?? null,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/sync/${node.id}`,
@@ -195,6 +201,7 @@ const useDeployedIntegrations = ({
         last_execution_date?: string | null;
         updated_at?: string | null;
         user?: { readonly name: string } | null;
+        ingestion_health?: RawIngestionHealth | null;
       },
     ) => {
       items.push({
@@ -210,6 +217,7 @@ const useDeployedIntegrations = ({
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
+        health: normalizeIngestionHealth(node.ingestion_health) ?? null,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/${kind}/${node.id}`,

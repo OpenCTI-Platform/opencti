@@ -8,9 +8,11 @@ import { useDeployedTypeMetadata } from '@components/integrations/deployed/Deplo
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { paperBorder } from '../paperSurface';
+import useIngestionHealthEnabled from '../../../../utils/hooks/useIngestionHealthEnabled';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -19,7 +21,8 @@ import { paperBorder } from '../paperSurface';
 // the names.
 const COLUMNS = {
   type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
-  description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
+  description: { width: '11%', display: { xs: 'none', lg: 'flex' } },
+  health: { width: '12%', minWidth: 96, display: { xs: 'none', md: 'flex' } },
   messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' },
   throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
@@ -35,6 +38,7 @@ const cellSx = (column: keyof typeof COLUMNS) => ({
 
 // Column headers rendered once at the top of each section container.
 export const DeployedIntegrationLinesHeader = () => {
+  const healthEnabled = useIngestionHealthEnabled();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const headerCellSx = {
@@ -75,6 +79,11 @@ export const DeployedIntegrationLinesHeader = () => {
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('date') }}>
         {t_i18n('Last activity')}
       </Typography>
+      {healthEnabled && (
+        <Typography component="div" sx={{ ...headerCellSx, ...cellSx('health') }}>
+          {t_i18n('Health')}
+        </Typography>
+      )}
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
       </Typography>
@@ -91,6 +100,7 @@ export interface DeployedIntegrationLineProps {
 // Compact row variant of DeployedIntegrationCard for the lines view. Cells
 // share their geometry with DeployedIntegrationLinesHeader so rows align.
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
+  const healthEnabled = useIngestionHealthEnabled();
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -284,7 +294,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           </Typography>
         )}
       </Box>
-      {/* Status column. */}
+      {/* Health column — dropped with its header when the feature is off, so
+          the remaining columns stay aligned rather than leaving a gap. */}
+      {healthEnabled && (
+        <Box sx={cellSx('health')}>
+          <IngestionHealthChip health={item.health} />
+        </Box>
+      )}
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />

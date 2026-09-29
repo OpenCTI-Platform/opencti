@@ -604,6 +604,12 @@ export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
 // entity types with a published WorkflowDefinition behave as before this change.
 export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 
+// Ingestion health feature flag (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check
+// activation). When disabled: the health manager is never registered, the `ingestion_health` field
+// on every ingestion source soft-fails to null, the cached health attributes are not registered,
+// and the front hides every health surface. Ingestion itself is untouched either way.
+export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

@@ -3,6 +3,8 @@ import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import { buildHealthTooltipLines, normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import List from '@mui/material/List';
@@ -553,6 +555,18 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
               <Grid item={true} xs={12}>
                 <Label>
+                  {t_i18n('Health')}
+                </Label>
+                <div>
+                  <IngestionHealthChip health={normalizeIngestionHealth(connector.ingestion_health)} />
+                  {buildHealthTooltipLines(normalizeIngestionHealth(connector.ingestion_health)).slice(1).map((line) => (
+                    <div key={line} style={{ marginTop: 4 }}>{line}</div>
+                  ))}
+                </div>
+              </Grid>
+
+              <Grid item={true} xs={12}>
+                <Label>
                   {t_i18n('State')}
                 </Label>
                 <FieldOrEmpty source={connector.connector_state}>
@@ -1067,6 +1081,19 @@ const Connector = createRefetchContainer(
           started_at
           last_update
           is_in_reboot_loop
+        }
+        ingestion_health {
+          status
+          configuration_status
+          summary
+          since
+          checks {
+            code
+            kind
+            params
+            severity
+            message
+          }
         }
         connector_user {
           id

@@ -164,6 +164,7 @@ import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './xtm/hub/news-feed/news-feed-graphql';
+import './ingestionHealth/ingestionHealth-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';

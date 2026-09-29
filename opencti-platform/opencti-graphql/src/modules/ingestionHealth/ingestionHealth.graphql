@@ -1,0 +1,79 @@
+# Ingestion health — resolved at read time from each source's own state, never
+# stored as the answer.
+
+enum IngestionHealthStatus {
+    healthy
+    idle
+    degraded
+    critical
+    stopped
+    unknown
+}
+
+enum IngestionCheckKind {
+    runtime
+    configuration
+}
+
+# Orthogonal to IngestionHealthStatus on purpose: a source on a personal account
+# ingests perfectly well. Kept apart so neither axis can mask the other.
+enum IngestionConfigurationStatus {
+    ok
+    advisory
+    blocking
+}
+
+enum IngestionCheckSeverity {
+    advisory
+    blocking
+}
+
+enum IngestionCheckCode {
+    NO_HEARTBEAT
+    NO_CONSUMER
+    MANUALLY_STOPPED
+    NEVER_RUN
+    RUN_OVERDUE
+    RUN_STALE
+    LAST_RUN_ERROR
+    EMPTY_RUNS
+    CURSOR_STALLED
+    REBOOT_LOOP
+    USER_NOT_SERVICE_ACCOUNT
+    USER_MISSING
+    USER_DISABLED
+    USER_MISSING_CAPABILITY
+    TOKEN_EXPIRED
+    TOKEN_EXPIRING
+    EMPTY_SCOPE
+    CONFIDENCE_UNSET
+    CONTRACT_CONFIG_INCOMPLETE
+    VERSION_MISMATCH
+    DUPLICATE_QUEUE
+}
+
+type IngestionCheck {
+    kind: IngestionCheckKind!
+    code: IngestionCheckCode!
+    severity: IngestionCheckSeverity!
+    # Values for the message placeholders, so each surface renders in its own
+    # locale instead of displaying the pre-rendered English `message`.
+    params: JSON
+    # Server-rendered English sentence, for notifiers and API clients.
+    message: String!
+    detail: String
+}
+
+type IngestionHealth {
+    status: IngestionHealthStatus!
+    # Always populated, independently of `status`, so a source that is both
+    # degraded and misconfigured stays findable on either axis.
+    configuration_status: IngestionConfigurationStatus!
+    # Status plus the most diagnostic check, as one sentence.
+    summary: String!
+    # Ranked, most diagnostic first.
+    checks: [IngestionCheck!]!
+    since: DateTime
+    last_productive_at: DateTime
+    next_expected_at: DateTime
+}

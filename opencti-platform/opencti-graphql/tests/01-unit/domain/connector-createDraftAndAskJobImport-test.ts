@@ -31,10 +31,14 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-  completeContextDataForEntity: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+    completeContextDataForEntity: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/utils/confidence-level', () => ({
   controlUserConfidenceAgainstElement: vi.fn(),

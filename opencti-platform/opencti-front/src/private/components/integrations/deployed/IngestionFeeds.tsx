@@ -24,6 +24,19 @@ export const ingestionFeedsQuery = graphql`
             id
             name
           }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
+          }
         }
       }
     }
@@ -46,6 +59,19 @@ export const ingestionFeedsQuery = graphql`
           user {
             id
             name
+          }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
           }
         }
       }
@@ -71,6 +97,19 @@ export const ingestionFeedsQuery = graphql`
             id
             name
           }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
+          }
         }
       }
     }
@@ -89,6 +128,19 @@ export const ingestionFeedsQuery = graphql`
           user {
             id
             name
+          }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
           }
         }
       }
@@ -113,6 +165,19 @@ export const ingestionFeedsQuery = graphql`
             id
             name
           }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
+          }
         }
       }
     }
@@ -135,6 +200,19 @@ export const ingestionFeedsQuery = graphql`
           user {
             id
             name
+          }
+          ingestion_health {
+            status
+            configuration_status
+            summary
+            since
+            checks {
+              kind
+              code
+              severity
+              params
+              message
+            }
           }
         }
       }

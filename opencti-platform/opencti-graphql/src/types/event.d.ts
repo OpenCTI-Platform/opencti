@@ -103,7 +103,8 @@ type DataEvent = UpdateEvent | DataEvent | MergeEvent;
 
 export interface ActivityStreamEvent {
   version: string;
-  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  // health/configuration: the ingestion health manager's own transitions.
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'health' | 'configuration';
   event_access: 'extended' | 'administration';
   prevent_indexing: boolean;
   event_scope: string;

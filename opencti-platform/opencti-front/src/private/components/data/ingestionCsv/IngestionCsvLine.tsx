@@ -11,6 +11,8 @@ import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopov
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLine_node$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvLine_node.graphql';
 import TableViewIcon from '@mui/icons-material/TableView';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import { normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -52,6 +54,19 @@ const ingestionCsvLineFragment = graphql`
     ingestion_running
     current_state_hash
     last_execution_date
+    ingestion_health {
+      status
+      configuration_status
+      summary
+      since
+      checks {
+        kind
+        code
+        severity
+        params
+        message
+      }
+    }
   }
 `;
 
@@ -116,6 +131,9 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />
+            </Cell>
+            <Cell width={dataColumns.ingestion_health.width} withTooltip={false}>
+              <IngestionHealthChip health={normalizeIngestionHealth(data.ingestion_health)} />
             </Cell>
             <Cell width={dataColumns.last_execution_date.width}>
               {fldt(data.last_execution_date) || EMPTY_VALUE}

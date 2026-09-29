@@ -18,9 +18,13 @@ vi.mock('../../../src/domain/settings', () => ({
   getMemoryStatistics: vi.fn(() => ({})),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 import loggerPlugin from '../../../src/graphql/loggerPlugin';
 import { logApp } from '../../../src/config/conf';
