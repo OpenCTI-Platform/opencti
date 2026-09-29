@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
+import { buildWorkflowMigrationPreviewResult } from '../migration/status-to-definition-converter';
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
@@ -32,20 +33,7 @@ const workflowResolvers = {
     },
     workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       const { byScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
-      return {
-        entityType,
-        results: Object.entries(byScope).map(([scope, result]) => ({
-          scope,
-          initialState: result!.definition.initialState,
-          // Always false: this preview never persists anything, so there is no
-          // published/draft distinction to report yet (see WorkflowMigrationScopeResult doc).
-          published: false,
-          hasPublishedVersion: false,
-          states: result!.definition.states,
-          transitions: result!.definition.transitions,
-          diagnostics: result!.diagnostics,
-        })),
-      };
+      return buildWorkflowMigrationPreviewResult(entityType, byScope);
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);

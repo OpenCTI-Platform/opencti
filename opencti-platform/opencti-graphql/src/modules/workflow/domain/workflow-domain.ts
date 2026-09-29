@@ -5,7 +5,7 @@ import { FunctionalError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../database/middleware-loader';
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
@@ -502,8 +502,13 @@ export const getWorkflowMigrationPreview = async (
       filterGroups: [],
     },
   });
-  const templates = await fullEntitiesList<BasicWorkflowTemplateEntity>(executionContext, executionUser, [ENTITY_TYPE_STATUS_TEMPLATE]);
-  return convertStatusToDefinition(statuses, templates);
+  const templateIds = [...new Set(statuses.map((status) => status.template_id))];
+  const templates = templateIds.length > 0
+    ? await storeLoadByIds<BasicWorkflowTemplateEntity>(executionContext, executionUser, templateIds, ENTITY_TYPE_STATUS_TEMPLATE)
+    : [];
+  // storeLoadByIds returns an undefined entry for each id it couldn't find — filter those out
+  // before handing templates to the converter (a missing one becomes a MISSING_TEMPLATE diagnostic).
+  return convertStatusToDefinition(statuses, templates.filter((template): template is BasicWorkflowTemplateEntity => template != null));
 };
 
 /**
