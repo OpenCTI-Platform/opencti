@@ -16,6 +16,13 @@ const deletedForgotPassword: string[] = [];
 const notified: string[] = [];
 const order: string[] = [];
 
+// What the store holds for the source, which the handler reads instead of its snapshot.
+let storedTokens: Array<{ id: string; name: string }> = [];
+
+vi.mock('../../../../src/database/middleware-loader', () => ({
+  storeLoadById: async () => ({ api_tokens: storedTokens }),
+}));
+
 vi.mock('../../../../src/database/middleware', () => ({
   updateAttribute: async (_context: unknown, _user: unknown, id: string, _type: string, inputs: unknown[], opts?: Record<string, unknown>) => {
     order.push('revocation');
@@ -83,11 +90,11 @@ const sourceUser = (tokenIds: string[] = []) => ({
   api_tokens: tokenIds.map((id) => ({ id, name: `token-${id}` })),
 }) as unknown as AuthUser;
 
-const handlerContext = (source: AuthUser) => ({
-  context,
-  sourceUser: source,
-  targetUser: { id: 'target-id' } as unknown as AuthUser,
-} as never);
+// The store mirrors the snapshot unless a test says otherwise.
+const handlerContext = (source: AuthUser, stored = source.api_tokens) => {
+  storedTokens = stored;
+  return { context, sourceUser: source, targetUser: { id: 'target-id' } as unknown as AuthUser } as never;
+};
 
 const NO_PLAN = { handler: 'source-runtime-invalidation', changes: [], alerts: [] };
 
@@ -161,6 +168,16 @@ describe('userMerge runtime handler', () => {
     // A write on the user would otherwise re-align the individual joined on its email.
     expect(updates[0].opts).toEqual({ skipUserIndividualSync: true });
     expect(deletedTokenIds).toEqual([['token-a', 'token-b']]);
+  });
+
+  // The snapshot is taken before both passes: a token added during the merge is only in the store.
+  it('should count and revoke the tokens the store holds, not the snapshot', async () => {
+    const late = sourceUser(['token-a', 'token-late']).api_tokens;
+    const plan = await userMergeRuntimeHandler.compute(handlerContext(sourceUser(['token-a']), late));
+    expect(plan.changes.find((change) => change.register_row_id === 'user.api-tokens')?.count).toEqual(2);
+    await userMergeRuntimeHandler.apply(handlerContext(sourceUser(['token-a']), late), NO_PLAN);
+    expect(updates[0].inputs[0]).toMatchObject({ value: [{ id: 'token-a' }, { id: 'token-late' }] });
+    expect(deletedTokenIds).toEqual([['token-a', 'token-late']]);
   });
 
   it('should notify the user cache of the revocation', async () => {

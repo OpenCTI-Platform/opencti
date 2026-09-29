@@ -1,5 +1,6 @@
 import { BUS_TOPICS } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
+import { storeLoadById } from '../../database/middleware-loader';
 import { delUserContext, fetchUserContextIds, notify, redisDelForgotPassword, redisGetForgotPasswordOtpPointer } from '../../database/redis';
 import { delTokensUsage, getTokensUsage } from '../../database/redis/token_usage';
 import { findUserSessions, killUserSessions } from '../../database/session';
@@ -7,6 +8,7 @@ import { UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import type { EditOperation } from '../../generated/graphql';
 import { closeUserStreamConnections, userStreamConnections } from '../../graphql/sseMiddleware';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import type { BasicStoreCommon } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange, USER_MERGE_USER_WRITE } from './userMerge-handler';
@@ -19,6 +21,13 @@ interface RuntimeContext {
   context: AuthContext;
   sourceUser: AuthUser;
 }
+
+// Read from the store, not from `sourceUser`: that snapshot is taken before both passes, so a token
+// added during the merge would be neither counted nor revoked.
+const currentTokens = async ({ context, sourceUser }: RuntimeContext): Promise<AuthUser['api_tokens']> => {
+  const source = await storeLoadById<BasicStoreCommon & Pick<AuthUser, 'api_tokens'>>(context, SYSTEM_USER, sourceUser.id, ENTITY_TYPE_USER);
+  return source?.api_tokens ?? [];
+};
 
 /**
  * One means of access the source keeps, with the way to observe it and the way to close it.
@@ -45,14 +54,14 @@ const INVALIDATIONS: RuntimeInvalidation[] = [
     registerRow: 'api-token.usage-key',
     entityType: ENTITY_TYPE_USER,
     detail: 'token usage keys dropped',
-    count: async ({ sourceUser }) => {
+    count: async (runtime) => {
       // A key only exists once the token has been used, so the token count would overstate it —
       // and this row is reported as exact.
-      const tokenIds = (sourceUser.api_tokens ?? []).map((token) => token.id);
+      const tokenIds = (await currentTokens(runtime)).map((token) => token.id);
       return Object.keys(await getTokensUsage(tokenIds)).length;
     },
-    invalidate: async ({ sourceUser }) => {
-      const tokenIds = (sourceUser.api_tokens ?? []).map((token) => token.id);
+    invalidate: async (runtime) => {
+      const tokenIds = (await currentTokens(runtime)).map((token) => token.id);
       return tokenIds.length > 0 ? delTokensUsage(tokenIds) : 0;
     },
   },
@@ -60,9 +69,10 @@ const INVALIDATIONS: RuntimeInvalidation[] = [
     registerRow: 'user.api-tokens',
     entityType: ENTITY_TYPE_USER,
     detail: 'API tokens revoked',
-    count: async ({ sourceUser }) => (sourceUser.api_tokens ?? []).length,
-    invalidate: async ({ context, sourceUser }) => {
-      const tokens = sourceUser.api_tokens ?? [];
+    count: async (runtime) => (await currentTokens(runtime)).length,
+    invalidate: async (runtime) => {
+      const { context, sourceUser } = runtime;
+      const tokens = await currentTokens(runtime);
       if (tokens.length === 0) {
         return 0;
       }
