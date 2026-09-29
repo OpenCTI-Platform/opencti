@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { graphql } from 'graphql';
 import { authDirectiveBuilder } from '../../../src/graphql/authDirective';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { BYPASS, PUBLIC_DASHBOARD_REFERER } from '../../../src/utils/access';
@@ -34,12 +33,20 @@ const buildUser = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+// Invoke the wrapped field resolver directly instead of going through the full graphql-js
+// execution engine (graphql()/execute()). This keeps the test independent from the schema's
+// internal "graphql" module instance, avoiding "Cannot use GraphQLSchema ... from another
+// module or realm" errors caused by mixed ESM/CJS resolution of the "graphql" dependency in CI.
 const runRestrictedQuery = async (user: unknown) => {
-  return graphql({
-    schema: buildSchema(),
-    source: '{ restricted }',
-    contextValue: { user, otp_mandatory: false, user_otp_validated: true },
-  });
+  const schema = buildSchema();
+  const contextValue = { user, otp_mandatory: false, user_otp_validated: true };
+  const restrictedField = schema.getQueryType()?.getFields().restricted;
+  try {
+    const data = await restrictedField?.resolve?.(undefined, {}, contextValue, {} as any);
+    return { data: { restricted: data }, errors: undefined as { message: string }[] | undefined };
+  } catch (error: any) {
+    return { data: { restricted: null as string | null }, errors: [{ message: error.message }] };
+  }
 };
 
 describe('authDirective capability check', () => {
