@@ -3127,6 +3127,33 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 
+  it('case (a): a status whose state is declared only as a transition endpoint (not in states[]) still resolves', async () => {
+    setupCommon();
+    const transitionOnlyDefinition = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'review' }],
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: transitionOnlyDefinition, validation_errors: [] } });
+      }
+      if (id === 'status-reviewing-id') {
+        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-reviewing-id',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    const [, , instanceInput] = (createEntity as any).mock.calls[0];
+    expect(instanceInput.currentState).toBe('reviewing');
+    expect(instanceInput.pendingError).toBeUndefined();
+  });
+
   it('case (c): no status supplied at all starts at initialState with the default scope, and projects once', async () => {
     setupCommon();
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
@@ -3380,6 +3407,16 @@ describe('getWorkflowInstance — read-repair', () => {
     await getWorkflowInstance(mockContext, mockUser, 'entity-id');
 
     expect(projectWorkflowState).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-run the mapped-Status lookup within the TTL window when the entity is already consistent', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('stale-status-id'); // already consistent
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(resolveMappedStatusId).toHaveBeenCalledTimes(1);
   });
 
   it('skips repair entirely when the workflow:disable_read_repair kill switch is enabled', async () => {

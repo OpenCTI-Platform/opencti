@@ -32,7 +32,9 @@ export const reportWorkflowAsyncActionResult = async (
   error?: string,
 ): Promise<void> => {
   const executionContext = bypassDraftContext(context);
-  const executionUser = executionContext.user!;
+  // Use the explicitly-passed `user`, not `context.user`: some callers (e.g. work.js via
+  // `executionContext(source)`) build a context with no `.user` and thread the identity separately.
+  const executionUser: AuthUser = { ...user, draft_context: undefined };
 
   const instanceEntity = await storeLoadById<any>(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
   if (!instanceEntity) {

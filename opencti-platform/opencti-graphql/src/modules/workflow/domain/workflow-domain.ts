@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { LRUCache } from 'lru-cache';
 import { booleanConf, logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
@@ -311,8 +312,9 @@ const resolveSuppliedStatus = async (
 ): Promise<{ stateId: string; scope: string } | null> => {
   const status = await storeLoadById<BasicWorkflowStatus>(context, user, suppliedStatusId, ENTITY_TYPE_STATUS);
   if (!status) return null;
-  const matchesState = (definitionData.states ?? []).some((s) => s.statusId === status.template_id);
-  if (!matchesState) return null;
+  // A state can be declared only via `initialState` or a transition endpoint, not in `states[]`.
+  const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  if (!canonicalStateIds.has(status.template_id)) return null;
   return { stateId: status.template_id, scope: status.scope };
 };
 
@@ -1053,14 +1055,16 @@ export const restorePublishedWorkflowDefinition = async (
 };
 
 /**
- * Per-process, per-entity rate limit for read-repair writes, so a page of repeated reads for
- * the same entity doesn't trigger a repair write on every single read.
+ * Per-process, per-entity rate limit for read-repair checks, so a page of repeated reads for
+ * the same entity doesn't re-run the mapped-Status lookup (nor a repair write) on every read.
+ * Bounded LRU with TTL: entries expire after the window and memory stays capped.
  * Known limitation: this cache is per-process, so a multi-node deployment can still perform
  * one redundant repair per node within the TTL window — acceptable since repairs are
  * idempotent no-ops once consistent.
  */
 const READ_REPAIR_RATE_LIMIT_TTL_MS = 5000;
-const readRepairLastAttemptByEntity = new Map<string, number>();
+const READ_REPAIR_RATE_LIMIT_MAX_ENTRIES = 10000;
+const readRepairLastAttemptByEntity = new LRUCache<string, true>({ max: READ_REPAIR_RATE_LIMIT_MAX_ENTRIES, ttl: READ_REPAIR_RATE_LIMIT_TTL_MS });
 
 /** Test-only: clears the read-repair rate-limit cache so tests can exercise it from a clean state. */
 export const __resetReadRepairRateLimitForTest = (): void => {
@@ -1109,15 +1113,15 @@ export const getWorkflowInstance = async (
   // under the reading caller's identity, never fails/delays the read on error, and is
   // rate-limited per entity so repeated reads don't repeatedly re-write an already-consistent field.
   if (instanceEntity && currentState && !booleanConf('workflow:disable_read_repair', false)) {
-    const lastAttempt = readRepairLastAttemptByEntity.get(effectiveEntityId);
-    const withinRateLimit = lastAttempt !== undefined && (Date.now() - lastAttempt) < READ_REPAIR_RATE_LIMIT_TTL_MS;
-    if (!withinRateLimit) {
+    if (!readRepairLastAttemptByEntity.has(effectiveEntityId)) {
+      // Record the attempt before checking, whatever the outcome, so consistent entities are
+      // not re-queried on every read within the window.
+      readRepairLastAttemptByEntity.set(effectiveEntityId, true);
       try {
         const scope = resolveProjectionScope(instanceEntity.scope);
         const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
         const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, currentState);
         if (expectedStatusId && (entity as BasicStoreEntity).x_opencti_workflow_id !== expectedStatusId) {
-          readRepairLastAttemptByEntity.set(effectiveEntityId, Date.now());
           await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, entity as BasicStoreEntity, currentState, scope);
           logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
         }
