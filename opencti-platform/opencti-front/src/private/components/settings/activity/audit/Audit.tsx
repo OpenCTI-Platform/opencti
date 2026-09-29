@@ -84,6 +84,13 @@ export const AuditCSVQuery = graphql`
             entity_type
             entity_name
             message
+            from_id
+            to_id
+            changes {
+              field
+              changes_added
+              changes_removed
+            }
           }
         }
       }
@@ -106,6 +113,13 @@ type AuditCsvNode = {
     entity_type?: string | null;
     entity_name?: string | null;
     message: string;
+    from_id?: string | null;
+    to_id?: string | null;
+    changes?: ReadonlyArray<{
+      field: string;
+      changes_added?: ReadonlyArray<string> | null;
+      changes_removed?: ReadonlyArray<string> | null;
+    } | null> | null;
   } | null;
 };
 
@@ -124,11 +138,19 @@ type AuditCsvRow = {
   context_data_entity_type: string;
   context_data_entity_name: string;
   context_data_message: string;
+  context_data_from_id: string;
+  context_data_to_id: string;
+  context_data_changes: string;
 };
 
 // react-csv wraps values in quotes but never escapes quotes within them (no RFC4180 support),
 // so any JSON-serialized field must go through this before being handed to CSVLink.
-export const toCsvSafeJson = (value: unknown): string => (value ? JSON.stringify(value).replace(/"/g, '""') : 'undefined');
+export const toCsvSafeJson = (value: unknown): string => {
+  if (value === null || value === undefined) return 'undefined';
+  // JSON.stringify returns undefined for non-serializable inputs such as functions or symbols.
+  const serialized = JSON.stringify(value);
+  return serialized === undefined ? 'undefined' : serialized.replace(/"/g, '""');
+};
 
 export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
   id: node.id,
@@ -145,6 +167,9 @@ export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCs
   context_data_entity_type: node.context_data?.entity_type ?? 'undefined',
   context_data_entity_name: node.context_data?.entity_name ?? 'undefined',
   context_data_message: node.context_data?.message ?? 'undefined',
+  context_data_from_id: node.context_data?.from_id ?? 'undefined',
+  context_data_to_id: node.context_data?.to_id ?? 'undefined',
+  context_data_changes: toCsvSafeJson(node.context_data?.changes),
 }));
 
 const Audit = () => {
