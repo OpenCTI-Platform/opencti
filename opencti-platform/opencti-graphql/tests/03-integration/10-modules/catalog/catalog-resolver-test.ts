@@ -59,6 +59,8 @@ const assertContractShape = (contract: any) => {
   expect(contract.logo === null || typeof contract.logo === 'string').toBe(true);
   expect(contract.last_verified_date === null || typeof contract.last_verified_date === 'string').toBe(true);
   expect(contract.support_version === null || typeof contract.support_version === 'string').toBe(true);
+  expect(contract.min_version === null || typeof contract.min_version === 'string').toBe(true);
+  expect(contract.max_version === null || typeof contract.max_version === 'string').toBe(true);
   expect(contract.subscription_link === null || typeof contract.subscription_link === 'string').toBe(true);
   expect(contract.config_schema).toMatchObject({
     type: expect.any(String),

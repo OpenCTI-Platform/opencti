@@ -2,12 +2,17 @@ import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import type { BasicStoreEntityCatalogContract } from './catalog-types';
 
-type SupportVersionContract = Pick<BasicStoreEntityCatalogContract, 'support_version' | 'contract_id'>;
+type SupportVersionContract = Pick<BasicStoreEntityCatalogContract, 'support_version' | 'min_version' | 'max_version' | 'contract_id'>;
 type ContractVersionContract = Pick<BasicStoreEntityCatalogContract, 'contract_version'>;
 
 type CompatibilityOptions = {
   platformVersion?: string;
-  onUnparsableSupportVersion?: (args: { contractId: string; supportVersion: string; platformVersion: string }) => void;
+  onUnparsableVersion?: (args: {
+    contractId: string;
+    field: 'support_version' | 'min_version' | 'max_version';
+    version: string;
+    platformVersion: string;
+  }) => void;
 };
 
 const ROLLING_VERSION = 'rolling';
@@ -23,30 +28,59 @@ export const isSupportVersionCompatible = (
   contract: SupportVersionContract,
   options: CompatibilityOptions = {},
 ) => {
-  if (!contract.support_version) {
+  const minVersion = contract.min_version || contract.support_version;
+  const maxVersion = contract.max_version;
+  if (!minVersion && !maxVersion) {
     return true;
   }
   const platformVersion = options.platformVersion ?? PLATFORM_VERSION;
-  const contractVersion = parseCatalogSemver(contract.support_version);
   const parsedPlatformVersion = parseCatalogSemver(platformVersion);
-  if (!contractVersion || !parsedPlatformVersion) {
-    if (options.onUnparsableSupportVersion) {
-      options.onUnparsableSupportVersion({
-        contractId: contract.contract_id,
-        supportVersion: contract.support_version,
-        platformVersion,
-      });
+  const reportUnparsableVersion = (
+    field: 'support_version' | 'min_version' | 'max_version',
+    version: string,
+  ) => {
+    if (options.onUnparsableVersion) {
+      options.onUnparsableVersion({ contractId: contract.contract_id, field, version, platformVersion });
     } else {
-      logApp.warn('[OPENCTI-MODULE] Ignoring catalog contract with unparsable support version', {
+      logApp.warn(`[OPENCTI-MODULE] Ignoring catalog contract with unparsable ${field}`, {
         module: 'catalog',
         contractId: contract.contract_id,
-        supportVersion: contract.support_version,
+        [field]: version,
         platformVersion,
       });
     }
+  };
+  if (!parsedPlatformVersion) {
+    const field = minVersion ? (contract.min_version ? 'min_version' : 'support_version') : 'max_version';
+    reportUnparsableVersion(field, minVersion ?? maxVersion ?? '');
     return false;
   }
-  return semver.lte(contractVersion, parsedPlatformVersion);
+
+  if (minVersion) {
+    const minField = contract.min_version ? 'min_version' : 'support_version';
+    const parsedMinVersion = minField === 'support_version'
+      ? parseCatalogSemver(minVersion)
+      : semver.valid(minVersion) ? semver.parse(minVersion) : null;
+    if (!parsedMinVersion) {
+      reportUnparsableVersion(minField, minVersion);
+      return false;
+    }
+    if (semver.gt(parsedMinVersion, parsedPlatformVersion)) {
+      return false;
+    }
+  }
+
+  if (maxVersion) {
+    const parsedMaxVersion = semver.valid(maxVersion) ? semver.parse(maxVersion) : null;
+    if (!parsedMaxVersion) {
+      reportUnparsableVersion('max_version', maxVersion);
+      return false;
+    }
+    if (semver.gt(parsedPlatformVersion, parsedMaxVersion)) {
+      return false;
+    }
+  }
+  return true;
 };
 
 export const compareContractVersions = (left: string, right: string) => {

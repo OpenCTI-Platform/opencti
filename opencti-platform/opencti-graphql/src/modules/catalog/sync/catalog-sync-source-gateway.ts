@@ -29,7 +29,8 @@ type CatalogContractDtoV1 = {
   subscription_link: string | null;
   source_code: string | null;
   manager_supported: boolean;
-  support_version: string | null;
+  min_version?: string | null;
+  max_version?: string | null;
   license_type: 'Free' | 'Commercial' | null;
   contact: string | null;
   solution_categories: string[];
@@ -240,7 +241,9 @@ const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: Catalog
       typeof max_confidence_level === 'number'
         ? max_confidence_level
         : DEFAULT_MAX_CONFIDENCE,
-    support_version: contractDto.support_version,
+    support_version: null,
+    min_version: contractDto.min_version,
+    max_version: contractDto.max_version,
     subscription_link: contractDto.subscription_link,
     source_code: contractDto.source_code ?? '',
     manager_supported: contractDto.manager_supported,
