@@ -6,7 +6,7 @@ vi.mock('../../../../src/database/redis', () => ({
   redisUserMergeJournalRead: async () => [],
 }));
 
-const { withJournalEntry } = await import('../../../../src/modules/userMerge/userMerge-journal');
+const { journalRefusal, withJournalEntry } = await import('../../../../src/modules/userMerge/userMerge-journal');
 const { UserMergeStatus } = await import('../../../../src/modules/userMerge/userMerge-types');
 
 const input = { mergeId: 'merge-1', sourceId: 'source', targetId: 'target', handler: 'handler-a', dryRun: false };
@@ -52,5 +52,41 @@ describe('userMerge journal', () => {
     const execute = vi.fn(async () => outcome);
     await expect(withJournalEntry(input, execute)).rejects.toThrow('redis is down');
     expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+const refusalInput = { mergeId: 'merge-1', sourceId: 'source', targetId: 'target', handler: 'user-runtime-state' };
+
+describe('journal entry of a refusal', () => {
+  beforeEach(() => {
+    upsert.mockReset();
+    upsert.mockResolvedValue(undefined);
+  });
+
+  // The dry pass of a real run is journalled as dry, so a run refused before the write loop leaves
+  // the exact entries a plain dry-run leaves. Without this one the two cannot be told apart.
+  it('should name the handler that diverged and carry the reason', async () => {
+    await journalRefusal(refusalInput, 'Platform state changed between the dry pass and the real pass, nothing was written: real only [user.password|User|2|true]');
+    expect(upsert.mock.calls[0][2]).toMatchObject({ handler: 'user-runtime-state', merge_id: 'merge-1' });
+    expect(upsert.mock.calls[1][2]).toMatchObject({
+      status: UserMergeStatus.Failed,
+      updated_count: 0,
+      message: expect.stringContaining('real only [user.password|User|2|true]'),
+    });
+  });
+
+  // A refusal wrote nothing, and the history cut is anchored on the runs that could have written.
+  // Recorded as real it would move that anchor back to a run that wrote nothing, dropping later
+  // history out of the scan and letting the deletion gate open on an incomplete merge.
+  it('should record the refusal as dry, since it wrote nothing to anchor the history cut on', async () => {
+    await journalRefusal(refusalInput, 'nothing was written');
+    expect(upsert.mock.calls[0][2]).toMatchObject({ dry_run: true });
+  });
+
+  // The journal is diagnostic: it must not replace the refusal the caller is about to raise with
+  // an error about the trace of it.
+  it('should not propagate a journal write failure', async () => {
+    upsert.mockRejectedValue(new Error('redis is down'));
+    await expect(journalRefusal(refusalInput, 'nothing was written')).resolves.toBeUndefined();
   });
 });
