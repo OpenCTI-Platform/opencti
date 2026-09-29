@@ -115,7 +115,7 @@ type AuditCsvRow = {
   event_type: string;
   event_scope?: string | null;
   event_status: string;
-  user_metadata: unknown;
+  user_metadata: string;
   timestamp: unknown;
   context_uri?: string | null;
   user_id: string;
@@ -126,13 +126,17 @@ type AuditCsvRow = {
   context_data_message: string;
 };
 
+// react-csv wraps values in quotes but never escapes quotes within them (no RFC4180 support),
+// so any JSON-serialized field must go through this before being handed to CSVLink.
+export const toCsvSafeJson = (value: unknown): string => (value ? JSON.stringify(value).replace(/"/g, '""') : 'undefined');
+
 export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
   id: node.id,
   entity_type: node.entity_type,
   event_type: node.event_type,
   event_scope: node.event_scope,
   event_status: node.event_status,
-  user_metadata: node.user_metadata ?? 'undefined',
+  user_metadata: toCsvSafeJson(node.user_metadata),
   timestamp: node.timestamp,
   context_uri: node.context_uri,
   user_id: node.user?.id ?? 'undefined',
