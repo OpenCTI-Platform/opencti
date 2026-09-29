@@ -62,7 +62,9 @@ const fetchXtmOneIssuer = async (): Promise<string | undefined> => {
   const previous = xtmOneIdentity?.issuer;
   try {
     const httpClient = getHttpClient({ baseURL: xtmOneUrl, responseType: 'json' });
-    const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000 });
+    // Only the configured URL may answer: a redirect is a failed read, never
+    // another origin supplying XTM One's identity.
+    const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000, maxRedirects: 0 });
     const published = response.data?.issuer;
     const issuer = typeof published === 'string' ? canonicalUrl(published) : undefined;
     if (!issuer) {

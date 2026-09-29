@@ -159,6 +159,7 @@ import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedC
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
 import { getXtmOneIdentity } from '../../../src/domain/xtm-auth';
+import xtmOneClient from '../../../src/modules/xtm/one/xtm-one-client';
 import {
   deleteChatbotSession,
   getChatbotConfig,
@@ -1439,10 +1440,11 @@ describe('httpChatbotProxy: getChatbotConfig', () => {
 
   it('should serve no URL when XTM One is not configured', async () => {
     vi.mocked(getXtmOneIdentity).mockResolvedValue(undefined);
+    vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
 
     await getChatbotConfig(buildReq(), res);
 
-    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: null, xtm_one_configured: true });
+    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: null, xtm_one_configured: false });
   });
 
   it('should return 403 when user is not authenticated', async () => {

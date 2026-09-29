@@ -198,6 +198,23 @@ describe('XTM One reached on an internal URL', () => {
     }
   });
 
+  it('never follows a redirect: another origin cannot supply the identity', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      expect(mocks.get).toHaveBeenCalledWith(`${XTM_ONE_URL}/xtm/auth/metadata`, expect.objectContaining({ maxRedirects: 0 }));
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockRejectedValueOnce(Object.assign(new Error('Request failed with status code 302'), { response: { status: 302 } }));
+      await getXtmOneIssuer();
+      await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('drops the published identity once XTM One answers 404, and falls back to the configured URL', async () => {
     vi.useFakeTimers();
     try {
