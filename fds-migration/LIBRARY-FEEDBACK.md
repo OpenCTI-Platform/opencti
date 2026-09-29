@@ -2264,3 +2264,30 @@ at 10% of the status colour; the wash is a different value.
 It retires the day the label follows the data colour and the wash yields to a
 caller-supplied background, or the day `Chip` exposes a label slot.
 
+
+## 61. A layer's fields, hovers and borders are fixed colours, so a customer surface cannot carry them
+
+**Reported** on #18468: under a customised theme the fields, the drawers and the
+left-bar submenu kept the library's blue.
+
+**Today.** Each `--<family>-layer-N` is a palette step (`var(--grayblue-600)`),
+not a value relative to `--bg-elevation-default-layer-N`. A product that moves the
+surface moves nothing painted on it: a field, a hover, a heading, a border stay
+on the library's palette — or merge into the new surface. The same holds for
+`--color-filigran-brand-secondary`/`-tertiary` against `-brand-primary`, the tonic
+family against `-tonic-primary`, `--text-default-secondary`/`-disabled` against
+`-primary`, and the body gradient's far stop against layer 0.
+
+**Workaround.** `src/static/css/custom-theme-tokens.css` re-declares those members
+as `color-mix()` of their root, under `fds-custom-<setting>` classes that only a
+customised theme gets. The percentages are fitted to the library's own steps and
+locked by `custom-theme-tokens.test.ts`.
+
+**Ask.** Declare the members as relative colours of their root in `theme.css` —
+`color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 11%)`
+or relative colour syntax — so a product sets the root and the family follows.
+The library already does this for its `-transparency-N` variants.
+
+**Removal test.** Delete `custom-theme-tokens.css` and its import, set a purple
+paper on a custom theme: a drawer, the fields inside it and its header are all
+purple, and a field still stands out from the drawer.
