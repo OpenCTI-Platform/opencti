@@ -21,6 +21,15 @@ const LIST_CATALOGS_QUERY = gql`
   }
 `;
 
+const LIST_CATALOG_REVISIONS_QUERY = gql`
+  query CatalogsRevisions {
+    catalogsRevisions {
+      catalog_id
+      revision
+    }
+  }
+`;
+
 const GET_CATALOG_BY_ID_QUERY = gql`
   query CatalogById($id: String!) {
     catalog(id: $id) {
@@ -195,5 +204,23 @@ describe('Catalog resolver integration', () => {
 
   it('should expose expected endpoint shapes with a custom V1 catalog source', async () => {
     await assertCatalogEndpoints(catalogV1Id, catalogV1Slug, v1CatalogUri);
+  });
+
+  it('should expose lightweight catalogs revisions payload', async () => {
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', v1CatalogUri);
+    await synchronizeCatalogs(testContext, ADMIN_USER);
+
+    const result = await queryAsAdminWithSuccess({
+      query: LIST_CATALOG_REVISIONS_QUERY,
+      variables: {},
+    });
+    const revisions = result.data?.catalogsRevisions ?? [];
+    expect(revisions.length).toBeGreaterThan(0);
+
+    for (const revisionEntry of revisions) {
+      expect(Object.keys(revisionEntry).sort()).toEqual(['catalog_id', 'revision']);
+      expect(revisionEntry.catalog_id).toEqual(expect.any(String));
+      expect(revisionEntry.revision).toEqual(expect.any(String));
+    }
   });
 });
