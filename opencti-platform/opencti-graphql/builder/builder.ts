@@ -48,6 +48,12 @@ const buildOptions = {
         to: ['.'],
       },
     }),
+    copy({
+      assets: {
+        from: ['./node_modules/ejs/lib/cjs/ejs.js', './node_modules/ejs/lib/cjs/utils.js'],
+        to: ['./ejs'],
+      },
+    }),
   ],
   entryPoints,
   entryNames: '[name]',

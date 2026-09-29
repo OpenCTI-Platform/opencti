@@ -8,6 +8,7 @@ import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
+import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -95,6 +96,8 @@ export const platformStop = async () => {
   await cacheManager.shutdown();
   // Destroy the modules
   await shutdownModules();
+  // Shutdown the safe-ejs worker pool
+  await shutdownSafeEjsPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
