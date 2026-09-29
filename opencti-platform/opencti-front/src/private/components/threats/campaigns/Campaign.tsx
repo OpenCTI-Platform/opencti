@@ -60,6 +60,7 @@ const campaignFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...CampaignDetails_campaign
   }
 `;

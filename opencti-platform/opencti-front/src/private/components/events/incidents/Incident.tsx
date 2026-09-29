@@ -70,6 +70,7 @@ const incidentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...IncidentDetails_incident
   }
 `;

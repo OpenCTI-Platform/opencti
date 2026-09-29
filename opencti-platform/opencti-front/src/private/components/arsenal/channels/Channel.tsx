@@ -60,6 +60,7 @@ export const channelFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...ChannelDetails_channel
   }
 `;

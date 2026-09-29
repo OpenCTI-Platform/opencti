@@ -54,6 +54,7 @@ const NoteComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...NoteDetails_note
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container

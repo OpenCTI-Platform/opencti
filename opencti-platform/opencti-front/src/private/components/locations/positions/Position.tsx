@@ -155,6 +155,7 @@ const Position = createFragmentContainer(PositionComponent, {
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
     }
   `,
 });
