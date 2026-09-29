@@ -62,7 +62,9 @@ const fetchXtmOneIssuer = async (): Promise<string | undefined> => {
   const previous = xtmOneIdentity?.issuer;
   try {
     const httpClient = getHttpClient({ baseURL: xtmOneUrl, responseType: 'json' });
-    const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000 });
+    // Only the configured URL may answer: a redirect is a failed read, never
+    // another origin supplying XTM One's identity.
+    const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000, maxRedirects: 0 });
     const published = response.data?.issuer;
     const issuer = typeof published === 'string' ? canonicalUrl(published) : undefined;
     if (!issuer) {
@@ -105,6 +107,15 @@ export const getXtmOneIssuer = async (): Promise<string | undefined> => {
   // Past its expiry the last answer is served while it is read again: only the
   // first call ever waits for XTM One.
   return xtmOneIdentity ? xtmOneIdentity.issuer : xtmOneIdentityFetch;
+};
+
+// Where a browser opens XTM One: the identity it publishes, else the
+// configured URL, which may be an address only this backend reaches.
+export const getXtmOneIdentity = async (): Promise<string | undefined> => {
+  if (!xtmOneUrl) {
+    return undefined;
+  }
+  return (await getXtmOneIssuer()) ?? xtmOneUrl;
 };
 
 // -- Trusted issuers ---------------------------------------------------------

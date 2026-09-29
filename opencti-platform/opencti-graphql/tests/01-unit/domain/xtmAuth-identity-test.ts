@@ -119,6 +119,25 @@ describe('XTM One reached on an internal URL', () => {
     expect(payloadOf(await issueXtmJwt(user, 'https://other.example.com')).aud).toBe('https://other.example.com');
   });
 
+  it('is opened in the browser on the identity XTM One publishes', async () => {
+    mocks.get.mockResolvedValue({ data: { issuer: `${XTM_ONE_ISSUER}/` } });
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBe(XTM_ONE_ISSUER);
+  });
+
+  it('is opened in the browser on its configured URL when it publishes no identity', async () => {
+    mocks.get.mockRejectedValue(Object.assign(new Error('Request failed with status code 404'), { response: { status: 404 } }));
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBe(XTM_ONE_URL);
+  });
+
+  it('has no browser URL when XTM One is not configured', async () => {
+    mocks.xtmOneUrl = '';
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBeUndefined();
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
   it('verifies an XTM One token with the keys served on the configured URL', async () => {
     mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
     const { verifyXtmJwt } = await loadXtmAuth();
@@ -174,6 +193,23 @@ describe('XTM One reached on an internal URL', () => {
       expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
       expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(true);
       expect(mocks.get).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('never follows a redirect: another origin cannot supply the identity', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      expect(mocks.get).toHaveBeenCalledWith(`${XTM_ONE_URL}/xtm/auth/metadata`, expect.objectContaining({ maxRedirects: 0 }));
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockRejectedValueOnce(Object.assign(new Error('Request failed with status code 302'), { response: { status: 302 } }));
+      await getXtmOneIssuer();
+      await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
     } finally {
       vi.useRealTimers();
     }

@@ -12,7 +12,7 @@ import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
-import { issueXtmJwt } from '../domain/xtm-auth';
+import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
@@ -151,7 +151,10 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 };
 
 // ── GET /chatbot/config ──────────────────────────────────────────────────
-// Returns chatbot configuration (XTM One URL) for the frontend.
+// Returns chatbot configuration for the frontend. `xtm_one_url` is where the
+// browser opens XTM One (Ask Ariane's links, the CTEM Command Center, the MCP
+// card): its published identity, not `xtm:xtm_one_url`, which may be an
+// internal address only this backend reaches.
 export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -160,7 +163,7 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
       return null;
     }
     res.json({
-      xtm_one_url: XTM_ONE_URL || null,
+      xtm_one_url: (await getXtmOneIdentity()) ?? null,
       xtm_one_configured: xtmOneClient.isConfigured(),
     });
   } catch (e: unknown) {
