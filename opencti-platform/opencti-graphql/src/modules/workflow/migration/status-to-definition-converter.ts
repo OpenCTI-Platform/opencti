@@ -2,8 +2,10 @@ import { StatusScope } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { WorkflowSerializedTransition } from '../types/workflow-types';
 
+export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER' | 'DUPLICATE_ORDER' | 'NAME_CONFLICT' | 'MISSING_TEMPLATE';
+
 export interface WorkflowMigrationDiagnostic {
-  type: string;
+  type: WorkflowMigrationDiagnosticType;
   message: string;
   statusId?: string;
 }
@@ -42,6 +44,14 @@ const toEventSegment = (value: string): string => {
   return segment || value;
 };
 
+// A blank/whitespace-only template name is treated the same as a missing one everywhere in this
+// module (falls back to the template id), so both the transition-naming and name-conflict checks
+// agree on what counts as "blank".
+const resolveDisplayName = (templateId: string, templatesById: Map<string, BasicWorkflowTemplateEntity>): string => {
+  const rawName = templatesById.get(templateId)?.name;
+  return rawName && rawName.trim().length > 0 ? rawName : templateId;
+};
+
 /**
  * Synthesizes a fully-connected transition graph over `states`: legacy `Status` data has no
  * edge/transition concept, only a flat `order`, and today's `StatusField` UI lets users jump to
@@ -59,8 +69,7 @@ const synthesizeFullyConnectedTransitions = (
   const stateIds = states.map((state) => state.statusId);
   if (stateIds.length < 2) return [];
   return stateIds.map((to) => {
-    const rawName = templatesById.get(to)?.name;
-    const name = rawName && rawName.trim().length > 0 ? rawName : to;
+    const name = resolveDisplayName(to, templatesById);
     return {
       from: stateIds.filter((id) => id !== to),
       to,
@@ -95,6 +104,32 @@ const convertScopeGroup = (
         statusId: status.id,
       });
     }
+    if (!templatesById.has(status.template_id)) {
+      diagnostics.push({
+        type: 'MISSING_TEMPLATE',
+        message: `Status ${status.id} references template ${status.template_id}, which no longer exists; falling back to the template id as its display name.`,
+        statusId: status.id,
+      });
+    }
+  });
+
+  // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group make
+  // the resulting sort look non-deterministic to a reviewer, even though it isn't (source-array
+  // order breaks the tie).
+  const orderCounts = new Map<number, number>();
+  uniqueStatuses.forEach((status) => {
+    if (hasOrder(status)) {
+      orderCounts.set(status.order, (orderCounts.get(status.order) ?? 0) + 1);
+    }
+  });
+  uniqueStatuses.forEach((status) => {
+    if (hasOrder(status) && (orderCounts.get(status.order) ?? 0) > 1) {
+      diagnostics.push({
+        type: 'DUPLICATE_ORDER',
+        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); tie is broken by source order.`,
+        statusId: status.id,
+      });
+    }
   });
 
   // Statuses with a defined order sort by that value; statuses missing order keep their original
@@ -114,11 +149,11 @@ const convertScopeGroup = (
   // display name would be indistinguishable to a human reviewing the migrated definition.
   const nameCounts = new Map<string, number>();
   ordered.forEach((status) => {
-    const name = templatesById.get(status.template_id)?.name ?? status.template_id;
+    const name = resolveDisplayName(status.template_id, templatesById);
     nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
   });
   ordered.forEach((status) => {
-    const name = templatesById.get(status.template_id)?.name ?? status.template_id;
+    const name = resolveDisplayName(status.template_id, templatesById);
     if ((nameCounts.get(name) ?? 0) > 1) {
       diagnostics.push({
         type: 'NAME_CONFLICT',
@@ -180,3 +215,47 @@ export const convertStatusToDefinition = (
 
   return { byScope };
 };
+
+// GraphQL-ready shape for a single scope's preview result, distinct from `WorkflowMigrationConversionResult`
+// because it also carries the always-false `published`/`hasPublishedVersion` fields expected by the
+// `WorkflowMigrationScopeResult` schema type.
+export interface WorkflowMigrationScopeResult {
+  scope: StatusScope;
+  initialState: string;
+  published: boolean;
+  hasPublishedVersion: boolean;
+  states: WorkflowMigrationState[];
+  transitions: WorkflowSerializedTransition[];
+  diagnostics: WorkflowMigrationDiagnostic[];
+}
+
+export interface WorkflowMigrationPreviewResult {
+  entityType: string;
+  results: WorkflowMigrationScopeResult[];
+}
+
+/**
+ * Pure reshaping of `byScope` (keyed by `StatusScope`) into the flat `results` array expected by
+ * the `WorkflowMigrationPreview` GraphQL type. Kept here, next to `convertStatusToDefinition`,
+ * rather than in the resolver, so it stays unit-testable without a resolver/context and the
+ * resolver stays a thin bridge to domain logic.
+ */
+export const buildWorkflowMigrationPreviewResult = (
+  entityType: string,
+  byScope: WorkflowMigrationByScope,
+): WorkflowMigrationPreviewResult => ({
+  entityType,
+  results: Object.entries(byScope)
+    .filter((entry): entry is [string, WorkflowMigrationConversionResult] => entry[1] !== undefined)
+    .map(([scope, result]) => ({
+      scope: scope as StatusScope,
+      initialState: result.definition.initialState,
+      // Always false: this preview never persists anything, so there is no published/draft
+      // distinction to report yet (see WorkflowMigrationScopeResult doc in the schema).
+      published: false,
+      hasPublishedVersion: false,
+      states: result.definition.states,
+      transitions: result.definition.transitions,
+      diagnostics: result.diagnostics,
+    })),
+});
