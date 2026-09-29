@@ -8,7 +8,7 @@ import { getQueueConsumersByType } from '../../../src/database/rabbitmq';
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
   redisSetPlatformUsageMetrics: vi.fn(),
-  redisIsAlive: vi.fn(),
+  redisHealthCheck: vi.fn(),
 }));
 vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ getStorageUsedSize: vi.fn(), isStorageAlive: vi.fn() }));
