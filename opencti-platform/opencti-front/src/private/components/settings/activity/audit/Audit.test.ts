@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { buildAuditCsvData } from './Audit';
+import { buildAuditCsvData, toCsvSafeJson } from './Audit';
+
+describe('toCsvSafeJson', () => {
+  it('doubles inner double quotes so react-csv does not truncate the field', () => {
+    const userAgent = { 'user-agent': 'Mozilla/5.0 (KHTML, like Gecko)' };
+
+    expect(toCsvSafeJson(userAgent)).toBe('{""user-agent"":""Mozilla/5.0 (KHTML, like Gecko)""}');
+  });
+
+  it('returns the literal fallback for empty values', () => {
+    expect(toCsvSafeJson(undefined)).toBe('undefined');
+    expect(toCsvSafeJson(null)).toBe('undefined');
+  });
+});
 
 describe('buildAuditCsvData', () => {
   it('includes user metadata in the exported row', () => {
@@ -25,19 +38,6 @@ describe('buildAuditCsvData', () => {
       },
     }]);
 
-    expect(csvRow.user_metadata).toEqual(userMetadata);
-  });
-
-  it('uses the fallback when user metadata is absent', () => {
-    const [csvRow] = buildAuditCsvData([{
-      node: {
-        id: 'activity-id',
-        event_type: 'mutation',
-        event_status: 'success',
-        timestamp: '2026-09-25T10:00:00.000Z',
-      },
-    }]);
-
-    expect(csvRow.user_metadata).toBe('undefined');
+    expect(csvRow.user_metadata).toBe(toCsvSafeJson(userMetadata));
   });
 });
