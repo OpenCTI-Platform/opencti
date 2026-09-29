@@ -9493,7 +9493,6 @@ type Query {
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
-  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!]): String!
 }
 
 type Subscription {
@@ -10466,6 +10465,7 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!]): File!
 }
 
 enum WorkflowExecutionStatus {

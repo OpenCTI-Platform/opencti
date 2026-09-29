@@ -1,9 +1,12 @@
-import type { Resolvers } from '../../generated/graphql';
+import type { Resolvers, ResolversTypes } from '../../generated/graphql';
 import { generateGlobalConfigurationExport } from './globalExport-domain';
 
 const globalExportResolvers: Resolvers = {
-  Query: {
-    globalConfigurationExport: (_, { entityTypes, selections }, context) => generateGlobalConfigurationExport(context, context.user, entityTypes, selections),
+  Mutation: {
+    globalConfigurationExport: async (_, { entityTypes, selections }, context) => {
+      const file = await generateGlobalConfigurationExport(context, context.user, entityTypes, selections);
+      return file as unknown as ResolversTypes['File'];
+    },
   },
 };
 

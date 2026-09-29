@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterAll, describe, it, expect, vi } from 'vitest';
 import { ZipArchive } from 'archiver';
 import {
   exportCategory,
@@ -32,12 +32,39 @@ import { ENTITY_TYPE_WORKSPACE } from '../../../../src/modules/workspace/workspa
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../../../../src/modules/customView/customView-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../../../../src/modules/fintelTemplate/fintelTemplate-types';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
+import { deleteFile, type LoadedFile } from '../../../../src/database/file-storage';
+import { downloadFile } from '../../../../src/database/raw-file-storage';
+import { GLOBAL_EXPORT_STORAGE_PATH } from '../../../../src/modules/internal/document/document-types';
 
 const createFakeArchive = () => ({ append: vi.fn() }) as unknown as ZipArchive;
 
 const ZIP_MAGIC_BYTES = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
+const exportedFileIds: string[] = [];
+
+const runGlobalExport = async (...args: Parameters<typeof generateGlobalConfigurationExport>): Promise<LoadedFile> => {
+  const file = await generateGlobalConfigurationExport(...args);
+  exportedFileIds.push(file.id);
+  return file;
+};
+
+const readExportedZip = async (file: LoadedFile): Promise<Buffer> => {
+  const stream = await downloadFile(file.id);
+  expect(stream).not.toBeNull();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream!) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
+
 describe('Global configuration export', () => {
+  afterAll(async () => {
+    for (let i = 0; i < exportedFileIds.length; i += 1) {
+      await deleteFile(testContext, ADMIN_USER, exportedFileIds[i], { forceDelete: true });
+    }
+  });
+
   describe('category functions', () => {
     it('should export existing playbooks and append one entry per playbook', async () => {
       const archive = createFakeArchive();
@@ -340,28 +367,30 @@ describe('Global configuration export', () => {
   });
 
   describe('generateGlobalConfigurationExport', () => {
-    it('should return a valid base64-encoded zip for the requested categories', async () => {
-      const base64 = await generateGlobalConfigurationExport(testContext, ADMIN_USER, [
+    it('should upload a valid zip for the requested categories to the global export storage', async () => {
+      const file = await runGlobalExport(testContext, ADMIN_USER, [
         ENTITY_TYPE_PLAYBOOK,
         ENTITY_TYPE_FORM,
       ]);
 
-      expect(base64).toBeDefined();
-      expect(typeof base64).toBe('string');
+      expect(file).toBeDefined();
+      expect(file.id.startsWith(`${GLOBAL_EXPORT_STORAGE_PATH}/`)).toBe(true);
+      expect(file.name).toMatch(/^platform_configuration_export_.+\.zip$/);
 
-      const buffer = Buffer.from(base64, 'base64');
+      const buffer = await readExportedZip(file);
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
       expect(buffer.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))).toBeGreaterThan(0);
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
     });
 
     it('should deduplicate entity_types passed more than once', async () => {
-      const base64 = await generateGlobalConfigurationExport(
+      const file = await runGlobalExport(
         testContext,
         ADMIN_USER,
         [ENTITY_TYPE_FORM, ENTITY_TYPE_FORM],
       );
-      expect(Buffer.from(base64, 'base64').subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
+      const buffer = await readExportedZip(file);
+      expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
     });
 
     it('should throw on an unknown entity_type', async () => {
@@ -371,7 +400,7 @@ describe('Global configuration export', () => {
     });
 
     it('should include all settings categories in a single bundle', async () => {
-      const base64 = await generateGlobalConfigurationExport(testContext, ADMIN_USER, [
+      const file = await runGlobalExport(testContext, ADMIN_USER, [
         SETTINGS_BRANDING,
         SETTINGS_THEME,
         SETTINGS_LANGUAGE,
@@ -379,8 +408,8 @@ describe('Global configuration export', () => {
         SETTINGS_HIDDEN_ENTITY_TYPES,
       ]);
 
-      expect(base64).toBeDefined();
-      const buffer = Buffer.from(base64, 'base64');
+      expect(file).toBeDefined();
+      const buffer = await readExportedZip(file);
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
       expect(buffer.includes(Buffer.from('settings/branding.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('settings/theme.json'))).toBe(true);
@@ -534,7 +563,7 @@ describe('Global configuration export', () => {
     it('should embed accurate meta.json (version, author, deduplicated entity_types, counts)', async () => {
       const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
 
-      await generateGlobalConfigurationExport(testContext, ADMIN_USER, [
+      await runGlobalExport(testContext, ADMIN_USER, [
         ENTITY_TYPE_PLAYBOOK,
         ENTITY_TYPE_FORM,
         ENTITY_TYPE_PLAYBOOK, // duplicate on purpose
@@ -562,7 +591,7 @@ describe('Global configuration export', () => {
 
       const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
 
-      await generateGlobalConfigurationExport(
+      await runGlobalExport(
         testContext,
         ADMIN_USER,
         [ENTITY_TYPE_FORM, ENTITY_TYPE_PLAYBOOK],
@@ -581,7 +610,7 @@ describe('Global configuration export', () => {
     it('should ignore a selection whose ids array is empty', async () => {
       const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
 
-      await generateGlobalConfigurationExport(
+      await runGlobalExport(
         testContext,
         ADMIN_USER,
         [ENTITY_TYPE_FORM],
@@ -597,8 +626,8 @@ describe('Global configuration export', () => {
     });
 
     it('should produce a valid zip containing only meta.json when entityTypes is empty', async () => {
-      const base64 = await generateGlobalConfigurationExport(testContext, ADMIN_USER, []);
-      const buffer = Buffer.from(base64, 'base64');
+      const file = await runGlobalExport(testContext, ADMIN_USER, []);
+      const buffer = await readExportedZip(file);
 
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
