@@ -17417,6 +17417,7 @@ export type Mutation = {
   formImport?: Maybe<Form>;
   formSubmit?: Maybe<FormSubmissionResponse>;
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
+  globalConfigurationExport: File;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -18679,6 +18680,12 @@ export type MutationFrontendErrorLogArgs = {
   codeStack?: InputMaybe<Scalars['String']['input']>;
   componentStack?: InputMaybe<Scalars['String']['input']>;
   message: Scalars['String']['input'];
+};
+
+
+export type MutationGlobalConfigurationExportArgs = {
+  entityTypes: Array<Scalars['String']['input']>;
+  selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
 
 
@@ -24886,7 +24893,6 @@ export type Query = {
   fintelTemplate?: Maybe<FintelTemplate>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
-  globalConfigurationExport: Scalars['String']['output'];
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -26084,12 +26090,6 @@ export type QueryFormsArgs = {
   orderBy?: InputMaybe<FormsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryGlobalConfigurationExportArgs = {
-  entityTypes: Array<Scalars['String']['input']>;
-  selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
 
 
@@ -48890,6 +48890,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formImport?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormImportArgs, 'file'>>;
   formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
+  globalConfigurationExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationGlobalConfigurationExportArgs, 'entityTypes'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;
@@ -50774,7 +50775,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
-  globalConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGlobalConfigurationExportArgs, 'entityTypes'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;

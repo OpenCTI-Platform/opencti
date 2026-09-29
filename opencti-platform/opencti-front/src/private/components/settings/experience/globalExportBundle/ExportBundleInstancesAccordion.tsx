@@ -12,7 +12,7 @@ import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import type { SxProps } from '@mui/material/styles';
 import { useFormatter } from 'src/components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
-import type { ExportInstanceConfig, InstanceItem } from './exportBundleInstances';
+import type { ExportInstanceConfig, InstanceItem } from './exportBundleInstanceTypes';
 
 export type InstanceSelectionMode = 'none' | 'all' | 'partial';
 
