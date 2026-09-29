@@ -523,6 +523,51 @@ describe('authenticateUserByUserId', () => {
   });
 });
 
+describe('internalAuthenticateUser real identity tracking', () => {
+  const mockContext = testContext;
+
+  it('should attach the real (pre-impersonation) user id when a BYPASS user impersonates via opencti-applicant-id', async () => {
+    const bypassUser = buildCachedUser('bypass-admin', { capabilities: [{ name: 'BYPASS' }] });
+    const applicantUser = buildCachedUser('applicant-user');
+    const usersMap = new Map([['bypass-admin', bypassUser], ['applicant-user', applicantUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+    const mockReq = buildMockReq({ headers: { 'opencti-applicant-id': 'applicant-user' } });
+
+    const result = await authenticateUserByUserId(mockContext, mockReq, 'bypass-admin');
+
+    expect(result.id).toBe('applicant-user');
+    expect(result.origin?.real_authentication_id).toBe('bypass-admin');
+  });
+
+  it('should keep real_authentication_id equal to the user id when there is no impersonation', async () => {
+    const normalUser = buildCachedUser('normal-user');
+    const usersMap = new Map([['normal-user', normalUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+    const mockReq = buildMockReq();
+
+    const result = await authenticateUserByUserId(mockContext, mockReq, 'normal-user');
+
+    expect(result.id).toBe('normal-user');
+    expect(result.origin?.real_authentication_id).toBe('normal-user');
+  });
+
+  it('should NOT impersonate when opencti-applicant-id is set but user is not a BYPASS user', async () => {
+    const normalUser = buildCachedUser('normal-user');
+    const applicantUser = buildCachedUser('applicant-user');
+    const usersMap = new Map([['normal-user', normalUser], ['applicant-user', applicantUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+    const mockReq = buildMockReq({ headers: { 'opencti-applicant-id': 'applicant-user' } });
+
+    const result = await authenticateUserByUserId(mockContext, mockReq, 'normal-user');
+
+    expect(result.id).toBe('normal-user');
+    expect(result.origin?.real_authentication_id).toBe('normal-user');
+  });
+});
+
 describe('authenticateUserByJWT', () => {
   const mockContext = testContext;
   const mockReq = buildMockReq();
