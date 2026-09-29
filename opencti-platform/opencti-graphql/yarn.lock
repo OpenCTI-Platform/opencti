@@ -3898,6 +3898,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bytes@npm:3.1.6":
+  version: 3.1.6
+  resolution: "@types/bytes@npm:3.1.6"
+  checksum: 10c0/2d9fff3d0aa5487f71a94a719b04336f03832211353927b9e1b3dc02a566f38c96b7a5ccb260af3893b4900f5bc5ee1b5adc3074a061b7a0522787ed57a8a5be
+  languageName: node
+  linkType: hard
+
 "@types/chai@npm:^5.2.2":
   version: 5.2.3
   resolution: "@types/chai@npm:5.2.3"
@@ -10285,6 +10292,7 @@ __metadata:
     "@types/archiver": "npm:8.0.0"
     "@types/bluebird": "npm:3.5.42"
     "@types/busboy": "npm:1.5.4"
+    "@types/bytes": "npm:3.1.6"
     "@types/ejs": "npm:3.1.5"
     "@types/express": "npm:5.0.6"
     "@types/graphql-upload": "npm:17.0.0"
@@ -10318,6 +10326,7 @@ __metadata:
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.3.0"
     busboy: "npm:1.6.0"
+    bytes: "npm:3.1.2"
     canonicalize: "npm:5.1.0"
     chokidar: "npm:5.0.0"
     compression: "npm:1.8.2"
