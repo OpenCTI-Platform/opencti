@@ -99,7 +99,7 @@ export type NotificationTemplateMarking = Pick<StoreMarkingDefinition, 'id' | 's
 
 /**
  * STIX instances only carry marking ids (object_marking_refs).
- * Resolve them so that notifier templates can display the markings infos
+ * Resolve them so notifier templates can display marking information.
 **/
 export function resolveNotificationDataMarkings(
   data: NotificationData[],
