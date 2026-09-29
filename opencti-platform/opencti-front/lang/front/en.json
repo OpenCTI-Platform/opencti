@@ -2885,6 +2885,7 @@
   "Listen for updates to your PIR(s)": "Listen for updates to your PIR(s)",
   "Listen knowledge events": "Listen knowledge events",
   "Listen queue": "Listen queue",
+  "Listening...": "Listening...",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "Listing playbooks with entry points manual or live trigger (events) and matching filters.",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.",
   "Live streams": "Live streams",
