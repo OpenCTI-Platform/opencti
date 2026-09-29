@@ -1438,13 +1438,13 @@ describe('httpChatbotProxy: getChatbotConfig', () => {
     expect(res.json).toHaveBeenCalledWith({ xtm_one_url: 'http://localhost:8090', xtm_one_configured: true });
   });
 
-  it('should serve no URL when XTM One is not configured', async () => {
-    vi.mocked(getXtmOneIdentity).mockResolvedValue(undefined);
+  it('should serve no URL, without reading XTM One, when XTM One is not configured', async () => {
     vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
 
     await getChatbotConfig(buildReq(), res);
 
     expect(res.json).toHaveBeenCalledWith({ xtm_one_url: null, xtm_one_configured: false });
+    expect(getXtmOneIdentity).not.toHaveBeenCalled();
   });
 
   it('should return 403 when user is not authenticated', async () => {

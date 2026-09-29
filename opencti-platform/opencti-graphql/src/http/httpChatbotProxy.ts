@@ -162,9 +162,12 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
       res.sendStatus(403);
       return null;
     }
+    // Only a configured client reads XTM One's identity: the default
+    // configuration names a URL without a token, and this route serves every page.
+    const configured = xtmOneClient.isConfigured();
     res.json({
-      xtm_one_url: (await getXtmOneIdentity()) ?? null,
-      xtm_one_configured: xtmOneClient.isConfigured(),
+      xtm_one_url: configured ? ((await getXtmOneIdentity()) ?? null) : null,
+      xtm_one_configured: configured,
     });
   } catch (e: unknown) {
     logApp.error('Error in chatbot config', { cause: e });
