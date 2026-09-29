@@ -1,6 +1,8 @@
 @import '@filigran/chatbot/styles.css';
 @import '@filigran/rich-text-editor/styles.css';
 @import '@fontsource/geologica';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
 @import '@fontsource/ibm-plex-sans';
 @import 'graphiql/style.css';
 @import 'react-grid-layout/css/styles.css';
@@ -10,7 +12,7 @@
 @import 'reactflow/dist/style.css';
 @import 'tippy.js/animations/scale.css';
 @import 'tippy.js/dist/tippy.css';
-@import './leaflet.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
 @import './timerange.css';
 
 * {
@@ -99,7 +101,7 @@ div.markdown table {
 
 /* end region markdown*/
 
-.leaflet-container {
+.maplibregl-map {
   width: 100%;
   height: 100%;
   border-radius: 6px;
