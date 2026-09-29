@@ -57,6 +57,7 @@ export const observedDataFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...ObservedDataDetails_observedData
     ...ContainerHeader_container
   }

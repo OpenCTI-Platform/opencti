@@ -61,6 +61,7 @@ const threatActorGroupFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...ThreatActorGroupDetails_ThreatActorGroup
   }
 `;

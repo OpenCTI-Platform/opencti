@@ -62,6 +62,7 @@ export const securityPlatformFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...SecurityPlatformDetails_securityPlatform
   }
 `;

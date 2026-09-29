@@ -60,6 +60,7 @@ const sectorFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...SectorDetails_sector
   }
 `;
