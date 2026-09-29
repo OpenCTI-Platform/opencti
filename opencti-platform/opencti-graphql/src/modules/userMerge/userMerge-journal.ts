@@ -149,7 +149,8 @@ export const readJournalEntries = async (mergeId?: string, first?: number): Prom
  * at the current instant would let the previous merge's own traces back in, count them as
  * references still pending, and refuse the deletion forever.
  *
- * Dry-runs are skipped because they write nothing to bound. The journal expires after 30 days, so
+ * Dry-runs are skipped because they write nothing to bound, and so are refused real runs, which
+ * `journalRefusal` records as dry for that reason. The journal expires after 30 days, so
  * a pair merged longer ago reads as never merged and the gate refuses — the safe way to be wrong.
  */
 export const resolveMergeStartedAt = async (sourceId: string, targetId: string, fallback: Date): Promise<Date> => {
