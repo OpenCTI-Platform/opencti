@@ -11,13 +11,14 @@ import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED } from '../../../../src/c
 import { registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 import { USER_MERGE_SOURCE_DISABLE_HANDLER } from '../../../../src/modules/userMerge/userMerge-handler';
 import { USER_MERGED_INTO_FIELD } from '../../../../src/modules/userMerge/userMerge-types';
+import { USER_MERGE_RUNTIME_HANDLER } from '../../../../src/modules/userMerge/userMerge-runtimeHandler';
 
 /**
  * Handlers that write on the source account itself rather than on what it owns. A chunk adding
  * one belongs here; a handler appearing here that was not added on purpose is the bug this test
  * is looking for.
  */
-const SOURCE_ACCOUNT_HANDLERS: string[] = [USER_MERGE_SOURCE_DISABLE_HANDLER];
+const SOURCE_ACCOUNT_HANDLERS: string[] = [USER_MERGE_SOURCE_DISABLE_HANDLER, USER_MERGE_RUNTIME_HANDLER];
 
 /**
  * Read from the register rather than written down. What these tests state is that the API reports
