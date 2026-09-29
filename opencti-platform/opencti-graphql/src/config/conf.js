@@ -357,6 +357,9 @@ export const logFrontend = {
     appLogger.log(level, message, data);
     supportLogger.log(level, message, data);
   },
+  debug: (message, meta = {}) => logFrontend._log('debug', message, meta),
+  info: (message, meta = {}) => logFrontend._log('info', message, meta),
+  warn: (message, meta = {}) => logFrontend._log('warn', message, meta),
   error: (message, meta = {}) => logFrontend._log('error', message, meta),
 };
 

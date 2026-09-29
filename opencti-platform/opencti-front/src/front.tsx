@@ -9,6 +9,7 @@ import App from './app';
 import { environment } from './relay/environment';
 import Loader from './components/Loader';
 import { THEME_DARK_DEFAULT_BACKGROUND } from './components/ThemeDark';
+import { initLogger } from './utils/logs/loggerProvider';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,6 +31,8 @@ const Loading = () => {
 };
 
 const container = document.getElementById('root');
+
+initLogger();
 
 const root = createRoot(container!);
 
