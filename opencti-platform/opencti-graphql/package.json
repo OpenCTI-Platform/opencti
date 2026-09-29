@@ -180,7 +180,7 @@
     "validator": "13.15.35",
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.21.3",
+    "ws": "8.22.0",
     "xml2js": "0.6.2",
     "zod": "4.6.5"
   },
