@@ -10,12 +10,16 @@ const {
   mockCommit,
   mockCommitClear,
   mockNotifySuccess,
+  mockNotifyError,
+  mockRelayErrorHandling,
   mockExitDraft,
   mockNavigate,
 } = vi.hoisted(() => ({
   mockCommit: vi.fn(),
   mockCommitClear: vi.fn(),
   mockNotifySuccess: vi.fn(),
+  mockNotifyError: vi.fn(),
+  mockRelayErrorHandling: vi.fn(),
   mockExitDraft: vi.fn(),
   mockNavigate: vi.fn(),
 }));
@@ -64,7 +68,8 @@ vi.mock('../../../../components/i18n', () => ({
 }));
 
 vi.mock('../../../../relay/environment', () => ({
-  MESSAGING$: { notifySuccess: mockNotifySuccess, notifyError: vi.fn() },
+  MESSAGING$: { notifySuccess: mockNotifySuccess, notifyError: mockNotifyError },
+  relayErrorHandling: mockRelayErrorHandling,
 }));
 
 // ---------------------------------------------------------------------------
@@ -72,6 +77,84 @@ vi.mock('../../../../relay/environment', () => ({
 // ---------------------------------------------------------------------------
 const renderWizard = (entityNavigationId: string | null = null, draftId?: string) =>
   renderHook(() => useTransitionWizard({ entityId: 'entity-1', entityNavigationId, draftId }));
+
+const emptyValues = { comment: '', shareOrganizations: [], unshareOrganizations: [] };
+
+describe('useTransitionWizard consolidated submission', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const values = {
+    comment: '  approved  ',
+    shareOrganizations: [{ value: 'org-1' }],
+    unshareOrganizations: [{ value: 'org-2' }],
+  };
+
+  it('submits combined inputs once and remains busy until completion', async () => {
+    const { result } = renderWizard('nav-1', 'draft-1');
+    act(() => result.current.handleTransition('approve', ['validateDraft'], CommentMode.required, true, true));
+    let submitted: Promise<void>;
+    act(() => {
+      submitted = result.current.handleApplyWizard(values);
+      result.current.handleApplyWizard(values);
+    });
+    expect(mockCommit).toHaveBeenCalledTimes(1);
+    expect(result.current.approving).toBe(true);
+    expect(mockCommit.mock.calls[0][0].variables).toEqual({
+      entityId: 'entity-1', eventName: 'approve', comment: 'approved',
+      runtimeParams: { shareOrganizationIds: ['org-1'], unshareOrganizationIds: ['org-2'] },
+    });
+    await act(async () => {
+      mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } });
+      await submitted;
+    });
+    expect(result.current.approving).toBe(false);
+    expect(result.current.wizard).toBeNull();
+    expect(mockExitDraft).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the form available for retry after a business failure', async () => {
+    const { result } = renderWizard();
+    act(() => result.current.handleTransition('approve', [], CommentMode.required));
+    act(() => {
+      result.current.handleApplyWizard(values);
+    });
+    await act(async () => mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: false, reason: 'Denied' } }));
+    expect(result.current.approving).toBe(false);
+    expect(result.current.wizard?.event).toBe('approve');
+    act(() => {
+      result.current.handleApplyWizard(values);
+    });
+    expect(mockCommit).toHaveBeenCalledTimes(2);
+  });
+
+  it('delegates transport errors to central Relay handling and permits retry', async () => {
+    const { result } = renderWizard();
+    act(() => result.current.handleTransition('approve', [], CommentMode.allowed));
+    act(() => {
+      result.current.handleApplyWizard(values);
+    });
+    const error = new Error('Network unavailable');
+    await act(async () => mockCommit.mock.calls[0][0].onError(error));
+    expect(mockRelayErrorHandling).toHaveBeenCalledExactlyOnceWith(error);
+    expect(mockNotifyError).not.toHaveBeenCalled();
+    expect(result.current.approving).toBe(false);
+    act(() => {
+      result.current.handleApplyWizard(values);
+    });
+    expect(mockCommit).toHaveBeenCalledTimes(2);
+  });
+
+  it('never opens draft validation or exits a draft for a generic entity', () => {
+    const { result } = renderWizard('entity-1');
+    act(() => result.current.handleTransition('approve', ['validateDraft']));
+    expect(result.current.wizard).toBeNull();
+    expect(mockCommit).toHaveBeenCalledOnce();
+    act(() => mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } }));
+    act(() => result.current.notifyBackgroundTransitionComplete());
+    expect(mockExitDraft).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -93,7 +176,7 @@ describe('useTransitionWizard – handleTransition', () => {
     expect(result.current.wizard).toBeNull();
   });
 
-  it('opens wizard at org-picker step when requiresShareOrg=true', () => {
+  it('opens the form with sharing when requiresShareOrg=true', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -101,69 +184,69 @@ describe('useTransitionWizard – handleTransition', () => {
     });
 
     expect(result.current.wizard).not.toBeNull();
-    expect(result.current.currentStep).toBe('org-picker');
+    expect(result.current.wizard?.requiresShareOrg).toBe(true);
     expect(mockCommit).not.toHaveBeenCalled();
   });
 
-  it('opens wizard at org-picker step when requiresUnshareOrg=true', () => {
+  it('opens the form with unsharing when requiresUnshareOrg=true', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], null, false, true);
     });
 
-    expect(result.current.currentStep).toBe('org-picker');
+    expect(result.current.wizard?.requiresUnshareOrg).toBe(true);
   });
 
-  it('opens wizard at comment step when comment mode is "allowed"', () => {
+  it('opens the form with an optional comment', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], CommentMode.allowed, false, false);
     });
 
-    expect(result.current.currentStep).toBe('comment');
+    expect(result.current.wizard?.commentMode).toBe(CommentMode.allowed);
   });
 
-  it('opens wizard at comment step when comment mode is "required"', () => {
+  it('opens the form with a required comment', () => {
     const { result } = renderWizard();
 
     act(() => {
       result.current.handleTransition('submit', [], CommentMode.required, false, false);
     });
 
-    expect(result.current.currentStep).toBe('comment');
+    expect(result.current.wizard?.commentMode).toBe(CommentMode.required);
   });
 
-  it('adds validate step when actions include validateDraft', () => {
-    const { result } = renderWizard();
+  it('requires confirmation when draft actions include validateDraft', () => {
+    const { result } = renderWizard(null, 'draft-1');
 
     act(() => {
       result.current.handleTransition('submit', ['validateDraft'], null, false, false);
     });
 
-    expect(result.current.currentStep).toBe('validate');
+    expect(result.current.wizard?.requiresValidation).toBe(true);
   });
 
-  it('queues org-picker → comment → validate when all are needed', () => {
-    const { result } = renderWizard();
+  it('includes all applicable inputs in one form', () => {
+    const { result } = renderWizard(null, 'draft-1');
 
     act(() => {
       result.current.handleTransition('submit', ['validateDraft'], CommentMode.required, true, false);
     });
 
-    expect(result.current.currentStep).toBe('org-picker');
-    // After org-picker, comment step should come next
-    expect(result.current.wizard!.steps).toEqual(['org-picker', 'comment', 'validate']);
+    expect(result.current.wizard).toMatchObject({
+      requiresShareOrg: true, commentMode: CommentMode.required, requiresValidation: true,
+    });
   });
 });
 
-describe('useTransitionWizard – handleOrgPickerSubmit', () => {
+describe('useTransitionWizard organization inputs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('advances with shareOrganizationIds in runtimeParams', () => {
+  it('submits shareOrganizationIds in runtimeParams', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -171,19 +254,15 @@ describe('useTransitionWizard – handleOrgPickerSubmit', () => {
     });
 
     act(() => {
-      result.current.handleOrgPickerSubmit(
-        { shareOrganizations: [{ value: 'org-1' }], unshareOrganizations: [] },
-        { resetForm: vi.fn() },
-      );
+      result.current.handleApplyWizard({ ...emptyValues, shareOrganizations: [{ value: 'org-1' }] });
     });
 
-    // No more steps after org-picker with no comment or validate → mutation fires
     expect(mockCommit).toHaveBeenCalledTimes(1);
     const [variables] = mockCommit.mock.calls[0];
     expect(variables.variables.runtimeParams.shareOrganizationIds).toEqual(['org-1']);
   });
 
-  it('advances with unshareOrganizationIds in runtimeParams', () => {
+  it('submits unshareOrganizationIds in runtimeParams', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -191,10 +270,7 @@ describe('useTransitionWizard – handleOrgPickerSubmit', () => {
     });
 
     act(() => {
-      result.current.handleOrgPickerSubmit(
-        { shareOrganizations: [], unshareOrganizations: [{ value: 'org-x' }] },
-        { resetForm: vi.fn() },
-      );
+      result.current.handleApplyWizard({ ...emptyValues, unshareOrganizations: [{ value: 'org-x' }] });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
@@ -203,12 +279,12 @@ describe('useTransitionWizard – handleOrgPickerSubmit', () => {
   });
 });
 
-describe('useTransitionWizard – handleConfirmComment', () => {
+describe('useTransitionWizard comment inputs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('fires mutation with the trimmed comment and clears commentValue', () => {
+  it('fires mutation with the trimmed comment', () => {
     const { result } = renderWizard();
 
     act(() => {
@@ -216,17 +292,12 @@ describe('useTransitionWizard – handleConfirmComment', () => {
     });
 
     act(() => {
-      result.current.setCommentValue('  my comment  ');
-    });
-
-    act(() => {
-      result.current.handleConfirmComment();
+      result.current.handleApplyWizard({ ...emptyValues, comment: '  my comment  ' });
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
     const [{ variables }] = mockCommit.mock.calls[0];
     expect(variables.comment).toBe('my comment');
-    expect(result.current.commentValue).toBe('');
   });
 
   it('passes undefined comment when the comment field is empty', () => {
@@ -237,7 +308,7 @@ describe('useTransitionWizard – handleConfirmComment', () => {
     });
 
     act(() => {
-      result.current.handleConfirmComment();
+      result.current.handleApplyWizard(emptyValues);
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
@@ -246,22 +317,22 @@ describe('useTransitionWizard – handleConfirmComment', () => {
   });
 });
 
-describe('useTransitionWizard – handleValidateDraft', () => {
+describe('useTransitionWizard draft confirmation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('advances the wizard (fires mutation when validate is the last step)', () => {
-    const { result } = renderWizard();
+  it('submits draft validation after confirmation', () => {
+    const { result } = renderWizard(null, 'draft-1');
 
     act(() => {
       result.current.handleTransition('submit', ['validateDraft'], null, false, false);
     });
 
-    expect(result.current.currentStep).toBe('validate');
+    expect(result.current.wizard?.requiresValidation).toBe(true);
 
     act(() => {
-      result.current.handleValidateDraft();
+      result.current.handleApplyWizard(emptyValues);
     });
 
     expect(mockCommit).toHaveBeenCalledTimes(1);
@@ -271,6 +342,16 @@ describe('useTransitionWizard – handleValidateDraft', () => {
 describe('useTransitionWizard – fireTransition response handling', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('notifies the returned business failure reason without reporting success', () => {
+    const { result } = renderWizard();
+    act(() => result.current.handleTransition('submit', []));
+    const [{ onCompleted }] = mockCommit.mock.calls[0];
+    act(() => onCompleted({ triggerWorkflowEvent: { success: false, reason: 'Transition denied' } }));
+    expect(mockNotifyError).toHaveBeenCalledWith('Transition denied');
+    expect(mockNotifySuccess).not.toHaveBeenCalled();
+    expect(mockExitDraft).not.toHaveBeenCalled();
   });
 
   it('calls notifySuccess and does NOT navigate when executionStatus is pending', () => {
@@ -291,15 +372,14 @@ describe('useTransitionWizard – fireTransition response handling', () => {
   });
 
   it('calls exitDraft when sync validateDraft completes successfully', () => {
-    const { result } = renderWizard('nav-entity-1');
+    const { result } = renderWizard('nav-entity-1', 'draft-1');
 
     act(() => {
       result.current.handleTransition('submit', ['validateDraft'], null, false, false);
     });
 
-    // validate step fires
     act(() => {
-      result.current.handleValidateDraft();
+      result.current.handleApplyWizard(emptyValues);
     });
 
     const [{ onCompleted }] = mockCommit.mock.calls[0];
@@ -338,7 +418,7 @@ describe('useTransitionWizard – notifyBackgroundTransitionComplete', () => {
   });
 
   it('calls notifySuccess and exits draft', () => {
-    const { result } = renderWizard('nav-1');
+    const { result } = renderWizard('nav-1', 'draft-1');
 
     act(() => {
       result.current.notifyBackgroundTransitionComplete();
