@@ -20,6 +20,7 @@ def make_push_handler(
     handler = PushHandler.__new__(PushHandler)
     handler.logger = MagicMock()
     handler.api = MagicMock()
+    handler.connector_id = "connector-under-test"
     handler.bundles_global_counter = bundles_global_counter or MagicMock()
     handler.bundles_processing_time_gauge = (
         bundles_processing_time_gauge or MagicMock()

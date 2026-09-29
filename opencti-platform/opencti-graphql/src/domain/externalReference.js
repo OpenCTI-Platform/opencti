@@ -54,6 +54,11 @@ export const externalReferenceImportPush = async (context, user, externalReferen
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };
 
+export const externalReferenceImportPushRef = async (context, user, externalReferenceId, fileRef) => {
+  const entitiesReferences = await findReferencesForExternalId(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
+  return stixCoreObjectImportPush(context, user, externalReferenceId, null, { fileRef, importContextEntities: entitiesReferences });
+};
+
 export const addExternalReference = async (context, user, externalReference) => {
   const referenceAttachment = conf.get('app:reference_attachment');
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));

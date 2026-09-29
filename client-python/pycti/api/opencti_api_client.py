@@ -345,6 +345,8 @@ class OpenCTIApiClient:
         # Keep track of draft context
         self.draft_id = ""
 
+        self.connector_id = None
+
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
             raise ValueError(

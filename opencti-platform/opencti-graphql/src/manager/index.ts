@@ -7,6 +7,7 @@ import './indicatorDecayManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';
+import './syncInflightCleanupManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';

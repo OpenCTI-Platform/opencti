@@ -23,7 +23,13 @@ import {
   vulnerabilitiesPaginated,
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationshipsPaginated } from '../domain/stixCoreObject';
+import {
+  stixCoreObjectExportPush,
+  stixCoreObjectImportPush,
+  stixCoreObjectImportPushRef,
+  stixCoreObjectsExportPush,
+  stixCoreRelationshipsPaginated,
+} from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
@@ -110,6 +116,7 @@ const stixCyberObservableResolvers = {
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, id, args),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
+      importPushRef: (args) => stixCoreObjectImportPushRef(context, context.user, id, args.fileRef),
       promoteToIndicator: () => promoteObservableToIndicator(context, context.user, id),
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
