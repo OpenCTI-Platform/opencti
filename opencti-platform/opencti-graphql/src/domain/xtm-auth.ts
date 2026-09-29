@@ -87,7 +87,9 @@ export const getXtmOneIssuer = async (): Promise<string | undefined> => {
       xtmOneIdentityFetch = undefined;
     });
   }
-  return xtmOneIdentityFetch;
+  // Past its expiry the last answer is served while it is read again: only the
+  // first call ever waits for XTM One.
+  return xtmOneIdentity ? xtmOneIdentity.issuer : xtmOneIdentityFetch;
 };
 
 // -- Trusted issuers ---------------------------------------------------------

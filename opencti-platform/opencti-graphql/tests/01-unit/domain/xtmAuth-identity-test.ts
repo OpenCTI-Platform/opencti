@@ -9,11 +9,12 @@ const XTM_ONE_ISSUER = 'http://localhost:8090';
 const mocks = vi.hoisted(() => ({
   get: vi.fn(),
   createRemoteJWKSet: vi.fn(),
+  xtmOneUrl: '',
 }));
 
 vi.mock('../../../src/config/conf', () => ({
   default: {
-    get: (key: string) => ({ 'xtm:xtm_one_url': `${XTM_ONE_URL}/`, 'xtm:auth:token_ttl': 300 } as Record<string, any>)[key],
+    get: (key: string) => ({ 'xtm:xtm_one_url': mocks.xtmOneUrl, 'xtm:auth:token_ttl': 300 } as Record<string, any>)[key],
   },
   getBaseUrl: () => 'http://localhost:8080',
   logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
@@ -64,6 +65,28 @@ const signAsXtmOne = async (issuer: string) => {
 beforeEach(() => {
   mocks.get.mockReset();
   mocks.createRemoteJWKSet.mockReset();
+  mocks.xtmOneUrl = `${XTM_ONE_URL}/`;
+});
+
+describe('XTM One reached on its public URL (SaaS)', () => {
+  const PUBLIC_URL = 'https://acme.one.filigran.io';
+
+  it('trusts it and fetches its keys there without reading the metadata document', async () => {
+    mocks.xtmOneUrl = PUBLIC_URL;
+    const { verifyXtmJwt } = await loadXtmAuth();
+    const { payload } = await verifyXtmJwt(await signAsXtmOne(PUBLIC_URL));
+    expect(payload.email).toBe('analyst@example.com');
+    expect(String(mocks.createRemoteJWKSet.mock.calls[0][0])).toBe(`${PUBLIC_URL}/xtm/auth/jwks`);
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
+  it('addresses the tokens sent to it exactly as before', async () => {
+    mocks.xtmOneUrl = PUBLIC_URL;
+    mocks.get.mockResolvedValue({ data: { issuer: PUBLIC_URL } });
+    const { issueXtmJwt } = await loadXtmAuth();
+    const token = await issueXtmJwt({ id: 'user-1', user_email: 'analyst@example.com' }, PUBLIC_URL);
+    expect(payloadOf(token).aud).toBe(PUBLIC_URL);
+  });
 });
 
 describe('XTM One reached on an internal URL', () => {
@@ -112,6 +135,22 @@ describe('XTM One reached on an internal URL', () => {
       expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
       vi.advanceTimersByTime(3_600_001);
       mocks.get.mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('only the first call waits for XTM One: an expired identity is served while it is read again', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockReturnValueOnce(new Promise(() => {}));
       expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
       expect(mocks.get).toHaveBeenCalledTimes(2);
     } finally {
