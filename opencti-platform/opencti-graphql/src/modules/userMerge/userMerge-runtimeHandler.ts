@@ -156,22 +156,11 @@ const ACKNOWLEDGED_ROWS: Array<{ registerRow: string; entityType: string; detail
 ];
 
 /**
- * Closes every means of access the source keeps once the merge is applied.
+ * Closes every access the source keeps, so re-activating the account cannot re-arm its API tokens.
  *
- * Runs last, deliberately. The source deactivation runs first and already blocks authentication —
- * every entry point resolves through `validateUser`, which refuses any account status other than
- * active — so this is not what stops the merged-away account from logging in. What it does is turn
- * a reversible block into a definitive one: re-activating the account would otherwise re-arm every
- * API token it still holds, which is precisely what the feature asks not to happen.
- *
- * Both passes read the pre-merge state: the engine computes and verifies every handler before any
- * of them writes, so the counts reported here are the ones the operator reviewed. Sessions are
- * where that matters — the deactivation kills them once the write phase starts, so `apply` usually
- * finds none left. Killing them again is what makes the guarantee this handler carries independent
- * of a side effect in `userEditField`.
- *
- * Redis keys are not declared in `reads`/`writes`: those express field paths, used for the
- * read/write disjointness check between handlers, and no other handler reads them.
+ * Counts are pre-merge: the deactivation already killed the sessions when `apply` runs, which kills
+ * them again rather than rely on that side effect of `userEditField`. Redis keys are not declared in
+ * `reads`/`writes`, which hold field paths for the disjointness check.
  */
 export const userMergeRuntimeHandler: UserMergeHandler = {
   identifier: USER_MERGE_RUNTIME_HANDLER,
@@ -203,14 +192,8 @@ export const userMergeRuntimeHandler: UserMergeHandler = {
     });
     return { handler: USER_MERGE_RUNTIME_HANDLER, changes, alerts: [] };
   },
-  /**
-   * Every invalidation is attempted, whatever the plan announced.
-   *
-   * The other handlers skip the rows they planned at zero, because re-running their bulk update
-   * would be a write for nothing. Here the plan is a photograph of a moment before the merge
-   * started writing, and the point of the pass is that nothing is left open when it ends — a
-   * session opened between the two would be exactly what has to be closed.
-   */
+  // Every invalidation runs whatever the plan counted: an access opened since the plan is exactly
+  // what has to be closed.
   apply: async ({ context, sourceUser }: UserMergeHandlerContext): Promise<number> => {
     const runtime: RuntimeContext = { context, sourceUser };
     let invalidated = 0;

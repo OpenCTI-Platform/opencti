@@ -48,19 +48,11 @@ const describeDivergence = ({ dry_only: dryOnly, real_only: realOnly }: { dry_on
 };
 
 /**
- * Recomputes every handler and proves each one still matches what the dry pass reported,
- * before any of them writes.
+ * Recomputes every handler and checks it against the dry pass, before any of them writes.
  *
- * Recomputing a handler just before its own write would compare the platform against a state
- * the merge itself has already altered: handlers destroy what later handlers count — killing
- * the source sessions is enough — so a correct merge would be read as a platform that moved.
- * Recomputing everything first keeps the question the guard is asking: did anything other than
- * this merge touch the platform since the operator reviewed the report.
- *
- * The platform is required to be at rest during a merge, so a divergence is not a race to be
- * retried — it is the premise of the operation being false. Refusing here rather than in the
- * middle of the write loop is also what makes the refusal recoverable: nothing is written at
- * all, instead of leaving the platform half merged by the handlers that already ran.
+ * Not per handler before its own write: earlier handlers destroy what later ones count (the
+ * deactivation kills the sessions), so a correct merge would read as a platform that moved. And a
+ * refusal here writes nothing, where one mid-loop would leave the platform half merged.
  */
 const recomputeVerifiedPlans = async (
   handlers: UserMergeHandler[],
