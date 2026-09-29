@@ -165,8 +165,12 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
-| xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL                                                                                            |
+| xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL, as reachable from OpenCTI (an internal address such as `http://xtm-one:4000` in Docker works) |
 | xtm:xtm_one_token                   | XTM__XTM_ONE_TOKEN               |                         | XTM One registration token. With the URL, the platform registers with XTM One every 5 minutes                |
+
+!!! note "XTM One reached on an internal URL"
+
+    OpenCTI signs the requests of its users to XTM One, and verifies the requests XTM One sends back, with short-lived tokens. When `XTM__XTM_ONE_URL` is an internal address, OpenCTI reads XTM One's public identity (its `BASE_URL`) from `/xtm/auth/metadata` on that address and fetches XTM One's signing keys there too, so the two URLs may differ. On the XTM One side, set `OPENCTI_API_URL` to the address XTM One reaches OpenCTI on. `APP__BASE_URL` stays the public URL of OpenCTI: it is the identity XTM One trusts.
 
 !!! note "Enterprise Edition granted through XTM One"
 
