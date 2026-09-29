@@ -107,6 +107,15 @@ export const getXtmOneIssuer = async (): Promise<string | undefined> => {
   return xtmOneIdentity ? xtmOneIdentity.issuer : xtmOneIdentityFetch;
 };
 
+// Where a browser opens XTM One: the identity it publishes, else the
+// configured URL, which may be an address only this backend reaches.
+export const getXtmOneIdentity = async (): Promise<string | undefined> => {
+  if (!xtmOneUrl) {
+    return undefined;
+  }
+  return (await getXtmOneIssuer()) ?? xtmOneUrl;
+};
+
 // -- Trusted issuers ---------------------------------------------------------
 
 export const isTrustedIssuer = async (issuer: string): Promise<boolean> => {

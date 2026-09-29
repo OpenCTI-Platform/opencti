@@ -119,6 +119,25 @@ describe('XTM One reached on an internal URL', () => {
     expect(payloadOf(await issueXtmJwt(user, 'https://other.example.com')).aud).toBe('https://other.example.com');
   });
 
+  it('is opened in the browser on the identity XTM One publishes', async () => {
+    mocks.get.mockResolvedValue({ data: { issuer: `${XTM_ONE_ISSUER}/` } });
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBe(XTM_ONE_ISSUER);
+  });
+
+  it('is opened in the browser on its configured URL when it publishes no identity', async () => {
+    mocks.get.mockRejectedValue(Object.assign(new Error('Request failed with status code 404'), { response: { status: 404 } }));
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBe(XTM_ONE_URL);
+  });
+
+  it('has no browser URL when XTM One is not configured', async () => {
+    mocks.xtmOneUrl = '';
+    const { getXtmOneIdentity } = await loadXtmAuth();
+    expect(await getXtmOneIdentity()).toBeUndefined();
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
   it('verifies an XTM One token with the keys served on the configured URL', async () => {
     mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
     const { verifyXtmJwt } = await loadXtmAuth();
