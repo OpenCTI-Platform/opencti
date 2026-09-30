@@ -19,7 +19,6 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
@@ -149,7 +148,6 @@ const BUILT_IN_ELEMENTS: Record<string, NaturalKey[]> = {
     ...['PAP:CLEAR', 'PAP:GREEN', 'PAP:AMBER', 'PAP:RED'].map((definition) => ({ definition_type: 'PAP', definition })),
   ],
   [ENTITY_TYPE_THEME]: byNames(['Filigran Dark', 'Filigran Light']),
-  [ENTITY_TYPE_DECAY_RULE]: byNames(['Built-in default', 'Built-in files and artifact', 'Built-in IP and URL', 'Built-in domain name']),
   [ENTITY_TYPE_EMAIL_TEMPLATE]: byNames(['Built-In Template For Onboarding']),
   [ENTITY_TYPE_NOTIFIER]: byNames(['Sample of Microsoft Teams message for live trigger', 'Sample of Microsoft Teams message for digest trigger']),
   [ENTITY_TYPE_RETENTION_RULE]: ['file', 'workbench', 'history', 'activity'].map((scope) => ({ scope })),
@@ -178,7 +176,6 @@ const NATURAL_KEY_RESOLVERS: Record<string, NaturalKeyResolver> = {
   [ENTITY_TYPE_VOCABULARY]: (element) => ({ category: element.category, name: element.name }),
   [ENTITY_TYPE_MARKING_DEFINITION]: (element) => ({ definition_type: element.definition_type, definition: element.definition }),
   [ENTITY_TYPE_THEME]: builtInFlaggedByName,
-  [ENTITY_TYPE_DECAY_RULE]: builtInFlaggedByName,
   [ENTITY_TYPE_EMAIL_TEMPLATE]: byName,
   [ENTITY_TYPE_NOTIFIER]: byName,
   [ENTITY_TYPE_RETENTION_RULE]: (element) => ({ scope: element.scope }),
