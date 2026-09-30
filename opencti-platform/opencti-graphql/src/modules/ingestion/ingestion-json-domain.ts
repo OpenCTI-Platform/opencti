@@ -79,7 +79,7 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
 };
 
 /**
- * Normalises the result of getValueFromPath (typed as any) to a string or null.
+ * Normalises the result of getValueFromPath (typed as unknown) to a string or null.
  * JSONPath can return an array — in that case the first element is used.
  * Non-string, non-array values (objects, numbers, …) are rejected (return null).
  */
