@@ -51,7 +51,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     };
   };
 
-  it('starts in generation mode without inheriting template or file defaults', async () => {
+  it('starts in generation mode with the default template pre-selected, without inheriting file defaults', async () => {
     testRender(
       <StixCoreObjectFileExportForm
         {...baseProps}
@@ -64,7 +64,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     );
 
     await waitFor(() => expect(screen.getByLabelText('Export as fintel')).toBeChecked());
-    expect(screen.getByLabelText('Template')).toHaveValue('');
+    expect(screen.getByLabelText('Template')).toHaveValue('Template B');
     expect(screen.getByLabelText('File to export')).toBeDisabled();
     expect(screen.getByLabelText('File to export')).toHaveValue('Generated file');
     expect(screen.getByLabelText('Export file name')).toHaveValue('');
@@ -72,10 +72,10 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     expect(screen.getByLabelText('Include back page')).toBeChecked();
   });
 
-  it('requires a template and filename and submits without inherited markings', async () => {
+  it('pre-selects the default template, requires a filename, and submits without inherited markings', async () => {
     const { user, onSubmit } = renderPdfForm();
     await user.click(screen.getByRole('button', { name: 'Create' }));
-    await waitFor(() => expect(screen.getAllByText('This field is required')).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByText('This field is required')).toHaveLength(1));
     expect(onSubmit).not.toHaveBeenCalled();
 
     await user.click(screen.getByLabelText('Template'));
@@ -154,6 +154,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
         onSubmit={onSubmit}
         connectors={[{ ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' }, templateConnector]}
         templates={templates}
+        defaultTemplate={templates[1]}
         fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
         defaultFileMarkings={[{ value: 'marking-1', label: 'TLP:GREEN' }]}
         defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
@@ -202,6 +203,31 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
       connector: { value: BUILT_IN_FROM_TEMPLATE.value },
       format: 'text/html',
     });
+  });
+
+  it('allows switching back to the HTML-to-PDF connector after selecting the template connector', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(
+      <StixCoreObjectFileExportForm
+        {...baseProps}
+        onSubmit={onSubmit}
+        connectors={[{ ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' }, templateConnector]}
+        templates={templates}
+        fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
+        defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
+      />,
+    );
+
+    const connectorInput = () => screen.getByRole('combobox', { name: 'Connector' }) as HTMLInputElement;
+
+    await user.click(connectorInput());
+    await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
+    expect(connectorInput().value).toBe('Generate FINTEL from template');
+
+    await user.click(connectorInput());
+    await user.click(await screen.findByRole('option', { name: 'HTML content files to PDF' }));
+
+    await waitFor(() => expect(connectorInput().value).toBe('HTML content files to PDF'));
   });
 
   it('restores the source template page defaults after switching back to legacy export', async () => {

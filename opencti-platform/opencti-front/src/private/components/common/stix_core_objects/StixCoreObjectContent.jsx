@@ -957,6 +957,7 @@ const StixCoreObjectContent = createRefetchContainer(
           fintelTemplates {
             id
             name
+            default
             template_content
           }
         }
