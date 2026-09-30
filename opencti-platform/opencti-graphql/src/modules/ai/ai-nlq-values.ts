@@ -432,6 +432,9 @@ enum EntityObservableEnum {
   IMEI = 'IMEI',
   ICCID = 'ICCID',
   IMSI = 'IMSI',
+  CITIZENSHIP_DOCUMENTS = 'Citizenship Documents',
+  NATIONAL_ID = 'National ID',
+  PASSPORT = 'Passport',
 }
 
 export const entityObservableDescription = {
@@ -708,6 +711,15 @@ export const entityObservableDescription = {
   },
   [EntityObservableEnum.IMSI]: {
     description: 'An identifier used to identify a specific mobile network subscriber.',
+  },
+  [EntityObservableEnum.CITIZENSHIP_DOCUMENTS]: {
+    description: 'Conclusive evidence of citizenship.',
+  },
+  [EntityObservableEnum.NATIONAL_ID]: {
+    description: 'An national identifier used by citizens or residents for the purpose of work, taxation, and government benefits.',
+  },
+  [EntityObservableEnum.PASSPORT]: {
+    description: 'An identifier used to request foreign governments to permit you to travel or temporarily reside in their territories and have access to lawful local aid and protection. ',
   },
 };
 

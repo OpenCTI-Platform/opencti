@@ -209,6 +209,9 @@ class Opinion:
                         ... on Case {
                             name
                         }
+                        ... on CitizenshipDocument {
+                            name
+                        }
                         ... on StixCyberObservable {
                             observable_value
                         }

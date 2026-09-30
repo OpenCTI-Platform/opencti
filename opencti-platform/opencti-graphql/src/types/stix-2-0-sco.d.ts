@@ -433,3 +433,32 @@ export interface StixIMSI extends StixCyberObject {
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
+
+// Citizenship Documents
+export interface StixCitizenshipDocuments extends StixCyberObject {
+  value: string;
+  labels: Array<string>;
+  description: string;
+  score: number;
+  created_by_ref: StixId | undefined;
+  external_references: Array<StixInternalExternalReference>;
+}
+
+// National ID
+export interface StixNationalID extends StixCyberObject {
+  value: string;
+  labels: Array<string>;
+  description: string;
+  score: number;
+  created_by_ref: StixId | undefined;
+  external_references: Array<StixInternalExternalReference>;
+}
+// Passport
+export interface StixPassport extends StixCyberObject {
+  value: string;
+  labels: Array<string>;
+  description: string;
+  score: number;
+  created_by_ref: StixId | undefined;
+  external_references: Array<StixInternalExternalReference>;
+}

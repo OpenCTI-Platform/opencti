@@ -217,6 +217,9 @@ class Feedback:
                             created_at
                             updated_at
                         }
+                        ... on CitizenshipDocument {
+                            name
+                        }
                     }
                 }
             }
@@ -429,6 +432,9 @@ class Feedback:
                             spec_version
                             created_at
                             updated_at
+                        }
+                        ... on CitizenshipDocument {
+                            name
                         }
                     }
                 }

@@ -231,6 +231,9 @@ class Task:
                             created_at
                             updated_at
                         }
+                        ... on CitizenshipDocument {
+                            name
+                        }
                     }
                 }
             }

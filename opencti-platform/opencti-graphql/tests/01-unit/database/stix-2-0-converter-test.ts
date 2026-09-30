@@ -55,6 +55,7 @@ import {
   convertInfrastructureToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
+  ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
@@ -317,6 +318,10 @@ describe('Stix 2.0 opencti converter', () => {
     expect(result).toEqual(EXPECTED_PIR_RELATION);
   });
   // Identities
+  it('should convert Citizen Document', async () => {
+    const result = convertIdentityToStix(INDIVIDUAL_INSTANCE, ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT);
+    expect(result).toEqual(EXPECTED_INDIVIDUAL);
+  });
   it('should convert Individual', async () => {
     const result = convertIdentityToStix(INDIVIDUAL_INSTANCE, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
     expect(result).toEqual(EXPECTED_INDIVIDUAL);

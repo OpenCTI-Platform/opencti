@@ -21,6 +21,7 @@ import {
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
@@ -68,6 +69,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_GROUPING
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_SYSTEM, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_SECTOR, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_INDIVIDUAL, [objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT, []);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_REGION, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_CITY, []);

@@ -58,6 +58,9 @@ PATTERN_MAPPING = {
     "IMEI": ["value"],
     "ICCID": ["value"],
     "IMSI": ["value"],
+    "Citizenship-Documents": ["value"],
+    "National-ID": ["value"],
+    "Passport": ["value"],
 }
 
 

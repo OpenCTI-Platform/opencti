@@ -59,6 +59,7 @@ import fileResolvers from '../resolvers/file';
 import indexedFileResolvers from '../resolvers/indexedFile';
 import globalTypeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
+import citizenshipDocumentResolvers from '../resolvers/citizenshipDocument';
 
 import taskResolvers from '../resolvers/backgroundTask';
 
@@ -222,6 +223,7 @@ const schemaResolvers = [
   individualResolvers,
   sectorResolvers,
   systemResolvers,
+  citizenshipDocumentResolvers,
   // Others
   indicatorResolvers,
   infrastructureResolvers,
