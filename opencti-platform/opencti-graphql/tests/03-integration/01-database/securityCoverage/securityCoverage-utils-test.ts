@@ -162,8 +162,8 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_ATTACK_PATTERN)).toBeDefined();
 
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
-    await reportDeleteWithElements(testContext, ADMIN_USER, report.standard_id);
-    await deleteAttackPatterns([removed]);  
+    await reportDeleteWithElements(testContext, ADMIN_USER, report.internal_id);
+    await deleteAttackPatterns([removed]);
   });
 
   it('should remove the has-covered of a vulnerability untargeted by a covered campaign, keeping the other ones', async () => {
