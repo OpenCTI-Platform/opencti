@@ -28,7 +28,6 @@ import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
 import { generateBuiltInExportId } from '../schema/identifier';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 // region Platform capabilities definition
@@ -277,8 +276,6 @@ const createVocabularies = async (context) => {
         category,
         order,
         builtIn: builtInOv.includes(category),
-        // Computed from the name as stored: some keys have surrounding spaces that are trimmed at creation
-        export_id: generateBuiltInExportId(ENTITY_TYPE_VOCABULARY, { category, name: key.trim() }),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }

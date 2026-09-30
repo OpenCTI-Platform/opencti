@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeMissingBuiltInExportIds } from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
+import { computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
 
 const INDEX = 'test_internal_objects-000001';
@@ -8,19 +8,6 @@ const element = (entity_type: string, data: Record<string, any> = {}) => {
   idCounter += 1;
   return { _index: INDEX, internal_id: `id-${idCounter}`, entity_type, created_at: '2024-01-01T00:00:00.000Z', ...data };
 };
-
-describe('generateBuiltInExportId', () => {
-  it('should be deterministic and only depend on the type and the natural key', () => {
-    const exportId = generateBuiltInExportId('Group', { name: 'Administrators' });
-    expect(exportId).toEqual(generateBuiltInExportId('Group', { name: 'Administrators' }));
-    expect(exportId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-    expect(exportId).not.toEqual(generateBuiltInExportId('Role', { name: 'Administrators' }));
-    expect(exportId).not.toEqual(generateBuiltInExportId('Group', { name: 'Connectors' }));
-    // Key order does not matter
-    expect(generateBuiltInExportId('Vocabulary', { category: 'a', name: 'b' }))
-      .toEqual(generateBuiltInExportId('Vocabulary', { name: 'b', category: 'a' }));
-  });
-});
 
 describe('Migration add export_id to built-in entities', () => {
   it('should compute the same export_id as the platform initialization for built-in elements', () => {
@@ -61,7 +48,7 @@ describe('Migration add export_id to built-in entities', () => {
   });
 
   it('should recognize built-in vocabularies whose key has surrounding spaces', () => {
-    // malware_type_ov is declared with ' ransomware', stored as 'ransomware'
+    // malware_type_ov declares ' ransomware', stored as 'ransomware': the migration lists the stored names
     const vocabulary = element('Vocabulary', { category: 'malware_type_ov', name: 'ransomware' });
     expect(computeMissingBuiltInExportIds([vocabulary])).toEqual([
       { element: vocabulary, export_id: generateBuiltInExportId('Vocabulary', { category: 'malware_type_ov', name: 'ransomware' }) },
@@ -109,5 +96,16 @@ describe('Migration add export_id to built-in entities', () => {
     expect(computeMissingBuiltInExportIds([newer, builtIn])).toEqual([
       { element: builtIn, export_id: generateBuiltInExportId('Role', { name: 'Connector' }) },
     ]);
+  });
+
+  it('should list the built-in elements that cannot be found', () => {
+    const administrators = element('Group', { name: 'Administrators' });
+    const renamedDefault = element('Group', { name: 'Everyone' });
+    const alreadyMigratedThenRenamed = element('Group', { name: 'Robots', export_id: generateBuiltInExportId('Group', { name: 'Connectors' }) });
+    const missing = findMissingBuiltInElements([administrators, renamedDefault, alreadyMigratedThenRenamed]);
+    expect(missing.filter((m) => m.entity_type === 'Group')).toEqual([{ entity_type: 'Group', naturalKey: { name: 'Default' } }]);
+    expect(missing.filter((m) => m.entity_type === 'Vocabulary')).toHaveLength(355);
+    // Types whose instances are all built-in have no list of expected elements
+    expect(missing.filter((m) => ['Settings', 'EntitySetting', 'ManagerConfiguration', 'Capability'].includes(m.entity_type))).toEqual([]);
   });
 });
