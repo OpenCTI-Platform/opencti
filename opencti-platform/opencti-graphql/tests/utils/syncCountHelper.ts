@@ -64,7 +64,7 @@ testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 testCreatedCounter['security-coverage'] = 22;
-testCreatedCounter['security-coverage-result'] = 18;
+testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -162,7 +162,7 @@ testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 testDeletedCounter['security-coverage'] = 20;
-testDeletedCounter['security-coverage-result'] = 16;
+testDeletedCounter['security-coverage-result'] = 19;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
