@@ -11,6 +11,11 @@ import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute'
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
 
+export type ListOutcome = {
+  html: string;
+  isEmpty: boolean;
+};
+
 type ListItem = object & { id: string };
 type DisplayScalar = string | number | boolean;
 type DisplayInputValue
@@ -64,10 +69,21 @@ const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
 
-  const buildListOutcome = async (
+  function buildListOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    widgetPerspective: WidgetPerspective | null | undefined,
+    options: { includeMetadata: true },
+  ): Promise<ListOutcome>;
+  function buildListOutcome(
     dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
     widgetPerspective?: WidgetPerspective | null,
-  ) => {
+    options?: { includeMetadata?: boolean },
+  ): Promise<string>;
+  async function buildListOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    widgetPerspective?: WidgetPerspective | null,
+    options?: { includeMetadata?: boolean },
+  ): Promise<string | ListOutcome> {
     const variables = {
       first: dataSelection.number ?? 10,
       orderBy: dataSelection.sort_by ?? 'created_at',
@@ -93,7 +109,7 @@ const useBuildListOutcome = () => {
       { label: t_i18n('Creation date'), attribute: 'created_at' },
     ];
 
-    return renderToString(
+    const html = renderToString(
       <table>
         <thead>
           <tr>
@@ -122,7 +138,14 @@ const useBuildListOutcome = () => {
         </tbody>
       </table>,
     );
-  };
+
+    const outcome = {
+      html,
+      isEmpty: nodes.length === 0,
+    };
+
+    return options?.includeMetadata ? outcome : outcome.html;
+  }
 
   return { buildListOutcome };
 };

@@ -9,13 +9,27 @@ import { donutChartOptions } from '../../../Charts';
 import chartDataURI from '../apexchartUtils';
 import type { Widget } from '../../../widget/widget';
 
+export type DonutOutcome = {
+  html: string;
+  isEmpty: boolean;
+};
+
 const useDonutOutcome = () => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
 
-  const buildDonutOutcome = async (
+  function buildDonutOutcome(
     dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
-  ) => {
+    options: { includeMetadata: true },
+  ): Promise<DonutOutcome>;
+  function buildDonutOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
+    options?: { includeMetadata?: boolean },
+  ): Promise<string>;
+  async function buildDonutOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
+    options?: { includeMetadata?: boolean },
+  ): Promise<string | DonutOutcome> {
     const finalField = dataSelection.attribute || 'entity_type';
     const variables = {
       field: finalField,
@@ -32,9 +46,13 @@ const useDonutOutcome = () => {
       variables,
     ).toPromise() as StixRelationshipsDonutDistributionQuery$data;
 
-    if (!data) return '';
+    if (!data) {
+      const emptyOutcome = { html: '', isEmpty: true };
+      return options?.includeMetadata ? emptyOutcome : emptyOutcome.html;
+    }
 
     const chartData = data.map((n) => n?.value);
+    const isEmpty = !data.some((item) => (item?.value ?? 0) > 0);
     const labels = buildWidgetLabelsOption(data, finalField);
     let chartColors: string[] = [];
     if (data.at(0)?.entity?.color) {
@@ -58,8 +76,12 @@ const useDonutOutcome = () => {
       ...donutChartOptions(theme, labels, 'bottom', false, chartColors),
     };
     const dataURI = await chartDataURI(chartOptions as ApexOptions);
-    return `<img src="${dataURI}" />`;
-  };
+    const outcome = {
+      html: `<img src="${dataURI}" />`,
+      isEmpty,
+    };
+    return options?.includeMetadata ? outcome : outcome.html;
+  }
 
   return { buildDonutOutcome };
 };

@@ -6,6 +6,34 @@ import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOut
 import { useFormatter } from '../../../components/i18n';
 import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
 import { EngineFintelTemplateQuery$data } from './__generated__/EngineFintelTemplateQuery.graphql';
+import { buildTemplateContentWithOptionalSectionPruning, BuildFileFromTemplateOptions, isSemanticallyEmptyHtmlFragment, TemplateVariableResolution } from './templateSectionUtils';
+import type { ListOutcome } from './stix_core_objects/useBuildListOutcome';
+import type { DonutOutcome } from './stix_relationships/useDonutOutcome';
+
+type WidgetOutcome = ListOutcome | DonutOutcome;
+
+const normalizeWidgetOutcome = (outcome: string | WidgetOutcome): WidgetOutcome => {
+  if (typeof outcome === 'string') {
+    return {
+      html: outcome,
+      isEmpty: isSemanticallyEmptyHtmlFragment(outcome),
+    };
+  }
+
+  return outcome;
+};
+
+const applyTemplateVariableResolutions = (
+  templateContent: string,
+  resolutions: TemplateVariableResolution[],
+) => {
+  return resolutions.reduce((nextTemplateContent, resolution) => {
+    const token = `$${resolution.variableName}`;
+    return resolution.replaceAll
+      ? nextTemplateContent.replaceAll(token, resolution.replacement)
+      : nextTemplateContent.replace(token, resolution.replacement);
+  }, templateContent);
+};
 
 const useFileFromTemplate = () => {
   const { t_i18n } = useFormatter();
@@ -16,11 +44,131 @@ const useFileFromTemplate = () => {
 
   type Template = EngineFintelTemplateQuery$data['fintelTemplate'];
 
+  const resolveDataWidgetOutcome = async (
+    containerId: string,
+    maxContentMarkings: string[],
+    templateWidget: NonNullable<NonNullable<Template>['fintel_template_widgets']>[number],
+    includeMetadata: boolean,
+  ): Promise<TemplateVariableResolution[]> => {
+    const { widget } = templateWidget;
+
+    if (widget.type === 'attribute') {
+      try {
+        const attributesOutcomes = await buildAttributesOutcome(
+          containerId,
+          widget.dataSelection[0],
+          includeMetadata ? { includeMetadata: true } : undefined,
+        );
+
+        return attributesOutcomes.flatMap((outcome) => {
+          if (outcome.error) {
+            MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${outcome.error}`);
+          }
+
+          if (!outcome.variableName) {
+            return [];
+          }
+
+          return [{
+            variableName: outcome.variableName,
+            replacement: outcome.attributeData,
+            isEmpty: includeMetadata ? outcome.isEmpty : false,
+            preserveSection: includeMetadata ? outcome.preserveSection : undefined,
+            replaceAll: true,
+          }];
+        });
+      } catch (error) {
+        MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${error}`);
+        return [];
+      }
+    }
+
+    const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
+
+    try {
+      let outcome: WidgetOutcome = { html: '', isEmpty: true };
+      if (widget.type === 'list') {
+        outcome = includeMetadata
+          ? normalizeWidgetOutcome(await buildListOutcome(
+              {
+                ...widget.dataSelection[0],
+                filters,
+              },
+              widget.perspective,
+              { includeMetadata: true },
+            ))
+          : {
+              html: await buildListOutcome(
+                {
+                  ...widget.dataSelection[0],
+                  filters,
+                },
+                widget.perspective,
+              ),
+              isEmpty: false,
+            };
+      } else if (widget.type === 'donut') {
+        const { dynamicFrom, dynamicTo } = widget.dataSelection[0];
+        outcome = includeMetadata
+          ? normalizeWidgetOutcome(await buildDonutOutcome({
+              ...widget.dataSelection[0],
+              filters,
+              dynamicFrom: dynamicFrom ? JSON.parse(dynamicFrom) : undefined,
+              dynamicTo: dynamicTo ? JSON.parse(dynamicTo) : undefined,
+            }, { includeMetadata: true }))
+          : {
+              html: await buildDonutOutcome({
+                ...widget.dataSelection[0],
+                filters,
+                dynamicFrom: dynamicFrom ? JSON.parse(dynamicFrom) : undefined,
+                dynamicTo: dynamicTo ? JSON.parse(dynamicTo) : undefined,
+              }),
+              isEmpty: false,
+            };
+      }
+
+      return [{
+        variableName: templateWidget.variable_name,
+        replacement: outcome.html,
+        isEmpty: includeMetadata ? outcome.isEmpty : false,
+      }];
+    } catch (error) {
+      MESSAGING$.notifyError(t_i18n('One of the widgets has not been resolved.'));
+      return [{
+        variableName: templateWidget.variable_name,
+        replacement: `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`,
+        isEmpty: false,
+        preserveSection: includeMetadata,
+      }];
+    }
+  };
+
+  const collectTemplateVariableResolutions = async (
+    containerId: string,
+    maxContentMarkings: string[],
+    templateWidgets: NonNullable<NonNullable<Template>['fintel_template_widgets']>,
+    includeMetadata: boolean,
+  ) => {
+    const resolutions: TemplateVariableResolution[] = [];
+
+    for (const templateWidget of templateWidgets) {
+      resolutions.push(...await resolveDataWidgetOutcome(
+        containerId,
+        maxContentMarkings,
+        templateWidget,
+        includeMetadata,
+      ));
+    }
+
+    return resolutions;
+  };
+
   const buildFileFromTemplate = async (
     containerId: string,
     maxContentMarkings: string[],
     templateId?: string,
     template?: Template,
+    options?: BuildFileFromTemplateOptions,
   ) => {
     let fintelTemplate: Template;
     if (template) {
@@ -38,56 +186,25 @@ const useFileFromTemplate = () => {
       throw Error('No fintel template found');
     }
 
-    let { template_content } = fintelTemplate;
+    const { template_content } = fintelTemplate;
     const { fintel_template_widgets } = fintelTemplate;
 
-    for (const templateWidget of fintel_template_widgets) {
-      const { widget } = templateWidget;
-      // attribute widgets
-      if (widget.type === 'attribute') {
-        try {
-          const attributesOutcomes = await buildAttributesOutcome(
-            containerId,
-            widget.dataSelection[0],
-          );
-          for (const outcome of attributesOutcomes) {
-            template_content = template_content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
-          }
-        } catch (error) {
-          MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${error}`);
-        }
-      // other widgets
-      } else {
-        let outcome = '';
-        const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
-        try {
-          if (widget.type === 'list') {
-            outcome = await buildListOutcome(
-              {
-                ...widget.dataSelection[0],
-                filters,
-              },
-              widget.perspective,
-            );
-          } else if (widget.type === 'donut') {
-            const { dynamicFrom, dynamicTo } = widget.dataSelection[0];
+    const variableResolutions = await collectTemplateVariableResolutions(
+      containerId,
+      maxContentMarkings,
+      fintel_template_widgets,
+      !!options?.removeEmptySections,
+    );
 
-            outcome = await buildDonutOutcome({
-              ...widget.dataSelection[0],
-              filters,
-              dynamicFrom: dynamicFrom ? JSON.parse(dynamicFrom) : undefined,
-              dynamicTo: dynamicTo ? JSON.parse(dynamicTo) : undefined,
-            });
-          }
-        } catch (error) {
-          outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
-          MESSAGING$.notifyError(t_i18n('One of the widgets has not been resolved.'));
-        }
-        template_content = template_content.replace(`$${templateWidget.variable_name}`, outcome);
-      }
+    if (!options?.removeEmptySections) {
+      return applyTemplateVariableResolutions(template_content, variableResolutions);
     }
 
-    return template_content;
+    return buildTemplateContentWithOptionalSectionPruning(
+      template_content,
+      variableResolutions,
+      options,
+    );
   };
 
   return { buildFileFromTemplate };
