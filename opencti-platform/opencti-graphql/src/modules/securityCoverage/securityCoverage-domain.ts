@@ -111,8 +111,12 @@ export const addSecurityCoverage = async (
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
     }, noEnrichOnUpdate);
-    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response
-    createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
+    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response.
+    // On upsert, keep the existing results; the Set avoids a duplicate when the same result is upserted.
+    createdSecurityCoverage[RELATION_RESULT_OF] = Array.from(new Set([
+      ...(createdSecurityCoverage[RELATION_RESULT_OF] ?? []),
+      result.id,
+    ]));
   }
 
   // 3. In case of manual creation, need to create associated has-covered relationships.
