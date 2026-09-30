@@ -344,6 +344,15 @@ describe('Vulnerabilities Utils', () => {
       expect(generateVulnerabilitiesUpdates({} as any, updates)).toEqual([]);
     });
 
+    it('should normalize existing inputs in place on update and only return new keys', () => {
+      const updates = [{ key: 'x_opencti_cvss_exploit_code_maturity', value: ['PROOF_OF_CONCEPT'] }];
+      const initial = { x_opencti_cvss_vector_string: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H' } as any;
+      const result = generateVulnerabilitiesUpdates(initial, updates);
+      expect(updates).toEqual([{ key: 'x_opencti_cvss_exploit_code_maturity', value: ['Proof-of-Concept'] }]);
+      expect(result.map((e) => e.key)).not.toContain('x_opencti_cvss_exploit_code_maturity');
+      expect(result).toContainEqual({ key: 'x_opencti_cvss_vector_string', value: ['CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P'] });
+    });
+
     it('should throw a functional error for a value invalid for the CVSS version', () => {
       const updates = [{ key: 'x_opencti_cvss_v2_availability_impact', value: ['HIGH'] }];
       expect(() => updateCvssVector('cvss2', 'AV:N/AC:L/Au:N/C:P/I:P/A:P', updates, null))

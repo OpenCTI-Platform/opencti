@@ -607,5 +607,15 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
       pushAll(newUpdates, updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
-  return newUpdates;
+  // Replace inputs already present to avoid producing two updates for the same key
+  const addedUpdates: CvssFieldUpdate[] = [];
+  newUpdates.forEach((newUpdate) => {
+    const existingUpdate = updates.find((e) => e.key === newUpdate.key);
+    if (existingUpdate) {
+      existingUpdate.value = newUpdate.value;
+    } else {
+      addedUpdates.push(newUpdate);
+    }
+  });
+  return addedUpdates;
 };
