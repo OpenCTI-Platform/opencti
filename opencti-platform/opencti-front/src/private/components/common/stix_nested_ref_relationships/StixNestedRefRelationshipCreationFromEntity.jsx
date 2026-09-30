@@ -7,7 +7,6 @@ import * as Yup from 'yup';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add, ArrowRightAlt, ChevronRightOutlined } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import SpeedDial from '@mui/material/SpeedDial';
