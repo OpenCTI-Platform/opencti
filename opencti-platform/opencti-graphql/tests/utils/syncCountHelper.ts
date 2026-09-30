@@ -14,7 +14,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 26;
-testCreatedCounter.campaign = 6;
+testCreatedCounter.campaign = 7;
 testCreatedCounter['case-incident'] = 7;
 testCreatedCounter['case-rfi'] = 10;
 testCreatedCounter['case-rft'] = 1;
