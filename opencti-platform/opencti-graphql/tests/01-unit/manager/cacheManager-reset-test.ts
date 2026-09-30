@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDatabaseCacheMock } from '../../utils/databaseCacheMock';
 
 // Capture the subscription callback registered by cacheManager
 let capturedResetHandler: ((event: { entityType: string }) => void) | null = null;
@@ -19,12 +20,9 @@ vi.mock('../../../src/database/redis', () => ({
   pubSubSubscription: (topic: string, handler: any) => mockPubSubSubscription(topic, handler),
 }));
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../src/database/cache', () => createDatabaseCacheMock({
   writeCacheForEntity: (...args: unknown[]) => mockWriteCacheForEntity(...args),
   resetCacheForEntity: (...args: unknown[]) => mockResetCacheForEntity(...args),
-  addCacheForEntity: vi.fn(),
-  refreshCacheForEntity: vi.fn(),
-  removeCacheForEntity: vi.fn(),
 }));
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDatabaseCacheMock } from '../../utils/databaseCacheMock';
 
 const mockWriteCacheForEntity = vi.fn();
 const mockPubSubSubscription = vi.fn(async (topic: string) => ({ topic, unsubscribe: vi.fn() }));
@@ -9,12 +10,8 @@ vi.mock('../../../src/database/redis', () => ({
   pubSubSubscription: (topic: string) => mockPubSubSubscription(topic),
 }));
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../src/database/cache', () => createDatabaseCacheMock({
   writeCacheForEntity: (...args: unknown[]) => mockWriteCacheForEntity(...args),
-  resetCacheForEntity: vi.fn(),
-  addCacheForEntity: vi.fn(),
-  refreshCacheForEntity: vi.fn(),
-  removeCacheForEntity: vi.fn(),
 }));
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
