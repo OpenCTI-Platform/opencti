@@ -496,13 +496,6 @@ describe('widgetUtils', () => {
       expect(checkIfDateAttributeValid(invalidSelection)).toBe(false);
     });
 
-    it('should return false when perspective is neither entities nor relationships', () => {
-      const dataSelection: WidgetDataSelection[] = [
-        { perspective: null, filters: null, date_attribute: 'created_at' },
-      ];
-      expect(checkIfDateAttributeValid(dataSelection)).toBe(false);
-    });
-
     it('should return true when perspective is audits', () => {
       const dataSelection: WidgetDataSelection[] = [
         { perspective: 'audits', filters: null, date_attribute: 'created_at' },

@@ -51,7 +51,7 @@ const useWidgetConfigValidateForm = () => {
     || fintelTemplateVariableNameChecker.test(config.fintelVariableName)
   );
 
-  // Check date attribute is valid according ot the widget perspective
+  // Check date attribute is valid according to the widget perspective
   const isDateAttributeValid = checkIfDateAttributeValid(dataSelection);
 
   // Check title is filled in case of fintel
