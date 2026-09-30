@@ -125,7 +125,7 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
-  const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
+  const { isWidgetVarNameAlreadyUsed, isVariableNameValid, isDateAttributeValid } = useWidgetConfigValidateForm();
   const widgetCategory = getCurrentCategory(type);
 
   const alreadyUsedInstances = (host.kind === 'fintelTemplate' ? host.fintelWidgets : []).flatMap(({ widget }) => {
@@ -590,6 +590,7 @@ const WidgetCreationParameters = () => {
                     >
                       <FormControl fullWidth={true} style={{ flex: 1 }}>
                         <Select
+                          error={!isDateAttributeValid}
                           value={dataSelection[i].date_attribute ?? 'created_at'}
                           onValueChange={(value) => handleChangeDataValidationParameter(i, 'date_attribute', value)}
                         >
