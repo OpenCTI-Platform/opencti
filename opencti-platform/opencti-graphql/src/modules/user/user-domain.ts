@@ -1,4 +1,6 @@
 import bcrypt from 'bcryptjs';
+import passport from 'passport';
+import validator from 'validator';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -59,7 +61,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { generateStandardId } from '../../schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../../database/redis/token_usage';
 import {
   isInternalRelationship,
@@ -120,7 +122,7 @@ import {
 } from '../../generated/graphql';
 import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
 import type { BasicGroupEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
-import { apiTokens, type BasicStoreEntityUser } from './user-types';
+import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -139,7 +141,6 @@ import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
-import passport from 'passport';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -150,7 +151,6 @@ import {
   PROVIDERS,
 } from '../authenticationProvider/providers-configuration';
 import { addOrganization } from '../organization/organization-domain';
-import validator from 'validator';
 import { logAuthInfo } from '../authenticationProvider/providers-logger';
 import { hashSHA256 } from '../../utils/hash';
 import { normalizeEmail } from '../../utils/email';
@@ -2581,7 +2581,7 @@ export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, 
 // Revoke token
 const revokeToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, tokenId: string, auditMessage: (token: UserApiToken) => string) => {
   const tokens = targetUser.api_tokens || [];
-  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  const tokenToRemove = tokens.find((t) => t.id === tokenId);
   if (!tokenToRemove) {
     throw FunctionalError('Token not found', { tokenId });
   }
