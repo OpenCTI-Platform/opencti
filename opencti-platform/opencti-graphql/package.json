@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "7.260928.1",
+  "version": "7.260930.0",
   "type": "module",
   "private": true,
   "scripts": {
