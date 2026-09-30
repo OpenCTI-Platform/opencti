@@ -66,11 +66,12 @@ const IngestionCatalogConnectorComponent = ({
     : 0;
   const canDeploy = connector ? canDeployConnector(connector) : false;
 
+  // connector and onClickDeploy are new on every render: depending on them would open the dialog in a loop
   useEffect(() => {
     if (openConfig && contract && connector && canDeploy) {
       onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
-  }, [canDeploy, connector, contract, deploymentCount, hasActiveManagers, onClickDeploy, openConfig]);
+  }, [openConfig, contract, canDeploy]);
 
   if (!contract) return <ErrorNotFound />;
 
