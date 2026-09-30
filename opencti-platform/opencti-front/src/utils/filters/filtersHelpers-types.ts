@@ -41,7 +41,7 @@ export interface handleFilterHelpers {
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleAddRepresentationFilter: (id: string, valueId: string | null) => void;
   handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => void;
-  handleAddFilterGroup: (parentGroupId?: string) => void;
+  handleAddFilterGroup: (parentGroupId?: string, initialFilter?: Filter) => void;
   handleRemoveFilterGroup: (groupId: string) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;

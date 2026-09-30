@@ -1187,6 +1187,23 @@ export const getDefaultFilterObject = (
   };
 };
 
+/**
+ * The filter a newly-created condition/group is pre-filled with: the first of `keyOptions`,
+ * matching the order the filter-key select shows them in. `keyOptions` is the caller's already-
+ * built, already-sorted `buildGroupedFilterKeyOptions(...)` result (or `ListFilters`'s `options`,
+ * built the same way) — this does not re-sort, so the one sort implementation there stays the
+ * only one. Shared by every "add a condition" and "add a nested group" entry point so they all
+ * pick the same default. Returns undefined when there is no available filter key to default to.
+ */
+export const getFirstDefaultConditionFilter = (
+  keyOptions: { value: string }[],
+  filterKeysMap: Map<string, FilterDefinition>,
+): Filter | undefined => {
+  const filterKey = keyOptions[0]?.value;
+  if (!filterKey) return undefined;
+  return getDefaultFilterObject(filterKey, getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap));
+};
+
 export const useGetDefaultFilterObject = (
   filterKeys: string[],
   entityTypes: string[],

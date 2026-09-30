@@ -9,7 +9,7 @@ import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInp
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
-import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
+import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, getFirstDefaultConditionFilter } from '../../../../utils/filters/filtersUtils';
 import { buildGroupedFilterKeyOptions, isGroupedFilterKeySelection } from '../../../../utils/filters/filterKeyGrouping';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
@@ -161,7 +161,7 @@ const ListFilters = ({
   );
 
   const handleAddFilterGroup = () => {
-    helpers?.handleAddFilterGroup?.(); // always added at the root from ListFilters
+    helpers?.handleAddFilterGroup?.(undefined, getFirstDefaultConditionFilter(options, filterKeysMap));
     setInputValue('');
   };
 

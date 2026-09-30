@@ -54,16 +54,17 @@ export const handleAddFilterWithEmptyValueUtil = ({ filters, filter, groupId }: 
 };
 
 /**
- * Appends a new empty sub-group inside the designated parent group (the root group when
- * `parentGroupId` is omitted).
+ * Appends a new sub-group inside the designated parent group (the root group when
+ * `parentGroupId` is omitted). Pre-filled with `initialFilter` as its first condition when given.
  */
-export const addFilterGroupUtil = ({ filters, parentGroupId }: FiltersLocalStorageUtilProps<{
+export const addFilterGroupUtil = ({ filters, parentGroupId, initialFilter }: FiltersLocalStorageUtilProps<{
   parentGroupId?: string;
+  initialFilter?: Filter;
 }>): FilterGroup => {
   const newGroup: FilterGroup = {
     id: uuid(),
     mode: 'and',
-    filters: [],
+    filters: initialFilter ? [initialFilter] : [],
     filterGroups: [],
   };
   return updateGroupById(filters, parentGroupId, (group) => ({
