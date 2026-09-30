@@ -68,6 +68,7 @@ const infrastructureFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...InfrastructureDetails_infrastructure
   }
 `;

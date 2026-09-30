@@ -10,6 +10,11 @@ import {
   getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { readFileSync } from 'node:fs';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { graphql } from 'graphql';
+import { authDirectiveBuilder } from '../../../src/graphql/authDirective';
+import type { BasicWorkflowStatus } from '../../../src/types/store';
 
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
@@ -24,6 +29,8 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   triggerWorkflowEvent: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
   getWorkflowPublishedVersionId: vi.fn(),
+  setWorkflowStatus: vi.fn(),
+  getWorkflowBypassStatuses: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', () => ({
@@ -34,6 +41,56 @@ const mockContext = { user: { id: 'user-id' } } as any;
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe('Workflow bypass API', () => {
+  const schema = () => authDirectiveBuilder('auth').authDirectiveTransformer(makeExecutableSchema({
+    typeDefs: [
+      `
+        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+        directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
+        directive @public on FIELD_DEFINITION
+        scalar JSON
+        scalar DateTime
+        scalar BasicObject
+        type Status { id: ID! }
+        type EntitySetting { id: ID! }
+        type DraftWorkspace { id: ID! }
+        type Query { health: Boolean @public }
+        type Mutation { health: Boolean @public }
+      `,
+      readFileSync(new URL('../../../src/modules/workflow/api/workflow.graphql', import.meta.url), 'utf8'),
+    ],
+    resolvers: { Query: workflowResolvers.Query, Mutation: workflowResolvers.Mutation },
+  }));
+
+  it.each([
+    ['mutation { setWorkflowStatus(entityId: "entity-id", targetStatusId: "status-id", applyTransitionActions: false) { success } }', 'setWorkflowStatus'],
+    ['{ workflowBypassStatuses(entityId: "entity-id") { status { id } onExit { type } onEnter { type } requiresShareOrganizationInput requiresUnshareOrganizationInput } }', 'workflowBypassStatuses'],
+  ])('requires actual BYPASS through the schema for %s', async (source, field) => {
+    vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true });
+    const statuses = [{ status: { id: 'status-id' } as BasicWorkflowStatus, onExit: [], onEnter: [], requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false }];
+    vi.mocked(workflowDomain.getWorkflowBypassStatuses).mockResolvedValue(statuses);
+    const executableSchema = schema();
+    const denied = await graphql({ schema: executableSchema, source, contextValue: { user: { id: 'editor', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } } });
+    expect(denied.errors?.[0].message).toBe('You are not allowed to do this.');
+    expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
+    expect(workflowDomain.getWorkflowBypassStatuses).not.toHaveBeenCalled();
+    const allowed = await graphql({ schema: executableSchema, source, contextValue: { user: { id: 'admin', capabilities: [{ name: 'BYPASS' }] } } });
+    expect(allowed.errors).toBeUndefined();
+    expect(allowed.data?.[field]).toEqual(field === 'setWorkflowStatus' ? { success: true } : statuses);
+  });
+
+  it('forwards bypass options, normalized comment and runtime params', async () => {
+    const runtimeParams = { shareOrganizationIds: ['org-id'] };
+    await workflowResolvers.Mutation.setWorkflowStatus({}, { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: true, comment: '  override  ', runtimeParams }, mockContext);
+    expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'status-id', true, 'override', runtimeParams);
+  });
+
+  it('rejects oversized bypass comments before invoking the domain', () => {
+    expect(() => workflowResolvers.Mutation.setWorkflowStatus({}, { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, comment: 'a'.repeat(1001) }, mockContext)).toThrow('1000');
+    expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
+  });
 });
 
 // ---------------------------------------------------------------------------

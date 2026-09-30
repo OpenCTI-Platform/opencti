@@ -59,6 +59,7 @@ const DataComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...DataComponentDetails_dataComponent
   }
 `;

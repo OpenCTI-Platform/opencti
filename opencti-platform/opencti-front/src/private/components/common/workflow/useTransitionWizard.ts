@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { MESSAGING$, relayErrorHandling } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
 import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
@@ -12,38 +12,44 @@ import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } f
 
 const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
 
-export type WizardStep = 'org-picker' | 'comment' | 'validate';
-
 export interface TransitionWizard {
   event: string;
   actions: readonly string[];
-  steps: WizardStep[];
-  runtimeParams?: Record<string, unknown>;
-  comment?: string;
+  requiresValidation: boolean;
   requiresShareOrg: boolean;
   requiresUnshareOrg: boolean;
   commentMode?: string;
 }
 
-interface UseTransitionWizardArgs {
-  entityId: string;
-  entityNavigationId: string | null | undefined;
-  draftId?: string;
+export interface TransitionFormValues {
+  comment: string;
+  shareOrganizations: Array<{ value: string; label?: string }>;
+  unshareOrganizations: Array<{ value: string; label?: string }>;
 }
 
-export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: UseTransitionWizardArgs) => {
+interface UseTransitionWizardArgs {
+  entityId: string;
+  entityNavigationId?: string | null;
+  draftId?: string;
+  isPending?: boolean;
+  onCompleted?: () => void;
+}
+
+export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isPending = false, onCompleted }: UseTransitionWizardArgs) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { exitDraft } = useSwitchDraft();
   const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
 
   const [wizard, setWizard] = useState<TransitionWizard | null>(null);
-  const [commentValue, setCommentValue] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const inFlight = useRef(false);
 
   const [commit, approving] = useMutation<WorkflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
   const [commitClear, clearing] = useMutation<WorkflowStatusClearMutationType>(workflowStatusClearMutation);
 
   const exitDraftAfterValidation = () => {
+    if (!draftId) return;
     exitDraft({
       onCompleted: () => {
         if (entityNavigationId) {
@@ -60,44 +66,44 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     actions: readonly string[],
     runtimeParams?: Record<string, unknown>,
     comment?: string,
-  ) => {
-    commit({
-      variables: { entityId, eventName, runtimeParams, comment },
-      onCompleted: (response) => {
-        const newTimestamp = response.triggerWorkflowEvent?.instance?.lastHistoryEntry?.timestamp;
-        if (newTimestamp && draftId) {
-          window.localStorage.setItem(`${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`, newTimestamp);
-        }
-        if (
-          response.triggerWorkflowEvent?.success
-          && response.triggerWorkflowEvent.executionStatus !== 'pending'
-          && actions.includes('validateDraft')
-        ) {
-          MESSAGING$.notifySuccess(t_i18n('Draft validation in progress'));
-          exitDraftAfterValidation();
-        } else if (response.triggerWorkflowEvent?.executionStatus === 'pending') {
-          MESSAGING$.notifySuccess(t_i18n('Workflow transition started in background'));
-        }
-      },
+  ): Promise<void> => {
+    if (inFlight.current || approving || clearing || isPending) return Promise.resolve();
+    inFlight.current = true;
+    setSubmitting(true);
+    return new Promise((resolve) => {
+      const finish = () => {
+        inFlight.current = false;
+        setSubmitting(false);
+        resolve();
+      };
+      commit({
+        variables: { entityId, eventName, runtimeParams, comment },
+        onCompleted: (response) => {
+          finish();
+          const result = response.triggerWorkflowEvent;
+          if (!result?.success) {
+            MESSAGING$.notifyError(result?.reason || t_i18n('An error has occurred'));
+            return;
+          }
+          setWizard(null);
+          onCompleted?.();
+          const newTimestamp = result.instance?.lastHistoryEntry?.timestamp;
+          if (newTimestamp && draftId) {
+            window.localStorage.setItem(`${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`, newTimestamp);
+          }
+          if (result.executionStatus === 'pending') {
+            MESSAGING$.notifySuccess(t_i18n('Workflow transition started in background'));
+          } else if (draftId && actions.includes('validateDraft')) {
+            MESSAGING$.notifySuccess(t_i18n('Draft validation in progress'));
+            exitDraftAfterValidation();
+          }
+        },
+        onError: (error) => {
+          finish();
+          relayErrorHandling(error);
+        },
+      });
     });
-  };
-
-  const advance = (patch?: { runtimeParams?: Record<string, unknown>; comment?: string }) => {
-    if (!wizard) return;
-    const next: TransitionWizard = {
-      ...wizard,
-      ...(patch?.runtimeParams !== undefined && {
-        runtimeParams: { ...wizard.runtimeParams, ...patch.runtimeParams },
-      }),
-      ...(patch?.comment !== undefined && { comment: patch.comment }),
-      steps: wizard.steps.slice(1),
-    };
-    if (next.steps.length === 0) {
-      setWizard(null);
-      fireTransition(next.event, next.actions, next.runtimeParams, next.comment);
-    } else {
-      setWizard(next);
-    }
   };
 
   const handleTransition = (
@@ -107,55 +113,45 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     requiresShareOrg?: boolean | null,
     requiresUnshareOrg?: boolean | null,
   ) => {
-    const steps: WizardStep[] = [];
-    if (requiresShareOrg || requiresUnshareOrg) steps.push('org-picker');
-    if (comment === CommentMode.allowed || comment === CommentMode.required) steps.push('comment');
-    if (actions.includes('validateDraft')) steps.push('validate');
-
-    if (steps.length === 0) {
+    if (inFlight.current || approving || clearing || isPending) return;
+    const requiresValidation = !!draftId && actions.includes('validateDraft');
+    const hasComment = comment === CommentMode.allowed || comment === CommentMode.required;
+    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation) {
       fireTransition(eventName, actions);
       return;
     }
     setWizard({
       event: eventName,
       actions,
-      steps,
+      requiresValidation,
       requiresShareOrg: !!requiresShareOrg,
       requiresUnshareOrg: !!requiresUnshareOrg,
       commentMode: comment ?? undefined,
     });
   };
 
-  const handleOrgPickerSubmit = (
-    values: { shareOrganizations: Array<{ value: string }>; unshareOrganizations: Array<{ value: string }> },
-    { resetForm }: { resetForm: () => void },
-  ) => {
-    const rp: Record<string, string[]> = {};
-    if (wizard?.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
-    if (wizard?.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
-    resetForm();
-    advance({ runtimeParams: rp });
-  };
-
-  const handleConfirmComment = () => {
-    advance({ comment: commentValue.trim() || undefined });
-    setCommentValue('');
-  };
-
-  const handleValidateDraft = () => {
-    advance();
+  const handleApplyWizard = (values: TransitionFormValues): Promise<void> => {
+    if (!wizard) return Promise.resolve();
+    const runtimeParams: Record<string, string[]> = {};
+    if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((organization) => organization.value);
+    if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((organization) => organization.value);
+    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined);
   };
 
   const handleClear = () => {
+    if (inFlight.current || approving || clearing) return;
     commitClear({
       variables: { entityId },
       onCompleted: () => {
+        onCompleted?.();
         MESSAGING$.notifySuccess(t_i18n('Pending workflow state cleared'));
       },
+      onError: relayErrorHandling,
     });
   };
 
   const notifyBackgroundTransitionComplete = () => {
+    if (!draftId) return;
     MESSAGING$.notifySuccess(t_i18n('Draft validated successfully'));
     exitDraftAfterValidation();
   };
@@ -163,16 +159,11 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
   return {
     wizard,
     setWizard,
-    commentValue,
-    setCommentValue,
-    currentStep: wizard?.steps[0] ?? null,
     canBypassMandatoryFields,
-    approving,
+    approving: approving || submitting,
     clearing,
     handleTransition,
-    handleOrgPickerSubmit,
-    handleConfirmComment,
-    handleValidateDraft,
+    handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
   };

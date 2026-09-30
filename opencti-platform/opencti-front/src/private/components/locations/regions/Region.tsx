@@ -79,6 +79,7 @@ const regionFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...LocationDetails_location
   }
 `;

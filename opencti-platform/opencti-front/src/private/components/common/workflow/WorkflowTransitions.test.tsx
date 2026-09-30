@@ -163,9 +163,9 @@ describe('WorkflowTransitions – error state UI', () => {
     expect(screen.getByText('Transition failed')).toBeDefined();
   });
 
-  it('renders only the Clear button in the error state', () => {
+  it('hides Clear from users without bypass permission in the error state', () => {
     testRender(<WorkflowTransitions data={makeErrorDraft()} />);
-    expect(screen.getByText('Clear')).toBeDefined();
+    expect(screen.queryByText('Clear')).toBeNull();
     expect(screen.queryByText('Retry')).toBeNull();
   });
 });

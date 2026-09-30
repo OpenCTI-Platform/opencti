@@ -48,6 +48,7 @@ export interface WorkflowPendingTransition {
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
+  draftEntityIds?: string[];
 }
 
 /**

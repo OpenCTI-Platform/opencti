@@ -140,7 +140,7 @@ const transformToWorkflowDefinition = (
 
       const actionPayload = {
         event,
-        conditions,
+        conditions: conditions ?? {},
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
         comment,
