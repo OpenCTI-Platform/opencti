@@ -151,8 +151,8 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromI
   if (!isStixCoreRelationship(relationshipType)) {
     throw FunctionalError(`Only stix-core-relationship can be deleted through this method, not ${relationshipType}.`);
   }
-  await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  if (SECURITY_COVERAGE_SCOPE_RELATIONS.includes(relationshipType)) {
+  const deletedRelations = await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  if (deletedRelations.deletions.length > 0 && SECURITY_COVERAGE_SCOPE_RELATIONS.includes(relationshipType)) {
     // Both ids may be standard ids here, resolve them before any coverage lookup.
     const [from, to] = await Promise.all([
       internalLoadById(context, user, fromId),
