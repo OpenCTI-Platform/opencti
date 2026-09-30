@@ -217,6 +217,19 @@ export const standardId: TextAttribute = {
   isFilterable: false,
 };
 
+export const exportId: TextAttribute = {
+  name: 'export_id',
+  label: 'Export id',
+  type: 'string',
+  format: 'short',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+};
+
 export const iAliasedIds: TextAttribute = {
   name: 'i_aliases_ids',
   label: 'Internal aliases',
