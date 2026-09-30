@@ -34,7 +34,8 @@ import {
 import { DatabaseError, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
 import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
-import { reportExpectation } from '../domain/work';
+import { reportWorkProgress } from '../domain/work';
+import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';
 import { getEntityFromCache } from '../database/cache';
 import { isTransitoryError } from '../database/engine';
 import { wait } from '../database/utils';
@@ -199,7 +200,7 @@ export class ChunkPoisonError extends Error {
 // stays tiny (memory-only: a restart resets the count, the cap still bounds the total).
 const transientAttempts = new Map<string, number>();
 
-interface ChunkMessage {
+interface ChunkMessage extends ChunkWorkFields {
   v?: number;
   chunk_id?: string;
   user_id?: string;
@@ -390,8 +391,7 @@ const reportChunkOutcome = async (
   outcome: OperationOutcome,
 ) => {
   if (outcome.deferred) {
-    // the work expectation stays open: the pending intents store reports it when the
-    // creation lands or expires (registerPendingIntentSettled below)
+    // retained: counted with its chunk, an expiry adds an error (registerPendingIntentSettled)
     operationsCounter?.add(1, { outcome: 'deferred' });
     return;
   }
@@ -399,11 +399,33 @@ const reportChunkOutcome = async (
     logApp.error('[CHUNK-INTAKE] Operation failed', { chunk_id: message.chunk_id, object_id: operation.object_id, error: outcome.error });
   }
   operationsCounter?.add(1, { outcome: outcome.error ? 'error' : 'ok' });
-  // Work bookkeeping is now in process: pycti called reportExpectation over HTTP for EVERY
-  // object (success included), which was the second HTTP call per object on the old path.
-  if (message.work_id) {
-    await reportExpectation(context, user, message.work_id, outcome.error ? { error: outcome.error, source: 'chunk intake' } : undefined);
+};
+
+// Work accounting (ADR 0007): the chunk's objects in ONE report, after the ack. After, not
+// before: a report failure must never requeue the chunk, whose replay would count it twice.
+const reportChunkWork = async (
+  context: AuthContext,
+  user: AuthUser,
+  message: ChunkMessage,
+  operations: ChunkOperation[],
+  results: { error?: string; deferred?: boolean }[],
+) => {
+  if (!message.work_id) return;
+  const progress = chunkWorkProgress(message, operations, results);
+  if (progress.count === 0 && progress.errors.length === 0) return;
+  try {
+    await reportWorkProgress(context, user, message.work_id, progress);
+  } catch (err) {
+    logApp.error('[CHUNK-INTAKE] Work report failed', { cause: err, chunk_id: message.chunk_id, work_id: message.work_id });
   }
+};
+
+// A dead-lettered chunk still meets its work: its objects are counted in error, so the work
+// can complete instead of waiting for objects that will never come.
+const reportDeadLetteredChunkWork = async (message: ChunkMessage, operations: ChunkOperation[], reason: string) => {
+  if (!message.work_id) return;
+  const results = operations.map(() => ({ error: `chunk dead-lettered (${reason})` }));
+  await reportChunkWork(executionContext(CHUNK_INTAKE_MANAGER_CONTEXT), SYSTEM_USER, message, operations, results);
 };
 
 export const processChunkMessage = async (payload: string, controls: ChunkControls) => {
@@ -604,6 +626,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       await reportChunkOutcome(context, user, message, ordered[index], results[index]);
     }
     controls.ack();
+    await reportChunkWork(context, user, message, ordered, results);
     inFlightChunks.delete(attemptKey);
     transientAttempts.delete(attemptKey);
     chunksCounter?.add(1, { outcome: 'acked' });
@@ -616,6 +639,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       chunksCounter?.add(1, { outcome: 'dead_letter', reason: e.reason });
       transientAttempts.delete(attemptKey);
       controls.deadLetter();
+      await reportDeadLetteredChunkWork(message, operations, e.reason);
       return;
     }
     const attempts = (transientAttempts.get(attemptKey) ?? 0) + 1;
@@ -624,6 +648,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       chunksCounter?.add(1, { outcome: 'dead_letter', reason: 'transient_cap' });
       transientAttempts.delete(attemptKey);
       controls.deadLetter();
+      await reportDeadLetteredChunkWork(message, operations, 'transient_cap');
       return;
     }
     transientAttempts.set(attemptKey, attempts);
@@ -639,12 +664,12 @@ const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
   startPreLoopTicker();
   startStallWatchdog();
-  // Terminal outcome of a retained creation: meet the work expectation the chunk skipped
-  // (applied), or meet it with an error (expired / failed), so works stay exact.
+  // Terminal outcome of a retained creation: its chunk already counted it (ADR 0007), so a
+  // landing reports nothing and an expiry or a failure only adds the error to the work.
   registerPendingIntentSettled(async (record, error) => {
-    if (!record.work_id) return;
+    if (!record.work_id || !error) return;
     const settleContext = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
-    await reportExpectation(settleContext, SYSTEM_USER, record.work_id, error ? { error, source: 'chunk intake (retained creation)' } : undefined);
+    await reportWorkProgress(settleContext, SYSTEM_USER, record.work_id, { count: 0, errors: [{ error, source: 'chunk intake (retained creation)' }] });
   });
   // Re-execution of a retained OPERATION: a fresh chunk context (the writer resolved from
   // the envelope, so no SYSTEM_USER divergence after a restart), the same in-process

@@ -327,11 +327,23 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
     .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
 };
 
-export const reportExpectation = async (context, user, workId, errorData) => {
+// Progress of a work, reported by count (ADR 0007): the chunk intake reports the objects of
+// a whole chunk in one call, with their errors and an informative message. count 0 only
+// appends errors or messages (a retained creation that expired after its chunk counted it)
+// and never completes a work. Errors and messages are capped at 100 per work.
+/**
+ * @param {import('../types/user').AuthContext} context
+ * @param {import('../types/user').AuthUser} user
+ * @param {string} workId
+ * @param {{ count?: number, errors?: { error: string, source: string }[], messages?: string[] }} [progress]
+ */
+export const reportWorkProgress = async (context, user, workId, { count = 1, errors = [], messages = [] } = {}) => {
   const timestamp = now();
-  await redisUpdateWorkFigures(workId);
+  if (count > 0) {
+    await redisUpdateWorkFigures(workId, count);
+  }
   const { expected, total, isProcessed, isMultiPartWork } = await redisGetWorkCompletionState(workId);
-  const isComplete = (!isMultiPartWork || isProcessed) && isWorkFinished(expected, total);
+  const isComplete = count > 0 && (!isMultiPartWork || isProcessed) && isWorkFinished(expected, total);
 
   // Important: isWorkAlive is intentionally checked *after* redisUpdateWorkFigures, not before.
   // If we checked liveness upfront and the work closed between that check and the figures update,
@@ -345,7 +357,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     return workId;
   }
 
-  if (isComplete || errorData) {
+  if (isComplete || errors.length > 0 || messages.length > 0) {
     const params = { now: timestamp };
     let sourceScript = '';
     if (isComplete) {
@@ -355,11 +367,13 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       ctx._source['completed_time'] = params.now;`;
     }
     // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
-    if (errorData) {
-      const { error, source } = errorData;
-      sourceScript += 'if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); }';
-      params.source = source;
-      params.error = error;
+    if (errors.length > 0) {
+      params.errors = errors.map(({ error, source }) => ({ error, source }));
+      sourceScript += 'for (e in params.errors) { if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.now, "message": e.error, "source": e.source]); } }';
+    }
+    if (messages.length > 0) {
+      params.messages = messages;
+      sourceScript += 'for (m in params.messages) { if (ctx._source.messages.length < 100) { ctx._source.messages.add(["timestamp": params.now, "message": m]); } }';
     }
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
@@ -373,13 +387,17 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
+        logApp.info('Work completed via expectation reporting', { workId, hasError: errors.length > 0 });
       }
-      logApp.info('Work completed via expectation reporting', { workId, hasError: !!errorData });
     } else {
       logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
     }
   }
   return workId;
+};
+
+export const reportExpectation = async (context, user, workId, errorData) => {
+  return reportWorkProgress(context, user, workId, { count: 1, errors: errorData ? [errorData] : [] });
 };
 
 /**

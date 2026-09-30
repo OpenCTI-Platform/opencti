@@ -756,8 +756,10 @@ export const buildSplitMessages = (message, { inlineBundles = false } = {}) => {
   // (or explicitly no_split) bundles. This avoids needless work for the common case and sidesteps
   // the splitter's dependency-walk on payloads it was never meant to touch (matching prior
   // behavior exactly, since single-object bundles were never split by the worker either).
+  // declared_expectations (ADR 0007): what the platform declares for each message, so a worker
+  // importing a bundle whole declares only the difference with the objects it reports.
   if (message.no_split || objectCount <= 1) {
-    return unsplit(objectCount);
+    return { messages: [{ ...message, declared_expectations: objectCount }], expectations: objectCount };
   }
   // P3 (plan 0009 part 9): ship the bundle whole; the worker splits it in place and imports
   // it level by level (bundle_inline marker). Expectations are NOT counted here: the worker
@@ -765,7 +767,7 @@ export const buildSplitMessages = (message, { inlineBundles = false } = {}) => {
   // avoids any platform/worker splitter divergence in the count. A worker without the marker
   // support falls back to its historic split-and-requeue path (which also counts).
   if (inlineBundles) {
-    return { messages: [{ ...message, bundle_inline: true }], expectations: null };
+    return { messages: [{ ...message, bundle_inline: true, declared_expectations: 0 }], expectations: null };
   }
   // Once the splitter has run, its output (deduped/filtered) is authoritative for both the
   // messages to publish and the expectation count - including the 0- and 1-bundle cases, which
@@ -774,7 +776,7 @@ export const buildSplitMessages = (message, { inlineBundles = false } = {}) => {
   // re-adding expectations for) content we already split.
   const splitter = new Stix2Splitter();
   const { bundles, numberExpectations } = splitter.splitBundleWithExpectations(bundleContent);
-  const messages = bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
+  const messages = bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true, declared_expectations: 1 }));
   return { messages, expectations: numberExpectations };
 };
 

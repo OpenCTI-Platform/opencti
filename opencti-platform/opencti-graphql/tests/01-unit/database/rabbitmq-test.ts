@@ -305,14 +305,14 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
       content: toBundle([{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }]),
     };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 2 }]);
     expect(result.expectations).toBe(2);
   });
 
   it('returns the original message unsplit for single-object bundles', () => {
     const message = { type: 'bundle', content: toBundle([{ id: 'malware--only', type: 'malware', name: 'Only' }]) };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 1 }]);
     expect(result.expectations).toBe(1);
   });
 
@@ -323,7 +323,7 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     // `len(content['objects']) == 1` pre-check in push_handler.py.
     const message = { type: 'bundle', content: toBundle([{ type: 'report', confidence: 100 }]) };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 1 }]);
     expect(result.expectations).toBe(1);
   });
 
@@ -336,15 +336,16 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     const result = buildSplitMessages(message, { inlineBundles: true });
     expect(result.messages.length).toBe(1);
     expect(result.messages[0].bundle_inline).toBe(true);
+    expect(result.messages[0].declared_expectations).toBe(0); // the worker declares the bundle's objects
     expect(decode(result.messages[0].content).objects.length).toBe(2);
     expect(result.expectations).toBeNull(); // the worker counts from its own splitter output
   });
 
   it('inline mode leaves single-object and no_split bundles exactly as before', () => {
     const single = { type: 'bundle', content: toBundle([{ id: 'malware--only', type: 'malware' }]) };
-    expect(buildSplitMessages(single, { inlineBundles: true })).toEqual({ messages: [single], expectations: 1 });
+    expect(buildSplitMessages(single, { inlineBundles: true })).toEqual({ messages: [{ ...single, declared_expectations: 1 }], expectations: 1 });
     const noSplit = { type: 'bundle', no_split: true, content: toBundle([{ id: 'a', type: 'malware' }, { id: 'b', type: 'malware' }]) };
-    expect(buildSplitMessages(noSplit, { inlineBundles: true })).toEqual({ messages: [noSplit], expectations: 2 });
+    expect(buildSplitMessages(noSplit, { inlineBundles: true })).toEqual({ messages: [{ ...noSplit, declared_expectations: 2 }], expectations: 2 });
   });
 
   it('splits a multi-object bundle into one message per object, preserving other fields', () => {
@@ -360,8 +361,9 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
 
     expect(splitMessages).toHaveLength(objects.length);
     expect(expectations).toBe(objects.length);
-    const ids = (splitMessages as { content: string; no_split: boolean; work_id: string; applicant_id: string; update: boolean }[]).map((msg) => {
+    const ids = (splitMessages as { content: string; no_split: boolean; declared_expectations: number; work_id: string; applicant_id: string; update: boolean }[]).map((msg) => {
       expect(msg.no_split).toBe(true);
+      expect(msg.declared_expectations).toBe(1);
       expect(msg.work_id).toBe('work-1');
       expect(msg.applicant_id).toBe('user-1');
       expect(msg.update).toBe(true);
@@ -375,21 +377,21 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
   it('returns expectations 0 and the original message unsplit when objects is an empty array', () => {
     const message = { type: 'bundle', content: toBundle([]) };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 0 }]);
     expect(result.expectations).toBe(0);
   });
 
   it('returns expectations 0 and the original message unsplit when the bundle has no objects field at all', () => {
     const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle' }), 'utf-8').toString('base64') };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 0 }]);
     expect(result.expectations).toBe(0);
   });
 
   it('returns expectations 0 and the original message unsplit when objects is not an array (malformed payload)', () => {
     const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects: 'not-an-array' }), 'utf-8').toString('base64') };
     const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
+    expect(result.messages).toEqual([{ ...message, declared_expectations: 0 }]);
     expect(result.expectations).toBe(0);
   });
 
