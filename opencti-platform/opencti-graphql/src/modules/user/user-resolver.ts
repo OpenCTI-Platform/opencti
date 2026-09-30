@@ -1,3 +1,6 @@
+import type { EditContext, EditInput, InternalRelationshipAddInput, Resolvers } from '../../generated/graphql';
+import type { AuthContext } from '../../types/user';
+import type { BasicStoreEntityUser } from './user-types';
 import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../../config/conf';
 import { internalLoadById } from '../../database/middleware-loader';
 import { fetchEditContext } from '../../database/redis';
@@ -62,27 +65,27 @@ import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../schema/internalRelations
 import { loadCreator } from '../../database/members';
 import { issueConnectorJWT } from '../../database/repository';
 
-const userResolvers = {
+const userResolvers: Resolvers = {
   Query: {
     me: (_, __, context) => context.user,
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findUserPaginated(context, context.user, args),
-    role: (_, { id }, context) => findRoleById(context, context.user, id),
-    roles: (_, args, context) => findRoles(context, context.user, args),
-    creators: (_, args, context) => findCreators(context, context.user, args),
-    assignees: (_, args, context) => findAssignees(context, context.user, args),
-    participants: (_, args, context) => findParticipants(context, context.user, args),
+    role: (_, { id }, context) => findRoleById(context, context.user, id) as any,
+    roles: (_, args, context) => findRoles(context, context.user, args) as any,
+    creators: (_, args, context) => findCreators(context, context.user, args) as any,
+    assignees: (_, args, context) => findAssignees(context, context.user, args) as any,
+    participants: (_, args, context) => findParticipants(context, context.user, args) as any,
     members: (_, args, context) => findMembersPaginated(context, context.user, args),
-    systemMembers: () => findAllSystemMemberPaginated(),
+    systemMembers: () => findAllSystemMemberPaginated() as any,
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     capabilitiesInDraft: (_, args, context) => findCapabilities(context, context.user, args, RELATION_HAS_CAPABILITY_IN_DRAFT),
-    bookmarks: (_, args, context) => bookmarks(context, context.user, args),
+    bookmarks: (_, args, context) => bookmarks(context, context.user, args) as any,
   },
   User: {
     roles: (current, args, context) => userRoles(context, context.user, current.id, args),
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args) as any,
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
@@ -100,40 +103,40 @@ const userResolvers = {
     },
     effective_confidence_level: (current, _, context) => {
       if (current.entity_type === ENTITY_TYPE_USER) {
-        return getUserEffectiveConfidenceLevel(current, context);
+        return getUserEffectiveConfidenceLevel(current, context) as any;
       }
       return null;
     },
   },
   MeUser: {
     language: (current) => current.language ?? 'auto',
-    unit_system: (current) => current.unit_system ?? 'auto',
+    unit_system: (current: any) => current.unit_system ?? 'auto',
     submenu_show_icons: (current) => current.submenu_show_icons ?? false,
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,
     unsubscribed_news_feed_types: (current) => current.unsubscribed_news_feed_types ?? [],
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args) as any,
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
-    default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
-    draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
-    effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context),
-    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    default_dashboard: (current: any, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
+    draftContext: (current: any, _, context) => findDraftById(context, context.user, current.draft_context),
+    effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context) as any,
+    personal_notifiers: (current: any, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
   },
   UserSession: {
-    user: (session, _, context) => loadCreator(context, context.user, session.user_id),
+    user: (session: any, _, context) => loadCreator(context, context.user, session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
-    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
+    capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id) as any,
+    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT) as any,
   },
   Group: {
-    roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
+    roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args) as any,
   },
   EffectiveConfidenceLevelSourceObject: {
-    __resolveType(obj) {
+    __resolveType(obj): any {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
@@ -141,10 +144,10 @@ const userResolvers = {
     },
   },
   Mutation: {
-    otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
+    otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input!),
     otpDeactivation: (_, __, context) => otpUserDeactivation(context, context.user, context.user.id),
-    otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
-    token: async (_, { input }, context) => sessionLogin(context, input),
+    otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input!),
+    token: async (_, { input }, context) => sessionLogin(context, input!),
     connectorJWT: () => issueConnectorJWT(),
     sessionKill: async (_, { id }, context) => {
       const kill = await killSession(id);
@@ -162,7 +165,7 @@ const userResolvers = {
     },
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
     userSessionsKill: async (_, { id }, context) => {
-      const user = await internalLoadById(context, context.user, id);
+      const user = await internalLoadById<BasicStoreEntityUser>(context, context.user, id);
       const sessions = await killUserSessions(id);
       const sessionIds = sessions.map((s) => s.sessionId);
       const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email;
@@ -178,30 +181,30 @@ const userResolvers = {
     },
     roleEdit: (_, { id }, context) => ({
       delete: () => roleDelete(context, context.user, id),
-      fieldPatch: ({ input }) => roleEditField(context, context.user, id, input),
-      contextPatch: ({ input }) => roleEditContext(context, context.user, id, input),
+      fieldPatch: ({ input }: { input: EditInput[] }) => roleEditField(context, context.user, id, input),
+      contextPatch: ({ input }: { input: EditContext }) => roleEditContext(context, context.user, id, input),
       contextClean: () => roleCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => roleAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => {
+      relationAdd: ({ input }: { input: InternalRelationshipAddInput }) => roleAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }: { toId: string; relationship_type: string }) => {
         return roleDeleteRelation(context, context.user, id, toId, relationshipType);
       },
-    }),
+    }) as any,
     roleAdd: (_, { input }, context) => addRole(context, context.user, input),
     userEdit: (_, { id }, context) => ({
       delete: () => userDelete(context, context.user, id),
-      fieldPatch: ({ input }) => userEditField(context, context.user, id, input),
-      contextPatch: ({ input }) => userEditContext(context, context.user, id, input),
+      fieldPatch: ({ input }: { input: EditInput[] }) => userEditField(context, context.user, id, input),
+      contextPatch: ({ input }: { input: EditContext }) => userEditContext(context, context.user, id, input),
       contextClean: () => userCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => userAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => {
+      relationAdd: ({ input }: { input: InternalRelationshipAddInput }) => userAddRelation(context, context.user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }: { toId: string; relationship_type: string }) => {
         return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
       },
-      organizationAdd: ({ organizationId }) => assignOrganizationToUser(context, context.user, id, organizationId),
-      organizationDelete: ({ organizationId }) => userDeleteOrganizationRelation(context, context.user, id, organizationId),
-    }),
+      organizationAdd: ({ organizationId }: { organizationId: string }) => assignOrganizationToUser(context, context.user, id, organizationId),
+      organizationDelete: ({ organizationId }: { organizationId: string }) => userDeleteOrganizationRelation(context, context.user, id, organizationId),
+    }) as any,
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     userAdd: (_, { input }, context) => addUser(context, context.user, input),
-    bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
+    bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type) as any,
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
@@ -213,7 +216,7 @@ const userResolvers = {
   },
   Subscription: {
     me: {
-      resolve: /* v8 ignore next */ async (payload, _, context) => {
+      resolve: /* v8 ignore next */ async (payload: any, _: any, context: AuthContext) => {
         // The payload snapshot can be older than the current user, and the client applies
         // payloads as they arrive: sending it would roll the client back.
         const currentUser = await resolveUserById(context, payload.instance.id);
@@ -225,8 +228,9 @@ const userResolvers = {
       },
     },
     user: {
-      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
+        // @ts-expect-error pre-existing call without the edit context input
         const preFn = () => userEditContext(context, context.user, id);
         const cleanFn = () => userCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_USER];

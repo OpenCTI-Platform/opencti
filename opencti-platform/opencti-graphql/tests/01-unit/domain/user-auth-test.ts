@@ -4,6 +4,7 @@ import { authenticateUserByToken } from '../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { generateTokenHmac } from '../../../src/modules/user/user-domain';
+import type { AuthContext } from '../../../src/types/user';
 
 // Mock dependencies
 vi.mock('../../../src/database/cache');
@@ -17,7 +18,7 @@ vi.mock('../../../src/config/conf', async () => {
 });
 
 describe('User Domain - Authentication', async () => {
-  const context = { user: SYSTEM_USER, req: {} };
+  const context = { user: SYSTEM_USER, req: {} } as unknown as AuthContext;
   const mockReq = {
     headers: {},
     header: (_: string) => undefined,

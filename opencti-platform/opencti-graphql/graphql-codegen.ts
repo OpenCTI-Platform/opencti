@@ -82,6 +82,7 @@ const config: CodegenConfig = {
           StreamCollection: '../modules/dataSharing/streamCollection-types#BasicStoreEntityStreamCollection',
           RetentionRule: '../modules/retentionRules/retentionRules-types#BasicStoreEntityRetentionRule',
           Vulnerability: '../modules/vulnerability/vulnerability-types#BasicStoreEntityVulnerability',
+          User: '../modules/user/user-types#BasicStoreEntityUser',
         },
       },
     },

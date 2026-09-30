@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { AuthContext } from '../../../src/types/user';
 
 const mockElRawUpdateByQuery = vi.fn().mockResolvedValue({ updated: 1 });
 const mockPublishCacheResetEvent = vi.fn().mockResolvedValue(undefined);
@@ -95,7 +96,7 @@ describe('User domain - cache reset on password validity changes', () => {
   it('clearAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER', async () => {
     const { clearAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
-    await clearAllUsersPasswordValidUntil({});
+    await clearAllUsersPasswordValidUntil({} as AuthContext);
 
     expect(mockElRawUpdateByQuery).toHaveBeenCalledTimes(1);
     expect(mockPublishCacheResetEvent).toHaveBeenCalledTimes(1);
@@ -105,7 +106,7 @@ describe('User domain - cache reset on password validity changes', () => {
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (from disabled)', async () => {
     const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
-    await adjustAllUsersPasswordValidUntil({}, 0, 30);
+    await adjustAllUsersPasswordValidUntil({} as AuthContext, 0, 30);
 
     // One call for setting fresh expiry on all users (from disabled state)
     expect(mockElRawUpdateByQuery).toHaveBeenCalledTimes(1);
@@ -116,7 +117,7 @@ describe('User domain - cache reset on password validity changes', () => {
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (active shift)', async () => {
     const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
-    await adjustAllUsersPasswordValidUntil({}, 60, 30);
+    await adjustAllUsersPasswordValidUntil({} as AuthContext, 60, 30);
 
     // Two calls: one to shift existing, one to set fresh for users without expiry
     expect(mockElRawUpdateByQuery).toHaveBeenCalledTimes(2);
@@ -127,7 +128,7 @@ describe('User domain - cache reset on password validity changes', () => {
   it('adjustAllUsersPasswordValidUntil should not call publishCacheResetEvent when diff is 0', async () => {
     const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
-    await adjustAllUsersPasswordValidUntil({}, 30, 30);
+    await adjustAllUsersPasswordValidUntil({} as AuthContext, 30, 30);
 
     expect(mockElRawUpdateByQuery).not.toHaveBeenCalled();
     expect(mockPublishCacheResetEvent).not.toHaveBeenCalled();
