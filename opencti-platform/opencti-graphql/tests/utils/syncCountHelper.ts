@@ -104,7 +104,7 @@ testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
-testUpdatedCounter['security-coverage'] = 2;
+testUpdatedCounter['security-coverage'] = 1;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
