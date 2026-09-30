@@ -3,7 +3,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { Stack } from '@mui/material';
 import { Theme, useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import React, { CSSProperties, Fragment, FunctionComponent, PropsWithChildren, Ref, useContext } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, PropsWithChildren, Ref, useContext, useState } from 'react';
 import {
   convertOperatorToIcon,
   FILTER_LINE_ITEM_HEIGHT,
@@ -165,6 +165,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { inPageContainer } = useContext(PageContainerContext);
+  const [hoveredFilterId, setHoveredFilterId] = useState<string | undefined>(undefined);
 
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   const { filterStyle, operatorStyle } = getChipStyles(theme, variant);
@@ -342,12 +343,20 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
             </FilterChip>
           </Box>
         );
+        const chipKey = currentFilter.id ?? `filter-${index}`;
         return (
-          <Fragment key={currentFilter.id ?? `filter-${index}`}>
+          <Fragment key={chipKey}>
             {tooltipContent
               ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                  <Tooltip open={hoveredFilterId === chipKey}>
+                    <TooltipTrigger asChild>
+                      <span
+                        onMouseEnter={() => setHoveredFilterId(chipKey)}
+                        onMouseLeave={() => setHoveredFilterId(undefined)}
+                      >
+                        {chip}
+                      </span>
+                    </TooltipTrigger>
                     <TooltipContent>{tooltipContent}</TooltipContent>
                   </Tooltip>
                 )

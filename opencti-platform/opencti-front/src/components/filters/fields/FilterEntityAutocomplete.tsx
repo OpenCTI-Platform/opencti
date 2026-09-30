@@ -148,16 +148,6 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
           </Fragment>
         );
       })}
-      sx={{
-        '& .MuiAutocomplete-tag': {
-          maxWidth: 200,
-        },
-        '& .MuiAutocomplete-tag .MuiChip-label': {
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        },
-      }}
       renderInput={(paramsInput) => (
         <TextField
           role="search"
