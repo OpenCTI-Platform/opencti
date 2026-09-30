@@ -35,6 +35,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
 
   const isDateRangeValue = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap)?.type === 'date' && filter.operator === 'within';
   const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
+  const isStandaloneDynamicFilter = filter.key === 'dynamicFrom' || filter.key === 'dynamicTo';
 
   const sharedValueProps = { filter, inputValues, setInputValues };
 
@@ -53,7 +54,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
           style={{ width: '100%' }}
         />
       </Box>
-      {!isCompositeRegardingOf && (
+      {!isCompositeRegardingOf && !isStandaloneDynamicFilter && (
         <Box
           data-testid="filter-row-value"
           sx={isDateRangeValue ? { flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0, display: 'flex', gap: 1 } : { flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0 }}
@@ -65,6 +66,11 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
           />
         </Box>
       )}
+      {isStandaloneDynamicFilter && (
+        <Box data-testid="filter-row-value" sx={{ flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0 }}>
+          <FilterRowCompositeValue {...sharedValueProps} />
+        </Box>
+      )}
       {isCompositeRegardingOf && (
         <>
           <Box data-testid="filter-row-relationship-type" sx={{ flex: FILTER_ROW_COLUMN_FLEX.compositeValue, minWidth: 0 }}>
@@ -73,7 +79,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
           <Box data-testid="filter-row-value" sx={{ flex: FILTER_ROW_COLUMN_FLEX.compositeValue, minWidth: 0 }}>
             {filter.key === 'regardingOf'
               ? <FilterValueInput {...sharedValueProps} filterKey={filter.key} subKey="id" />
-              : <FilterRowCompositeValue {...sharedValueProps} />}
+              : <FilterRowCompositeValue {...sharedValueProps} subKey="dynamic" />}
           </Box>
         </>
       )}
