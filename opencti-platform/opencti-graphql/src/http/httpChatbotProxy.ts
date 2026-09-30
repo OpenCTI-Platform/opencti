@@ -302,9 +302,11 @@ export const deleteChatbotSession = async (req: Express.Request, res: Express.Re
 //
 // XTM One says why it refuses one of these edits in `detail` (the default
 // workspace cannot be deleted, a workspace still holds work items, ...), and
-// the panel shows that reason. So a refusal is answered with the upstream
-// status and the upstream JSON body whole, plus the `{ status, error }` pair
-// every other chatbot route answers with.
+// the panel shows that reason. So a refusal is answered, as JSON, with the
+// upstream status and the upstream JSON body whole, plus the `{ status, error }`
+// pair every other chatbot route answers with. A failure XTM One did not
+// explain (no answer at all, or a body that is not a JSON object) is answered
+// with a fixed message: an exception's text never reaches the browser.
 
 // Returns the path parameter when it has the UUID shape; answers 400 and
 // returns null otherwise.
@@ -351,20 +353,22 @@ const sendUpstreamResponse = (res: Express.Response, response: { status: number;
   }
 };
 
+const XTM_ONE_UNREACHABLE = 'XTM One is unreachable';
+const XTM_ONE_REQUEST_FAILED = 'XTM One could not complete the request';
+
 const sendUpstreamError = (res: Express.Response, e: unknown) => {
-  const { message } = e as Error;
   const httpErr = getResponseError(e);
   if (!httpErr) {
-    res.status(503).send({ status: 'error', error: message });
+    res.status(503).json({ status: 'error', error: XTM_ONE_UNREACHABLE });
     return;
   }
   // A non-JSON upstream body (e.g. an HTML page from a reverse proxy) is not
-  // forwarded: only the status and the transport message are.
+  // forwarded: only the status is, with the fixed message.
   const upstream = httpErr.data && typeof httpErr.data === 'object' && !Array.isArray(httpErr.data)
     ? httpErr.data as Record<string, unknown>
     : {};
-  const detail = upstream.detail ?? upstream.message ?? message;
-  res.status(httpErr.status).send({ ...upstream, status: 'error', error: detailToText(detail, message) });
+  const detail = upstream.detail ?? upstream.message;
+  res.status(httpErr.status).json({ ...upstream, status: 'error', error: detailToText(detail, XTM_ONE_REQUEST_FAILED) });
 };
 
 // ── PATCH /chatbot/sessions/:conversationId ─────────────────────────────

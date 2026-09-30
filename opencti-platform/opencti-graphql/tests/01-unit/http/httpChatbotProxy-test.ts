@@ -1249,16 +1249,16 @@ describe('httpChatbotProxy: patchChatbotSession', () => {
     await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.send).toHaveBeenCalledWith({ detail: 'Conversation not found', status: 'error', error: 'Conversation not found' });
+    expect(res.json).toHaveBeenCalledWith({ detail: 'Conversation not found', status: 'error', error: 'Conversation not found' });
   });
 
-  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
     mockPatch.mockRejectedValue(new Error('Network failure'));
 
     await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
   });
 });
 
@@ -1318,7 +1318,7 @@ describe('httpChatbotProxy: getChatbotWorkspaces', () => {
     await getChatbotWorkspaces(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.send).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith({
       detail: 'XTM One requires an Enterprise Edition license',
       status: 'error',
       error: 'XTM One requires an Enterprise Edition license',
@@ -1333,16 +1333,18 @@ describe('httpChatbotProxy: getChatbotWorkspaces', () => {
     await getChatbotWorkspaces(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(502);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Request failed with status code 502' });
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One could not complete the request' });
+    expect(res.send).not.toHaveBeenCalled();
   });
 
-  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
-    mockGet.mockRejectedValue(new Error('Network failure'));
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('<img src=x onerror=alert(1)>'));
 
     await getChatbotWorkspaces(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
+    expect(res.send).not.toHaveBeenCalled();
   });
 });
 
@@ -1401,7 +1403,7 @@ describe('httpChatbotProxy: postChatbotWorkspace', () => {
     await postChatbotWorkspace(buildReq({ description: 'no name' }), res);
 
     expect(res.status).toHaveBeenCalledWith(422);
-    expect(res.send).toHaveBeenCalledWith({ detail: validation, status: 'error', error: 'Request failed with status code 422' });
+    expect(res.json).toHaveBeenCalledWith({ detail: validation, status: 'error', error: 'XTM One could not complete the request' });
   });
 });
 
@@ -1470,7 +1472,7 @@ describe('httpChatbotProxy: patchChatbotWorkspace', () => {
     await patchChatbotWorkspace(buildPatchReq(VALID_WORKSPACE_ID, { name: 'Renamed' }), res);
 
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.send).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith({
       detail: 'Only an administrator can edit a company-managed workspace',
       status: 'error',
       error: 'Only an administrator can edit a company-managed workspace',
@@ -1534,7 +1536,7 @@ describe('httpChatbotProxy: deleteChatbotWorkspace', () => {
     await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(409);
-    expect(res.send).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith({
       detail: 'This workspace still holds work items',
       status: 'error',
       error: 'This workspace still holds work items',
@@ -1549,20 +1551,20 @@ describe('httpChatbotProxy: deleteChatbotWorkspace', () => {
     await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.send).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith({
       detail: 'The default workspace cannot be deleted',
       status: 'error',
       error: 'The default workspace cannot be deleted',
     });
   });
 
-  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
     mockDelete.mockRejectedValue(new Error('Network failure'));
 
     await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
   });
 });
 
