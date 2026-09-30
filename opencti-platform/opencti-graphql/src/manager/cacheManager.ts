@@ -389,10 +389,29 @@ type SubEvent = { instance: StoreEntity | StoreRelation };
 type PubSubSubscription = { topic: string; unsubscribe: () => void };
 
 const initCacheManager = () => {
-  let subscribeAdds: PubSubSubscription[] = [];
-  let subscribeEdits: PubSubSubscription[] = [];
-  let subscribeDeletes: PubSubSubscription[] = [];
-  let subscribeReset: PubSubSubscription;
+  let subscriptions: PubSubSubscription[] = [];
+  const unsubscribeAll = () => {
+    for (let i = 0; i < subscriptions.length; i += 1) {
+      try {
+        subscriptions[i].unsubscribe();
+      } catch { /* dont care */ }
+    }
+    subscriptions = [];
+  };
+  const subscribeToTopics = async <T>(topics: string[], onMessage: (event: T) => void) => {
+    // Wait for every subscription to settle, so that the successful ones are tracked even if another one fails
+    const results = await Promise.allSettled(topics.map((topic) => pubSubSubscription<T>(topic, onMessage)));
+    for (let i = 0; i < results.length; i += 1) {
+      const result = results[i];
+      if (result.status === 'fulfilled') {
+        subscriptions.push(result.value);
+      }
+    }
+    const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+    if (failure) {
+      throw failure.reason;
+    }
+  };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     for (const [entityType, cacheFn] of Object.entries(CACHED_ENTITIES_MAP)) {
@@ -404,33 +423,31 @@ const initCacheManager = () => {
     init: () => initCacheContent(), // Use for testing
     start: async () => {
       initCacheContent();
-      subscribeAdds = await Promise.all(ADDS_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
-        await addCacheForEntity(event.instance);
-      })));
-      subscribeEdits = await Promise.all(EDITS_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
-        await refreshCacheForEntity(event.instance);
-      })));
-      subscribeDeletes = await Promise.all(DELETES_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
-        await removeCacheForEntity(event.instance);
-      })));
-      subscribeReset = await pubSubSubscription<{ entityType: string }>(CACHE_RESET_TOPIC, (event) => {
-        resetCacheForEntity(event.entityType);
-      });
+      try {
+        await subscribeToTopics<SubEvent>(ADDS_TOPICS, async (event) => {
+          await addCacheForEntity(event.instance);
+        });
+        await subscribeToTopics<SubEvent>(EDITS_TOPICS, async (event) => {
+          await refreshCacheForEntity(event.instance);
+        });
+        await subscribeToTopics<SubEvent>(DELETES_TOPICS, async (event) => {
+          await removeCacheForEntity(event.instance);
+        });
+        await subscribeToTopics<{ entityType: string }>([CACHE_RESET_TOPIC], (event) => {
+          resetCacheForEntity(event.entityType);
+        });
+      } catch (err) {
+        // Release the partial subscriptions, a retried start would otherwise listen twice to the same topics
+        unsubscribeAll();
+        throw err;
+      }
       const topicsCount = ADDS_TOPICS.length + EDITS_TOPICS.length + DELETES_TOPICS.length;
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized', { topicsCount });
     },
     shutdown: async () => {
       const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
-      const allSubscriptions = [...subscribeAdds, ...subscribeEdits, ...subscribeDeletes];
-      for (let i = 0; i < allSubscriptions.length; i += 1) {
-        try {
-          allSubscriptions[i].unsubscribe();
-        } catch { /* dont care */ }
-      }
-      try {
-        subscribeReset.unsubscribe();
-      } catch { /* dont care */ }
+      unsubscribeAll();
       logApp.info(`[OPENCTI-MODULE] Cache manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },

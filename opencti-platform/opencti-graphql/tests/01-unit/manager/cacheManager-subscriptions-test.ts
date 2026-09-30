@@ -9,7 +9,8 @@ import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 type TopicKey = 'ADDED_TOPIC' | 'EDIT_TOPIC' | 'DELETE_TOPIC';
 const TOPIC_KEYS: TopicKey[] = ['ADDED_TOPIC', 'EDIT_TOPIC', 'DELETE_TOPIC'];
 
-const mockPubSubSubscription = vi.fn(async (topic: string, _handler: (event: any) => unknown) => ({ topic, unsubscribe: vi.fn() }));
+const defaultPubSubSubscription = async (topic: string, _handler: (event: any) => unknown) => ({ topic, unsubscribe: vi.fn() });
+const mockPubSubSubscription = vi.fn(defaultPubSubSubscription);
 const mockWriteCacheForEntity = vi.fn();
 const mockAddCacheForEntity = vi.fn();
 const mockRefreshCacheForEntity = vi.fn();
@@ -112,6 +113,7 @@ const subscribedTopicsByKey = async (): Promise<Record<TopicKey, string[]>> => {
 describe('cacheManager pub/sub topics subscriptions', () => {
   beforeEach(() => {
     mockPubSubSubscription.mockClear();
+    mockPubSubSubscription.mockImplementation(defaultPubSubSubscription);
     mockWriteCacheForEntity.mockClear();
   });
 
@@ -150,5 +152,28 @@ describe('cacheManager pub/sub topics subscriptions', () => {
     const allTopics = TOPIC_KEYS.flatMap((key) => subscribed[key]);
     expect(allTopics).not.toContain(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC);
     expect(allTopics.filter((topic) => topic.includes('*'))).toEqual([]);
+  });
+
+  it('should release the already opened subscriptions when one of them fails on start', async () => {
+    const { default: cacheManager } = await import('../../../src/manager/cacheManager');
+    // Fail in the middle of the startup: add topics are subscribed, edit topics only partially
+    const failingTopic = BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
+    const unsubscribes: Mock[] = [];
+    mockPubSubSubscription.mockImplementation(async (topic: string) => {
+      if (topic === failingTopic) {
+        throw new Error('Redis subscription failure');
+      }
+      const unsubscribe = vi.fn();
+      unsubscribes.push(unsubscribe);
+      return { topic, unsubscribe };
+    });
+
+    await expect(cacheManager.start()).rejects.toThrow('Redis subscription failure');
+
+    expect(unsubscribes.length).toBeGreaterThan(0);
+    unsubscribes.forEach((unsubscribe) => expect(unsubscribe).toHaveBeenCalledTimes(1));
+    // Released subscriptions are no longer tracked, shutdown must not unsubscribe them twice
+    await cacheManager.shutdown();
+    unsubscribes.forEach((unsubscribe) => expect(unsubscribe).toHaveBeenCalledTimes(1));
   });
 });
