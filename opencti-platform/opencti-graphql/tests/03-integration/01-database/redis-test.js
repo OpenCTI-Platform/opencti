@@ -20,6 +20,8 @@ import {
   redisGetForgotPasswordOtp,
   redisGetIngestionHistory,
   redisGetIngestionLogHistory,
+  redisGetPlatformStorageUsageMetrics,
+  redisGetPlatformUsageMetrics,
   redisGetTelemetry,
   redisDeleteXtmAgentResponse,
   redisGetXtmAgentResponse,
@@ -27,6 +29,8 @@ import {
   redisPushIngestionLog,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
+  redisSetPlatformStorageUsageMetrics,
+  redisSetPlatformUsageMetrics,
   redisSetTelemetryAdd,
   redisSetXtmAgentResponse,
   setEditContext,
@@ -174,6 +178,52 @@ describe('Redis playbook executions tests', () => {
     await deleteAllPlaybookExecutions(PLAYBOOK_ID);
     const executions = await getLastPlaybookExecutions(PLAYBOOK_ID);
     expect(executions.length).toEqual(0);
+  });
+});
+
+describe('Redis platform usage metrics cache', () => {
+  // Fixed keys shared with the running platform: restore them so the health monitor keeps a consistent view.
+  const USAGE_KEY = 'platform_usage_metrics';
+  const STORAGE_USAGE_KEY = 'platform_storage_usage_metrics';
+  const restore = async (key, raw, ttl) => {
+    if (raw === null) {
+      await getClientBase().del(key);
+    } else if (ttl > 0) {
+      await getClientBase().set(key, raw, 'PX', ttl);
+    } else {
+      await getClientBase().set(key, raw);
+    }
+  };
+
+  it('should share usage metrics and the bucket size under separate keys', async () => {
+    const [usageRaw, usageTtl, storageRaw, storageTtl] = await Promise.all([
+      getClientBase().get(USAGE_KEY), getClientBase().pttl(USAGE_KEY), getClientBase().get(STORAGE_USAGE_KEY), getClientBase().pttl(STORAGE_USAGE_KEY),
+    ]);
+    try {
+      await redisSetPlatformUsageMetrics({ es_used_size: 10, queue_consumers: null, collected_at: 1 }, 60);
+      await redisSetPlatformStorageUsageMetrics({ s3_used_size: 20, collected_at: 1 }, 120);
+
+      expect(await redisGetPlatformUsageMetrics()).toEqual({ es_used_size: 10, queue_consumers: null, collected_at: 1 });
+      expect(await redisGetPlatformStorageUsageMetrics()).toEqual({ s3_used_size: 20, collected_at: 1 });
+      expect(await getClientBase().ttl(USAGE_KEY)).toBeLessThanOrEqual(60);
+      expect(await getClientBase().ttl(STORAGE_USAGE_KEY)).toBeGreaterThan(60);
+    } finally {
+      await restore(USAGE_KEY, usageRaw, usageTtl);
+      await restore(STORAGE_USAGE_KEY, storageRaw, storageTtl);
+    }
+  });
+
+  it('should return null when the shared payload is missing or not valid JSON', async () => {
+    const [storageRaw, storageTtl] = await Promise.all([getClientBase().get(STORAGE_USAGE_KEY), getClientBase().pttl(STORAGE_USAGE_KEY)]);
+    try {
+      await getClientBase().del(STORAGE_USAGE_KEY);
+      expect(await redisGetPlatformStorageUsageMetrics()).toBeNull();
+
+      await getClientBase().set(STORAGE_USAGE_KEY, 'this is not json', 'EX', 60);
+      expect(await redisGetPlatformStorageUsageMetrics()).toBeNull();
+    } finally {
+      await restore(STORAGE_USAGE_KEY, storageRaw, storageTtl);
+    }
   });
 });
 
