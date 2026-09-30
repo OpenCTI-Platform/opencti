@@ -2546,9 +2546,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   // Vulnerabilities updates
   if (initial.entity_type === ENTITY_TYPE_VULNERABILITY) {
     const vulnerabilitiesUpdates = generateVulnerabilitiesUpdates(initial as unknown as Vulnerability, updates);
-    if (vulnerabilitiesUpdates.length > 0) {
-      pushAll(updates, vulnerabilitiesUpdates);
-    }
+    vulnerabilitiesUpdates.forEach((vulnerabilityUpdate) => {
+      const existingUpdate = updates.find((e) => e.key === vulnerabilityUpdate.key);
+      if (existingUpdate) {
+        existingUpdate.value = vulnerabilityUpdate.value;
+      } else {
+        updates.push(vulnerabilityUpdate);
+      }
+    });
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {

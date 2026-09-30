@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { getCodeValue, getFullValue, parseCvssVector, updateCvssVector, getCvssCriticity, isValidCvssVector } from '../../../src/utils/vulnerabilities';
+import {
+  generateVulnerabilitiesUpdates,
+  getCodeValue,
+  getCvssCriticity,
+  getFullValue,
+  isValidCvssVector,
+  parseCvssVector,
+  updateCvssVector,
+} from '../../../src/utils/vulnerabilities';
 
 // Mock the cvssMappings to test getCodeValue
 const mockCvss2Config = {
@@ -117,6 +125,13 @@ describe('Vulnerabilities Utils', () => {
       it('should throw a functional error for an unknown component value', () => {
         expect(() => getCodeValue('E', 'UNKNOWN_VALUE', mockCvss3Config as any))
           .toThrow('Unknown CVSS component value UNKNOWN_VALUE for component E');
+      });
+
+      it('should throw a functional error for values with invalid punctuation', () => {
+        expect(() => getCodeValue('A', 'H!IGH', mockCvss3Config as any))
+          .toThrow('Unknown CVSS component value H!IGH for component A');
+        expect(() => getCodeValue('E', 'PROOF@OF@CONCEPT', mockCvss3Config as any))
+          .toThrow('Unknown CVSS component value PROOF@OF@CONCEPT for component E');
       });
     });
 
@@ -307,6 +322,8 @@ describe('Vulnerabilities Utils', () => {
       const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N', updates, null) as any[];
       const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
       expect(vectorField.value[0]).toBe('CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P');
+      expect(result).toContainEqual({ key: 'x_opencti_cvss_availability_impact', value: ['High'] });
+      expect(result).toContainEqual({ key: 'x_opencti_cvss_exploit_code_maturity', value: ['Proof-of-Concept'] });
     });
 
     it('should ignore empty values', () => {
@@ -314,6 +331,17 @@ describe('Vulnerabilities Utils', () => {
       const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updates, null) as any[];
       const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
       expect(vectorField.value[0]).toBe('CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H');
+    });
+
+    it('should return no update when only empty values and no existing vector', () => {
+      const updates = [{ key: 'x_opencti_cvss_exploit_code_maturity', value: [''] }];
+      expect(updateCvssVector('cvss3', null, updates, null)).toEqual([]);
+      expect(updateCvssVector('cvss3', null, updates, null, true)).toEqual({});
+    });
+
+    it('should not fail on update when only empty values and no existing vector', () => {
+      const updates = [{ key: 'x_opencti_cvss_exploit_code_maturity', value: [''] }];
+      expect(generateVulnerabilitiesUpdates({} as any, updates)).toEqual([]);
     });
 
     it('should throw a functional error for a value invalid for the CVSS version', () => {
