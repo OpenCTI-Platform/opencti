@@ -962,7 +962,7 @@ describe('User has no settings capability and is organization admin query behavi
       },
     };
 
-    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const queryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -1106,7 +1106,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should administrate more than 1 organization', async () => {
-    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const grantableGroupQueryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },

@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── DB / External mocks (only what cannot run without infrastructure) ────────
 
-vi.mock('../../../src/database/middleware', () => ({
+vi.mock('../../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
   createRelation: vi.fn().mockResolvedValue({}),
   patchAttribute: vi.fn().mockResolvedValue({ element: {} }),
@@ -17,31 +17,31 @@ vi.mock('../../../src/database/middleware', () => ({
   deleteRelationsByFromAndTo: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../../../src/database/engine', () => ({
+vi.mock('../../../../src/database/engine', () => ({
   elLoadBy: vi.fn().mockResolvedValue(null),
   elRawDeleteByQuery: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn().mockResolvedValue(new Map()),
   getEntityFromCache: vi.fn().mockResolvedValue({ platform_organization: null, platform_session_max_concurrent: 0 }),
   getEntitiesListFromCache: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../src/database/redis', () => ({
+vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
+vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../../../src/domain/group', () => ({
+vi.mock('../../../../src/domain/group', () => ({
   findGroupPaginated: vi.fn().mockResolvedValue({ edges: [] }),
   defaultMarkingDefinitionsFromGroups: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../src/database/session', () => ({
+vi.mock('../../../../src/database/session', () => ({
   killOtherUserSessions: vi.fn().mockResolvedValue([]),
   killUserSessions: vi.fn().mockResolvedValue([]),
   killUserSessionsOverLimit: vi.fn().mockResolvedValue([]),
@@ -54,7 +54,7 @@ vi.mock('passport', () => ({
   },
 }));
 
-vi.mock('../../../src/modules/authenticationProvider/providers-configuration', () => ({
+vi.mock('../../../../src/modules/authenticationProvider/providers-configuration', () => ({
   PROVIDERS: [],
   LOCAL_STRATEGY_IDENTIFIER: 'local',
   isLocalAuthForcedEnabledFromEnv: vi.fn().mockReturnValue(true),
@@ -63,18 +63,18 @@ vi.mock('../../../src/modules/authenticationProvider/providers-configuration', (
   getConfigurationAdminToken: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/settings', () => ({
+vi.mock('../../../../src/domain/settings', () => ({
   getSettings: vi.fn().mockResolvedValue({ local_auth: { enabled: true }, platform_organization: null, platform_session_max_concurrent: 0 }),
 }));
 
 // ─── Imports (must come after vi.mock) ───────────────────────────────────────
 
 import passport from 'passport';
-import { addUser, sessionLogin } from '../../../src/modules/user/user-domain';
-import { createEntity } from '../../../src/database/middleware';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
-import { SYSTEM_USER } from '../../../src/utils/access';
-import { sanitizeUser } from '../../../src/utils/templateContextSanitizer';
+import { addUser, sessionLogin } from '../../../../src/modules/user/user-domain';
+import { createEntity } from '../../../../src/database/middleware';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import { sanitizeUser } from '../../../../src/utils/templateContextSanitizer';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure unit tests — zero mocks, zero setup

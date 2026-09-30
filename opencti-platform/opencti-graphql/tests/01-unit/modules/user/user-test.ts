@@ -1,64 +1,64 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import { updateAttribute } from '../../../src/database/middleware';
-import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { TokenDuration, type UserTokenAddInput } from '../../../src/generated/graphql';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import { updateAttribute } from '../../../../src/database/middleware';
+import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { TokenDuration, type UserTokenAddInput } from '../../../../src/generated/graphql';
 import {
   authenticateUserByJWT,
   authenticateUserByToken,
   authenticateUserByUserId,
   checkPasswordInlinePolicy,
   isSensitiveChangesAllowed,
-} from '../../../src/modules/user/user-domain';
-import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
-import { testContext } from '../../utils/testQuery';
-import { isUserHasCapability } from '../../../src/utils/access';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
-import { verifyXtmJwt, isOwnIssuer } from '../../../src/domain/xtm-auth';
-import { elLoadBy } from '../../../src/database/engine';
-import { generateTokenHmac } from '../../../src/modules/user/user-domain';
-import { updateTokenUsage } from '../../../src/database/redis/token_usage';
+} from '../../../../src/modules/user/user-domain';
+import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
+import { testContext } from '../../../utils/testQuery';
+import { isUserHasCapability } from '../../../../src/utils/access';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
+import { verifyXtmJwt, isOwnIssuer } from '../../../../src/domain/xtm-auth';
+import { elLoadBy } from '../../../../src/database/engine';
+import { generateTokenHmac } from '../../../../src/modules/user/user-domain';
+import { updateTokenUsage } from '../../../../src/database/redis/token_usage';
 
-vi.mock('../../../src/database/middleware', () => ({
+vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),
   updateAttribute: vi.fn().mockResolvedValue({ element: { id: 'mock-id', user_email: 'test@test.com' } }),
 }));
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn().mockResolvedValue([]),
   getEntitiesMapFromCache: vi.fn().mockResolvedValue(new Map()),
   getEntityFromCache: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
+vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis', () => ({
+vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn(),
 }));
 
-vi.mock('../../../src/utils/access', async () => {
-  const actual = await vi.importActual('../../../src/utils/access');
+vi.mock('../../../../src/utils/access', async () => {
+  const actual = await vi.importActual('../../../../src/utils/access');
   return {
     ...actual,
     isUserHasCapability: vi.fn().mockReturnValue(true),
   };
 });
 
-vi.mock('../../../src/domain/xtm-auth', () => ({
+vi.mock('../../../../src/domain/xtm-auth', () => ({
   verifyXtmJwt: vi.fn(),
   isOwnIssuer: vi.fn(),
 }));
 
-vi.mock('../../../src/database/engine', () => ({
+vi.mock('../../../../src/database/engine', () => ({
   elLoadBy: vi.fn(),
   elRawDeleteByQuery: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis/token_usage', () => ({
+vi.mock('../../../../src/database/redis/token_usage', () => ({
   getTokensUsage: vi.fn().mockResolvedValue([]),
   updateTokenUsage: vi.fn().mockResolvedValue(undefined),
 }));

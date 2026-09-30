@@ -1,33 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { AuthContext } from '../../../src/types/user';
+import type { AuthContext } from '../../../../src/types/user';
 
 const mockElRawUpdateByQuery = vi.fn().mockResolvedValue({ updated: 1 });
 const mockPublishCacheResetEvent = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('../../../src/database/engine', () => ({
+vi.mock('../../../../src/database/engine', () => ({
   elRawUpdateByQuery: (...args: unknown[]) => mockElRawUpdateByQuery(...args),
   elLoadBy: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis', () => ({
+vi.mock('../../../../src/database/redis', () => ({
   delEditContext: vi.fn(),
   notify: vi.fn(),
   publishCacheResetEvent: (...args: unknown[]) => mockPublishCacheResetEvent(...args),
   setEditContext: vi.fn(),
 }));
 
-vi.mock('../../../src/database/utils', async (importOriginal) => {
+vi.mock('../../../../src/database/utils', async (importOriginal) => {
   const actual = await importOriginal() as Record<string, unknown>;
   return { ...actual };
 });
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(async () => []),
   getEntitiesMapFromCache: vi.fn(async () => new Map()),
   getEntityFromCache: vi.fn(async () => ({})),
 }));
 
-vi.mock('../../../src/database/middleware', () => ({
+vi.mock('../../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
   createRelation: vi.fn(),
   deleteElementById: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('../../../src/database/middleware', () => ({
   updatedInputsToData: vi.fn(),
 }));
 
-vi.mock('../../../src/database/middleware-loader', () => ({
+vi.mock('../../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(async () => []),
   fullEntitiesThoughAggregationConnection: vi.fn(),
   fullEntitiesThroughRelationsToList: vi.fn(async () => []),
@@ -49,26 +49,26 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(),
 }));
 
-vi.mock('../../../src/database/session', () => ({
+vi.mock('../../../../src/database/session', () => ({
   killOtherUserSessions: vi.fn(async () => []),
   killUserSessions: vi.fn(),
   killUserSessionsOverLimit: vi.fn(async () => []),
 }));
 
-vi.mock('../../../src/database/entity-representative', () => ({
+vi.mock('../../../../src/database/entity-representative', () => ({
   extractEntityRepresentativeName: vi.fn(),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
+vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis/token_usage', () => ({
+vi.mock('../../../../src/database/redis/token_usage', () => ({
   getTokensUsage: vi.fn(async () => []),
   updateTokenUsage: vi.fn(),
 }));
 
-vi.mock('../../../src/config/conf', async (importOriginal) => {
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal() as Record<string, unknown>;
   return {
     ...actual,
@@ -77,12 +77,12 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-vi.mock('../../../src/config/errors', async (importOriginal) => {
+vi.mock('../../../../src/config/errors', async (importOriginal) => {
   const actual = await importOriginal() as Record<string, unknown>;
   return { ...actual };
 });
 
-vi.mock('../../../src/http/ipWhitelistMiddleware', () => ({
+vi.mock('../../../../src/http/ipWhitelistMiddleware', () => ({
   ipMatchesWhitelist: vi.fn(),
   isUserExcluded: vi.fn(),
 }));
@@ -94,7 +94,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('clearAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER', async () => {
-    const { clearAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
+    const { clearAllUsersPasswordValidUntil } = await import('../../../../src/modules/user/user-domain');
 
     await clearAllUsersPasswordValidUntil({} as AuthContext);
 
@@ -104,7 +104,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (from disabled)', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({} as AuthContext, 0, 30);
 
@@ -115,7 +115,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (active shift)', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({} as AuthContext, 60, 30);
 
@@ -126,7 +126,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should not call publishCacheResetEvent when diff is 0', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({} as AuthContext, 30, 30);
 
