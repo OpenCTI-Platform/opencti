@@ -625,6 +625,16 @@ const WidgetCreationParameters = () => {
                                 stop_time ({t_i18n('Functional date')})
                               </SelectItem>
                             )}
+                            {perspective === 'entities' && !isWidgetListOrTimeline(type) && (
+                              <SelectItem value="first_seen">
+                                first_seen ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
+                            {perspective === 'entities' && !isWidgetListOrTimeline(type) && (
+                              <SelectItem value="last_seen">
+                                last_seen ({t_i18n('Functional date')})
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
