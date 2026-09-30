@@ -14,7 +14,7 @@ const SecurityCoverageResultFormSteps = ({
     <Stepper activeStep={activeStep}>
       <Step disabled={true}>
         <StepButton>
-          {t_i18n('Coverage details')}
+          {t_i18n('Coverage Result details')}
         </StepButton>
       </Step>
       <Step disabled={true}>

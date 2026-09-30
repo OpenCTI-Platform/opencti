@@ -67,6 +67,11 @@ const SecurityCoverageResultFormDrawer = ({
 
     const values = {
       name: formDetails.name,
+      description: formDetails.description,
+      createdBy: formDetails.createdBy?.value,
+      objectMarking: formDetails.objectMarking.map((v) => v.value),
+      objectLabel: formDetails.objectLabel.map((v) => v.value),
+      confidence: parseInt(String(formDetails.confidence), 10),
       coverage_information: formDetails.coverageInformation,
       coverage_valid_from: formDetails.validFrom,
       coverage_valid_to: formDetails.validTo,
