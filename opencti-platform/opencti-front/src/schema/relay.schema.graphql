@@ -10595,6 +10595,8 @@ type WorkflowTransition {
 
 type WorkflowBypassStatus {
   status: Status!
+  onExit: [WorkflowActionConfig!]!
+  onEnter: [WorkflowActionConfig!]!
   requiresShareOrganizationInput: Boolean!
   requiresUnshareOrganizationInput: Boolean!
 }

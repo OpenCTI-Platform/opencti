@@ -11,6 +11,8 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isBypassUser } from '../../../../utils/hooks/useGranted';
 export { WorkflowTransitions } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
@@ -18,9 +20,10 @@ interface WorkflowStatusProps {
   entityType?: string;
 }
 
-const WorkflowStatusView = ({ workflowInstance, fallback = null }: {
+const WorkflowStatusView = ({ workflowInstance, fallback = null, hideStatus = false }: {
   workflowInstance: WorkflowStatusStixDomainObject_data$data['workflowInstance'];
   fallback?: ReactNode;
+  hideStatus?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -58,7 +61,7 @@ const WorkflowStatusView = ({ workflowInstance, fallback = null }: {
           </Popover>
         </>
       )}
-      {currentStatus || fallback === null ? <ItemStatus status={currentStatus} /> : fallback}
+      {!hideStatus && (currentStatus || fallback === null ? <ItemStatus status={currentStatus} /> : fallback)}
     </>
   );
 };
@@ -78,12 +81,13 @@ export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, chi
   children?: ReactNode;
 }) => {
   const { isFeatureEnable } = useHelper();
+  const { me } = useAuth();
   const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
   return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
     ? (
         <>
-          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} />
+          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={!!children && canEdit && isBypassUser(me)} />
           {entity.workflowInstance && canEdit && children}
         </>
       )

@@ -39192,6 +39192,8 @@ export type WorkflowActionError = {
 
 export type WorkflowBypassStatus = {
   __typename?: 'WorkflowBypassStatus';
+  onEnter: Array<WorkflowActionConfig>;
+  onExit: Array<WorkflowActionConfig>;
   requiresShareOrganizationInput: Scalars['Boolean']['output'];
   requiresUnshareOrganizationInput: Scalars['Boolean']['output'];
   status: Status;
@@ -54671,6 +54673,8 @@ export type WorkflowActionErrorResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type WorkflowBypassStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowBypassStatus'] = ResolversParentTypes['WorkflowBypassStatus']> = ResolversObject<{
+  onEnter?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
+  onExit?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
   requiresShareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   requiresUnshareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;

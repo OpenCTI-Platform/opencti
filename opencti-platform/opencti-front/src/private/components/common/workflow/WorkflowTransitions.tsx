@@ -384,6 +384,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
     <>
       {entity.workflowInstance?.pendingStatus === 'pending' && !refreshFailed && <WorkflowPendingPoll refresh={refresh} />}
       {refreshFailed && <Button variant="secondary" onClick={refresh}>{t_i18n('Retry')}</Button>}
+      <WorkflowBypassStatus key={`bypass-${entity.id}`} data={data} entityType={entityType} refreshing={refreshing} onCompleted={refresh} />
       <WorkflowTransitionsView
         key={entity.id}
         entityId={entity.id}
@@ -392,7 +393,6 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         refreshing={refreshing}
         onCompleted={refresh}
       />
-      <WorkflowBypassStatus key={`bypass-${entity.id}`} data={data} entityType={entityType} refreshing={refreshing} onCompleted={refresh} />
     </>
   );
 };
