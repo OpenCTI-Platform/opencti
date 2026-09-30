@@ -202,7 +202,6 @@ describe('Built-in entities export_id', () => {
       ['Vocabulary', (e) => e.category === 'report_types_ov' && e.name === 'threat-report', { category: 'report_types_ov', name: 'threat-report' }],
       ['Marking-Definition', (e) => e.definition === 'TLP:AMBER+STRICT', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }],
       ['Theme', (e) => e.name === 'Filigran Light', { name: 'Filigran Light' }],
-      ['DecayRule', (e) => e.name === 'Built-in default', { name: 'Built-in default' }],
       ['EmailTemplate', (e) => e.name === 'Built-In Template For Onboarding', { name: 'Built-In Template For Onboarding' }],
       ['RetentionRule', (e) => e.scope === 'activity', { scope: 'activity' }],
       ['Notifier', (e) => e.name === 'Sample of Microsoft Teams message for digest trigger', { name: 'Sample of Microsoft Teams message for digest trigger' }],

@@ -21,7 +21,6 @@ describe('Migration add export_id to built-in entities', () => {
       element('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }),
       element('Vocabulary', { category: 'report_types_ov', name: 'threat-report' }),
       element('Theme', { name: 'Filigran Dark', built_in: true }),
-      element('DecayRule', { name: 'Built-in default', built_in: true }),
       element('EmailTemplate', { name: 'Built-In Template For Onboarding' }),
       element('RetentionRule', { name: 'History retention', scope: 'history' }),
       element('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' }),
@@ -39,11 +38,10 @@ describe('Migration add export_id to built-in entities', () => {
       [elements[6].internal_id, generateBuiltInExportId('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' })],
       [elements[7].internal_id, generateBuiltInExportId('Vocabulary', { category: 'report_types_ov', name: 'threat-report' })],
       [elements[8].internal_id, generateBuiltInExportId('Theme', { name: 'Filigran Dark' })],
-      [elements[9].internal_id, generateBuiltInExportId('DecayRule', { name: 'Built-in default' })],
-      [elements[10].internal_id, generateBuiltInExportId('EmailTemplate', { name: 'Built-In Template For Onboarding' })],
-      [elements[11].internal_id, generateBuiltInExportId('RetentionRule', { scope: 'history' })],
-      [elements[12].internal_id, generateBuiltInExportId('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' })],
-      [elements[13].internal_id, generateBuiltInExportId('FintelTemplate', { name: 'Executive Summary', target_type: 'Case-Rfi' })],
+      [elements[9].internal_id, generateBuiltInExportId('EmailTemplate', { name: 'Built-In Template For Onboarding' })],
+      [elements[10].internal_id, generateBuiltInExportId('RetentionRule', { scope: 'history' })],
+      [elements[11].internal_id, generateBuiltInExportId('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' })],
+      [elements[12].internal_id, generateBuiltInExportId('FintelTemplate', { name: 'Executive Summary', target_type: 'Case-Rfi' })],
     ]));
   });
 
@@ -75,7 +73,8 @@ describe('Migration add export_id to built-in entities', () => {
     const elements = [
       element('Group', { name: 'My team' }),
       element('Theme', { name: 'Filigran Dark', built_in: false }),
-      element('DecayRule', { name: 'My decay rule', built_in: false }),
+      // Built-in decay rules cannot be modified, so they are not exported
+      element('DecayRule', { name: 'Built-in default', built_in: true }),
       element('Vocabulary', { category: 'report_types_ov', name: 'my-report-type' }),
       element('Marking-Definition', { definition_type: 'STATEMENT', definition: 'Copyright' }),
       element('RetentionRule', { name: 'Knowledge retention', scope: 'knowledge' }),
