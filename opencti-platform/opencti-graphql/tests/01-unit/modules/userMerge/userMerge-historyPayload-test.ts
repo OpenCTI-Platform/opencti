@@ -26,6 +26,13 @@ describe('history context data payload rewriting', () => {
     expect(rewritten?.history_changes).toEqual({ added: [TARGET] });
   });
 
+  // Editing a filter field records the new filters serialized inside the mutation input.
+  it('should rewrite the source inside a filter serialized in the input', () => {
+    const filters = (user: string) => JSON.stringify({ mode: 'and', filters: [{ key: ['creator_id'], values: [user] }], filterGroups: [] });
+    const rewritten = userMergeRewriteHistoryPayload({ input: [{ key: 'filters', value: [filters(SOURCE)] }] as never }, SOURCE, TARGET);
+    expect(rewritten?.input).toEqual([{ key: 'filters', value: [filters(TARGET)] }]);
+  });
+
   it('should not rewrite an id merely embedded in a longer string', () => {
     const record = { input: { note: `see ${SOURCE}-archive for details` } };
     expect(userMergeRewriteHistoryPayload(record, SOURCE, TARGET)).toBeNull();
