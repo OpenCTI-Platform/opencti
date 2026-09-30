@@ -358,6 +358,50 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         # default "levels": one wave per nb_deps value (equal counts form an antichain)
         return obj.get("nb_deps", mini_bundle.get("x_opencti_seq", 0))
 
+    # region work accounting (ADR 0007)
+    @staticmethod
+    def bundle_object_count(content: Dict[str, Any]) -> int:
+        """Objects a whole-bundle import reports: one per distinct object (imported or,
+        in error, incompatible). Local on purpose: the stock image pins pycti from PyPI."""
+        return len({obj["id"] for obj in content.get("objects", []) if "id" in obj})
+
+    def declare_bundle_expectations(
+        self, work_id: Any, data: Dict[str, Any], content: Dict[str, Any]
+    ) -> bool:
+        """Declare what the sender did not, for a bundle this worker imports whole.
+
+        The sender (pycti at send time, or the platform when it pushes) states in
+        `declared_expectations` what it declared for this message; a message without it
+        comes from an older client, which declared 1. The worker adds the difference with
+        the objects it will report. Returns whether the work is still alive.
+        """
+        if work_id is None:
+            return True
+        missing = self.bundle_object_count(content) - int(
+            data.get("declared_expectations", 1)
+        )
+        if missing <= 0:
+            return True
+        return self.api.work.add_expectations(work_id, missing)
+
+    def report_incompatible(self, work_id: Any, incompatible: List[Any]) -> None:
+        """Report, in error, the elements the splitter found incompatible, exactly as the
+        whole-bundle import of pycti does, so the declared count is met."""
+        if work_id is None:
+            return
+        for item in incompatible:
+            self.api.work.report_expectation(
+                work_id,
+                {
+                    "error": "Incompatible element in bundle",
+                    "source": "Element "
+                    + str(item.get("id"))
+                    + " is incompatible and couldn't be processed",
+                },
+            )
+
+    # endregion
+
     def import_bundle_inline(
         self,
         content: Dict[str, Any],
@@ -376,13 +420,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         update = data.get("update", False)
         event_version = content.get("x_opencti_event_version")
         stix2_splitter = OpenCTIStix2Splitter()
-        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
-            content, False, event_version
+        expectations, incompatible, bundles = (
+            stix2_splitter.split_bundle_with_expectations(content, False, event_version)
         )
-        if work_id is not None:
-            work_alive = self.api.work.add_expectations(work_id, expectations)
-            if not work_alive:
-                return []
+        if not self.declare_bundle_expectations(work_id, data, content):
+            return []
+        self.report_incompatible(work_id, incompatible)
         imported_items: List[Any] = []
         too_large_items_bundles: List[Any] = []
         # Option B (plan 0009 s9.8.3, suffix transport): suffix every ref id that points to
@@ -501,13 +544,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         update = data.get("update", False)
         event_version = content.get("x_opencti_event_version")
         stix2_splitter = OpenCTIStix2Splitter()
-        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
-            content, False, event_version
+        expectations, incompatible, bundles = (
+            stix2_splitter.split_bundle_with_expectations(content, False, event_version)
         )
-        if work_id is not None:
-            work_alive = self.api.work.add_expectations(work_id, expectations)
-            if not work_alive:
-                return []
+        if not self.declare_bundle_expectations(work_id, data, content):
+            return []
+        # Declared in full now: an HTTP fallback of this message (chunk queue unavailable,
+        # unserializable chunk) must not declare the bundle a second time.
+        data["declared_expectations"] = self.bundle_object_count(content)
         member_ids = {obj["id"] for obj in content.get("objects", []) if "id" in obj}
         for mini_bundle in bundles:
             for obj in mini_bundle.get("objects", []):
@@ -521,14 +565,51 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     json.dumps(mini_bundle), update, types, None, self.objects_max_refs
                 )
                 too_large_items_bundles.extend(too_large)
-        # An object that yielded no mutation (unknown type, filtered out) would never be
-        # reported by the manager: report it here so the work's expectations stay exact.
+        # Work accounting (ADR 0007): the manager reports the objects of each chunk once, at
+        # its ack. The objects no chunk carries (no mutation: filtered type or too large;
+        # incompatible: in error, as the whole-bundle import reports them) ride on the
+        # bundle's last chunk as `work_extra`, so the bundle reports exactly its objects.
+        work_extra: Optional[Dict[str, Any]] = None
         if work_id is not None:
             captured_ids = {operation.get("object_id") for operation in operations}
+            too_large_ids = {
+                obj.get("id")
+                for too_large in too_large_items_bundles
+                if isinstance(too_large, dict)
+                for obj in too_large.get("objects", [])
+            }
+            extra_errors: List[Dict[str, str]] = []
+            extra_objects = 0
             for mini_bundle in bundles:
                 for obj in mini_bundle.get("objects", []):
                     if obj.get("id") not in captured_ids:
-                        self.api.work.report_expectation(work_id, None)
+                        extra_objects += 1
+                        if obj.get("id") in too_large_ids:
+                            extra_errors.append(
+                                {
+                                    "error": "Element too large, sent to dead letter",
+                                    "source": "Element " + str(obj.get("id")),
+                                }
+                            )
+            for item in incompatible:
+                extra_objects += 1
+                extra_errors.append(
+                    {
+                        "error": "Incompatible element in bundle",
+                        "source": "Element "
+                        + str(item.get("id"))
+                        + " is incompatible and couldn't be processed",
+                    }
+                )
+            if extra_objects > 0:
+                work_extra = {"objects": extra_objects, "errors": extra_errors[:10]}
+                if len(extra_errors) > 10:
+                    work_extra["errors"].append(
+                        {
+                            "error": f"{len(extra_errors) - 10} more elements in error",
+                            "source": "Chunk intake",
+                        }
+                    )
         size = max(1, self.ingest_chunk_size)
         base = {
             "v": 1,
@@ -543,11 +624,21 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         chunk_messages: List[Dict[str, Any]] = []
         dangling: set = set()
         try:
+            # work accounting: each object is reported by the first chunk it appears in, so
+            # an object whose operations straddle two chunks is never counted twice
+            accounted: set = set()
             for chunk_operations in build_chunks(operations, size, dangling):
+                chunk_objects = {
+                    op.get("object_id")
+                    for op in chunk_operations
+                    if op.get("object_id") and not op.get("echo_id")
+                } - accounted
+                accounted |= chunk_objects
                 message = {
                     **base,
                     "chunk_id": str(uuid.uuid4()),
                     "operations": chunk_operations,
+                    "work_objects": len(chunk_objects),
                 }
                 json.dumps(message)
                 chunk_messages.append(message)
@@ -557,6 +648,15 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 {"error": str(err)},
             )
             return None
+        if work_extra is not None:
+            if chunk_messages:
+                chunk_messages[-1]["work_extra"] = work_extra
+            else:
+                # nothing to publish: the bundle's objects are reported here
+                for error in work_extra["errors"]:
+                    self.api.work.report_expectation(work_id, error)
+                for _ in range(work_extra["objects"] - len(work_extra["errors"])):
+                    self.api.work.report_expectation(work_id, None)
         if dangling:
             # A9: an echo with no producer in this bundle came from another capture window
             # through the client cache; the platform cannot resolve it. Must never happen
@@ -616,13 +716,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         update = data.get("update", False)
         event_version = content.get("x_opencti_event_version")
         stix2_splitter = OpenCTIStix2Splitter()
-        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
-            content, False, event_version
+        expectations, incompatible, bundles = (
+            stix2_splitter.split_bundle_with_expectations(content, False, event_version)
         )
-        if work_id is not None:
-            work_alive = self.api.work.add_expectations(work_id, expectations)
-            if not work_alive:
-                return []
+        if not self.declare_bundle_expectations(work_id, data, content):
+            return []
+        self.report_incompatible(work_id, incompatible)
         member_ids = {obj["id"] for obj in content.get("objects", []) if "id" in obj}
         # per-object in-bundle deps, collected BEFORE marking (clean ref values)
         deps_per_bundle: List[set] = []
@@ -804,6 +903,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             content, data, work_id, types
                         )
                 elif objects_count == 1 or data.get("no_split", False):
+                    if not self.declare_bundle_expectations(work_id, data, content):
+                        return "ack"
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
                         self.api.stix2.import_bundle_from_json(
