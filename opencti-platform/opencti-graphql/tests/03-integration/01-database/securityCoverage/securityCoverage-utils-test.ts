@@ -8,13 +8,13 @@ import type { BasicStoreEntitySecurityCoverageResult } from '../../../../src/mod
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { addCampaign } from '../../../../src/domain/campaign';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
-import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
+import { addReport } from '../../../../src/domain/report';
 import { stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
 import { addStixCoreRelationship, stixCoreRelationshipDelete } from '../../../../src/domain/stixCoreRelationship';
 import { fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntityReport } from '../../../../src/types/store';
 import { addVulnerability } from '../../../../src/modules/vulnerability/vulnerability-domain';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../../src/modules/vulnerability/vulnerability-types';
@@ -162,8 +162,8 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_ATTACK_PATTERN)).toBeDefined();
 
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
-    await reportDeleteWithElements(testContext, ADMIN_USER, report.internal_id);
-    await deleteAttackPatterns([removed]);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteAttackPatterns(attackPatterns);
   });
 
   it('should remove the has-covered of a vulnerability untargeted by a covered campaign, keeping the other ones', async () => {
