@@ -64,7 +64,7 @@ testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 11;
+testCreatedCounter.vulnerability = 17;
 testCreatedCounter['security-coverage'] = 20;
 testCreatedCounter['security-coverage-result'] = 18;
 
