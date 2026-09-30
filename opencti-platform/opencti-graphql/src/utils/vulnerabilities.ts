@@ -333,13 +333,19 @@ export const getCodeValue = (
   );
   if (found) return found[1];
 
+  const normalizeLabel = (label: string) => label.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalizedMatch = Object.entries(map).find(
+    ([full]) => normalizeLabel(full) === normalizeLabel(processedValue),
+  );
+  if (normalizedMatch) return normalizedMatch[1];
+
   // Also, code input in lowercase? ("n" instead of "N")
   const codeFromLower = Object.entries(map).find(
     ([, code]) => code.toLowerCase() === processedValue.toLowerCase(),
   );
   if (codeFromLower) return codeFromLower[1];
 
-  return processedValue;
+  throw FunctionalError(`Unknown CVSS component value ${value} for component ${metric}`, { metric, value });
 };
 
 // --- CVSS Criticity ---
@@ -497,7 +503,7 @@ export const updateCvssVector = (
     const metric = openctiToCode[key];
     if (metric) {
       const val = Array.isArray(value) ? value[0] : value;
-      if (val !== null && val !== undefined) {
+      if (isNotEmptyField(val)) {
         parts.set(metric, getCodeValue(metric, String(val), config));
       }
     }

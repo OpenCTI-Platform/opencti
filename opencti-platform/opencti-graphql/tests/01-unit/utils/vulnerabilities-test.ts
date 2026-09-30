@@ -20,6 +20,8 @@ const mockCvss3Config = {
     AV: { Network: 'N', Adjacent: 'A', Local: 'L', Physical: 'P' },
     AC: { Low: 'L', High: 'H' },
     PR: { None: 'N', Low: 'L', High: 'H' },
+    A: { None: 'N', Low: 'L', High: 'H' },
+    E: { 'Not Defined': 'X', Unproven: 'U', 'Proof-of-Concept': 'P', Functional: 'F', High: 'H' },
   },
   codeToFull: {
     AV: { N: 'Network', A: 'Adjacent', L: 'Local', P: 'Physical' },
@@ -80,9 +82,9 @@ describe('Vulnerabilities Utils', () => {
         expect(result).toBe('H');
       });
 
-      it('should return original value if not found', () => {
-        const result = getCodeValue('AV', 'Unknown', mockCvss2Config as any);
-        expect(result).toBe('Unknown');
+      it('should throw a functional error if the value is not found', () => {
+        expect(() => getCodeValue('AV', 'Unknown', mockCvss2Config as any))
+          .toThrow('Unknown CVSS component value Unknown for component AV');
       });
 
       it('should return original value if metric not in config', () => {
@@ -105,6 +107,16 @@ describe('Vulnerabilities Utils', () => {
       it('should handle other CVSS3 specific values', () => {
         expect(getCodeValue('AV', 'Physical', mockCvss3Config as any)).toBe('P');
         expect(getCodeValue('AC', 'Low', mockCvss3Config as any)).toBe('L');
+      });
+
+      it('should convert NVD enum values to CVSS metric codes', () => {
+        expect(getCodeValue('E', 'PROOF_OF_CONCEPT', mockCvss3Config as any)).toBe('P');
+        expect(getCodeValue('A', 'HIGH', mockCvss3Config as any)).toBe('H');
+      });
+
+      it('should throw a functional error for an unknown component value', () => {
+        expect(() => getCodeValue('E', 'UNKNOWN_VALUE', mockCvss3Config as any))
+          .toThrow('Unknown CVSS component value UNKNOWN_VALUE for component E');
       });
     });
 
@@ -285,6 +297,29 @@ describe('Vulnerabilities Utils', () => {
       const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
       expect(vectorField).toBeDefined();
       expect(vectorField.value[0]).toContain('AV:A');
+    });
+
+    it('should convert NVD enum values when building a CVSS3 vector', () => {
+      const updates = [
+        { key: 'x_opencti_cvss_availability_impact', value: ['HIGH'] },
+        { key: 'x_opencti_cvss_exploit_code_maturity', value: ['PROOF_OF_CONCEPT'] },
+      ];
+      const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N', updates, null) as any[];
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
+      expect(vectorField.value[0]).toBe('CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P');
+    });
+
+    it('should ignore empty values', () => {
+      const updates = [{ key: 'x_opencti_cvss_exploit_code_maturity', value: [''] }];
+      const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updates, null) as any[];
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
+      expect(vectorField.value[0]).toBe('CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H');
+    });
+
+    it('should throw a functional error for a value invalid for the CVSS version', () => {
+      const updates = [{ key: 'x_opencti_cvss_v2_availability_impact', value: ['HIGH'] }];
+      expect(() => updateCvssVector('cvss2', 'AV:N/AC:L/Au:N/C:P/I:P/A:P', updates, null))
+        .toThrow('Unknown CVSS component value HIGH for component A');
     });
 
     it('should return empty object when no updates', () => {
