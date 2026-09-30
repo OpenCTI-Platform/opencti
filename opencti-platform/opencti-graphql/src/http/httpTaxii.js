@@ -19,7 +19,7 @@ import { handleConfidenceToScoreTransformation } from '../manager/ingestionManag
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 

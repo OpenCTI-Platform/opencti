@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../src/database/cache';
-import { authenticateUserByToken } from '../../../src/domain/user';
+import { authenticateUserByToken } from '../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { generateTokenHmac } from '../../../src/domain/user';
+import { generateTokenHmac } from '../../../src/modules/user/user-domain';
 
 // Mock dependencies
 vi.mock('../../../src/database/cache');

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addUserToken, revokeUserToken } from '../../../../src/domain/user';
+import { addUserToken, revokeUserToken } from '../../../../src/modules/user/user-domain';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -28,7 +28,7 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { notify } from '../../../../src/database/redis';
 import { elLoadBy } from '../../../../src/database/engine';
-import { validateAndNormalizeEmailInput } from '../../../../src/domain/user';
+import { validateAndNormalizeEmailInput } from '../../../../src/modules/user/user-domain';
 
 describe('User Domain', () => {
   const context = {

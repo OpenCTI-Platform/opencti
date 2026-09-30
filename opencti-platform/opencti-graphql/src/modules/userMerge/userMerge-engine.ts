@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import { resolveUserById } from '../../domain/user';
+import { resolveUserById } from '../user/user-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { userMergeProjectRights, userMergeRightsLabels, userMergeRightsOf } from './userMerge-rights';
 import {

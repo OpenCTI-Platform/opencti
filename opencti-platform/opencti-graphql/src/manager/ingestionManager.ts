@@ -32,7 +32,7 @@ import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csv
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
-import { findById as findUserById } from '../domain/user';
+import { findById as findUserById } from '../modules/user/user-domain';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';

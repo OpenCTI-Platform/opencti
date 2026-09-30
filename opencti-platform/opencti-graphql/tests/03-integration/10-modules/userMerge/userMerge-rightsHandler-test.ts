@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addGroup } from '../../../../src/domain/grant';
-import { addUser, assignGroupToUser, userAddRelation } from '../../../../src/domain/user';
+import { addUser, assignGroupToUser, userAddRelation } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { addOrganization } from '../../../../src/modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';

@@ -70,7 +70,7 @@ vi.mock('../../../src/domain/settings', () => ({
 // ─── Imports (must come after vi.mock) ───────────────────────────────────────
 
 import passport from 'passport';
-import { addUser, sessionLogin } from '../../../src/domain/user';
+import { addUser, sessionLogin } from '../../../src/modules/user/user-domain';
 import { createEntity } from '../../../src/database/middleware';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';

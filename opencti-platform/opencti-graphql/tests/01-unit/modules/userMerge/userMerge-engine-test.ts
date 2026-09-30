@@ -22,7 +22,7 @@ const storedUsers = new Map<string, unknown>([
   ['target-id', { internal_id: 'target-id', allowed_marking: [], organizations: [], capabilities: [] }],
 ]);
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   resolveUserById: async (_context: unknown, id: string) => storedUsers.get(id),
 }));
 

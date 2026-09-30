@@ -3,7 +3,7 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addIncident } from '../../../../src/domain/incident';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
-import { addUser } from '../../../../src/domain/user';
+import { addUser } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { elRawSearch } from '../../../../src/database/engine';

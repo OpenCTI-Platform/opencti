@@ -22,7 +22,7 @@ import { isEmptyField } from '../../database/utils';
 import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
 import { findStixCoreObjectPaginated } from '../../domain/stixCoreObject';
 import { findStixMetaObjectPaginated } from '../../domain/stixMetaObject';
-import { findUserPaginated } from '../../domain/user';
+import { findUserPaginated } from '../user/user-domain';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type {
   FilterGroup,

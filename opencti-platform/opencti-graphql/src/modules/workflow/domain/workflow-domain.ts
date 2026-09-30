@@ -8,7 +8,7 @@ import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../data
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { createStatus } from '../../../domain/status';
-import { resolveUserById } from '../../../domain/user';
+import { resolveUserById } from '../../user/user-domain';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { type EditInput, FilterMode, FilterOperator, StatusScope } from '../../../generated/graphql';
 import { lockResources } from '../../../lock/master-lock';

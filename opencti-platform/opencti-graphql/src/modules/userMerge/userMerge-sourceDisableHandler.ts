@@ -1,6 +1,6 @@
 import { ACCOUNT_STATUS_EXPIRED } from '../../config/conf';
 import { storeLoadById } from '../../database/middleware-loader';
-import { userEditField } from '../../domain/user';
+import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthContext } from '../../types/user';

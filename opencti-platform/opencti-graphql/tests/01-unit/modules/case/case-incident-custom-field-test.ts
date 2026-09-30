@@ -32,7 +32,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   resolveUserIndividual: vi.fn(async () => 'individual-id'),
 }));
 

@@ -6,7 +6,7 @@ import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { deleteElementById } from '../../../../src/database/middleware';
-import { resolveUserByIdFromCache } from '../../../../src/domain/user';
+import { resolveUserByIdFromCache } from '../../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../../src/modules/securityCoverage/securityCoverage-types';

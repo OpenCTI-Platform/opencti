@@ -93,7 +93,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('clearAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER', async () => {
-    const { clearAllUsersPasswordValidUntil } = await import('../../../src/domain/user');
+    const { clearAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
     await clearAllUsersPasswordValidUntil({});
 
@@ -103,7 +103,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (from disabled)', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/domain/user');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({}, 0, 30);
 
@@ -114,7 +114,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should call publishCacheResetEvent with ENTITY_TYPE_USER (active shift)', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/domain/user');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({}, 60, 30);
 
@@ -125,7 +125,7 @@ describe('User domain - cache reset on password validity changes', () => {
   });
 
   it('adjustAllUsersPasswordValidUntil should not call publishCacheResetEvent when diff is 0', async () => {
-    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/domain/user');
+    const { adjustAllUsersPasswordValidUntil } = await import('../../../src/modules/user/user-domain');
 
     await adjustAllUsersPasswordValidUntil({}, 30, 30);
 

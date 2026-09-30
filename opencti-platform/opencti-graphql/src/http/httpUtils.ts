@@ -62,7 +62,7 @@ export const extractRefererPathFromReq = (req: Request) => {
 //
 // `context.user_with_session` alone does not answer that: it only records that
 // a session cookie was present, while `authenticateUserFromRequest` returns on
-// the bearer-token branch before it ever looks at the session (`domain/user.js`).
+// the bearer-token branch before it ever looks at the session (`modules/user/user-domain.ts`).
 // A request carrying a token *and* any user's cookie therefore authenticates as
 // the token identity while still looking session-backed. Require that the
 // identity actually resolved from the session, by matching it against the

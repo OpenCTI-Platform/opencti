@@ -14,7 +14,7 @@ vi.mock('../../../src/config/conf', async () => {
 });
 
 import * as Cache from '../../../src/database/cache';
-import { isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
+import { isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
 import { SYSTEM_USER } from '../../../src/utils/access';
 
 const mockGetEntityFromCache = vi.mocked(Cache.getEntityFromCache);

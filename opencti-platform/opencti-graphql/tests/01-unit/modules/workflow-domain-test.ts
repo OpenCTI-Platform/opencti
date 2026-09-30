@@ -4,7 +4,7 @@ import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { createStatus } from '../../../src/domain/status';
-import { resolveUserById } from '../../../src/domain/user';
+import { resolveUserById } from '../../../src/modules/user/user-domain';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
 import { lockResources } from '../../../src/lock/master-lock';
@@ -49,7 +49,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   resolveUserById: vi.fn(),
 }));
 

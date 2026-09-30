@@ -21,7 +21,7 @@ import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
-import { initializeAdminUser } from './domain/user';
+import { initializeAdminUser } from './modules/user/user-domain';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
 import type { AuthContext } from './types/user';
 

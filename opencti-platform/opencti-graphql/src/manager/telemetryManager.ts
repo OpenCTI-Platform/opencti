@@ -63,7 +63,7 @@ import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redi
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';

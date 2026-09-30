@@ -14,7 +14,7 @@ import conf, {
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
   logApp,
-} from '../config/conf';
+} from '../../config/conf';
 import {
   AuthenticationFailure,
   ConfigurationError,
@@ -25,11 +25,11 @@ import {
   PasswordChangeRequired,
   UnsupportedError,
   ValidationError,
-} from '../config/errors';
-import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
+} from '../../config/errors';
+import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
@@ -40,9 +40,9 @@ import {
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
-} from '../database/middleware-loader';
-import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
-import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../database/session';
+} from '../../database/middleware-loader';
+import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
+import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -53,14 +53,14 @@ import {
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
-} from '../database/utils';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { publishUserAction } from '../listener/UserActionListener';
-import { authorizedMembers } from '../schema/attribute-definition';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { getTokensUsage, updateTokenUsage } from '../database/redis/token_usage';
+} from '../../database/utils';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { authorizedMembers } from '../../schema/attribute-definition';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
+import { generateStandardId } from '../../schema/identifier';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { getTokensUsage, updateTokenUsage } from '../../database/redis/token_usage';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -69,9 +69,9 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO,
-} from '../schema/internalRelationship';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+} from '../../schema/internalRelationship';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import {
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
@@ -91,36 +91,36 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
-} from '../utils/access';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
-import { now, utcDate } from '../utils/format';
-import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findDefaultIngestionGroups, findGroupPaginated as findGroups } from './group';
-import { addIndividual } from './individual';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { addFilter, extractFilterKeys } from '../utils/filtering/filtering-utils';
-import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
-import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
-import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
-import { cleanMarkings } from '../utils/markingDefinition-utils';
-import { TokenDuration, UnitSystem } from '../generated/graphql';
-import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
-import { sendMail, smtpComputeFrom } from '../database/smtp';
-import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import { doYield } from '../utils/eventloop-utils';
-import { disablePublicSharingForDeletedUser } from '../modules/dataSharing/dataSharing-utils';
-import { sanitizeUser } from '../utils/templateContextSanitizer';
-import { safeRender } from '../utils/safeEjs.client';
-import { totp } from '../utils/totp';
-import { pushAll } from '../utils/arrayUtil';
-import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
-import { USER_MERGED_INTO_FIELD } from '../modules/userMerge/userMerge-types';
-import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
-import { getSettings } from './settings';
+} from '../../utils/access';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../../utils/filtering/filtering-constants';
+import { now, utcDate } from '../../utils/format';
+import { addGroup } from '../../domain/grant';
+import { defaultMarkingDefinitionsFromGroups, findDefaultIngestionGroups, findGroupPaginated as findGroups } from '../../domain/group';
+import { addIndividual } from '../../domain/individual';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { addFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
+import { testFilterGroup, testStringFilter } from '../../utils/filtering/boolean-logic-engine';
+import { computeUserEffectiveConfidenceLevel } from '../../utils/confidence-level';
+import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../notifier/notifier-statics';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
+import { TokenDuration, UnitSystem } from '../../generated/graphql';
+import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../../manager/telemetryManager';
+import { sendMail, smtpComputeFrom } from '../../database/smtp';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
+import { doYield } from '../../utils/eventloop-utils';
+import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
+import { sanitizeUser } from '../../utils/templateContextSanitizer';
+import { safeRender } from '../../utils/safeEjs.client';
+import { totp } from '../../utils/totp';
+import { pushAll } from '../../utils/arrayUtil';
+import { apiTokens } from '../attributes/internalObject-registrationAttributes';
+import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
+import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
+import { getSettings } from '../../domain/settings';
 import passport from 'passport';
 import {
   EnvStrategyType,
@@ -130,14 +130,14 @@ import {
   isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
-} from '../modules/authenticationProvider/providers-configuration';
-import { addOrganization } from '../modules/organization/organization-domain';
+} from '../authenticationProvider/providers-configuration';
+import { addOrganization } from '../organization/organization-domain';
 import validator from 'validator';
-import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
-import { hashSHA256 } from '../utils/hash';
-import { normalizeEmail } from '../utils/email';
-import { getPlatformCrypto } from '../utils/platformCrypto';
-import { memoize } from '../utils/memoize';
+import { logAuthInfo } from '../authenticationProvider/providers-logger';
+import { hashSHA256 } from '../../utils/hash';
+import { normalizeEmail } from '../../utils/email';
+import { getPlatformCrypto } from '../../utils/platformCrypto';
+import { memoize } from '../../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1254,7 +1254,7 @@ export const bookmarks = async (context, user, args) => {
     };
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
-  let filteredBookmarks = [];
+  const filteredBookmarks = [];
   // Clean up bookmarks that no longer exist
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);

@@ -12,7 +12,7 @@ import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { sessionAuthenticateUser, userWithOrigin } from '../modules/user/user-domain';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, downloadFileRange, downloadLocalFileRange, getFileContent } from '../database/raw-file-storage';

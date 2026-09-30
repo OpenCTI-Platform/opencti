@@ -1,8 +1,8 @@
-import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../config/conf';
-import { internalLoadById } from '../database/middleware-loader';
-import { fetchEditContext } from '../database/redis';
-import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
-import { addRole } from '../domain/grant';
+import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../../config/conf';
+import { internalLoadById } from '../../database/middleware-loader';
+import { fetchEditContext } from '../../database/redis';
+import { findSessions, findUserSessions, killSession, killUserSessions } from '../../database/session';
+import { addRole } from '../../domain/grant';
 import {
   addBookmark,
   addUser,
@@ -49,18 +49,18 @@ import {
   sendEmailToUser,
   findUserPaginated,
   sessionLogin,
-} from '../domain/user';
-import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
-import { publishUserAction } from '../listener/UserActionListener';
-import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../domain/user';
-import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { REDACTED_USER } from '../utils/access';
-import { getNotifiers } from '../modules/notifier/notifier-domain';
-import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
-import { loadCreator } from '../database/members';
-import { issueConnectorJWT } from '../database/repository';
+} from './user-domain';
+import { subscribeToInstanceEvents, subscribeToUserEvents } from '../../graphql/subscriptionWrapper';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { findById as findDraftById } from '../draftWorkspace/draftWorkspace-domain';
+import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from './user-domain';
+import { findById as findWorskpaceById } from '../workspace/workspace-domain';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { REDACTED_USER } from '../../utils/access';
+import { getNotifiers } from '../notifier/notifier-domain';
+import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../schema/internalRelationship';
+import { loadCreator } from '../../database/members';
+import { issueConnectorJWT } from '../../database/repository';
 
 const userResolvers = {
   Query: {

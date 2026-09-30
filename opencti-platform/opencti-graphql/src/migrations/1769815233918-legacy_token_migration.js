@@ -2,7 +2,7 @@ import { logMigration } from '../config/conf';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { generateTokenHmac } from '../domain/user';
+import { generateTokenHmac } from '../modules/user/user-domain';
 import { elUpdate } from '../database/engine';
 
 const message = '[MIGRATION] Legacy Token Migration';

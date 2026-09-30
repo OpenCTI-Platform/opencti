@@ -5,14 +5,20 @@ import { updateAttribute } from '../../../src/database/middleware';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { TokenDuration, type UserTokenAddInput } from '../../../src/generated/graphql';
-import { authenticateUserByJWT, authenticateUserByToken, authenticateUserByUserId, checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
-import { addUserToken, generateSecureToken } from '../../../src/domain/user';
+import {
+  authenticateUserByJWT,
+  authenticateUserByToken,
+  authenticateUserByUserId,
+  checkPasswordInlinePolicy,
+  isSensitiveChangesAllowed,
+} from '../../../src/modules/user/user-domain';
+import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
 import { testContext } from '../../utils/testQuery';
 import { isUserHasCapability } from '../../../src/utils/access';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { verifyXtmJwt, isOwnIssuer } from '../../../src/domain/xtm-auth';
 import { elLoadBy } from '../../../src/database/engine';
-import { generateTokenHmac } from '../../../src/domain/user';
+import { generateTokenHmac } from '../../../src/modules/user/user-domain';
 import { updateTokenUsage } from '../../../src/database/redis/token_usage';
 
 vi.mock('../../../src/database/middleware', () => ({
