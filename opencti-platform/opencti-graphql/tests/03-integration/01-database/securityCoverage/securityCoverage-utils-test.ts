@@ -5,6 +5,19 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addSecurityCoverage, listSecurityCoverageResults, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import type { BasicStoreEntitySecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { addAttackPattern } from '../../../../src/domain/attackPattern';
+import { addCampaign } from '../../../../src/domain/campaign';
+import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
+import { addReport } from '../../../../src/domain/report';
+import { stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
+import { addStixCoreRelationship, stixCoreRelationshipDelete } from '../../../../src/domain/stixCoreRelationship';
+import { fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
+import { RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
+import type { BasicStoreEntity, BasicStoreRelation, StoreEntityReport } from '../../../../src/types/store';
+import { addVulnerability } from '../../../../src/modules/vulnerability/vulnerability-domain';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../../src/modules/vulnerability/vulnerability-types';
 
 describe('Function transformHasCoveredFromId', () => {
   let securityCoverage: BasicStoreEntitySecurityCoverage;
@@ -72,5 +85,162 @@ describe('Function transformHasCoveredFromId', () => {
       fromId: result.standard_id,
       toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
     });
+  });
+});
+
+describe('Security coverage has-covered cleanup when an entity leaves the covered scope', () => {
+  const createAttackPatterns = async (prefix: string) => {
+    const attackPatterns: BasicStoreEntity[] = [];
+    for (const suffix of ['AP1', 'AP2', 'AP3']) {
+      attackPatterns.push(await addAttackPattern(testContext, ADMIN_USER, { name: `${prefix} ${suffix}` }));
+    }
+    return attackPatterns;
+  };
+
+  const createVulnerabilities = async (prefix: string) => {
+    const vulnerabilities: BasicStoreEntity[] = [];
+    for (const suffix of ['V1', 'V2', 'V3']) {
+      vulnerabilities.push(await addVulnerability(testContext, ADMIN_USER, { name: `${prefix} ${suffix}` }));
+    }
+    return vulnerabilities;
+  };
+
+  // The coverage result covers every attack pattern of the assessed scope, as OpenAEV would report it.
+  const createCoverageCoveringAll = async (prefix: string, coveredStandardId: string, attackPatterns: BasicStoreEntity[]) => {
+    const securityCoverage: BasicStoreEntitySecurityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+      name: `${prefix} coverage`,
+      objectCovered: coveredStandardId,
+      auto_enrichment_disable: true,
+      external_uri: `http://localhost/admin/scenarios/${prefix}`,
+    });
+    const result = (await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage))[0];
+    for (const attackPattern of attackPatterns) {
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: result.standard_id,
+        toId: attackPattern.standard_id,
+        relationship_type: RELATION_HAS_COVERED,
+      });
+    }
+    return { securityCoverage, result };
+  };
+
+  const deleteAttackPatterns = async (attackPatterns: BasicStoreEntity[]) => {
+    for (const attackPattern of attackPatterns) {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    }
+  };
+
+  const deleteVulnerabilities = async (vulnerabilities: BasicStoreEntity[]) => {
+    for (const vulnerability of vulnerabilities) {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, vulnerability.id, ENTITY_TYPE_VULNERABILITY);
+    }
+  };
+
+  const listCoveredTargetIds = async (resultId: string) => {
+    const relations = await fullRelationsList<BasicStoreRelation>(testContext, ADMIN_USER, RELATION_HAS_COVERED, { fromId: resultId });
+    return relations.map((relation) => relation.toId).sort();
+  };
+
+  const sortedIds = (attackPatterns: BasicStoreEntity[]) => attackPatterns.map((attackPattern) => attackPattern.internal_id).sort();
+
+  it('should remove the has-covered of an entity removed from a covered report, keeping the other ones', async () => {
+    const prefix = 'sc-cleanup-report';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const report: StoreEntityReport = await addReport(testContext, ADMIN_USER, {
+      name: `${prefix} report`,
+      published: '2026-04-24T19:15:00.000Z',
+      objects: attackPatterns.map((attackPattern) => attackPattern.standard_id),
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, report.standard_id, attackPatterns);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(attackPatterns));
+
+    const [removed, ...stillInReport] = attackPatterns;
+    await stixDomainObjectDeleteRelation(testContext, ADMIN_USER, report.internal_id, removed.id, RELATION_OBJECT);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillInReport));
+    // The entity is only removed from the report, it must still exist
+    expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_ATTACK_PATTERN)).toBeDefined();
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should remove the has-covered of a vulnerability untargeted by a covered campaign, keeping the other ones', async () => {
+    const prefix = 'sc-cleanup-campaign-targets';
+    const vulnerabilities = await createVulnerabilities(prefix);
+    const campaign: BasicStoreEntity = await addCampaign(testContext, ADMIN_USER, { name: `${prefix} campaign` });
+    const targetsRelations = [];
+    for (const vulnerability of vulnerabilities) {
+      targetsRelations.push(await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: campaign.standard_id,
+        toId: vulnerability.standard_id,
+        relationship_type: RELATION_TARGETS,
+      }));
+    }
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, campaign.standard_id, vulnerabilities);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(vulnerabilities));
+
+    const [removed, ...stillTargeted] = vulnerabilities;
+    await stixCoreRelationshipDelete(testContext, ADMIN_USER, targetsRelations[0].id);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillTargeted));
+    expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_VULNERABILITY)).toBeDefined();
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, campaign.id, ENTITY_TYPE_CAMPAIGN);
+    await deleteVulnerabilities(vulnerabilities);
+  });
+
+  it('should remove the has-covered of an entity unlinked from a covered intrusion set, keeping the other ones', async () => {
+    const prefix = 'sc-cleanup-intrusion-set';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const intrusionSet: BasicStoreEntity = await addIntrusionSet(testContext, ADMIN_USER, { name: `${prefix} intrusion set` });
+    const usesRelations = [];
+    for (const attackPattern of attackPatterns) {
+      usesRelations.push(await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: intrusionSet.standard_id,
+        toId: attackPattern.standard_id,
+        relationship_type: RELATION_USES,
+      }));
+    }
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, intrusionSet.standard_id, attackPatterns);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(attackPatterns));
+
+    const [removed, ...stillUsed] = attackPatterns;
+    await stixCoreRelationshipDelete(testContext, ADMIN_USER, usesRelations[0].id);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillUsed));
+    expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_ATTACK_PATTERN)).toBeDefined();
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should remove the has-covered of a vulnerability untargeted by a covered intrusion set, keeping the other ones', async () => {
+    const prefix = 'sc-cleanup-intrusion-set-targets';
+    const vulnerabilities = await createVulnerabilities(prefix);
+    const intrusionSet: BasicStoreEntity = await addIntrusionSet(testContext, ADMIN_USER, { name: `${prefix} intrusion set` });
+    const targetsRelations = [];
+    for (const vulnerability of vulnerabilities) {
+      targetsRelations.push(await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: intrusionSet.standard_id,
+        toId: vulnerability.standard_id,
+        relationship_type: RELATION_TARGETS,
+      }));
+    }
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, intrusionSet.standard_id, vulnerabilities);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(vulnerabilities));
+
+    const [removed, ...stillTargeted] = vulnerabilities;
+    await stixCoreRelationshipDelete(testContext, ADMIN_USER, targetsRelations[0].id);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillTargeted));
+    expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_VULNERABILITY)).toBeDefined();
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+    await deleteVulnerabilities(vulnerabilities);
   });
 });
