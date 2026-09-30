@@ -33,7 +33,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     },
     booleanConf: (key, fallback) => {
       if (key === 'redis:use_ssl') return true;
-      if (key === 'tls_cluster_node_mode' && redisConfig.tlsClusterNodeMode !== undefined) {
+      if (key === 'redis:tls_cluster_node_mode' && redisConfig.tlsClusterNodeMode !== undefined) {
         return redisConfig.tlsClusterNodeMode;
       }
       return actual.booleanConf(key, fallback);
@@ -70,12 +70,12 @@ describe('Redis client creation', () => {
     client?.disconnect();
   });
 
-  it('should not pin the TLS servername in cluster mode by default', async () => {
+  it('should pin the TLS servername in cluster mode by default', async () => {
     client = await createRedisClient('test');
 
     expect(client).toBeInstanceOf(Cluster);
     expect(client.options.redisOptions.tls).toMatchObject({ ca: ['test-ca'] });
-    expect(client.options.redisOptions.tls).not.toHaveProperty('servername');
+    expect(client.options.redisOptions.tls).toHaveProperty('servername');
   });
 
   it('should use the configured hostname as TLS servername in single mode', async () => {
@@ -87,8 +87,9 @@ describe('Redis client creation', () => {
     expect(client.options.tls).toMatchObject({ ca: ['test-ca'], servername: 'redis.example.test' });
   });
 
-  it('should ignore an explicit redis:tls_servername in cluster mode while tls_cluster_node_mode stays at its default', async () => {
+  it('should ignore an explicit redis:tls_servername in cluster mode while tls_cluster_node_mode is true', async () => {
     redisConfig.tlsServername = 'redis-cluster.example.test';
+    redisConfig.tlsClusterNodeMode = true;
 
     client = await createRedisClient('test');
 
