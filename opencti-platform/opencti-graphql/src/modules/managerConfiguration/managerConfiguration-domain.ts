@@ -10,6 +10,7 @@ import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { generateBuiltInExportId } from '../../schema/identifier';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityManagerConfiguration> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION);
@@ -79,7 +80,11 @@ const addManagerConfiguration = async (
   user: AuthUser,
   managerConfiguration: { manager_id: string; manager_running: boolean; manager_setting: any },
 ) => {
-  const createdManagerConfiguration = await createEntity(context, user, managerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION);
+  const managerConfigurationToCreate = {
+    ...managerConfiguration,
+    export_id: generateBuiltInExportId(ENTITY_TYPE_MANAGER_CONFIGURATION, { manager_id: managerConfiguration.manager_id }),
+  };
+  const createdManagerConfiguration = await createEntity(context, user, managerConfigurationToCreate, ENTITY_TYPE_MANAGER_CONFIGURATION);
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].ADDED_TOPIC, createdManagerConfiguration, user);
 };
 

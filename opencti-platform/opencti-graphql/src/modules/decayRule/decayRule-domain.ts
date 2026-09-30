@@ -28,6 +28,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { convertTypeToStixType } from '../../database/stix-2-1-converter';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { addDecayRuleCreationCount } from '../../manager/telemetryManager';
+import { generateBuiltInExportId } from '../../schema/identifier';
 
 const DECAY_FACTOR: number = 3.0;
 
@@ -94,6 +95,7 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
     updated_at: now(),
     active: input.active || false,
     built_in: builtIn || false,
+    ...(builtIn ? { export_id: generateBuiltInExportId(ENTITY_TYPE_DECAY_RULE, { name: input.name }) } : {}),
   };
 
   if (input.decay_points) {

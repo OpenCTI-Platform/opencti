@@ -19,13 +19,17 @@ import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_RETENTION_RULE, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
 import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
+import { generateBuiltInExportId } from '../schema/identifier';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -193,33 +197,39 @@ export const CAPABILITIES = [
 ];
 // endregion
 
+const addBuiltInMarkingDefinition = async (context, markingDefinition) => {
+  const { definition_type, definition } = markingDefinition;
+  const export_id = generateBuiltInExportId(ENTITY_TYPE_MARKING_DEFINITION, { definition_type, definition });
+  return addAllowedMarkingDefinition(context, SYSTEM_USER, { ...markingDefinition, export_id });
+};
+
 const createMarkingDefinitions = async (context) => {
   // Create marking defs for TLP
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'TLP',
     definition: 'TLP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER+STRICT',
     x_opencti_color: '#d84315',
     x_opencti_order: 4,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'TLP',
     definition: 'TLP:RED',
     x_opencti_color: '#c62828',
@@ -227,25 +237,25 @@ const createMarkingDefinitions = async (context) => {
   });
 
   // Creation markings for PAP
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'PAP',
     definition: 'PAP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'PAP',
     definition: 'PAP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'PAP',
     definition: 'PAP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
+  await addBuiltInMarkingDefinition(context, {
     definition_type: 'PAP',
     definition: 'PAP:RED',
     x_opencti_color: '#c62828',
@@ -267,41 +277,53 @@ const createVocabularies = async (context) => {
         category,
         order,
         builtIn: builtInOv.includes(category),
+        // Computed from the name as stored: some keys have surrounding spaces that are trimmed at creation
+        export_id: generateBuiltInExportId(ENTITY_TYPE_VOCABULARY, { category, name: key.trim() }),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }
   }
 };
 
+const createBuiltInStatusTemplate = async (context, statusTemplate) => {
+  const export_id = generateBuiltInExportId(ENTITY_TYPE_STATUS_TEMPLATE, { name: statusTemplate.name });
+  return createStatusTemplate(context, SYSTEM_USER, { ...statusTemplate, export_id });
+};
+
+const createBuiltInStatus = async (context, type, statusTemplate, { order, scope }) => {
+  const export_id = generateBuiltInExportId(ENTITY_TYPE_STATUS, { type, scope, template: statusTemplate.name });
+  return createStatus(context, SYSTEM_USER, type, { template_id: statusTemplate.id, order, scope, export_id });
+};
+
 const createDefaultStatusTemplates = async (context) => {
-  const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
-  const statusProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
-  await createStatusTemplate(context, SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
-  await createStatusTemplate(context, SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
-  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
-  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusNew.id, order: 1, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusProgress.id, order: 2, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, { template_id: statusNew.id, order: 0, scope: StatusScope.RequestAccess });
+  const statusNew = await createBuiltInStatusTemplate(context, { name: 'NEW', color: '#ff9800' });
+  const statusProgress = await createBuiltInStatusTemplate(context, { name: 'IN_PROGRESS', color: '#5c7bf5' });
+  await createBuiltInStatusTemplate(context, { name: 'PENDING', color: '#5c7bf5' });
+  await createBuiltInStatusTemplate(context, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
+  const statusAnalyzed = await createBuiltInStatusTemplate(context, { name: 'ANALYZED', color: '#4caf50' });
+  const statusClosed = await createBuiltInStatusTemplate(context, { name: 'CLOSED', color: '#607d8b' });
+  await createBuiltInStatus(context, ENTITY_TYPE_CONTAINER_REPORT, statusNew, { order: 1, scope: StatusScope.Global });
+  await createBuiltInStatus(context, ENTITY_TYPE_CONTAINER_REPORT, statusProgress, { order: 2, scope: StatusScope.Global });
+  await createBuiltInStatus(context, ENTITY_TYPE_CONTAINER_REPORT, statusAnalyzed, { order: 3, scope: StatusScope.Global });
+  await createBuiltInStatus(context, ENTITY_TYPE_CONTAINER_REPORT, statusClosed, { order: 4, scope: StatusScope.Global });
+  await createBuiltInStatus(context, ENTITY_TYPE_CONTAINER_CASE_RFI, statusNew, { order: 0, scope: StatusScope.RequestAccess });
 };
 
 export const createInitialRequestAccessFlow = async (context) => {
-  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
-  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+  const statusTemplateDeclined = await createBuiltInStatusTemplate(context, { name: 'DECLINED', color: '#b83f13' });
+  const statusTemplateApproved = await createBuiltInStatusTemplate(context, { name: 'APPROVED', color: '#4caf50' });
 
-  const statusEntityRFIDeclined = await createStatus(
+  const statusEntityRFIDeclined = await createBuiltInStatus(
     context,
-    SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess },
+    statusTemplateDeclined,
+    { order: 1, scope: StatusScope.RequestAccess },
   );
-  const statusEntityRFIApproved = await createStatus(
+  const statusEntityRFIApproved = await createBuiltInStatus(
     context,
-    SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess },
+    statusTemplateApproved,
+    { order: 1, scope: StatusScope.RequestAccess },
   );
 
   const initialConfig = {
@@ -330,9 +352,14 @@ export const createCapabilities = async (context, capabilities, parentName = '')
   }
 };
 
+const createBuiltInRetentionRule = async (context, retentionRule) => {
+  const export_id = generateBuiltInExportId(ENTITY_TYPE_RETENTION_RULE, { scope: retentionRule.scope });
+  return createRetentionRule(context, SYSTEM_USER, { ...retentionRule, export_id });
+};
+
 export const createDefaultRetentionRules = async (context) => {
   // Create default disabled retention rule for global files (30 days, inactive)
-  await createRetentionRule(context, SYSTEM_USER, {
+  await createBuiltInRetentionRule(context, {
     name: 'Global files retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -340,7 +367,7 @@ export const createDefaultRetentionRules = async (context) => {
     active: false,
   });
   // Create default disabled retention rule for all workbenches (30 days, inactive)
-  await createRetentionRule(context, SYSTEM_USER, {
+  await createBuiltInRetentionRule(context, {
     name: 'All workbenches retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -348,7 +375,7 @@ export const createDefaultRetentionRules = async (context) => {
     active: false,
   });
   // Create default disabled retention rule for history (30 days, inactive)
-  await createRetentionRule(context, SYSTEM_USER, {
+  await createBuiltInRetentionRule(context, {
     name: 'History retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -356,7 +383,7 @@ export const createDefaultRetentionRules = async (context) => {
     active: false,
   });
   // Create default disabled retention rule for activity (30 days, inactive)
-  await createRetentionRule(context, SYSTEM_USER, {
+  await createBuiltInRetentionRule(context, {
     name: 'Activity retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -372,6 +399,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create Default(s) Role and Group
   const defaultRoleInput = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
+    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: ROLE_DEFAULT }),
     description: 'Default role associated to the default group',
     capabilities: [
       KNOWLEDGE_CAPABILITY,
@@ -381,6 +409,7 @@ const createBasicRolesAndCapabilities = async (context) => {
 
   const defaultGroup = await addGroup(context, SYSTEM_USER, {
     name: GROUP_DEFAULT,
+    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: GROUP_DEFAULT }),
     description: 'Default group associated to all users',
     default_assignation: true,
   });
@@ -393,6 +422,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create Administrator(s) Role and Group
   const administratorRoleInput = {
     name: ROLE_ADMINISTRATOR,
+    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: ROLE_ADMINISTRATOR }),
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
     can_manage_sensitive_config: false,
@@ -402,6 +432,7 @@ const createBasicRolesAndCapabilities = async (context) => {
 
   const administratorGroup = await addGroup(context, SYSTEM_USER, {
     name: 'Administrators',
+    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: 'Administrators' }),
     description: 'Administrator group',
     auto_new_marking: true,
   });
@@ -414,6 +445,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create Connector(s) Role and Group
   const connectorRoleInput = {
     name: 'Connector',
+    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: 'Connector' }),
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
       'APIACCESS_USETOKEN',
@@ -443,6 +475,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create connector group with connector role
   const connectorGroup = await addGroup(context, SYSTEM_USER, {
     name: 'Connectors',
+    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: 'Connectors' }),
     description: 'Connector group',
     auto_new_marking: true,
     auto_integration_assignation: ['global'],
@@ -531,7 +564,8 @@ export const initializeData = async (context, withMarkings = true) => {
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
-  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
+  const emailTemplateExportId = generateBuiltInExportId(ENTITY_TYPE_EMAIL_TEMPLATE, { name: DEFAULT_EMAIL_TEMPLATE_INPUT.name });
+  await addEmailTemplate(context, SYSTEM_USER, { ...DEFAULT_EMAIL_TEMPLATE_INPUT, export_id: emailTemplateExportId }, false);
   await createDefaultRetentionRules(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);
