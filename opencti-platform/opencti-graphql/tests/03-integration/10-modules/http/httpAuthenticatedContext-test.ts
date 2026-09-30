@@ -3,7 +3,7 @@ import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticat
 import { ADMIN_API_TOKEN, getAuthUser, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { TokenDuration } from '../../../../src/generated/graphql';
-import { addUserToken, revokeUserToken } from '../../../../src/modules/user/user-domain';
+import { addUserToken, revokeUserToken } from '../../../../src/domain/user';
 import type { AuthUser } from '../../../../src/types/user';
 
 describe('Testing createAuthenticatedContext', () => {

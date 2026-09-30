@@ -58,7 +58,7 @@ import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkben
 import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
-import { createOnTheFlyUser } from '../modules/user/user-domain';
+import { createOnTheFlyUser } from './user';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';

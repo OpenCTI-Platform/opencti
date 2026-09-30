@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { DateTime } from 'luxon';
+import * as crypto from 'crypto';
 import conf, {
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
@@ -23,6 +24,7 @@ import {
   FunctionalError,
   PasswordChangeRequired,
   UnsupportedError,
+  ValidationError,
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -48,6 +50,8 @@ import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -91,7 +95,7 @@ import {
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups } from './group';
+import { defaultMarkingDefinitionsFromGroups, findDefaultIngestionGroups, findGroupPaginated as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -100,7 +104,7 @@ import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-lo
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
-import { UnitSystem } from '../generated/graphql';
+import { TokenDuration, UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
@@ -115,7 +119,6 @@ import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
 import { USER_MERGED_INTO_FIELD } from '../modules/userMerge/userMerge-types';
-import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
 import { getSettings } from './settings';
 import passport from 'passport';
@@ -133,6 +136,8 @@ import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 import { hashSHA256 } from '../utils/hash';
 import { normalizeEmail } from '../utils/email';
+import { getPlatformCrypto } from '../utils/platformCrypto';
+import { memoize } from '../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -2424,4 +2429,192 @@ export const getUserEffectiveConfidenceLevel = async (user, context) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const completeUser = await buildCompleteUserFromCacheOrDb(context, context.user, user, platformUsers);
   return computeUserEffectiveConfidenceLevel(completeUser);
+};
+
+// -- Existing Logic --
+export const userAlreadyExists = async (context, name) => {
+  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
+  const users = await findUserPaginated(context, SYSTEM_USER, {
+    first: 1,
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['name'],
+          values: [name],
+        },
+      ],
+      filterGroups: [],
+    },
+  });
+  return users.edges.length > 0;
+};
+
+export const createOnTheFlyUser = async (context, user, input) => {
+  const defaultIngestionGroups = await findDefaultIngestionGroups(context, user);
+  if (defaultIngestionGroups.length < 1) {
+    throw FunctionalError('You have not defined a default group for ingestion users', {});
+  }
+  const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
+  if (isUserAlreadyExisting) {
+    if (input.serviceAccount) {
+      throw FunctionalError('This service account already exists. Change the instance name to change the automatically created service account name', { name: input.userName });
+    }
+    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', { name: input.userName });
+  }
+  const { platform_organization } = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  let userInput = {
+    password: uuid(),
+    user_email: `automatic+${uuid()}@opencti.invalid`,
+    name: input.userName,
+    prevent_default_groups: true,
+    groups: [defaultIngestionGroups[0].id],
+    objectOrganization: platform_organization && !input.serviceAccount ? [platform_organization] : [],
+    user_service_account: input.serviceAccount,
+  };
+
+  if (input.confidenceLevel) {
+    const userConfidence = input.confidenceLevel;
+    if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
+      throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
+    }
+    userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
+  }
+  return await addUser(context, user, userInput);
+};
+
+// -- API Token Logic --
+
+// Add token
+const addToken = async (context, user, targetUser, input, auditMessage) => {
+  const { duration, name } = input;
+  let expires_at = null;
+  if (duration && duration !== TokenDuration.Unlimited) {
+    const durationDays = {
+      [TokenDuration.Days_30]: 30,
+      [TokenDuration.Days_60]: 60,
+      [TokenDuration.Days_90]: 90,
+      [TokenDuration.Days_365]: 365,
+    };
+    const days = durationDays[duration];
+    if (days) {
+      expires_at = DateTime.now().plus({ days }).toUTC().toString();
+    }
+  }
+  const generatedToken = await generateSecureToken();
+  const { token, hash, masked_token } = generatedToken;
+  const tokenId = uuid();
+  const now = DateTime.now().toUTC().toString();
+  const newToken = {
+    id: tokenId,
+    name,
+    hash,
+    created_at: now,
+    expires_at,
+    masked_token,
+  };
+  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: auditMessage(newToken),
+    context_data: {
+      id: targetUser.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        duration: input.duration,
+        name: input.name,
+        token_id: tokenId,
+      },
+    },
+  });
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, targetUser);
+  return {
+    token_id: tokenId,
+    plaintext_token: token,
+    masked_token: masked_token,
+    expires_at,
+  };
+};
+export const addUserToken = async (context, user, input) => {
+  return await addToken(context, user, user, input, (token) => `generated a new API token '${token.name}'`);
+};
+export const addUserTokenByAdmin = async (context, user, userId, input) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, userId);
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { userId });
+  }
+  return await addToken(context, user, userToEdit, input, (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`);
+};
+
+// Revoke token
+const revokeToken = async (context, user, targetUser, tokenId, auditMessage) => {
+  const tokens = targetUser.api_tokens || [];
+  const tokenToRemove = tokens.find((t) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: auditMessage(tokenToRemove),
+    context_data: {
+      id: targetUser.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+  return tokenId;
+};
+export const revokeUserToken = async (context, user, tokenId) => {
+  return await revokeToken(context, user, user, tokenId, (token) => `revoked API token '${token.name}'`);
+};
+export const revokeUserTokenByAdmin = async (context, user, targetUserId, tokenId) => {
+  const userToEdit = await internalLoadById(context, user, targetUserId);
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+  return await revokeToken(context, user, userToEdit, tokenId, (token) => `revoked API token '${token.name}' for user '${userToEdit.user_email}'`);
+};
+
+/**
+ * Generate a secure random token.
+ * 48 bytes = 384 bits of entropy.
+ * Returns the plain token (to be shown once), the hash (to be stored), and a masked version.
+ */
+export const generateSecureToken = async () => {
+  // 48 bytes -> base64 -> 64 chars
+  const random = crypto.randomBytes(48).toString('base64url');
+  const token = `flgrn_octi_tkn_${random}`;
+  const hash = await generateTokenHmac(token);
+  const masked_token = `****${token.slice(-4)}`;
+  return { token, hash, masked_token };
+};
+
+/**
+ * Hash a token using hmac algorithm.
+ * @param token the token to hash
+ */
+const hmacDerivation = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveHmac(['authentication', 'token'], 1);
+});
+
+export const generateTokenHmac = async (token) => {
+  const { hmac } = await hmacDerivation();
+  return hmac(Buffer.from(token));
 };

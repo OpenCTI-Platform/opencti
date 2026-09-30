@@ -16,7 +16,7 @@ import {
 } from './ingestion-csv-domain';
 import { findIngestionLogsForFeed, removeAuthenticationCredentials } from './ingestion-common';
 import { decryptIngestionCredential } from './ingestion-common';
-import { userAlreadyExists } from '../user/user-domain';
+import { userAlreadyExists } from '../../domain/user';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionCsv } from './ingestion-types';
 

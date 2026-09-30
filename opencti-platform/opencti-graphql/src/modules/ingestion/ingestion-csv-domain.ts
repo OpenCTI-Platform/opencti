@@ -36,7 +36,7 @@ import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
-import { createOnTheFlyUser } from '../user/user-domain';
+import { createOnTheFlyUser } from '../../domain/user';
 import { findDefaultIngestionGroups } from '../../domain/group';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';

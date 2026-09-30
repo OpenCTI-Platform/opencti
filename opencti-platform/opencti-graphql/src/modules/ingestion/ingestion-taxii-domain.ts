@@ -10,7 +10,7 @@ import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxi
 import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
 import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createOnTheFlyUser } from '../user/user-domain';
+import { createOnTheFlyUser } from '../../domain/user';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';

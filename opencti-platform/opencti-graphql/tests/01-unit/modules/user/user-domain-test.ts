@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addUserToken, revokeUserToken } from '../../../../src/modules/user/user-domain';
+import { addUserToken, revokeUserToken } from '../../../../src/domain/user';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';

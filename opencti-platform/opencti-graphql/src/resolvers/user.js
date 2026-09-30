@@ -53,7 +53,7 @@ import {
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../modules/user/user-domain';
+import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../domain/user';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { REDACTED_USER } from '../utils/access';

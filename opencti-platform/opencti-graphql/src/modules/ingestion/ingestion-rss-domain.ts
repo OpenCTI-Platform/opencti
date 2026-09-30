@@ -8,7 +8,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddAutoUserInput, IngestionRssAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createOnTheFlyUser } from '../user/user-domain';
+import { createOnTheFlyUser } from '../../domain/user';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';

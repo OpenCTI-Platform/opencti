@@ -19,7 +19,7 @@ import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { SignJWT } from 'jose';
 import { memoize } from '../utils/memoize';
-import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
+import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../domain/user';
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';

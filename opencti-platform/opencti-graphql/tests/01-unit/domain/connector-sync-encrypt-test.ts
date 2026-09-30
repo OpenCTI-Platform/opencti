@@ -46,7 +46,7 @@ vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn()
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addConnectorDeployedCount: vi.fn(), addWorkbenchDraftConvertionCount: vi.fn(), addWorkbenchValidationCount: vi.fn(),
 }));
-vi.mock('../../../src/modules/user/user-domain', () => ({ createOnTheFlyUser: vi.fn() }));
+vi.mock('../../../src/domain/user', () => ({ createOnTheFlyUser: vi.fn() }));
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({ addDraftWorkspace: vi.fn() }));
 vi.mock('../../../src/utils/platformCrypto', () => ({
   getPlatformCrypto: vi.fn(),
@@ -77,7 +77,7 @@ import { updateAttribute, createEntity } from '../../../src/database/middleware'
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
 import { getHttpClient } from '../../../src/utils/http-client';
-import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
+import { createOnTheFlyUser } from '../../../src/domain/user';
 import { verifyIngestionUri } from '../../../src/modules/ingestion/ingestion-common';
 import { syncEditField, registerSync, findSyncById, testSync as connectorTestSync, fetchRemoteStreams } from '../../../src/domain/connector';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
