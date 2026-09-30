@@ -73,8 +73,8 @@ const userResolvers: Resolvers = {
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findUserPaginated(context, context.user, args),
-    role: (_, { id }, context) => findRoleById(context, context.user, id) as any,
-    roles: (_, args, context) => findRoles(context, context.user, args) as any,
+    role: (_, { id }, context) => findRoleById(context, context.user, id),
+    roles: (_, args, context) => findRoles(context, context.user, args),
     creators: (_, args, context) => findCreators(context, context.user, args) as any,
     assignees: (_, args, context) => findAssignees(context, context.user, args) as any,
     participants: (_, args, context) => findParticipants(context, context.user, args) as any,
@@ -87,7 +87,7 @@ const userResolvers: Resolvers = {
   },
   User: {
     roles: (current, args, context) => userRoles(context, context.user, current.id, args),
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args) as any,
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
@@ -117,13 +117,13 @@ const userResolvers: Resolvers = {
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,
     unsubscribed_news_feed_types: (current) => current.unsubscribed_news_feed_types ?? [],
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args) as any,
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
-    default_dashboard: (current: any, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
-    draftContext: (current: any, _, context) => findDraftById(context, context.user, current.draft_context),
+    default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
+    draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
     effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context) as any,
-    personal_notifiers: (current: any, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
   },
   UserSession: {
@@ -131,11 +131,11 @@ const userResolvers: Resolvers = {
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id) as any,
-    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT) as any,
+    capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
+    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
   },
   Group: {
-    roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args) as any,
+    roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
   },
   EffectiveConfidenceLevelSourceObject: {
     __resolveType(obj): any {
@@ -206,7 +206,7 @@ const userResolvers: Resolvers = {
     }) as any,
     meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
     userAdd: (_, { input }, context) => addUser(context, context.user, input),
-    bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type) as any,
+    bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
@@ -218,7 +218,7 @@ const userResolvers: Resolvers = {
   },
   Subscription: {
     me: {
-      resolve: /* v8 ignore next */ async (payload: any, _: any, context: AuthContext) => {
+      resolve: /* v8 ignore next */ async (payload: { instance: BasicStoreEntityUser }, _: unknown, context: AuthContext) => {
         // The payload snapshot can be older than the current user, and the client applies
         // payloads as they arrive: sending it would roll the client back.
         const currentUser = await resolveUserById(context, payload.instance.id);
@@ -230,7 +230,7 @@ const userResolvers: Resolvers = {
       },
     },
     user: {
-      resolve: /* v8 ignore next */ (payload: any) => payload.instance,
+      resolve: /* v8 ignore next */ (payload: { instance: BasicStoreEntityUser }) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         // @ts-expect-error pre-existing call without the edit context input
         const preFn = () => userEditContext(context, context.user, id);

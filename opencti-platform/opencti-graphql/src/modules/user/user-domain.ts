@@ -33,6 +33,7 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache }
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
+  type EntityOptions,
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
   fullEntitiesThroughRelationsToList,
@@ -41,6 +42,7 @@ import {
   internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
+  type RelationOptions,
   storeLoadById,
 } from '../../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
@@ -75,6 +77,7 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import {
+  type AuthorizedMember,
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
@@ -89,6 +92,7 @@ import {
   isBypassUser,
   isOnlyOrgaAdmin,
   isUserHasCapability,
+  type ParticipantWithOrgIds,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
@@ -110,7 +114,12 @@ import {
   type EditContext,
   type EditInput,
   EditOperation,
+  type Filter,
   type InternalRelationshipAddInput,
+  type QueryAssigneesArgs,
+  type QueryCreatorsArgs,
+  type QueryParticipantsArgs,
+  type QueryRolesArgs,
   type SendUserMailInput,
   TokenDuration,
   UnitSystem,
@@ -118,14 +127,17 @@ import {
   type UserLoginInput,
   type UserOtpActivationInput,
   type UserOtpLoginInput,
+  type UserRolesArgs,
   type UserTokenAddInput,
 } from '../../generated/graphql';
-import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
-import type { BasicGroupEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
-import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser } from './user-types';
+import type Express from 'express';
+import type { AuthContext, AuthUser, UserApiToken, UserCapability, UserOrigin } from '../../types/user';
+import type { BasicCapabilityEntity, BasicGroupEntity, BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation, StoreEntity } from '../../types/store';
+import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
+import type { ProviderUserInfo } from '../authenticationProvider/providers-configuration';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../../manager/telemetryManager';
@@ -200,7 +212,10 @@ const roleUsersCacheRefresh = async (context: AuthContext, user: AuthUser, roleI
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
 };
 
-export const userWithOrigin = (req: any, user: any, originHeaders: any = {}) => {
+type OriginRequest = Pick<Express.Request, 'ip' | 'headers' | 'header'> & { sessionID?: string };
+type OriginUser = Partial<AuthUser> & { headers_audit?: string[] };
+
+export const userWithOrigin = <T extends OriginUser>(req: OriginRequest, user: T, originHeaders: Partial<UserOrigin> = {}) => {
   // /!\ This metadata information is used in different ways
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
@@ -215,8 +230,8 @@ export const userWithOrigin = (req: any, user: any, originHeaders: any = {}) => 
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
-    group_ids: user.groups?.map((g: any) => g.internal_id) ?? [],
-    organization_ids: user.organizations?.map((o: any) => o.internal_id) ?? [],
+    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
+    organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
     user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata, sessionHash: hashedSessionId },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
@@ -267,7 +282,7 @@ export const findById = async (context: AuthContext, user: AuthUser, userId: any
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAllUser = async (context: AuthContext, user: AuthUser, args: any) => {
+export const findAllUser = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityUser>) => {
   const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
@@ -278,23 +293,23 @@ export const findUserPaginated = async (context: AuthContext, user: AuthUser, ar
 };
 
 const postResolveMembersFunction = (context: AuthContext, user: AuthUser) => {
-  return async (usersResult: any) => {
+  return async (usersResult: ParticipantWithOrgIds[]) => {
     return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
   };
 };
 
-export const findCreators = (context: AuthContext, user: AuthUser, args: any) => {
+export const findCreators = (context: AuthContext, user: AuthUser, args: QueryCreatorsArgs) => {
   const { entityTypes = [] } = args;
   const creatorsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
-export const findAssignees = (context: AuthContext, user: AuthUser, args: any) => {
+export const findAssignees = (context: AuthContext, user: AuthUser, args: QueryAssigneesArgs) => {
   const { entityTypes = [] } = args;
   const assigneesFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
-export const findParticipants = (context: AuthContext, user: AuthUser, args: any) => {
+export const findParticipants = (context: AuthContext, user: AuthUser, args: QueryParticipantsArgs) => {
   const { entityTypes = [] } = args;
   const participantsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
@@ -318,8 +333,9 @@ export const findAllSystemMemberPaginated = () => {
   return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
 };
 
+type CreatorSourceUser = AuthUser & { description?: string; [RELATION_PARTICIPATE_TO]?: string[] };
 // build only a creator object with what we need to expose of users
-const buildCreatorUser = (user: any) => {
+const buildCreatorUser = (user: CreatorSourceUser | undefined) => {
   if (!user) {
     return user;
   }
@@ -343,16 +359,16 @@ export const batchCreators = async (context: AuthContext, user: AuthUser, userLi
   return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
 };
 
-export const userOrganizationsPaginatedWithoutInferences = async (context: AuthContext, user: AuthUser, userId: string, opts: any) => {
+export const userOrganizationsPaginatedWithoutInferences = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicStoreEntityOrganization>) => {
   const args = { ...opts, withInferences: false };
   return pageRegardingEntitiesConnection<BasicStoreEntityOrganization>(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
-export const userOrganizationsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: any) => {
+export const userOrganizationsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicStoreEntityOrganization>) => {
   return pageRegardingEntitiesConnection<BasicStoreEntityOrganization>(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
-export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: any) => {
+export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: UserRolesArgs) => {
   const { orderBy, orderMode } = opts;
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const userLoaded: any = platformUsers.get(userId);
@@ -365,21 +381,21 @@ export const userRoles = async (context: AuthContext, _user: AuthUser, userId: s
   return userLoaded.roles;
 };
 
-export const userGroupsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: any) => {
+export const userGroupsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicGroupEntity>) => {
   return pageRegardingEntitiesConnection(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
 };
 
-export const groupRolesPaginated = async (context: AuthContext, user: AuthUser, groupId: string, opts: any) => {
+export const groupRolesPaginated = async (context: AuthContext, user: AuthUser, groupId: string, opts: EntityOptions<BasicStoreEntity>) => {
   return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
 };
 
-export const batchUserTokens = async (__: AuthContext, _: AuthUser, batchUsers: any[]) => {
+export const batchUserTokens = async (__: AuthContext, _: AuthUser, batchUsers: Pick<AuthUser, 'api_tokens'>[]) => {
   const tokenIds = batchUsers.flatMap((u) => u.api_tokens ?? []).map((token) => token.id);
   const tokensMap = await getTokensUsage(tokenIds);
-  return batchUsers.map((u) => (u.api_tokens ?? []).map((token: any) => ({ ...token, last_used_at: tokensMap[token.id] })));
+  return batchUsers.map((u) => (u.api_tokens ?? []).map((token) => ({ ...token, last_used_at: tokensMap[token.id] })));
 };
 
-export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, userIds: string[], opts: any = {}) => {
+export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, userIds: string[], opts: EntityOptions<BasicStoreEntity> = {}) => {
   // Get all groups for users
   const usersGroups = await fullRelationsList(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
   const groupIds: string[] = [];
@@ -416,7 +432,7 @@ export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, u
   });
 };
 
-export const computeAvailableMarkings = (userMarkings: any[], allMarkings: any[]) => {
+export const computeAvailableMarkings = <T extends BasicStoreEntityMarkingDefinition>(userMarkings: BasicStoreEntityMarkingDefinition[], allMarkings: T[]) => {
   const computedMarkings = [];
   for (let index = 0; index < userMarkings.length; index += 1) {
     const userMarking = userMarkings[index];
@@ -455,12 +471,20 @@ export const checkUserCanShareMarkings = async (context: AuthContext, user: Auth
   }
 };
 
-const getUserAndGlobalMarkings = async (context: AuthContext, userId: string, userGroups: any[], userMarkings: any[], capabilities: any[]) => {
+type MaxShareableMarking = { type: string; value: string };
+type GroupWithShareableMarkings = { max_shareable_markings?: MaxShareableMarking[] };
+const getUserAndGlobalMarkings = async (
+  context: AuthContext,
+  userId: string,
+  userGroups: GroupWithShareableMarkings[],
+  userMarkings: BasicStoreEntityMarkingDefinition[],
+  capabilities: UserCapability[],
+) => {
   const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesListFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, userGroups);
-  let computeUserMarkings: any;
+  let computeUserMarkings: BasicStoreEntityMarkingDefinition[];
   let maxShareableMarkings: any;
   const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
@@ -468,11 +492,11 @@ const getUserAndGlobalMarkings = async (context: AuthContext, userId: string, us
     maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
     computeUserMarkings = userMarkings;
-    const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }: any) => value === 'none').map(({ type }: any) => type));
-    maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }: any) => value !== 'none')).filter((m) => !!m);
+    const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type));
+    maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
     const allShareableMarkings = all.filter(({ definition_type }) => (
       !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }: any) => type === definition_type)
-    )).filter(({ id }) => computeUserMarkings.some((m: any) => m.id === id)).map(({ id }) => id);
+    )).filter(({ id }) => computeUserMarkings.some((m) => m.id === id)).map(({ id }) => id);
     maxShareableMarkings = [...maxShareableMarkings.map(({ value }: any) => value), ...allShareableMarkings];
   }
   const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
@@ -480,24 +504,24 @@ const getUserAndGlobalMarkings = async (context: AuthContext, userId: string, us
 };
 
 export const roleCapabilities = async (context: AuthContext, user: AuthUser, roleId: string, relationshipType: string = RELATION_HAS_CAPABILITY) => {
-  return await fullEntitiesThroughRelationsToList(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
+  return await fullEntitiesThroughRelationsToList<BasicCapabilityEntity>(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
 };
 
-export const getDefaultHiddenTypes = (entities: any[]) => {
+export const getDefaultHiddenTypes = (entities: { default_hidden_types?: string[] }[]) => {
   let userDefaultHiddenTypes = entities.map((entity) => entity.default_hidden_types).flat();
   userDefaultHiddenTypes = uniq(userDefaultHiddenTypes.filter((type) => type !== undefined));
   return userDefaultHiddenTypes;
 };
 
 export const findRoleById = (context: AuthContext, user: AuthUser, roleId: string) => {
-  return storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
+  return storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
 };
 
-export const findRoles = (context: AuthContext, user: AuthUser, args: any) => {
+export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
-export const findCapabilities = async (context: AuthContext, user: AuthUser, args: any, relationship_type: string = RELATION_HAS_CAPABILITY) => {
+export const findCapabilities = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity>, relationship_type: string = RELATION_HAS_CAPABILITY) => {
   const filters = relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT
     ? addFilter(args.filters, 'name', CAPABILITIES_IN_DRAFT_NAMES)
     : args.filters;
@@ -508,7 +532,7 @@ export const findCapabilities = async (context: AuthContext, user: AuthUser, arg
   });
 };
 
-export const findRolesWithCapabilityInDraft = async (context: AuthContext, user: AuthUser, args?: any) => {
+export const findRolesWithCapabilityInDraft = async (context: AuthContext, user: AuthUser, args?: RelationOptions<BasicStoreRelation>) => {
   return R.uniqBy((relation) => relation.fromId,
     await fullRelationsList(
       context,
@@ -522,7 +546,7 @@ export const findRolesWithCapabilityInDraft = async (context: AuthContext, user:
 };
 
 export const roleDelete = async (context: AuthContext, user: AuthUser, roleId: string) => {
-  const deleted = await deleteElementById<any>(context, user, roleId, ENTITY_TYPE_ROLE);
+  const deleted = await deleteElementById<StoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -553,8 +577,9 @@ const isUserAdministratingOrga = (user: AuthUser, organizationId: string) => {
   return user.administrated_organizations.some(({ id }) => id === organizationId);
 };
 
+type UserWithOrganizationIds = BasicStoreEntityUser & { [RELATION_PARTICIPATE_TO]?: string[] };
 const loadUserToUpdateWithAccessCheck = async (context: AuthContext, user: AuthUser, userId: string) => {
-  const userToUpdate = await internalLoadById<any>(context, user, userId, { type: ENTITY_TYPE_USER });
+  const userToUpdate = await internalLoadById<UserWithOrganizationIds>(context, user, userId, { type: ENTITY_TYPE_USER });
   if (!userToUpdate) {
     throw FunctionalError(`${ENTITY_TYPE_USER} cannot be found.`, { userId });
   }
@@ -619,7 +644,8 @@ export const assignGroupToUser = async (context: AuthContext, user: AuthUser, us
   return rel;
 };
 
-export const checkPasswordInlinePolicy = (context: AuthContext, policy: any, password: string) => {
+type PasswordInlinePolicy = Pick<BasicStoreSettings, 'password_policy_min_length' | 'password_policy_max_length' | 'password_policy_min_symbols' | 'password_policy_min_numbers' | 'password_policy_min_words' | 'password_policy_min_lowercase' | 'password_policy_min_uppercase'>;
+export const checkPasswordInlinePolicy = (context: AuthContext, policy: PasswordInlinePolicy, password: string) => {
   const {
     password_policy_min_length,
     password_policy_max_length,
@@ -977,7 +1003,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: any
   }));
   await Promise.all(relationOrganizations.map((relation: any) => createRelation(context, user, relation)));
   // Add the provided groups
-  let relationGroups: any[] = [];
+  let relationGroups: { fromId: string; toId: string; relationship_type: string }[] = [];
   if ((newUser.groups ?? []).length > 0) {
     relationGroups = (newUser.groups ?? []).map((group: string) => ({
       fromId: element.id,
@@ -1032,7 +1058,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: any
 };
 
 export const roleEditField = async (context: AuthContext, user: AuthUser, roleId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute<any>(context, user, roleId, ENTITY_TYPE_ROLE, input);
+  const { element } = await updateAttribute<StoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -1046,7 +1072,7 @@ export const roleEditField = async (context: AuthContext, user: AuthUser, roleId
 };
 
 export const roleAddRelation = async (context: AuthContext, user: AuthUser, roleId: string, input: InternalRelationshipAddInput) => {
-  const role = await storeLoadById<any>(context, user, roleId, ENTITY_TYPE_ROLE);
+  const role = await storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`, { id: roleId });
   }
@@ -1071,7 +1097,7 @@ export const roleAddRelation = async (context: AuthContext, user: AuthUser, role
 };
 
 export const roleDeleteRelation = async (context: AuthContext, user: AuthUser, roleId: string, toId: string, relationshipType: string) => {
-  const role = await storeLoadById<any>(context, user, roleId, ENTITY_TYPE_ROLE);
+  const role = await storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError('Cannot delete the relation, Role cannot be found.', { id: roleId });
   }
@@ -1114,7 +1140,7 @@ export const validateAndNormalizeEmailInput = async (context: AuthContext, userI
   }
 };
 
-export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: any = {}) => {
+export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: Parameters<typeof updateAttribute>[5] = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
@@ -1226,7 +1252,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute<any>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
+  const { element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -1265,7 +1291,7 @@ export const bookmarks = async (context: AuthContext, user: AuthUser, args: any)
     }
     // filter the bookmark list according to the filters
     const entityTypeBookmarkTester = {
-      entity_type: (data: any, filter: any) => {
+      entity_type: (data: UserBookmark, filter: Filter) => {
         const values = [data.type]; // data is a bookmark
         return testStringFilter(filter, values);
       },
@@ -1306,10 +1332,10 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
     R.filter((n) => n.id !== id, currentBookmarks),
   );
   await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
-  return storeLoadById(context, user, id, type);
+  return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
-export const meEditField = async (context: any, user: any, userId: string, inputs: any[], password: string | null = null) => {
+export const meEditField = async (context: AuthContext, user: any, userId: string, inputs: any[], password: string | null = null) => {
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
@@ -1348,10 +1374,10 @@ export const meEditField = async (context: any, user: any, userId: string, input
   return userEditField(context, user, userId, inputs);
 };
 
-export const isUserTheLastAdmin = (userId: string, authorized_members: any) => {
+export const isUserTheLastAdmin = (userId: string, authorized_members: AuthorizedMember[] | null | undefined) => {
   if (authorized_members !== null && authorized_members !== undefined) {
-    const currentUserIsAdmin = authorized_members.some(({ id, access_right }: any) => id === userId && access_right === 'admin');
-    const anotherUserIsAdmin = authorized_members.some(({ id, access_right }: any) => id !== userId && access_right === 'admin');
+    const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
+    const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
 
     return currentUserIsAdmin && !anotherUserIsAdmin;
   }
@@ -1469,7 +1495,7 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   await deleteAllWorkspaceForUser(context, user, userId);
   await disablePublicSharingForDeletedUser(context, userId);
 
-  const deleted = await deleteElementById<any>(context, user, userId, ENTITY_TYPE_USER);
+  const deleted = await deleteElementById<StoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
     user,
@@ -1516,7 +1542,7 @@ export const userAddRelation = async (context: AuthContext, user: AuthUser, user
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
 
-export const userDeleteRelation = async (context: AuthContext, user: AuthUser, targetUser: any, toId: string, relationshipType: string) => {
+export const userDeleteRelation = async (context: AuthContext, user: AuthUser, targetUser: BasicStoreEntityUser, toId: string, relationshipType: string) => {
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
@@ -1578,7 +1604,18 @@ export const userDeleteOrganizationRelation = async (context: AuthContext, user:
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
-export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<any> => {
+type LoginFromProviderOptions = {
+  providerGroups?: string[];
+  providerOrganizations?: string[];
+  preventDefaultGroups?: boolean;
+  autoCreateGroup?: boolean;
+  extendPlatformGroups?: boolean;
+  autoCreateOrganization?: boolean;
+  providerGroupsMapping?: { provider: string; platform: string }[];
+};
+
+type LoginFromProviderResult = BasicStoreEntityUser & { provider_metadata?: unknown } & Record<string, unknown>;
+export const loginFromProvider = async (userInfo: ProviderUserInfo, opts: LoginFromProviderOptions = {}): Promise<LoginFromProviderResult> => {
   const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
   const { autoCreateGroup = false, extendPlatformGroups = false, autoCreateOrganization = false, providerGroupsMapping = [] } = opts;
   const context = executionContext('login_provider');
@@ -1592,7 +1629,7 @@ export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<
     };
     const foundGroups = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters: groupsFilters });
     const foundGroupsNames = foundGroups.map((group) => group.name);
-    const newGroupsToCreate: any[] = [];
+    const newGroupsToCreate: Promise<unknown>[] = [];
     providerGroups.forEach((groupName: string) => {
       if (!foundGroupsNames.includes(groupName)) {
         if (!autoCreateGroup) {
@@ -1613,7 +1650,7 @@ export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<
     };
     const foundOrganizations = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: organizationsFilters });
     const foundOrganizationsNames = foundOrganizations.map((group) => group.name);
-    const newOrganizationsToCreate: any[] = [];
+    const newOrganizationsToCreate: Promise<unknown>[] = [];
     providerOrganizations.forEach((organizationName: string) => {
       if (!foundOrganizationsNames.includes(organizationName)) {
         if (!autoCreateOrganization) {
@@ -1633,7 +1670,7 @@ export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<
   }
   const userEmail = normalizeEmail(email);
   const name = isEmptyField(providedName) ? userEmail : providedName;
-  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+  const user = await elLoadBy<BasicStoreEntityUser>(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
     const newUser = { name, firstname, lastname, user_email: userEmail, external: true, prevent_default_groups: preventDefaultGroups };
@@ -1649,11 +1686,11 @@ export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
     // 01 - Delete group relations from the user
-    const userGroups = await fullEntitiesThroughRelationsToList<any>(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+    const userGroups = await fullEntitiesThroughRelationsToList<BasicGroupEntity>(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
     let deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
     if (extendPlatformGroups) {
       // swap to delete groups that are managed by the provider that aren't in the provided groups
-      const providerManagedGroups = providerGroupsMapping.map((mapping: any) => mapping.platform).filter((group: string) => !providerGroups.includes(group));
+      const providerManagedGroups = providerGroupsMapping.map((mapping) => mapping.platform).filter((group: string) => !providerGroups.includes(group));
       deleteGroups = userGroups.filter((o) => providerManagedGroups.includes(o.name));
     }
     for (let index = 0; index < deleteGroups.length; index += 1) {
@@ -1672,7 +1709,13 @@ export const loginFromProvider = async (userInfo: any, opts: any = {}): Promise<
   // If organizations are specified here, that overwrite the default assignation
   if (providerOrganizations.length > 0) {
     // 01 - Delete all organizations no longer assign to the user
-    const userOrganizations = await fullEntitiesThroughRelationsToList<any>(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const userOrganizations = await fullEntitiesThroughRelationsToList<BasicStoreEntityOrganization>(
+      context,
+      SYSTEM_USER,
+      user.id,
+      RELATION_PARTICIPATE_TO,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    );
     const deleteOrganizations = userOrganizations.filter((o) => !providerOrganizations.includes(o.name));
     for (let index = 0; index < deleteOrganizations.length; index += 1) {
       const userOrganization = deleteOrganizations[index];
@@ -1733,7 +1776,8 @@ export const resolveUserIndividual = async (context: AuthContext, user: AuthUser
   return user.individual_id;
 };
 
-export const otpUserActivation = async (context: any, user: AuthUser, { secret, code }: UserOtpActivationInput) => {
+type OtpSessionRequest = { session: { user: { otp_validated?: boolean }; save: () => void } };
+export const otpUserActivation = async (context: AuthContext & { req: OtpSessionRequest }, user: AuthUser, { secret, code }: UserOtpActivationInput) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
     throw UnsupportedError('You need to deactivate your current 2FA before generating a new one');
@@ -1762,7 +1806,7 @@ export const otpUserDeactivation = async (context: AuthContext, user: AuthUser, 
  * If blocked, throws an AuthenticationFailure with the IP blocked message.
  * The middleware will block any subsequent requests from this IP.
  */
-const checkIpWhitelistOnLogin = async (context: AuthContext, loggedUser: any) => {
+const checkIpWhitelistOnLogin = async (context: AuthContext, loggedUser: Pick<AuthUser, 'id'>) => {
   // Global kill switch via configuration file (app:ip_whitelist_enabled)
   const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
   if (!ipWhitelistConfEnabled) return;
@@ -1793,18 +1837,19 @@ const checkIpWhitelistOnLogin = async (context: AuthContext, loggedUser: any) =>
   throw AuthenticationFailure('Your IP address is not allowed to access this platform');
 };
 
+type PassportAuthenticationResult = { user: BasicStoreEntityUser | false | undefined; provider: string };
 export const sessionLogin = async (context: AuthContext, input: UserLoginInput) => {
   // We need to iterate on each provider to find one that validated the credentials
   let loggedUser;
   // don't send error immediately until all providers have failed
-  const deferredErrors: any[] = [];
+  const deferredErrors: (() => void)[] = [];
   // Try registered providers first
   const body = { username: input.email, password: input.password };
   const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
   for (let index = 0; index < formProviders.length; index += 1) {
     const auth = formProviders[index];
-    const { user, provider } = await new Promise<any>((resolve) => {
-      passport.authenticate(auth.provider, {}, (err: any, authUser: any, info: any) => {
+    const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
+      passport.authenticate(auth.provider, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         if (err || info) {
           // @ts-expect-error _strategy is an undocumented passport API
           const authLogger = passport._strategy(auth.provider).logger;
@@ -1827,8 +1872,8 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   // Try local is activated
   if (!loggedUser) {
     const settings: any = await getSettings(context);
-    const { user, provider } = await new Promise<any>((resolve) => {
-      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: any, authUser: any, info: any) => {
+    const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
+      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         if (err || info) {
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
@@ -1853,7 +1898,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   } else {
     deferredErrors.forEach((d) => d());
   }
-  const auditUser = userWithOrigin(context.req, { user_email: input.email });
+  const auditUser = userWithOrigin(context.req!, { user_email: input.email } as AuthUser);
   await publishUserAction({
     user: auditUser,
     event_type: 'authentication',
@@ -1867,7 +1912,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   throw AuthenticationFailure();
 };
 
-export const otpUserLogin = async (req: any, user: any, { code }: UserOtpLoginInput) => {
+export const otpUserLogin = async (req: OtpSessionRequest, user: any, { code }: UserOtpLoginInput) => {
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
@@ -2057,7 +2102,7 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
   return resolvedUsers;
 };
 
-export const buildCompleteUser = async (context: AuthContext, client: any) => {
+export const buildCompleteUser = async (context: AuthContext, client: Omit<BasicStoreEntityUser, 'password'> | null | undefined) => {
   if (!client) {
     return undefined;
   }
@@ -2073,11 +2118,11 @@ export const resolveUserByIdFromCache = async (context: AuthContext, id: string)
 
 export const resolveUserById = async (context: AuthContext, id: string) => {
   if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
-  const client = await storeLoadById(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
+  const client = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
 
-export const authenticateUserByBasicAuth = async (context: AuthContext, req: any, basicAuth: any) => {
+export const authenticateUserByBasicAuth = async (context: AuthContext, req: OriginRequest, basicAuth: { username: string; password: string }) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const loggedUser = await login(basicAuth.username, basicAuth.password);
   const user = platformUsers.get(loggedUser.id);
@@ -2090,7 +2135,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: any
   throw FunctionalError('Cannot identify user with basic auth');
 };
 
-export const authenticateUserByJWT = async (context: AuthContext, req: any, token: string) => {
+export const authenticateUserByJWT = async (context: AuthContext, req: OriginRequest, token: string) => {
   const verified = await verifyXtmJwt(token);
   const { iss, sub, email }: any = verified.payload;
 
@@ -2109,7 +2154,7 @@ export const authenticateUserByJWT = async (context: AuthContext, req: any, toke
   return await authenticateUserByEmail(context, req, email);
 };
 
-const authenticateUserByEmail = async (context: AuthContext, req: any, email: string) => {
+const authenticateUserByEmail = async (context: AuthContext, req: OriginRequest, email: string) => {
   const user = await getUserByEmail(email);
   if (!user) {
     throw AuthenticationFailure('JWT email does not match any user', { email });
@@ -2122,7 +2167,7 @@ const authenticateUserByEmail = async (context: AuthContext, req: any, email: st
   return internalAuthenticateUser(context, req, cacheUser);
 };
 
-export const authenticateUserByToken = async (context: AuthContext, req: any, token: string) => {
+export const authenticateUserByToken = async (context: AuthContext, req: OriginRequest, token: string) => {
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const hashedToken = await generateTokenHmac(token);
   const user = platformUsers.find((u) => {
@@ -2157,7 +2202,7 @@ export const authenticateUserByToken = async (context: AuthContext, req: any, to
   throw FunctionalError('Cannot identify user with token');
 };
 
-export const authenticateUserByUserId = async (context: AuthContext, req: any, userId: string) => {
+export const authenticateUserByUserId = async (context: AuthContext, req: OriginRequest, userId: string) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   if (platformUsers.has(userId)) {
     const user = platformUsers.get(userId);
@@ -2195,7 +2240,7 @@ const internalAuthenticateUser = async (context: AuthContext, req: any, user: an
  * @param {AuthUser} user
  * @returns {boolean}
  */
-export const isPasswordExpired = (user: any) => {
+export const isPasswordExpired = (user: Pick<AuthUser, 'password_valid_until'>) => {
   if (user.password_valid_until == null) {
     return false;
   }
@@ -2213,7 +2258,7 @@ export const isPasswordExpired = (user: any) => {
  *   Used at session creation so the user can authenticate and be redirected to the password screen.
  * @throws {AuthenticationFailure} if the user has an invalid account status.
  */
-const validateUser = (user: any, settings: any, { skipForcePasswordCheck = false }: { skipForcePasswordCheck?: boolean } = {}) => {
+const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForcePasswordCheck = false }: { skipForcePasswordCheck?: boolean } = {}) => {
   // Check organization consistency
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -2244,7 +2289,7 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: any, us
     platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     logged = platformUsers.get(user.internal_id);
   }
-  const settings = await getEntityFromCache<any>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged, settings, { skipForcePasswordCheck: true });
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged.id, settings.platform_session_max_concurrent);
@@ -2415,7 +2460,7 @@ export const userEditContext = async (context: AuthContext, user: AuthUser, user
 };
 // endregion
 
-const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: any, userToLoad: any, cachedUsers: Map<string, any>) => {
+const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: any, userToLoad: BasicStoreEntityUser, cachedUsers: Map<string, AuthUser>) => {
   const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {
@@ -2432,7 +2477,7 @@ const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: any, u
   return completeUser;
 };
 
-export const batchUserEffectiveConfidenceLevel = async (context: AuthContext, user: AuthUser, batchUsers: any[]) => {
+export const batchUserEffectiveConfidenceLevel = async (context: AuthContext, user: AuthUser, batchUsers: BasicStoreEntityUser[]) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const completeUsers = [];
   for (let i = 0; i < batchUsers.length; i += 1) {
