@@ -108,7 +108,7 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
   if (relationshipType === RELATION_OBJECT && COVERED_ENTITIES_TYPE.includes(stixObjectOrRelationship.entity_type)) {
     // toId is a StixRef, resolve it since has-covered relationships are indexed on internal ids.
     const removedEntity = await findById(context, user, toId);
-    if (removedEntity  && patchedElement.currentRefIds.includes(removedEntity.internal_id)) {
+    if (removedEntity && patchedElement.currentRefIds.includes(removedEntity.internal_id)) {
       await removeHasCoveredForRemovedEntities(context, stixObjectOrRelationship.internal_id, [removedEntity.internal_id]);
     }
   }
