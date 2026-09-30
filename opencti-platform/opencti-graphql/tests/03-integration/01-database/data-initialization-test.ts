@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, fullEntitiesThroughRelationsToList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -12,7 +12,13 @@ import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retenti
 import { elList, elUpdate } from '../../../src/database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../../src/database/utils';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
-import { BUILT_IN_EXPORT_ID_TYPES, computeMissingBuiltInExportIds, up as addExportIdMigration } from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
+import { logApp } from '../../../src/config/conf';
+import {
+  BUILT_IN_EXPORT_ID_TYPES,
+  computeMissingBuiltInExportIds,
+  findMissingBuiltInElements,
+  up as addExportIdMigration,
+} from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -217,10 +223,17 @@ describe('Built-in entities export_id', () => {
 
   it('should compute in the migration the same export_id as the initialization', async () => {
     const elements = await listBuiltInCandidates();
-    const initializationExportIds = new Map(elements.filter((e) => e.export_id).map((e) => [e.internal_id, e.export_id]));
+    const initializationExportIds = new Map(elements.map((e) => [e.internal_id, e.export_id]));
     const elementsWithoutExportId = elements.map(({ export_id: _, ...element }) => element);
-    const migrationExportIds = new Map(computeMissingBuiltInExportIds(elementsWithoutExportId).map((a) => [a.element.internal_id, a.export_id]));
-    expect(migrationExportIds).toEqual(initializationExportIds);
+    const assignments = computeMissingBuiltInExportIds(elementsWithoutExportId);
+    expect(assignments.length).toBeGreaterThan(500);
+    // Every element the migration recognizes gets the value computed at creation
+    assignments.forEach(({ element, export_id }) => {
+      expect(export_id, `${element.entity_type} ${element.internal_id}`).toEqual(initializationExportIds.get(element.internal_id));
+    });
+    // The migration finds every built-in element it expects. A failure means a built-in element was renamed or removed:
+    // its export_id must stay the one of platforms created before. Fintel templates are not created by the test platform setup.
+    expect(findMissingBuiltInElements(elements).filter((missing) => missing.entity_type !== 'FintelTemplate')).toEqual([]);
   });
 
   it('should add the missing export_id to built-in entities with the migration', async () => {
@@ -240,7 +253,11 @@ describe('Built-in entities export_id', () => {
     }
     const withoutExportId = await listBuiltInCandidates();
     expect(computeMissingBuiltInExportIds(withoutExportId)).toHaveLength(targets.length);
+    const warnSpy = vi.spyOn(logApp, 'warn');
     await addExportIdMigration(() => {});
+    // The test platform setup does not create the fintel templates: the migration reports them
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('6 built-in FintelTemplate not found'));
+    warnSpy.mockRestore();
     const migrated = await listBuiltInCandidates();
     targets.forEach((target) => {
       expect(findElement(migrated, target.entity_type, (e) => e.internal_id === target.internal_id).export_id).toEqual(target.export_id);

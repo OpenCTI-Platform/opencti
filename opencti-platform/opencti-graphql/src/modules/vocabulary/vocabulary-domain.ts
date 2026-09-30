@@ -13,6 +13,7 @@ import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { normalizeName } from '../../schema/identifier';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { generateBuiltInExportId } from '../../schema/identifier';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
@@ -77,9 +78,18 @@ const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) 
   }
 };
 
+// Vocabularies declared by the platform get their stable export_id whoever creates them: initialization, migration or user
+const computeBuiltInVocabularyExportId = (category: VocabularyCategory, name: string) => {
+  const storedName = name.trim();
+  const isBuiltIn = (openVocabularies[category] ?? []).some(({ key }) => key.trim() === storedName);
+  return isBuiltIn ? generateBuiltInExportId(ENTITY_TYPE_VOCABULARY, { category, name: storedName }) : undefined;
+};
+
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
   checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
-  const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
+  const export_id = computeBuiltInVocabularyExportId(vocabulary.category, vocabulary.name);
+  const vocabularyToCreate = { ...vocabulary, order: vocabulary.order ?? 0, ...(export_id ? { export_id } : {}) };
+  const element = await createEntity(context, user, vocabularyToCreate, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
 
