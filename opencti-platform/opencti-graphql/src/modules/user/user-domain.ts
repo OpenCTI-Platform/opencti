@@ -120,7 +120,7 @@ import {
 } from '../../generated/graphql';
 import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
 import type { BasicGroupEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
-import type { BasicStoreEntityUser } from './user-types';
+import { apiTokens, type BasicStoreEntityUser } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -136,7 +136,6 @@ import { sanitizeUser } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
-import { apiTokens } from '../attributes/internalObject-registrationAttributes';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';

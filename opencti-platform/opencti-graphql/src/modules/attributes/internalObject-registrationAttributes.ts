@@ -1,21 +1,7 @@
 import * as R from 'ramda';
-import { computeAccountStatusChoices } from '../../config/conf';
 import { ConnectorPriorityGroup } from '../../generated/graphql';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
-import {
-  type AttributeDefinition,
-  changes,
-  createdAt,
-  creators,
-  draftChange,
-  draftContext,
-  errors,
-  id,
-  lastEventId,
-  type NestedObjectAttribute,
-  refreshedAt,
-  updatedAt,
-} from '../../schema/attribute-definition';
+import { type AttributeDefinition, changes, createdAt, creators, draftContext, errors, id, lastEventId, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import {
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_BACKGROUND_TASK,
@@ -178,25 +164,6 @@ export const settingsMessages = {
   },
 };
 
-export const apiTokens: NestedObjectAttribute = {
-  name: 'api_tokens',
-  label: 'API Tokens',
-  type: 'object',
-  format: 'nested',
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: true,
-  upsert: true,
-  isFilterable: false,
-  mappings: [
-    { name: 'id', label: 'ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'hash', label: 'Hash', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'masked_token', label: 'Masked Token', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'created_at', label: 'Created at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    { name: 'expires_at', label: 'Expires at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-  ],
-};
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> } = {
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -344,82 +311,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
       ],
     },
     { name: 'auto_integration_assignation', label: 'Default Group used for integration user creation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-  ],
-  [ENTITY_TYPE_USER]: [
-    { name: 'user_email', label: 'Email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'personal_notifiers', label: 'Trigger for personal notifiers', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    // { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'firstname', label: 'User firstname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'lastname', label: 'User lastname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'theme', label: 'Theme', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'language', label: 'Language', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'external', label: 'External', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    {
-      name: 'bookmarks',
-      label: 'Bookmarks',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: false,
-      isFilterable: false,
-      mappings: [
-        { name: 'id', label: 'Id', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-        { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-      ],
-    },
-    apiTokens,
-    { name: 'otp_secret', label: 'OTP secret', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'password_valid_until', label: 'Password valid until', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { ...draftContext, isFilterable: false },
-    { ...draftChange, isFilterable: false },
-    { name: 'default_time_field', label: 'Default time field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'account_status', label: 'Account status', type: 'string', format: 'enum', values: Object.keys(computeAccountStatusChoices()), mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'account_lock_after_date', label: 'User account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'merged_into', label: 'Merged into', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'administrated_organizations', label: 'Administrated organizations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'unit_system', label: 'Unit system', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'submenu_show_icons', label: 'Show submenu icons', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'submenu_auto_collapse', label: 'Auto collapse submenus', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'monochrome_labels', label: 'Monochrome labels and entity types', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'unsubscribed_news_feed_types', label: 'Unsubscribed news feed types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    {
-      name: 'user_confidence_level',
-      label: 'User Confidence Level',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: false,
-      upsert: false,
-      isFilterable: false,
-      mappings: [
-        { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
-        {
-          name: 'overrides',
-          label: 'Overrides',
-          type: 'object',
-          format: 'nested',
-          editDefault: false,
-          mandatoryType: 'internal',
-          multiple: true,
-          upsert: true,
-          isFilterable: false,
-          mappings: [
-            { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
-            { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
-          ],
-        },
-      ],
-    },
-    { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

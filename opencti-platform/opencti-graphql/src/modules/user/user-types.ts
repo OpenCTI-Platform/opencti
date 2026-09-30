@@ -2,8 +2,29 @@ import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { UserApiToken } from '../../types/user';
 import type { ConfidenceLevel } from '../../generated/graphql';
+import type { NestedObjectAttribute } from '../../schema/attribute-definition';
 
 export const ENTITY_TYPE_USER = 'User';
+
+export const apiTokens: NestedObjectAttribute = {
+  name: 'api_tokens',
+  label: 'API Tokens',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  mappings: [
+    { name: 'id', label: 'ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'hash', label: 'Hash', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'masked_token', label: 'Masked Token', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'created_at', label: 'Created at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'expires_at', label: 'Expires at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+  ],
+};
 
 // region Database types
 export interface UserBookmark {
