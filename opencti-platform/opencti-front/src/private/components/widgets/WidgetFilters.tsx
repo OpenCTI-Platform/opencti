@@ -310,11 +310,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         )}
       </Box>
 
-      <Box sx={{ paddingTop: 4 }}>
+      <Box sx={{ paddingTop: 2 }}>
         {perspective === 'relationships'
           && (dataSelection.filters_id || isFilterGroupNotEmptyShallow(filters))
           && (
-            <div style={{ marginTop: 8, marginBottom: 4 }}>
+            <div style={{ padding: 4 }}>
               {t_i18n('Relationship filters: these filters apply to the relationships between the result of any dynamic source or dynamic target filters ')}
             </div>
           )
@@ -340,7 +340,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
           || (!isSavedDynamicFromMode && isFilterGroupNotEmptyShallow(filtersDynamicFrom)))
         && (
-          <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <div style={{ padding: 4 }}>
             {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
           </div>
         )
@@ -369,7 +369,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
           || (!isSavedDynamicToMode && isFilterGroupNotEmptyShallow(filtersDynamicTo)))
         && (
-          <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <div style={{ padding: 4 }}>
             {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
           </div>
         )
