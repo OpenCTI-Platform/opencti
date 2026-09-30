@@ -38,6 +38,24 @@ describe('WidgetCreationParameters.utils', () => {
     expect(getEntityTypeFromFilters(filterGroup)).toBeUndefined();
   });
 
+  it('returns relationship type with and global mode', () => {
+    const filterGroup: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'relationship_type', values: ['stix-sighting-relationship'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    expect(getEntityTypeFromFilters(filterGroup)).toBe('stix-sighting-relationship');
+  });
+
+  it('returns relationship type with or global mode', () => {
+    const filterGroup: FilterGroup = {
+      mode: 'or',
+      filters: [{ key: 'relationship_type', values: ['stix-sighting-relationship'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    expect(getEntityTypeFromFilters(filterGroup)).toBe('stix-sighting-relationship');
+  });
+
   it('keeps selected columns when they are missing from available columns', () => {
     const availableColumns: WidgetColumn[] = [
       { attribute: 'entity_type', label: 'Type' },
