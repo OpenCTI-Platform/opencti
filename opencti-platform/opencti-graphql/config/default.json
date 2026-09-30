@@ -446,7 +446,9 @@
     "username": "",
     "password": "",
     "forced_sender_email": "",
-    "email_max_cc_size": 500
+    "email_max_cc_size": 500,
+    "connection_timeout": 10000,
+    "greeting_timeout": 10000
   },
   "aws": {
     "proxy_enabled": false
