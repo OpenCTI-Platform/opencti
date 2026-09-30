@@ -67,6 +67,8 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
 
 export interface StoreEntityUser extends BasicStoreEntityUser, StoreEntity {}
 
+export type BasicStoreMember = Pick<BasicStoreEntity, 'id' | 'name' | 'entity_type'>;
+
 export interface StoreUserSession extends Omit<UserSession, 'user'> {
   user_id: string;
 }

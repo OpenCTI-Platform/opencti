@@ -88,6 +88,8 @@ const config: CodegenConfig = {
           Group: '../types/store.d#BasicGroupEntity',
           MeUser: '../modules/user/user-types#BasicStoreEntityUser',
           UserSession: '../modules/user/user-types#StoreUserSession',
+          Creator: '../modules/user/user-types#BasicStoreMember',
+          Member: '../modules/user/user-types#BasicStoreMember',
         },
       },
     },

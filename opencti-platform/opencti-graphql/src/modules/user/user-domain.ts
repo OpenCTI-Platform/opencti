@@ -1890,7 +1890,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     // As soon as credential is validated, stop looking for another provider
     if (user) {
       await checkIpWhitelistOnLogin(context, user);
-      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+      loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
       break;
     }
   }
@@ -1908,7 +1908,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
     if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context, user);
-      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+      loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
     }
   }
   if (loggedUser) {
@@ -2311,13 +2311,13 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   }
 };
 
-export const sessionAuthenticateUser = async (context: AuthContext, req: any, user: any, provider: string) => {
+export const sessionAuthenticateUser = async (context: AuthContext, req: Express.Request, user: Pick<BasicStoreEntityUser, 'id' | 'internal_id'>, provider: string) => {
   let platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
   if (!logged) {
     logApp.warn('[CACHE] Missing user in cache', { user: user.internal_id });
     // Ensure all nodes known about this user
-    await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, user, user);
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, user, user as AuthUser);
     // Get the user in a refreshed cache
     platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     logged = platformUsers.get(user.internal_id);
@@ -2328,9 +2328,9 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: any, us
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
   const withOrigin = userWithOrigin(req, logged!);
   // Build and save the session
-  req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged!.password_valid_until ?? null };
-  req.session.session_provider = provider;
-  req.session.save();
+  req.session!.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged!.password_valid_until ?? null };
+  req.session!.session_provider = provider;
+  req.session!.save();
   // Publish the login event
   const userOrigin = withOrigin;
   await publishUserAction({
