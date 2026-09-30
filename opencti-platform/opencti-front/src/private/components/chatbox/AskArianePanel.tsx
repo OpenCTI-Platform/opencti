@@ -163,6 +163,11 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         sessions: '/sessions',
         upload: '/upload',
         download: '/files',
+        // Composer prompt picker and quota indicator. The chatbot defaults
+        // ('/chat/prompts', '/chat/quota') are XTM One-style paths the proxy
+        // does not serve, which left both affordances hidden.
+        prompts: '/prompts',
+        quota: '/quota',
       }}
       user={{ firstName }}
       disableFileManagement={false}
