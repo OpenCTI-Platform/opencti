@@ -48,8 +48,8 @@ const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTim
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // Strict UUID shape check for path parameters forwarded to XTM One
-// (conversation ids, file ids). Rejecting anything else up-front keeps
-// arbitrary strings out of the upstream URL path.
+// (conversation ids, message ids, file ids). Rejecting anything else
+// up-front keeps arbitrary strings out of the upstream URL path.
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 // XTM One reports a refusal as `{detail: {code, message}}` as often as a bare
@@ -422,6 +422,142 @@ export const getChatbotPendingApprovals = async (req: Express.Request, res: Expr
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot pending approvals', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/prompts ────────────────────────────────────────────────
+// The user's reusable prompts for the composer's prompt picker. The chatbot
+// shows the picker only when this answers, so a failure simply hides it.
+export const getChatbotPrompts = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/prompts', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot prompts list', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/quota ──────────────────────────────────────────────────
+// The user's agentic quota for the composer's quota indicator. XTM One
+// answers 200 `null` when there is nothing to show; it is forwarded as is and
+// the chatbot then hides the indicator.
+export const getChatbotQuota = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/quota', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot quota', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// Both ids of a message feedback route end up in the upstream URL path, so
+// both are held to the UUID shape; answers 400 and returns null otherwise.
+const readFeedbackTarget = (req: Express.Request, res: Express.Response) => {
+  const conversationId = String(req.params.conversationId ?? '');
+  if (!conversationId || !UUID_RE.test(conversationId)) {
+    res.status(400).json({ error: 'Invalid conversation id' });
+    return null;
+  }
+  const messageId = String(req.params.messageId ?? '');
+  if (!messageId || !UUID_RE.test(messageId)) {
+    res.status(400).json({ error: 'Invalid message id' });
+    return null;
+  }
+  return { conversationId, messageId };
+};
+
+// ── POST /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Stores the user's thumbs rating of an answer (`{ rating, comment }`) on the
+// message in XTM One, where the agent's managers read it. The body is
+// forwarded whole; XTM One validates it and answers 404 for a message the
+// user cannot see, which is passed through.
+export const postChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      req.body,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── DELETE /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Retracts the user's rating of an answer. Idempotent upstream (204 whether
+// or not a rating was stored).
+export const deleteChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.delete(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    // Same forwarding as the session delete: an empty upstream body (the
+    // 204) is ended empty, never through `sendStatus` and its textual body.
+    if (response.data !== undefined && response.data !== null && response.data !== '') {
+      res.status(response.status).json(response.data);
+    } else {
+      res.status(response.status).end();
+    }
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback delete', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
