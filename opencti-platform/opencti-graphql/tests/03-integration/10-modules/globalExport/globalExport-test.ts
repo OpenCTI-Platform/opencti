@@ -22,7 +22,11 @@ import {
   SETTINGS_LANGUAGE,
   SETTINGS_MESSAGES,
   SETTINGS_THEME,
+  withExportId,
 } from '../../../../src/modules/globalExport/globalExport-domain';
+import { ingestionTaxiiAdd, ingestionTaxiiDelete } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { IngestionAuthType, TaxiiVersion } from '../../../../src/generated/graphql';
+import pjson from '../../../../package.json';
 import { getSettings } from '../../../../src/domain/settings';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_PLAYBOOK } from '../../../../src/modules/playbook/playbook-types';
@@ -375,7 +379,8 @@ describe('Global configuration export', () => {
 
       expect(file).toBeDefined();
       expect(file.id.startsWith(`${GLOBAL_EXPORT_STORAGE_PATH}/`)).toBe(true);
-      expect(file.name).toMatch(/^platform_configuration_export_.+\.zip$/);
+      expect(file.name).toMatch(/^opencti-config-\d{4}-\d{2}-\d{2}T.+\.zip$/);
+      expect(file.name.endsWith(`-${pjson.version}.zip`)).toBe(true);
 
       const buffer = await readExportedZip(file);
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
@@ -631,6 +636,95 @@ describe('Global configuration export', () => {
 
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
+    });
+  });
+
+  describe('export_id', () => {
+    it('should add the export_id before the configuration', () => {
+      const exported = JSON.stringify({ openCTI_version: '1.0.0', type: 'playbook', configuration: { name: 'My playbook' } });
+      const withId = JSON.parse(withExportId(exported, { export_id: 'my-export-id' }));
+
+      expect(withId).toEqual({
+        openCTI_version: '1.0.0',
+        type: 'playbook',
+        export_id: 'my-export-id',
+        configuration: { name: 'My playbook' },
+      });
+      expect(Object.keys(withId)).toEqual(['openCTI_version', 'type', 'export_id', 'configuration']);
+    });
+
+    it('should not add an export_id to an element created by a user', () => {
+      const exported = JSON.stringify({ openCTI_version: '1.0.0', type: 'dashboard', configuration: {} });
+      const withId = JSON.parse(withExportId(exported, {}));
+
+      expect(withId).not.toHaveProperty('export_id');
+    });
+
+    it('should never export the internal_id of an entity', async () => {
+      const forms = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], {});
+      if (forms.length === 0) return;
+      const target = forms[0];
+
+      const archive = createFakeArchive();
+      await exportFormsCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      const [content] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      const parsed = JSON.parse(content);
+      expect(parsed).not.toHaveProperty('internal_id');
+      expect(parsed.export_id).toBe(target.export_id);
+    });
+
+    it('should add the export_id of the settings and of the theme', async () => {
+      const settings = await getSettings(testContext) as any;
+      const brandingArchive = createFakeArchive();
+      await exportSettingsBrandingCategory(testContext, ADMIN_USER, brandingArchive);
+      const themeArchive = createFakeArchive();
+      await exportSettingsThemeCategory(testContext, ADMIN_USER, themeArchive);
+
+      const [branding] = (brandingArchive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      const parsedBranding = JSON.parse(branding);
+      expect(parsedBranding.export_id).toBe(settings.export_id);
+      expect(parsedBranding).not.toHaveProperty('internal_id');
+      const [theme] = (themeArchive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      const parsedTheme = JSON.parse(theme);
+      expect(parsedTheme.export_id).toBe(settings.platform_theme.export_id);
+      expect(parsedTheme).not.toHaveProperty('internal_id');
+    });
+  });
+
+  describe('generateGlobalConfigurationExport - credentials', () => {
+    it('should never include the feed credentials in the bundle', async () => {
+      const password = 'global-export-test-password';
+      const feed = await ingestionTaxiiAdd(testContext, ADMIN_USER, {
+        name: 'Global export TAXII feed with credentials',
+        uri: 'https://example.com/taxii-feed',
+        collection: 'testing',
+        version: TaxiiVersion.V21,
+        user_id: ADMIN_USER.id,
+        authentication_type: IngestionAuthType.Basic,
+        authentication_value: `user:${password}`,
+      });
+      const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
+      try {
+        await runGlobalExport(testContext, ADMIN_USER, [
+          ENTITY_TYPE_INGESTION_TAXII,
+          ENTITY_TYPE_INGESTION_CSV,
+          ENTITY_TYPE_INGESTION_JSON,
+          ENTITY_TYPE_INGESTION_RSS,
+        ]);
+
+        const feedEntries = appendSpy.mock.calls.filter(([, options]) => options?.name?.startsWith('ingestion/feeds/'));
+        expect(feedEntries.some(([, options]) => options?.name?.endsWith(`${feed.id}.json`))).toBe(true);
+        feedEntries.forEach(([content, options]) => {
+          const exported = content as string;
+          expect(exported, options?.name).not.toContain(password);
+          // Feeds keep an empty authentication_value: the credentials must be set again after the import
+          expect(JSON.parse(exported).configuration.authentication_value ?? '', options?.name).toBe('');
+        });
+      } finally {
+        appendSpy.mockRestore();
+        await ingestionTaxiiDelete(testContext, ADMIN_USER, feed.id);
+      }
     });
   });
 });

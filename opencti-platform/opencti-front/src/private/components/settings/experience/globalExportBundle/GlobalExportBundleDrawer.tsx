@@ -39,14 +39,9 @@ const getDefaultInstanceModes = (): Record<string, InstanceSelectionMode> => Obj
   EXPORT_INSTANCE_CONFIGS.map((config) => [config.entityType, 'all' as InstanceSelectionMode]),
 );
 
-const buildExportFileName = (bundleName: string): string => {
+const buildExportFileName = (storedFileName: string, bundleName: string): string => {
   const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
-  const suffix = safeBundleName ? `_${safeBundleName}` : '';
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, '0');
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const year = now.getFullYear();
-  return `${year}${month}${day}_opencti_config_export${suffix}.zip`;
+  return safeBundleName ? storedFileName.replace(/\.zip$/, `-${safeBundleName}.zip`) : storedFileName;
 };
 
 const downloadStoredFile = async (fileId: string): Promise<Blob> => {
@@ -106,11 +101,11 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
-  const downloadExport = async (fileId: string) => {
+  const downloadExport = async (fileId: string, storedFileName: string) => {
     setDownloading(true);
     try {
       const blob = await downloadStoredFile(fileId);
-      fileDownload(blob, buildExportFileName(bundleName));
+      fileDownload(blob, buildExportFileName(storedFileName, bundleName));
       onClose();
     } finally {
       setDownloading(false);
@@ -135,9 +130,9 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     commitExportMutation({
       variables: { entityTypes, selections },
       onCompleted: (result: PlatformBundleDrawerExportMutation$data) => {
-        const fileId = result?.globalConfigurationExport?.id;
-        if (fileId) {
-          downloadExport(fileId);
+        const exportedFile = result?.globalConfigurationExport;
+        if (exportedFile?.id) {
+          downloadExport(exportedFile.id, exportedFile.name);
         } else {
           onClose();
         }
