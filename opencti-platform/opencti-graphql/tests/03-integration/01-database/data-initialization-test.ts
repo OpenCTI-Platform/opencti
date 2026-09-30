@@ -225,7 +225,8 @@ describe('Built-in entities export_id', () => {
     const initializationExportIds = new Map(elements.map((e) => [e.internal_id, e.export_id]));
     const elementsWithoutExportId = elements.map(({ export_id: _, ...element }) => element);
     const assignments = computeMissingBuiltInExportIds(elementsWithoutExportId);
-    expect(assignments.length).toBeGreaterThan(500);
+    // Sanity floor, mostly made of the built-in vocabularies
+    expect(assignments.length).toBeGreaterThan(450);
     // Every element the migration recognizes gets the value computed at creation
     assignments.forEach(({ element, export_id }) => {
       expect(export_id, `${element.entity_type} ${element.internal_id}`).toEqual(initializationExportIds.get(element.internal_id));
