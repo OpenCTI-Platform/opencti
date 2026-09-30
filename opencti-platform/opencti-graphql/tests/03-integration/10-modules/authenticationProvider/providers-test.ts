@@ -570,6 +570,9 @@ describe('Provider coverage', () => {
         header: (_: string) => undefined,
         session: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore see user#sessionAuthenticateUser there is a session.regenerate() there
+          regenerate: (callback) => callback(null),
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore see user#sessionAuthenticateUser there is a session.save() there
           save: () => {},
         },
