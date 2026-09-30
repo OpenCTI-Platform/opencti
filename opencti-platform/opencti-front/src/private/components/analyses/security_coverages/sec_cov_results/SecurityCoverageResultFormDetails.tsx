@@ -5,12 +5,23 @@ import { Field, Form, Formik } from 'formik';
 import TextField from '../../../../../components/TextField';
 import Button from '../../../../../components/common/button/Button';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import CoverageInformationField from '../../../common/form/CoverageInformationField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import CreatedByField from '../../../common/form/CreatedByField';
+import ObjectLabelField from '../../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
+import MarkdownField from '../../../../../components/SimpleMarkdownField';
+import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
+import ConfidenceField from '../../../common/form/ConfidenceField';
 
 export interface SecurityCoverageResultFormData {
   name: string;
+  description: string;
+  confidence: number | undefined;
+  createdBy?: FieldOption;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   coverageInformation: CoverageInformation[];
   validFrom: Date | null;
   validTo: Date | null;
@@ -28,9 +39,12 @@ const SecurityCoverageResultFormDetails = ({
   initValues,
 }: SecurityCoverageResultFormDetailsProps) => {
   const { t_i18n } = useFormatter();
+  const { registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const validation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     validFrom: Yup.date().nullable().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     validTo: Yup.date().nullable().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     coverageInformation: Yup.array().of(
@@ -46,6 +60,11 @@ const SecurityCoverageResultFormDetails = ({
 
   const initialValues: SecurityCoverageResultFormData = initValues ?? {
     name: '',
+    description: '',
+    createdBy: undefined,
+    confidence: 100,
+    objectLabel: [],
+    objectMarking: [],
     validFrom: null,
     validTo: null,
     coverageInformation: [],
@@ -59,7 +78,7 @@ const SecurityCoverageResultFormDetails = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ isValid }) => (
+      {({ isValid, setFieldValue }) => (
         <Form>
           <Field
             component={TextField}
@@ -68,6 +87,21 @@ const SecurityCoverageResultFormDetails = ({
             label={t_i18n('Name')}
             fullWidth={true}
             required
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+          />
+          <ConfidenceField
+            containerStyle={fieldSpacingContainerStyle}
+            entityType="Security-Coverage"
           />
           <Field
             component={CoverageInformationField}
@@ -88,6 +122,21 @@ const SecurityCoverageResultFormDetails = ({
               label: t_i18n('Valid to'),
               style: { ...fieldSpacingContainerStyle },
             }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
 
           <FormButtonContainer>
