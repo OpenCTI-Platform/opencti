@@ -32,7 +32,7 @@ import type {
   MutationAiSummarizeFilesArgs,
   StixMetaObjectConnection,
 } from '../../generated/graphql';
-import { Format, Tone } from '../../generated/graphql';
+import { Format, OrderingMode, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -344,7 +344,7 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
         filters: entityTypesFilter,
         search: value,
         orderBy: '_score',
-        orderMode: 'desc',
+        orderMode: OrderingMode.Desc,
       });
       resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.every((type) => isStixMetaObject(type))) { // case Stix-Meta-Object

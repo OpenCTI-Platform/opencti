@@ -39,6 +39,7 @@ import {
   fullEntitiesThroughRelationsToList,
   fullRelationsList,
   internalFindByIds,
+  internalFindByIdsMapped,
   internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
@@ -104,7 +105,7 @@ import { addGroup } from '../../domain/grant';
 import { defaultMarkingDefinitionsFromGroups, findDefaultIngestionGroups, findGroupPaginated as findGroups } from '../../domain/group';
 import { addIndividual } from '../../domain/individual';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 import { addFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../../utils/confidence-level';
@@ -115,7 +116,10 @@ import {
   type EditInput,
   EditOperation,
   type Filter,
+  FilterMode,
   type InternalRelationshipAddInput,
+  OrderingMode,
+  type QueryBookmarksArgs,
   type QueryAssigneesArgs,
   type QueryCreatorsArgs,
   type QueryParticipantsArgs,
@@ -131,12 +135,24 @@ import {
   type UserTokenAddInput,
 } from '../../generated/graphql';
 import type Express from 'express';
+import type { JWTPayload } from 'jose';
 import type { AuthContext, AuthUser, UserApiToken, UserCapability, UserOrigin } from '../../types/user';
-import type { BasicCapabilityEntity, BasicGroupEntity, BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation, StoreEntity } from '../../types/store';
+import type {
+  BasicCapabilityEntity,
+  BasicGroupEntity,
+  BasicStoreBase,
+  BasicStoreEntity,
+  BasicStoreObject,
+  BasicStoreEntityMarkingDefinition,
+  BasicStoreRelation,
+  StoreEntity,
+  StoreMarkingDefinition,
+} from '../../types/store';
 import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
+import type { Group } from '../../types/group';
 import type { ProviderUserInfo } from '../authenticationProvider/providers-configuration';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
@@ -265,7 +281,7 @@ const extractUserFromBasicAuth = async (authorization: string | undefined) => {
   return null;
 };
 
-export const findById = async (context: AuthContext, user: AuthUser, userId: any) => {
+export const findById = async (context: AuthContext, user: AuthUser, userId: string) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user administrated organizations
     const memberOrganizations = await fullEntitiesThroughRelationsToList(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
@@ -287,7 +303,7 @@ export const findAllUser = async (context: AuthContext, user: AuthUser, args: En
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
 
-export const findUserPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
+export const findUserPaginated = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityUser>) => {
   const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
   return pageEntitiesConnection<BasicStoreEntityUser>(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
@@ -368,15 +384,17 @@ export const userOrganizationsPaginated = async (context: AuthContext, user: Aut
   return pageRegardingEntitiesConnection<BasicStoreEntityOrganization>(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
+type UserWithStoreRoles = Omit<AuthUser, 'roles'> & { roles: BasicStoreEntity[] };
+type RoleSortKey = (role: BasicStoreEntity) => R.Ord;
 export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: UserRolesArgs) => {
   const { orderBy, orderMode } = opts;
-  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded: any = platformUsers.get(userId);
+  const platformUsers = await getEntitiesMapFromCache<UserWithStoreRoles>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const userLoaded = platformUsers.get(userId)!;
   if (orderBy) {
     if (orderMode === 'desc') {
-      return R.sortWith<any>([R.descend(R.prop(orderBy))])(userLoaded.roles);
+      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
     }
-    return R.sortWith<any>([R.ascend(R.prop(orderBy))])(userLoaded.roles);
+    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
   }
   return userLoaded.roles;
 };
@@ -462,7 +480,7 @@ export const getAvailableDataSharingMarkings = async (context: AuthContext, user
   return computeAvailableMarkings(maxMarkings, allMarkings);
 };
 
-export const checkUserCanShareMarkings = async (context: AuthContext, user: AuthUser, markingsToShare: any[]) => {
+export const checkUserCanShareMarkings = async (context: AuthContext, user: AuthUser, markingsToShare: Pick<StoreMarkingDefinition, 'definition_type' | 'x_opencti_order'>[]) => {
   const shareableMarkings = await getAvailableDataSharingMarkings(context, user);
   const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
     shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
@@ -485,7 +503,7 @@ const getUserAndGlobalMarkings = async (
   const allMarkingsPromise = getEntitiesListFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, userGroups);
   let computeUserMarkings: BasicStoreEntityMarkingDefinition[];
-  let maxShareableMarkings: any;
+  let maxShareableMarkings: BasicStoreEntityMarkingDefinition[] | string[];
   const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
     computeUserMarkings = all;
@@ -493,11 +511,11 @@ const getUserAndGlobalMarkings = async (
   } else { // Standard user have markings related to his groups
     computeUserMarkings = userMarkings;
     const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type));
-    maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
+    const groupsMaxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
     const allShareableMarkings = all.filter(({ definition_type }) => (
-      !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }: any) => type === definition_type)
+      !notShareableMarkings.includes(definition_type) && !groupsMaxShareableMarkings.some(({ type }) => type === definition_type)
     )).filter(({ id }) => computeUserMarkings.some((m) => m.id === id)).map(({ id }) => id);
-    maxShareableMarkings = [...maxShareableMarkings.map(({ value }: any) => value), ...allShareableMarkings];
+    maxShareableMarkings = [...groupsMaxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
   }
   const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
   return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
@@ -846,18 +864,23 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
   await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
+type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'> & {
+  organizations: Array<Pick<BasicStoreEntityOrganization, 'name'>>;
+  account_lock_after_date: string | undefined;
+};
+
 export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
-  const users = await getEntitiesListFromCache<any>(context, user, ENTITY_TYPE_USER);
+  const users = await getEntitiesListFromCache<MailTargetUser>(context, user, ENTITY_TYPE_USER);
   const targetUser = users.find((usr) => input.target_user_id === usr.id || input.target_user_id === usr.standard_id);
 
   if (!targetUser) {
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
 
-  const organizationNames = (targetUser.organizations ?? []).map((org: any) => org.name);
+  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
 
   const emailTemplate = await internalLoadById<BasicStoreEntityEmailTemplate>(context, user, input.email_template_id);
   if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
@@ -873,7 +896,7 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 
   // If the template asks for a user token, we need to generate a new one.
   if (emailTemplate.template_body.includes('$user.api_token')) {
-    const inputToken: any = { name: 'Template generated token' };
+    const inputToken: TokenAddInput = { name: 'Template generated token' };
     const token = await addUserTokenByAdmin(context, user, input.target_user_id, inputToken);
     templateUser.api_token = token.plaintext_token;
   }
@@ -925,7 +948,9 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
   return true;
 };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: any) => {
+type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
+
+export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -945,11 +970,11 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: any
     // user is Organization Admin
     // Check organization
     const myOrganizationIds = user.administrated_organizations.map((organization) => organization.id);
-    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga: string) => myOrganizationIds.includes(orga))) {
+    if (newUser.objectOrganization!.length === 0 || !newUser.objectOrganization!.every((orga: string) => myOrganizationIds.includes(orga))) {
       throw ForbiddenAccess();
     }
-    const myGroupIds = R.uniq(user.administrated_organizations.map((orga: any) => orga.grantable_groups).flat());
-    if (!newUser.groups.every((group: string) => myGroupIds.includes(group))) {
+    const myGroupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+    if (!newUser.groups!.every((group: string) => myGroupIds.includes(group))) {
       throw ForbiddenAccess();
     }
   }
@@ -959,12 +984,12 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: any
   if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
   } else { // If local user, check the password policy
-    await checkPasswordFromPolicy(context, userPassword);
+    await checkPasswordFromPolicy(context, userPassword!);
   }
   const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
   let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
-    R.assoc('password', bcrypt.hashSync(userPassword)),
+    R.assoc('password', bcrypt.hashSync(userPassword!)),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
@@ -1001,7 +1026,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: any
     toId: organizationId,
     relationship_type: RELATION_PARTICIPATE_TO,
   }));
-  await Promise.all(relationOrganizations.map((relation: any) => createRelation(context, user, relation)));
+  await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
   // Add the provided groups
   let relationGroups: { fromId: string; toId: string; relationship_type: string }[] = [];
   if ((newUser.groups ?? []).length > 0) {
@@ -1196,8 +1221,8 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     }
     if (input.key === 'draft_context') {
       // draft context might have changed, we need to check draft context exists and refresh session info
-      const draftContext: any = R.head(input.value)?.toString();
-      if (draftContext?.length > 0) {
+      const draftContext = R.head(input.value)?.toString();
+      if (draftContext !== undefined && draftContext.length > 0) {
         const draftWorkspaces = await getEntitiesMapFromCache<BasicStoreEntityDraftWorkspace>(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
         const draftWorkspace = draftWorkspaces.get(draftContext);
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
@@ -1275,8 +1300,8 @@ export const deleteBookmark = async (context: AuthContext, user: AuthUser, id: s
   return id;
 };
 
-export const bookmarks = async (context: AuthContext, user: AuthUser, args: any) => {
-  const { first = 10, after, types = [], filters = null, orderBy = null, orderMode = 'asc' } = args;
+export const bookmarks = async (context: AuthContext, user: AuthUser, args: QueryBookmarksArgs) => {
+  const { first = 10, after, types = [], filters = null, orderBy = null, orderMode = OrderingMode.Asc } = args;
   const currentUser = await storeLoadById<BasicStoreEntityUser>(context, user, user.id, ENTITY_TYPE_USER);
   // handle types
   let bookmarkList = types && types.length > 0
@@ -1319,7 +1344,7 @@ export const bookmarks = async (context: AuthContext, user: AuthUser, args: any)
     first: first ?? bookmarkIds.length,
     after: after || undefined,
     orderBy: orderBy || undefined,
-    orderMode: orderBy ? (orderMode ?? 'asc') : undefined,
+    orderMode: orderBy ? (orderMode ?? OrderingMode.Asc) : undefined,
   });
   return connection;
 };
@@ -1335,7 +1360,7 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
   return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
-export const meEditField = async (context: AuthContext, user: any, userId: string, inputs: any[], password: string | null = null) => {
+export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external' | 'password'>>, userId: string, inputs: any[], password: string | null = null) => {
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
@@ -1359,7 +1384,7 @@ export const meEditField = async (context: AuthContext, user: any, userId: strin
           throw FunctionalError('The current password you have provided is not valid');
         }
         const dbPassword = user.password;
-        const match = bcrypt.compareSync(password, dbPassword);
+        const match = bcrypt.compareSync(password, dbPassword!);
         if (!match) {
           throw FunctionalError('The current password you have provided is not valid');
         }
@@ -1509,7 +1534,7 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
 };
 
-export const userAddRelation = async (context: AuthContext, user: AuthUser, userId: string, input: any) => {
+export const userAddRelation = async (context: AuthContext, user: AuthUser, userId: string, input: InternalRelationshipAddInput) => {
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
 
@@ -1518,8 +1543,8 @@ export const userAddRelation = async (context: AuthContext, user: AuthUser, user
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   // Check in case organization admins adds non-grantable group a user
-  const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga: any) => orga.grantable_groups).flat());
-  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
+  const myGrantableGroups: Array<InternalRelationshipAddInput['toId']> = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  const myAdministratedOrganizationsIds: Array<InternalRelationshipAddInput['toId']> = user.administrated_organizations.map((orga) => orga.id);
   if (isOnlyOrgaAdmin(user)) {
     if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
       throw ForbiddenAccess();
@@ -1582,7 +1607,7 @@ export const userDeleteOrganizationRelation = async (context: AuthContext, user:
   // check the user is accessible
   const targetUser = await loadUserToUpdateWithAccessCheck(context, user, userId);
 
-  const { to }: any = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const { to }: { to: BasicStoreBase & Pick<BasicStoreEntityOrganization, 'authorized_authorities'> } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   if (to.authorized_authorities?.includes(userId)) {
     const indexOfMember = to.authorized_authorities.indexOf(userId);
     to.authorized_authorities.splice(indexOfMember, 1);
@@ -1871,7 +1896,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   }
   // Try local is activated
   if (!loggedUser) {
-    const settings: any = await getSettings(context);
+    const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         if (err || info) {
@@ -1912,11 +1937,11 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   throw AuthenticationFailure();
 };
 
-export const otpUserLogin = async (req: OtpSessionRequest, user: any, { code }: UserOtpLoginInput) => {
+export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { code }: UserOtpLoginInput) => {
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
-  const { valid } = await totp.verify({ secret: user.otp_secret, token: code });
+  const { valid } = await totp.verify({ secret: user.otp_secret!, token: code });
   if (!valid) {
     throw AuthenticationFailure();
   }
@@ -1935,12 +1960,18 @@ const virtualOrganizationAdminCapability = {
   updated_at: Date.now(),
 };
 
-export const isSensitiveChangesAllowed = (userId: string, roles: any[]) => {
+export const isSensitiveChangesAllowed = (userId: string, roles: Array<Pick<BasicStoreEntity, 'id'> & { can_manage_sensitive_config?: boolean }>) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return true;
   }
   return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
 };
+
+type UserAuthRelations = { organizationIds?: string[]; groupIds?: string[] };
+type ResolvedAuthGroup = BasicGroupEntity & Group & GroupWithShareableMarkings & { default_hidden_types?: string[]; no_creators?: boolean; restrict_delete?: boolean };
+type ResolvedAuthRole = BasicStoreEntity & { can_manage_sensitive_config?: boolean };
+type ResolvedAuthCapability = Pick<BasicCapabilityEntity, 'name'> & { id: string; standard_id: string; internal_id?: string };
+type ResolvedAuthOrganization = BasicStoreEntityOrganization & { default_hidden_types?: string[] };
 
 export const buildCompleteUsers = async (context: AuthContext, clients: any) => {
   const resolvedUsers = [];
@@ -1950,7 +1981,7 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
   const individualsPromise = fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
   const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
   const relations = await fullRelationsList(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
-  const users = new Map<string, any>();
+  const users = new Map<string, UserAuthRelations>();
   const roleIds = new Set<string>();
   const groupIds = new Set<string>();
   const capabilityIds = new Set<string>();
@@ -1975,7 +2006,7 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
     if (entity_type === RELATION_PARTICIPATE_TO) {
       organizationIds.add(toId);
       if (users.has(fromId)) {
-        const user = users.get(fromId);
+        const user = users.get(fromId)!;
         if (user.organizationIds) {
           user.organizationIds.push(toId);
         } else {
@@ -1990,7 +2021,7 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
     if (entity_type === RELATION_MEMBER_OF) {
       groupIds.add(toId);
       if (users.has(fromId)) {
-        const user = users.get(fromId);
+        const user = users.get(fromId)!;
         if (user.groupIds) {
           user.groupIds.push(toId);
         } else {
@@ -2038,7 +2069,7 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
     }
   }
   const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
-  const resolvedObject: any = await internalFindByIds(context, SYSTEM_USER, ids, { toMap: true });
+  const resolvedObject = await internalFindByIdsMapped<BasicStoreObject>(context, SYSTEM_USER, ids);
   const individuals = await individualsPromise;
   const individualMap = new Map();
   for (let indexIndividual = 0; indexIndividual < individuals.length; indexIndividual += 1) {
@@ -2048,17 +2079,17 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
   for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
     const client = clients[userIndex];
     const user = users.get(client.internal_id);
-    const groups = (user?.groupIds ?? []).map((groupId: string) => resolvedObject[groupId])
-      .filter((e: any) => isNotEmptyField(e));
-    const roles = R.uniq(groups.map((group: any) => groupsRoles.get(group.internal_id)).flat())
-      .map((roleId: any) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
-    const markings = R.uniq(groups.map((group: any) => groupsMarkings.get(group.internal_id)).flat())
-      .map((markingId: any) => markingsMap.get(markingId)).filter((e) => isNotEmptyField(e));
+    const groups = (user?.groupIds ?? []).map((groupId: string) => resolvedObject[groupId] as ResolvedAuthGroup)
+      .filter((e) => isNotEmptyField(e));
+    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
+      .map((roleId) => resolvedObject[roleId!] as ResolvedAuthRole).filter((e) => isNotEmptyField(e));
+    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
+      .map((markingId) => markingsMap.get(markingId!)).filter((e) => isNotEmptyField(e));
     const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
     const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
-      .map((capabilityId: any) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+      .map((capabilityId) => resolvedObject[capabilityId!] as ResolvedAuthCapability).filter((e) => isNotEmptyField(e));
     const capabilitiesInDraft = R.uniq(roles.map((role) => rolesCapabilitiesInDraft.get(role.internal_id)).flat())
-      .map((capabilityId: any) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+      .map((capabilityId) => resolvedObject[capabilityId!] as ResolvedAuthCapability).filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
     if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
@@ -2066,15 +2097,15 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
       capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-    const organizations = (user?.organizationIds ?? []).map((organizationId: string) => resolvedObject[organizationId])
-      .filter((e: any) => isNotEmptyField(e) && e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const organizations = (user?.organizationIds ?? []).map((organizationId: string) => resolvedObject[organizationId] as ResolvedAuthOrganization)
+      .filter((e) => isNotEmptyField(e) && e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
-    const administrated_organizations = organizations.filter((o: any) => (o.authorized_authorities ?? []).includes(client.id));
+    const administrated_organizations = organizations.filter((o) => (o.authorized_authorities ?? []).includes(client.id));
     const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
-    const no_creators = groups.filter((g: any) => g.no_creators).length === groups.length;
-    const restrict_delete = !isByPass && groups.filter((g: any) => g.restrict_delete).length === groups.length;
+    const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
+    const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
     const marking = await getUserAndGlobalMarkings(context, client.id, groups, markings, capabilities);
     if (administrated_organizations.length > 0) {
       capabilities.push(virtualOrganizationAdminCapability);
@@ -2135,9 +2166,11 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
   throw FunctionalError('Cannot identify user with basic auth');
 };
 
+type XtmJwtClaims = Pick<JWTPayload, 'sub'> & { iss: string; email?: string };
+
 export const authenticateUserByJWT = async (context: AuthContext, req: OriginRequest, token: string) => {
   const verified = await verifyXtmJwt(token);
-  const { iss, sub, email }: any = verified.payload;
+  const { iss, sub, email } = verified.payload as XtmJwtClaims;
 
   // Own token: sub is the user id
   if (isOwnIssuer(iss)) {
@@ -2205,20 +2238,20 @@ export const authenticateUserByToken = async (context: AuthContext, req: OriginR
 export const authenticateUserByUserId = async (context: AuthContext, req: OriginRequest, userId: string) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   if (platformUsers.has(userId)) {
-    const user = platformUsers.get(userId);
+    const user = platformUsers.get(userId)!;
     return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with id');
 };
 
-const internalAuthenticateUser = async (context: AuthContext, req: any, user: any) => {
+const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest, user: AuthUser) => {
   let authenticatedUser = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const synchronizedUpsert = req.headers['synchronized-upsert'] === 'true';
   if (synchronizedUpsert && !isBypassUser(authenticatedUser)) {
     throw FunctionalError('Cant use synchronized-upsert header without bypass capability');
   }
-  const applicantId = req.headers['opencti-applicant-id'];
+  const applicantId = req.headers['opencti-applicant-id'] as string | undefined;
   if (applicantId && isBypassUser(authenticatedUser)) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
@@ -2280,7 +2313,7 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
 
 export const sessionAuthenticateUser = async (context: AuthContext, req: any, user: any, provider: string) => {
   let platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  let logged: any = platformUsers.get(user.internal_id);
+  let logged = platformUsers.get(user.internal_id);
   if (!logged) {
     logApp.warn('[CACHE] Missing user in cache', { user: user.internal_id });
     // Ensure all nodes known about this user
@@ -2291,11 +2324,11 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: any, us
   }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
-  validateUser(logged, settings, { skipForcePasswordCheck: true });
-  const numberOfKilledSessions = await killUserSessionsOverLimit(logged.id, settings.platform_session_max_concurrent);
-  const withOrigin = userWithOrigin(req, logged);
+  validateUser(logged!, settings, { skipForcePasswordCheck: true });
+  const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
+  const withOrigin = userWithOrigin(req, logged!);
   // Build and save the session
-  req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
+  req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged!.password_valid_until ?? null };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event
@@ -2312,9 +2345,10 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: any, us
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string } } };
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
-export const authenticateUserFromRequest = async (context: AuthContext, req: any) => {
+export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
   // If user not identified, try to extract token from bearer
   const bearerToken = extractTokenFromBearer(req.headers.authorization);
   if (bearerToken) {
@@ -2370,7 +2404,7 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: any
 
 const initAdmin = async (context: AuthContext, email: string, password: string, tokenValue: string) => {
   const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
-  let existingAdmin: any = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
+  let existingAdmin: Pick<BasicStoreEntityUser, 'id' | 'api_tokens'> | undefined = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
@@ -2401,7 +2435,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
   }
   // Create base token if needed
   const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;
-  const tokensWithoutBaseOne = (existingAdmin.api_tokens ?? []).filter((t: any) => t.id !== tokenId);
+  const tokensWithoutBaseOne: Array<Omit<UserApiToken, 'expires_at'> & Partial<Pick<UserApiToken, 'expires_at'>>> = (existingAdmin!.api_tokens ?? []).filter((t) => t.id !== tokenId);
   const now = DateTime.now().toUTC().toString();
   const newToken = {
     id: tokenId,
@@ -2411,7 +2445,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
     masked_token: `****${tokenValue.slice(-4)}`,
   };
   tokensWithoutBaseOne.push(newToken);
-  const updates: any = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
+  const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE as EditOperation }];
   await updateAttribute(context, SYSTEM_USER, OPENCTI_ADMIN_UUID, ENTITY_TYPE_USER, updates);
 };
 
@@ -2437,13 +2471,16 @@ export const initializeAdminUser = async (context: AuthContext) => {
   }
 };
 
-export const findDefaultDashboards = async (context: AuthContext, user: AuthUser, currentUser: any) => {
-  const groupsDashboardIds = (currentUser.groups ?? []).map(({ default_dashboard }: any) => default_dashboard);
-  const orgaDashboardIds = (currentUser.organizations ?? []).map(({ default_dashboard }: any) => default_dashboard);
-  const ids = [...orgaDashboardIds, ...groupsDashboardIds].filter((id) => id);
-  const dashboards: any = await internalFindByIds(context, user, ids, { type: ENTITY_TYPE_WORKSPACE });
+type DashboardHolder = { default_dashboard?: string };
+type UserWithDashboardHolders = Pick<BasicStoreEntityUser, 'id'> & { groups?: DashboardHolder[]; organizations?: DashboardHolder[] };
+
+export const findDefaultDashboards = async (context: AuthContext, user: AuthUser, currentUser: UserWithDashboardHolders) => {
+  const groupsDashboardIds = (currentUser.groups ?? []).map(({ default_dashboard }) => default_dashboard);
+  const orgaDashboardIds = (currentUser.organizations ?? []).map(({ default_dashboard }) => default_dashboard);
+  const ids = [...orgaDashboardIds, ...groupsDashboardIds].filter((id): id is string => !!id);
+  const dashboards = await internalFindByIds<BasicStoreEntityWorkspace>(context, user, ids, { type: ENTITY_TYPE_WORKSPACE }) as BasicStoreEntityWorkspace[];
   // Sort dashboards the same order as the fetched ids
-  return dashboards.sort((a: any, b: any) => ids.indexOf(a.id) - ids.indexOf(b.id));
+  return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 };
 
 // region context
@@ -2460,7 +2497,7 @@ export const userEditContext = async (context: AuthContext, user: AuthUser, user
 };
 // endregion
 
-const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: any, userToLoad: BasicStoreEntityUser, cachedUsers: Map<string, AuthUser>) => {
+const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: AuthUser, userToLoad: Pick<BasicStoreEntityUser, 'id'>, cachedUsers: Map<string, AuthUser>) => {
   const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {
@@ -2488,10 +2525,10 @@ export const batchUserEffectiveConfidenceLevel = async (context: AuthContext, us
   return completeUsers.map((u) => computeUserEffectiveConfidenceLevel(u));
 };
 
-export const getUserEffectiveConfidenceLevel = async (user: any, context: AuthContext) => {
+export const getUserEffectiveConfidenceLevel = async (user: Pick<BasicStoreEntityUser, 'id'>, context: AuthContext) => {
   // we load the user from cache to have the complete user with groupos
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const completeUser = await buildCompleteUserFromCacheOrDb(context, context.user, user, platformUsers);
+  const completeUser = await buildCompleteUserFromCacheOrDb(context, context.user!, user, platformUsers);
   return computeUserEffectiveConfidenceLevel(completeUser);
 };
 
@@ -2501,7 +2538,7 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   const users = await findUserPaginated(context, SYSTEM_USER, {
     first: 1,
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
         {
           key: ['name'],
@@ -2557,7 +2594,8 @@ export interface GeneratedToken {
 }
 
 // Add token
-const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, input: UserTokenAddInput, auditMessage: (token: UserApiToken) => string) => {
+type TokenAddInput = Omit<UserTokenAddInput, 'duration'> & Partial<Pick<UserTokenAddInput, 'duration'>>;
+const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, input: TokenAddInput, auditMessage: (token: UserApiToken) => string) => {
   const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
@@ -2614,7 +2652,7 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
 export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
   return await addToken(context, user, user, input, (token) => `generated a new API token '${token.name}'`);
 };
-export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
+export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: TokenAddInput) => {
   // Load target user
   const userToEdit = await internalLoadById(context, user, userId) as unknown as AuthUser;
   if (!userToEdit) {

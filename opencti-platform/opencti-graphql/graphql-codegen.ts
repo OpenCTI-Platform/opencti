@@ -87,6 +87,7 @@ const config: CodegenConfig = {
           Capability: '../types/store.d#BasicCapabilityEntity',
           Group: '../types/store.d#BasicGroupEntity',
           MeUser: '../modules/user/user-types#BasicStoreEntityUser',
+          UserSession: '../modules/user/user-types#StoreUserSession',
         },
       },
     },

@@ -1,7 +1,7 @@
 import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { UserApiToken } from '../../types/user';
-import type { ConfidenceLevel } from '../../generated/graphql';
+import type { ConfidenceLevel, UserSession } from '../../generated/graphql';
 import type { NestedObjectAttribute } from '../../schema/attribute-definition';
 
 export const ENTITY_TYPE_USER = 'User';
@@ -66,6 +66,10 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
 }
 
 export interface StoreEntityUser extends BasicStoreEntityUser, StoreEntity {}
+
+export interface StoreUserSession extends Omit<UserSession, 'user'> {
+  user_id: string;
+}
 // endregion
 
 // region Stix type

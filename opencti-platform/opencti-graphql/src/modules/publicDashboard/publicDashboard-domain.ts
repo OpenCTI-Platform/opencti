@@ -220,7 +220,7 @@ export const addPublicDashboard = async (
     const markingLevels = await Promise.all(input.allowed_markings_ids.map((id) => {
       return findMarkingDefinitionById(context, user, id);
     }));
-    await checkUserCanShareMarkings(context, user, markingLevels);
+    await checkUserCanShareMarkings(context, user, markingLevels as StoreMarkingDefinition[]);
   }
 
   const uriKey = sanitizePublicDashboardUriKey(input.uri_key);

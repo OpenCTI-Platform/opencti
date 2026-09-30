@@ -1,4 +1,4 @@
-import type { EditContext, EditInput, InternalRelationshipAddInput, Resolvers } from '../../generated/graphql';
+import type { EditContext, EditInput, InternalRelationshipAddInput, Resolvers, UnitSystem } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
 import { ENTITY_TYPE_USER, type BasicStoreEntityUser } from './user-types';
 import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../../config/conf';
@@ -112,7 +112,7 @@ const userResolvers: Resolvers = {
   },
   MeUser: {
     language: (current) => current.language ?? 'auto',
-    unit_system: (current: any) => current.unit_system ?? 'auto',
+    unit_system: (current) => (current.unit_system ?? 'auto') as UnitSystem,
     submenu_show_icons: (current) => current.submenu_show_icons ?? false,
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,
@@ -127,7 +127,7 @@ const userResolvers: Resolvers = {
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
   },
   UserSession: {
-    user: (session: any, _, context) => loadCreator(context, context.user, session.user_id),
+    user: (session, _, context) => loadCreator(context, context.user, session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),

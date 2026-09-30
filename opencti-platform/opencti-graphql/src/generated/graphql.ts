@@ -53,7 +53,7 @@ import type { BasicStoreEntityTaxiiCollection } from '../modules/dataSharing/tax
 import type { BasicStoreEntityStreamCollection } from '../modules/dataSharing/streamCollection-types';
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 import type { BasicStoreEntityVulnerability } from '../modules/vulnerability/vulnerability-types';
-import type { BasicStoreEntityUser } from '../modules/user/user-types';
+import type { BasicStoreEntityUser, StoreUserSession } from '../modules/user/user-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -41660,7 +41660,7 @@ export type ResolversTypes = ResolversObject<{
   UserMergeStatus: UserMergeStatus;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
-  UserSession: ResolverTypeWrapper<UserSession>;
+  UserSession: ResolverTypeWrapper<StoreUserSession>;
   UserStatus: ResolverTypeWrapper<UserStatus>;
   UserTokenAddInput: UserTokenAddInput;
   UsersOrdering: UsersOrdering;
@@ -42687,7 +42687,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserMergeSourceDeletionReadiness: UserMergeSourceDeletionReadiness;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
-  UserSession: UserSession;
+  UserSession: StoreUserSession;
   UserStatus: UserStatus;
   UserTokenAddInput: UserTokenAddInput;
   VerifyMfaInput: VerifyMfaInput;

@@ -561,7 +561,7 @@ export const processCsvLines = async (
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
-    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id!) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
       removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
     }
