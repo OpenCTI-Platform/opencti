@@ -283,12 +283,14 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | smtp:oauth_issuer          | SMTP__OAUTH_ISSUER          |               | OAuth2: OIDC issuer URL of the identity provider (used for discovery and refresh token grant)                        |
 | smtp:oauth_refresh_token   | SMTP__OAUTH_REFRESH_TOKEN   |               | OAuth2: long-lived refresh token used to obtain a fresh access token before each email is sent                       |
 | smtp:forced_sender_email   | SMTP__FORCED_SENDER_EMAIL   |               | When set, forces all emails to use this address as sender and disables the UI-based SMTP configuration               |
+| smtp:connection_timeout    | SMTP__CONNECTION_TIMEOUT    | 10000         | Maximum time, in milliseconds, to wait for the TCP connection to the SMTP server                                     |
+| smtp:greeting_timeout      | SMTP__GREETING_TIMEOUT      | 10000         | Maximum time, in milliseconds, to wait for the SMTP server greeting after the connection opens                       |
 
 !!! note "Interface-based SMTP configuration"
 
     OpenCTI also supports configuring SMTP entirely from the **Settings > Security > SMTP configuration** interface, without requiring a deployment restart. When the **Use configuration in interface** toggle is enabled in the interface, the platform uses the settings stored in the database and ignores the backend JSON/env configuration.
 
-    The backend parameters above act as a fallback when the interface configuration is not enabled.
+    The backend parameters above act as a fallback when the interface configuration is not enabled. Exception: `smtp:connection_timeout` and `smtp:greeting_timeout` always come from the backend configuration and also apply when the interface configuration is enabled.
 
     See [SMTP configuration](../administration/smtp-configuration.md) for details.
 
