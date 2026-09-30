@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateAliasesId, generateHashedObservableStandardIds, generateStandardId, normalizeName } from '../../../src/schema/identifier';
+import { generateAliasesId, generateBuiltInExportId, generateHashedObservableStandardIds, generateStandardId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -151,6 +151,18 @@ describe('identifier', () => {
     expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, baseSighting)).toEqual('sighting--161901df-21bb-527a-b96b-354119279fe2');
     expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, { ...baseSighting, first_seen: '2022-11-25T19:00:05.000Z' })).toEqual('sighting--3c59ceea-8e41-5adb-a257-d070d19e6d2b');
     expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, { ...baseSighting, first_seen: '2022-11-25T19:00:05.000Z', last_seen: '2022-11-26T19:00:05.000Z' })).toEqual('sighting--b4d307b6-d22c-5f22-b530-876c298493da');
+  });
+
+  it('should built-in export ids be generated correctly', () => {
+    // Stored and never recomputed: these values must not change between versions, or platforms would stop matching
+    expect(generateBuiltInExportId('Settings')).toEqual('ee5aa991-1ed8-575f-908b-7bf19359e086');
+    expect(generateBuiltInExportId('Group', { name: 'Administrators' })).toEqual('d8281c40-c3c8-5cd8-910f-aa3259e92453');
+    expect(generateBuiltInExportId('Vocabulary', { category: 'malware_type_ov', name: 'ransomware' })).toEqual('6959176a-9cbe-5bfa-a977-93b83c0ec3b1');
+    expect(generateBuiltInExportId('Status', { type: 'Report', scope: 'GLOBAL', template: 'NEW' })).toEqual('c2be890f-6cc0-5822-9795-ea6eee54d8c6');
+    expect(generateBuiltInExportId('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' })).toEqual('d58e35dd-f974-5690-8f79-20759a80b99c');
+    // Only the type and the natural key matter, not the key order
+    expect(generateBuiltInExportId('Role', { name: 'Administrators' })).not.toEqual(generateBuiltInExportId('Group', { name: 'Administrators' }));
+    expect(generateBuiltInExportId('Status', { template: 'NEW', scope: 'GLOBAL', type: 'Report' })).toEqual('c2be890f-6cc0-5822-9795-ea6eee54d8c6');
   });
 
   it('should aliases generated with normalization', () => {
