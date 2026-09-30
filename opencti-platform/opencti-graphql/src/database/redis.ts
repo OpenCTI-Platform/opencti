@@ -73,7 +73,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
   const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
-  const omitTLSServerName = booleanConf('tls_cluster_node_mode');
+  const omitTLSServerName = booleanConf('redis:tls_cluster_node_mode');
   const redisOpts = await redisOptions(provider, false, omitTLSServerName ? undefined : tlsServername);
   return {
     keyPrefix: REDIS_PREFIX,
