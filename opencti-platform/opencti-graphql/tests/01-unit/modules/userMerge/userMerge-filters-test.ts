@@ -102,6 +102,30 @@ describe('userMerge filter remapping', () => {
     expect(filters[1].values).toEqual([50, true, null]);
   });
 
+  // A playbook node configuration is serialized JSON inside the definition, and its filters are
+  // serialized JSON inside the configuration: the id is three encodings deep.
+  it('should reach an id held in serialized JSON nested in the payload', () => {
+    const payload = JSON.stringify({ nodes: [{ configuration: JSON.stringify({ filters: filterGroup([SOURCE]) }) }] });
+    const result = remapUserInJsonString(payload, SOURCE, TARGET);
+    expect(result).toMatchObject({ changed: true, parsed: true });
+    expect(result.json).not.toContain(SOURCE);
+    const configuration = JSON.parse(JSON.parse(result.json).nodes[0].configuration);
+    expect(typeof configuration.filters).toEqual('string');
+    expect(JSON.parse(configuration.filters).filters[0].values).toEqual([TARGET]);
+  });
+
+  it('should leave a nested string that holds the id but is not JSON', () => {
+    const payload = JSON.stringify({ description: `{ see ${SOURCE}` });
+    expect(remapUserInJsonString(payload, SOURCE, TARGET)).toMatchObject({ changed: false, parsed: true });
+  });
+
+  it('should collapse two entries the rewrite made identical', () => {
+    const payload = JSON.stringify({ members: [{ value: SOURCE }, { value: TARGET }, { value: OTHER }] });
+    const result = remapUserInJsonString(payload, SOURCE, TARGET);
+    expect(JSON.parse(result.json).members).toEqual([{ value: TARGET }, { value: OTHER }]);
+    expect(result.counters).toEqual({ rewritten: 1, deduplicated: 1 });
+  });
+
   // The two are reported apart by the handler, because they call for opposite follow-ups.
   it('should tell an unreadable filter from one mentioning the id as free text', () => {
     const broken = remapUserInJsonString(`{ not json ${SOURCE}`, SOURCE, TARGET);

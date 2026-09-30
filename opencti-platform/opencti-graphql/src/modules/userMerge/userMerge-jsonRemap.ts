@@ -36,13 +36,36 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
- * A value can be a plain id, a nested group, or the `{ key, values }` sub-object the composite
- * filter keys carry — `regardingOf` and `dynamicFrom` / `dynamicTo`. All three are walked.
+ * A string that is itself serialized JSON holding the source id: decode, walk, re-encode.
+ *
+ * Payloads nest serialized JSON inside serialized JSON — a playbook node `configuration`, and the
+ * `filters` inside it; a history `input` carrying the new value of a filter field. Without the
+ * decode, the id sits in a longer string and is never equal to the source id. Anything that does
+ * not parse to an object or an array is a plain string and is left alone.
+ */
+const remapEncodedJson = (value: string, sourceId: string, targetId: string, counters: RemapCounters): RemappedValue => {
+  const first = value.trimStart()[0];
+  if (!value.includes(sourceId) || (first !== '{' && first !== '[')) {
+    return { value, changed: false };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return { value, changed: false };
+  }
+  const result = remapValue(parsed, sourceId, targetId, counters);
+  return result.changed ? { value: JSON.stringify(result.value), changed: true } : { value, changed: false };
+};
+
+/**
+ * A value can be a plain id, a nested group, the `{ key, values }` sub-object the composite
+ * filter keys carry — `regardingOf` and `dynamicFrom` / `dynamicTo` — or serialized JSON.
  */
 const remapValue = (value: unknown, sourceId: string, targetId: string, counters: RemapCounters): RemappedValue => {
   if (typeof value === 'string') {
     if (value !== sourceId) {
-      return { value, changed: false };
+      return remapEncodedJson(value, sourceId, targetId, counters);
     }
     counters.rewritten += 1;
     return { value: targetId, changed: true };
@@ -65,11 +88,22 @@ const remapValue = (value: unknown, sourceId: string, targetId: string, counters
  * the filter chips of the UI use the value itself as a React key; and a draft patch replaying
  * `added_value` twice would add the same member twice.
  *
- * Only the target id is collapsed — any other value is untouched by the merge. The collapse
- * applies to the whole list once a rewrite happened, so a list that already repeated the target
- * id comes out canonical rather than half-cleaned; a repeated id in a list of references carries
- * no meaning to preserve.
+ * Only what names the target is collapsed — the target id, or an entry holding it that became
+ * identical to another, such as two `{ value }` members once both point at the target. Any other
+ * value is untouched by the merge. The collapse applies to the whole list once a rewrite happened,
+ * so a list that already repeated the target comes out canonical rather than half-cleaned.
  */
+const dedupKey = (value: unknown, targetId: string): string | undefined => {
+  if (value === targetId) {
+    return targetId;
+  }
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+  const serialized = JSON.stringify(value);
+  return serialized.includes(targetId) ? serialized : undefined;
+};
+
 const remapArray = (values: unknown[], sourceId: string, targetId: string, counters: RemapCounters): RemappedValue => {
   let changed = false;
   const remapped = values.map((value) => {
@@ -80,16 +114,17 @@ const remapArray = (values: unknown[], sourceId: string, targetId: string, count
   if (!changed) {
     return { value: values, changed: false };
   }
-  let targetSeen = false;
+  const seen = new Set<string>();
   const kept = remapped.filter((value) => {
-    if (value !== targetId) {
+    const key = dedupKey(value, targetId);
+    if (key === undefined) {
       return true;
     }
-    if (targetSeen) {
+    if (seen.has(key)) {
       counters.deduplicated += 1;
       return false;
     }
-    targetSeen = true;
+    seen.add(key);
     return true;
   });
   return { value: kept, changed: true };

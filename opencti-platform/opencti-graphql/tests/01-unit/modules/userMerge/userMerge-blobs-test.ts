@@ -164,3 +164,51 @@ describe('userMerge serialized request access', () => {
     expect(JSON.parse(rewrite.doc.x_opencti_request_access).applicant_id).toEqual(TARGET);
   });
 });
+
+describe('userMerge playbook definitions', () => {
+  // The shape the playbook domain stores: each node configuration is serialized JSON, and the
+  // filters inside it are serialized JSON again.
+  const definitionOf = (user: string) => JSON.stringify({
+    nodes: [
+      {
+        id: 'listen',
+        component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
+        configuration: JSON.stringify({
+          create: true,
+          filters: JSON.stringify({ mode: 'and', filters: [{ key: ['creator_id'], values: [user], operator: 'eq', mode: 'or' }], filterGroups: [] }),
+        }),
+      },
+      {
+        id: 'restrict',
+        component_id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
+        configuration: JSON.stringify({ access_restrictions: [{ label: 'someone', type: 'User', value: user, accessRight: 'view', groupsRestriction: [] }] }),
+      },
+      {
+        id: 'notify',
+        component_id: 'PLAYBOOK_NOTIFIER_COMPONENT',
+        configuration: JSON.stringify({ notifiers: [OTHER], authorized_members: [{ value: user }] }),
+      },
+    ],
+    links: [],
+  });
+
+  it('should rewrite the users named inside the node configurations', () => {
+    const rewrite = rewriteOf('playbook-definition', { playbook_definition: definitionOf(SOURCE) }) as { doc: Record<string, string> };
+    expect(rewrite.doc.playbook_definition).toEqual(definitionOf(TARGET));
+  });
+
+  it('should be a no-op on a second run', () => {
+    expect(rewriteOf('playbook-definition', { playbook_definition: definitionOf(TARGET) })).toBeUndefined();
+  });
+});
+
+describe('userMerge draft patches holding serialized attributes', () => {
+  // A draft of an attribute stored as serialized JSON carries it encoded once more in the patch.
+  it('should rewrite the id inside a serialized attribute value', () => {
+    const request = (user: string) => JSON.stringify({ applicant_id: user, type: 'organization_sharing' });
+    const patch = JSON.stringify({ x_opencti_request_access: { replaced_value: [request(SOURCE)], initial_value: [request(OTHER)] } });
+    const parsed = JSON.parse(rewriteJson(patch, SOURCE, TARGET) as string);
+    expect(parsed.x_opencti_request_access.replaced_value).toEqual([request(TARGET)]);
+    expect(parsed.x_opencti_request_access.initial_value).toEqual([request(OTHER)]);
+  });
+});
