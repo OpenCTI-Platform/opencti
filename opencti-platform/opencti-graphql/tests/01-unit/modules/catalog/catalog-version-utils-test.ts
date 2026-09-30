@@ -262,18 +262,18 @@ describe('catalog-version-utils', () => {
     ]);
 
     expect(grouped.get('same-slug')).toEqual([
-      { version: '2.0.0', support_version: '9999.0.0', min_version: '9999.0.0', min_platform_version: '9999.0.0' },
-      { version: '1.0.0', support_version: '7.0.0', min_version: '7.0.0', min_platform_version: '7.0.0' },
+      { version: '2.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0' },
     ]);
     expect(grouped.get('other-slug')).toEqual([
-      { version: '1.0.0', support_version: '7.1.0', min_version: '7.1.0', min_platform_version: '7.1.0' },
+      { version: '1.0.0', support_version: '7.1.0' },
     ]);
   });
 
   it('should compute compatibility from contract versions for the current platform', () => {
     const versions = [
-      { version: '2.0.0', support_version: '9999.0.0', min_version: '9999.0.0', min_platform_version: '9999.0.0' },
-      { version: '1.0.0', support_version: '7.0.0', min_version: '7.0.0', min_platform_version: '7.0.0' },
+      { version: '2.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0' },
     ];
 
     expect(getLatestCompatibleVersion(versions, { platformVersion: '7.2.0' })).toBe('1.0.0');

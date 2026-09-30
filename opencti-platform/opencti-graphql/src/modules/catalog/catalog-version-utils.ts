@@ -128,10 +128,6 @@ export const filterAndSortLatestCompatibleContracts = (
     .sort(compareContractVersionDesc);
 };
 
-const getMinimumVersionForCatalogVersion = (version: CatalogContractVersion) => {
-  return version.min_platform_version ?? version.min_version ?? version.support_version ?? null;
-};
-
 // Same ordering as the contracts selection, so latest_compatible_version names the exposed contract
 const compareCatalogVersionDesc = (left: CatalogContractVersion, right: CatalogContractVersion) => {
   return -compareContractVersions(left.version, right.version);
@@ -144,7 +140,7 @@ export const getLatestCompatibleVersion = (
   const platformVersion = options.platformVersion ?? PLATFORM_VERSION;
   const compatibleVersions = [...versions]
     .filter((version) => {
-      const minimumVersion = getMinimumVersionForCatalogVersion(version);
+      const minimumVersion = version.support_version;
       if (!minimumVersion) {
         return true;
       }
@@ -164,7 +160,7 @@ export const getMinimumPlatformVersion = (versions: CatalogContractVersion[]) =>
   let minimumPlatformVersion: string | null = null;
 
   for (const version of versions) {
-    const candidateVersion = getMinimumVersionForCatalogVersion(version);
+    const candidateVersion = version.support_version;
     if (!candidateVersion) {
       continue;
     }
@@ -205,8 +201,6 @@ const mapContractToVersion = (
 ): CatalogContractVersion => ({
   version: contract.contract_version,
   support_version: contract.support_version ?? null,
-  min_version: contract.support_version ?? null,
-  min_platform_version: contract.support_version ?? null,
 });
 
 // Selects the contract to expose for each slug: the latest compatible one, which is the

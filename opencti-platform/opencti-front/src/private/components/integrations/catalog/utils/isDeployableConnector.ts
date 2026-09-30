@@ -9,8 +9,6 @@ type DeployableConnector = {
   versions?: Array<{
     version: string;
     support_version?: string | null;
-    min_version?: string | null;
-    min_platform_version?: string | null;
   }> | null;
 };
 

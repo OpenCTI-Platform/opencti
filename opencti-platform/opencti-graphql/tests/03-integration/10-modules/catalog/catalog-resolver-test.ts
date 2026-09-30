@@ -81,7 +81,7 @@ const assertContractShape = (contract: any) => {
     expect(contract.versions).toEqual(expect.any(Array));
     contract.versions.forEach((versionEntry: any) => {
       expect(versionEntry.version).toEqual(expect.any(String));
-      expect(versionEntry.min_platform_version === null || typeof versionEntry.min_platform_version === 'string').toBe(true);
+      expect(versionEntry.support_version === null || typeof versionEntry.support_version === 'string').toBe(true);
     });
   }
 };
@@ -276,8 +276,8 @@ describe('Catalog resolver integration', () => {
     expect(listedContract.container_version).toBe('1.0.0');
     expect(listedContract.support_version).toBe('7.0.0');
     expect(listedContract.versions).toEqual([
-      { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
-      { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
+      { version: '2.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0' },
     ]);
     expect(listedContract.compatibility).toEqual({
       is_compatible: true,
@@ -299,8 +299,8 @@ describe('Catalog resolver integration', () => {
     expect(bySlugContract.container_version).toBe('1.0.0');
     expect(bySlugContract.support_version).toBe('7.0.0');
     expect(bySlugContract.versions).toEqual([
-      { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
-      { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
+      { version: '2.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0' },
     ]);
     expect(bySlugContract.compatibility).toEqual({
       is_compatible: true,

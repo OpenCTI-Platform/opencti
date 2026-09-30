@@ -4,8 +4,6 @@ import { compareCalVer } from './compareCalVer';
 type ConnectorVersionEntry = {
   version: string;
   support_version?: string | null;
-  min_version?: string | null;
-  min_platform_version?: string | null;
 };
 
 type CompatibleConnector = {
@@ -20,10 +18,6 @@ const isVersionCompatible = (minimumVersion: string | null | undefined, platform
   }
   const comparison = compareCalVer(minimumVersion, platformVersion);
   return comparison !== null && comparison <= 0;
-};
-
-const getEntryMinimumVersion = (entry: ConnectorVersionEntry) => {
-  return entry.min_platform_version ?? entry.min_version ?? entry.support_version ?? null;
 };
 
 export const getLatestCompatibleVersion = (
@@ -43,7 +37,7 @@ export const getLatestCompatibleVersion = (
   let latestCompatibleVersion: string | null = null;
 
   for (const versionEntry of versions) {
-    if (!isVersionCompatible(getEntryMinimumVersion(versionEntry), platformVersion)) {
+    if (!isVersionCompatible(versionEntry.support_version, platformVersion)) {
       continue;
     }
     if (!latestCompatibleVersion) {

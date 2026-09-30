@@ -21,8 +21,6 @@ export type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
 export interface CatalogContractVersion {
   version: string;
   support_version?: string | null;
-  min_version?: string | null;
-  min_platform_version?: string | null;
 }
 
 export interface CatalogContractCompatibility {

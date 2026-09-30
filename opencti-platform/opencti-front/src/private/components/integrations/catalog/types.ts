@@ -43,8 +43,6 @@ export interface IngestionConnector {
   versions?: Array<{
     version: string;
     support_version?: string | null;
-    min_version?: string | null;
-    min_platform_version?: string | null;
   }> | null;
   compatibility?: IngestionConnectorCompatibility | null;
   container_image: string;
