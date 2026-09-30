@@ -135,10 +135,10 @@ describe('Component: FilterGroupPanel', () => {
     expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledWith(expect.objectContaining({ key: 'description' }), 'group-1-1');
   });
 
-  it('adds a sub-group in that group', async () => {
+  it('adds a sub-group in that group, pre-filled with a first default condition', async () => {
     const { user } = renderPanel(group);
     await user.click(screen.getByTestId('filter-group-add-group-group-1'));
-    expect(helpers.handleAddFilterGroup).toHaveBeenCalledWith('group-1');
+    expect(helpers.handleAddFilterGroup).toHaveBeenCalledWith('group-1', expect.objectContaining({ key: 'description' }));
   });
 
   it('switches the mode of the sub-group only', async () => {

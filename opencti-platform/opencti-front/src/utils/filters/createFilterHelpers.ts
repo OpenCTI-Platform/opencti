@@ -66,8 +66,8 @@ export const createFilterHelpers = (adapter: FilterStateAdapter): handleFilterHe
     }),
     'useEmptyGroup',
   ),
-  handleAddFilterGroup: (parentGroupId?: string) => adapter.applyChange(
-    (filters) => ({ filters: addFilterGroupUtil({ filters, parentGroupId }) }),
+  handleAddFilterGroup: (parentGroupId?: string, initialFilter?: Filter) => adapter.applyChange(
+    (filters) => ({ filters: addFilterGroupUtil({ filters, parentGroupId, initialFilter }) }),
     'useEmptyGroup',
   ),
   handleRemoveFilterGroup: (groupId: string) => adapter.applyChange(

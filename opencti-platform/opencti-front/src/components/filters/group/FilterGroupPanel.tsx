@@ -7,7 +7,8 @@ import Stack from '@mui/material/Stack';
 import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Fragment, FunctionComponent } from 'react';
 import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
-import { getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
+import { getFirstDefaultConditionFilter, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
+import { buildGroupedFilterKeyOptions } from '../../../utils/filters/filterKeyGrouping';
 import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from '../fields/FilterEditorContext';
 import FilterRow from '../fields/FilterRow';
@@ -34,6 +35,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
   const { t_i18n } = useFormatter();
   const { helpers, availableFilterKeys, entityTypes } = useFilterEditorContext();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
+  const keyOptions = buildGroupedFilterKeyOptions(availableFilterKeys, entityTypes ?? [], filterKeysMap, t_i18n);
   const groupId = group.id;
   const mode = (group.mode ?? 'and').toLowerCase();
 
@@ -43,14 +45,9 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
   };
 
   const handleAddCondition = () => {
-    // Match the order the key select displays (alphabetical by label), not the raw
-    // availableFilterKeys order, so the pre-selected filter is the first one shown.
-    const filterKey = [...availableFilterKeys]
-      .sort((a, b) => t_i18n(getFilterDefinitionFromFilterKeysMap(a, filterKeysMap)?.label ?? a)
-        .localeCompare(t_i18n(getFilterDefinitionFromFilterKeysMap(b, filterKeysMap)?.label ?? b)))[0];
-    if (!filterKey) return;
-    const filterDefinition = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
-    helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(filterKey, filterDefinition), groupId);
+    const initialFilter = getFirstDefaultConditionFilter(keyOptions, filterKeysMap);
+    if (!initialFilter) return;
+    helpers?.handleAddFilterWithEmptyValue(initialFilter, groupId);
   };
 
   return (
@@ -89,7 +86,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
             variant="tertiary"
             size="small"
             startIcon={<LibraryAddOutlinedIcon fontSize="small" />}
-            onClick={() => helpers?.handleAddFilterGroup(groupId)}
+            onClick={() => helpers?.handleAddFilterGroup(groupId, getFirstDefaultConditionFilter(keyOptions, filterKeysMap))}
             data-testid={`filter-group-add-group-${groupId ?? 'root'}`}
           >
             {t_i18n('Group')}

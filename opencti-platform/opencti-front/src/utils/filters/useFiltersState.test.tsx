@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { act } from 'react';
 import { testRenderHook } from '../tests/test-render';
 import useFiltersState from './useFiltersState';
-import type { FilterGroup } from './filtersHelpers-types';
 
 const initFilters = {
   id: 'root',
@@ -20,7 +19,7 @@ const initFilters = {
       filterGroups: [],
     },
   ],
-} as unknown as FilterGroup;
+};
 
 describe('useFiltersState nested groups helpers', () => {
   it('should expose the new helpers', () => {
