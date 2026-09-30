@@ -60,7 +60,13 @@ export const SETTINGS_LANGUAGE = 'SettingsLanguage';
 export const SETTINGS_MESSAGES = 'SettingsMessages';
 export const SETTINGS_HIDDEN_ENTITY_TYPES = 'SettingsHiddenEntityTypes';
 
-const exportEntitiesToZip = async <T extends { id: string; name: string }>(
+// Adds the export_id that the import will use to find an element that already exists on the target platform.
+export const withExportId = (exported: string, entity: { export_id?: string }): string => {
+  const { configuration, ...header } = JSON.parse(exported);
+  return JSON.stringify({ ...header, export_id: entity.export_id, configuration });
+};
+
+const exportEntitiesToZip = async <T extends { id: string; export_id?: string; name: string }>(
   archive: ZipArchive,
   entities: T[],
   exportFn: (entity: T) => Promise<string>,
@@ -68,7 +74,7 @@ const exportEntitiesToZip = async <T extends { id: string; name: string }>(
 ): Promise<number> => {
   for (let i = 0; i < entities.length; i += 1) {
     const exported = await exportFn(entities[i]);
-    archive.append(exported, { name: pathFor(entities[i]) });
+    archive.append(withExportId(exported, entities[i]), { name: pathFor(entities[i]) });
   }
   return entities.length;
 };
@@ -269,7 +275,7 @@ export const generateGlobalConfigurationExport = async (
     await archive.finalize();
     await zipReady;
 
-    const filename = `platform_configuration_export_${new Date().toISOString().replace(/[:.]/g, '-')}.zip`;
+    const filename = `opencti-config-${new Date().toISOString().replace(/[:.]/g, '-')}-${pjson.version}.zip`;
     const { upload } = await uploadToStorage(
       context,
       user,
@@ -281,7 +287,7 @@ export const generateGlobalConfigurationExport = async (
     const contextData = buildContextDataForFile(
       null,
       'global_configuration_export',
-      'platform_configuration_export.zip',
+      filename,
       [],
       { entity_types: uniqueEntityTypes, counts },
     );

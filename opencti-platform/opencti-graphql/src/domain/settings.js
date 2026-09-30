@@ -540,6 +540,7 @@ export const generateSettingsBrandingExportConfiguration = async (context) => {
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'settingsBranding',
+    export_id: settings.export_id,
     configuration: {
       platform_title: settings.platform_title,
       platform_favicon: settings.platform_favicon,
@@ -555,6 +556,7 @@ export const generateSettingsThemeExportConfiguration = async (context) => {
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'settingsTheme',
+    export_id: settings.platform_theme.export_id,
     configuration: {
       name: settings.platform_theme.name,
       theme_background: settings.platform_theme.theme_background,
@@ -581,6 +583,7 @@ export const generateSettingsLanguageExportConfiguration = async (context) => {
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'settingsLanguage',
+    export_id: settings.export_id,
     configuration: {
       platform_language: settings.platform_language,
       platform_translations: settings.platform_translations,
@@ -593,6 +596,7 @@ export const generateSettingsMessagesExportConfiguration = async (context) => {
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'settingsMessages',
+    export_id: settings.export_id,
     configuration: {
       platform_banner_text: settings.platform_banner_text,
       platform_banner_level: settings.platform_banner_level,
