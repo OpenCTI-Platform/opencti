@@ -452,11 +452,15 @@ export const buildDraftPlan = (
   // Apply explicit authorized members from form submission
   // Bypass users can always override; non-bypass users can override when the field is editable
   const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
+  // AUTHOR-type authorized-member rules ("author's org") must resolve even when the
+  // "Draft Author" section itself is left unconfigured, so fall back to the main
+  // entity's author instead of silently dropping the rule.
+  const authorForAuthorizedMembers = createdBy ?? resolveMainEntityAuthorFromValues(schema, values);
   let authorized_members: MemberAccessInput[] = [];
   if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-    authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
+    authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, authorForAuthorizedMembers);
   } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-    authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
+    authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, authorForAuthorizedMembers);
   }
 
   const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {

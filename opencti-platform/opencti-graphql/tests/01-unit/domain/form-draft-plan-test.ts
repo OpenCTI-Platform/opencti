@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDraftPlan } from '../../../src/modules/form/form-domain';
 import { BYPASS } from '../../../src/utils/access';
+import { FormFieldType } from '../../../src/modules/form/form-types';
 
 const mockUser: any = { id: 'user-1', capabilities: [{ name: BYPASS }] };
 const nonBypassUser: any = { id: 'user-2', capabilities: [] };
@@ -40,5 +41,30 @@ describe('buildDraftPlan', () => {
     };
     const plan = buildDraftPlan('Test Form', schema, { draftAuthor: null }, nonBypassUser, false);
     expect(plan.draftInput.createdBy).toBeUndefined();
+  });
+
+  it('resolves AUTHOR-type authorized-member rules from the main entity author even when "Draft Author" is left unconfigured', () => {
+    const schema: any = {
+      draftDefaults: {
+        // No `author` config at all: the admin only configured Authorized Members.
+        authorizedMembers: {
+          enabled: true,
+          defaults: [
+            { value: 'AUTHOR', accessRight: 'view' },
+            { value: 'AUTHOR', accessRight: 'edit', groupsRestriction: [{ value: 'group-analyst' }] },
+          ],
+        },
+      },
+      fields: [{ name: 'createdBy', type: FormFieldType.CreatedBy }],
+    };
+    const values = { createdBy: { value: 'org-a' } };
+
+    const plan = buildDraftPlan('Test Form', schema, values, nonBypassUser, false);
+
+    expect(plan.draftInput.createdBy).toBeUndefined();
+    expect(plan.draftInput.authorized_members).toEqual([
+      { id: 'org-a', access_right: 'view', groups_restriction_ids: undefined },
+      { id: 'org-a', access_right: 'edit', groups_restriction_ids: ['group-analyst'] },
+    ]);
   });
 });
