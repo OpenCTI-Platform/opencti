@@ -247,14 +247,24 @@ describe('Catalog resolver integration', () => {
         id: `${contractSlug}-1.0.0`,
         slug: contractSlug,
         version: '1.0.0',
-        support_version: '7.0.0',
+        min_version: '7.0.0',
+        max_version: '8.0.0',
       },
       {
         ...fixture.contracts[0],
         id: `${contractSlug}-2.0.0`,
         slug: contractSlug,
         version: '2.0.0',
-        support_version: '9999.0.0',
+        min_version: '9999.0.0',
+        max_version: null,
+      },
+      {
+        ...fixture.contracts[0],
+        id: `${contractSlug}-too-new-1.0.0`,
+        slug: `${contractSlug}-too-new`,
+        version: '1.0.0',
+        min_version: '6.0.0',
+        max_version: '7.0.0',
       },
     ];
 
@@ -274,15 +284,25 @@ describe('Catalog resolver integration', () => {
     const listedContract = catalogContracts.find((entry: any) => entry.slug === contractSlug);
     expect(listedContract).toBeDefined();
     expect(listedContract.container_version).toBe('1.0.0');
-    expect(listedContract.support_version).toBe('7.0.0');
+    expect(listedContract.min_version).toBe('7.0.0');
     expect(listedContract.versions).toEqual([
-      { version: '2.0.0', support_version: '9999.0.0' },
-      { version: '1.0.0', support_version: '7.0.0' },
+      { version: '2.0.0', support_version: null, min_version: '9999.0.0', max_version: null },
+      { version: '1.0.0', support_version: null, min_version: '7.0.0', max_version: '8.0.0' },
     ]);
     expect(listedContract.compatibility).toEqual({
       is_compatible: true,
       latest_compatible_version: '1.0.0',
-      minimum_platform_version: '7.0.0',
+      minimum_platform_version: null,
+      maximum_platform_version: null,
+    });
+
+    const tooNewContract = catalogContracts.find((entry: any) => entry.slug === `${contractSlug}-too-new`);
+    expect(tooNewContract.container_version).toBe('1.0.0');
+    expect(tooNewContract.compatibility).toEqual({
+      is_compatible: false,
+      latest_compatible_version: null,
+      minimum_platform_version: null,
+      maximum_platform_version: '7.0.0',
     });
 
     const bySlugResult = await queryAsAdminWithSuccess({
@@ -297,15 +317,16 @@ describe('Catalog resolver integration', () => {
     const bySlugContract = JSON.parse(bySlugPayload.contract);
     expect(bySlugContract.slug).toEqual(contractSlug);
     expect(bySlugContract.container_version).toBe('1.0.0');
-    expect(bySlugContract.support_version).toBe('7.0.0');
+    expect(bySlugContract.min_version).toBe('7.0.0');
     expect(bySlugContract.versions).toEqual([
-      { version: '2.0.0', support_version: '9999.0.0' },
-      { version: '1.0.0', support_version: '7.0.0' },
+      { version: '2.0.0', support_version: null, min_version: '9999.0.0', max_version: null },
+      { version: '1.0.0', support_version: null, min_version: '7.0.0', max_version: '8.0.0' },
     ]);
     expect(bySlugContract.compatibility).toEqual({
       is_compatible: true,
       latest_compatible_version: '1.0.0',
-      minimum_platform_version: '7.0.0',
+      minimum_platform_version: null,
+      maximum_platform_version: null,
     });
   });
 });

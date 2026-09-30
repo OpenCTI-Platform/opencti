@@ -137,20 +137,14 @@ export const getLatestCompatibleVersion = (
   versions: CatalogContractVersion[],
   options: CompatibilityOptions = {},
 ) => {
-  const platformVersion = options.platformVersion ?? PLATFORM_VERSION;
+  // Same check as the contracts selection and the deployment
   const compatibleVersions = [...versions]
-    .filter((version) => {
-      const minimumVersion = version.support_version;
-      if (!minimumVersion) {
-        return true;
-      }
-      const parsedMinimumVersion = parseCatalogSemver(minimumVersion);
-      const parsedPlatformVersion = parseCatalogSemver(platformVersion);
-      if (!parsedMinimumVersion || !parsedPlatformVersion) {
-        return false;
-      }
-      return semver.lte(parsedMinimumVersion, parsedPlatformVersion);
-    })
+    .filter((version) => isSupportVersionCompatible({
+      contract_id: version.version,
+      support_version: version.support_version ?? undefined,
+      min_version: version.min_version ?? undefined,
+      max_version: version.max_version ?? undefined,
+    }, options))
     .sort(compareCatalogVersionDesc);
 
   return compatibleVersions[0]?.version ?? null;
@@ -160,7 +154,7 @@ export const getMinimumPlatformVersion = (versions: CatalogContractVersion[]) =>
   let minimumPlatformVersion: string | null = null;
 
   for (const version of versions) {
-    const candidateVersion = version.support_version;
+    const candidateVersion = version.min_version;
     if (!candidateVersion) {
       continue;
     }
@@ -184,23 +178,45 @@ export const getMinimumPlatformVersion = (versions: CatalogContractVersion[]) =>
   return minimumPlatformVersion;
 };
 
+// Highest platform version supported by the connector, when every version has a max_version
+export const getMaximumPlatformVersion = (versions: CatalogContractVersion[]) => {
+  const maxVersions = versions.map((version) => semver.valid(version.max_version ?? null));
+  if (maxVersions.length === 0 || maxVersions.some((maxVersion) => !maxVersion)) {
+    return null;
+  }
+  return (maxVersions as string[]).sort(semver.rcompare)[0];
+};
+
 export const buildCatalogContractCompatibility = (
   versions: CatalogContractVersion[],
   options: CompatibilityOptions = {},
 ): CatalogContractCompatibility => {
   const latestCompatibleVersion = getLatestCompatibleVersion(versions, options);
+  const isCompatible = latestCompatibleVersion !== null;
+  const platformVersion = parseCatalogSemver(options.platformVersion ?? PLATFORM_VERSION);
+  const minimumPlatformVersion = getMinimumPlatformVersion(versions);
+  const parsedMinimumPlatformVersion = parseCatalogSemver(minimumPlatformVersion);
+  const maximumPlatformVersion = getMaximumPlatformVersion(versions);
   return {
-    is_compatible: latestCompatibleVersion !== null,
+    is_compatible: isCompatible,
     latest_compatible_version: latestCompatibleVersion,
-    minimum_platform_version: getMinimumPlatformVersion(versions),
+    // Only set when the platform is too old or too new for every version of the connector
+    minimum_platform_version: !isCompatible && platformVersion && parsedMinimumPlatformVersion && semver.lt(platformVersion, parsedMinimumPlatformVersion)
+      ? minimumPlatformVersion
+      : null,
+    maximum_platform_version: !isCompatible && platformVersion && maximumPlatformVersion && semver.gt(platformVersion, maximumPlatformVersion)
+      ? maximumPlatformVersion
+      : null,
   };
 };
 
 const mapContractToVersion = (
-  contract: Pick<BasicStoreEntityCatalogContract, 'contract_version' | 'support_version'>,
+  contract: Pick<BasicStoreEntityCatalogContract, 'contract_version' | 'support_version' | 'min_version' | 'max_version'>,
 ): CatalogContractVersion => ({
   version: contract.contract_version,
   support_version: contract.support_version ?? null,
+  min_version: contract.min_version ?? null,
+  max_version: contract.max_version ?? null,
 });
 
 // Selects the contract to expose for each slug: the latest compatible one, which is the
