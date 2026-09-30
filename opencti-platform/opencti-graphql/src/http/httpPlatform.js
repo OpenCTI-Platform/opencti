@@ -45,6 +45,10 @@ import {
   getLegacyChatbotProxy,
   postChatbotMessageApprove,
   getChatbotPendingApprovals,
+  getChatbotPrompts,
+  getChatbotQuota,
+  postChatbotMessageFeedback,
+  deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -630,6 +634,12 @@ const createApp = async (app, schema) => {
   // prompt (and the `tool_call_id`s a decision must name) back.
   app.post(`${basePath}/chatbot/messages/approve`, postChatbotMessageApprove);
   app.get(`${basePath}/chatbot/conversations/:conversationId/pending-approvals`, getChatbotPendingApprovals);
+  // Composer extras (prompt picker, quota indicator) and persisted thumbs
+  // feedback on an answer.
+  app.get(`${basePath}/chatbot/prompts`, getChatbotPrompts);
+  app.get(`${basePath}/chatbot/quota`, getChatbotQuota);
+  app.post(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, postChatbotMessageFeedback);
+  app.delete(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, deleteChatbotMessageFeedback);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
