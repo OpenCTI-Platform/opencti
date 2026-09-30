@@ -14,7 +14,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 // 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
-testCreatedCounter['attack-pattern'] = 28;
+testCreatedCounter['attack-pattern'] = 29;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
