@@ -433,6 +433,7 @@ const WidgetCreationParameters = () => {
             const isNumberError = (selection.number ?? 10) > maxResultCount;
             const limitHelper = `${t_i18n('The number of results should be lower than')} ${maxResultCount}`;
             const perspective = selection.perspective;
+            const selectedEntityType = getEntityTypeFromFilters(selection.filters);
 
             return (
               <div key={i} data-testid={`widget-params-selection-${i}`}>
@@ -615,25 +616,25 @@ const WidgetCreationParameters = () => {
                             <SelectItem value="modified">
                               modified ({t_i18n('Functional date')})
                             </SelectItem>
-                            {perspective === 'relationships' && (
-                              <SelectItem value="start_time">
-                                start_time ({t_i18n('Functional date')})
-                              </SelectItem>
+                            {(perspective === 'relationships' && selectedEntityType !== 'stix-sighting-relationship') && (
+                              <>
+                                <SelectItem value="start_time">
+                                  start_time ({t_i18n('Functional date')})
+                                </SelectItem>
+                                <SelectItem value="stop_time">
+                                  stop_time ({t_i18n('Functional date')})
+                                </SelectItem>
+                              </>
                             )}
-                            {perspective === 'relationships' && (
-                              <SelectItem value="stop_time">
-                                stop_time ({t_i18n('Functional date')})
-                              </SelectItem>
-                            )}
-                            {perspective === 'entities' && !isWidgetListOrTimeline(type) && (
-                              <SelectItem value="first_seen">
-                                first_seen ({t_i18n('Functional date')})
-                              </SelectItem>
-                            )}
-                            {perspective === 'entities' && !isWidgetListOrTimeline(type) && (
-                              <SelectItem value="last_seen">
-                                last_seen ({t_i18n('Functional date')})
-                              </SelectItem>
+                            {(perspective === 'entities' || selectedEntityType === 'stix-sighting-relationship') && (
+                              <>
+                                <SelectItem value="first_seen">
+                                  first_seen ({t_i18n('Functional date')})
+                                </SelectItem>
+                                <SelectItem value="last_seen">
+                                  last_seen ({t_i18n('Functional date')})
+                                </SelectItem>
+                              </>
                             )}
                           </SelectContent>
                         </Select>
