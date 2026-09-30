@@ -1,0 +1,54 @@
+import type { StixObject } from '../../types/stix-2-1-common';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { UserApiToken } from '../../types/user';
+import type { ConfidenceLevel } from '../../generated/graphql';
+
+export const ENTITY_TYPE_USER = 'User';
+
+// region Database types
+export interface UserBookmark {
+  id: string;
+  type: string;
+}
+
+export interface BasicStoreEntityUser extends BasicStoreEntity {
+  user_email: string;
+  personal_notifiers: Array<string>;
+  password: string;
+  name: string;
+  description: string;
+  firstname: string;
+  lastname: string;
+  theme: string;
+  language: string;
+  external: boolean;
+  bookmarks: Array<UserBookmark>;
+  api_tokens: Array<UserApiToken>;
+  otp_secret: string;
+  otp_qr: string;
+  otp_activated: boolean;
+  password_valid_until: Date | null;
+  default_dashboard: string;
+  draft_context: string;
+  default_time_field: string;
+  account_status: string;
+  account_lock_after_date: Date;
+  merged_into: string;
+  administrated_organizations: string;
+  unit_system: string;
+  submenu_show_icons: boolean;
+  submenu_auto_collapse: boolean;
+  monochrome_labels: boolean;
+  unsubscribed_news_feed_types: Array<string>;
+  user_confidence_level: ConfidenceLevel | null;
+  user_service_account: boolean;
+}
+
+export interface StoreEntityUser extends BasicStoreEntityUser, StoreEntity {}
+// endregion
+
+// region Stix type
+export interface StixUser extends StixObject {
+  name: string;
+}
+// endregion
