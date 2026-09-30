@@ -167,3 +167,31 @@ def test_create_bundle():
     ]:
         assert key in bundle
     assert len(bundle.keys()) == 6
+
+
+def test_count_bundle_objects_matches_what_a_whole_bundle_import_reports():
+    # A worker importing a bundle sent whole reports one expectation per imported element
+    # and one per incompatible element: the declared count must equal their sum.
+    from pycti.utils.opencti_stix2_splitter import count_bundle_objects
+
+    for path in (
+        "./tests/data/enterprise-attack.json",
+        "./tests/data/DATA-TEST-STIX2_v2.json",
+    ):
+        with open(path) as file:
+            content = file.read()
+        expectations, incompatible, _ = (
+            OpenCTIStix2Splitter().split_bundle_with_expectations(content)
+        )
+        assert count_bundle_objects(content) == expectations + len(incompatible)
+        assert count_bundle_objects(json.loads(content)) == count_bundle_objects(
+            content
+        )
+
+
+def test_count_bundle_objects_counts_duplicates_once():
+    from pycti.utils.opencti_stix2_splitter import count_bundle_objects
+
+    report = {"type": "report", "id": "report--" + str(uuid.uuid4())}
+    bundle = {"type": "bundle", "objects": [report, dict(report)]}
+    assert count_bundle_objects(bundle) == 1

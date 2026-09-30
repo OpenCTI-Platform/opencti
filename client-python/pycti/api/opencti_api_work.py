@@ -1,6 +1,7 @@
+import threading
 import time
 import traceback
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 
 class OpenCTIApiWork:
@@ -19,6 +20,20 @@ class OpenCTIApiWork:
         :type api: OpenCTIApiClient
         """
         self.api = api
+        # Works opened by this client through `initiate_work` and not closed yet by
+        # `to_processed`: the connector helper closes the ones a scheduled run leaves open,
+        # so a multipart work never stays "in progress" because a connector forgot to close it.
+        self._open_works: Set[str] = set()
+        self._open_works_lock = threading.Lock()
+
+    def open_work_ids(self) -> Set[str]:
+        """Return the ids of the works opened by this client and not closed yet.
+
+        :return: a copy of the set of open work ids
+        :rtype: set
+        """
+        with self._open_works_lock:
+            return set(self._open_works)
 
     def to_received(self, work_id: str, message: str):
         """Mark work as received.
@@ -55,6 +70,8 @@ class OpenCTIApiWork:
         :return: None
         :rtype: None
         """
+        with self._open_works_lock:
+            self._open_works.discard(work_id)
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
                 "Reporting work update_processed", {"work_id": work_id}
@@ -183,7 +200,8 @@ class OpenCTIApiWork:
         self,
         connector_id: str,
         friendly_name: str,
-        is_multipart: bool = False,
+        is_multipart: bool = True,
+        auto_close: bool = True,
     ) -> Optional[str]:
         """Initiate a new work for a connector.
 
@@ -198,11 +216,16 @@ class OpenCTIApiWork:
                                 to `report_expectation` matches the expectations
                                 but only when an explicit call to `to_processed`
                                 is made.
-                                Should be set to `True` when sending multiple
-                                STIX bundles consecutively via `send_stix2_bundle`
-                                during the work's lifetime.
-                                Defaults to `False`.
+                                Defaults to `True`: a work completes only once its
+                                connector said it has sent everything, never between
+                                two bundles. The connector helper calls `to_processed`
+                                for the works a scheduled run leaves open.
         :type is_multipart:     bool
+        :param auto_close:      when `True` (default), the connector helper closes this
+                                work at the end of the scheduled run that opened it if
+                                the connector did not; `False` for a work kept open
+                                across runs.
+        :type auto_close:       bool
         :return:                the work id or None if bundle_send_to_queue is False
         :rtype: str or None
         """
@@ -231,7 +254,11 @@ class OpenCTIApiWork:
                 },
                 True,
             )
-            return work["data"]["workAdd"]["id"]
+            work_id = work["data"]["workAdd"]["id"]
+            if auto_close:
+                with self._open_works_lock:
+                    self._open_works.add(work_id)
+            return work_id
         return None
 
     def delete_work(self, work_id: str):

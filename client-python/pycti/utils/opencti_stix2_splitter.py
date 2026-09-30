@@ -25,6 +25,23 @@ supported_types = (
 )
 
 
+def count_bundle_objects(bundle) -> int:
+    """Count the objects a bundle sent whole will be reported for.
+
+    A worker importing a whole bundle reports one expectation per distinct object: one per
+    element it imports and one (in error) per element the splitter finds incompatible.
+    Every distinct object falls in exactly one of the two, so the count is the number of
+    distinct object ids, with no dependency walk (milliseconds on the largest bundles).
+
+    :param bundle: the bundle, as a JSON string or a dict
+    :type bundle: str or dict
+    :return: the number of distinct objects of the bundle
+    :rtype: int
+    """
+    bundle_data = json.loads(bundle) if isinstance(bundle, str) else bundle
+    return len({item["id"] for item in bundle_data.get("objects", []) if "id" in item})
+
+
 def is_id_supported(key):
     """Check if a STIX ID type is supported for processing.
 

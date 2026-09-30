@@ -54,7 +54,10 @@ from pydantic import TypeAdapter
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
-from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_stix2_splitter import (
+    OpenCTIStix2Splitter,
+    count_bundle_objects,
+)
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 """List of string values considered as boolean True."""
@@ -3091,6 +3094,57 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             sys.excepthook(*sys.exc_info())
 
+    def _run_connector_process(self, message_callback: Callable[[], None]) -> None:
+        """Run the connector process, then close the works it opened and left open.
+
+        A work opened during the run with `initiate_work` (multipart by default) completes
+        only once `to_processed` says everything was sent. Connectors that forget it would
+        leave the work in progress forever: the helper closes it at the end of the run,
+        with the exception text and `in_error` when the run raised.
+
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        """
+        opened_before = self.api.work.open_work_ids()
+        try:
+            message_callback()
+        except BaseException as err:  # pylint: disable=broad-except
+            if isinstance(err, SystemExit) and err.code in (0, None):
+                self._close_run_works(opened_before, "Run finished", False)
+            elif isinstance(err, (KeyboardInterrupt, SystemExit)):
+                self._close_run_works(opened_before, "Run interrupted", True)
+            else:
+                self._close_run_works(
+                    opened_before, f"Run failed: {type(err).__name__}: {err}", True
+                )
+            raise
+        self._close_run_works(opened_before, "Run finished", False)
+
+    def _close_run_works(
+        self, opened_before: set, message: str, in_error: bool
+    ) -> None:
+        """Close the works opened since `opened_before` and still open.
+
+        :param opened_before: the open work ids before the run
+        :type opened_before: set
+        :param message: the message reported on each work
+        :type message: str
+        :param in_error: whether the run failed
+        :type in_error: bool
+        """
+        for work_id in self.api.work.open_work_ids() - opened_before:
+            try:
+                self.connector_logger.info(
+                    "Closing the work left open by the run",
+                    {"work_id": work_id, "in_error": in_error},
+                )
+                self.api.work.to_processed(work_id, message, in_error)
+            except Exception as err:  # pylint: disable=broad-except
+                self.connector_logger.error(
+                    "Cannot close the work left open by the run",
+                    {"work_id": work_id, "reason": str(err)},
+                )
+
     def _schedule_process(
         self,
         scheduler: sched.scheduler,
@@ -3115,7 +3169,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
             if not check_connector_buffering:
                 # Start running the connector
-                message_callback()
+                self._run_connector_process(message_callback)
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
 
@@ -3162,7 +3216,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
                 if not check_connector_buffering:
                     # Start running the connector
-                    message_callback()
+                    self._run_connector_process(message_callback)
 
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
@@ -3171,7 +3225,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                message_callback()
+                self._run_connector_process(message_callback)
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
                 # Lets you know what is the last run of the connector datetime
@@ -3747,7 +3801,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         if no_split:
             bundles = [bundle]
-            expectations_number = 1
+            # The worker reports one expectation per distinct object of a bundle sent whole
+            # (ADR 0007): declaring 1 made the work complete at its first object.
+            expectations_number = count_bundle_objects(bundle)
         else:
             stix2_splitter = OpenCTIStix2Splitter()
             expectations_number, _, bundles = (
@@ -3807,6 +3863,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         update=update,
                         draft_id=draft_id,
                         no_split=no_split,
+                        declared_expectations=(expectations_number if no_split else 1),
                     )
                 channel.close()
                 pika_connection.close()
@@ -3852,6 +3909,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         entities_types = kwargs.get("entities_types", None)
         draft_id = kwargs.get("draft_id", None)
         no_split = kwargs.get("no_split", False)
+        declared_expectations = kwargs.get("declared_expectations", None)
 
         if entities_types is None:
             entities_types = []
@@ -3878,6 +3936,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         }
         if work_id is not None:
             message["work_id"] = work_id
+            # What this sender already declared for this message: the worker adds only the
+            # difference with the objects it will report (a message without the field comes
+            # from an older client, which declared 1).
+            if declared_expectations is not None:
+                message["declared_expectations"] = declared_expectations
 
         # Send the message
         retry_count = 0
