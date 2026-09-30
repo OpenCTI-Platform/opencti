@@ -21,6 +21,8 @@ const buildContractEntityFields = (): CatalogContractEntityFields => ({
   playbook_supported: false,
   max_confidence_level: 50,
   support_version: '6.7.0',
+  min_version: '6.8.0',
+  max_version: '7.5.0',
   subscription_link: null as unknown as string,
   source_code: '',
   manager_supported: true,
@@ -45,7 +47,7 @@ const buildContractEntityFields = (): CatalogContractEntityFields => ({
 });
 
 describe('catalog contract mappings', () => {
-  it('should normalize V0 support_version when mapping to entity fields', () => {
+  it('should preserve V0 support_version range when mapping to entity fields', () => {
     const dto: CatalogContract = {
       title: 'IPinfo',
       slug: 'ipinfo',
@@ -83,7 +85,7 @@ describe('catalog contract mappings', () => {
       logoUri: null,
     });
     expect(mapped.contract_id).toBe('ipinfo-1.2.3');
-    expect(mapped.support_version).toBe('6.7.0');
+    expect(mapped.support_version).toBe('>= 6.7.0');
     expect(mapped.contract_version).toBe('1.2.3');
   });
 
@@ -93,6 +95,8 @@ describe('catalog contract mappings', () => {
       USERNAME: { type: 'string' },
     });
     expect(mapped.config_schema.required).toEqual(['USERNAME']);
+    expect(mapped.min_version).toBe('6.8.0');
+    expect(mapped.max_version).toBe('7.5.0');
   });
 
   it('should keep runtime config vars when GraphQL contract mapping does not request stripping', () => {
@@ -130,6 +134,8 @@ describe('catalog contract mappings', () => {
       contract_id: 'ipinfo-1.2.3',
       contract_version: '1.2.3',
       image: 'opencti/connector-ipinfo',
+      min_version: '6.8.0',
+      max_version: '7.5.0',
     });
     expect((embedded as any)._index).toBeUndefined();
     expect((embedded as any)._score).toBeUndefined();

@@ -66,7 +66,10 @@ export interface CatalogType {
 }
 
 // region Api types
-export type GraphqlCatalogContract = CatalogContract;
+export type GraphqlCatalogContract = CatalogContract & {
+  min_version: string | null;
+  max_version: string | null;
+};
 export interface GraphqlCatalog {
   id: string;
   entity_type: string;
@@ -107,6 +110,8 @@ export interface CatalogContractEntityFields {
   playbook_supported: boolean;
   max_confidence_level: number;
   support_version?: string;
+  min_version?: string;
+  max_version?: string;
   subscription_link?: string;
   source_code?: string;
   manager_supported: boolean;
