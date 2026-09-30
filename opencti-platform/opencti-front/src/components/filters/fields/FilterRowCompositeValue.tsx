@@ -5,7 +5,6 @@ import { Dispatch, FunctionComponent, SetStateAction, useState } from 'react';
 import { useFormatter } from '../../i18n';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../utils/fdsLayer';
-import FilterValuesForDynamicSubKey from '../FilterValuesForDynamicSubKey';
 import FilterValueInput from './FilterValueInput';
 import { FILTER_VALUE_POPOVER_MIN_WIDTH, filterFieldBoxStyle } from './filterFieldLayout';
 
@@ -15,13 +14,6 @@ export interface FilterRowCompositeValueProps {
   setInputValues: Dispatch<SetStateAction<FilterEditorInputValue[]>>;
 }
 
-/**
- * Read-only value of the 'dynamic' subfilter of a 'dynamicRegardingOf' filter, displayed in the
- * nested-group row (the 'relationship_type' subfilter has its own column next to this one, so it
- * is not shown here). Same 'Dynamic filter' chip + hover tooltip as the root-level filter string
- * (FilterValues / FilterValuesForDynamicSubKey), so the two never drift apart. Clicking it opens a
- * popover with just the nested filter-group editor for that 'dynamic' subfilter.
- */
 const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> = ({
   filter,
   inputValues,
@@ -32,6 +24,10 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const dynamicValue = filter.values.find((f) => f.key === 'dynamic')?.values?.[0];
+  const directChildrenCount = (dynamicValue?.filters?.length ?? 0) + (dynamicValue?.filterGroups?.length ?? 0);
+  const dynamicValueLabel = directChildrenCount === 0
+    ? t_i18n('Add dynamic filter')
+    : `${directChildrenCount} ${directChildrenCount === 1 ? t_i18n('dynamic filter rule') : t_i18n('dynamic filter rules')}`;
   // Opening the popover queries based on the relationship type: without one selected yet, that
   // query has nothing to key off and breaks the app, so the trigger stays disabled until then.
   const hasRelationshipType = filter.values.some((f) => f.key === 'relationship_type');
@@ -58,7 +54,7 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           whiteSpace: 'nowrap',
         }}
       >
-        <FilterValuesForDynamicSubKey filterValue={dynamicValue} />
+        {dynamicValueLabel}
       </Button>
       <Popover
         open={!!anchorEl}
