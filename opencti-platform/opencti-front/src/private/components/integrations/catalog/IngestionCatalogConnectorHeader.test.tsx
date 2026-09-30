@@ -73,6 +73,45 @@ describe('IngestionCatalogConnectorHeader', () => {
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeDisabled();
   });
 
+  it('disables Deploy instead of the Enterprise Edition upsell in Community Edition when no compatible version exists', () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: '7.260828.0',
+        maximum_platform_version: null,
+      },
+    });
+
+    testRender(
+      <IngestionCatalogConnectorHeader connector={connector} isEnterpriseEdition={false} onClickDeploy={() => {}} />,
+      { userContext: buildUserContext() },
+    );
+
+    expect(screen.getByRole('button', { name: 'Deploy' })).toBeDisabled();
+  });
+
+  it('explains on hover why Deploy is disabled, and lets keyboard users reach the reason', async () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: null,
+        maximum_platform_version: '7.260900.0',
+      },
+    });
+
+    const { user } = testRender(
+      <IngestionCatalogConnectorHeader connector={connector} isEnterpriseEdition={true} onClickDeploy={() => {}} />,
+      { userContext: buildUserContext() },
+    );
+
+    const wrapper = screen.getByRole('button', { name: 'Deploy' }).parentElement as HTMLElement;
+    expect(wrapper).toHaveAttribute('tabindex', '0');
+    await user.hover(wrapper);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/^This connector is not compatible with your current platform version. It supports platform versions up to/);
+  });
+
   it('keeps Deploy enabled when a compatible version exists', () => {
     const connector = buildConnector({
       compatibility: {

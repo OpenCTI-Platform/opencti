@@ -2,6 +2,7 @@ import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import React from 'react';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type IngestionCatalogCardDeployButtonProps = {
@@ -9,21 +10,24 @@ type IngestionCatalogCardDeployButtonProps = {
   deployedTo?: string;
   onClick: () => void;
   disabled?: boolean;
+  disabledReason?: string | null;
 };
 
-const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onClick, disabled = false }: IngestionCatalogCardDeployButtonProps) => {
+const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onClick, disabled = false, disabledReason = null }: IngestionCatalogCardDeployButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
     <Stack direction="row" alignItems="center" gap={1}>
       <DeployedCountChip count={deploymentCount} to={deployedTo} />
-      <Button
-        size="small"
-        disabled={disabled}
-        onClick={onClick}
-      >
-        {t_i18n('Deploy')}
-      </Button>
+      <DisabledReasonTooltip reason={disabled ? disabledReason : null}>
+        <Button
+          size="small"
+          disabled={disabled}
+          onClick={onClick}
+        >
+          {t_i18n('Deploy')}
+        </Button>
+      </DisabledReasonTooltip>
     </Stack>
   );
 };

@@ -11,6 +11,7 @@ import IngestionCatalogCardDeployButton from '@components/integrations/catalog/c
 import ConnectorUseCases from '@components/integrations/catalog/components/card/usecases/ConnectorUseCases';
 import Tooltip from '@mui/material/Tooltip';
 import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -100,6 +101,7 @@ const ConnectorActions = ({
   onClickDeploy,
 }: ConnectorActionsProps) => {
   const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
   const shouldRenderDeploy = connector.manager_supported === true;
 
   return (
@@ -122,11 +124,13 @@ const ConnectorActions = ({
           onClick={(e) => e.stopPropagation()}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            {isEnterpriseEdition ? (
+            {/* The EE upsell only when EE would make the connector deployable */}
+            {isEnterpriseEdition || !canDeploy ? (
               <IngestionCatalogCardDeployButton
                 deploymentCount={deploymentCount}
                 deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
                 disabled={!canDeploy}
+                disabledReason={compatibilityMessage}
                 onClick={onClickDeploy}
               />
             ) : (
