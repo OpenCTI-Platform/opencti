@@ -70,6 +70,7 @@ const securityCoverageValidation = (t_i18n: (value: string) => string, isAutomat
   const baseShape = {
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     external_uri: Yup.string().url().nullable(),
   };
 
@@ -180,7 +181,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     { title: t_i18n('Choose type'), step: StepKey.MODE },
     ...(preSelectedEntityId ? [] : [{ title: t_i18n('Select entity to cover'), step: StepKey.OBJECT_COVERED }]),
     ...(mode === SecurityCoverageMode.MANUAL ? [{ title: t_i18n('Select entities to test'), step: StepKey.TESTED_ENTITIES }] : []),
-    { title: t_i18n('Coverage details'), step: StepKey.COVERAGE_DETAILS },
+    { title: t_i18n('Coverage Result details'), step: StepKey.COVERAGE_DETAILS },
   ];
 
   const activeStepIndex = Math.max(0, steps.findIndex(({ step }) => step === activeStep));
