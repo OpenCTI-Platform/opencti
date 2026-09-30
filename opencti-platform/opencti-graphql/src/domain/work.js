@@ -362,8 +362,10 @@ export const reportWorkProgress = async (context, user, workId, { count = 1, err
     let sourceScript = '';
     if (isComplete) {
       params.completed_number = total;
+      params.expected_number = expected;
       sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
+      ctx._source['import_expected_number'] = params.expected_number;
       ctx._source['completed_time'] = params.now;`;
     }
     // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
@@ -425,16 +427,10 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
     return workId;
   }
 
-  const currentWork = await loadWorkById(context, user, workId);
-  if (!currentWork) { // work is no longer exists
-    logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
-    return workId;
-  }
-
-  const params = { updated_at: now(), import_expected_number: expectations };
-  let source = 'ctx._source.updated_at = params.updated_at;';
-  source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  // ADR 0007: the declaration stays in Redis. A running work's tracking is read from Redis
+  // (computeWorkStatus), and its document gets the expected count once, at completion: a
+  // refreshed update per declaration (one per bundle sent) cost 10% of the ingestion throughput
+  // on the chunk path (35,000 extra refreshes and 3,200 history merges on mix140k).
   return workId;
 };
 
@@ -491,8 +487,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   if (isComplete) {
     params.completed_number = total && !Number.isNaN(total) ? total : 1;
+    params.expected_number = expected;
     source += `ctx._source['status'] = "complete";
-               ctx._source['import_expected_number'] = params.completed_number;
+               ctx._source['import_expected_number'] = params.expected_number;
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
     // Telemetry: objects processed by this completed work (volume proxy,

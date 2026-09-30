@@ -27,9 +27,11 @@ const forceCompleteWork = async (context, element, workState, reason) => {
   const processed = parseInt(workState.import_processed_number ?? '0', 10) || 0;
   const expected = parseInt(workState.import_expected_number ?? '0', 10) || 0;
   const params = { completed_time: now(), completed_number: processed, error: `${reason}: ${Math.max(expected - processed, 0)} of ${expected} expected objects never reported`, source: 'connector manager' };
+  params.expected_number = expected;
   let sourceScript = `ctx._source['status'] = "complete";
     ctx._source['completed_time'] = params.completed_time;
-    ctx._source['completed_number'] = params.completed_number;`;
+    ctx._source['completed_number'] = params.completed_number;
+    ctx._source['import_expected_number'] = params.expected_number;`;
   if (expected > processed) {
     sourceScript += 'if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.completed_time, "message": params.error, "source": params.source]); }';
   }
