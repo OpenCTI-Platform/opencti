@@ -33,7 +33,7 @@ export interface PlatformHealthStatus {
   dependencies: Record<HealthDependency, boolean>;
 }
 
-const CHECK_TIMEOUT_MS = 15_000;
+export const CHECK_TIMEOUT_MS = 15_000;
 const DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS = 30_000;
 // Also the cadence at which `platformUsageMetricsManager` recomputes and republishes the shared value.
 export const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;

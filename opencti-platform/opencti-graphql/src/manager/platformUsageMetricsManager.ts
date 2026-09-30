@@ -6,6 +6,7 @@ import { getQueueConsumersByType } from '../database/rabbitmq';
 import { redisGetPlatformStorageUsageMetrics, redisGetPlatformUsageMetrics, redisSetPlatformStorageUsageMetrics, redisSetPlatformUsageMetrics } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import {
+  CHECK_TIMEOUT_MS,
   DEFAULT_STORAGE_USAGE_METRICS_INTERVAL_MS,
   DEFAULT_STORAGE_USAGE_METRICS_TIMEOUT_MS,
   DEFAULT_USAGE_METRICS_INTERVAL_MS,
@@ -28,9 +29,17 @@ const SCHEDULE_TIME = conf.get('app:health_monitoring:usage_metrics_interval') ?
 // so it runs on its own, longer, schedule and with a timeout sized for large buckets.
 const STORAGE_SCHEDULE_TIME = conf.get('app:health_monitoring:storage_usage_metrics_interval') ?? DEFAULT_STORAGE_USAGE_METRICS_INTERVAL_MS;
 const STORAGE_COLLECT_TIMEOUT = conf.get('app:health_monitoring:storage_usage_metrics_timeout') ?? DEFAULT_STORAGE_USAGE_METRICS_TIMEOUT_MS;
-// Expiring the shared value with the collection interval is what makes exactly one
-// node recompute per cycle cluster-wide, the others reading the still valid payload.
-const toTtlSeconds = (intervalMs: number) => Math.max(1, Math.round(intervalMs / 1000));
+// The shared value outlives its interval by the collection timeout, so it's still readable while the next
+// collection runs; a value missing a whole cycle (collection stopped cluster-wide) expires rather than going stale.
+const toTtlSeconds = (intervalMs: number, timeoutMs: number) => Math.max(1, Math.ceil((intervalMs + timeoutMs) / 1000));
+
+// Since the value outlives its interval, freshness, not presence, decides whether a tick recomputes:
+// a value published less than half an interval ago comes from another node's tick in this same cycle.
+// Payloads without a collection date (published by a previous version) are always recomputed.
+const isPublishedThisCycle = (cached: unknown, intervalMs: number) => {
+  const collectedAt = (cached as { collected_at?: unknown } | null)?.collected_at;
+  return typeof collectedAt === 'number' && Date.now() - collectedAt < intervalMs / 2;
+};
 
 // A failed collection resets the metric to null so neither Prometheus nor the
 // health endpoint reports a stale value as if it were freshly measured.
@@ -71,23 +80,27 @@ const buildSharedMetricsHandler = <T extends object>(
   read: () => Promise<unknown>,
   parse: (cached: unknown) => T | null,
   compute: () => Promise<T>,
-  publish: (metrics: T, ttlSeconds: number) => Promise<void>,
+  publish: (payload: T & { collected_at: number }, ttlSeconds: number) => Promise<void>,
   intervalMs: number,
+  timeoutMs: number,
 ) => async (): Promise<void> => {
-  const alreadyPublished = parse(await read());
-  if (alreadyPublished !== null) {
+  const cached = await read();
+  if (parse(cached) !== null && isPublishedThisCycle(cached, intervalMs)) {
     return;
   }
   const metrics = await compute();
-  await publish(metrics, toTtlSeconds(intervalMs));
+  await publish({ ...metrics, collected_at: Date.now() }, toTtlSeconds(intervalMs, timeoutMs));
 };
 
 export const platformUsageMetricsHandler = buildSharedMetricsHandler(
   redisGetPlatformUsageMetrics,
   parseCachedUsageMetrics,
   computeUsageMetrics,
-  redisSetPlatformUsageMetrics,
+  // Nodes running the version before the bucket size got its own key reject a payload without
+  // s3_used_size, and their manager then rescans the bucket: keep it, null, for mixed-version clusters.
+  (payload, ttlSeconds) => redisSetPlatformUsageMetrics({ ...payload, s3_used_size: null }, ttlSeconds),
   SCHEDULE_TIME,
+  CHECK_TIMEOUT_MS,
 );
 
 export const platformStorageUsageMetricsHandler = buildSharedMetricsHandler(
@@ -96,6 +109,7 @@ export const platformStorageUsageMetricsHandler = buildSharedMetricsHandler(
   computeStorageUsageMetrics,
   redisSetPlatformStorageUsageMetrics,
   STORAGE_SCHEDULE_TIME,
+  STORAGE_COLLECT_TIMEOUT,
 );
 
 // Run on start: the first scheduled tick only fires one interval after boot, which would leave
