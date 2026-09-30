@@ -168,7 +168,11 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         // does not serve, which left both affordances hidden.
         prompts: '/prompts',
         quota: '/quota',
+        // Persisted thumbs rating of an answer, sent as POST / DELETE
+        // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
+        feedback: '/conversations',
       }}
+      locale={intl.locale.split('-')[0]}
       user={{ firstName }}
       disableFileManagement={false}
       t={tChatbot}
