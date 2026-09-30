@@ -33,7 +33,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     },
     booleanConf: (key, fallback) => {
       if (key === 'redis:use_ssl') return true;
-      if (key === 'tls_cluster_node_mode' && redisConfig.tlsClusterNodeMode !== undefined) {
+      if (key === 'redis:tls_cluster_node_mode' && redisConfig.tlsClusterNodeMode !== undefined) {
         return redisConfig.tlsClusterNodeMode;
       }
       return actual.booleanConf(key, fallback);
