@@ -18,7 +18,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters, WidgetPerspective } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
 import { isNotEmptyField } from '../utils';
 import useEntityTranslation from 'src/utils/hooks/useEntityTranslation';
 
