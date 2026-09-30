@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { CircularProgress, Fab } from '@mui/material';
+import Button from '@common/button/Button';
 import { ChevronRightOutlined } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
@@ -219,23 +220,18 @@ const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
           )}
         </UserContext.Consumer>
       </div>
-      <Fab
-        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
-        variant="extended"
-        size="small"
-        color="primary"
+      <Button
         onClick={handleNextStep}
         disabled={targetEntities.length < 1}
-        style={{
+        endIcon={<ChevronRightOutlined />}
+        sx={{
           position: 'fixed',
           bottom: 40,
           right: 30,
-          zIndex: 1001,
         }}
       >
         {t_i18n('Continue')}
-        <ChevronRightOutlined />
-      </Fab>
+      </Button>
     </div>
   );
 };
