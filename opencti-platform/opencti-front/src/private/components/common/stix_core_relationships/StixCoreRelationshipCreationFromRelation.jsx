@@ -459,7 +459,7 @@ const StixCoreRelationshipCreationFromRelation = ({
   return (
     <div>
       <IconButton
-        aria-label="Label"
+        aria-label={t_i18n('Add relationship')}
         onClick={handleOpen}
         size="small"
         variant="tertiary"
