@@ -68,7 +68,7 @@ import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
+import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -262,6 +262,14 @@ export const managedConnectorAdd = async (
   // Get contract
   const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
   if (isEmptyField(targetContract)) {
+    // Distinguish an unknown connector from a connector that the platform version cannot run
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    if (imageContracts.length > 0) {
+      throw FunctionalError('This connector is not compatible with the platform version', {
+        image: input.manager_contract_image,
+        platformVersion: PLATFORM_VERSION,
+      });
+    }
     throw UnsupportedError('Target contract not found');
   }
   if (!targetContract.manager_supported) {

@@ -277,12 +277,12 @@ export const findLatestCompatibleCatalogContractBySlug = async (
   return filterAndSortLatestCompatibleContracts(contracts)[0];
 };
 
-export const findLatestCompatibleCatalogContractByImageName = async (
+export const findCatalogContractsByImageName = async (
   context: AuthContext,
   user: AuthUser,
   imageName: string,
 ) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
@@ -298,6 +298,14 @@ export const findLatestCompatibleCatalogContractByImageName = async (
       },
     },
   );
+};
+
+export const findLatestCompatibleCatalogContractByImageName = async (
+  context: AuthContext,
+  user: AuthUser,
+  imageName: string,
+) => {
+  const contracts = await findCatalogContractsByImageName(context, user, imageName);
   const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
     logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
