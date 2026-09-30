@@ -4914,6 +4914,8 @@
   "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "Este conector no ha sido desarrollado ni verificado por Filigran. Por lo tanto, Filigran no se hace responsable de ningún problema que pueda surgir durante su uso.",
   "This connector is active": "Este conector está activo",
   "This connector is disconnected": "Este conector está desconectado",
+  "This connector is not compatible with your current platform version.": "Este conector no es compatible con la versión actual de su plataforma.",
+  "This connector is not compatible with your current platform version. It supports platform versions up to {version}.": "Este conector no es compatible con la versión actual de su plataforma. Admite versiones de la plataforma hasta la {version}.",
   "This connector is not compatible with your current platform version. Please upgrade your platform to {version} or above.": "Este conector no es compatible con la versión actual de su plataforma. Actualice su plataforma a la versión {version} o superior.",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "No se ha podido enviar esta decisión. Actualiza el chat e inténtalo de nuevo.",

@@ -1,32 +1,14 @@
 import { IngestionConnector } from '@components/integrations/catalog/types';
-import { getLatestCompatibleVersion } from './getLatestCompatibleVersion';
 
 type DeployableConnector = {
   manager_supported?: IngestionConnector['manager_supported'] | null;
   compatibility?: IngestionConnector['compatibility'] | null;
-  support_version?: IngestionConnector['support_version'] | null;
-  container_version?: IngestionConnector['container_version'] | null;
-  versions?: Array<{
-    version: string;
-    support_version?: string | null;
-  }> | null;
 };
 
-export const canDeployConnector = (
-  connector: DeployableConnector | null | undefined,
-  platformVersion?: string | null,
-) => {
+// Compatibility with the platform version is computed by the backend, with the same check as the deployment
+export const canDeployConnector = (connector: DeployableConnector | null | undefined) => {
   if (connector?.manager_supported !== true) {
     return false;
   }
-
-  if (connector.compatibility) {
-    return connector.compatibility.is_compatible;
-  }
-
-  if (!platformVersion) {
-    return true;
-  }
-
-  return getLatestCompatibleVersion(connector, platformVersion) !== null;
+  return connector.compatibility?.is_compatible !== false;
 };

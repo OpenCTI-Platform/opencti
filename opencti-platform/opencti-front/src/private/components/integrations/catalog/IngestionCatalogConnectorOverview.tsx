@@ -1,8 +1,8 @@
 import Button from '@common/button/Button';
 import { Launch } from 'mdi-material-ui';
-import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid2';
 import { IngestionConnector } from '@components/integrations/catalog/types';
+import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
@@ -13,20 +13,12 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
   const latestCompatibleVersion = connector.compatibility?.latest_compatible_version ?? null;
-  const minimumPlatformVersion = connector.compatibility?.minimum_platform_version ?? null;
-  const shouldShowCompatibilityAlert = connector.manager_supported && connector.compatibility?.is_compatible === false && !!minimumPlatformVersion;
 
   return (
     <Grid container spacing={2} sx={{ marginBottom: 20 }}>
       <Grid size={{ xs: 12, md: 8 }}>
         <Card title={t_i18n('Overview')}>
-          {shouldShowCompatibilityAlert && (
-            <Alert severity="info" sx={{ marginBottom: 2 }}>
-              {t_i18n('This connector is not compatible with your current platform version. Please upgrade your platform to {version} or above.', {
-                values: { version: minimumPlatformVersion },
-              })}
-            </Alert>
-          )}
+          <IngestionCatalogCompatibilityAlert connector={connector} sx={{ marginBottom: 2 }} />
           <MarkdownDisplay content={connector.description} />
         </Card>
       </Grid>

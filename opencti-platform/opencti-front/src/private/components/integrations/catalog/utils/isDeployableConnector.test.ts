@@ -17,6 +17,7 @@ describe('canDeployConnector', () => {
         is_compatible: false,
         latest_compatible_version: null,
         minimum_platform_version: '7.260950.0',
+        maximum_platform_version: null,
       },
     })).toBe(false);
   });
@@ -27,21 +28,9 @@ describe('canDeployConnector', () => {
       compatibility: {
         is_compatible: true,
         latest_compatible_version: '7.260828.0',
-        minimum_platform_version: '7.260828.0',
+        minimum_platform_version: null,
+        maximum_platform_version: null,
       },
     })).toBe(true);
-  });
-
-  it('falls back to client-side version checks when compatibility is absent', () => {
-    expect(canDeployConnector({
-      manager_supported: true,
-      container_version: '7.260901.0',
-      support_version: '7.260901.0',
-    }, '7.260901.0')).toBe(true);
-    expect(canDeployConnector({
-      manager_supported: true,
-      container_version: '7.260950.0',
-      support_version: '7.260950.0',
-    }, '7.260901.0')).toBe(false);
   });
 });

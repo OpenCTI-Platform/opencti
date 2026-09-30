@@ -18,7 +18,10 @@ export type IngestionTypedProperty<K extends keyof IngestionTypeMap = keyof Inge
 export interface IngestionConnectorCompatibility {
   is_compatible: boolean;
   latest_compatible_version: string | null;
+  // Set only when no version is compatible: the platform version to upgrade to
   minimum_platform_version: string | null;
+  // Set only when no version is compatible because the platform is newer than all of them
+  maximum_platform_version: string | null;
 }
 
 export interface IngestionConnector {
@@ -43,6 +46,8 @@ export interface IngestionConnector {
   versions?: Array<{
     version: string;
     support_version?: string | null;
+    min_version?: string | null;
+    max_version?: string | null;
   }> | null;
   compatibility?: IngestionConnectorCompatibility | null;
   container_image: string;

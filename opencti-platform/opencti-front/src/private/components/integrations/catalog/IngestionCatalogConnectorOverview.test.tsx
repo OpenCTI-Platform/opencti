@@ -28,7 +28,8 @@ const buildConnector = (overrides: Partial<IngestionConnector> = {}): IngestionC
   compatibility: {
     is_compatible: true,
     latest_compatible_version: '7.260700.0',
-    minimum_platform_version: '7.260700.0',
+    minimum_platform_version: null,
+    maximum_platform_version: null,
   },
   container_image: 'example/test:7.260700.0',
   container_type: 'EXTERNAL_IMPORT',
@@ -49,7 +50,8 @@ describe('IngestionCatalogConnectorOverview', () => {
       compatibility: {
         is_compatible: true,
         latest_compatible_version: '7.260828.0',
-        minimum_platform_version: '7.260700.0',
+        minimum_platform_version: null,
+        maximum_platform_version: null,
       },
     });
 
@@ -70,6 +72,7 @@ describe('IngestionCatalogConnectorOverview', () => {
         is_compatible: false,
         latest_compatible_version: null,
         minimum_platform_version: '7.260828.0',
+        maximum_platform_version: null,
       },
     });
 
@@ -80,12 +83,59 @@ describe('IngestionCatalogConnectorOverview', () => {
     expect(screen.getByText('This connector is not compatible with your current platform version. Please upgrade your platform to 7.260828.0 or above.')).toBeInTheDocument();
   });
 
+  it('tells the platform is too new when every version has a lower maximum platform version', () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: null,
+        maximum_platform_version: '7.260700.0',
+      },
+    });
+
+    testRender(<IngestionCatalogConnectorOverview connector={connector} />);
+
+    expect(screen.getByText('This connector is not compatible with your current platform version. It supports platform versions up to 7.260700.0.')).toBeInTheDocument();
+  });
+
+  it('displays a generic compatibility alert when no platform version can be suggested', () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: null,
+        maximum_platform_version: null,
+      },
+    });
+
+    testRender(<IngestionCatalogConnectorOverview connector={connector} />);
+
+    expect(screen.getByText('This connector is not compatible with your current platform version.')).toBeInTheDocument();
+  });
+
+  it('does not display the compatibility alert for a connector that is not managed', () => {
+    const connector = buildConnector({
+      manager_supported: false,
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: '7.260828.0',
+        maximum_platform_version: null,
+      },
+    });
+
+    testRender(<IngestionCatalogConnectorOverview connector={connector} />);
+
+    expect(screen.queryByText(/This connector is not compatible/)).not.toBeInTheDocument();
+  });
+
   it('translates the compatibility alert and fills in the minimum platform version', () => {
     const connector = buildConnector({
       compatibility: {
         is_compatible: false,
         latest_compatible_version: null,
         minimum_platform_version: '7.260828.0',
+        maximum_platform_version: null,
       },
     });
     // testRender provides the intl context outside of the user context, so the locale is set by a nested provider

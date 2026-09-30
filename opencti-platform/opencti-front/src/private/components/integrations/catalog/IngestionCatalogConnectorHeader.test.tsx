@@ -27,7 +27,8 @@ const buildConnector = (overrides: Partial<IngestionConnector> = {}): IngestionC
   compatibility: {
     is_compatible: true,
     latest_compatible_version: '7.260700.0',
-    minimum_platform_version: '7.260700.0',
+    minimum_platform_version: null,
+    maximum_platform_version: null,
   },
   container_image: 'example/test:7.260700.0',
   container_type: 'EXTERNAL_IMPORT',
@@ -60,6 +61,7 @@ describe('IngestionCatalogConnectorHeader', () => {
         is_compatible: false,
         latest_compatible_version: null,
         minimum_platform_version: '7.260828.0',
+        maximum_platform_version: null,
       },
     });
 
@@ -76,7 +78,8 @@ describe('IngestionCatalogConnectorHeader', () => {
       compatibility: {
         is_compatible: true,
         latest_compatible_version: '7.260828.0',
-        minimum_platform_version: '7.260828.0',
+        minimum_platform_version: null,
+        maximum_platform_version: null,
       },
     });
 
