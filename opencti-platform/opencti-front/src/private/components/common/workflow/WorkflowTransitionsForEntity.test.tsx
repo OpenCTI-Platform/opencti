@@ -15,7 +15,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 vi.mock('../../drafts/useSwitchDraft', () => ({ default: () => ({ exitDraft: vi.fn() }) }));
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../relay/environment')>(),
-  fetchQuery: () => ({ toPromise: async () => ({ workflowBypassStatuses: [{ status: { id: 'status-B', template: { name: 'B', color: '#00ff00' } }, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }] }) }),
+  fetchQuery: () => ({ toPromise: async () => ({ workflowBypassStatuses: [{ status: { id: 'status-B', template: { name: 'B', color: '#00ff00' } }, onExit: [{ type: 'log', params: null }], onEnter: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }] }) }),
 }));
 
 const status = (name: string) => ({ id: `status-${name}`, order: 1, template: { id: `template-${name}`, name, color: '#00ff00' } });
@@ -32,8 +32,9 @@ const Harness = () => {
   return report && (
     <>
       <span data-testid="legacy-status">{report.status?.template?.name}</span>
-      <WorkflowStatusForEntity data={report} entityType="Report" />
-      <WorkflowTransitionsForEntity data={report} entityType="Report" />
+      <WorkflowStatusForEntity data={report} entityType="Report">
+        <WorkflowTransitionsForEntity data={report} entityType="Report" />
+      </WorkflowStatusForEntity>
     </>
   );
 };
@@ -67,14 +68,13 @@ describe('WorkflowTransitionsForEntity refresh', () => {
   it('allows closing the bypass dialog after a hook failure updates the Relay instance', async () => {
     const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
     vi.useRealTimers();
-    await user.click(screen.getByRole('button', { name: 'Bypass status' }));
     await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'B' }));
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(await screen.findByRole('option', { name: 'B' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     await act(async () => relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       WorkflowTriggerResult: () => ({ success: false, reason: 'Hook failed', executionStatus: 'error', instance: instance('error'), entity: null }),
     })));
-    expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Apply actions' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByRole('button', { name: 'Clear' })).toBeEnabled();
@@ -83,19 +83,18 @@ describe('WorkflowTransitionsForEntity refresh', () => {
   it.each(['completed', 'pending'])('refreshes projected status after a %s bypass through the shared owner', async (executionStatus) => {
     const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
     vi.useRealTimers();
-    await user.click(screen.getByRole('button', { name: 'Bypass status' }));
     await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'B' }));
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(await screen.findByRole('option', { name: 'B' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     await act(async () => relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       WorkflowTriggerResult: () => ({ success: true, reason: null, executionStatus, instance: instance(null), entity: null }),
     })));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'approve' })).toBeDisabled();
     await resolveRefresh(relayEnv, null, 'B');
     expect(screen.getByTestId('legacy-status')).toHaveTextContent('B');
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeEnabled();
+    expect(screen.getByRole('combobox')).toBeEnabled();
     expect(screen.getByRole('button', { name: 'approve' })).toBeEnabled();
   });
 

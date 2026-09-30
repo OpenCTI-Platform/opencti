@@ -1483,16 +1483,17 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
 };
 
 const getWorkflowBypassRequirements = (definitionData: WorkflowDefinitionResponse, currentState: string | undefined, targetState: string) => {
-  const actions = [
-    ...(definitionData.states?.find((state) => state.statusId === currentState)?.onExit ?? []),
-    ...(definitionData.states?.find((state) => state.statusId === targetState)?.onEnter ?? []),
-  ];
+  const onExit = definitionData.states?.find((state) => state.statusId === currentState)?.onExit ?? [];
+  const onEnter = definitionData.states?.find((state) => state.statusId === targetState)?.onEnter ?? [];
+  const actions = [...onExit, ...onEnter];
   const runtimeActions = actions.filter((action) => action.type === 'asyncBulkAction').flatMap((action) => {
     const params: { actions?: { type: string; context?: { values?: unknown[] } }[] } | undefined = typeof action.params === 'string'
       ? JSON.parse(action.params) : action.params;
     return (params?.actions ?? []).filter((innerAction) => !innerAction.context?.values?.length);
   });
   return {
+    onExit,
+    onEnter,
     requiresShareOrganizationInput: runtimeActions.some((action) => action.type === 'SHARE'),
     requiresUnshareOrganizationInput: runtimeActions.some((action) => action.type === 'UNSHARE'),
   };

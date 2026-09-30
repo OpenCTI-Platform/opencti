@@ -245,8 +245,8 @@ describe('Workflow bypass', () => {
     definition.states[1].onEnter.push({ type: 'asyncBulkAction', params: { actions: [{ type: 'UNSHARE', context: { values: [] } }] } });
     definition.states[0].onEnter = [{ type: 'asyncBulkAction', params: { actions: [{ type: 'UNSHARE', context: { values: ['static-org'] } }] } }];
     expect(await getWorkflowBypassStatuses(context, user, entity.id)).toEqual([
-      { status: legacy, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false },
-      { status: target, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true },
+      { status: legacy, onExit: definition.states[0].onExit, onEnter: definition.states[0].onEnter, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false },
+      { status: target, onExit: definition.states[0].onExit, onEnter: definition.states[1].onEnter, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true },
     ]);
     expect(createEntity).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
@@ -568,7 +568,7 @@ describe('Workflow bypass', () => {
     definition.states = statuses.map((status) => ({ statusId: status.template_id }));
     vi.mocked(fullEntitiesList).mockResolvedValue([...statuses].reverse().concat({ ...target, template_id: 'stale' }));
     expect(await getWorkflowBypassStatuses(context, user, entity.id)).toEqual(statuses.map((status) => ({
-      status, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false,
+      status, onExit: [], onEnter: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false,
     })));
     expect(createEntity).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();

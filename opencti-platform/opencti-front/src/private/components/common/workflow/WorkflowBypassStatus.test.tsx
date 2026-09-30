@@ -40,17 +40,17 @@ vi.mock('../form/ObjectOrganizationField', async () => {
 
 const statuses = Array.from({ length: 105 }, (_, index) => ({
   status: { id: `status-${index}`, template: { name: `Status ${index}`, color: '#ff0000' } },
+  onExit: [{ type: 'updateAuthorizedMembers', params: null }],
+  onEnter: [{ type: 'validateDraft', params: null }],
   requiresShareOrganizationInput: false,
   requiresUnshareOrganizationInput: false,
 }));
-const entity = (pendingStatus: string | null = null) => ({
-  id: 'incident-1', entity_type: 'Incident', workflowInstance: { id: 'instance-1', pendingStatus },
+const entity = (pendingStatus: string | null = null, source = 0) => ({
+  id: 'incident-1', entity_type: 'Incident', workflowInstance: { id: 'instance-1', pendingStatus, currentState: `state-${source}`, currentStatus: statuses[source].status },
 }) as unknown as WorkflowStatusStixDomainObject_data$key;
 
 const openDialog = async (onCompleted?: () => void) => {
   const rendered = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} />);
-  await rendered.user.click(screen.getByRole('button', { name: 'Bypass status' }));
-  await waitFor(() => expect(screen.getByRole('combobox')).toBeEnabled());
   return rendered;
 };
 
@@ -67,6 +67,49 @@ beforeEach(() => {
 });
 
 describe('WorkflowBypassStatus', () => {
+  it('changes a status without hooks immediately and keeps the current status until completion', async () => {
+    fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{ ...statuses[104], onExit: [], onEnter: [] }] });
+    const { user } = await openDialog();
+    expect(screen.getByRole('combobox')).toHaveTextContent('Status 0');
+    await selectStatus(user);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(commit).toHaveBeenCalledOnce();
+    expect(commit.mock.calls[0][0].variables).toMatchObject({ targetStatusId: 'status-104', applyTransitionActions: false });
+    expect(screen.getByRole('combobox')).toHaveTextContent('Status 0');
+  });
+
+  it('previews source and target hooks and cancels without changing status', async () => {
+    const { user } = await openDialog();
+    await selectStatus(user);
+    expect(screen.getByText('On exit actions: Status 0')).toBeVisible();
+    expect(screen.getByText('On enter actions: Status 104')).toBeVisible();
+    expect(screen.getByText('Update authorized members')).toBeVisible();
+    expect(screen.getByText('Validate draft')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(commit).not.toHaveBeenCalled();
+  });
+
+  it('dismisses stale confirmation when the source status changes', async () => {
+    const { user, rerender } = await openDialog();
+    await selectStatus(user);
+    rerender(<WorkflowBypassStatus data={entity(null, 1)} entityType="Incident" />);
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('combobox')).toHaveTextContent('Status 1');
+    expect(commit).not.toHaveBeenCalled();
+  });
+
+  it('supports keyboard-only retry after loading fails', async () => {
+    fetchStatuses.mockRejectedValueOnce(new Error('Unavailable'));
+    const { user } = await openDialog();
+    await user.tab();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('button', { name: 'Retry' });
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Retry' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('option', { name: 'Status 104' })).toBeVisible();
+  });
   it.each(['share', 'unshare', 'both'])('requires %s organizations and combines selected runtime inputs', async (mode) => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{
       ...statuses[104], requiresShareOrganizationInput: mode !== 'unshare', requiresUnshareOrganizationInput: mode !== 'share',
@@ -74,7 +117,7 @@ describe('WorkflowBypassStatus', () => {
     const { user } = await openDialog();
     expect(screen.queryByLabelText('Organizations to share with')).toBeNull();
     await selectStatus(user);
-    const apply = screen.getByRole('button', { name: 'Apply' });
+    const apply = screen.getByRole('button', { name: 'Apply actions' });
     expect(apply).toBeDisabled();
     fireEvent.submit(apply.closest('form')!);
     await act(async () => {});
@@ -89,19 +132,16 @@ describe('WorkflowBypassStatus', () => {
     });
   });
 
-  it.each(['toggle', 'target'])('hides organization inputs and omits stale runtime values after changing %s', async (change) => {
+  it('skips hooks and omits runtime inputs when changing status only', async () => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [statuses[0], {
       ...statuses[104], requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true,
     }] });
     const { user } = await openDialog();
     await selectStatus(user);
     await user.click(screen.getByLabelText('Organizations to share with'));
-    if (change === 'toggle') await user.click(screen.getByRole('switch'));
-    else await selectStatus(user, 'Status 0');
-    expect(screen.queryByLabelText('Organizations to share with')).toBeNull();
-    expect(screen.queryByLabelText('Organizations to unshare from')).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Change status only' }));
     expect(commit).toHaveBeenCalledOnce();
+    expect(commit.mock.calls[0][0].variables.applyTransitionActions).toBe(false);
     expect(commit.mock.calls[0][0].variables.runtimeParams).toBeUndefined();
   });
 
@@ -109,20 +149,20 @@ describe('WorkflowBypassStatus', () => {
     const onCompleted = vi.fn();
     const { user, rerender } = await openDialog(onCompleted);
     await selectStatus(user);
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: true, executionStatus } }, null));
     expect(onCompleted).toHaveBeenCalledOnce();
     rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} refreshing />);
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
     rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} refreshing={false} />);
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeEnabled();
+    expect(screen.getByRole('combobox')).toBeEnabled();
   });
 
   it('does not refresh a rejected bypass', async () => {
     const onCompleted = vi.fn();
     const { user } = await openDialog(onCompleted);
     await selectStatus(user);
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: false, reason: 'Denied' } }, null));
     expect(onCompleted).not.toHaveBeenCalled();
   });
@@ -130,13 +170,13 @@ describe('WorkflowBypassStatus', () => {
   it.each(['bypass', 'enabled'] as const)('hides the control and never queries when %s is false', (permission) => {
     permissions[permission] = false;
     testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
-    expect(screen.queryByRole('button', { name: 'Bypass status' })).toBeNull();
+    expect(screen.queryByRole('combobox')).toBeNull();
     expect(fetchStatuses).not.toHaveBeenCalled();
   });
 
   it.each(['pending', 'error'])('disables bypass while the instance is %s', (pendingStatus) => {
     testRender(<WorkflowBypassStatus data={entity(pendingStatus)} entityType="Incident" />);
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
     expect(fetchStatuses).not.toHaveBeenCalled();
   });
 
@@ -146,21 +186,20 @@ describe('WorkflowBypassStatus', () => {
       resolve = done;
     }));
     const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
-    await user.click(screen.getByRole('button', { name: 'Bypass status' }));
+    await user.click(screen.getByRole('combobox'));
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
-    expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+    expect(screen.queryByRole('dialog')).toBeNull();
     await act(async () => resolve({ workflowBypassStatuses: statuses }));
     expect(fetchStatuses).toHaveBeenCalledWith(expect.anything(), { entityId: 'incident-1' });
-    await user.click(screen.getByRole('combobox'));
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(statuses.map(({ status }) => status.template.name));
   });
 
   it('notifies query failures and supports retry', async () => {
     fetchStatuses.mockRejectedValueOnce(new Error('Unavailable'));
     const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
-    await user.click(screen.getByRole('button', { name: 'Bypass status' }));
+    await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
-    await waitFor(() => expect(screen.getByRole('combobox')).toBeEnabled());
+    expect(await screen.findByRole('option', { name: 'Status 104' })).toBeVisible();
     expect(notifications.notifyError).toHaveBeenCalledOnce();
     expect(fetchStatuses).toHaveBeenCalledTimes(2);
   });
@@ -168,17 +207,17 @@ describe('WorkflowBypassStatus', () => {
   it('does not allow submission with no mapped target', async () => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [] });
     const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
-    await user.click(screen.getByRole('button', { name: 'Bypass status' }));
+    await user.click(screen.getByRole('combobox'));
     expect(await screen.findByText('No available status')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+    expect(screen.queryByRole('option')).toBeNull();
+    expect(commit).not.toHaveBeenCalled();
   });
 
   it.each([true, false])('submits once with actions=%s and a trimmed comment', async (actions) => {
     const { user } = await openDialog();
     await selectStatus(user);
     await user.type(screen.getByLabelText('Comment'), '  Ready  ');
-    if (!actions) await user.click(screen.getByRole('switch'));
-    const apply = screen.getByRole('button', { name: 'Apply' });
+    const apply = screen.getByRole('button', { name: actions ? 'Apply actions' : 'Change status only' });
     await user.dblClick(apply);
     expect(commit).toHaveBeenCalledOnce();
     expect(commit.mock.calls[0][0].variables).toEqual({ entityId: 'incident-1', targetStatusId: 'status-104', applyTransitionActions: actions, comment: 'Ready' });
@@ -193,35 +232,35 @@ describe('WorkflowBypassStatus', () => {
     const { user } = await openDialog();
     await selectStatus(user);
     await user.type(screen.getByLabelText('Comment'), 'Keep this');
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: false, reason: 'Status is no longer mapped' } }, null));
     expect(notifications.notifyError).toHaveBeenCalledWith('Status is no longer mapped');
     expect(screen.getByLabelText('Comment')).toHaveValue('Keep this');
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     expect(commit).toHaveBeenCalledTimes(2);
   });
 
   it('releases submission after a transport failure through the API mutation handler', async () => {
     const { user } = await openDialog();
     await selectStatus(user);
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onError(new Error('Network unavailable')));
     expect(notifications.notifyRelayError).toHaveBeenCalledOnce();
-    expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Apply actions' })).toBeEnabled();
   });
 
   it('reports queued work without claiming the status is updated and blocks further bypass', async () => {
     const { user, rerender } = await openDialog();
     await selectStatus(user);
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: true, executionStatus: 'pending' } }, null));
     expect(notifications.notifySuccess).not.toHaveBeenCalledWith('Status updated');
     expect(notifications.notifySuccess).toHaveBeenCalledWith('Transition started in background');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
     rerender(<WorkflowBypassStatus data={entity('pending')} entityType="Incident" />);
     rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
-    expect(screen.getByRole('button', { name: 'Bypass status' })).toBeEnabled();
+    expect(screen.getByRole('combobox')).toBeEnabled();
   });
 
   it('enforces COMMENT_MAX_LENGTH even for bypass users', async () => {
@@ -230,7 +269,7 @@ describe('WorkflowBypassStatus', () => {
     const comment = screen.getByLabelText('Comment');
     expect(comment).toHaveAttribute('maxlength', String(COMMENT_MAX_LENGTH));
     fireEvent.change(comment, { target: { value: 'x'.repeat(COMMENT_MAX_LENGTH + 1) } });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Apply actions' })).toBeDisabled());
     expect(commit).not.toHaveBeenCalled();
   });
 });

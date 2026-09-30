@@ -66,10 +66,10 @@ describe('Workflow bypass API', () => {
 
   it.each([
     ['mutation { setWorkflowStatus(entityId: "entity-id", targetStatusId: "status-id", applyTransitionActions: false) { success } }', 'setWorkflowStatus'],
-    ['{ workflowBypassStatuses(entityId: "entity-id") { status { id } requiresShareOrganizationInput requiresUnshareOrganizationInput } }', 'workflowBypassStatuses'],
+    ['{ workflowBypassStatuses(entityId: "entity-id") { status { id } onExit { type } onEnter { type } requiresShareOrganizationInput requiresUnshareOrganizationInput } }', 'workflowBypassStatuses'],
   ])('requires actual BYPASS through the schema for %s', async (source, field) => {
     vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true });
-    const statuses = [{ status: { id: 'status-id' } as BasicWorkflowStatus, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false }];
+    const statuses = [{ status: { id: 'status-id' } as BasicWorkflowStatus, onExit: [], onEnter: [], requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false }];
     vi.mocked(workflowDomain.getWorkflowBypassStatuses).mockResolvedValue(statuses);
     const executableSchema = schema();
     const denied = await graphql({ schema: executableSchema, source, contextValue: { user: { id: 'editor', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } } });

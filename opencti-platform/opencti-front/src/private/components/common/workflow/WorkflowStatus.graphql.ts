@@ -146,6 +146,14 @@ export const workflowStatusClearMutation = graphql`
 export const workflowBypassStatusesQuery = graphql`
   query WorkflowStatusBypassStatusesQuery($entityId: String!) {
     workflowBypassStatuses(entityId: $entityId) {
+      onExit {
+        type
+        params
+      }
+      onEnter {
+        type
+        params
+      }
       status {
         id
         template {
