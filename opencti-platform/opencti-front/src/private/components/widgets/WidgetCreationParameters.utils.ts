@@ -7,7 +7,7 @@ export const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): stri
 
   const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
   const hasSingleEntityType = entityTypeFilters.length === 1;
-  const otherFiltersLength = filterGroup.filters.filter((filter) => ['entity_type', 'relationship_type'].includes(filter.key)).length;
+  const otherFiltersLength = filterGroup.filters.filter((filter) => !['entity_type', 'relationship_type'].includes(filter.key)).length;
 
   if (hasSingleEntityType && filterGroup.mode === 'and') {
     return entityTypeFilters[0];
