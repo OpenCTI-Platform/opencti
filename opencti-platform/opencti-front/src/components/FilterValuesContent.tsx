@@ -42,6 +42,9 @@ const FilterValuesContent: FunctionComponent<
   const rawValue = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
     : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
+  const wrapStyle: React.CSSProperties | undefined = isFilterTooltip
+    ? { whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }
+    : undefined;
 
   if (rawValue === null) {
     return (
@@ -63,7 +66,7 @@ const FilterValuesContent: FunctionComponent<
         alignItems="center"
         gap={0.5}
       >
-        <span>{rawValue}</span>
+        <span style={wrapStyle}>{rawValue}</span>
         {tooltipMessage && (
           <Tooltip title={tooltipMessage}>
             <InformationOutline color="primary" fontSize="small" />
@@ -81,11 +84,11 @@ const FilterValuesContent: FunctionComponent<
   if (redirection && isRedirectableFilter) {
     return (
       <Link to={`/dashboard/id/${id}`}>
-        <span color="primary">{displayedValue}</span>
+        <span color="primary" style={wrapStyle}>{displayedValue}</span>
       </Link>
     );
   }
-  return <span>{displayedValue}</span>;
+  return <span style={wrapStyle}>{displayedValue}</span>;
 };
 
 export default FilterValuesContent;
