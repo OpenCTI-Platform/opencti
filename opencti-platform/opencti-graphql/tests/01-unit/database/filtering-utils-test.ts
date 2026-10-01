@@ -2,12 +2,59 @@ import { describe, expect, it } from 'vitest';
 // Registers all entity/relation modules so schemaAttributesDefinition / schemaRelationsRefDefinition
 // are populated, without requiring a live DB/ES stack (pure in-memory schema registration).
 import '../../../src/modules/index';
-import { checkFiltersValidity } from '../../../src/utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
 import { buildRefRelationKey } from '../../../src/schema/general';
 import { RELATION_OBJECT, RELATION_CREATED_BY } from '../../../src/schema/stixRefRelationship';
 import type { FilterGroup } from '../../../src/generated/graphql';
 
 describe('Filtering utils', () => {
+  describe('report relationship filters', () => {
+    it('should convert report membership to the indexed object reference', () => {
+      const filters = addFilter(undefined, 'objects', 'report-id');
+
+      expect(() => checkFiltersValidity(filters)).not.toThrow();
+      expect(convertRelationRefsFilterKeys(filters)).toEqual({
+        mode: 'and',
+        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: ['report-id'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
+      expect(filters.filters[0].key).toEqual(['objects']);
+    });
+
+    it('should keep report membership mandatory when user filters use OR', () => {
+      const userFilters = {
+        mode: 'or',
+        filters: [
+          { key: ['relationship_type'], values: ['uses'], operator: 'eq', mode: 'or' },
+          { key: ['confidence'], values: ['80'], operator: 'gte', mode: 'or' },
+        ],
+        filterGroups: [],
+      } as FilterGroup;
+      const originalFilters = structuredClone(userFilters);
+      const filters = addFilter(userFilters, 'objects', 'report-id');
+
+      expect(convertRelationRefsFilterKeys(filters)).toEqual({
+        mode: 'and',
+        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: ['report-id'], operator: 'eq', mode: 'or' }],
+        filterGroups: [originalFilters],
+      });
+      expect(userFilters).toEqual(originalFilters);
+    });
+
+    it('should preserve report membership inside nested filter groups', () => {
+      const filters = addFilter(addFilter(undefined, 'objects', 'report-id'), 'relationship_type', 'uses');
+      const converted = convertRelationRefsFilterKeys(filters);
+
+      expect(converted.filters[0].key).toEqual(['relationship_type']);
+      expect(converted.filterGroups[0].filters[0]).toEqual({
+        key: [buildRefRelationKey(RELATION_OBJECT, '*')],
+        values: ['report-id'],
+        operator: 'eq',
+        mode: 'or',
+      });
+    });
+  });
+
   it('should reject a filter key containing an extra invalid segment after the first dot', () => {
     // "name" alone is a valid schema key, but the full composed key carries extra content
     // after the first dot that should not be accepted.

@@ -38,6 +38,10 @@ export default class SDOTabs {
     return this.page.getByRole('tab', { name: 'Observables' }).click();
   }
 
+  goToRelationshipsTab() {
+    return this.page.getByRole('tab', { name: 'Relationships' }).click();
+  }
+
   goToHistoryTab() {
     return this.page.getByRole('tab', { name: 'History' }).click();
   }
