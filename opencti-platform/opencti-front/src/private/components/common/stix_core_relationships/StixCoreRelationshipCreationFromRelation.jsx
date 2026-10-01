@@ -471,30 +471,30 @@ const StixCoreRelationshipCreationFromRelation = ({
         onClose={handleClose}
         title={t_i18n('Create a relationship')}
         subHeader={{
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
-        }}
-      >
-        <QueryRenderer
-          query={stixCoreRelationshipCreationFromRelationQuery}
-          variables={{ id: entityId }}
-          render={({ props }) => {
-            if (props && props.stixCoreRelationship) {
-              return (
-                <div>
+          left: step === 0
+              ? [(
+                  <SearchInput
+                    variant="inDrawer"
+                    onSubmit={handleSearch}
+                    key="leftInput"
+                  />
+                )]
+              : [],
+          }}
+        >
+          <QueryRenderer
+            query={stixCoreRelationshipCreationFromRelationQuery}
+            variables={{ id: entityId }}
+            render={({ props }) => {
+              if (props && props.stixCoreRelationship) {
+                return (
+                  <div style={{ marginTop: -20 }}>
                   {step === 0 ? renderSelectEntity() : ''}
-                  {step === 1
-                    ? renderForm(props.stixCoreRelationship)
-                    : ''}
-                </div>
-              );
-            }
-            return renderLoader();
+                    {step === 1 ? renderForm(props.stixCoreRelationship) : ''}
+                  </div>
+                );
+              }
+              return renderLoader();
           }}
         />
       </Drawer>
