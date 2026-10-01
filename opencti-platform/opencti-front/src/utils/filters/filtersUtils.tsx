@@ -71,79 +71,31 @@ export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => mapFi
 }));
 
 /**
- * Warns when `ensureFilterIds` has to regenerate an id because it was already used in the tree.
- * A clash means some flow duplicated a subtree (a hydration path, a future "duplicate group"
- * feature...): regeneration keeps the tree addressable, but it silently detaches the copy from
- * its source, so the developer who created the clash must hear about it.
- * Warn only, never throw: a duplicated id must not break a user's filter edition.
- * `import.meta.env.DEV` is statically replaced by Vite, so this block leaves the prod bundle.
- */
-const warnDuplicateFilterId = (id: string, kind: 'group' | 'filter') => {
-  if (import.meta.env.DEV) {
-    console.warn(`[ensureFilterIds] duplicated ${kind} id "${id}" in the filter group tree: a new id has been generated.`);
-  }
-};
-
-/**
- * Recursion behind `ensureFilterIds`, carrying the ids already met. `mapFilterGroupTree` cannot do
- * it — its `transform` callback receives a group and nothing else — and is left untouched for its
- * other callers rather than widened with a context argument only this concern needs.
- * Groups and filters share ONE id namespace: groups are addressed by `updateGroupById` /
- * `removeFilterGroupUtil`, filters by the filter helpers, and nothing prevents a caller from
- * mixing the two lookups; one namespace makes that confusion impossible by construction.
- * `seenIds` is mutated while walking, the input tree never is: a new object is spread on any
- * change, otherwise the very same reference is returned (so frozen inputs are safe).
- */
-const ensureUniqueFilterIds = (filterGroup: FilterGroup, seenIds: Set<string>): FilterGroup => {
-  const subGroups = filterGroup.filterGroups ?? [];
-  const newSubGroups = subGroups.map((group) => ensureUniqueFilterIds(group, seenIds));
-  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
-
-  const filters = filterGroup.filters ?? [];
-  const newFilters = filters.map((filter) => {
-    if (!filter.id) return { ...filter, id: uuid() };
-    if (seenIds.has(filter.id)) {
-      warnDuplicateFilterId(filter.id, 'filter');
-      return { ...filter, id: uuid() };
-    }
-    seenIds.add(filter.id);
-    return filter;
-  });
-  const filtersChanged = newFilters.some((filter, index) => filter !== filters[index]);
-
-  const groupIdIsDuplicated = !!filterGroup.id && seenIds.has(filterGroup.id);
-  if (groupIdIsDuplicated) warnDuplicateFilterId(filterGroup.id as string, 'group');
-  const needsNewGroupId = !filterGroup.id || groupIdIsDuplicated;
-  const groupId = needsNewGroupId ? uuid() : (filterGroup.id as string);
-  seenIds.add(groupId);
-
-  if (!subGroupsChanged && !filtersChanged && !needsNewGroupId) return filterGroup;
-  return {
-    ...filterGroup,
-    ...(subGroupsChanged ? { filterGroups: newSubGroups } : {}),
-    ...(filtersChanged ? { filters: newFilters } : {}),
-    id: groupId,
-  };
-};
-
-/**
  * Assigns a FRONTEND-ONLY uuid `id` to the given filter group, to every nested group and to every
- * filter of every group, whenever it does not already have a usable one — the hydration
- * counterpart of `canonicalizeFilterGroupForBackend` (which drops both id kinds in a single pass).
- * Both functions must stay symmetric going forward: whatever id the canonical form loses, this one
- * must be able to restore.
- * - non-mutating and safe on frozen inputs (typically emptyFilterGroup);
- * - uniqueness-enforcing: an id already used elsewhere in the tree is replaced by a fresh one,
- *   because `updateGroupById` and `removeFilterGroupUtil` address groups by id and would otherwise
- *   edit, or delete, several groups at once;
- * - idempotent: an existing unique id is always preserved, and when every group and filter is
+ * filter of every group, whenever it does not already have one — the hydration counterpart of
+ * `canonicalizeFilterGroupForBackend` (which drops both id kinds in a single pass).
+ * - non-mutating and safe on frozen inputs (typically emptyFilterGroup), built on `mapFilterGroupTree`;
+ * - idempotent: an existing id is always preserved as-is, and when every group and filter is
  *   already identified the very same object (identity) is returned, so calling it twice never
  *   triggers a state change nor a url re-sync — unlike normalizeFilterGroupForFrontend, which
  *   regenerates a filter's id unconditionally and is unsuited to repeated hydration.
+ * /!\ Does not de-duplicate: assumes every id already present was itself produced by `uuid()`
+ * (fresh per call), so a collision is not checked for. Never feed it a hand-built or copy-pasted
+ * tree whose ids were not minted that way.
  * /!\ Must only be called on state entry points (state initialization, setFilters), never in a
  * render-derived value: new uuids on every render would cause endless history.replaceState churn.
  */
-export const ensureFilterIds = (filterGroup: FilterGroup): FilterGroup => ensureUniqueFilterIds(filterGroup, new Set<string>());
+export const ensureFilterIds = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(filterGroup, (group) => {
+  const filters = group.filters ?? [];
+  const newFilters = filters.map((filter) => (filter.id ? filter : { ...filter, id: uuid() }));
+  const filtersChanged = newFilters.some((filter, index) => filter !== filters[index]);
+  if (!filtersChanged && group.id) return group;
+  return {
+    ...group,
+    ...(filtersChanged ? { filters: newFilters } : {}),
+    id: group.id ?? uuid(),
+  };
+});
 
 // ----------------------------------------------------------------------------------------------------------------------
 

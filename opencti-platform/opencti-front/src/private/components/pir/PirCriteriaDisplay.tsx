@@ -47,7 +47,7 @@ const PirCriteriaDisplayComponent = ({
   const data = Object.values(Object.groupBy(criteria.flatMap(({ filters }) => {
     const relationship = filters.find((filter) => filter.key.includes('entity_type'))?.values[0];
     const targetId = filters.find((filter) => filter.key.includes('toId'))?.values[0];
-    const target = filtersRepresentatives.find((rep) => rep.id === targetId)?.value;
+    const target = filtersRepresentatives.find((rep) => rep.representativeId === targetId)?.value;
     if (!relationship || !target) return [];
     return { relationship, target };
   }), ({ relationship }) => relationship));

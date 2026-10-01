@@ -41,7 +41,7 @@ const TaskFilterValue = ({
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
+    (filtersRepresentatives ?? []).map((n) => [n?.representativeId, n]),
   );
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
