@@ -17,6 +17,14 @@ vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
   readJournalEntries: async () => [],
 }));
 
+const cacheResets: string[] = [];
+
+vi.mock('../../../../src/database/redis', () => ({
+  publishCacheResetEvent: async (entityType: string) => {
+    cacheResets.push(entityType);
+  },
+}));
+
 const storedUsers = new Map<string, unknown>([
   ['source-id', { internal_id: 'source-id', allowed_marking: [], organizations: [], capabilities: [] }],
   ['target-id', { internal_id: 'target-id', allowed_marking: [], organizations: [], capabilities: [] }],
@@ -26,7 +34,7 @@ vi.mock('../../../../src/modules/user/user-domain', () => ({
   resolveUserById: async (_context: unknown, id: string) => storedUsers.get(id),
 }));
 
-const { executeUserMerge } = await import('../../../../src/modules/userMerge/userMerge-engine');
+const { executeUserMerge, USER_MERGE_CACHED_ENTITY_TYPES } = await import('../../../../src/modules/userMerge/userMerge-engine');
 const { registerUserMergeHandler } = await import('../../../../src/modules/userMerge/userMerge-registry');
 
 const plan = (handler: string, count: number): UserMergeHandlerPlan => ({
@@ -63,7 +71,40 @@ describe('userMerge engine', () => {
     resetUserMergeHandlers();
     openedEntries.length = 0;
     refusals.length = 0;
+    cacheResets.length = 0;
     vi.restoreAllMocks();
+  });
+
+  // Handlers write straight to Elasticsearch, which notifies no cache: without the reset a live
+  // stream or a trigger keeps evaluating the source id until a restart, on every node.
+  it('should reset every cached entity type once the real pass has written', async () => {
+    registerUserMergeHandler(mockHandler('handler-a'));
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Success);
+    expect(cacheResets.sort()).toEqual([...USER_MERGE_CACHED_ENTITY_TYPES].sort());
+  });
+
+  it('should reset no cache when nothing was written', async () => {
+    let computeCount = 0;
+    registerUserMergeHandler(mockHandler('handler-a', {
+      compute: async () => {
+        computeCount += 1;
+        return plan('handler-a', computeCount);
+      },
+    }));
+    await execute(true);
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Failed);
+    expect(cacheResets).toEqual([]);
+  });
+
+  it('should still reset the caches when a handler fails after another one wrote', async () => {
+    registerUserMergeHandler(mockHandler('handler-a'));
+    registerUserMergeHandler(mockHandler('handler-b', {
+      apply: async () => {
+        throw new Error('bulk rewrite failed');
+      },
+    }));
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Failed);
+    expect(cacheResets.sort()).toEqual([...USER_MERGE_CACHED_ENTITY_TYPES].sort());
   });
 
   it('should not apply anything in dry mode', async () => {
