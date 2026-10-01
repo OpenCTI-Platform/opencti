@@ -25,7 +25,15 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { applyKeepAliveTimeout, buildGraphqlUploadOptions, buildRateLimiterOptions } from './httpUtils';
+import {
+  applyKeepAliveTimeout,
+  buildGraphqlUploadOptions,
+  buildRateLimiterOptions,
+  clientErrorResponse,
+  isClientRequestError,
+  logMalformedRequest,
+  normalizeUploadError,
+} from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -158,7 +166,20 @@ const createHttpServer = async () => {
     if (req.path.startsWith(`${basePath}/chatbot/`)) {
       return next();
     }
-    return graphqlUpload(req, res, next);
+    return graphqlUpload(req, res, (uploadError) => {
+      // Body not following the graphql multipart request spec, or not parsable as multipart at all:
+      // answer the caller, do not 500.
+      const error = normalizeUploadError(uploadError);
+      if (error && isClientRequestError(error)) {
+        logMalformedRequest(req, error, 'Malformed graphql request call');
+        const { status, body } = clientErrorResponse(error);
+        // graphql-upload patches res.send to wait for the request to close, and busboy can throw
+        // before the body is piped, so it has to be drained here or the answer never flushes.
+        req.resume();
+        return res.status(status).send(body);
+      }
+      return next(error);
+    });
   });
   app.use(
     `${basePath}/graphql`,

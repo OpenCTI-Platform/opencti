@@ -29,7 +29,7 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { extractRefererPathFromReq, setCookieError, decodeOidcState, clientErrorResponse, isClientRequestError, logMalformedRequest } from './httpUtils';
 import {
   getChatbotConfig,
   getChatbotAgents,
@@ -681,6 +681,15 @@ const createApp = async (app, schema) => {
 
   // Error handling
   app.use((err, req, res, _next) => {
+    // graphql-upload patches res.send to wait for the request to close; no-op otherwise. Must
+    // cover the 500 below too, or an unread multipart body holds that answer back the same way.
+    req.resume();
+    if (isClientRequestError(err)) {
+      logMalformedRequest(req, err);
+      const { status, body } = clientErrorResponse(err);
+      res.status(status).send(body);
+      return;
+    }
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });
