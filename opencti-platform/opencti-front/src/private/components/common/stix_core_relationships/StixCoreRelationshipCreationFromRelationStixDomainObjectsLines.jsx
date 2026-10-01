@@ -16,7 +16,7 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { getMainRepresentative } from 'src/utils/defaultRepresentatives.ts';
+import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 
 const styles = (theme) => ({
   container: {
