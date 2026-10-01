@@ -24,7 +24,7 @@ The following metrics are exposed by the OpenCTI API.
 | `opencti_api_side_bulk` | Gauge | Measures the size of bulks for absorption impacts (worker path). | Count |
 | `opencti_dependency_up` | Gauge | Reports the connectivity state of a platform dependency: `1` when the dependency answers, `0` when it fails. | Boolean |
 | `opencti_elasticsearch_used_size_bytes` | Gauge | Reports the total ElasticSearch/OpenSearch primary store size, replicas excluded. | Bytes |
-| `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the files stored by the platform (imports, exports, embedded and support files, draft files), summed from the size indexed for each file rather than by listing the S3/MinIO bucket. Objects written outside the file management, such as offloaded stream events or catalog logos, are not counted. Also exposed as `s3_used_size` by `/health`. | Bytes |
+| `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the files stored by the platform (imports, exports, embedded and support files, files generated from templates, and draft files), summed from the size indexed for each file rather than by listing the S3/MinIO bucket. Objects written outside the file management, such as offloaded stream events or catalog logos, are not counted. Also exposed as `s3_used_size` by `/health`. | Bytes |
 | `opencti_queue_consumers` | Gauge | Reports the number of active consumers on the push queues, per connector type. | Count |
 
 ## Platform Health Metrics
