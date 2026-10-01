@@ -1,7 +1,9 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
+// fds:keep-mui gap #155 — Combobox has no multi-select entity-search mode with a search-scope endAdornment yet (see FDS-ORNAMENT note below, fds-migration/LIBRARY-FEEDBACK.md)
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+// fds:keep-mui gap #155 — paired with the Autocomplete above
 import TextField from '@mui/material/TextField';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
