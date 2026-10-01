@@ -168,6 +168,7 @@ import {
   deleteChatbotSession,
   deleteChatbotWorkspace,
   getChatbotConfig,
+  getChatbotConversationReferences,
   getChatbotFileDownload,
   getChatbotPendingApprovals,
   getChatbotPrompts,
@@ -177,6 +178,7 @@ import {
   patchChatbotSession,
   patchChatbotWorkspace,
   postAgentMessageStream,
+  postChatbotMessage,
   postChatbotMessageApprove,
   postChatbotMessageFeedback,
   postChatbotMessageSteer,
@@ -1565,6 +1567,217 @@ describe('httpChatbotProxy: deleteChatbotWorkspace', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotConversationReferences', () => {
+  const EXCLUDED_CONVERSATION_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildQueryReq = (query: Record<string, unknown> = {}) => ({ query, headers: {} } as any);
+
+  // The query parameters forwarded to XTM One by the last call.
+  const forwardedParams = () => {
+    const [, opts] = mockGet.mock.calls.at(-1) ?? [];
+    return opts?.params;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    mockGet.mockResolvedValue({ status: 200, data: { conversations: [] } });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 without calling XTM One when the chatbot is not enabled', async () => {
+    withoutOwnLicense();
+
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the search as the calling user, with the upstream status and body', async () => {
+    const references = {
+      conversations: [{
+        id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        title: 'Incident 42',
+        key: 'incident-42-cccccccc',
+        updated_at: '2026-09-30T12:00:00Z',
+        is_own: true,
+      }],
+    };
+    mockGet.mockResolvedValue({ status: 200, data: references });
+
+    await getChatbotConversationReferences(buildQueryReq({ q: '  incident  ', limit: '5', exclude: EXCLUDED_CONVERSATION_ID }), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/conversation-references');
+    expect(opts.params).toEqual({ q: 'incident', limit: 5, exclude: EXCLUDED_CONVERSATION_ID });
+    expect(opts.timeout).toBeGreaterThan(0);
+    const clientOptions = vi.mocked(getHttpClient).mock.calls.at(-1)?.[0];
+    expect(clientOptions?.headers).toMatchObject({ Authorization: 'Bearer jwt-token-123', 'Content-Type': 'application/json' });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(references);
+  });
+
+  it('should forward no parameter when none is given, for XTM One\'s default list', async () => {
+    await getChatbotConversationReferences(buildQueryReq(), res);
+
+    expect(forwardedParams()).toEqual({});
+  });
+
+  it('should forward only the parameters XTM One reads', async () => {
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident', workspace_id: EXCLUDED_CONVERSATION_ID, archived: 'true' }), res);
+
+    expect(forwardedParams()).toEqual({ q: 'incident' });
+  });
+
+  it('should cut the search text to 200 characters', async () => {
+    await getChatbotConversationReferences(buildQueryReq({ q: 'a'.repeat(250) }), res);
+
+    expect(forwardedParams()).toEqual({ q: 'a'.repeat(200) });
+  });
+
+  it('should cut the search text by character, never inside a surrogate pair', async () => {
+    await getChatbotConversationReferences(buildQueryReq({ q: '🔥'.repeat(250) }), res);
+
+    const { q } = forwardedParams();
+    expect(Array.from(q)).toHaveLength(200);
+    expect(q).toBe('🔥'.repeat(200));
+  });
+
+  it.each([
+    ['empty', ''],
+    ['blank', '   '],
+    ['repeated', ['incident', 'ransomware']],
+  ])('should leave out a search text that is %s', async (_label, q) => {
+    await getChatbotConversationReferences(buildQueryReq({ q, limit: '5' }), res);
+
+    expect(forwardedParams()).toEqual({ limit: 5 });
+  });
+
+  it.each([
+    ['zero', '0'],
+    ['above 20', '21'],
+    ['not a whole number', '5.5'],
+    ['negative', '-1'],
+    ['not a number', 'all'],
+    ['repeated', ['5', '10']],
+  ])('should leave out a limit that is %s', async (_label, limit) => {
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident', limit }), res);
+
+    expect(forwardedParams()).toEqual({ q: 'incident' });
+  });
+
+  it('should forward the limit bounds 1 and 20', async () => {
+    await getChatbotConversationReferences(buildQueryReq({ limit: '1' }), res);
+    expect(forwardedParams()).toEqual({ limit: 1 });
+
+    await getChatbotConversationReferences(buildQueryReq({ limit: '20' }), res);
+    expect(forwardedParams()).toEqual({ limit: 20 });
+  });
+
+  it.each([
+    ['not a UUID', '../sessions'],
+    ['a UUID with a suffix', `${EXCLUDED_CONVERSATION_ID}&q=other`],
+    ['repeated', [EXCLUDED_CONVERSATION_ID, EXCLUDED_CONVERSATION_ID]],
+  ])('should leave out an excluded conversation id that is %s', async (_label, exclude) => {
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident', exclude }), res);
+
+    expect(forwardedParams()).toEqual({ q: 'incident' });
+  });
+
+  it('should forward an upstream refusal with its JSON body', async () => {
+    const httpError = new Error('Request failed with status code 403') as any;
+    httpError.response = { status: 403, data: { detail: 'XTM One requires an Enterprise Edition license' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: 'XTM One requires an Enterprise Edition license',
+      status: 'error',
+      error: 'XTM One requires an Enterprise Edition license',
+    });
+  });
+
+  it('should not forward a non-JSON upstream error body', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, data: '<html>Bad Gateway</html>' };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One could not complete the request' });
+    expect(res.send).not.toHaveBeenCalled();
+  });
+
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('<img src=x onerror=alert(1)>'));
+
+    await getChatbotConversationReferences(buildQueryReq({ q: 'incident' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
+    expect(res.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessage', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should forward the referenced conversation ids with the rest of the body, unchanged', async () => {
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+    const body = {
+      agent_slug: 'global.assistant',
+      conversation_id: '22222222-2222-2222-2222-222222222222',
+      content: 'Compare with @Incident 42 and @Ransomware triage',
+      referenced_conversation_ids: ['cccccccc-cccc-cccc-cccc-cccccccccccc', 'dddddddd-dddd-dddd-dddd-dddddddddddd'],
+    };
+    const req = buildReq(body);
+    (req as any).on = vi.fn();
+
+    await postChatbotMessage(req, res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/messages');
+    expect(sentBody).toEqual(body);
+    expect(sentBody.referenced_conversation_ids).toEqual(body.referenced_conversation_ids);
+    const clientOptions = vi.mocked(getHttpClient).mock.calls.at(-1)?.[0];
+    expect(clientOptions?.responseType).toBe('stream');
+    expect(clientOptions?.headers).toMatchObject({ Authorization: 'Bearer jwt-token-123' });
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
   });
 });
 

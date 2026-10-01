@@ -471,6 +471,55 @@ export const deleteChatbotWorkspace = async (req: Express.Request, res: Express.
   }
 };
 
+// ── GET /chatbot/conversation-references ────────────────────────────────
+// The conversations the chat panel's `@` menu offers, so that a message can
+// reference another XTM One conversation. XTM One lists, as the calling user,
+// only the conversations that user can open. The ids picked travel in the
+// message's `referenced_conversation_ids`, which `POST /chatbot/messages`
+// forwards with the rest of its body.
+//
+// Only the three query parameters XTM One reads are forwarded, each held to
+// the shape XTM One accepts. A malformed one is left out rather than refused,
+// so the menu still gets XTM One's default list:
+// - `q`: the text typed after `@`, trimmed and cut to 200 characters;
+// - `limit`: an integer from 1 to 20;
+// - `exclude`: a conversation id (the conversation on screen).
+const CONVERSATION_REFERENCES_QUERY_MAX_CHARS = 200;
+const CONVERSATION_REFERENCES_MAX_LIMIT = 20;
+
+const readConversationReferenceParams = (query: Express.Request['query']) => {
+  const params: { q?: string; limit?: number; exclude?: string } = {};
+  const { q, limit, exclude } = query;
+  if (typeof q === 'string') {
+    // Cut by code point, as XTM One counts characters: never inside a
+    // surrogate pair, which could not be encoded into the upstream URL.
+    const text = Array.from(q.trim()).slice(0, CONVERSATION_REFERENCES_QUERY_MAX_CHARS).join('').trim();
+    if (text) params.q = text;
+  }
+  if (typeof limit === 'string' && /^[0-9]+$/.test(limit)) {
+    const value = Number(limit);
+    if (value >= 1 && value <= CONVERSATION_REFERENCES_MAX_LIMIT) params.limit = value;
+  }
+  if (typeof exclude === 'string' && UUID_RE.test(exclude)) params.exclude = exclude;
+  return params;
+};
+
+export const getChatbotConversationReferences = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.get('/api/v1/platform/chat/conversation-references', {
+      params: readConversationReferenceParams(req.query),
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot conversation references', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
 // ── POST /chatbot/messages/steer ────────────────────────────────────────
 // Mid-run steering: injects a user message into the running agent loop of
 // the conversation. Upstream status codes are forwarded as-is — the
@@ -745,6 +794,9 @@ export const deleteChatbotMessageFeedback = async (req: Express.Request, res: Ex
 // Proxies to XTM One Platform Chat API (streaming SSE).
 // When file_ids are present in the body, routes to the conversation-level
 // messages endpoint so that uploaded files are visible to the agent.
+// The body is forwarded unchanged, `referenced_conversation_ids` (the
+// conversations picked from the `@` menu) included: XTM One keeps only those
+// the user can open.
 // Chat stream (conversationId available or not)
 export const postChatbotMessage = async (req: Express.Request, res: Express.Response) => {
   try {
