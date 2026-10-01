@@ -2532,17 +2532,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/passport-saml@npm:5.1.0":
-  version: 5.1.0
-  resolution: "@node-saml/passport-saml@npm:5.1.0"
+"@node-saml/passport-saml@npm:5.1.1":
+  version: 5.1.1
+  resolution: "@node-saml/passport-saml@npm:5.1.1"
   dependencies:
     "@node-saml/node-saml": "npm:^5.1.0"
-    "@types/express": "npm:^4.17.23"
+    "@types/express": "npm:^4.17.25"
     "@types/passport": "npm:^1.0.17"
     "@types/passport-strategy": "npm:^0.2.38"
     passport: "npm:^0.7.0"
     passport-strategy: "npm:^1.0.0"
-  checksum: 10c0/a0962b8f80e4867342984deb007a5ce3a95014e594d88652e5d34d33f62d5db8559d98a4f2c668a145bdb0212c5fdac19284bd60591537061998b46404d4acd6
+  checksum: 10c0/fe4b455586d24338c2523a522b61c1b74a31e1e9f153dcca75f425b4c4094ceae6fba258d054967a853bfe6cb60c18c50730b439692e3f195cd4b76764d91114
   languageName: node
   linkType: hard
 
@@ -4015,7 +4015,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:^4.17.23":
+"@types/express@npm:^4.17.25":
   version: 4.17.25
   resolution: "@types/express@npm:4.17.25"
   dependencies:
@@ -10271,7 +10271,7 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
     "@noble/ed25519": "npm:3.2.0"
-    "@node-saml/passport-saml": "npm:5.1.0"
+    "@node-saml/passport-saml": "npm:5.1.1"
     "@opensearch-project/opensearch": "npm:3.6.0"
     "@opentelemetry/api": "npm:1.9.1"
     "@opentelemetry/core": "npm:2.11.0"
