@@ -67,7 +67,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
         onClick={handleOpen}
         variant="secondary"
       >
-        {t_i18n('Create workflow')}
+        {t_i18n('Create status')}
       </Button>
       <Formik
         initialValues={initialValues}
