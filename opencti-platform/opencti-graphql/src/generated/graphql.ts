@@ -2508,6 +2508,7 @@ export enum Capabilities {
   SettingsSetdissemination = 'SETTINGS_SETDISSEMINATION',
   SettingsSetkillchainphases = 'SETTINGS_SETKILLCHAINPHASES',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
+  SettingsSetmanagement = 'SETTINGS_SETMANAGEMENT',
   SettingsSetmanagextmhub = 'SETTINGS_SETMANAGEXTMHUB',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
   SettingsSetparameters = 'SETTINGS_SETPARAMETERS',

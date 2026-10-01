@@ -22,6 +22,7 @@ import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -55,7 +56,7 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
   } else if (scope === 'activity') {
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, deleteOpts);
   } else if (scope === 'draft') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_DRAFT_WORKSPACE, deleteOpts);
+    await deleteDraftWorkspace(context, RETENTION_MANAGER_USER, nodeId);
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }

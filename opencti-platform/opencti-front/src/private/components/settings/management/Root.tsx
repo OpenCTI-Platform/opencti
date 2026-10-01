@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import ManagementMenu from '../ManagementMenu';
 
-import useGranted, { SETTINGS_SETMANAGEMENT } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNUPDATE, SETTINGS_SETMANAGEMENT } from '../../../../utils/hooks/useGranted';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
@@ -34,7 +34,7 @@ const RootManagement = () => {
           <Route
             path="/drafts"
             element={(
-              <Security needs={[SETTINGS_SETMANAGEMENT]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={[KNOWLEDGE, KNOWLEDGE_KNUPDATE, SETTINGS_SETMANAGEMENT]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Drafts />
               </Security>
             )}

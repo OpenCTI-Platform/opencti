@@ -20,7 +20,7 @@ import { DraftsLinesPaginationSettingsQuery, DraftsLinesPaginationSettingsQuery$
 import DraftPopover from '../drafts/DraftPopover';
 import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
 import ItemStatus from 'src/components/ItemStatus';
-
+import type { DraftRetentionQuery$data } from './__generated__/DraftRetentionQuery.graphql';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useAuth from '../../../utils/hooks/useAuth';
 
@@ -161,7 +161,6 @@ const DraftRetentionQuery = graphql`
   }
 `;
 
-
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
 interface DraftsProps {
@@ -275,24 +274,25 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const daysStale = Array.from({ length: 7 }, (value, i) => i === 0 ? 1 : i * 5);
   const [daysSelected, setDaysSelected] = useState('30');
   const [staleCount, setStaleCount] = useState(0);
-  const draftRetentionData: any = useLazyLoadQuery(DraftRetentionQuery, {});
-  const draftRetentionObj: any = draftRetentionData && draftRetentionData.retentionRules
-    && draftRetentionData.retentionRules.edges.length ? draftRetentionData.retentionRules.edges[0].node : null;
-  const [tableRows, setTableRows] = useState<any[]>([]);
+  const draftRetentionData = useLazyLoadQuery(DraftRetentionQuery, {}) as DraftRetentionQuery$data;
+  type RetentionNode = NonNullable<NonNullable<NonNullable<DraftRetentionQuery$data['retentionRules']>['edges']>[number]>['node'];
+  const draftRetentionObj: RetentionNode | null = draftRetentionData?.retentionRules?.edges?.[0]?.node ?? null;
+  type WorkspaceRowNode = NonNullable<NonNullable<NonNullable<DraftsLinesSettings_data$data['draftWorkspaces']>['edges']>[number]>['node'];
+  const [tableRows, setTableRows] = useState<WorkspaceRowNode[]>([]);
 
-  const findStaleCount = (selectorDaysSelected) => {
+  const findStaleCount = (selectorDaysSelected: string) => {
     if (draftRetentionObj && draftRetentionObj.retention_unit && draftRetentionObj.max_retention) {
       const now = new Date().getTime();
       const msPerDay = 24 * 60 * 60 * 1000;
-      let tempStaleCount = 0;;
+      let tempStaleCount = 0;
 
       if (draftRetentionObj.retention_unit === 'days' || draftRetentionObj.retention_unit === 'hours' || draftRetentionObj.retention_unit === 'minutes') {
-        for (const row of tableRows) {
-          const creationDate = new Date(row.created_at);
-          const deletionTime = creationDate.getTime() + (parseInt(draftRetentionObj.max_retention) *
-            (draftRetentionObj.retention_unit === 'days' ? msPerDay
+        for (const row of tableRows as Record<string, unknown>[]) {
+          const creationDate = new Date(row.created_at as string);
+          const deletionTime = creationDate.getTime() + (draftRetentionObj.max_retention
+            * (draftRetentionObj.retention_unit === 'days' ? msPerDay
               : (draftRetentionObj.retention_unit === 'hours' ? (60 * 60 * 1000)
-                : (draftRetentionObj.retention_unit === 'minutes' ? (60 * 1000) : (0)))));
+                  : (draftRetentionObj.retention_unit === 'minutes' ? (60 * 1000) : (0)))));
           const daysUntilDeletion = (deletionTime - now) / msPerDay;
 
           if (daysUntilDeletion >= 0 && daysUntilDeletion <= parseInt(selectorDaysSelected))
@@ -319,12 +319,14 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           <div style={{ padding: '8px 0' }}>
             <span style={{ color: theme.palette.primary.main }}>{staleCount} stale drafts</span>&nbsp;<span>found within</span>
             <select
-              id="daysStale" style={{ margin: '0 4px' }}
+              id="daysStale"
+              style={{ margin: '0 4px' }}
               value={daysSelected}
               onChange={(e) => {
                 setDaysSelected(e.target.value);
                 findStaleCount(e.target.value);
-              }}>
+              }}
+            >
               {daysStale.map((dayCount) => (
                 <option key={dayCount} value={dayCount}>
                   {dayCount}
@@ -335,7 +337,16 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           </div>
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: DraftsLinesSettings_data$data) => { const rows = (data.draftWorkspaces?.edges ?? []).map((n) => n?.node); setTimeout(() => setTableRows(rows), 0); return rows; }}
+            resolvePath={(data: DraftsLinesSettings_data$data) => {
+              // Statement 1: Extract rows
+              const rows = (data.draftWorkspaces?.edges ?? []).map((n) => n?.node);
+
+              // Statement 2: Update state asynchronously
+              setTimeout(() => setTableRows(rows), 0);
+
+              // Statement 3: Return rows
+              return rows;
+            }}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             entityTypes={['DraftWorkspace']}

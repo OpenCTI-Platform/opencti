@@ -200,7 +200,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-              //disabled={true}
+              // disabled={true}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
                 <SelectItem value="draft">{t_i18n('Draft')}</SelectItem>
@@ -215,11 +215,13 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               >
                 <Filters
                   availableFilterKeys={availableFilterKeys}
+                  disabled={formValues.scope === 'draft' ? true : false}
                   helpers={helpers}
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </Box>
               <FilterIconButton
+                disabledPossible={formValues.scope === 'draft' ? true : false}
                 filters={filters}
                 helpers={helpers}
                 redirection
