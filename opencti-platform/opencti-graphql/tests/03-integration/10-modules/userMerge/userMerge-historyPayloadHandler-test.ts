@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elIndex, elRawDeleteByQuery, elRawGet } from '../../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { addUser } from '../../../../src/domain/user';
+import { addUser } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../../../../src/database/utils';
 import { executeUserMerge } from '../../../../src/modules/userMerge/userMerge-engine';
