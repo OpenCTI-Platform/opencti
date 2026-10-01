@@ -1,6 +1,4 @@
 import Button from '@common/button/Button';
-import { TasksLinesPaginationQuery$variables } from '@components/cases/__generated__/TasksLinesPaginationQuery.graphql';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
@@ -17,13 +15,12 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
 
-const taskAddMutation = graphql`
+export const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
       id
@@ -54,7 +51,7 @@ interface FormikTaskAddInput {
   objectMarking: FieldOption[];
 }
 
-interface TaskCreationProps {
+interface TaskCreationFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
@@ -64,7 +61,7 @@ interface TaskCreationProps {
   inputValue?: string;
 }
 
-export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
+export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
   updater,
   onClose,
   defaultMarkings,
@@ -210,22 +207,3 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     </Formik>
   );
 };
-
-const TaskCreation = ({
-  paginationOptions,
-}: {
-  paginationOptions: TasksLinesPaginationQuery$variables;
-}) => {
-  const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
-  return (
-    <Drawer
-      title={t_i18n('Create a task')}
-      variant={DrawerVariant.create}
-    >
-      <TaskCreationForm updater={updater} />
-    </Drawer>
-  );
-};
-
-export default TaskCreation;

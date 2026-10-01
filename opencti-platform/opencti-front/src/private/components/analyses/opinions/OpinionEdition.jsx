@@ -7,6 +7,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const opinionEditionQuery = graphql`
   query OpinionEditionContainerQuery($id: String!) {
@@ -45,6 +46,7 @@ const OpinionEdition = ({ opinionId }) => {
                 <OpinionEditionContainer
                   opinion={props.opinion}
                   handleClose={handleClose}
+                  controlledDial={EditEntityControlledDial}
                 />
               </CollaborativeSecurity>
             );

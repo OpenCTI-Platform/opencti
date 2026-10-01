@@ -108,7 +108,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
               name="description"
               label={t('Description')}
               fullWidth={true}
-              className="mt-5"
+              style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
             <CreatorField

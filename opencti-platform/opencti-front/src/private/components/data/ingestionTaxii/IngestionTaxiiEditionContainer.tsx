@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import IngestionTaxiiEdition from '@components/data/ingestionTaxii/IngestionTaxiiEdition';
 import { IngestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,7 +35,6 @@ const IngestionTaxiiEditionContainer: FunctionComponent<IngestionTaxiiEditionCon
   return (
     <Drawer
       title={t_i18n('Update a TAXII ingester')}
-      variant={open == null ? DrawerVariant.update : undefined}
       open={open}
       onClose={handleClose}
     >
