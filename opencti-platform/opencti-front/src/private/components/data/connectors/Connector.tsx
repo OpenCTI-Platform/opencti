@@ -685,7 +685,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
                     {compatibleUpdateVersion && (
                       <Box sx={{ marginTop: 1 }}>
-                        <ConnectorUpdateChip version={compatibleUpdateVersion} incompatibility={!!connector.incompatibility} />
+                        <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel incompatibility={!!connector.incompatibility} />
                       </Box>
                     )}
                   </Grid>

@@ -3,19 +3,25 @@ import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-
 import { useFormatter } from '../../../../components/i18n';
 
 interface ConnectorUpdateChipProps {
-  // Version to install, shown in the label when given
+  // Version to install
   version?: string | null;
+  // Shows the version in the label, where there is room for it, instead of the tooltip
+  versionInLabel?: boolean;
   // A version even newer than the update exists, but it needs a newer platform
   incompatibility?: boolean;
 }
 
 // The connector has an update it can install: the newer incompatible version is only a hint,
 // it never replaces the label (the deployed connector itself is not incompatible).
-const ConnectorUpdateChip: React.FC<ConnectorUpdateChipProps> = ({ version, incompatibility = false }) => {
+const ConnectorUpdateChip: React.FC<ConnectorUpdateChipProps> = ({ version, versionInLabel = false, incompatibility = false }) => {
   const { t_i18n } = useFormatter();
-  const label = version ? `${t_i18n('Update available')}: ${version}` : t_i18n('Update available');
+  const label = versionInLabel && version ? `${t_i18n('Update available')}: ${version}` : t_i18n('Update available');
+  const hints = [
+    !versionInLabel && version ? t_i18n('Version {version} can be installed', { values: { version } }) : null,
+    incompatibility ? t_i18n('A newer version needs a platform upgrade') : null,
+  ].filter((hint): hint is string => hint !== null);
   const chip = <Chip severity="info" label={label} />;
-  if (!incompatibility) {
+  if (hints.length === 0) {
     return chip;
   }
   return (
@@ -25,7 +31,9 @@ const ConnectorUpdateChip: React.FC<ConnectorUpdateChipProps> = ({ version, inco
           {chip}
         </span>
       </TooltipTrigger>
-      <TooltipContent>{t_i18n('A newer version needs a platform upgrade')}</TooltipContent>
+      <TooltipContent>
+        {hints.map((hint) => <div key={hint}>{hint}</div>)}
+      </TooltipContent>
     </Tooltip>
   );
 };
