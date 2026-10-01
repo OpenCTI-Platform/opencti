@@ -151,8 +151,6 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
         </Link>
       );
 
-      console.log('collapsed', collapsed);
-
       if (item.badge) {
         return (
           <div key={item.id} className="relative">
