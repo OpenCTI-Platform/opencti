@@ -16,13 +16,14 @@ import { useFormatter } from 'src/components/i18n';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
-import useEntityToggle from 'src/utils/hooks/useEntityToggle';
+import useEntityToggle, { UseEntityToggleType } from 'src/utils/hooks/useEntityToggle';
 import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LOCAL_STORAGE_KEY } from './SelectEntitiesToCoverStep-utils';
 
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
-  onSelectEntities: (selection: SelectedEntities | null) => void;
-  onPrevious?: () => void;
+  onSelectEntities: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
+  onCancel?: () => void;
+  endIfNoSelection?: boolean;
 }
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
@@ -131,7 +132,8 @@ const DATA_COLUMNS = {
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
   onSelectEntities,
-  onPrevious,
+  onCancel,
+  endIfNoSelection = false,
 }: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
@@ -204,13 +206,13 @@ const SelectEntitiesToCoverStep = ({
         />
       )}
       <FormButtonContainer>
-        { onPrevious && (
-          <Button onClick={() => onPrevious()}>
-            {t_i18n('Previous')}
+        {onCancel && (
+          <Button variant="secondary" onClick={() => onCancel()}>
+            {t_i18n('Cancel')}
           </Button>
         )}
-        <Button onClick={() => onSelectEntities(selection)}>
-          {t_i18n('Next')}
+        <Button onClick={() => onSelectEntities(selection, Object.values(selectedElements))}>
+          {(endIfNoSelection && !selection) ? t_i18n('Create') : t_i18n('Next')}
         </Button>
       </FormButtonContainer>
     </>

@@ -1,6 +1,6 @@
 import { FieldOption } from 'src/utils/field';
-import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { CoverageInformation } from '../SecurityCoverage-types';
+import { StixCoreRelationshipCreationAddInput } from '../../../common/stix_core_relationships/StixCoreRelationshipCreation';
 
 export enum StepKey {
   MODE = 'mode',
@@ -32,9 +32,10 @@ export interface SecurityCoverageFormValues {
 
 export interface SelectedEntities {
   selected_ids?: string[];
-  filters?: FilterGroup;
+  filters?: string;
   excluded_ids?: string[];
   search?: string;
+  relationships_config?: StixCoreRelationshipCreationAddInput;
 }
 
 export const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];

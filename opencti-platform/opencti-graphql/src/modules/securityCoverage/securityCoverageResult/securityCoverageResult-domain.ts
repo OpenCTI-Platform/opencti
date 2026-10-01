@@ -146,7 +146,11 @@ export const createHasCoveredRelTask = async (
   selection: SecurityCoverageSelectedEntitiesInput,
 ) => {
   const description = `Create has-covered relationships for SCR ${securityCoverageResultId}`;
-  const actions = [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }];
+  const actions = [{
+    type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+    id: securityCoverageResultId,
+    relationships_config: selection.relationships_config ?? undefined,
+  }];
 
   const selectedIds = selection.selected_ids ?? [];
   if (selectedIds.length > 0) {

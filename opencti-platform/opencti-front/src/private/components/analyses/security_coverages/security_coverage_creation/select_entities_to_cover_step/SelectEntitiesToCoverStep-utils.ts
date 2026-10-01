@@ -1,5 +1,6 @@
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { HAS_COVERED_TARGETS_TYPES, SelectedEntities } from '../SecurityCoverageCreation-types';
+import { serializeFilterGroupForBackend } from '../../../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'SelectEntitiesToCoverStep';
 
@@ -73,7 +74,7 @@ export const buildEntitiesSelection = ({
 }: BuildEntitiesSelectionArgs): SelectedEntities | null => {
   if (selectAll) {
     return {
-      filters,
+      filters: filters ? serializeFilterGroupForBackend(filters) : undefined,
       ...(excludedIds.length > 0 && { excluded_ids: excludedIds }),
       ...(searchTerm && { search: searchTerm }),
     };
