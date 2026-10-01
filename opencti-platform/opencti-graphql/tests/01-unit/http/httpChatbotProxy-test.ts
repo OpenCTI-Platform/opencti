@@ -101,7 +101,7 @@ vi.mock('../../../src/modules/settings/licensing', () => ({
   getEnterpriseEditionInfo: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   issueAuthenticationJWT: vi.fn(),
 }));
 

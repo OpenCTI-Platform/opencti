@@ -5,7 +5,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDa
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
-import { computeAvailableMarkings } from '../../domain/user';
+import { computeAvailableMarkings } from '../user/user-domain';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';

@@ -19,7 +19,7 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
   };
 });
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   userEditField: mockUserEditField,
 }));
 

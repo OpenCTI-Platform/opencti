@@ -1,6 +1,14 @@
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel, batchUserTokens } from '../domain/user';
+import {
+  authenticateUserFromRequest,
+  userWithOrigin,
+  batchCreator,
+  batchCreators,
+  batchRolesForUsers,
+  batchUserEffectiveConfidenceLevel,
+  batchUserTokens,
+} from '../modules/user/user-domain';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';

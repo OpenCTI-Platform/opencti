@@ -1,70 +1,67 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import { updateAttribute } from '../../../src/database/middleware';
-import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { TokenDuration, type UserTokenAddInput } from '../../../src/generated/graphql';
-import { authenticateUserByJWT, authenticateUserByToken, authenticateUserByUserId, checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
-import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
-import { testContext } from '../../utils/testQuery';
-import { isUserHasCapability } from '../../../src/utils/access';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
-import { verifyXtmJwt, isOwnIssuer } from '../../../src/domain/xtm-auth';
-import { elLoadBy } from '../../../src/database/engine';
-import { generateTokenHmac } from '../../../src/modules/user/user-domain';
-import { updateTokenUsage } from '../../../src/database/redis/token_usage';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import { updateAttribute } from '../../../../src/database/middleware';
+import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { TokenDuration, type UserTokenAddInput } from '../../../../src/generated/graphql';
+import {
+  authenticateUserByJWT,
+  authenticateUserByToken,
+  authenticateUserByUserId,
+  checkPasswordInlinePolicy,
+  isSensitiveChangesAllowed,
+} from '../../../../src/modules/user/user-domain';
+import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
+import { testContext } from '../../../utils/testQuery';
+import { isUserHasCapability } from '../../../../src/utils/access';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
+import { verifyXtmJwt, isOwnIssuer } from '../../../../src/domain/xtm-auth';
+import { elLoadBy } from '../../../../src/database/engine';
+import { generateTokenHmac } from '../../../../src/modules/user/user-domain';
+import { updateTokenUsage } from '../../../../src/database/redis/token_usage';
 
-vi.mock('../../../src/database/middleware', () => ({
+vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),
   updateAttribute: vi.fn().mockResolvedValue({ element: { id: 'mock-id', user_email: 'test@test.com' } }),
 }));
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn().mockResolvedValue([]),
   getEntitiesMapFromCache: vi.fn().mockResolvedValue(new Map()),
   getEntityFromCache: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
+vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis', () => ({
+vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn(),
 }));
 
-vi.mock('../../../src/utils/access', async () => {
-  const actual = await vi.importActual('../../../src/utils/access');
+vi.mock('../../../../src/utils/access', async () => {
+  const actual = await vi.importActual('../../../../src/utils/access');
   return {
     ...actual,
     isUserHasCapability: vi.fn().mockReturnValue(true),
   };
 });
 
-vi.mock('../../../src/domain/xtm-auth', () => ({
+vi.mock('../../../../src/domain/xtm-auth', () => ({
   verifyXtmJwt: vi.fn(),
   isOwnIssuer: vi.fn(),
 }));
 
-vi.mock('../../../src/database/engine', () => ({
+vi.mock('../../../../src/database/engine', () => ({
   elLoadBy: vi.fn(),
   elRawDeleteByQuery: vi.fn(),
 }));
 
-vi.mock('../../../src/database/redis/token_usage', () => ({
+vi.mock('../../../../src/database/redis/token_usage', () => ({
   getTokensUsage: vi.fn().mockResolvedValue([]),
   updateTokenUsage: vi.fn().mockResolvedValue(undefined),
 }));
-
-vi.mock('../../../src/modules/user/user-domain', async () => {
-  const actual = await vi.importActual('../../../src/modules/user/user-domain');
-  return {
-    ...actual,
-    generateTokenHmac: vi.fn(),
-    addUserTokenByAdmin: vi.fn(),
-  };
-});
 
 describe('password checker', () => {
   it('should no policy applied', async () => {
@@ -675,14 +672,12 @@ describe('authenticateUserByToken', () => {
   const mockReq = buildMockReq();
 
   beforeEach(() => {
-    vi.mocked(generateTokenHmac).mockReset();
     vi.mocked(isUserHasCapability).mockReturnValue(true);
     vi.mocked(updateTokenUsage).mockResolvedValue(undefined as any);
   });
 
   it('should authenticate user with a valid non-expired token', async () => {
-    const hashedToken = 'hashed-abc-123';
-    vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
+    const hashedToken = await generateTokenHmac('plaintext-token');
 
     const futureDate = DateTime.now().plus({ days: 30 }).toISO();
     const cachedUser = buildCachedUser('token-user-1', {
@@ -693,14 +688,12 @@ describe('authenticateUserByToken', () => {
 
     const result = await authenticateUserByToken(mockContext, mockReq, 'plaintext-token');
 
-    expect(generateTokenHmac).toHaveBeenCalledWith('plaintext-token');
     expect(updateTokenUsage).toHaveBeenCalled();
     expect(result.id).toBe('token-user-1');
   });
 
   it('should authenticate user with an UNLIMITED (no expiration) token', async () => {
-    const hashedToken = 'hashed-unlimited';
-    vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
+    const hashedToken = await generateTokenHmac('unlimited-plaintext');
 
     const cachedUser = buildCachedUser('unlimited-user', {
       api_tokens: [{ hash: hashedToken, name: 'Unlimited Token', expires_at: null }],
@@ -714,8 +707,7 @@ describe('authenticateUserByToken', () => {
   });
 
   it('should throw FunctionalError when token is expired', async () => {
-    const hashedToken = 'hashed-expired';
-    vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
+    const hashedToken = await generateTokenHmac('expired-plaintext');
 
     const pastDate = DateTime.now().minus({ days: 1 }).toISO();
     const cachedUser = buildCachedUser('expired-user', {
@@ -729,8 +721,6 @@ describe('authenticateUserByToken', () => {
   });
 
   it('should throw FunctionalError when no user matches the hashed token', async () => {
-    vi.mocked(generateTokenHmac).mockResolvedValue('hashed-unknown');
-
     vi.mocked(getEntitiesListFromCache).mockResolvedValue([] as any);
 
     await expect(
@@ -739,8 +729,7 @@ describe('authenticateUserByToken', () => {
   });
 
   it('should throw ForbiddenAccess when user lacks APIACCESS_USETOKEN capability', async () => {
-    const hashedToken = 'hashed-no-cap';
-    vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
+    const hashedToken = await generateTokenHmac('nocap-plaintext');
     vi.mocked(isUserHasCapability).mockReturnValue(false);
 
     const cachedUser = buildCachedUser('nocap-user', {
@@ -754,9 +743,6 @@ describe('authenticateUserByToken', () => {
   });
 
   it('should throw FunctionalError when user has no api_tokens array matching the hash', async () => {
-    const hashedToken = 'hashed-no-tokens';
-    vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
-
     const cachedUser = buildCachedUser('notokens-user', {
       api_tokens: [],
     });

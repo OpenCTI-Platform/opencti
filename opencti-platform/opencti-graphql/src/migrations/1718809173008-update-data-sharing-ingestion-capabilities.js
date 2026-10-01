@@ -1,7 +1,7 @@
 import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elList, elLoadById, elReplace } from '../database/engine';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';

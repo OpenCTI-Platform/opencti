@@ -11,7 +11,7 @@ import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
-import { buildCompleteUsers, resolveUserById } from '../domain/user';
+import { buildCompleteUsers, resolveUserById } from '../modules/user/user-domain';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';

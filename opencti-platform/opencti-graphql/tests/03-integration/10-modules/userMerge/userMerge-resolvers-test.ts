@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../../src/database/cache';
-import { addUser, userDelete, userEditField } from '../../../../src/domain/user';
+import { addUser, userDelete, userEditField } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { SYSTEM_USER } from '../../../../src/utils/access';
