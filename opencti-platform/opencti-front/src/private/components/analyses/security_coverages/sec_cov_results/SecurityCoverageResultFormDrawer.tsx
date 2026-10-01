@@ -73,6 +73,7 @@ const SecurityCoverageResultFormDrawer = ({
       objectLabel: formDetails.objectLabel.map((v) => v.value),
       confidence: parseInt(String(formDetails.confidence), 10),
       coverage_information: formDetails.coverageInformation,
+      external_uri: formDetails.externalUri,
       coverage_valid_from: formDetails.validFrom,
       coverage_valid_to: formDetails.validTo,
       add_related_entities: selectedEntities ? {
