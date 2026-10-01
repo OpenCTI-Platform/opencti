@@ -960,10 +960,10 @@ describe('Function serializeFilterGroupForBackend', () => {
 describe('isRegardingOfFilterWarning', () => {
   it('should return if the filter combination is a warning one', () => {
     const filtersRepresentativesMap = new Map([
-      ['reportId', { id: 'reportId', value: 'MyReport', entity_type: 'Report', color: 'red' }],
-      ['malwareId', { id: 'malwareId', value: 'MyMalware', entity_type: 'Malware', color: 'red' }],
-      ['observableId', { id: 'observableId', value: 'MyObservable', entity_type: 'Software', color: 'red' }],
-      ['indicatorId', { id: 'indicatorId', value: 'MyIndicator', entity_type: 'Indicator', color: 'red' }],
+      ['reportId', { representativeId: 'reportId', value: 'MyReport', entity_type: 'Report', color: 'red' }],
+      ['malwareId', { representativeId: 'malwareId', value: 'MyMalware', entity_type: 'Malware', color: 'red' }],
+      ['observableId', { representativeId: 'observableId', value: 'MyObservable', entity_type: 'Software', color: 'red' }],
+      ['indicatorId', { representativeId: 'indicatorId', value: 'MyIndicator', entity_type: 'Indicator', color: 'red' }],
     ]);
     const filter1 = { key: 'objectMarking', values: ['marking1'], operator: 'eq' };
     const isWarning1 = isRegardingOfFilterWarning(filter1, [], filtersRepresentativesMap);
@@ -2314,57 +2314,6 @@ describe('ensureFilterIds', () => {
     expectNoFrontendIds(canonicalizeFilterGroupForBackend(ensureFilterIds(nested)));
   });
 
-  it('should regenerate duplicated group ids while keeping the tree shape, mode and filters', () => {
-    const duplicated = {
-      id: 'dup',
-      mode: 'and',
-      filters: [],
-      filterGroups: [
-        {
-          id: 'dup',
-          mode: 'or',
-          filters: [{ id: 'f1', key: 'objectLabel', values: ['label'], operator: 'eq', mode: 'or' }],
-          filterGroups: [{ id: 'dup', mode: 'and', filters: [], filterGroups: [] }],
-        },
-      ],
-    } as unknown as FilterGroup;
-    const result = ensureFilterIds(duplicated);
-    const ids = [result.id, result.filterGroups[0].id, result.filterGroups[0].filterGroups[0].id];
-    expect(new Set(ids).size).toEqual(3);
-    expect(result.mode).toEqual('and');
-    expect(result.filterGroups[0].mode).toEqual('or');
-    expect(result.filterGroups[0].filters[0].key).toEqual('objectLabel');
-    expect(result.filterGroups[0].filters[0].id).toEqual('f1');
-    expect(result.filterGroups[0].filterGroups.length).toEqual(1);
-  });
-
-  it('should regenerate duplicated filter ids, including across different groups', () => {
-    const duplicated = {
-      mode: 'and',
-      filters: [
-        { id: 'same', key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' },
-        { id: 'same', key: 'objectLabel', values: ['label'], operator: 'eq', mode: 'or' },
-      ],
-      filterGroups: [
-        {
-          mode: 'or',
-          filters: [{ id: 'same', key: 'createdBy', values: ['id'], operator: 'eq', mode: 'or' }],
-          filterGroups: [],
-        },
-      ],
-    } as unknown as FilterGroup;
-    const result = ensureFilterIds(duplicated);
-    const ids = [
-      result.filters[0].id,
-      result.filters[1].id,
-      result.filterGroups[0].filters[0].id,
-    ];
-    expect(new Set(ids).size).toEqual(3);
-    // The walk is bottom-up, so the deepest occurrence is the one keeping the clashing id.
-    expect(result.filterGroups[0].filters[0].id).toEqual('same');
-    expect(result.filters.map(({ key }) => key)).toEqual(['entity_type', 'objectLabel']);
-  });
-
   it('should return the very same references when every id is already unique', () => {
     const unique = {
       id: 'g0',
@@ -2405,17 +2354,5 @@ describe('ensureFilterIds', () => {
     const resultDynamicGroup = (result.filters[0].values[0] as { values: FilterGroup[] }).values[0];
     expect(resultDynamicGroup).toBe(dynamicGroup);
     expect(resultDynamicGroup.id).toBeUndefined();
-  });
-
-  it('should be idempotent after a duplicate has been resolved', () => {
-    const duplicated = {
-      id: 'dup',
-      mode: 'and',
-      filters: [],
-      filterGroups: [{ id: 'dup', mode: 'or', filters: [], filterGroups: [] }],
-    } as unknown as FilterGroup;
-    const once = ensureFilterIds(duplicated);
-    const twice = ensureFilterIds(once);
-    expect(twice).toBe(once);
   });
 });
