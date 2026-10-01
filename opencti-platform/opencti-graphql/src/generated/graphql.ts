@@ -18799,6 +18799,7 @@ export type MutationFrontendErrorLogArgs = {
 
 
 export type MutationGlobalConfigurationExportArgs = {
+  bundleName?: InputMaybe<Scalars['String']['input']>;
   entityTypes: Array<Scalars['String']['input']>;
   selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
