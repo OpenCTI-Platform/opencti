@@ -7,7 +7,7 @@ import { redisGetPlatformUsageMetrics, redisSetPlatformUsageMetrics } from '../d
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { DEFAULT_USAGE_METRICS_INTERVAL_MS, parseCachedUsageMetrics, type PlatformUsageMetrics, withTimeout } from '../telemetry/platformHealthMetrics';
 
-const PLATFORM_USAGE_METRICS_MANAGER_ENABLED = booleanConf('platform_usage_metrics_manager:enabled', true);
+const PLATFORM_USAGE_METRICS_MANAGER_ENABLED = booleanConf('platform_usage_metrics_manager:enabled', false);
 const PLATFORM_USAGE_METRICS_MANAGER_KEY = conf.get('platform_usage_metrics_manager:lock_key') || 'platform_usage_metrics_manager_lock';
 // Shares the same config key as the reading side (platformHealthMetrics' adoptSharedUsageMetrics),
 // "usage_metrics_interval" is the one interval that drives both how often this manager

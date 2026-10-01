@@ -307,7 +307,7 @@
     "interval": 60000
   },
   "platform_usage_metrics_manager": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "platform_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {

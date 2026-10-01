@@ -31,7 +31,7 @@ The following metrics are exposed by the OpenCTI API.
 
 A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:dependency_check_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
 
-Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: they describe the platform as a whole rather than one node's view of it, so a dedicated manager (`platform_usage_metrics_manager`, see [Configuration](configuration.md)) computes the value once per interval and shares it with the rest of the cluster through Redis; every node then just adopts that shared value on its own polling cycle, which keeps every node reporting the same figure.
+Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: they describe the platform as a whole rather than one node's view of it, so a dedicated manager (`platform_usage_metrics_manager`, see [Configuration](configuration.md)) computes the value once per interval and shares it with the rest of the cluster through Redis; every node then just adopts that shared value on its own polling cycle, which keeps every node reporting the same figure. This manager is disabled by default: set `PLATFORM_USAGE_METRICS_MANAGER__ENABLED=true` to collect the usage metrics.
 
 A usage metric that cannot be collected is not exported, instead of being exported as `0`.
 
