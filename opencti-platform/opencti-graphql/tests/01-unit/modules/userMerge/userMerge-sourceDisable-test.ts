@@ -14,7 +14,7 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
   storeLoadById: async () => stored,
 }));
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   userEditField: async (_context: unknown, _user: unknown, userId: string, inputs: { key: string; value: string[] }[], opts?: Record<string, unknown>) => {
     edits.push({ userId, inputs, opts });
   },

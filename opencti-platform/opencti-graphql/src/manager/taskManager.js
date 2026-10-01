@@ -5,7 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { resolveUserByIdFromCache } from '../domain/user';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
 import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';

@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
 
 // Mock cache and conf to keep tests pure/unit
-vi.mock('../../../src/database/cache');
-vi.mock('../../../src/database/redis');
-vi.mock('../../../src/config/conf', async () => {
-  const actual = await vi.importActual('../../../src/config/conf');
+vi.mock('../../../../src/database/cache');
+vi.mock('../../../../src/database/redis');
+vi.mock('../../../../src/config/conf', async () => {
+  const actual = await vi.importActual('../../../../src/config/conf');
   return {
     ...actual,
     basePath: '',
@@ -13,9 +13,9 @@ vi.mock('../../../src/config/conf', async () => {
   };
 });
 
-import * as Cache from '../../../src/database/cache';
-import { isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
-import { SYSTEM_USER } from '../../../src/utils/access';
+import * as Cache from '../../../../src/database/cache';
+import { isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../../src/modules/user/user-domain';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const mockGetEntityFromCache = vi.mocked(Cache.getEntityFromCache);
 

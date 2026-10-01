@@ -708,7 +708,7 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
  * Construct a filter to restrict users visibility
  * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
  */
-export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup | null) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
@@ -1091,7 +1091,7 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-type ParticipantWithOrgIds = Participant & Creator & {
+export type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
     main: string;
     secondary: string;
@@ -1175,7 +1175,7 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup | null) => {
   return {
     mode: FilterMode.And,
     filters: [

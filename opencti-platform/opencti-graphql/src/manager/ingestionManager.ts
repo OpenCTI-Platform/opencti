@@ -32,7 +32,7 @@ import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csv
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
-import { findById as findUserById } from '../domain/user';
+import { findById as findUserById } from '../modules/user/user-domain';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
@@ -561,7 +561,7 @@ export const processCsvLines = async (
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
-    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id!) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
       removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
     }

@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as Cache from '../../../src/database/cache';
-import { authenticateUserByToken } from '../../../src/domain/user';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { SYSTEM_USER } from '../../../src/utils/access';
-import { generateTokenHmac } from '../../../src/modules/user/user-domain';
+import * as Cache from '../../../../src/database/cache';
+import { authenticateUserByToken } from '../../../../src/modules/user/user-domain';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import { generateTokenHmac } from '../../../../src/modules/user/user-domain';
+import type { AuthContext } from '../../../../src/types/user';
 
 // Mock dependencies
-vi.mock('../../../src/database/cache');
-vi.mock('../../../src/database/redis'); // to prevent connection attempts
-vi.mock('../../../src/config/conf', async () => {
-  const actual = await vi.importActual('../../../src/config/conf');
+vi.mock('../../../../src/database/cache');
+vi.mock('../../../../src/database/redis'); // to prevent connection attempts
+vi.mock('../../../../src/config/conf', async () => {
+  const actual = await vi.importActual('../../../../src/config/conf');
   return {
     ...actual,
     logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() }, // mock logger
@@ -17,7 +18,7 @@ vi.mock('../../../src/config/conf', async () => {
 });
 
 describe('User Domain - Authentication', async () => {
-  const context = { user: SYSTEM_USER, req: {} };
+  const context = { user: SYSTEM_USER, req: {} } as unknown as AuthContext;
   const mockReq = {
     headers: {},
     header: (_: string) => undefined,

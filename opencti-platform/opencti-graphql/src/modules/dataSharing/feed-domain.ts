@@ -12,7 +12,7 @@ import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
-import { TAXIIAPI } from '../../domain/user';
+import { TAXIIAPI } from '../user/user-domain';
 import { validatePublicUserId } from './dataSharing-utils';
 
 const VALID_MULTI_MATCH_STRATEGIES = ['first', 'list'];

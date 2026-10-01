@@ -1,7 +1,7 @@
 import type { AuthContext } from '../types/user';
 import { DraftLockedError, FunctionalError } from '../config/errors';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { userEditField } from '../domain/user';
+import { userEditField } from '../modules/user/user-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';

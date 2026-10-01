@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ACCOUNT_STATUS_EXPIRED } from '../../../../src/config/conf';
 import { addIndividual } from '../../../../src/domain/individual';
-import { addUser, userEditField } from '../../../../src/domain/user';
+import { addUser, userEditField } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { storeLoadById } from '../../../../src/database/middleware-loader';

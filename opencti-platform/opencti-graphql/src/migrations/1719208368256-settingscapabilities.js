@@ -5,7 +5,7 @@ import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 
 const message = '[MIGRATION] update settings capabilities';
 
