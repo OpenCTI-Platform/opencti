@@ -5493,6 +5493,7 @@
   "Verify": "検証",
   "Verify SSL certificate": "SSL証明書を検証する",
   "Version": "バージョン",
+  "Version {version} can be installed": "バージョン {version} をインストールできます",
   "Version of the product": "製品のバージョン",
   "Versions": "バージョン",
   "Vertical Bar": "縦棒",

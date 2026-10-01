@@ -292,7 +292,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
         <Stack direction="column" alignItems="flex-start" gap={0.5}>
-          {item.updateAvailable && <ConnectorUpdateChip incompatibility={item.incompatibility} />}
+          {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} incompatibility={item.incompatibility} />}
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
