@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,7 +13,6 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
-import { Chip } from '@filigran/design-system';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -112,12 +112,6 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   })();
 
   const hasQueuedMessages = item.messagesCount != null && item.messagesCount > 0;
-  const updateBadge = item.updateAvailable ? {
-    label: item.incompatibility ? t_i18n('Incompatible') : t_i18n('Update available'),
-    color: item.incompatibility ? theme.palette.error.main : theme.palette.warning.main,
-    background: item.incompatibility ? alpha(theme.palette.error.main, 0.12) : alpha(theme.palette.warning.main, 0.12),
-    border: item.incompatibility ? alpha(theme.palette.error.main, 0.35) : alpha(theme.palette.warning.main, 0.35),
-  } : null;
 
   return (
     <Box
@@ -298,9 +292,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
         <Stack direction="column" alignItems="flex-start" gap={0.5}>
-          {updateBadge && (
-            <Chip severity={item.incompatibility ? 'high' : 'info'} label={updateBadge.label} />
-          )}
+          {item.updateAvailable && <ConnectorUpdateChip incompatibility={item.incompatibility} />}
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
