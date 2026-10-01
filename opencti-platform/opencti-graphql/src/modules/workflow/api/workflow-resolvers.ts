@@ -84,6 +84,7 @@ const workflowResolvers = {
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
     pendingError: (instance: any) => instance.pendingError ?? null,
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
+    scope: (instance: any) => instance.scope ?? null,
   },
   WorkflowSerializedTransition: {
     from: (transition: any) => {
