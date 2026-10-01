@@ -181,6 +181,8 @@ const StixCoreObjectFileExportForm = ({
     [selectedDefaultTemplate] = templates ?? [];
   }
   const defaultFileToExport = fileOptions?.find((f) => f.value === defaultValues?.fileToExport);
+  // A preset file means we're converting a specific existing file, not generating a fresh one.
+  const hasPresetFileToExport = !!defaultValues?.fileToExport;
   let defaultFormat = '';
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
@@ -191,7 +193,7 @@ const StixCoreObjectFileExportForm = ({
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
     format: defaultFormat,
     type: null,
-    exportAsFintel: (templates?.length ?? 0) > 0,
+    exportAsFintel: (templates?.length ?? 0) > 0 && !hasPresetFileToExport,
     template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
@@ -203,8 +205,9 @@ const StixCoreObjectFileExportForm = ({
       ?? defaultFileMarkings
       ?? [],
   };
+  // Built-in connectors self-manage their format (see the forcing effects below), so gating them here would lock users out of switching back.
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
-    if (!selectedFormat) return true;
+    if (!selectedFormat || isBuiltInConnector(option.value)) return true;
     const connector = connectors.find((c) => c.value === option.value);
     return !!connector?.connectorScope?.includes(selectedFormat);
   };
@@ -229,9 +232,23 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
-            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0);
+            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0 && !hasPresetFileToExport);
           }
         }, [values.connector?.value]);
+
+        // Generating FINTEL from a template only ever produces HTML; PDF is reserved for the toggle on HTML content files to PDF.
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format !== 'text/html') {
+            setFieldValue('format', 'text/html');
+          }
+        }, [values.connector?.value, values.format]);
+
+        // Symmetric to the effect above: the HTML-to-PDF connector only ever produces PDF.
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.format !== 'application/pdf') {
+            setFieldValue('format', 'application/pdf');
+          }
+        }, [values.connector?.value, values.format]);
 
         useEffect(() => {
           if (values.connector !== null) {
@@ -262,6 +279,7 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('exportFileName', null);
             setFieldValue('fileMarkings', []);
             setFieldValue('contentMaxMarkings', []);
+            setFieldValue('template', selectedDefaultTemplate);
             setFieldValue('includeCoverPage', true);
             setFieldValue('includeBackPage', true);
             return;
@@ -275,6 +293,7 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('exportFileName', null);
           }
           if (connector === BUILT_IN_HTML_TO_PDF.value && (values.fileToExport === null || values.fileToExport.value === 'generatedFile')) {
+            // Turning off the fintel toggle keeps the same connector; just fall back to a real file to export.
             setFieldValue('fileToExport', defaultFileToExport ?? (fileOptions ?? [])[0] ?? null);
             setFieldValue('fileMarkings', initialValues.fileMarkings);
             setFieldValue('contentMaxMarkings', []);
@@ -329,13 +348,10 @@ const StixCoreObjectFileExportForm = ({
         }, [isFintelPdf, setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
 
         const shouldDisplayFintelDesign = (
-          isFintelPdf || (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+          isFintelPdf
           || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
         );
-        const shouldDisplayPageOptions = (
-          values.connector?.value === BUILT_IN_HTML_TO_PDF.value
-          || (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-        );
+        const shouldDisplayPageOptions = values.connector?.value === BUILT_IN_HTML_TO_PDF.value;
 
         return (
 
