@@ -84,21 +84,21 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
+  const entityTypes = Object.values(checkedCategoryItems).flat();
+  const selections: { entityType: string; ids: string[] }[] = [];
+
+  EXPORT_INSTANCE_CONFIGS.forEach((config) => {
+    const mode = instanceModes[config.entityType] ?? 'all';
+    const ids = instanceSelectedIds[config.entityType] ?? [];
+    if (mode === 'all') {
+      entityTypes.push(config.entityType);
+    } else if (mode === 'partial' && ids.length > 0) {
+      entityTypes.push(config.entityType);
+      selections.push({ entityType: config.entityType, ids });
+    }
+  });
+
   const onExport = () => {
-    const entityTypes = Object.values(checkedCategoryItems).flat();
-    const selections: { entityType: string; ids: string[] }[] = [];
-
-    EXPORT_INSTANCE_CONFIGS.forEach((config) => {
-      const mode = instanceModes[config.entityType] ?? 'all';
-      const ids = instanceSelectedIds[config.entityType] ?? [];
-      if (mode === 'all') {
-        entityTypes.push(config.entityType);
-      } else if (mode === 'partial' && ids.length > 0) {
-        entityTypes.push(config.entityType);
-        selections.push({ entityType: config.entityType, ids });
-      }
-    });
-
     commitExportMutation({
       variables: { entityTypes, selections, bundleName },
       onCompleted: (result: PlatformBundleDrawerExportMutation$data) => {
@@ -220,7 +220,7 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
             </Button>
             <Button
               startIcon={<DownloadOutlined />}
-              disabled={exporting}
+              disabled={exporting || entityTypes.length === 0}
               onClick={onExport}
             >
               {t_i18n('Export Platform Bundle')}
