@@ -54,7 +54,8 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
-import { Chip, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import { getDeployedConnectorDetails } from './connectorDetails';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -673,7 +674,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
                     {compatibleUpdateVersion && (
                       <Box sx={{ marginTop: 1 }}>
-                        <Chip severity="high" label={`${t_i18n('Update available')}: ${compatibleUpdateVersion}`} />
+                        <ConnectorUpdateChip version={compatibleUpdateVersion} incompatibility={!!connector.incompatibility} />
                       </Box>
                     )}
                   </Grid>
@@ -732,6 +733,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunIsNumber,
     lastRunConverted,
     compatibleUpdateVersion,
+    connector.incompatibility,
     theme,
     t_i18n,
     nsdt,
@@ -1135,6 +1137,7 @@ const Connector = createRefetchContainer(
         }
         update_available
         latest_compatible_version
+        incompatibility
         updated_at
         created_at
         config {

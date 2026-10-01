@@ -5,13 +5,13 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { paperBorder } from '../paperSurface';
-import { Chip } from '@filigran/design-system';
 
 interface StatusDotProps {
   item: DeployedIntegrationItem;
@@ -96,13 +96,6 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
     if (item.status === 'processing') return <ItemBoolean status={undefined} label={statusText} />;
     return <ItemBoolean status={item.status === 'active'} label={statusText} />;
   })();
-
-  const updateBadge = item.updateAvailable ? {
-    label: item.incompatibility ? t_i18n('Incompatible') : t_i18n('Update available'),
-    color: item.incompatibility ? theme.palette.error.main : theme.palette.warning.main,
-    background: item.incompatibility ? alpha(theme.palette.error.main, 0.12) : alpha(theme.palette.warning.main, 0.12),
-    border: item.incompatibility ? alpha(theme.palette.error.main, 0.35) : alpha(theme.palette.warning.main, 0.35),
-  } : null;
 
   return (
     <Box
@@ -257,9 +250,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Stack>
           <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={(event) => event.stopPropagation()}>
-            {updateBadge && (
-              <Chip severity={item.incompatibility ? 'high' : 'info'} label={updateBadge.label} />
-            )}
+            {item.updateAvailable && <ConnectorUpdateChip incompatibility={item.incompatibility} />}
             {statusChip}
           </Stack>
         </Stack>
