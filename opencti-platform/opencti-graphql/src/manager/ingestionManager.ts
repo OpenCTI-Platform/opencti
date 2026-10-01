@@ -301,7 +301,7 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
               .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
             patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
-              .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
+              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
           });
         ingestionPromises.push(ingestionPromise);
       }
@@ -648,7 +648,7 @@ export const csvExecutor = async (context: AuthContext) => {
             try {
               await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' });
             } catch (reason) {
-              logApp.warn('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason });
+              logApp.error('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason });
             }
             await ingestionLogger.error('Feed fetch failed', buildIngestionErrorMeta(e));
           });
@@ -718,7 +718,7 @@ export const jsonExecutor = async (context: AuthContext) => {
             .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
           await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
-            .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));
+            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));
         }
       } else {
         // Update the state
