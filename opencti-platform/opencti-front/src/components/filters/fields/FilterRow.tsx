@@ -16,8 +16,6 @@ export interface FilterRowProps {
   filter: Filter;
 }
 
-type KeyOption = { value: string; label: string };
-
 /**
  * The editing part of a filter row: the operator select and the value editor(s). Rendered keyed
  * by `filter.key` (not `filter.id`) by `FilterRow` below, so that changing the filter's key —
