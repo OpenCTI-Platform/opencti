@@ -5,7 +5,7 @@ import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { addUser } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
-import { deleteElementById } from '../../../../src/database/middleware';
+import { createEntity, deleteElementById, updateAttribute } from '../../../../src/database/middleware';
 import { elRawSearch } from '../../../../src/database/engine';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { INDEX_DELETED_OBJECTS } from '../../../../src/database/utils';
@@ -17,6 +17,10 @@ import { executeUserMerge } from '../../../../src/modules/userMerge/userMerge-en
 import { registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
 import type { UserMergeHandler } from '../../../../src/modules/userMerge/userMerge-handler';
 import { userMergeOperationalRelationsHandler } from '../../../../src/modules/userMerge/userMerge-operationalRelationsHandler';
+import { userMergeBlobsHandler } from '../../../../src/modules/userMerge/userMerge-blobsHandler';
+import { USER_MERGE_DRAFT_PATCH_TARGET } from '../../../../src/modules/userMerge/userMerge-blobTargets';
+import { EditOperation } from '../../../../src/generated/graphql';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
 const SOURCE_EMAIL = 'usermerge-operational-source@opencti.invalid';
@@ -24,8 +28,11 @@ const TARGET_EMAIL = 'usermerge-operational-target@opencti.invalid';
 
 let sourceId: string;
 let targetId: string;
+let sourceStandardId: string;
+let targetStandardId: string;
 
 const created: string[] = [];
+const silentIncidents: string[] = [];
 const createdDrafts: string[] = [];
 
 const merge = (dryRun: boolean) => executeUserMerge(
@@ -90,6 +97,8 @@ describe('userMerge operational relations handler', () => {
     const target = await addUser(testContext, ADMIN_USER, { name: 'userMerge operational target user', password: 'userMerge', user_email: TARGET_EMAIL });
     sourceId = source.id;
     targetId = target.id;
+    sourceStandardId = source.standard_id;
+    targetStandardId = target.standard_id;
   });
 
   afterAll(async () => {
@@ -101,6 +110,10 @@ describe('userMerge operational relations handler', () => {
       if (incident) {
         await deleteElementById(testContext, ADMIN_USER, created[i], ENTITY_TYPE_INCIDENT);
       }
+    }
+    // Silent like their creation.
+    for (let i = 0; i < silentIncidents.length; i += 1) {
+      await deleteElementById(testContext, SYSTEM_USER, silentIncidents[i], ENTITY_TYPE_INCIDENT, { publishStreamEvent: false });
     }
     for (let i = 0; i < createdDrafts.length; i += 1) {
       await deleteDraftWorkspace(testContext, ADMIN_USER, createdDrafts[i]);
@@ -151,6 +164,37 @@ describe('userMerge operational relations handler', () => {
     expect(result.status).toEqual(UserMergeStatus.Success);
     expect(await trashedReferences(sourceId)).toEqual(0);
     expect(await trashedReferences(targetId)).toBeGreaterThan(0);
+  });
+
+  // The patch of a draft holds a relationship edit by standard id, and validation replays the
+  // patch rather than the relations of the draft copy. The blobs handler rewriting it has no
+  // integration suite of its own: it borrows this pair rather than creating two more users, whose
+  // individuals would shift the raw stream counters.
+  it('should rewrite an assignee added inside a draft in the draft patch', async () => {
+    registerUserMergeHandler(userMergeBlobsHandler);
+    try {
+      // Silent, so the stream never carries this incident and the raw stream counters stay put.
+      const incident = await createEntity(testContext, SYSTEM_USER, { name: 'userMerge operational draft edit' }, ENTITY_TYPE_INCIDENT, { publishStreamEvent: false });
+      silentIncidents.push(incident.id);
+      const draft = await createDraft('userMerge operational draft edit', {});
+      const draftContext = { ...testContext, draft_context: draft.id };
+      await updateAttribute(draftContext, ADMIN_USER, incident.id, ENTITY_TYPE_INCIDENT, [{ key: 'objectAssignee', value: [sourceId], operation: EditOperation.Add }]);
+      const patchOf = async () => {
+        const copy = await storeLoadById<BasicStoreEntity>(draftContext, ADMIN_USER, incident.id, ENTITY_TYPE_INCIDENT);
+        return JSON.parse(copy.draft_change?.draft_updates_patch ?? '{}');
+      };
+      expect((await patchOf()).objectAssignee.added_value).toEqual([sourceStandardId]);
+
+      const dryRun = await merge(true);
+      expect(countOf(dryRun.report, USER_MERGE_DRAFT_PATCH_TARGET.path)).toEqual(1);
+      const result = await merge(false);
+      expect(result.status).toEqual(UserMergeStatus.Success);
+      expect((await patchOf()).objectAssignee.added_value).toEqual([targetStandardId]);
+      expect(countOf((await merge(true)).report, USER_MERGE_DRAFT_PATCH_TARGET.path)).toEqual(0);
+    } finally {
+      resetUserMergeHandlers();
+      registerUserMergeHandler(userMergeOperationalRelationsHandler);
+    }
   });
 
   it('should be a no-op when nothing references the source user', async () => {

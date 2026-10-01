@@ -220,6 +220,49 @@ const resolveTarget = async (
   return outcome;
 };
 
+/** A source id and the target id that replaces it. */
+type UserMergeIdPair = { sourceId: string; targetId: string };
+
+/**
+ * The ids a draft patch can name a user by.
+ *
+ * A patch stores a relationship edit by the `standard_id` of the element it points to
+ * (`getConsolidatedUpdatePatch`), so an assignee or a participant edited in a draft is held as
+ * `user--…` rather than as the internal id every other payload carries. Draft validation replays
+ * the patch: left alone, it assigns the disabled source, or once the source is deleted, drops the
+ * assignment without an error.
+ */
+export const userMergeDraftPatchIdPairs = ({ sourceId, targetId, sourceUser, targetUser }: UserMergeHandlerContext): UserMergeIdPair[] => {
+  const pairs = [{ sourceId, targetId }];
+  if (sourceUser.standard_id && targetUser.standard_id && sourceUser.standard_id !== targetUser.standard_id) {
+    pairs.push({ sourceId: sourceUser.standard_id, targetId: targetUser.standard_id });
+  }
+  return pairs;
+};
+
+/**
+ * Rewrite a draft patch for every id pair. A rejection only stands when no pair rewrote anything,
+ * the way a payload mixing a reference and a free-text mention is rewritten for the reference.
+ */
+export const rewriteDraftPatch = (raw: unknown, pairs: UserMergeIdPair[]): string | RewriteRejection | undefined => {
+  let current = raw;
+  let changed = false;
+  let rejection: RewriteRejection | undefined;
+  for (let i = 0; i < pairs.length; i += 1) {
+    const rewritten = rewriteJson(current, pairs[i].sourceId, pairs[i].targetId);
+    if (rewritten === 'unparsable') {
+      return rewritten;
+    }
+    if (rewritten === 'textual') {
+      rejection = rewritten;
+    } else if (rewritten !== undefined) {
+      current = rewritten;
+      changed = true;
+    }
+  }
+  return changed ? current as string : rejection;
+};
+
 /**
  * The draft patch, which no entity type qualifies: `draft_updates_patch` is a global attribute
  * carried by every draftable entity, so the selection is the phrase match alone.
@@ -230,13 +273,14 @@ const resolveTarget = async (
  * rollback.
  */
 const resolveDraftPatch = async (handlerContext: UserMergeHandlerContext): Promise<TargetOutcome> => {
-  const { context, sourceId, targetId } = handlerContext;
+  const { context } = handlerContext;
   const path = USER_MERGE_DRAFT_PATCH_TARGET.path;
-  const query = { bool: { must: [{ match_phrase: { [path]: sourceId } }] } };
+  const pairs = userMergeDraftPatchIdPairs(handlerContext);
+  const query = { bool: { should: pairs.map((pair) => ({ match_phrase: { [path]: pair.sourceId } })), minimum_should_match: 1 } };
   const outcome = emptyOutcome();
   await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, query, (page) => {
     page.forEach((candidate) => {
-      const rewritten = rewriteJson(candidate.source.draft_change?.draft_updates_patch, sourceId, targetId);
+      const rewritten = rewriteDraftPatch(candidate.source.draft_change?.draft_updates_patch, pairs);
       if (rewritten === 'unparsable') {
         outcome.unparsable += 1;
         return;

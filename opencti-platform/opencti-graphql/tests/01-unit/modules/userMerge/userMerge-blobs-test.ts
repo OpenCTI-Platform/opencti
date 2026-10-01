@@ -8,8 +8,9 @@ import {
   userMergeBlobFieldPaths,
 } from '../../../../src/modules/userMerge/userMerge-blobTargets';
 import { USER_MERGE_REGISTER } from '../../../../src/modules/userMerge/userMerge-register';
-import { rewriteJson, rewriteTarget } from '../../../../src/modules/userMerge/userMerge-blobsHandler';
+import { rewriteDraftPatch, rewriteJson, rewriteTarget, userMergeDraftPatchIdPairs } from '../../../../src/modules/userMerge/userMerge-blobsHandler';
 import type { UserMergeRewriteCandidate } from '../../../../src/modules/userMerge/userMerge-bulk';
+import type { UserMergeHandlerContext } from '../../../../src/modules/userMerge/userMerge-handler';
 
 const SOURCE = 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
 const TARGET = 'bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb';
@@ -154,6 +155,63 @@ describe('userMerge draft patches', () => {
   it('should report an id mentioned inside a value rather than as one', () => {
     const patch = JSON.stringify({ description: { replaced_value: [`written by ${SOURCE}`] } });
     expect(rewriteJson(patch, SOURCE, TARGET)).toEqual('textual');
+  });
+});
+
+describe('userMerge draft patches holding relationship edits', () => {
+  const SOURCE_STANDARD = 'user--aaaaaaaa-5555-5555-8555-aaaaaaaaaaaa';
+  const TARGET_STANDARD = 'user--bbbbbbbb-5555-5555-8555-bbbbbbbbbbbb';
+  const pairs = [{ sourceId: SOURCE, targetId: TARGET }, { sourceId: SOURCE_STANDARD, targetId: TARGET_STANDARD }];
+  const contextOf = (sourceStandard?: string, targetStandard?: string) => ({
+    sourceId: SOURCE,
+    targetId: TARGET,
+    sourceUser: { internal_id: SOURCE, standard_id: sourceStandard },
+    targetUser: { internal_id: TARGET, standard_id: targetStandard },
+  }) as unknown as UserMergeHandlerContext;
+
+  it('should pair the standard ids of both users with their internal ids', () => {
+    expect(userMergeDraftPatchIdPairs(contextOf(SOURCE_STANDARD, TARGET_STANDARD))).toEqual(pairs);
+  });
+
+  it('should keep the internal ids alone when a standard id is missing', () => {
+    expect(userMergeDraftPatchIdPairs(contextOf(SOURCE_STANDARD))).toEqual([pairs[0]]);
+  });
+
+  // An assignee edited in a draft is stored by standard id: the internal id never appears.
+  it('should rewrite an edit the patch holds by standard id, initial_value included', () => {
+    const patch = JSON.stringify({
+      objectAssignee: { replaced_value: [], added_value: [SOURCE_STANDARD], removed_value: [], initial_value: [SOURCE_STANDARD] },
+    });
+    const parsed = JSON.parse(rewriteDraftPatch(patch, pairs) as string);
+    expect(parsed.objectAssignee.added_value).toEqual([TARGET_STANDARD]);
+    expect(parsed.objectAssignee.initial_value).toEqual([TARGET_STANDARD]);
+  });
+
+  it('should rewrite both forms when one patch holds them', () => {
+    const patch = JSON.stringify({
+      x_opencti_request_access: { replaced_value: [JSON.stringify({ applicant_id: SOURCE })] },
+      objectParticipant: { added_value: [SOURCE_STANDARD, OTHER] },
+    });
+    const parsed = JSON.parse(rewriteDraftPatch(patch, pairs) as string);
+    expect(JSON.parse(parsed.x_opencti_request_access.replaced_value[0]).applicant_id).toEqual(TARGET);
+    expect(parsed.objectParticipant.added_value).toEqual([TARGET_STANDARD, OTHER]);
+  });
+
+  it('should collapse the target an edit already named', () => {
+    const patch = JSON.stringify({ objectAssignee: { added_value: [SOURCE_STANDARD, TARGET_STANDARD] } });
+    expect(JSON.parse(rewriteDraftPatch(patch, pairs) as string).objectAssignee.added_value).toEqual([TARGET_STANDARD]);
+  });
+
+  it('should rewrite the reference even when the other id is only mentioned', () => {
+    const patch = JSON.stringify({ description: { replaced_value: [`written by ${SOURCE}`] }, objectAssignee: { added_value: [SOURCE_STANDARD] } });
+    const parsed = JSON.parse(rewriteDraftPatch(patch, pairs) as string);
+    expect(parsed.objectAssignee.added_value).toEqual([TARGET_STANDARD]);
+    expect(parsed.description.replaced_value).toEqual([`written by ${SOURCE}`]);
+  });
+
+  it('should be a no-op on a second run', () => {
+    const patch = JSON.stringify({ objectAssignee: { added_value: [SOURCE_STANDARD], initial_value: [] } });
+    expect(rewriteDraftPatch(rewriteDraftPatch(patch, pairs), pairs)).toBeUndefined();
   });
 });
 
