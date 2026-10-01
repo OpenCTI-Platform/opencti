@@ -546,13 +546,15 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Create a relationship')}
           subHeader={{
-            left: [(
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-                key="leftInput"
-              />
-            )],
+            left: step === 0
+              ? [(
+                  <SearchInput
+                    variant="inDrawer"
+                    onSubmit={this.handleSearch.bind(this)}
+                    key="leftInput"
+                  />
+                )]
+              : [],
           }}
         >
           <QueryRenderer
@@ -561,11 +563,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             render={({ props }) => {
               if (props && props.stixCoreRelationship) {
                 return (
-                  <div>
+                  <div style={{ marginTop: -20 }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1
-                      ? this.renderForm(props.stixCoreRelationship)
-                      : ''}
+                    {step === 1 ? this.renderForm(props.stixCoreRelationship) : ''}
                   </div>
                 );
               }

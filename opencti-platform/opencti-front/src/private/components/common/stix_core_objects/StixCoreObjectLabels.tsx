@@ -18,12 +18,14 @@ interface StixCoreObjectLabelsProps {
   onClick?: HandleAddFilter;
   variant?: string;
   revoked?: boolean;
+  defaultValueIfEmpty?: string;
 }
 
 const StixCoreObjectLabels = ({
   labels,
   onClick,
   revoked,
+  defaultValueIfEmpty,
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -109,7 +111,7 @@ const StixCoreObjectLabels = ({
 
   // case no labels
   return (
-    <>{EMPTY_VALUE}</>
+    <>{defaultValueIfEmpty ?? EMPTY_VALUE}</>
   );
 };
 
