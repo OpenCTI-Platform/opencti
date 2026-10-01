@@ -1,7 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
+import { publishCacheResetEvent } from '../../database/redis';
 import { resolveUserById } from '../user/user-domain';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { userMergeProjectRights, userMergeRightsLabels, userMergeRightsOf } from './userMerge-rights';
 import {
@@ -18,6 +20,50 @@ import { journalRefusal, readJournalEntries, withJournalEntry } from './userMerg
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../dataSharing/streamCollection-types';
+import { ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_TRIGGER } from '../notification/notification-types';
+import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
+
+/**
+ * Entity types the platform serves from its in-memory cache and whose user references a handler
+ * rewrites — filters, authorized members, owners, playbook definitions, platform settings.
+ *
+ * Most handlers write straight to Elasticsearch, which notifies no cache: a live stream, a trigger
+ * or a PIR would keep evaluating the source id until a restart, and on every node of a cluster.
+ * Resetting these types once the writes are done makes every node reload them on the next read.
+ */
+export const USER_MERGE_CACHED_ENTITY_TYPES = [
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  ENTITY_TYPE_DECAY_RULE,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_NOTIFIER,
+  ENTITY_TYPE_PIR,
+  ENTITY_TYPE_PLAYBOOK,
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_TRIGGER,
+  ENTITY_TYPE_USER,
+];
+
+// A failed reset must not turn an applied merge into a failure: the writes stand either way.
+const resetMergedCaches = async (mergeId: string) => {
+  try {
+    await Promise.all(USER_MERGE_CACHED_ENTITY_TYPES.map((entityType) => publishCacheResetEvent(entityType)));
+  } catch (err) {
+    logApp.error(`${LOG_PREFIX} cache reset failed, the merged entities are served stale until a restart`, {
+      merge_id: mergeId,
+      cause: err instanceof Error ? err.message : String(err),
+    });
+  }
+};
 
 const LOG_PREFIX = '[MERGE_USERS]';
 
@@ -197,13 +243,18 @@ export const executeUserMerge = async (
     const plans = await recomputeVerifiedPlans(handlers, handlerContext, dryOutcomes, journalInput);
 
     const outcomes: UserMergeHandlerOutcome[] = [];
-    for (let i = 0; i < handlers.length; i += 1) {
-      const handler = handlers[i];
-      const outcome = await withJournalEntry(
-        { ...journalInput, handler: handler.identifier, dryRun: false },
-        () => applyHandler(handler, handlerContext, plans[i]),
-      );
-      outcomes.push(outcome);
+    try {
+      for (let i = 0; i < handlers.length; i += 1) {
+        const handler = handlers[i];
+        const outcome = await withJournalEntry(
+          { ...journalInput, handler: handler.identifier, dryRun: false },
+          () => applyHandler(handler, handlerContext, plans[i]),
+        );
+        outcomes.push(outcome);
+      }
+    } finally {
+      // A failed run too: what the handlers before the failure wrote is just as stale.
+      await resetMergedCaches(mergeId);
     }
     return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, outcomes) };
   } catch (err) {
