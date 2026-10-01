@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { logApp } from '../../../src/config/conf';
 import { internalDeleteElementById } from '../../../src/database/middleware';
+import { notify } from '../../../src/database/redis';
 import { fullEntitiesList, internalLoadById } from '../../../src/database/middleware-loader';
 import { lockResources } from '../../../src/lock/master-lock';
 import { workflowStatusCleanupHandler } from '../../../src/manager/workflowStatusCleanupManager';
@@ -18,6 +20,14 @@ vi.mock('../../../src/lock/master-lock', () => ({
   lockResources: vi.fn(),
 }));
 
+vi.mock('../../../src/database/redis', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/redis')>();
+  return {
+    ...actual,
+    notify: vi.fn(),
+  };
+});
+
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   isStatusOrphaned: vi.fn(),
   getWorkflowStatusLockKey: (entityType: string) => `workflow-status-lifecycle:${entityType}`,
@@ -35,6 +45,7 @@ describe('Workflow status cleanup manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (lockResources as any).mockResolvedValue({ unlock: vi.fn() });
+    (notify as any).mockResolvedValue(undefined);
   });
 
   it('should hard-delete a Status that is still orphaned when the grace period has elapsed', async () => {
@@ -97,6 +108,40 @@ describe('Workflow status cleanup manager', () => {
     await workflowStatusCleanupHandler();
 
     expect(internalDeleteElementById).toHaveBeenCalledTimes(2);
+  });
+
+  it('should report a failed deletion as a warning, since the next pass retries it', async () => {
+    const logAppErrorSpy = vi.spyOn(logApp, 'error');
+    const logAppWarnSpy = vi.spyOn(logApp, 'warn');
+    const status = { id: 'status-b-id', type: 'Incident', template_id: 'tpl-b', to_be_deleted_at: new Date('2020-01-01') };
+    (fullEntitiesList as any).mockResolvedValue([status]);
+    (internalLoadById as any).mockResolvedValue(status);
+    (isStatusOrphaned as any).mockResolvedValue(true);
+    (internalDeleteElementById as any).mockRejectedValue(new Error('boom'));
+
+    await workflowStatusCleanupHandler();
+
+    expect(logAppWarnSpy).toHaveBeenCalledTimes(1);
+    expect(logAppWarnSpy.mock.calls[0][0]).toContain('Workflow status cleanup error');
+    expect(logAppErrorSpy, 'The Status is still there, so tomorrow\'s pass retries it.').not.toHaveBeenCalled();
+  });
+
+  it('should report a failed deletion event publish as an error, since nothing can republish it', async () => {
+    const logAppErrorSpy = vi.spyOn(logApp, 'error');
+    const logAppWarnSpy = vi.spyOn(logApp, 'warn');
+    const status = { id: 'status-b-id', type: 'Incident', template_id: 'tpl-b', to_be_deleted_at: new Date('2020-01-01') };
+    (fullEntitiesList as any).mockResolvedValue([status]);
+    (internalLoadById as any).mockResolvedValue(status);
+    (isStatusOrphaned as any).mockResolvedValue(true);
+    (internalDeleteElementById as any).mockResolvedValue({ element: { id: 'status-b-id' } });
+    (notify as any).mockRejectedValue(new Error('redis is down'));
+
+    await workflowStatusCleanupHandler();
+
+    // The Status is already gone: no later run will see it again, so the event is lost for good.
+    expect(logAppErrorSpy).toHaveBeenCalledTimes(1);
+    expect(logAppErrorSpy.mock.calls[0][0]).toContain('deletion event publish failed');
+    expect(logAppWarnSpy, 'The delete itself succeeded.').not.toHaveBeenCalled();
   });
 
   it('should do nothing when there are no candidates past their grace period', async () => {
