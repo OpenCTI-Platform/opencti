@@ -82,5 +82,3 @@ describe('hasSameSavedFilters', () => {
     expect(hasSameSavedFilters(undefined, nestedFilterGroup)).toBe(false);
   });
 });
-
-
