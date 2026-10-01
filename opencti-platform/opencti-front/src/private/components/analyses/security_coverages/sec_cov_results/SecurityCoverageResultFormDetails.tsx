@@ -23,6 +23,7 @@ export interface SecurityCoverageResultFormData {
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
   coverageInformation: CoverageInformation[];
+  externalUri: string;
   validFrom: Date | null;
   validTo: Date | null;
 }
@@ -56,6 +57,7 @@ const SecurityCoverageResultFormDetails = ({
           .max(100, t_i18n('Score must be at most 100')),
       }),
     ).min(1, t_i18n('At least one coverage metric is required')),
+    externalUri: Yup.string().url().nullable(),
   });
 
   const initialValues: SecurityCoverageResultFormData = initValues ?? {
@@ -68,6 +70,7 @@ const SecurityCoverageResultFormDetails = ({
     validFrom: null,
     validTo: null,
     coverageInformation: [],
+    externalUri: '',
   };
 
   return (
@@ -82,10 +85,8 @@ const SecurityCoverageResultFormDetails = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
             name="name"
             label={t_i18n('Name')}
-            fullWidth={true}
             required
           />
           <Field
@@ -106,6 +107,12 @@ const SecurityCoverageResultFormDetails = ({
           <Field
             component={CoverageInformationField}
             name="coverageInformation"
+          />
+          <Field
+            component={TextField}
+            name="externalUri"
+            label={t_i18n('Source external link')}
+            className="mt-4"
           />
           <Field
             component={DateTimePickerField}
