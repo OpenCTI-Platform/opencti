@@ -257,6 +257,20 @@ describe('catalog-version-utils', () => {
     });
   });
 
+  it('should not suggest a min_version that is not valid semver', () => {
+    const versions = [
+      { version: '2.0.0', min_version: '7.260950' },
+      { version: '1.0.0', min_version: '7.261000.0' },
+    ];
+
+    expect(buildCatalogContractCompatibility(versions, { platformVersion: '7.260930.0', onUnparsableVersion: () => {} })).toEqual({
+      is_compatible: false,
+      latest_compatible_version: null,
+      minimum_platform_version: '7.261000.0',
+      maximum_platform_version: null,
+    });
+  });
+
   it('should give the highest supported platform version when the platform is too new', () => {
     const versions = [
       { version: '2.0.0', min_version: '7.0.0', max_version: '7.1.0' },

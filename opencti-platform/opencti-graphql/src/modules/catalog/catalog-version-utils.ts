@@ -150,32 +150,13 @@ export const getLatestCompatibleVersion = (
   return compatibleVersions[0]?.version ?? null;
 };
 
+// Lowest platform version required by the connector, read as strictly as isSupportVersionCompatible:
+// a min_version that is not valid semver makes its version incompatible, so it is never suggested
 export const getMinimumPlatformVersion = (versions: CatalogContractVersion[]) => {
-  let minimumPlatformVersion: string | null = null;
-
-  for (const version of versions) {
-    const candidateVersion = version.min_version;
-    if (!candidateVersion) {
-      continue;
-    }
-    if (!minimumPlatformVersion) {
-      minimumPlatformVersion = candidateVersion;
-      continue;
-    }
-    const parsedCandidateVersion = parseCatalogSemver(candidateVersion);
-    const parsedMinimumPlatformVersion = parseCatalogSemver(minimumPlatformVersion);
-    if (parsedCandidateVersion && parsedMinimumPlatformVersion) {
-      if (semver.lt(parsedCandidateVersion, parsedMinimumPlatformVersion)) {
-        minimumPlatformVersion = candidateVersion;
-      }
-      continue;
-    }
-    if (candidateVersion.localeCompare(minimumPlatformVersion, undefined, { numeric: true, sensitivity: 'base' }) < 0) {
-      minimumPlatformVersion = candidateVersion;
-    }
-  }
-
-  return minimumPlatformVersion;
+  const minVersions = versions
+    .map((version) => semver.valid(version.min_version ?? null))
+    .filter((minVersion): minVersion is string => !!minVersion);
+  return minVersions.sort(semver.compare)[0] ?? null;
 };
 
 // Highest platform version supported by the connector, when every version has a max_version
