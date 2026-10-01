@@ -9,8 +9,9 @@ import { BYPASS, isUserHasCapability } from '../../utils/access';
 import { ForbiddenAccess } from '../../config/errors';
 import { logApp } from '../../config/conf';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { type LoadedFile, uploadToStorage } from '../../database/file-storage';
+import { deleteFile, type LoadedFile, uploadToStorage } from '../../database/file-storage';
 import { GLOBAL_EXPORT_STORAGE_PATH } from '../internal/document/document-types';
+import { allFilesForPaths } from '../internal/document/document-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import { playbookExport } from '../playbook/playbook-domain';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
@@ -218,18 +219,32 @@ export const exportCategory = async (
   }
 };
 
+const GLOBAL_EXPORT_FILE_TTL_MS = 60 * 60 * 1000;
+
+export const deleteGlobalExportsNotModifiedSince = async (context: AuthContext, user: AuthUser, notModifiedSince: Date): Promise<void> => {
+  const expiredFiles = await allFilesForPaths(context, user, [GLOBAL_EXPORT_STORAGE_PATH], { notModifiedSince: notModifiedSince.toISOString() });
+  for (let i = 0; i < expiredFiles.length; i += 1) {
+    await deleteFile(context, user, expiredFiles[i].id, { forceDelete: true });
+  }
+};
+
 /**
- * Builds the configuration export ZIP for the given entity_types and returns it base64-encoded
+ * Builds the configuration export ZIP for the given entity_types and uploads it to the global export storage
  */
 export const generateGlobalConfigurationExport = async (
   context: AuthContext,
   user: AuthUser,
   entityTypes: string[],
   selections?: { entityType: string; ids?: string[] | null }[] | null,
+  bundleName?: string | null,
 ): Promise<LoadedFile> => {
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();
   }
+
+  await deleteGlobalExportsNotModifiedSince(context, user, new Date(Date.now() - GLOBAL_EXPORT_FILE_TTL_MS)).catch((err) => {
+    logApp.warn('[GLOBAL EXPORT] Failed to remove expired export files', { cause: err });
+  });
 
   const idsByEntityType = new Map<string, string[]>();
   (selections ?? []).forEach((selection) => {
@@ -247,6 +262,7 @@ export const generateGlobalConfigurationExport = async (
     writeStream.on('error', reject);
     archive.on('error', reject);
   });
+  zipReady.catch(() => {});
   archive.pipe(writeStream);
 
   try {
@@ -275,7 +291,8 @@ export const generateGlobalConfigurationExport = async (
     await archive.finalize();
     await zipReady;
 
-    const filename = `opencti-config-${new Date().toISOString().replace(/[:.]/g, '-')}-${pjson.version}.zip`;
+    const bundleSuffix = bundleName?.trim() ? `-${slugify(bundleName)}` : '';
+    const filename = `opencti-config-${new Date().toISOString().replace(/[:.]/g, '-')}-${pjson.version}${bundleSuffix}.zip`;
     const { upload } = await uploadToStorage(
       context,
       user,
@@ -301,6 +318,12 @@ export const generateGlobalConfigurationExport = async (
     addGlobalExportPlatformCount();
 
     return upload;
+  } catch (error) {
+    archive.abort();
+    writeStream.destroy();
+    // Wait for the write stream to be closed before removing the temporary file
+    await zipReady.catch(() => {});
+    throw error;
   } finally {
     await fs.promises.unlink(tmpZipPath).catch((err) => {
       logApp.warn('[GLOBAL EXPORT] Failed to remove temporary export file', { cause: err, tmpZipPath });
