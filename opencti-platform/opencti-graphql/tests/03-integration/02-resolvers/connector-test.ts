@@ -301,7 +301,7 @@ describe('Connector resolver standard behaviour', () => {
     expect(connector.data.registerConnector.version).toEqual('rolling');
   });
 
-  it('should reject connector registration with an invalid semver version', async () => {
+  it('should register connector with an invalid semver version', async () => {
     const VALID_CONNECTOR = {
       input: {
         id: TEST_CN_ID,
@@ -327,12 +327,10 @@ describe('Connector resolver standard behaviour', () => {
       },
     };
     const queryResult = await queryAsAdmin({ query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors).toHaveLength(1);
-    expect(queryResult.errors?.[0].message).toBe('Connector version is not a valid semantic version');
+    expect(queryResult.errors).toBeUndefined();
 
     const persistedConnector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
-    expect(persistedConnector.data.connector.version).toEqual('rolling');
+    expect(persistedConnector.data.connector.version).toEqual('not-a-version');
   });
 
   it('should legacy ping still works (without connector_info)', async () => {

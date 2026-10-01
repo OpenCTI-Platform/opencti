@@ -349,7 +349,10 @@ export const registerConnector = async (
   const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
   const { version = null, slug = null } = connectorData;
   if (!isEmptyField(version) && !semver.valid(version) && version !== 'rolling') {
-    throw ValidationError('Connector version is not a valid semantic version', 'version', { version });
+    logApp.warn('[OPENCTI-MODULE] Connector version is not a valid format', {
+      version,
+      module: 'connector',
+    });
   }
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
