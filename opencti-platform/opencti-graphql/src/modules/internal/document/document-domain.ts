@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
-import { elAggregationCount, elCount, elDeleteInstances, elFindByIds, elIndex } from '../../../database/engine';
+import { elAggregationCount, elCount, elDeleteInstances, elFindByIds, elIndex, elRawSearch } from '../../../database/engine';
 import { INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -167,6 +167,23 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
     weightField: 'size',
     normalizeLabel: false,
   });
+};
+
+// Total size of the files stored through the platform, summed from their InternalFile documents
+// rather than by listing the bucket: one request whatever the number of objects, on any S3 backend.
+// Each document lives in a single index, so draft files are counted once alongside the others.
+// Objects written with rawUpload only (offloaded stream events, logos, map tiles) are not indexed, so not counted.
+export const getIndexedFilesUsedSize = async (context: AuthContext): Promise<number> => {
+  const query = {
+    index: [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_DRAFT_OBJECTS],
+    body: {
+      size: 0,
+      query: { term: { 'entity_type.keyword': ENTITY_TYPE_INTERNAL_FILE } },
+      aggs: { used_size: { sum: { field: 'size' } } },
+    },
+  };
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_INTERNAL_FILE, query);
+  return Number(data.aggregations?.used_size?.value ?? 0);
 };
 
 // Get Files paginated with auto enrichment
