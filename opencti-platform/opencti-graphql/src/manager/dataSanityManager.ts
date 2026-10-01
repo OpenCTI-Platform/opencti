@@ -29,18 +29,29 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
       continue;
     }
     const startTime = Date.now();
+    let runError: any;
+    let output;
     try {
       logApp.info('[DATA_SANITY_MANAGER] Executing force_run data sanity operation', { operation: operation.identifier });
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
-      const output = await operation.operationRun(context);
-      const executionTimeMs = Date.now() - startTime;
-      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, true, '', output);
-      logApp.info('[DATA_SANITY_MANAGER] Force_run data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      output = await operation.operationRun(context);
     } catch (e: any) {
-      const executionTimeMs = Date.now() - startTime;
-      const errorMessage = e?.message || String(e);
-      logApp.warn('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, error: e });
-      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
+      // The operation did not complete. Its outcome is recorded below and shown in the UI,
+      // so this is a reported failure, not an unhandled one.
+      runError = e;
+      logApp.warn('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, cause: e });
+    }
+    const executionTimeMs = Date.now() - startTime;
+    try {
+      const runMessage = runError ? (runError?.message || String(runError)) : '';
+      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, !runError, runMessage, output);
+      if (!runError) {
+        logApp.info('[DATA_SANITY_MANAGER] Force_run data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      }
+    } catch (e: any) {
+      // The result could not be written: the operation stays flagged as running and every
+      // later pass skips it over the running lock. Needs a human.
+      logApp.error('[DATA_SANITY_MANAGER] Force_run data sanity operation result could not be recorded', { operation: operation.identifier, cause: e });
     }
   }
 };
@@ -53,6 +64,8 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
       continue;
     }
     const startTime = Date.now();
+    let runError: any;
+    let output;
     try {
       logApp.info('[DATA_SANITY_MANAGER] Executing data sanity operation', { operation: operation.identifier });
       if (operation.execution_type === 'run_once') {
@@ -61,15 +74,24 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
       }
 
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
-      const output = await operation.operationRun(context);
-      const executionTimeMs = Date.now() - startTime;
-      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, true, '', output);
-      logApp.info('[DATA_SANITY_MANAGER] Data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      output = await operation.operationRun(context);
     } catch (e: any) {
-      const executionTimeMs = Date.now() - startTime;
-      const errorMessage = e?.message || String(e);
-      logApp.warn('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, error: e });
-      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
+      // The operation did not complete. Its outcome is recorded below and shown in the UI,
+      // so this is a reported failure, not an unhandled one.
+      runError = e;
+      logApp.warn('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, cause: e });
+    }
+    const executionTimeMs = Date.now() - startTime;
+    try {
+      const runMessage = runError ? (runError?.message || String(runError)) : '';
+      await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, !runError, runMessage, output);
+      if (!runError) {
+        logApp.info('[DATA_SANITY_MANAGER] Data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      }
+    } catch (e: any) {
+      // The result could not be written: the operation stays flagged as running and every
+      // later pass skips it over the running lock. Needs a human.
+      logApp.error('[DATA_SANITY_MANAGER] Data sanity operation result could not be recorded', { operation: operation.identifier, cause: e });
     }
   }
 };

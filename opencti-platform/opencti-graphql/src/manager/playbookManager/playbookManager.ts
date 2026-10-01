@@ -209,7 +209,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             previousStepBundle: null,
             bundle,
           }).catch((err) => {
-            logApp.warn('[OPENCTI-MODULE] Playbook manager step executor error', { cause: err, id: entityId, manager: 'PLAYBOOK_MANAGER' });
+            logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: err, id: entityId, manager: 'PLAYBOOK_MANAGER' });
           });
           return true;
         } catch (e) {
