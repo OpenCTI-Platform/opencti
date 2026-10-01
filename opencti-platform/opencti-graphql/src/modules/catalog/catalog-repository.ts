@@ -215,44 +215,6 @@ export const findCatalogContractsBySlug = async (
   );
 };
 
-export const findLatestCompatibleCatalogContractsByCatalogId = async (
-  context: AuthContext,
-  user: AuthUser,
-  catalogId: string,
-) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
-    context,
-    user,
-    [ENTITY_TYPE_CATALOG_CONTRACT],
-    {
-      indices: [READ_INDEX_INTERNAL_OBJECTS],
-      filters: {
-        filters: [{
-          key: ['catalog_id'],
-          values: [catalogId],
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
-    },
-  );
-  const compatibleContracts = filterAndSortLatestCompatibleContracts(contracts);
-  logApp.debug('[OPENCTI-MODULE] Loaded compatible catalog contracts', {
-    module: 'catalog',
-    catalogId,
-    platformVersion: PLATFORM_VERSION,
-    compatibleContractsCount: compatibleContracts.length,
-  });
-  // Keep latest compatible version by slug (results are sorted by version desc).
-  return compatibleContracts.reduce((map, contract) => {
-    if (map.has(contract.slug)) {
-      return map;
-    }
-    map.set(contract.slug, contract);
-    return map;
-  }, new Map<string, BasicStoreEntityCatalogContract>());
-};
-
 export const findLatestCompatibleCatalogContractBySlug = async (
   context: AuthContext,
   user: AuthUser,
