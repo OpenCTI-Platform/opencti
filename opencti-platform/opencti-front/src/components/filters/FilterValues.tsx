@@ -309,8 +309,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               );
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
-                // shallow check: this only gates rendering of the dynamic sub-filter chip UI, must not
-                // hide a filter/group the user just added but hasn't filled in yet
                 if (!isFilterGroupNotEmptyShallow(dynamicValue)) {
                   return <div key={val.key} />;
                 }

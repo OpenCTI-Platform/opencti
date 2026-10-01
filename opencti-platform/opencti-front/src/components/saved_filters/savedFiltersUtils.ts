@@ -35,13 +35,3 @@ export const hasSameSavedFilters = (savedFilters?: string | null, filters?: Filt
   if (normalized === undefined) return false;
   return normalized === serializeSavedFilterGroup(filters);
 };
-
-/**
- * Tells whether a filter group holds nothing worth saving. A group carrying only empty nested
- * groups is considered empty: nested groups are just containers, saving them would persist a filter
- * that filters nothing.
- */
-export const isEmptySavedFilterGroup = (filters?: FilterGroup | null): boolean => (
-  !filters
-  || ((filters.filters ?? []).length === 0 && (filters.filterGroups ?? []).every((group) => isEmptySavedFilterGroup(group)))
-);
