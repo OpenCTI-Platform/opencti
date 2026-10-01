@@ -33,7 +33,7 @@ import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
-import { getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 
 const WidgetCreationParameters = () => {
