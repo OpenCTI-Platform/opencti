@@ -44,7 +44,6 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
               <StixNestedRefRelationshipCreationFromEntityContainer
                 paginationOptions={paginationOptions}
                 entityId={entityId}
-                variant="inLine"
                 entityType={entityType}
               />
             </Security>

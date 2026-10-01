@@ -316,21 +316,3 @@ carried, because some moved more than once: `theme_secondary` on Light was
 seeded as `#00BD94` and later as `#00f0bc`, and installations exist on both.
 `theme_text_color` moved by letter case alone; rewriting it normalises the row
 so the strict comparison downstream succeeds.
-
-## fab-conversion-deferred
-
-Nine floating action buttons across the product — the `<Fab>` mounts in
-`Drawer.tsx`, `NoteCreation.tsx`, `IndicatorCreation.tsx`,
-`StixCyberObservableCreation.jsx`, `ContainerAddStixCoreObjects.jsx`,
-`StixCoreRelationshipCreationFromRelation.jsx`,
-`StixCoreRelationshipCreationSelectEntityStage.tsx`,
-`StixSightingRelationshipCreationFromEntity.jsx` and
-`SubTypeWorkflowStatusAdd.tsx`.
-
-They stay on MUI deliberately. Whether these keep their floating shape or are
-rethought as in-page buttons is a product/UX call, not a mechanical conversion,
-so the Button/Chip wave left all nine untouched. Pending decision, owner Sandy,
-raised 2026-08-26.
-
-Retire this section when the shape is decided: either the nine convert, or they
-are ruled to stay and the markers come out.
