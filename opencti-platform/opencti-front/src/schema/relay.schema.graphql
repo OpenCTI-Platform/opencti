@@ -10465,7 +10465,7 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
-  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!]): File!
+  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!], bundleName: String): File!
 }
 
 enum WorkflowExecutionStatus {

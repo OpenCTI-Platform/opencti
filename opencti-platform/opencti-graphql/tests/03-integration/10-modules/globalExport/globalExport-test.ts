@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import os from 'node:os';
 import { afterAll, describe, it, expect, vi } from 'vitest';
 import { ZipArchive } from 'archiver';
 import {
@@ -16,6 +18,7 @@ import {
   exportSettingsLanguageCategory,
   exportSettingsMessagesCategory,
   exportSettingsThemeCategory,
+  deleteGlobalExportsNotModifiedSince,
   generateGlobalConfigurationExport,
   SETTINGS_BRANDING,
   SETTINGS_HIDDEN_ENTITY_TYPES,
@@ -39,6 +42,7 @@ import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { deleteFile, type LoadedFile } from '../../../../src/database/file-storage';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { GLOBAL_EXPORT_STORAGE_PATH } from '../../../../src/modules/internal/document/document-types';
+import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
 
 const createFakeArchive = () => ({ append: vi.fn() }) as unknown as ZipArchive;
 
@@ -388,6 +392,18 @@ describe('Global configuration export', () => {
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
     });
 
+    it('should append the slugified bundle name to the stored file name', async () => {
+      const file = await runGlobalExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], null, '  My Prod Bundle! ');
+
+      expect(file.name.endsWith(`-${pjson.version}-my-prod-bundle.zip`)).toBe(true);
+    });
+
+    it('should not append anything to the stored file name for a blank bundle name', async () => {
+      const file = await runGlobalExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], null, '   ');
+
+      expect(file.name.endsWith(`-${pjson.version}.zip`)).toBe(true);
+    });
+
     it('should deduplicate entity_types passed more than once', async () => {
       const file = await runGlobalExport(
         testContext,
@@ -402,6 +418,38 @@ describe('Global configuration export', () => {
       await expect(
         generateGlobalConfigurationExport(testContext, ADMIN_USER, ['NotARealEntityType']),
       ).rejects.toThrow('Unknown configuration export entity_type: "NotARealEntityType"');
+    });
+
+    it('should abort the archive and remove the temporary zip when an export function fails', async () => {
+      const listTmpExports = () => fs.readdirSync(os.tmpdir()).filter((name) => name.startsWith('opencti-global-export-'));
+      const tmpExportsBefore = listTmpExports();
+      const abortSpy = vi.spyOn(ZipArchive.prototype, 'abort');
+
+      await expect(
+        generateGlobalConfigurationExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM, 'NotARealEntityType']),
+      ).rejects.toThrow('Unknown configuration export entity_type: "NotARealEntityType"');
+
+      expect(abortSpy).toHaveBeenCalledTimes(1);
+      expect(listTmpExports()).toEqual(tmpExportsBefore);
+      abortSpy.mockRestore();
+    });
+
+    it('should keep recent exports in the storage when generating a new one', async () => {
+      const previousFile = await runGlobalExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM]);
+      await runGlobalExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM]);
+
+      const storedFiles = await allFilesForPaths(testContext, ADMIN_USER, [GLOBAL_EXPORT_STORAGE_PATH]);
+      expect(storedFiles.map((storedFile) => storedFile.id)).toContain(previousFile.id);
+    });
+
+    it('should delete the exports not modified since the given date', async () => {
+      const file = await runGlobalExport(testContext, ADMIN_USER, [ENTITY_TYPE_FORM]);
+
+      await deleteGlobalExportsNotModifiedSince(testContext, ADMIN_USER, new Date(Date.now() + 1000));
+
+      const storedFiles = await allFilesForPaths(testContext, ADMIN_USER, [GLOBAL_EXPORT_STORAGE_PATH]);
+      expect(storedFiles.map((storedFile) => storedFile.id)).not.toContain(file.id);
+      expect(await downloadFile(file.id)).toBeNull();
     });
 
     it('should include all settings categories in a single bundle', async () => {
