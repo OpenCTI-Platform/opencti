@@ -7,7 +7,6 @@ import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
-import fileDownload from 'js-file-download';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import { useFormatter } from 'src/components/i18n';
@@ -27,10 +26,9 @@ import {
 } from '@components/settings/experience/globalExportBundle/__generated__/PlatformBundleDrawerExportMutation.graphql';
 
 const platformBundleDrawerExportMutation = graphql`
-  mutation PlatformBundleDrawerExportMutation($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
-    globalConfigurationExport(entityTypes: $entityTypes, selections: $selections) {
+  mutation PlatformBundleDrawerExportMutation($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!], $bundleName: String) {
+    globalConfigurationExport(entityTypes: $entityTypes, selections: $selections, bundleName: $bundleName) {
       id
-      name
     }
   }
 `;
@@ -38,19 +36,6 @@ const platformBundleDrawerExportMutation = graphql`
 const getDefaultInstanceModes = (): Record<string, InstanceSelectionMode> => Object.fromEntries(
   EXPORT_INSTANCE_CONFIGS.map((config) => [config.entityType, 'all' as InstanceSelectionMode]),
 );
-
-const buildExportFileName = (storedFileName: string, bundleName: string): string => {
-  const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
-  return safeBundleName ? storedFileName.replace(/\.zip$/, `-${safeBundleName}.zip`) : storedFileName;
-};
-
-const downloadStoredFile = async (fileId: string): Promise<Blob> => {
-  const response = await fetch(`${APP_BASE_PATH}/storage/get/${encodeURIComponent(fileId)}`, { credentials: 'include' });
-  if (!response.ok) {
-    throw new Error(`Failed to download export file (${response.status})`);
-  }
-  return response.blob();
-};
 
 interface GlobalExportBundleDrawerProps {
   open: boolean;
@@ -65,9 +50,7 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
   const [instanceModes, setInstanceModes] = useState<Record<string, InstanceSelectionMode>>(getDefaultInstanceModes());
   const [instanceSelectedIds, setInstanceSelectedIds] = useState<Record<string, string[]>>({});
   const [bundleName, setBundleName] = useState('');
-  const [downloading, setDownloading] = useState(false);
-  const [commitExportMutation, exportInFlight] = useApiMutation<PlatformBundleDrawerExportMutation>(platformBundleDrawerExportMutation);
-  const exporting = exportInFlight || downloading;
+  const [commitExportMutation, exporting] = useApiMutation<PlatformBundleDrawerExportMutation>(platformBundleDrawerExportMutation);
 
   const handleInstanceModeChange = (entityType: string) => (mode: InstanceSelectionMode) => {
     setInstanceModes((prev) => ({ ...prev, [entityType]: mode }));
@@ -101,17 +84,6 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
-  const downloadExport = async (fileId: string, storedFileName: string) => {
-    setDownloading(true);
-    try {
-      const blob = await downloadStoredFile(fileId);
-      fileDownload(blob, buildExportFileName(storedFileName, bundleName));
-      onClose();
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   const onExport = () => {
     const entityTypes = Object.values(checkedCategoryItems).flat();
     const selections: { entityType: string; ids: string[] }[] = [];
@@ -128,14 +100,13 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
 
     commitExportMutation({
-      variables: { entityTypes, selections },
+      variables: { entityTypes, selections, bundleName },
       onCompleted: (result: PlatformBundleDrawerExportMutation$data) => {
-        const exportedFile = result?.globalConfigurationExport;
-        if (exportedFile?.id) {
-          downloadExport(exportedFile.id, exportedFile.name);
-        } else {
-          onClose();
+        const fileId = result?.globalConfigurationExport?.id;
+        if (fileId) {
+          window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(fileId)}`;
         }
+        onClose();
       },
     });
   };
