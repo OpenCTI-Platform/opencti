@@ -13,6 +13,7 @@ import Button from '../../../../../components/common/button/Button';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { SecurityCoverageResultCreationMutation } from './__generated__/SecurityCoverageResultCreationMutation.graphql';
 import { serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
+import StixCoreRelationshipCreationForm from '../../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -136,9 +137,13 @@ const SecurityCoverageResultFormDrawer = ({
           )}
 
           {activeStep === 2 && (
-            <Button onClick={() => onSubmit()} disabled={submitting}>
-              Validate
-            </Button>
+            <StixCoreRelationshipCreationForm
+              fromEntities={[entity]}
+              toEntities={[selected]}
+              relationshipTypes={[relationshipType]}
+              onSubmit={console.log}
+              handleClose={console.log}
+            />
           )}
         </>
       </Drawer>
