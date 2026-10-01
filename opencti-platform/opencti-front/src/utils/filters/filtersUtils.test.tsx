@@ -12,6 +12,7 @@ import {
   getEntityTypeThreeFirstLevelsFilterValues,
   isDraftWorkspaceFilterGroup,
   isFilterGroupFormatCorrect,
+  isFilterGroupNotEmpty,
   isRegardingOfFilterWarning,
   normalizeFilterGroupForBackend,
   normalizeFilterGroupForFrontend,
@@ -2354,5 +2355,36 @@ describe('ensureFilterIds', () => {
     const resultDynamicGroup = (result.filters[0].values[0] as { values: FilterGroup[] }).values[0];
     expect(resultDynamicGroup).toBe(dynamicGroup);
     expect(resultDynamicGroup.id).toBeUndefined();
+  });
+});
+
+describe('isFilterGroupNotEmpty', () => {
+  it('should consider an undefined or empty filter group as empty', () => {
+    expect(isFilterGroupNotEmpty(undefined)).toBe(false);
+    expect(isFilterGroupNotEmpty({ mode: 'and', filters: [], filterGroups: [] })).toBe(false);
+  });
+
+  it('should consider a group holding only empty nested groups as empty', () => {
+    expect(isFilterGroupNotEmpty({
+      mode: 'and',
+      filters: [],
+      filterGroups: [{ mode: 'and', filters: [], filterGroups: [{ mode: 'or', filters: [], filterGroups: [] }] }],
+    })).toBe(false);
+  });
+
+  it('should consider a group holding only value-less filters as empty', () => {
+    expect(isFilterGroupNotEmpty({
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: [] }],
+      filterGroups: [],
+    })).toBe(false);
+  });
+
+  it('should consider a group holding a nested filter with values as not empty', () => {
+    expect(isFilterGroupNotEmpty({
+      mode: 'and',
+      filters: [],
+      filterGroups: [{ mode: 'and', filters: [{ key: 'name', values: ['a'] }], filterGroups: [] }],
+    })).toBe(true);
   });
 });

@@ -81,8 +81,9 @@ export default class FiltersPageModel {
   }
 
   /**
-   * Adds an empty nested group at the ROOT level, through the synthetic option of the
-   * filter key combobox.
+   * Adds a nested group at the ROOT level, through the synthetic option of the filter key
+   * combobox. NOT empty: `addFilterGroupUtil` pre-fills every new group with one default
+   * condition filter, so `addConditionInGroup` below always targets the LAST row.
    */
   async addFilterGroup(addFilterLabel = 'Add filter') {
     await this.root.getByLabel(addFilterLabel).click();
@@ -130,7 +131,9 @@ export default class FiltersPageModel {
     // shortcut rendered when the group is still empty.
     await panel.getByTestId(/^filter-group-add-condition-(?!link)/).click();
 
-    await panel.getByTestId('filter-row-key-select').click();
+    // The group already holds its pre-filled default condition (see `addFilterGroup` above),
+    // so this click appends a SECOND row: `.last()` is the one just added, every time.
+    await panel.getByTestId('filter-row-key-select').last().click();
     const keyOption = this.page.getByRole('option', { name: filterKey, exact: true });
     await expect(keyOption).toBeVisible();
     await keyOption.click();

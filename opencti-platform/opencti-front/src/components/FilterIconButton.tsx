@@ -158,8 +158,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   }));
 
   const displayedFilters = filters ? filterGroupOnAvailableKeys(filters, availableFilterKeys) : undefined;
-  // shallow check on purpose: this gates rendering of the chips/edit UI itself, so it must not
-  // hide a filter/group the user just added but hasn't filled in yet (see isFilterGroupNotEmptyShallow doc)
   if (displayedFilters && isFilterGroupNotEmptyShallow(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery

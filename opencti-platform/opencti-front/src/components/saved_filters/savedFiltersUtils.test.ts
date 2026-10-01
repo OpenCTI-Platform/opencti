@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasSameSavedFilters, isEmptySavedFilterGroup, normalizeSavedFilterGroupString, serializeSavedFilterGroup } from './savedFiltersUtils';
+import { hasSameSavedFilters, normalizeSavedFilterGroupString, serializeSavedFilterGroup } from './savedFiltersUtils';
 import { ensureFilterIds } from '../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
@@ -83,26 +83,4 @@ describe('hasSameSavedFilters', () => {
   });
 });
 
-describe('isEmptySavedFilterGroup', () => {
-  it('should consider an undefined or empty filter group as empty', () => {
-    expect(isEmptySavedFilterGroup(undefined)).toBe(true);
-    expect(isEmptySavedFilterGroup({ mode: 'and', filters: [], filterGroups: [] })).toBe(true);
-  });
 
-  it('should consider a group holding only empty nested groups as empty', () => {
-    expect(isEmptySavedFilterGroup({
-      mode: 'and',
-      filters: [],
-      filterGroups: [{ mode: 'and', filters: [], filterGroups: [{ mode: 'or', filters: [], filterGroups: [] }] }],
-    })).toBe(true);
-  });
-
-  it('should consider a group holding a nested filter as not empty', () => {
-    expect(isEmptySavedFilterGroup(nestedFilterGroup)).toBe(false);
-    expect(isEmptySavedFilterGroup({
-      mode: 'and',
-      filters: [],
-      filterGroups: [{ mode: 'and', filters: [{ key: 'name', values: ['a'] }], filterGroups: [] }],
-    })).toBe(false);
-  });
-});
