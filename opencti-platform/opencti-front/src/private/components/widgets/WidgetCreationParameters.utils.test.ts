@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import type { WidgetColumn } from 'src/utils/widget/widget';
-import { getEntityTypeFromFilters, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
+import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 
 describe('WidgetCreationParameters.utils', () => {
   it('returns undefined when filterGroup is undefined', () => {
@@ -84,5 +84,58 @@ describe('WidgetCreationParameters.utils', () => {
 
     const merged = mergeAvailableAndSelectedColumns(availableColumns, selectedColumns);
     expect(merged).toHaveLength(2);
+  });
+
+  it('falls back to fintel entity type for entities perspective when no entity_type filter is present', () => {
+    const host: WidgetHost = {
+      kind: 'fintelTemplate',
+      fintelWidgets: [],
+      fintelEntityType: 'Vulnerability',
+      fintelEditorValue: '',
+    };
+    expect(getWidgetColumnsEntityType(undefined, 'entities', host)).toBe('Vulnerability');
+  });
+
+  it('returns undefined for non-entities perspective when no entity_type filter is present', () => {
+    const host: WidgetHost = {
+      kind: 'fintelTemplate',
+      fintelWidgets: [],
+      fintelEntityType: 'Vulnerability',
+      fintelEditorValue: '',
+    };
+    expect(getWidgetColumnsEntityType(undefined, 'relationships', host)).toBeUndefined();
+  });
+
+  it('keeps entity_type filter value over host fallback when present', () => {
+    const filterGroup: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Indicator'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const host: WidgetHost = {
+      kind: 'fintelTemplate',
+      fintelWidgets: [],
+      fintelEntityType: 'Vulnerability',
+      fintelEditorValue: '',
+    };
+    expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBe('Indicator');
+  });
+
+  it('does not fallback to host type when entity_type filter is ambiguous', () => {
+    const filterGroup: FilterGroup = {
+      mode: 'or',
+      filters: [
+        { key: 'entity_type', values: ['Vulnerability'], operator: 'eq', mode: 'or' },
+        { key: 'name', values: ['CVE'], operator: 'search', mode: 'or' },
+      ],
+      filterGroups: [],
+    };
+    const host: WidgetHost = {
+      kind: 'fintelTemplate',
+      fintelWidgets: [],
+      fintelEntityType: 'Malware',
+      fintelEditorValue: '',
+    };
+    expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBeUndefined();
   });
 });
