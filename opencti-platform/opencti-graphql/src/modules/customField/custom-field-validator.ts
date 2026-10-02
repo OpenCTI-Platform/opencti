@@ -1,12 +1,13 @@
 import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
-import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
+import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CustomFieldValueAddInput, type EditInput, EditOperation } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { customFieldValues } from '../../schema/attribute-definition';
+import { now } from '../../utils/format';
 
 // Custom field values are typed `[Any]` in the API, so dates don't go through the GraphQL DateTime scalar.
 // Apply the same rule as standard date attributes: RFC 3339 date-time only, normalized to ISO UTC.
@@ -158,8 +159,11 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
         return { ...customFieldDefaultValue, string_value: defaultValue };
       case 'select':
         return { ...customFieldDefaultValue, select_value: defaultValue };
-      case 'date':
-        return { ...customFieldDefaultValue, date_value: normalizeCustomFieldDate(defaultValue) ?? defaultValue };
+      case 'date': {
+        // @now is resolved when the value is filled; an invalid default is ignored rather than failing indexing
+        const dateValue = defaultValue === CUSTOM_FIELD_NOW_TOKEN ? now() : normalizeCustomFieldDate(defaultValue);
+        return dateValue ? { ...customFieldDefaultValue, date_value: dateValue } : undefined;
+      }
       case 'multi_select':
         return { ...customFieldDefaultValue, select_values: [defaultValue] };
       case 'boolean':

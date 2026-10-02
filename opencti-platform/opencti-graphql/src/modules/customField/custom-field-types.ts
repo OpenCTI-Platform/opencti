@@ -7,6 +7,10 @@ export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 // Prefix for custom field names stored on entities
 export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 
+// Date default_value meaning "the current date/time when the field gets populated"
+// Must stay in sync with CUSTOM_FIELD_NOW_TOKEN in opencti-front/src/utils/customFieldDefaults.ts
+export const CUSTOM_FIELD_NOW_TOKEN = '@now';
+
 // Field types supported by custom fields
 // `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
 export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';
