@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../user/user-domain';
-import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
+import { AuthenticationFailure, PASSWORD_CHANGE_THROTTLED, PASSWORD_REUSED, PasswordResetExpired, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
 import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
@@ -162,6 +162,18 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  // The code may expire, or be replaced by a newer request, while the user is on the new-password step
+  if (!hashedOtp) {
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `Password reset code is expired or not found for ${input.transactionId}`,
+    });
+    throw PasswordResetExpired();
+  }
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
   if (!isMatch || !isStateMfaValid) {
@@ -194,7 +206,12 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     };
     await sendMail(sendMailArgs, { identifier: userId, category: 'password-change' });
     return true;
-  } catch (_error) {
+  } catch (error) {
+    // The user stays on the new-password step: these two tell them what to do there
+    const code = (error as { extensions?: { code?: string } })?.extensions?.code;
+    if (code === PASSWORD_REUSED || code === PASSWORD_CHANGE_THROTTLED) {
+      throw error;
+    }
     throw UnsupportedError('Password change failed, please try again.');
   }
 };

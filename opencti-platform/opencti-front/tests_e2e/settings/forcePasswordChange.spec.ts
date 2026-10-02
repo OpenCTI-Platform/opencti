@@ -6,6 +6,12 @@ const TEST_USER_EMAIL = 'test-password-expiry@filigran.test';
 const TEST_USER_PASSWORD = 'TestPassword1!';
 const TEST_USER_NAME = 'TestPasswordExpiry';
 
+const HISTORY_USER = {
+  name: 'TestPasswordHistory',
+  email: 'test-password-history@filigran.test',
+  password: 'HistoryPassword1!',
+};
+
 const CHANGE_PASSWORD_PATH = '/dashboard/change-password';
 
 /**
@@ -36,15 +42,18 @@ const findUserIdByEmail = async (request: APIRequestContext, email: string): Pro
 /**
  * Create the test user if it doesn't exist.
  */
-const ensureTestUser = async (request: APIRequestContext): Promise<string> => {
-  let userId = await findUserIdByEmail(request, TEST_USER_EMAIL);
+const ensureTestUser = async (
+  request: APIRequestContext,
+  { name, email, password } = { name: TEST_USER_NAME, email: TEST_USER_EMAIL, password: TEST_USER_PASSWORD },
+): Promise<string> => {
+  let userId = await findUserIdByEmail(request, email);
   if (!userId) {
     const result = await graphql(request, `
       mutation {
         userAdd(input: {
-          name: "${TEST_USER_NAME}",
-          user_email: "${TEST_USER_EMAIL}",
-          password: "${TEST_USER_PASSWORD}",
+          name: "${name}",
+          user_email: "${email}",
+          password: "${password}",
         }) { id }
       }
     `);
@@ -68,6 +77,20 @@ const setPasswordValidUntil = async (request: APIRequestContext, userId: string,
       }
     }
   `);
+};
+
+/**
+ * Set the number of recent passwords that cannot be reused, leaving the other local policies as they are.
+ */
+const setPasswordHistoryCount = async (request: APIRequestContext, count: number) => {
+  const { data } = await graphql(request, 'query { settings { id } }');
+  await graphql(request, `
+    mutation ($id: ID!, $input: LocalAuthConfigInput!) {
+      settingsEdit(id: $id) {
+        updateLocalAuth(input: $input) { id }
+      }
+    }
+  `, { id: data.settings.id, input: { enabled: true, password_policy_history_count: count } });
 };
 
 test.describe('Force password change - navigation blocking', { tag: ['@ce', '@groupff'] }, () => {
@@ -159,5 +182,41 @@ test.describe('Force password change - navigation blocking', { tag: ['@ce', '@gr
     // Should land on the dashboard
     await page.waitForURL('**/dashboard', { timeout: 30000 });
     expect(page.url()).not.toContain(CHANGE_PASSWORD_PATH);
+  });
+});
+
+test.describe('Force password change - password history', { tag: ['@ce', '@groupff'] }, () => {
+  let historyUserId: string;
+
+  test.beforeEach(async ({ request }) => {
+    historyUserId = await ensureTestUser(request, HISTORY_USER);
+    await setPasswordHistoryCount(request, 2);
+    const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    await setPasswordValidUntil(request, historyUserId, pastDate);
+  });
+
+  test.afterEach(async ({ request }) => {
+    // 0 also deletes the password histories recorded meanwhile
+    await setPasswordHistoryCount(request, 0);
+    if (historyUserId) {
+      await setPasswordValidUntil(request, historyUserId, null);
+    }
+  });
+
+  test('should refuse the current password and keep the user on the form', async ({ page }) => {
+    const loginPage = new LoginFormPageModel(page);
+    await page.context().clearCookies();
+    await page.goto('/');
+    await loginPage.login(HISTORY_USER.email, HISTORY_USER.password);
+
+    await expect(page.getByText('Must be different from your last 2 passwords')).toBeVisible({ timeout: 30000 });
+    await page.getByLabel('New password').fill(HISTORY_USER.password);
+    await page.getByLabel('Confirmation').fill(HISTORY_USER.password);
+    await page.getByRole('button', { name: 'Update' }).click();
+
+    // Under the field, and in the notification
+    await expect(page.getByText('This password has already been used recently. Please choose a different one.').first()).toBeVisible();
+    await expect(page.getByLabel('New password')).toHaveValue('');
+    await expect(page.getByLabel('Confirmation')).toHaveValue('');
   });
 });

@@ -1,4 +1,5 @@
 import { ACCOUNT_STATUS_EXPIRED } from '../../config/conf';
+import { patchAttribute } from '../../database/middleware';
 import { storeLoadById } from '../../database/middleware-loader';
 import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -9,6 +10,7 @@ import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHand
 import { USER_MERGED_INTO_FIELD } from './userMerge-types';
 
 const ACCOUNT_STATUS_FIELD = 'account_status';
+const PASSWORD_HISTORY_FIELD = 'password_history';
 const SOURCE_DISABLE_ROW = 'user.account-status';
 const DISABLED = 'source account disabled, its sessions killed, merge target recorded on it';
 
@@ -56,7 +58,7 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
   identifier: USER_MERGE_SOURCE_DISABLE_HANDLER,
   covers: [SOURCE_DISABLE_ROW],
   reads: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`],
-  writes: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`],
+  writes: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`, `${ENTITY_TYPE_USER}.${PASSWORD_HISTORY_FIELD}`],
   compute: async ({ context, sourceId, targetId }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const state = await readSourceAccountState(context, sourceId);
     // Both conditions, not just the status: an account an administrator had already expired before
@@ -85,6 +87,9 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
       { key: ACCOUNT_STATUS_FIELD, value: [ACCOUNT_STATUS_EXPIRED] },
       { key: USER_MERGED_INTO_FIELD, value: [targetId] },
     ], USER_MERGE_USER_WRITE);
+    // The disabled account keeps its password but none of the hashes of the passwords it used before.
+    // Written apart because userEditField refuses this field from any caller.
+    await patchAttribute(context, SYSTEM_USER, sourceId, ENTITY_TYPE_USER, { [PASSWORD_HISTORY_FIELD]: [] }, USER_MERGE_USER_WRITE);
     return 1;
   },
 };
