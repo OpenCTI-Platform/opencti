@@ -338,7 +338,19 @@ describe('catalog-version-utils', () => {
     expect(status).toEqual({
       update_available: true,
       latest_compatible_version: '1.5.0',
-      incompatibility: true,
+      has_newer_incompatible_version: true,
     });
+  });
+
+  it('should compare connector versions like the auto-upgrade does', () => {
+    const options = { platformVersion: '7.2.0' };
+
+    expect(buildConnectorUpdateStatus('1.0.0', [{ version: 'rolling' }, { version: '1.0.0' }], options)).toEqual({
+      update_available: true,
+      latest_compatible_version: 'rolling',
+      has_newer_incompatible_version: false,
+    });
+    expect(buildConnectorUpdateStatus('rolling', [{ version: 'rolling' }, { version: '2.0.0' }], options).update_available).toBe(false);
+    expect(buildConnectorUpdateStatus(null, [{ version: '2.0.0' }], options).update_available).toBe(false);
   });
 });

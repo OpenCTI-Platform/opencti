@@ -15,7 +15,7 @@ export const connectorsListQuery = graphql`
       updated_at
       update_available
       latest_compatible_version
-      incompatibility
+      has_newer_incompatible_version
       manager_contract_excerpt {
         title
         slug

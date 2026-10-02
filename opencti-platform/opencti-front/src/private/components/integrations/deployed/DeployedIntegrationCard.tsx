@@ -250,7 +250,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Stack>
           <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
-            {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} incompatibility={item.incompatibility} />}
+            {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
           </Stack>
         </Stack>

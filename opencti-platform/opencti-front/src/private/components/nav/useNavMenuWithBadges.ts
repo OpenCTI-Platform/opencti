@@ -3,7 +3,7 @@ import useIntegrationsNavBadge from './useIntegrationsNavBadge';
 import useNavMenu, { NavGroup, NavItemBadge } from './useNavMenu';
 
 const withNavItemBadge = (groups: NavGroup[], itemId: string, badge?: NavItemBadge): NavGroup[] => {
-  if (!badge || badge.content <= 0) {
+  if (!badge) {
     return groups;
   }
 

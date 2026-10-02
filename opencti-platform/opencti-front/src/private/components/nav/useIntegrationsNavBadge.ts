@@ -7,14 +7,14 @@ import { CATALOG_POLLING_INTERVAL_MS } from '../integrations/catalog/catalog-con
 import { NavItemBadge } from './useNavMenu';
 import { useIntegrationsNavBadgeQuery } from './__generated__/useIntegrationsNavBadgeQuery.graphql';
 
-// latest_compatible_version and incompatibility are not needed for the count: they are fetched
+// latest_compatible_version and has_newer_incompatible_version are not needed for the count: they are fetched
 // so that refreshing the badge also refreshes the update chips of the Deployed page (same records).
 export const integrationsNavBadgeQuery = graphql`
   query useIntegrationsNavBadgeQuery {
     connectors {
       update_available
       latest_compatible_version
-      incompatibility
+      has_newer_incompatible_version
     }
   }
 `;

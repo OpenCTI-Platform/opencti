@@ -34,7 +34,7 @@ export interface DeployedIntegrationItem {
   updatedAt: string | null;
   updateAvailable: boolean;
   latestCompatibleVersion: string | null;
-  incompatibility: boolean;
+  hasNewerIncompatibleVersion: boolean;
   isManaged: boolean;
   uri?: string | null;
   userName?: string | null;
@@ -158,7 +158,7 @@ const useDeployedIntegrations = ({
         updatedAt: connector.updated_at,
         updateAvailable: !!connector.update_available,
         latestCompatibleVersion: connector.latest_compatible_version ?? null,
-        incompatibility: !!connector.incompatibility,
+        hasNewerIncompatibleVersion: !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
@@ -184,7 +184,7 @@ const useDeployedIntegrations = ({
         updatedAt: null,
         updateAvailable: false,
         latestCompatibleVersion: null,
-        incompatibility: false,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -220,7 +220,7 @@ const useDeployedIntegrations = ({
         updatedAt: (node.updated_at as string | null) ?? null,
         updateAvailable: false,
         latestCompatibleVersion: null,
-        incompatibility: false,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -262,7 +262,7 @@ const useDeployedIntegrations = ({
         updatedAt: (node.updated_at as string | null) ?? null,
         updateAvailable: false,
         latestCompatibleVersion: null,
-        incompatibility: false,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),
