@@ -10215,7 +10215,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.23.0, openai@npm:^7.10.0":
+"openai@npm:7.25.0":
+  version: 7.25.0
+  resolution: "openai@npm:7.25.0"
+  peerDependencies:
+    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
+    "@smithy/hash-node": ">=4.3.0 <5"
+    "@smithy/signature-v4": ">=5.4.0 <6"
+    undici: ">=5 <9"
+    ws: ^8.21.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    "@aws-sdk/credential-provider-node":
+      optional: true
+    "@smithy/hash-node":
+      optional: true
+    "@smithy/signature-v4":
+      optional: true
+    undici:
+      optional: true
+    ws:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/3ec11d0b4055b366dab3c5140f056a00148a7d615a46197ce1c4b4ffec9223cc1b0c620e6e7f3f4057e9c6673e8bdac2583c20a686b874ed9dd5e32d5d02e50a
+  languageName: node
+  linkType: hard
+
+"openai@npm:^7.10.0":
   version: 7.23.0
   resolution: "openai@npm:7.23.0"
   peerDependencies:
@@ -10388,7 +10415,7 @@ __metadata:
     node-forge: "npm:1.4.0"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.0.12"
-    openai: "npm:7.23.0"
+    openai: "npm:7.25.0"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
