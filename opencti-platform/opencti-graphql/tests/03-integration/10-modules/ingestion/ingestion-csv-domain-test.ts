@@ -9,7 +9,7 @@ import {
 import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../../src/generated/graphql';
 import { unSetOrganization, setOrganization } from '../../../utils/testQueryHelper';
-import { getFakeAuthUser, getOrganizationEntity } from '../../../utils/domainQueryHelper';
+import { getFakeAuthUser, getOrganizationEntity, grantDefaultIngestionRights } from '../../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { findDefaultIngestionGroups, groupEditField } from '../../../../src/domain/group';
 import type { BasicGroupEntity } from '../../../../src/types/store';
@@ -30,7 +30,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
-    ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
+    await grantDefaultIngestionRights(ingestionUser, ['INGESTION_SETINGESTIONS']);
     currentTestContext = executionContext('testContext', ingestionUser);
   });
 
@@ -136,7 +136,8 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       user_id: USER_EDITOR.id,
       confidence_level: 88,
     };
-    const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    // The creator must cover the rights of the chosen execution identity.
+    const ingestionCreated = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test existing user setup');
     ingestionCreatedIds.push(ingestionCreated.id);
     expect(ingestionCreated.user_id).toBe(USER_EDITOR.id);
@@ -145,6 +146,48 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(editorUser.user_service_account).toBeFalsy();
     expect(editorUser.user_confidence_level?.max_confidence).toBeUndefined();
     expect(editorUser.user_email).toBe('editor@opencti.io');
+  });
+
+  it('should create a CSV Feed be refused when the chosen user exceeds the creator rights', async () => {
+    const restrictedUser = getFakeAuthUser('CsvFeedRestrictedCreator');
+    restrictedUser.capabilities = [{ name: 'INGESTION_SETINGESTIONS' }] as AuthUser['capabilities'];
+    const restrictedContext = executionContext('testContext', restrictedUser);
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed that should never be created',
+      uri: 'http://fakefeed.invalid',
+      user_id: USER_EDITOR.id,
+    };
+    await expect(addIngestionCsv(restrictedContext, restrictedUser, ingestionCsvInput))
+      .rejects.toThrowError('You are not allowed to use this user for this ingestion');
+  });
+
+  it('should create a CSV Feed be refused when the chosen user does not exist', async () => {
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed with an unknown user',
+      uri: 'http://fakefeed.invalid',
+      user_id: 'bf1a3d5d-c4a1-4a1d-9f53-0c3ee0f4bb3f',
+    };
+    await expect(addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput))
+      .rejects.toThrowError('You are not allowed to use this user for this ingestion');
+  });
+
+  it('should edition of the execution identity be refused when it exceeds the creator rights', async () => {
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed to test identity edition',
+      uri: 'http://fakefeed.invalid',
+      user_id: USER_EDITOR.id,
+    };
+    const ingestionCreated = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
+    ingestionCreatedIds.push(ingestionCreated.id);
+
+    const restrictedUser = getFakeAuthUser('CsvFeedRestrictedEditor');
+    restrictedUser.capabilities = [{ name: 'INGESTION_SETINGESTIONS' }] as AuthUser['capabilities'];
+    const restrictedContext = executionContext('testContext', restrictedUser);
+    await expect(ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [{ key: 'user_id', value: [ADMIN_USER.id] }]))
+      .rejects.toThrowError('You are not allowed to use this user for this ingestion');
   });
 
   it('should create a CSV Feed with a strange name works fine', async () => {
@@ -274,7 +317,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   let ingestionCreated: IngestionCsv;
   beforeAll(async () => {
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
-    ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
+    await grantDefaultIngestionRights(ingestionUser, ['INGESTION_SETINGESTIONS']);
     currentTestContext = executionContext('testContext', ingestionUser);
 
     // Add new ingestionFeed
