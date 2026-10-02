@@ -3,7 +3,7 @@ import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config
 import { elDeleteElements, elDeleteInstances, elFindByIds } from '../../database/engine';
 import { deleteAllObjectFiles } from '../../database/file-storage';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { INDEX_DELETED_OBJECTS, isNotEmptyField, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
+import { INDEX_DELETED_OBJECTS, isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import { FilterMode, FilterOperator, OrderingMode, type QueryDeleteOperationsArgs } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
@@ -249,6 +249,22 @@ export const processDeleteOperation = async (context: AuthContext, user: AuthUse
   const deletedElementsIds = deleted_elements.map((el) => el.id);
   const deletedElements: any[] = await elFindByIds(context, user, deletedElementsIds, { indices: READ_INDEX_DELETED_OBJECTS }) as any[];
   const mainDeletedEntity = deletedElements.find((el) => el.internal_id === mainEntityId);
+  // Main entity also live (failed restore, concurrent upsert): only purge the trash, keep the shared files
+  if (!isRestoring && mainDeletedEntity) {
+    const liveMainEntities = await elFindByIds(context, user, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreObject[];
+    const liveMainEntity = liveMainEntities.find((el) => el.internal_id === mainEntityId);
+    if (liveMainEntity) {
+      logApp.warn('[DELETE OPERATION] Main entity exists in both live and deleted objects indices, only purging trash copies', {
+        deleteOperationId: id,
+        mainEntityId,
+        entity_type: mainDeletedEntity.entity_type,
+        liveIndex: liveMainEntity._index,
+      });
+      await elDeleteInstances(context, [...deletedElements]);
+      await elDeleteElements(context, user, [deleteOperation]);
+      return id;
+    }
+  }
   if (mainDeletedEntity && isStixObject(mainDeletedEntity.entity_type)) {
     if (isRestoring) {
       // cluster restored: flag the files available for search again
