@@ -47,7 +47,7 @@ const creationContentOverrides: Record<string, () => string> = {
 
 const creationContent = (screen: string) => (creationContentOverrides[screen]
   ? creationContentOverrides[screen]()
-  : source(`${screen}${screen.endsWith('SecurityPlatform') ? 'CreationForm' : 'Creation'}.tsx`));
+  : source(`${screen}${screen.endsWith('SecurityPlatform') || screen.endsWith('/Task') ? 'CreationForm' : 'Creation'}.tsx`));
 
 const detailsPath = (screen: string) => {
   if (sharedLocationScreens.has(screen)) return 'locations/LocationDetails.tsx';
