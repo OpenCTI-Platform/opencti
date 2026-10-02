@@ -23,9 +23,8 @@ import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/use
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
-import { buildConnectorUpdateStatus, mapContractToVersion } from '../modules/catalog/catalog-version-utils';
-import { findCatalogContractsByImageNames, findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
-import { stripImageToRepositoryPath } from '../telemetry/TelemetryMeterManager';
+import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
+import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -219,51 +218,23 @@ export const connectorsForManagers = async (context, user) => {
 const NO_UPDATE_STATUS = {
   update_available: false,
   latest_compatible_version: null,
-  incompatibility: false,
+  has_newer_incompatible_version: false,
 };
 
-// Catalog keyword fields are matched case insensitively, group the contracts the same way
-const groupContractVersionsBy = (contracts, keyOf) => {
-  const versionsByKey = new Map();
-  for (const contract of contracts) {
-    const key = (keyOf(contract) ?? '').toLowerCase();
-    versionsByKey.set(key, [...(versionsByKey.get(key) ?? []), mapContractToVersion(contract)]);
-  }
-  return versionsByKey;
-};
-
-// Batched for connector lists: the catalog contracts of all the connectors are loaded at once,
-// by slug, or by image for connectors without a slug.
+// Batched for connector lists: the catalog contracts of all the connectors are loaded at once, by slug.
+// Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
 export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
-  const lookups = connectorsToCheck.map((cn) => {
-    if (cn?.manager_contract?.slug) {
-      return { slug: cn.manager_contract.slug.toLowerCase() };
-    }
-    const imageName = cn?.manager_contract_image ? stripImageToRepositoryPath(cn.manager_contract_image) : '';
-    return imageName ? { imageName } : null;
-  });
-  const slugs = [...new Set(lookups.map((lookup) => lookup?.slug).filter(isNotEmptyField))];
-  const imageNames = [...new Set(lookups.map((lookup) => lookup?.imageName).filter(isNotEmptyField))];
-  const [slugContracts, imageContracts] = await Promise.all([
-    slugs.length > 0 ? findCatalogContractsBySlugs(context, user, slugs) : [],
-    imageNames.length > 0 ? findCatalogContractsByImageNames(context, user, imageNames) : [],
-  ]);
-  const versionsBySlug = groupContractVersionsBy(slugContracts, (contract) => contract.slug);
-  const versionsByImageName = groupContractVersionsBy(imageContracts, (contract) => contract.image);
+  const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
+  const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
+  const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
+  const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
   return connectorsToCheck.map((cn, index) => {
-    const lookup = lookups[index];
-    if (!lookup) {
+    const slug = slugs[index];
+    if (!slug) {
       return NO_UPDATE_STATUS;
     }
-    const versions = (lookup.slug ? versionsBySlug.get(lookup.slug) : versionsByImageName.get(lookup.imageName)) ?? [];
-    return buildConnectorUpdateStatus(cn.manager_contract?.contract_version ?? null, versions, { platformVersion: PLATFORM_VERSION });
+    return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
   });
-};
-
-export const connectorsUpdateCount = async (context, user) => {
-  const elements = await connectors(context, user);
-  const statuses = await computeConnectorsUpdateStatus(context, user, elements);
-  return statuses.filter((status) => status.update_available).length;
 };
 
 export const connectorsForWorker = async (context, user) => {

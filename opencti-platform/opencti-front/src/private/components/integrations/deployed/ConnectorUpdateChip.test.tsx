@@ -15,7 +15,7 @@ describe('ConnectorUpdateChip', () => {
   });
 
   it('should add the platform upgrade hint when a newer version needs it', async () => {
-    const { user } = testRender(<ConnectorUpdateChip version="7.260915.0" incompatibility />);
+    const { user } = testRender(<ConnectorUpdateChip version="7.260915.0" hasNewerIncompatibleVersion />);
 
     expect(screen.queryByText('Incompatible')).not.toBeInTheDocument();
     await user.hover(screen.getByText('Update available'));
@@ -25,7 +25,7 @@ describe('ConnectorUpdateChip', () => {
   });
 
   it('should show the version in the label and only the platform upgrade hint in the tooltip', async () => {
-    const { user } = testRender(<ConnectorUpdateChip version="7.260915.0" versionInLabel incompatibility />);
+    const { user } = testRender(<ConnectorUpdateChip version="7.260915.0" versionInLabel hasNewerIncompatibleVersion />);
 
     await user.hover(screen.getByText('Update available: 7.260915.0'));
     const tooltip = await screen.findByRole('tooltip');

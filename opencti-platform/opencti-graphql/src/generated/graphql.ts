@@ -4589,8 +4589,8 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
-  incompatibility?: Maybe<Scalars['Boolean']['output']>;
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
   latest_compatible_version?: Maybe<Scalars['String']['output']>;
@@ -24803,7 +24803,6 @@ export type Query = {
   connectorsForManagers?: Maybe<Array<ManagedConnector>>;
   connectorsForNotification?: Maybe<Array<Maybe<Connector>>>;
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
-  connectorsUpdateCount?: Maybe<Scalars['Int']['output']>;
   container?: Maybe<Container>;
   containers?: Maybe<ContainerConnection>;
   containersAskAiSummary?: Maybe<AiSummary>;
@@ -44248,8 +44247,8 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  incompatibility?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   latest_compatible_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50691,7 +50690,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForManagers?: Resolver<Maybe<Array<ResolversTypes['ManagedConnector']>>, ParentType, ContextType>;
   connectorsForNotification?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
-  connectorsUpdateCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
   containersAskAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAskAiSummaryArgs>>;

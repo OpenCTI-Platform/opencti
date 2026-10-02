@@ -195,6 +195,7 @@ export const buildCatalogContractCompatibility = (
   };
 };
 
+// Same version comparison as the auto-upgrade (see connector-domain), so both agree on what an update is
 export const buildConnectorUpdateStatus = (
   currentVersion: string | null | undefined,
   versions: CatalogContractVersion[],
@@ -202,35 +203,16 @@ export const buildConnectorUpdateStatus = (
 ) => {
   const latestCompatibleVersion = getLatestCompatibleVersion(versions, options);
   const latestVersion = getLatestVersion(versions);
-  const parsedCurrentVersion = currentVersion ? parseCatalogSemver(currentVersion) : null;
-  const parsedLatestCompatibleVersion = latestCompatibleVersion ? parseCatalogSemver(latestCompatibleVersion) : null;
-  const parsedLatestVersion = latestVersion ? parseCatalogSemver(latestVersion) : null;
-
-  const update_available = Boolean(
-    latestCompatibleVersion
-    && parsedCurrentVersion
-    && parsedLatestCompatibleVersion
-    && semver.gt(parsedLatestCompatibleVersion, parsedCurrentVersion),
-  );
-
-  const incompatibility = Boolean(
-    latestVersion
-    && latestCompatibleVersion
-    && parsedLatestVersion
-    && parsedLatestCompatibleVersion
-    && parsedCurrentVersion
-    && semver.gt(parsedLatestVersion, parsedLatestCompatibleVersion)
-    && semver.gt(parsedLatestCompatibleVersion, parsedCurrentVersion),
-  );
-
+  const updateAvailable = !!(latestCompatibleVersion && currentVersion && compareContractVersions(latestCompatibleVersion, currentVersion) > 0);
+  const hasNewerIncompatibleVersion = !!(updateAvailable && latestCompatibleVersion && latestVersion && compareContractVersions(latestVersion, latestCompatibleVersion) > 0);
   return {
-    update_available,
+    update_available: updateAvailable,
     latest_compatible_version: latestCompatibleVersion,
-    incompatibility,
+    has_newer_incompatible_version: hasNewerIncompatibleVersion,
   };
 };
 
-export const mapContractToVersion = (
+const mapContractToVersion = (
   contract: Pick<BasicStoreEntityCatalogContract, 'contract_version' | 'support_version' | 'min_version' | 'max_version'>,
 ): CatalogContractVersion => ({
   version: contract.contract_version,
@@ -266,15 +248,17 @@ export const selectLatestContractsBySlug = (
 
 export const groupContractVersionsBySlug = (
   contracts: Array<BasicStoreEntityCatalogContract & SlugContract & ContractVersionContract>,
+  keyOf: (contract: SlugContract) => string = (contract) => contract.slug,
 ) => {
   const versionsBySlug = new Map<string, CatalogContractVersion[]>();
   for (const contract of [...contracts].sort(compareContractVersionDesc)) {
-    const existingVersions = versionsBySlug.get(contract.slug) ?? [];
+    const key = keyOf(contract);
+    const existingVersions = versionsBySlug.get(key) ?? [];
     if (existingVersions.some((version) => version.version === contract.contract_version)) {
       continue;
     }
     existingVersions.push(mapContractToVersion(contract));
-    versionsBySlug.set(contract.slug, existingVersions);
+    versionsBySlug.set(key, existingVersions);
   }
   return versionsBySlug;
 };

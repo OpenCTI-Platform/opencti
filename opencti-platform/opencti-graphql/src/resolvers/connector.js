@@ -60,7 +60,6 @@ import {
   connectorManager,
   connectorManagers,
   connectors,
-  connectorsUpdateCount,
   connectorsForAnalysis,
   connectorsForImport,
   connectorsForManagers,
@@ -83,7 +82,6 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
-    connectorsUpdateCount: (_, __, context) => connectorsUpdateCount(context, context.user),
     connectorsForManagers: async (_, __, context) => {
       await waitForManagedConnectorAutoUpgrade();
       return connectorsForManagers(context, context.user);
@@ -129,7 +127,7 @@ const connectorResolvers = {
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
     update_available: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).update_available,
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
-    incompatibility: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).incompatibility,
+    has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
   },
   ManagedConnector: { // For composer

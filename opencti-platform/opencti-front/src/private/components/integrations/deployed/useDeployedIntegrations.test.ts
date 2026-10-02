@@ -115,11 +115,11 @@ describe('useDeployedIntegrations', () => {
 
     it('keeps backend-computed update metadata on the deployed connector item', () => {
       const { result } = renderIntegrations({
-        connectors: [makeConnector({ update_available: true, latest_compatible_version: '1.2.3', incompatibility: true })],
+        connectors: [makeConnector({ update_available: true, latest_compatible_version: '1.2.3', has_newer_incompatible_version: true })],
       });
       expect(result.current[0].updateAvailable).toBe(true);
       expect(result.current[0].latestCompatibleVersion).toBe('1.2.3');
-      expect(result.current[0].incompatibility).toBe(true);
+      expect(result.current[0].hasNewerIncompatibleVersion).toBe(true);
     });
 
     it('reports a processing status while a managed connector is transitioning', () => {

@@ -22,7 +22,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import MadeByFiligran from './MadeByFiligran';
 import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from './navBarConstants';
 import useNavMenuWithBadges from './useNavMenuWithBadges';
-import { NavGroup, NavItem, NavSubItem } from './useNavMenu';
+import { NavGroup, NavItem, NavItemBadge, NavSubItem } from './useNavMenu';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
@@ -59,32 +59,23 @@ export interface NavBarViewProps {
   navLabel: string;
 }
 
-const renderNavItemBadge = (badge: NonNullable<NavItem['badge']>, anchored = true, compact = false) => {
-  const badgeNode = (
-    <Badge
-      bareAnchor={anchored && !compact ? 'md' : false}
-      content={badge.content}
-      dot={compact}
-      accessibleText={badge.accessibleText}
-      {...(anchored ? { children: <span className="inline-flex h-4 w-4 shrink-0" aria-hidden="true" /> } : {})}
-    />
-  );
-
-  if (!badge.accessibleText) {
-    return badgeNode;
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="inline-flex" aria-hidden="true">
-          {badgeNode}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="right">{badge.accessibleText}</TooltipContent>
-    </Tooltip>
-  );
-};
+const renderNavItemBadge = (badge: NavItemBadge, compact: boolean) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="inline-flex" aria-hidden="true">
+        <Badge
+          bareAnchor={compact ? false : 'md'}
+          content={badge.content}
+          dot={compact}
+          accessibleText={badge.accessibleText}
+        >
+          <span className="inline-flex h-4 w-4 shrink-0" aria-hidden="true" />
+        </Badge>
+      </span>
+    </TooltipTrigger>
+    <TooltipContent side="right">{badge.accessibleText}</TooltipContent>
+  </Tooltip>
+);
 
 export const NavBarView: React.FC<NavBarViewProps> = ({
   groups,
@@ -156,7 +147,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
           <div key={item.id} className="relative">
             <NavbarItem asChild tooltipLabel={item.label}>{rowBody}</NavbarItem>
             <div className="absolute inset-y-0 right-2 flex items-center">
-              {renderNavItemBadge(item.badge, true, collapsed)}
+              {renderNavItemBadge(item.badge, collapsed)}
             </div>
 
           </div>

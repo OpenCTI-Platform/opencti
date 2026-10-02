@@ -56,7 +56,6 @@ import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
-import { getDeployedConnectorDetails } from './connectorDetails';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -299,13 +298,21 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
-  const { deployedVersion, slug: deployedSlug } = getDeployedConnectorDetails({
-    managerContractDefinition: connector.manager_contract_definition,
-    managerContractExcerpt: connector.manager_contract_excerpt,
-  });
-  const compatibleUpdateVersion = connector.update_available
-    ? connector.latest_compatible_version?.trim() || null
-    : null;
+  // Parsed catalog contract, used to surface the marketplace overview
+  // (description, links, use cases) next to the monitoring data.
+  const contractDefinition = useMemo(() => {
+    if (!connector.is_managed || !connector.manager_contract_definition) {
+      return null;
+    }
+    try {
+      return JSON.parse(connector.manager_contract_definition) as IngestionConnector;
+    } catch {
+      return null;
+    }
+  }, [connector.is_managed, connector.manager_contract_definition]);
+
+  const deployedVersion = contractDefinition?.container_version;
+  const compatibleUpdateVersion = connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
@@ -685,13 +692,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
                     {compatibleUpdateVersion && (
                       <Box sx={{ marginTop: 1 }}>
-                        <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel incompatibility={!!connector.incompatibility} />
+                        <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
                       </Box>
                     )}
                   </Grid>
                   <Grid item xs={6}>
                     <Label>{t_i18n('Slug')}</Label>
-                    <Typography component="div" variant="body1">{deployedSlug || t_i18n('Not provided')}</Typography>
+                    <Typography component="div" variant="body1">{connector.manager_contract_excerpt?.slug || t_i18n('Not provided')}</Typography>
                   </Grid>
                 </>
               )}
@@ -744,7 +751,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunIsNumber,
     lastRunConverted,
     compatibleUpdateVersion,
-    connector.incompatibility,
     theme,
     t_i18n,
     nsdt,
@@ -791,19 +797,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
     return `${excerptTitle} - ${connectorTitle}`;
   })();
-
-  // Parsed catalog contract, used to surface the marketplace overview
-  // (description, links, use cases) next to the monitoring data.
-  const contractDefinition = useMemo(() => {
-    if (!connector.is_managed || !connector.manager_contract_definition) {
-      return null;
-    }
-    try {
-      return JSON.parse(connector.manager_contract_definition) as IngestionConnector;
-    } catch {
-      return null;
-    }
-  }, [connector.is_managed, connector.manager_contract_definition]);
 
   const hasDeprecatedConfiguredFields = useMemo(() => {
     if (!connector.is_managed || !connector.manager_contract_definition) {
@@ -1149,7 +1142,7 @@ const Connector = createRefetchContainer(
         }
         update_available
         latest_compatible_version
-        incompatibility
+        has_newer_incompatible_version
         updated_at
         created_at
         config {

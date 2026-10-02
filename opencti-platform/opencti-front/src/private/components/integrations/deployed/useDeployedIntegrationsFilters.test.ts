@@ -19,7 +19,7 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
   updatedAt: '2026-01-01T00:00:00.000Z',
   updateAvailable: false,
   latestCompatibleVersion: null,
-  incompatibility: false,
+  hasNewerIncompatibleVersion: false,
   isManaged: true,
   detailUrl: '/dashboard/integrations/connectors/item-1',
   searchText: 'connector a external_import',

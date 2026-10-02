@@ -287,31 +287,6 @@ export const findCatalogContractsByImageName = async (
   );
 };
 
-// Batched variant for connector lists: one query for all the image names
-export const findCatalogContractsByImageNames = async (
-  context: AuthContext,
-  user: AuthUser,
-  imageNames: string[],
-) => {
-  return fullEntitiesList<BasicStoreEntityCatalogContract>(
-    context,
-    user,
-    [ENTITY_TYPE_CATALOG_CONTRACT],
-    {
-      indices: [READ_INDEX_INTERNAL_OBJECTS],
-      filters: {
-        filters: [{
-          key: ['image'],
-          values: imageNames,
-          mode: FilterMode.Or,
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
-    },
-  );
-};
-
 export const findLatestCompatibleCatalogContractByImageName = async (
   context: AuthContext,
   user: AuthUser,
