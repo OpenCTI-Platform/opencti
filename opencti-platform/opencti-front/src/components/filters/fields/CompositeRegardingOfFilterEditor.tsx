@@ -35,7 +35,7 @@ const CompositeRegardingOfFilterEditor: FunctionComponent<CompositeRegardingOfFi
   showFirstOperator = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const { helpers, entityTypes } = useFilterEditorContext();
+  const { entityTypes } = useFilterEditorContext();
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
 
   if (!filterDefinition?.subFilters || filterDefinition.subFilters.length <= 1) {
@@ -62,9 +62,7 @@ const CompositeRegardingOfFilterEditor: FunctionComponent<CompositeRegardingOfFi
         <FilterOperatorSelect
           filter={filter}
           filterKey={filterKey}
-          helpers={helpers}
           setInputValues={setInputValues}
-          entityTypes={entityTypes}
           subKey={subKey}
           disabled={disabled}
         />

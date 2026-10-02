@@ -1,10 +1,11 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { addDays, subDays } from 'date-fns';
 import { CSSProperties, Dispatch, FunctionComponent, SetStateAction } from 'react';
-import { Filter, handleFilterHelpers, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
+import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { getAvailableOperatorForFilter, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { FilterDefinition } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../i18n';
+import { useFilterEditorContext } from './FilterEditorContext';
 
 const OperatorKeyValues: {
   [key: string]: string;
@@ -34,9 +35,7 @@ const OperatorKeyValues: {
 export interface FilterOperatorSelectProps {
   filter?: Filter;
   filterKey: string;
-  helpers?: handleFilterHelpers;
   setInputValues: Dispatch<SetStateAction<FilterEditorInputValue[]>>;
-  entityTypes?: string[];
   subKey?: string;
   disabled?: boolean;
   /** Accessible name of the operator select. */
@@ -56,9 +55,7 @@ export interface FilterOperatorSelectProps {
 const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   filter,
   filterKey,
-  helpers,
   setInputValues,
-  entityTypes,
   subKey,
   disabled = false,
   label,
@@ -66,6 +63,7 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   style,
 }) => {
   const { t_i18n } = useFormatter();
+  const { helpers, entityTypes } = useFilterEditorContext();
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const finalFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
 

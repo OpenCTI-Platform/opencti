@@ -14,6 +14,7 @@ vi.mock('../../../relay/environment', () => ({
 }));
 
 import FilterOperatorSelect from './FilterOperatorSelect';
+import { FilterEditorProvider } from './FilterEditorContext';
 
 const buildDefinition = (filterKey: string, type: string, label: string, subFilters?: FilterDefinition[]): FilterDefinition => ({
   filterKey,
@@ -63,14 +64,19 @@ describe('FilterOperatorSelect', () => {
   let setInputValues: SetInputValuesMock;
 
   const renderSelect = (filter: Filter, subKey?: string) => testRender(
-    <FilterOperatorSelect
-      filter={filter}
-      filterKey={filter.key}
+    <FilterEditorProvider
       helpers={helpers}
-      setInputValues={setInputValues}
+      availableFilterKeys={[]}
       entityTypes={['Stix-Core-Object']}
-      subKey={subKey}
-    />,
+      filtersRepresentativesMap={new Map()}
+    >
+      <FilterOperatorSelect
+        filter={filter}
+        filterKey={filter.key}
+        setInputValues={setInputValues}
+        subKey={subKey}
+      />
+    </FilterEditorProvider>,
     { userContext },
   );
 
