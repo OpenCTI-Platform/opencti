@@ -28,51 +28,55 @@ import { REDACTED_INFORMATION } from '../database/utils';
 import type { ActivityStreamEvent } from '../types/event';
 import { EVENT_ACTIVITY_VERSION } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { buildRedactedInputs } from '../utils/redaction';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
-const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
+const LOGS_SENSITIVE_FIELDS = buildRedactedInputs(conf.get('app:app_logs:logs_redacted_inputs'));
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
 export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot'];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
+export const cleanInputData = (obj: any) => {
+  const stack = [obj];
+  while (stack.length > 0) {
+    const currentObj = stack.pop() as any;
+    // A single edit input, { key: 'password', value: ... }, carries its secret under `value`
+    const isSensitiveEditInput = typeof currentObj.key === 'string' && LOGS_SENSITIVE_FIELDS.includes(currentObj.key);
+    Object.keys(currentObj).forEach((key) => {
+      if (LOGS_SENSITIVE_FIELDS.includes(key) || (isSensitiveEditInput && key === 'value')) {
+        currentObj[key] = REDACTED_INFORMATION;
+      }
+      // Need special case to clean inputs
+      if (key === 'input' && Array.isArray(currentObj[key])) {
+        const preparedElements = [];
+        for (let index = 0; index < currentObj[key].length; index += 1) {
+          const currentObjElementElement = currentObj[key][index];
+          if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
+            preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
+          } else {
+            preparedElements.push(currentObjElementElement);
+          }
+        }
+        currentObj[key] = preparedElements;
+      }
+      if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        if (key === 'input') {
+          // remove unsupported props in input like sort, _id that cause errors for old databases.
+          UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+            delete currentObj[key][prop];
+          });
+        }
+        stack.push(currentObj[key]);
+      }
+    });
+  }
+  return obj;
+};
+
 const initActivityManager = () => {
   const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const cleanInputData = (obj: any) => {
-    const stack = [obj];
-    while (stack.length > 0) {
-      const currentObj = stack.pop() as any;
-      Object.keys(currentObj).forEach((key) => {
-        if (LOGS_SENSITIVE_FIELDS.includes(key)) {
-          currentObj[key] = REDACTED_INFORMATION;
-        }
-        // Need special case to clean inputs
-        if (key === 'input' && Array.isArray(currentObj[key])) {
-          const preparedElements = [];
-          for (let index = 0; index < currentObj[key].length; index += 1) {
-            const currentObjElementElement = currentObj[key][index];
-            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
-              preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
-            } else {
-              preparedElements.push(currentObjElementElement);
-            }
-          }
-          currentObj[key] = preparedElements;
-        }
-        if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
-          if (key === 'input') {
-            // remove unsupported props in input like sort, _id that cause errors for old databases.
-            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
-              delete currentObj[key][prop];
-            });
-          }
-          stack.push(currentObj[key]);
-        }
-      });
-    }
-    return obj;
-  };
   const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {

@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import { render } from '@testing-library/react';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
 import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material/styles';
@@ -111,6 +111,28 @@ describe('ForcePasswordChange (public login)', () => {
     const config = (commitFnMock as Mock).mock.calls[0][0];
     config.onError?.({ res: { errors: [{ message: 'boom' }] } });
     expect(handleErrorInForm).toHaveBeenCalled();
+  });
+
+  it('clears both fields and explains a recently used password under the first one', async () => {
+    const { handleErrorInForm } = await import('../../../../relay/environment');
+    const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
+    await user.type(screen.getByLabelText('New password'), 'OldPass1!');
+    await user.type(screen.getByLabelText('Confirmation'), 'OldPass1!');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    const config = (commitFnMock as Mock).mock.calls[0][0];
+    act(() => {
+      config.onError?.({ res: { errors: [{ message: 'reused', name: 'PASSWORD_REUSED', extensions: { code: 'PASSWORD_REUSED' } }] } });
+    });
+    expect(await screen.findByText('This password has already been used recently. Please choose a different one.')).toBeDefined();
+    expect((screen.getByLabelText('New password') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Confirmation') as HTMLInputElement).value).toBe('');
+    expect(handleErrorInForm).not.toHaveBeenCalled();
+  });
+
+  it('shows the password history rule when the platform enforces it', () => {
+    renderWithLoginContext(<ForcePasswordChange policies={{ historyCount: 3 }} />);
+    expect(screen.getByText('Must be different from your last 3 passwords')).toBeDefined();
   });
 
   it('Back to login resets forcePasswordChange context flag', async () => {

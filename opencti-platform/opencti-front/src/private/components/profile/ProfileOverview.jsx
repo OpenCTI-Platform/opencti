@@ -27,6 +27,7 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { APIACCESS_USETOKEN, KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
+import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages } from '../../../utils/passwordChangeErrors';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
@@ -267,6 +268,15 @@ const ProfileOverviewComponent = (props) => {
         setSubmitting(false);
         MESSAGING$.notifySuccess('The password has been updated');
         resetForm();
+      },
+      onError: (error) => {
+        if (passwordChangeErrorCode(error) === PASSWORD_REUSED) {
+          resetForm({
+            values: { ...values, password: '', confirmation: '' },
+            errors: { password: passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED] },
+            touched: { password: true },
+          });
+        }
       },
     });
   };
