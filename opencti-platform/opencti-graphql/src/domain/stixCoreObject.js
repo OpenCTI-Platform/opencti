@@ -54,7 +54,7 @@ import {
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { createWork, worksForSource, workToExportFile } from './work';
+import { createWork, findExportApplicantId, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -555,8 +555,11 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
   const meta = { list_filters: listFilters };
   const entity = entity_id ? await internalLoadById(context, user, entity_id) : undefined;
-  const opts = { entity, meta, file_markings };
-  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, opts);
+  const path = `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`;
+  const { filename } = await file;
+  const creatorId = await findExportApplicantId(context, user, path, filename);
+  const opts = { entity, meta, file_markings, creatorId };
+  await uploadToStorage(context, user, path, file, opts);
   return true;
 };
 
@@ -566,7 +569,10 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const { filename } = await args.file;
+  const creatorId = await findExportApplicantId(context, user, path, filename);
+  const opts = { entity: previous, file_markings: args.file_markings, creatorId };
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, opts);
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
