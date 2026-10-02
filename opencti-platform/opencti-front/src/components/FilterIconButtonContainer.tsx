@@ -45,11 +45,11 @@ interface FilterIconButtonContainerProps {
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
   availableFilterKeys?: string[];
   /**
-   * When true, the nested filter group editor is rendered in the normal document flow
-   * (a plain Box) instead of a floating `Popper`. Used in contexts where a floating panel
-   * would overflow its container without resizing it, e.g. the widget creation dialog.
+   * When true, the nested filter group editor is rendered as a floating `Popper` instead of in
+   * the normal document flow. Default is inline; opt into floating where a dropdown-style
+   * trigger is more appropriate than growing the layout.
    */
-  inline?: boolean;
+  floating?: boolean;
 }
 
 /**
@@ -84,7 +84,7 @@ const FilterIconButtonContainer: FunctionComponent<
   filterChipsParams,
   setFilterChipsParams,
   availableFilterKeys,
-  inline,
+  floating,
 }) => {
   const displayedFilters = filters.filters;
   const displayedFilterGroups = filters.filterGroups ?? [];
@@ -161,7 +161,7 @@ const FilterIconButtonContainer: FunctionComponent<
       {helpers && (
         <FilterGroupPanelHost
           group={openedGroup}
-          inline={inline}
+          floating={floating}
           anchorRef={filterLineRef}
           onClickAway={handleClickAwayPanel}
           helpers={helpers}
