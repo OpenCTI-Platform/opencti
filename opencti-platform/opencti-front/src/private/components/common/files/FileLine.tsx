@@ -34,11 +34,11 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Box from '@mui/material/Box';
-import {isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import ItemCreators from "src/components/ItemCreators";
+import ItemCreators from 'src/components/ItemCreators';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
