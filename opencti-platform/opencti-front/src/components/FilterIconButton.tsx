@@ -1,76 +1,45 @@
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmptyShallow, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
+import { isFilterGroupNotEmptyShallow, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
-import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
-import type { WidgetHost } from '../utils/widget/widget';
-import FilterIconButtonContainer, { FilterIconButtonVariant } from './FilterIconButtonContainer';
+import { FilterGroup } from '../utils/filters/filtersHelpers-types';
+import FilterIconButtonContainer, { FilterIconButtonSharedProps } from './FilterIconButtonContainer';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { FilterChipsParameter } from './filters/FilterChipPopover';
 
-export interface FilterIconButtonProps {
-  availableFilterKeys?: string[];
+export interface FilterIconButtonProps extends FilterIconButtonSharedProps {
   filters?: FilterGroup | null;
-  handleRemoveFilter?: (key: string, op?: string) => void;
-  handleSwitchGlobalMode?: () => void;
-  handleSwitchLocalMode?: (filter: Filter) => void;
-  variant?: FilterIconButtonVariant;
-  chipColor?: ChipOwnProps['color'];
   dataColumns?: DataColumns;
-  disabledPossible?: boolean;
-  redirection?: boolean;
-  helpers?: handleFilterHelpers;
-  availableRelationFilterTypes?: Record<string, string[]>;
-  entityTypes?: string[];
-  filtersRestrictions?: FiltersRestrictions;
-  searchContext?: FilterSearchContext;
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
-  host?: WidgetHost;
-  hasSavedFilters?: boolean;
-  floating?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup;
-  hasRenderedRef: boolean;
-  setHasRenderedRef: (value: boolean) => void;
+  hasRendered: boolean;
+  setHasRendered: (value: boolean) => void;
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
+
+/**
+ * Only reason this is a separate component from `FilterIconButton`: `useQueryLoading` must not
+ * fire while `filters` is empty, and a hook can't be called conditionally in the same body as
+ * that early return. Every other prop here is pure passthrough, hence the `...shared` spread.
+ */
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
-  handleRemoveFilter,
-  handleSwitchGlobalMode,
-  handleSwitchLocalMode,
-  variant,
-  disabledPossible,
-  redirection,
-  chipColor,
-  helpers,
-  availableRelationFilterTypes,
-  hasRenderedRef,
-  setHasRenderedRef,
-  entityTypes,
-  filtersRestrictions,
-  searchContext,
-  availableEntityTypes,
-  availableRelationshipTypes,
-  host,
-  hasSavedFilters,
+  hasRendered,
+  setHasRendered,
   filterChipsParams,
   setFilterChipsParams,
-  availableFilterKeys,
-  floating,
+  ...shared
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
       filters: normalizeFilterGroupForBackend(filters),
-      isMeValueForbidden: searchContext?.elementType === 'Playbook-Stix-Component',
+      isMeValueForbidden: shared.searchContext?.elementType === 'Playbook-Stix-Component',
     },
   );
   return (
@@ -78,30 +47,13 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
       {filtersRepresentativesQueryRef && (
         <React.Suspense fallback={<span />}>
           <FilterIconButtonContainer
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            variant={variant}
-            chipColor={chipColor}
-            disabledPossible={disabledPossible}
-            redirection={redirection}
+            {...shared}
             filters={filters}
             filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
-            helpers={helpers}
-            hasRenderedRef={hasRenderedRef}
-            setHasRenderedRef={setHasRenderedRef}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            entityTypes={entityTypes}
-            filtersRestrictions={filtersRestrictions}
-            searchContext={searchContext}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-            host={host}
-            hasSavedFilters={hasSavedFilters}
+            hasRendered={hasRendered}
+            setHasRendered={setHasRendered}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
-            availableFilterKeys={availableFilterKeys}
-            floating={floating}
           />
         </React.Suspense>
       )}
@@ -110,12 +62,12 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
 };
 
 interface EmptyFilterProps {
-  setHasRenderedRef: (value: boolean) => void;
+  setHasRendered: (value: boolean) => void;
 }
 
-const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRenderedRef }) => {
+const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRendered }) => {
   useEffect(() => {
-    setHasRenderedRef(true);
+    setHasRendered(true);
   }, []);
   return null;
 };
@@ -123,26 +75,10 @@ const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRenderedRef })
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableFilterKeys,
   filters,
-  handleRemoveFilter,
-  handleSwitchGlobalMode,
-  handleSwitchLocalMode,
-  variant,
-  disabledPossible,
-  redirection,
-  chipColor,
-  helpers,
-  availableRelationFilterTypes,
-  entityTypes,
-  filtersRestrictions,
-  searchContext,
-  availableEntityTypes,
-  availableRelationshipTypes,
-  host,
-  hasSavedFilters,
-  floating,
+  ...shared
 }) => {
   const hasRenderedRef = useRef(false);
-  const setHasRenderedRef = (value: boolean) => {
+  const setHasRendered = (value: boolean) => {
     hasRenderedRef.current = value;
   };
 
@@ -161,33 +97,17 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   if (displayedFilters && isFilterGroupNotEmptyShallow(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
+        {...shared}
+        availableFilterKeys={availableFilterKeys}
         filters={displayedFilters}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        variant={variant}
-        disabledPossible={disabledPossible}
-        redirection={redirection}
-        chipColor={chipColor}
-        helpers={helpers}
-        availableRelationFilterTypes={availableRelationFilterTypes}
-        hasRenderedRef={hasRenderedRef.current}
-        setHasRenderedRef={setHasRenderedRef}
-        entityTypes={entityTypes}
-        filtersRestrictions={filtersRestrictions}
-        searchContext={searchContext}
-        availableEntityTypes={availableEntityTypes}
-        availableRelationshipTypes={availableRelationshipTypes}
-        host={host}
-        hasSavedFilters={hasSavedFilters}
+        hasRendered={hasRenderedRef.current}
+        setHasRendered={setHasRendered}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}
-        availableFilterKeys={availableFilterKeys}
-        floating={floating}
       />
     );
   }
-  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef} />);
+  return (<EmptyFilter setHasRendered={setHasRendered} />);
 };
 
 export default FilterIconButton;

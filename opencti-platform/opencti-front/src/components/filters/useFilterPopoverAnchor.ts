@@ -5,8 +5,8 @@ import { FilterChipsParameter } from './FilterChipPopover';
 interface UseFilterPopoverAnchorArgs {
   helpers?: handleFilterHelpers;
   displayedFilters: Filter[];
-  hasRenderedRef: boolean;
-  setHasRenderedRef: (value: boolean) => void;
+  hasRendered: boolean;
+  setHasRendered: (value: boolean) => void;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
 
@@ -25,8 +25,8 @@ const getAnchorPosition = (element: HTMLElement) => {
 const useFilterPopoverAnchor = ({
   helpers,
   displayedFilters,
-  hasRenderedRef,
-  setHasRenderedRef,
+  hasRendered,
+  setHasRendered,
   setFilterChipsParams,
 }: UseFilterPopoverAnchorArgs) => {
   const itemRefToPopover = useRef(null);
@@ -40,7 +40,7 @@ const useFilterPopoverAnchor = ({
   useEffect(() => {
     if (!helpers) return;
     const latestFilterId = helpers.getLatestAddFilterId();
-    const newFilterAdded = hasRenderedRef
+    const newFilterAdded = hasRendered
       && latestFilterId
       && itemRefToPopover.current
       && oldItemRefToPopover.current !== itemRefToPopover.current;
@@ -53,10 +53,10 @@ const useFilterPopoverAnchor = ({
         anchorPosition,
       });
     } else {
-      setHasRenderedRef(true);
+      setHasRendered(true);
     }
     oldItemRefToPopover.current = itemRefToPopover.current;
-  }, [displayedFilters, helpers, hasRenderedRef, setFilterChipsParams, setHasRenderedRef]);
+  }, [displayedFilters, helpers, hasRendered, setFilterChipsParams, setHasRendered]);
 
   const handleClose = () => {
     setFilterChipsParams({
