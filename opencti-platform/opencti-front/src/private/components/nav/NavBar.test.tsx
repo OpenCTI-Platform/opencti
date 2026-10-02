@@ -5,6 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import MadeByFiligran from './MadeByFiligran';
+import NavBadge from './NavBadge';
 import { isRouteSelected, NavBarView, NavBarViewProps } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
@@ -94,7 +95,7 @@ describe('NavBarView', () => {
           label: 'Integrations',
           icon: null,
           link: '/dashboard/integrations',
-          badge: { content: 11, accessibleText: '11 connector update available' },
+          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
         }],
       }],
     });
@@ -112,7 +113,7 @@ describe('NavBarView', () => {
           label: 'Integrations',
           icon: null,
           link: '/dashboard/integrations',
-          badge: { content: 11, accessibleText: '11 connector update available' },
+          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
         }],
       }],
     });
@@ -131,7 +132,7 @@ describe('NavBarView', () => {
           label: 'Integrations',
           icon: null,
           link: '/dashboard/integrations',
-          badge: { content: 11, accessibleText: '11 connector update available' },
+          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact />,
         }],
       }],
     });

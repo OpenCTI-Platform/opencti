@@ -119,7 +119,8 @@ export interface NavItem {
   icon: React.ReactNode;
   link: string;
   exact?: boolean;
-  badge?: NavItemBadge;
+  // Rendered at the end of the row, it loads its own data so the menu never waits for it
+  badge?: React.ReactNode;
   subItems?: NavSubItem[];
 }
 
