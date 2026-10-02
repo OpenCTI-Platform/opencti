@@ -122,8 +122,28 @@ describe('NavBarView', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
   });
 
-  it('keeps the badge visible when the rail is collapsed', async () => {
+  it('lets keyboard and screen reader users reach the update count', async () => {
     const { user } = renderNav({
+      groups: [{
+        id: 'main',
+        items: [{
+          id: 'integrations',
+          label: 'Integrations',
+          icon: null,
+          link: '/dashboard/integrations',
+          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
+        }],
+      }],
+    });
+
+    expect(screen.getByText('11 connector update available').closest('[aria-hidden="true"]')).toBeNull();
+    screen.getByRole('link', { name: 'Integrations' }).focus();
+    await user.tab();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
+  });
+
+  it('keeps the badge reachable when the rail is collapsed', async () => {
+    renderNav({
       collapsed: true,
       groups: [{
         id: 'main',
@@ -137,8 +157,12 @@ describe('NavBarView', () => {
       }],
     });
 
-    expect(screen.queryByText('11', { selector: 'span[aria-hidden="true"]' })).not.toBeInTheDocument();
-    await user.hover(screen.getByRole('link', { name: 'Integrations' }).parentElement?.querySelector('.absolute > span[aria-hidden="true"]') as HTMLElement);
+    // A dot: the count is not drawn, only announced
+    expect(screen.queryByText('11')).not.toBeInTheDocument();
+    const announcement = screen.getByText('11 connector update available');
+    expect(announcement.closest('[aria-hidden="true"]')).toBeNull();
+    const trigger = announcement.closest('[tabindex="0"]') as HTMLElement;
+    trigger.focus();
     expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
   });
 
