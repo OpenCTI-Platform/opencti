@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
-import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
+import { Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
+import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Tooltip, Typography } from '@mui/material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import Button from '../../../../components/common/button/Button';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
@@ -27,6 +27,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { relayErrorHandling } from '../../../../relay/environment';
 import WorkflowBypassStatus from './WorkflowBypassStatus';
+import Button from '@common/button/Button';
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
@@ -45,11 +46,18 @@ interface WorkflowTransitionsViewProps {
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
-  entityId, entityNavigationId, draftId, processingCount = 0, workflowInstance, entityType, refreshing = false, onCompleted,
+  entityId,
+  entityNavigationId,
+  draftId,
+  processingCount = 0,
+  workflowInstance,
+  entityType,
+  refreshing = false,
+  onCompleted,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
 
@@ -88,20 +96,11 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return null;
   }
 
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   if (isPending) {
     const totalExpected = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.expectedCount ?? 0), 0) ?? 0;
     const totalProcessed = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.processedCount ?? 0), 0) ?? 0;
     return (
       <>
-        <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" noWrap>
             {pendingTransition?.event}
@@ -131,7 +130,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   if (isError) {
     return (
       <>
-        <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
             <ErrorOutline color="error" fontSize="small" />
@@ -165,8 +163,48 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
 
   return (
     <>
-      <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-      {workflowInstance.allowedTransitions.length < 3 ? (
+      {workflowInstance.allowedTransitions.length > 1 ? (
+        <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+          <MenuTrigger asChild>
+            <Button
+              disabled={approving || clearing || !!wizard}
+              endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
+            >
+              {t_i18n('Next status')}
+            </Button>
+          </MenuTrigger>
+          <MenuContent
+            align="start"
+            sideOffset={6}
+            style={{ minWidth: 'var(--radix-dropdown-menu-trigger-width)', maxWidth: 'calc(100vw - 32px)' }}
+          >
+            {workflowInstance.allowedTransitions.map((transition) => {
+              const actionCount = transition.actions?.length ?? 0;
+              return (
+                <MenuItem
+                  key={transition.event}
+                  disabled={approving || clearing || !!wizard}
+                  onSelect={() => handleTransition(
+                    transition.event,
+                    transition.actions ?? [],
+                    transition.comment,
+                    transition.requiresShareOrganizationInput,
+                    transition.requiresUnshareOrganizationInput,
+                  )}
+                  style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
+                  endIcon={actionCount > 0 ? (
+                    <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
+                      (+{actionCount} {t_i18n(actionCount === 1 ? 'action required' : 'actions required')})
+                    </span>
+                  ) : undefined}
+                >
+                  <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
+                </MenuItem>
+              );
+            })}
+          </MenuContent>
+        </Menu>
+      ) : (
         <>
           {workflowInstance.allowedTransitions.map((transition) => (
             <Button
@@ -184,37 +222,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
               {transition.event}
             </Button>
           ))}
-        </>
-      ) : (
-        <>
-          <Button
-            variant="primary"
-            onClick={handleOpen}
-            endIcon={<ArrowDropDownOutlined />}
-            disabled={approving || clearing || !!wizard}
-          >
-            {t_i18n('Next status')}
-          </Button>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-            {workflowInstance.allowedTransitions.map((transition) => (
-              <MenuItem
-                key={transition.event}
-                disabled={approving || clearing || !!wizard}
-                onClick={() => {
-                  handleClose();
-                  handleTransition(
-                    transition.event,
-                    transition.actions ?? [],
-                    transition.comment,
-                    transition.requiresShareOrganizationInput,
-                    transition.requiresUnshareOrganizationInput,
-                  );
-                }}
-              >
-                {transition.event}
-              </MenuItem>
-            ))}
-          </Menu>
         </>
       )}
       {wizard && (

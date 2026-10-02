@@ -9,6 +9,7 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
     currentState
     currentStatus {
       id
+      order
       template {
         name
         color
@@ -156,6 +157,7 @@ export const workflowBypassStatusesQuery = graphql`
       }
       status {
         id
+        order
         template {
           name
           color

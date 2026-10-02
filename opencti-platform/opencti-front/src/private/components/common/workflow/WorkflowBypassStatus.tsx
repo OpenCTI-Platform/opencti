@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Box } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { Field, Form, Formik, FormikHelpers, FormikErrors } from 'formik';
 import Dialog from '../../../../components/common/dialog/Dialog';
 import Button from '../../../../components/common/button/Button';
@@ -15,7 +16,7 @@ import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { COMMENT_MAX_LENGTH, workflowBypassStatusesQuery, workflowSetStatusMutation, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
+import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusBypassStatusesQuery } from './__generated__/WorkflowStatusBypassStatusesQuery.graphql';
 import type { WorkflowStatusSetStatusMutation } from './__generated__/WorkflowStatusSetStatusMutation.graphql';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
@@ -27,6 +28,26 @@ interface BypassValues {
   shareOrganizations: Array<{ value: string; label?: string }>;
   unshareOrganizations: Array<{ value: string; label?: string }>;
 }
+
+type WorkflowStatus = NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['currentStatus'];
+
+const WorkflowOrderChip = styled(Chip)({ '& > span': { color: 'inherit' } });
+
+const ItemStatusWorkflow = ({ status }: { status: WorkflowStatus }) => (
+  <>
+    {status?.template && (
+      <WorkflowOrderChip
+        label={String(status.order + 1)}
+        style={{
+          color: status.template.color,
+          backgroundColor: `color-mix(in srgb, ${status.template.color} 10%, transparent)`,
+          marginRight: 10,
+        }}
+      />
+    )}
+    <ItemStatus status={status} />
+  </>
+);
 
 export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onCompleted }: {
   data: WorkflowStatusStixDomainObject_data$key;
@@ -178,14 +199,14 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
         }}
       >
         <SelectTrigger aria-label={t_i18n('Status')} className="h-8 w-auto max-w-full border-0 bg-transparent">
-          <SelectValue><ItemStatus status={currentStatus} /></SelectValue>
+          <SelectValue><ItemStatusWorkflow status={currentStatus} /></SelectValue>
         </SelectTrigger>
         <SelectContent>
           {loading && <div role="status" className="px-3 py-2">{t_i18n('Loading')}</div>}
           {!loading && !loadError && statuses.length === 0 && <div role="status" className="px-3 py-2">{t_i18n('No available status')}</div>}
           {!loading && !loadError && statuses.map(({ status }) => (
-            <SelectItem key={status.id} value={status.id} disabled={status.id === currentStatus?.id}>
-              <ItemStatus status={status} />
+            <SelectItem key={status.id} value={status.id} disabled={status.id === currentStatus?.id} className="px-3 py-2">
+              <ItemStatusWorkflow status={status} />
             </SelectItem>
           ))}
         </SelectContent>

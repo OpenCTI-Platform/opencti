@@ -4,8 +4,8 @@ import { extractEntityRepresentativeName } from '../../../src/database/entity-re
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
-import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
+import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
 import { lockResources } from '../../../src/lock/master-lock';
@@ -122,6 +122,7 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
 
 vi.mock('../../../src/domain/status', () => ({
   createStatus: vi.fn(),
+  findByType: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
@@ -3010,6 +3011,8 @@ describe('Transition comments – Domain', () => {
 describe('getWorkflowInstance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findStatusesByType).mockResolvedValue([]);
+    vi.mocked(WorkflowFactory.createDefinition).mockReset();
   });
 
   const makeBaseSetup = () => {
@@ -3025,6 +3028,31 @@ describe('getWorkflowInstance', () => {
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (loadEntity as any).mockResolvedValue(null); // no instance
   };
+
+  it.each(['standard', StatusScope.RequestAccess])('hydrates current and destination statuses in scope %s', async (scope) => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]', scope });
+    const currentStatus = { id: 'mapped-draft', template_id: 'draft', order: 0, type: 'Incident', scope: scope === 'standard' ? StatusScope.Global : scope };
+    const toStatus = { ...currentStatus, id: 'mapped-closed', template_id: 'closed', order: 1 };
+    vi.mocked(findStatusesByType).mockResolvedValue([
+      { ...currentStatus, id: 'wrong-scope', scope: scope === 'standard' ? StatusScope.RequestAccess : StatusScope.Global },
+      currentStatus,
+      toStatus,
+    ] as any);
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    expect(result.currentStatus).toEqual(currentStatus);
+    expect(result.allowedTransitions[0].toStatus).toEqual(toStatus);
+    expect(findStatusesByType).toHaveBeenCalledOnce();
+    expect(findStatusesByType).toHaveBeenCalledWith(mockContext, { ...mockUser, draft_context: undefined }, 'Incident');
+  });
+
+  it('returns null status mappings when no Status exists', async () => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]' });
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    expect(result.currentStatus).toBeNull();
+    expect(result.allowedTransitions[0].toStatus).toBeNull();
+  });
 
   it('returns pendingTransition: null when instance has no pendingTransition', async () => {
     makeBaseSetup();

@@ -8,8 +8,8 @@ import { createEntity, createRelation, deleteElementById, loadEntity, updateAttr
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { createListTask } from '../../../domain/backgroundTask-common';
-import { createStatus } from '../../../domain/status';
 import { resolveUserById } from '../../user/user-domain';
+import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode } from '../../../generated/graphql';
 import { lockResources } from '../../../lock/master-lock';
@@ -1136,7 +1136,10 @@ export const getWorkflowInstance = async (
   }
 
   // Pass entitySetting and definitionData to avoid redundant lookups in getAllowedTransitions
-  const allowedTransitions = await getAllowedTransitions(context, user, entityId, { entity, entitySetting, definitionData, instanceEntity });
+  const statuses = await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entity.entity_type);
+  const scope = resolveProjectionScope(instanceEntity?.scope);
+  const currentStatus = statuses.find((status) => status.scope === scope && status.template_id === currentState) ?? null;
+  const allowedTransitions = await getAllowedTransitions(context, user, entityId, { entity, entitySetting, definitionData, instanceEntity, statuses });
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
 
   // Parse pending transition and enrich with live Work data
@@ -1189,6 +1192,7 @@ export const getWorkflowInstance = async (
     internal_id: id,
     __typename: 'WorkflowInstance',
     currentState: currentState || '',
+    currentStatus,
     allowedTransitions,
     history: JSON.parse(instanceEntity?.history || '[]'),
     pendingStatus: instanceEntity?.pendingStatus ?? null,
@@ -1210,8 +1214,17 @@ export const getAllowedTransitions = async (
     entitySetting?: BasicStoreEntityEntitySetting;
     definitionData?: WorkflowDefinitionResponse | null;
     instanceEntity?: WorkflowInstanceStoreEntity | null;
+    statuses?: BasicWorkflowStatus[];
   },
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<Array<{
+  event: string;
+  toState: string;
+  toStatus: BasicWorkflowStatus | null;
+  comment?: string;
+  actions: string[];
+  requiresShareOrganizationInput: boolean;
+  requiresUnshareOrganizationInput: boolean;
+}>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -1235,6 +1248,8 @@ export const getAllowedTransitions = async (
   }
 
   const transitions = definition.getTransitions(effectiveStateId);
+  const statuses = options?.statuses ?? await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entity.entity_type);
+  const scope = resolveProjectionScope(instanceEntity?.scope);
 
   // Pre-evaluate conditions against the requesting user so the frontend only
   // sees transitions the current user is actually allowed to trigger.
@@ -1248,6 +1263,7 @@ export const getAllowedTransitions = async (
       return {
         event: transition.event,
         toState: transition.to,
+        toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
         comment: transition.comment,
         actions: transition.actionTypes || [],
         requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,

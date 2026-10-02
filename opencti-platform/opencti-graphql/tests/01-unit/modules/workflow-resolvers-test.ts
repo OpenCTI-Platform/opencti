@@ -93,6 +93,51 @@ describe('Workflow bypass API', () => {
   });
 });
 
+describe('Workflow status GraphQL contract', () => {
+  it.each(['destination', 'result'])('returns mapped identity and order for %s status', async (field) => {
+    const status = { id: 'report-status-approved', template_id: 'template-approved', order: 1 };
+    const schema = makeExecutableSchema({
+      typeDefs: `
+        type Status { id: ID!, order: Int! }
+        type WorkflowTransition { toStatus: Status }
+        type WorkflowTriggerResult { status: Status }
+        type Query { destination: WorkflowTransition, result: WorkflowTriggerResult }
+      `,
+      resolvers: {
+        Query: {
+          destination: () => ({ toState: 'template-approved', toStatus: status }),
+          result: () => ({ newState: 'template-approved', instance: { currentState: 'template-approved', currentStatus: status } }),
+        },
+        WorkflowTransition: { toStatus: workflowResolvers.WorkflowTransition.toStatus },
+        WorkflowTriggerResult: { status: workflowResolvers.WorkflowTriggerResult.status },
+      },
+    });
+    const statusField = field === 'destination' ? 'toStatus' : 'status';
+    const result = await graphql({ schema, source: `{ ${field} { ${statusField} { id order } } }` });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.[field]).toEqual({ [statusField]: { id: status.id, order: 1 } });
+  });
+
+  it('returns the mapped Status identity and required order for the current state', async () => {
+    const currentStatus = { id: 'report-status-new', template_id: 'template-new', order: 0 };
+    const schema = makeExecutableSchema({
+      typeDefs: `
+        type Status { id: ID!, order: Int! }
+        type WorkflowInstance { currentStatus: Status }
+        type Report { workflowInstance: WorkflowInstance }
+        type Query { report: Report }
+      `,
+      resolvers: {
+        Query: { report: () => ({ workflowInstance: { currentState: 'template-new', currentStatus } }) },
+        WorkflowInstance: { currentStatus: workflowResolvers.WorkflowInstance.currentStatus },
+      },
+    });
+    const result = await graphql({ schema, source: '{ report { workflowInstance { currentStatus { id order } } } }' });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.report).toEqual({ workflowInstance: { currentStatus: { id: 'report-status-new', order: 0 } } });
+  });
+});
+
 // ---------------------------------------------------------------------------
 // WorkflowTransition field resolver
 // ---------------------------------------------------------------------------
@@ -242,10 +287,11 @@ describe('Query.allowedTransitions resolver – comment field', () => {
 // ---------------------------------------------------------------------------
 
 describe('WorkflowTriggerResult resolver – status field', () => {
-  it('should return a status object derived from newState when present', () => {
-    const triggerResult = { newState: 'reviewed', instance: {}, entity: {} };
+  it('should return the mapped status of the resulting instance', () => {
+    const currentStatus = { id: 'mapped-reviewed', template_id: 'reviewed', order: 1 };
+    const triggerResult = { newState: 'reviewed', instance: { currentStatus }, entity: {} };
     const status = workflowResolvers.WorkflowTriggerResult.status(triggerResult);
-    expect(status).toEqual({ id: 'reviewed', template_id: 'reviewed' });
+    expect(status).toEqual(currentStatus);
   });
 
   it('should return null when newState is absent', () => {
@@ -423,7 +469,7 @@ describe('workflow-resolvers', () => {
 
     describe('allowedTransitions', () => {
       it('should call getAllowedTransitions with correct arguments', async () => {
-        const mockTransitions = [{ event: 'close', toState: 'closed', actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
+        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
         vi.mocked(workflowDomain.getAllowedTransitions).mockResolvedValue(mockTransitions);
 
         const result = await workflowResolvers.Query.allowedTransitions(
@@ -594,10 +640,11 @@ describe('workflow-resolvers', () => {
     });
 
     describe('currentStatus', () => {
-      it('should return status object with id and template_id', () => {
-        const instance = { currentState: 'open' };
+      it('should return the complete mapped status', () => {
+        const currentStatus = { id: 'mapped-open', template_id: 'open', order: 0 };
+        const instance = { currentState: 'open', currentStatus };
         const result = workflowResolvers.WorkflowInstance.currentStatus(instance);
-        expect(result).toEqual({ id: 'open', template_id: 'open' });
+        expect(result).toEqual(currentStatus);
       });
     });
 
@@ -613,10 +660,11 @@ describe('workflow-resolvers', () => {
 
   describe('WorkflowTransition type resolvers', () => {
     describe('toStatus', () => {
-      it('should return status object from toState', () => {
-        const transition = { toState: 'closed' };
+      it('should return the complete mapped destination status', () => {
+        const toStatus = { id: 'mapped-closed', template_id: 'closed', order: 2 };
+        const transition = { toState: 'closed', toStatus };
         const result = workflowResolvers.WorkflowTransition.toStatus(transition);
-        expect(result).toEqual({ id: 'closed', template_id: 'closed' });
+        expect(result).toEqual(toStatus);
       });
     });
 
@@ -644,10 +692,10 @@ describe('workflow-resolvers', () => {
 
   describe('WorkflowTriggerResult type resolvers', () => {
     describe('status', () => {
-      it('should return status object when newState is present', () => {
+      it('should return null when the resulting state has no mapped status', () => {
         const result = { newState: 'completed' };
         const status = workflowResolvers.WorkflowTriggerResult.status(result);
-        expect(status).toEqual({ id: 'completed', template_id: 'completed' });
+        expect(status).toBeNull();
       });
 
       it('should return null when newState is not present', () => {

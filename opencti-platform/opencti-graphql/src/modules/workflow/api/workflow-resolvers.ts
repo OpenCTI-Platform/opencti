@@ -99,7 +99,7 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
-    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
+    currentStatus: (instance: any) => instance.currentStatus ?? null,
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
@@ -118,7 +118,7 @@ const workflowResolvers = {
     to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
-    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
@@ -142,7 +142,7 @@ const workflowResolvers = {
     asyncActions: (pt: any) => pt.asyncActions ?? [],
   },
   WorkflowTriggerResult: {
-    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    status: (result: any) => (result.newState ? result.instance?.currentStatus ?? null : null),
     instance: (result: any) => result.instance,
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,

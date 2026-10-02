@@ -11,11 +11,12 @@ import type { RootReportQuery } from '../../analyses/reports/__generated__/RootR
 import type { Report_report$key } from '../../analyses/reports/__generated__/Report_report.graphql';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import type { WorkflowStatusStixDomainObject_data$data } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 
 vi.mock('../../drafts/useSwitchDraft', () => ({ default: () => ({ exitDraft: vi.fn() }) }));
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../relay/environment')>(),
-  fetchQuery: () => ({ toPromise: async () => ({ workflowBypassStatuses: [{ status: { id: 'status-B', template: { name: 'B', color: '#00ff00' } }, onExit: [{ type: 'log', params: null }], onEnter: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }] }) }),
+  fetchQuery: () => ({ toPromise: async () => ({ workflowBypassStatuses: [{ status: { id: 'status-B', order: 0, template: { name: 'B', color: '#00ff00' } }, onExit: [{ type: 'log', params: null }], onEnter: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }] }) }),
 }));
 
 const status = (name: string) => ({ id: `status-${name}`, order: 1, template: { id: `template-${name}`, name, color: '#00ff00' } });
@@ -39,7 +40,8 @@ const Harness = () => {
   );
 };
 
-const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE') => {
+const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
+  allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions) => {
   vi.useFakeTimers();
   const rendered = testRender(<Suspense><Harness /></Suspense>, {
     userContext: createMockUserContext({
@@ -48,7 +50,7 @@ const setup = async (pendingStatus: string | null = 'pending', enabled = true, a
     }),
   });
   await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
-    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: instance(pendingStatus) }),
+    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: { ...instance(pendingStatus), allowedTransitions } }),
   })));
   return rendered;
 };
@@ -65,11 +67,45 @@ const resolveRefresh = async (relayEnv: ReturnType<typeof testRender>['relayEnv'
 afterEach(() => vi.useRealTimers());
 
 describe('WorkflowTransitionsForEntity refresh', () => {
+  it.each([2, 3])('opens a menu for %s entity transitions without executing the primary label', async (count) => {
+    const transitions = instance(null).allowedTransitions;
+    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [
+      transitions[0],
+      { ...transitions[0], event: 'close', actions: ['log'] },
+      ...(count === 3 ? [{ ...transitions[0], event: 'review', actions: ['log', 'updateAuthorizedMembers'] }] : []),
+    ]);
+    vi.useRealTimers();
+    await user.click(screen.getByRole('button', { name: 'approve' }));
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    expect(screen.getByRole('menuitem', { name: 'approve' })).toBeVisible();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(count);
+    expect(screen.getByText('(+1 action required)')).toBeVisible();
+    if (count === 3) expect(screen.getByText('(+2 actions required)')).toBeVisible();
+    await user.click(screen.getByRole('menuitem', { name: /^close/ }));
+    expect(relayEnv.mock.getMostRecentOperation().request.variables.eventName).toBe('close');
+  });
+
+  it('supports keyboard dismissal and selection of the first transition', async () => {
+    const transition = instance(null).allowedTransitions[0];
+    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [transition, { ...transition, event: 'close' }]);
+    vi.useRealTimers();
+    const trigger = screen.getByRole('button', { name: 'approve' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('menu')).toBeVisible();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(trigger).toHaveFocus();
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    await user.keyboard('{Enter}{ArrowDown}{Home}{Enter}');
+    expect(relayEnv.mock.getMostRecentOperation().request.variables.eventName).toBe('approve');
+  });
+
   it('allows closing the bypass dialog after a hook failure updates the Relay instance', async () => {
     const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
     vi.useRealTimers();
     await user.click(screen.getByRole('combobox'));
-    await user.click(await screen.findByRole('option', { name: 'B' }));
+    await user.click(await screen.findByRole('option', { name: /^1\s*B$/ }));
     await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     await act(async () => relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       WorkflowTriggerResult: () => ({ success: false, reason: 'Hook failed', executionStatus: 'error', instance: instance('error'), entity: null }),
@@ -84,7 +120,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
     vi.useRealTimers();
     await user.click(screen.getByRole('combobox'));
-    await user.click(await screen.findByRole('option', { name: 'B' }));
+    await user.click(await screen.findByRole('option', { name: /^1\s*B$/ }));
     await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     await act(async () => relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       WorkflowTriggerResult: () => ({ success: true, reason: null, executionStatus, instance: instance(null), entity: null }),
