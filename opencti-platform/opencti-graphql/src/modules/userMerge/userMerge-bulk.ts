@@ -161,3 +161,20 @@ export const userMergeBulkRewrite = async (
   logApp.info('[MERGE_USERS] bulk rewrite done', { label, updated: updates.length });
   return updates.length;
 };
+
+/** Deletes the documents the caller selected, each in the index it was read from. */
+export const userMergeBulkDelete = async (
+  context: AuthContext,
+  label: string,
+  deletions: { id: string; index: string }[],
+): Promise<number> => {
+  if (deletions.length === 0) {
+    return 0;
+  }
+  const body = deletions.map((deletion) => ({ delete: { _index: deletion.index, _id: deletion.id } }));
+  await elBulk(context, { refresh: true, timeout: '60m', body }).catch((err: unknown) => {
+    throw DatabaseError('User merge bulk delete failed', { label, cause: err });
+  });
+  logApp.info('[MERGE_USERS] bulk delete done', { label, deleted: deletions.length });
+  return deletions.length;
+};

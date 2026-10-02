@@ -213,6 +213,22 @@ describe('userMerge draft patches holding relationship edits', () => {
     const patch = JSON.stringify({ objectAssignee: { added_value: [SOURCE_STANDARD], initial_value: [] } });
     expect(rewriteDraftPatch(rewriteDraftPatch(patch, pairs), pairs)).toBeUndefined();
   });
+
+  // Validation applies the add before the remove: a swap left as both would unassign the target.
+  it('should keep the target assigned when the draft swapped the source for it', () => {
+    const patch = JSON.stringify({ objectAssignee: { added_value: [TARGET_STANDARD], removed_value: [SOURCE_STANDARD], initial_value: [SOURCE_STANDARD] } });
+    const parsed = JSON.parse(rewriteDraftPatch(patch, pairs) as string);
+    expect(parsed.objectAssignee.added_value).toEqual([TARGET_STANDARD]);
+    expect(parsed.objectAssignee.removed_value).toEqual([]);
+    expect(parsed.objectAssignee.initial_value).toEqual([TARGET_STANDARD]);
+  });
+
+  it('should keep a removal of the source the draft did not balance with the target', () => {
+    const patch = JSON.stringify({ objectAssignee: { added_value: [OTHER], removed_value: [SOURCE_STANDARD] } });
+    const parsed = JSON.parse(rewriteDraftPatch(patch, pairs) as string);
+    expect(parsed.objectAssignee.added_value).toEqual([OTHER]);
+    expect(parsed.objectAssignee.removed_value).toEqual([TARGET_STANDARD]);
+  });
 });
 
 describe('userMerge serialized request access', () => {

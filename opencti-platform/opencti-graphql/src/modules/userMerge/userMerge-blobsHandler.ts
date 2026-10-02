@@ -241,6 +241,30 @@ export const userMergeDraftPatchIdPairs = ({ sourceId, targetId, sourceUser, tar
 };
 
 /**
+ * A draft that swapped one account of the pair for the other — the source removed, the target
+ * added — comes out of the rewrite adding and removing the target. Validation applies the add
+ * before the remove (`buildUpdateFieldPatch`), which would leave the target unassigned. Both
+ * accounts being the same person, the draft assigned them: the removal is dropped.
+ */
+const settleSwappedUsers = (json: string, pairs: UserMergeIdPair[]): string => {
+  const targets = pairs.map((pair) => pair.targetId);
+  const patch = JSON.parse(json) as Record<string, { added_value?: unknown[]; removed_value?: unknown[] } | null>;
+  let settled = false;
+  Object.values(patch).forEach((field) => {
+    if (!field || !Array.isArray(field.added_value) || !Array.isArray(field.removed_value)) {
+      return;
+    }
+    const added = field.added_value;
+    const kept = field.removed_value.filter((value) => !(targets.includes(value as string) && added.includes(value)));
+    if (kept.length !== field.removed_value.length) {
+      field.removed_value = kept;
+      settled = true;
+    }
+  });
+  return settled ? JSON.stringify(patch) : json;
+};
+
+/**
  * Rewrite a draft patch for every id pair. A rejection only stands when no pair rewrote anything,
  * the way a payload mixing a reference and a free-text mention is rewritten for the reference.
  */
@@ -260,7 +284,7 @@ export const rewriteDraftPatch = (raw: unknown, pairs: UserMergeIdPair[]): strin
       changed = true;
     }
   }
-  return changed ? current as string : rejection;
+  return changed ? settleSwappedUsers(current as string, pairs) : rejection;
 };
 
 /**
