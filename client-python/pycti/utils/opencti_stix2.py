@@ -9,6 +9,7 @@ import re
 import time
 import traceback
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
@@ -200,6 +201,7 @@ class OpenCTIStix2:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
+        self.expectation_executor = ThreadPoolExecutor(max_workers=1)
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
@@ -3678,7 +3680,10 @@ class OpenCTIStix2:
                         ):
                             self.import_object(item, update, types)
         if work_id is not None:
-            self.opencti.work.report_expectation(work_id, None)
+            headers = self.opencti.request_headers.copy()
+            self.expectation_executor.submit(
+                self.opencti.work.report_expectation, work_id, None, headers
+            )
         bundles_success_counter.add(1)
         return True
 

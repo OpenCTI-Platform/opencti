@@ -632,7 +632,7 @@ class OpenCTIApiClient:
 
         return obj, []
 
-    def query(self, query, variables=None, disable_impersonate=False):
+    def query(self, query, variables=None, disable_impersonate=False, headers=None):
         """Submit a query to the OpenCTI GraphQL API.
 
         :param query: GraphQL query string
@@ -652,7 +652,7 @@ class OpenCTIApiClient:
         # Recursively extract File objects from nested dictionaries
         query_var, files_vars = self._extract_files(variables)
 
-        query_headers = self.request_headers.copy()
+        query_headers = (headers or self.request_headers).copy()
         if disable_impersonate and "opencti-applicant-id" in query_headers:
             del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query

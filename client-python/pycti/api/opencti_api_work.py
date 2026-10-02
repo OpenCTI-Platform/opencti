@@ -88,7 +88,7 @@ class OpenCTIApiWork:
            """
         self.api.query(query, {"id": work_id})
 
-    def report_expectation(self, work_id: str, error):
+    def report_expectation(self, work_id: str, error, headers=None):
         """Report a work expectation.
 
         :param work_id: the work id
@@ -108,7 +108,7 @@ class OpenCTIApiWork:
                 }
                """
             try:
-                self.api.query(query, {"id": work_id, "error": error}, True)
+                self.api.query(query, {"id": work_id, "error": error}, True, headers)
             except Exception:
                 self.api.app_logger.error("Cannot report expectation")
 
