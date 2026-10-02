@@ -20,7 +20,7 @@ vi.mock('../../../src/utils/filtering/filtering-utils', async (importOriginal) =
   };
 });
 
-import { findWorkPaginated, worksForConnector, worksForSource } from '../../../src/domain/work';
+import { findExportApplicantId, findWorkPaginated, worksForConnector, worksForSource } from '../../../src/domain/work';
 
 describe('Work domain query options', () => {
   const context = {} as any;
@@ -76,5 +76,34 @@ describe('Work domain query options', () => {
     expect(options.types).toEqual([ENTITY_TYPE_WORK]);
     expect(options.type).toBeUndefined();
     expect(options.filters).toEqual(sourceAndEventFilter);
+  });
+
+  it('findExportApplicantId should return the user of the export work named after the file', async () => {
+    const nameFilter = { mode: 'and', filters: [{ key: 'name', values: ['export.json'] }], filterGroups: [] };
+    const nameAndSourceFilter = { mode: 'and', filters: [{ key: 'event_source_id', values: ['export/Report/report-id'] }], filterGroups: [nameFilter] };
+    const fullFilter = { mode: 'and', filters: [{ key: 'event_type', values: ['INTERNAL_EXPORT_FILE'] }], filterGroups: [nameAndSourceFilter] };
+    mockAddFilter
+      .mockReturnValueOnce(nameFilter)
+      .mockReturnValueOnce(nameAndSourceFilter)
+      .mockReturnValueOnce(fullFilter);
+    mockElPaginate.mockResolvedValue([{ id: 'work-id', user_id: 'applicant-id' }]);
+
+    const applicantId = await findExportApplicantId(context, user, 'export/Report/report-id', 'export.json');
+
+    expect(applicantId).toEqual('applicant-id');
+    expect(mockAddFilter).toHaveBeenNthCalledWith(1, null, 'name', 'export.json');
+    expect(mockAddFilter).toHaveBeenNthCalledWith(2, nameFilter, 'event_source_id', 'export/Report/report-id');
+    expect(mockAddFilter).toHaveBeenNthCalledWith(3, nameAndSourceFilter, 'event_type', 'INTERNAL_EXPORT_FILE');
+    const [, , , options] = mockElPaginate.mock.calls[0];
+    expect(options.filters).toEqual(fullFilter);
+    expect(options.first).toEqual(1);
+  });
+
+  it('findExportApplicantId should return undefined when no export work matches', async () => {
+    mockElPaginate.mockResolvedValue([]);
+
+    const applicantId = await findExportApplicantId(context, user, 'export/Report/report-id', 'export.json');
+
+    expect(applicantId).toBeUndefined();
   });
 });

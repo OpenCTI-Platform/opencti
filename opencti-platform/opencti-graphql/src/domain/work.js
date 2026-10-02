@@ -126,6 +126,14 @@ export const loadExportWorksAsProgressFiles = async (context, user, sourceId) =>
   return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
 
+// Export connectors push the generated file with their own user,
+// the export work (named after the expected file) holds the user who asked for it
+export const findExportApplicantId = async (context, user, sourceId, fileName) => {
+  const filters = addFilter(null, 'name', fileName);
+  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, filters, first: 1 });
+  return works[0]?.user_id;
+};
+
 export const deleteWorksRaw = async (context, works) => {
   const workIds = works.map((w) => w.internal_id);
   await elDeleteInstances(context, works);
