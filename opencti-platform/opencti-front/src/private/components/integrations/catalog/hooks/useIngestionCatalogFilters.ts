@@ -100,9 +100,10 @@ const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean =
 };
 
 const matchesManagerSupported = (item: CatalogItem, managerSupported: ManagerSupportedFacet): boolean => {
+  // Managed / Manual tells who runs a connector container: built-in methods have none.
+  if (item.deployment !== 'connector') return false;
   if (managerSupported === 'managed') return item.managerSupported === true;
-  // Missing manager_supported metadata is treated as unmanaged so legacy
-  // contracts and built-in items stay in the same bucket.
+  // Missing manager_supported metadata is treated as unmanaged (legacy contracts).
   return item.managerSupported !== true;
 };
 

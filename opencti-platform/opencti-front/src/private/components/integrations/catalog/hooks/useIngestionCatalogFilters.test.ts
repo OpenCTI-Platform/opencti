@@ -88,7 +88,8 @@ describe('useIngestionCatalogFilters', () => {
       // 3 verified (2 connectors + built-in), 1 community
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 3, 'built-in': 1 });
-      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 3, unmanaged: 1 });
+      // The built-in is neither managed nor manual: it is left out of the group.
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 3, unmanaged: 0 });
     });
 
     it('counts each facet group against items filtered by every group except itself', () => {
@@ -102,7 +103,7 @@ describe('useIngestionCatalogFilters', () => {
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 2, 'built-in': 1 });
       // ...but the status group itself is counted with the status filter skipped.
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
-      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 2, unmanaged: 1 });
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 2, unmanaged: 0 });
     });
 
     it('counts the license and category groups with their own filter skipped', () => {
@@ -165,6 +166,24 @@ describe('useIngestionCatalogFilters', () => {
 
       act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed', 'unmanaged'] })));
       expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Managed', 'Unmanaged', 'Missing']);
+    });
+
+    it('leaves built-in methods out of Managed and Manual, and keeps them without a selection', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: 'Managed', manager_supported: true }),
+          makeContract({ title: 'Unmanaged', manager_supported: false }),
+        ],
+        builtIns: [builtInSync],
+      });
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 1, unmanaged: 1 });
+      expect(result.current.filteredItems.some((item) => item.deployment === 'built-in')).toBe(true);
+
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['unmanaged'] })));
+      expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Unmanaged']);
+
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed', 'unmanaged'] })));
+      expect(result.current.filteredItems.some((item) => item.deployment === 'built-in')).toBe(false);
     });
 
     it('persists managerSupported in the URL and clears it back to no selection', () => {
