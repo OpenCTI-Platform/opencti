@@ -20,7 +20,8 @@ vi.mock('../../../src/utils/filtering/filtering-utils', async (importOriginal) =
   };
 });
 
-import { findExportApplicantId, findWorkPaginated, worksForConnector, worksForSource } from '../../../src/domain/work';
+import { findExportApplicantId, findWorkPaginated, loadExportWorksAsProgressFiles, worksForConnector, worksForSource } from '../../../src/domain/work';
+import { ADMIN_USER } from '../../utils/testQuery';
 
 describe('Work domain query options', () => {
   const context = {} as any;
@@ -97,6 +98,33 @@ describe('Work domain query options', () => {
     const [, , , options] = mockElPaginate.mock.calls[0];
     expect(options.filters).toEqual(fullFilter);
     expect(options.first).toEqual(1);
+  });
+
+  it('loadExportWorksAsProgressFiles should only keep the exports asked by the given user', async () => {
+    const userFilter = { mode: 'and', filters: [{ key: 'user_id', values: ['user-id'] }], filterGroups: [] };
+    mockAddFilter.mockReturnValueOnce(userFilter);
+
+    await loadExportWorksAsProgressFiles(context, user, 'export/Report/report-id', { userId: 'user-id' });
+
+    expect(mockAddFilter).toHaveBeenNthCalledWith(1, null, 'user_id', 'user-id');
+    expect(mockAddFilter).toHaveBeenNthCalledWith(2, userFilter, 'event_source_id', 'export/Report/report-id');
+  });
+
+  it('loadExportWorksAsProgressFiles should keep all exports for bypass users', async () => {
+    const sourceFilter = { mode: 'and', filters: [{ key: 'event_source_id', values: ['export/Report/report-id'] }], filterGroups: [] };
+    mockAddFilter.mockReturnValueOnce(sourceFilter);
+    const exportWork = { status: 'progress', messages: [], errors: [], updated_at: new Date().toISOString() };
+    mockElPaginate.mockResolvedValue([
+      { ...exportWork, internal_id: 'work-1', user_id: 'user-1' },
+      { ...exportWork, internal_id: 'work-2', user_id: 'user-2' },
+    ]);
+
+    // paginatedForPathWithEnrichment gives no userId for bypass users
+    const progressFiles = await loadExportWorksAsProgressFiles(context, ADMIN_USER, 'export/Report/report-id', { userId: undefined });
+
+    expect(mockAddFilter).not.toHaveBeenCalledWith(null, 'user_id', expect.anything());
+    expect(mockAddFilter).toHaveBeenNthCalledWith(1, null, 'event_source_id', 'export/Report/report-id');
+    expect(progressFiles.map((file: { id: string }) => file.id)).toEqual(['work-1', 'work-2']);
   });
 
   it('findExportApplicantId should return undefined when no export work matches', async () => {

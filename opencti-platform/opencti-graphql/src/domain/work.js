@@ -120,8 +120,10 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
-  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
+export const loadExportWorksAsProgressFiles = async (context, user, sourceId, opts = {}) => {
+  // userId restricts to the exports asked by this user
+  const filters = opts.userId ? addFilter(null, 'user_id', opts.userId) : null;
+  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, filters, first: 10 });
   const filterSuccessCompleted = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
   return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
