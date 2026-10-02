@@ -198,8 +198,8 @@ describe('buildCustomFieldStixFilterTester', () => {
 
   const filter = { key: ['x_opencti_cf_field'], values: ['a'], operator: FilterOperator.Eq } as any;
 
-  it('dispatches to testStringFilter for string, select and multi_select field types', () => {
-    for (const fieldType of ['string', 'select', 'multi_select'] as const) {
+  it('dispatches to testStringFilter for string, markdown, select and multi_select field types', () => {
+    for (const fieldType of ['string', 'markdown', 'select', 'multi_select'] as const) {
       const definition = makeDefinition({ name: 'x_opencti_cf_field', field_type: fieldType });
       const tester = buildCustomFieldStixFilterTester(definition);
       const stix = { x_opencti_cf_field: 'value' };
