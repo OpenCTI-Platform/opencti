@@ -9,10 +9,12 @@ import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } fr
 import { getUseCaseIcon } from '@components/integrations/catalog/utils/useCaseIcons';
 import {
   CATALOG_DEPLOYMENT_FACETS,
+  CATALOG_MANAGER_SUPPORTED_FACETS,
   CATALOG_STATUS_FACETS,
   CatalogDeploymentFacet,
   CatalogFilterState,
   CatalogStatusFacet,
+  ManagerSupportedFacet,
 } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { useFormatter } from '../../../../components/i18n';
 import { paperBg, paperBorder } from '../paperSurface';
@@ -176,6 +178,7 @@ interface IngestionCatalogFacetSidebarProps {
     licenseTypeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     deploymentCounts: Record<string, number>;
+    managerSupportedCounts: Record<ManagerSupportedFacet, number>;
   };
 }
 
@@ -256,6 +259,27 @@ const IngestionCatalogFacetSidebar = ({
               onToggle={() => onFiltersChange((prev) => ({ ...prev, deployments: toggleValue(prev.deployments, deployment) }))}
             />
           ))}
+        </Box>
+
+        <Box sx={dividedGroupSx}>
+          <FacetGroupLabel>{t_i18n('Deployment')}</FacetGroupLabel>
+          {CATALOG_MANAGER_SUPPORTED_FACETS.map((managerSupported) => {
+            const label = managerSupported === 'managed'
+              ? t_i18n('Managed')
+              : t_i18n('Manual');
+            return (
+              <FacetCheckbox
+                key={managerSupported}
+                checked={filters.managerSupported.includes(managerSupported)}
+                count={facets.managerSupportedCounts[managerSupported] ?? 0}
+                label={label}
+                onToggle={() => onFiltersChange((prev) => ({
+                  ...prev,
+                  managerSupported: toggleValue(prev.managerSupported, managerSupported),
+                }))}
+              />
+            );
+          })}
         </Box>
 
         <Box sx={dividedGroupSx}>
