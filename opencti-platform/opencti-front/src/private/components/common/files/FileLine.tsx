@@ -284,14 +284,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             gap={0.5}
           >
             {!isProgress && !isFail && !isOutdated && (
-              <Box sx={{ maxWidth: 150 }}>
+              <Box sx={{ width: 100, display: 'flex', justifyContent: 'center' }}>
                 <ItemMarkings
                   markingDefinitions={fileMarkings}
                   limit={1}
                 />
               </Box>
             )}
-            {!isProgress && !isFail && !isOutdated && isBypassUser(me) && (
+            {isBypassUser(me) && (
               <ItemCreators
                 creators={file?.metaData?.creator ? [file?.metaData?.creator] : []}
                 maxWidth={60}
