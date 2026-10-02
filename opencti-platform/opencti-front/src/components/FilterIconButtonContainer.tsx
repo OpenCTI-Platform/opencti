@@ -19,20 +19,15 @@ export type FilterIconButtonVariant
     | 'small' // small variant, for filters in a datatable line for instance
     | 'tag'; // for filters with a style similar as the Tag component, in an entity Overview for instance
 
-interface FilterIconButtonContainerProps {
-  filters: FilterGroup;
+export interface FilterIconButtonSharedProps {
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
   variant?: FilterIconButtonVariant;
-  dataColumns?: DataColumns;
+  chipColor?: ChipOwnProps['color'];
   disabledPossible?: boolean;
   redirection?: boolean;
-  filtersRepresentativesQueryRef: PreloadedQuery<FilterValuesContentQuery>;
-  chipColor?: ChipOwnProps['color'];
   helpers?: handleFilterHelpers;
-  hasRenderedRef: boolean;
-  setHasRenderedRef: (value: boolean) => void;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
@@ -41,8 +36,6 @@ interface FilterIconButtonContainerProps {
   availableRelationshipTypes?: string[];
   host?: WidgetHost;
   hasSavedFilters?: boolean;
-  filterChipsParams: FilterChipsParameter;
-  setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
   availableFilterKeys?: string[];
   /**
    * When true, the nested filter group editor is rendered as a floating `Popper` instead of in
@@ -50,6 +43,16 @@ interface FilterIconButtonContainerProps {
    * trigger is more appropriate than growing the layout.
    */
   floating?: boolean;
+}
+
+interface FilterIconButtonContainerProps extends FilterIconButtonSharedProps {
+  filters: FilterGroup;
+  dataColumns?: DataColumns;
+  filtersRepresentativesQueryRef: PreloadedQuery<FilterValuesContentQuery>;
+  hasRendered: boolean;
+  setHasRendered: (value: boolean) => void;
+  filterChipsParams: FilterChipsParameter;
+  setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
 
 /**
@@ -71,8 +74,8 @@ const FilterIconButtonContainer: FunctionComponent<
   chipColor,
   handleRemoveFilter,
   helpers,
-  hasRenderedRef,
-  setHasRenderedRef,
+  hasRendered,
+  setHasRendered,
   availableRelationFilterTypes,
   entityTypes,
   filtersRestrictions,
@@ -107,8 +110,8 @@ const FilterIconButtonContainer: FunctionComponent<
   } = useFilterPopoverAnchor({
     helpers,
     displayedFilters,
-    hasRenderedRef,
-    setHasRenderedRef,
+    hasRendered,
+    setHasRendered,
     setFilterChipsParams,
   });
 
