@@ -68,9 +68,7 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
       <FilterOperatorSelect
         filter={filter}
         filterKey={fKey}
-        helpers={helpers}
         setInputValues={setInputValues}
-        entityTypes={entityTypes}
         subKey={subKey}
         disabled={disabled}
       />

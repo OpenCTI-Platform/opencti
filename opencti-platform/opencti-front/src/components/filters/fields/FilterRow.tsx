@@ -26,7 +26,7 @@ export interface FilterRowProps {
  */
 const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
   const { t_i18n } = useFormatter();
-  const { helpers, entityTypes } = useFilterEditorContext();
+  const { entityTypes } = useFilterEditorContext();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
 
   const [inputValues, setInputValues] = useState<FilterEditorInputValue[]>(filter ? [filter as FilterEditorInputValue] : []);
@@ -43,9 +43,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
         <FilterOperatorSelect
           filter={filter}
           filterKey={filter.key}
-          helpers={helpers}
           setInputValues={setInputValues}
-          entityTypes={entityTypes}
           subKey={isCompositeRegardingOf ? 'relationship_type' : undefined}
           label={t_i18n('Condition')}
           triggerId={`filter-row-operator-${filter.id}`}
@@ -114,6 +112,7 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, val) => option.value === val.value}
           groupBy={isGrouped ? (option) => option.groupLabel ?? '' : undefined}
+          labelPosition="none"
           onValueChange={(next) => {
             const picked = Array.isArray(next) ? next[0] : next;
             if (picked?.value) handleChangeKey(picked.value);
