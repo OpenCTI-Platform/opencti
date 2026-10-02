@@ -553,6 +553,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
               <Grid item={true} xs={12}>
                 <Label>
+                  {t_i18n('Version')}
+                </Label>
+                <FieldOrEmpty source={connector.version}>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {connector.version}
+                  </Typography>
+                </FieldOrEmpty>
+              </Grid>
+
+              <Grid item={true} xs={12}>
+                <Label>
                   {t_i18n('State')}
                 </Label>
                 <FieldOrEmpty source={connector.connector_state}>
@@ -1045,6 +1056,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        version
         connector_user_id
         is_managed
         manager_contract_configuration {
