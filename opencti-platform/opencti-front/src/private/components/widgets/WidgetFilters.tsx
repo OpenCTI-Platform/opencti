@@ -333,7 +333,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
             entityTypes={searchContext.entityTypes}
             host={host}
-            inline
           />
         )}
 
@@ -362,7 +361,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               'Stix-Cyber-Observable',
             ]}
             host={host}
-            inline
           />
         )}
 
@@ -391,7 +389,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               'Stix-Cyber-Observable',
             ]}
             host={host}
-            inline
           />
         )}
 

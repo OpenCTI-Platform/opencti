@@ -15,11 +15,11 @@ interface FilterGroupPanelHostProps extends Omit<FilterEditorContextValue, 'filt
   group?: FilterGroup;
   filtersRepresentativesMap?: FilterEditorContextValue['filtersRepresentativesMap'];
   /**
-   * When true, the panel is rendered in the normal document flow (a plain Box) instead of a
-   * floating `Popper`. Used in contexts where a floating panel would overflow its container
-   * without resizing it, e.g. the widget creation dialog.
+   * When true, the panel is rendered as a floating `Popper` instead of in the normal document
+   * flow. Default (false/undefined) is inline (a plain Box), so a floating panel only overflows
+   * its container where explicitly opted into, e.g. a dropdown-style trigger.
    */
-  inline?: boolean;
+  floating?: boolean;
   /** Element the floating panel is sized and positioned against (the chip line). */
   anchorRef: RefObject<HTMLDivElement | null>;
   onClickAway: (event: MouseEvent | TouchEvent) => void;
@@ -37,7 +37,7 @@ interface FilterGroupPanelHostProps extends Omit<FilterEditorContextValue, 'filt
  */
 const FilterGroupPanelHost: FunctionComponent<FilterGroupPanelHostProps> = ({
   group,
-  inline,
+  floating,
   anchorRef,
   onClickAway,
   helpers,
@@ -74,49 +74,49 @@ const FilterGroupPanelHost: FunctionComponent<FilterGroupPanelHostProps> = ({
     </FilterEditorProvider>
   );
 
-  if (inline) {
-    if (!group) return null;
+  if (floating) {
     return (
-      <Box sx={{ width: '100%', marginTop: 1 }}>
-        <Paper padding={0} style={{ width: '100%' }}>
-          {withContext(panel)}
-        </Paper>
-      </Box>
+      <Popper
+        open={Boolean(group)}
+        anchorEl={anchorRef.current}
+        placement="bottom-start"
+        disablePortal
+        transition
+        // Sized against the wrapping `Box` (position: relative) instead of a JS-measured
+        // offsetWidth: stays in sync with the chip line's real width on every resize /
+        // sidebar collapse, with no state tracking needed.
+        style={{ width: '100%', zIndex: theme.zIndex.modal }}
+      >
+        {({ TransitionProps }) => (
+          <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
+            <Paper padding={0} style={{ width: '100%', marginTop: 8 }}>
+              {/* The decision must be taken on `pointerdown`: the design system Select opens on
+                  that event and portals its content, and the resulting `click` is then dispatched
+                  on the common ancestor of the trigger and of the freshly mounted content, i.e.
+                  the document element — outside the panel and outside any React tree, where no
+                  listener can recognize it. On `pointerdown` the target is still the trigger.
+                  Clicks landing inside an already open portal are handled by ClickAwayListener
+                  itself, which forgives events bubbling through a React portal.
+                  FDS-WORKAROUND #65: removable once SelectContent accepts `portalled`. */}
+              <ClickAwayListener mouseEvent="onPointerDown" onClickAway={onClickAway}>
+                <Box sx={{ padding: 2 }}>
+                  {group && withContext(<FilterGroupPanel group={group} />)}
+                </Box>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
     );
   }
 
+  if (!group) return null;
   return (
-    <Popper
-      open={Boolean(group)}
-      anchorEl={anchorRef.current}
-      placement="bottom-start"
-      disablePortal
-      transition
-      // Sized against the wrapping `Box` (position: relative) instead of a JS-measured
-      // offsetWidth: stays in sync with the chip line's real width on every resize /
-      // sidebar collapse, with no state tracking needed.
-      style={{ width: '100%', zIndex: theme.zIndex.modal }}
-    >
-      {({ TransitionProps }) => (
-        <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
-          <Paper padding={0} style={{ width: '100%', marginTop: 8 }}>
-            {/* The decision must be taken on `pointerdown`: the design system Select opens on
-                that event and portals its content, and the resulting `click` is then dispatched
-                on the common ancestor of the trigger and of the freshly mounted content, i.e.
-                the document element — outside the panel and outside any React tree, where no
-                listener can recognize it. On `pointerdown` the target is still the trigger.
-                Clicks landing inside an already open portal are handled by ClickAwayListener
-                itself, which forgives events bubbling through a React portal.
-                FDS-WORKAROUND #65: removable once SelectContent accepts `portalled`. */}
-            <ClickAwayListener mouseEvent="onPointerDown" onClickAway={onClickAway}>
-              <Box sx={{ padding: 2 }}>
-                {group && withContext(<FilterGroupPanel group={group} />)}
-              </Box>
-            </ClickAwayListener>
-          </Paper>
-        </Grow>
-      )}
-    </Popper>
+    <Box sx={{ width: '100%', marginTop: 1 }}>
+      <Paper padding={0} style={{ width: '100%' }}>
+        {withContext(panel)}
+      </Paper>
+    </Box>
   );
 };
 
