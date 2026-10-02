@@ -1,31 +1,26 @@
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
-import Skeleton from '@mui/material/Skeleton';
+import { Stack } from '@mui/material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import ListLines from '../../../../components/list_lines/ListLines';
 import { formatDate } from '../../../../utils/Time';
 import { insertNode } from '../../../../utils/store';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
-import StixCoreRelationshipCreationFromRelationStixDomainObjectsLines, {
-  stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
-} from './StixCoreRelationshipCreationFromRelationStixDomainObjectsLines';
-import StixCoreRelationshipCreationFromRelationStixCyberObservablesLines, {
-  stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
-} from './StixCoreRelationshipCreationFromRelationStixCyberObservablesLines';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { removeEmptyFields } from '../../../../utils/utils';
+import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from '../containers/ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
-import SearchInput from '../../../../components/SearchInput';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import Drawer from '../drawer/Drawer';
-import { Stack } from '@mui/material';
 
 const stixCoreRelationshipCreationFromRelationQuery = graphql`
   query StixCoreRelationshipCreationFromRelationQuery($id: String!) {
@@ -232,10 +227,70 @@ const StixCoreRelationshipCreationFromRelation = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [targetEntity, setTargetEntity] = useState(null);
-  const [search, setSearch] = useState('');
+  const [openCreateEntity, setOpenCreateEntity] = useState(false);
+  const [openCreateObservable, setOpenCreateObservable] = useState(false);
+
+  // Same listing as the 'Add entities' panel (ContainerAddStixCoreObjectsInLine)
+  const targetTypes = stixCoreObjectTypes && stixCoreObjectTypes.length > 0
+    ? stixCoreObjectTypes
+    : [onlyObservables ? 'Stix-Cyber-Observable' : 'Stix-Core-Object'];
+  const showSDOCreation = !onlyObservables;
+  const showSCOCreation = onlyObservables || targetTypes.includes('Stix-Core-Object') || targetTypes.includes('Stix-Cyber-Observable');
+  const { viewStorage, helpers, paginationOptions: storagePaginationOptions } = usePaginationLocalStorage(
+    `relation-add-linked-entities-${targetTypes}`,
+    {
+      searchTerm: '',
+      sortBy: '_score',
+      orderAsc: false,
+      filters: emptyFilterGroup,
+      types: targetTypes,
+    },
+    true,
+  );
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+  } = viewStorage;
+  const { count: _, ...storagePaginationOptionsNoCount } = storagePaginationOptions;
+  const searchPaginationOptions = removeEmptyFields({
+    ...storagePaginationOptionsNoCount,
+    search: searchTerm,
+  });
+  const buildColumns = () => ({
+    entity_type: {
+      label: 'Type',
+      width: '15%',
+      isSortable: true,
+    },
+    value: {
+      label: 'Value',
+      width: '32%',
+      isSortable: false,
+    },
+    createdBy: {
+      label: 'Author',
+      width: '15%',
+      isSortable: isRuntimeFieldEnable(),
+    },
+    objectLabel: {
+      label: 'Labels',
+      width: '22%',
+      isSortable: false,
+    },
+    objectMarking: {
+      label: 'Marking',
+      width: '15%',
+      isSortable: isRuntimeFieldEnable(),
+    },
+  });
 
   const handleOpen = () => setOpen(true);
 
@@ -290,120 +345,104 @@ const StixCoreRelationshipCreationFromRelation = ({
     setTargetEntity(null);
   };
 
-  const handleSearch = (keyword) => setSearch(keyword);
-
-  const handleSelectEntity = (stixDomainObject) => {
+  const handleSelectEntity = (stixCoreObject) => {
     setStep(1);
-    setTargetEntity(stixDomainObject);
+    setTargetEntity(stixCoreObject);
   };
 
-  const renderFakeList = () => (
-    <List>
-      {Array.from(Array(20), (e, i) => (
-        <ListItem key={i} divider={true}>
-          <ListItemIcon>
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height={15}
-                style={{ marginBottom: 10 }}
-              />
-            )}
-            secondary={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height={15}
-              />
-            )}
-          />
-        </ListItem>
-      ))}
-    </List>
+  // Mounted in the drawer header, as in the 'Add entities' panel, and opened by the buttons of the list
+  const renderCreations = () => (
+    <>
+      {showSDOCreation && (
+        <StixDomainObjectCreation
+          display={false}
+          inputValue={searchTerm}
+          speeddial={true}
+          open={openCreateEntity}
+          handleClose={() => setOpenCreateEntity(false)}
+          stixDomainObjectTypes={stixCoreObjectTypes}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+        />
+      )}
+      {showSCOCreation && (
+        <StixCyberObservableCreation
+          display={false}
+          contextual={true}
+          inputValue={searchTerm}
+          speeddial={true}
+          open={openCreateObservable}
+          handleClose={() => setOpenCreateObservable(false)}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+        />
+      )}
+    </>
   );
 
-  const renderSelectEntity = () => {
-    const stixDomainObjectsPaginationOptions = {
-      search,
-      types: stixCoreObjectTypes
-        ? stixCoreObjectTypes.filter((n) => n !== 'Stix-Cyber-Observable')
-        : null,
-      orderBy: search.length > 0 ? null : 'created_at',
-      orderMode: search.length > 0 ? null : 'desc',
-    };
-    return (
-      <Stack>
-        {!onlyObservables ? (
-          <QueryRenderer
-            query={
-              stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
-            }
-            variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixCoreRelationshipCreationFromRelationStixDomainObjectsLines
-                    handleSelect={handleSelectEntity}
-                    data={props}
-                  />
-                );
-              }
-              return renderFakeList();
-            }}
+  const creationButtons = (
+    <Stack direction="row" gap={1}>
+      {showSDOCreation && (
+        <Button
+          disableElevation
+          aria-label={t_i18n('Create an entity')}
+          onClick={() => setOpenCreateEntity(true)}
+        >
+          {t_i18n('Create an entity')}
+        </Button>
+      )}
+      {showSCOCreation && (
+        <Button
+          disableElevation
+          aria-label={t_i18n('Create an observable')}
+          onClick={() => setOpenCreateObservable(true)}
+        >
+          {t_i18n('Create an observable')}
+        </Button>
+      )}
+    </Stack>
+  );
+
+  const renderSelectEntity = () => (
+    <ListLines
+      helpers={helpers}
+      sortBy={sortBy}
+      orderAsc={orderAsc}
+      dataColumns={buildColumns()}
+      handleSearch={helpers.handleSearch}
+      keyword={searchTerm}
+      handleSort={helpers.handleSort}
+      handleAddFilter={helpers.handleAddFilter}
+      handleRemoveFilter={helpers.handleRemoveFilter}
+      handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+      handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+      disableCards={true}
+      iconExtension={true}
+      filters={filters}
+      paginationOptions={searchPaginationOptions}
+      parametersWithPadding={true}
+      disableExport={true}
+      availableEntityTypes={targetTypes}
+      entityTypes={targetTypes}
+      createButton={creationButtons}
+    >
+      <QueryRenderer
+        query={containerAddStixCoreObjectsLinesQuery}
+        variables={{ count: 25, ...searchPaginationOptions }}
+        render={({ props: renderProps }) => (
+          <ContainerAddStixCoreObjectsLines
+            data={renderProps}
+            dataColumns={buildColumns()}
+            initialLoading={renderProps === null}
+            containerStixCoreObjects={[]}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+            onLabelClick={helpers.handleAddFilter}
+            onSelect={handleSelectEntity}
           />
-        ) : (
-          ''
         )}
-        <QueryRenderer
-          query={
-            stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery
-          }
-          variables={{
-            search,
-            types: stixCoreObjectTypes,
-            count: 50,
-            orderBy: 'created_at',
-            orderMode: 'desc',
-          }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixCoreRelationshipCreationFromRelationStixCyberObservablesLines
-                  handleSelect={handleSelectEntity}
-                  data={props}
-                />
-              );
-            }
-            return !stixCoreObjectTypes
-              || stixCoreObjectTypes.length === 0 ? (
-                  renderFakeList()
-                ) : (
-                  <div> &nbsp; </div>
-                );
-          }}
-        />
-        <Stack direction="row" alignSelf="flex-end">
-          <StixDomainObjectCreation
-            display={open}
-            inputValue={search}
-            paginationOptions={stixDomainObjectsPaginationOptions}
-            stixDomainObjectTypes={stixCoreObjectTypes}
-          />
-        </Stack>
-      </Stack>
-    );
-  };
+      />
+    </ListLines>
+  );
 
   const renderForm = (sourceEntity) => {
     let fromEntity = sourceEntity;
@@ -470,15 +509,7 @@ const StixCoreRelationshipCreationFromRelation = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a relationship')}
-        subHeader={{
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
-        }}
+        header={renderCreations()}
       >
         <QueryRenderer
           query={stixCoreRelationshipCreationFromRelationQuery}
