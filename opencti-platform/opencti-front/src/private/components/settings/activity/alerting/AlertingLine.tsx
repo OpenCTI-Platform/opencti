@@ -142,6 +142,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 filters={filters}
                 variant="small"
                 redirection
+                showGroupsSummaryButtonOnReadOnly
               />
             )}
             {data.trigger_type === 'digest' && (

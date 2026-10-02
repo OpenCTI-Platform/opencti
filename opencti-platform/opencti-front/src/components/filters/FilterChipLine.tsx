@@ -104,6 +104,12 @@ export interface FilterChipLineProps {
   displayedFilters: Filter[];
   displayedFilterGroups: FilterGroup[];
   globalMode: string;
+  /**
+   * On a read-only line, show the "Filters are not fully displayed" action instead of the
+   * clickable group chip. See `FilterIconButtonSharedProps.showGroupsSummaryButtonOnReadOnly`.
+   * No-op on a read-write line (the group chip always stays clickable there).
+   */
+  showGroupsSummaryButtonOnReadOnly?: boolean;
   filterKeysMap: Map<string, FilterDefinition>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   variant?: FilterIconButtonVariant;
@@ -140,6 +146,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
   displayedFilters,
   displayedFilterGroups,
   globalMode,
+  showGroupsSummaryButtonOnReadOnly,
   filterKeysMap,
   filtersRepresentativesMap,
   variant,
@@ -207,7 +214,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
 
   return (
     <Box sx={lineStyle} ref={lineRef}>
-      {isReadWriteFilter
+      {(isReadWriteFilter || !showGroupsSummaryButtonOnReadOnly)
         ? displayedFilterGroups.map((group, index) => (
             <Fragment key={group.id ?? `filter-group-${index}`}>
               <FilterGroupChipButton
@@ -224,12 +231,14 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
             </Fragment>
           ))
         : displayedFilterGroups.length > 0 && (
-          <ImbricatedFilterGroupDisplay
-            filterObj={{ mode: globalMode, filters: [], filterGroups: displayedFilterGroups }}
-            filterMode={globalMode}
-            filtersRepresentativesMap={filtersRepresentativesMap}
-            filterStyle={filterStyle}
-          />
+          <Box sx={{ padding: '0 4px' }}>
+            <ImbricatedFilterGroupDisplay
+              filterObj={{ mode: globalMode, filters: [], filterGroups: [{ mode: globalMode, filters: displayedFilters, filterGroups: displayedFilterGroups }] }}
+              filterMode={globalMode}
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              filterStyle={filterStyle}
+            />
+          </Box>
         )}
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;

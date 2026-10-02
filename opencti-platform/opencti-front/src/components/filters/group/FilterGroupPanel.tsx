@@ -34,6 +34,7 @@ export interface FilterGroupPanelProps {
 const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) => {
   const { t_i18n } = useFormatter();
   const { helpers, availableFilterKeys, entityTypes } = useFilterEditorContext();
+  const isReadOnly = !helpers;
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const keyOptions = buildGroupedFilterKeyOptions(availableFilterKeys, entityTypes ?? [], filterKeysMap, t_i18n);
   const groupId = group.id;
@@ -58,7 +59,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ gap: 1, marginBottom: 1 }}>
-        <Select value={mode} onValueChange={handleChangeMode}>
+        <Select value={mode} onValueChange={handleChangeMode} disabled={isReadOnly}>
           <SelectTrigger
             id={`filter-group-mode-select-${groupId ?? 'root'}`}
             data-testid={`filter-group-mode-select-${groupId ?? 'root'}`}
@@ -72,47 +73,55 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
             <SelectItem value="or">{t_i18n('or').toUpperCase()}</SelectItem>
           </SelectContent>
         </Select>
-        <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
-          <Button
-            variant="tertiary"
-            size="small"
-            startIcon={<AddOutlined fontSize="small" />}
-            onClick={handleAddCondition}
-            data-testid={`filter-group-add-condition-${groupId ?? 'root'}`}
-          >
-            {t_i18n('Condition')}
-          </Button>
-          <Button
-            variant="tertiary"
-            size="small"
-            startIcon={<LibraryAddOutlinedIcon fontSize="small" />}
-            onClick={() => helpers?.handleAddFilterGroup(groupId, getFirstDefaultConditionFilter(keyOptions, filterKeysMap))}
-            data-testid={`filter-group-add-group-${groupId ?? 'root'}`}
-          >
-            {t_i18n('Group')}
-          </Button>
-          <IconButton
-            priority="tertiary"
-            variant="destructive"
-            onClick={() => helpers?.handleRemoveFilterGroup(groupId ?? '')}
-            data-testid={`filter-group-remove-${groupId ?? 'root'}`}
-            aria-label={t_i18n('Delete')}
-            icon={<CloseOutlined fontSize="small" />}
-          />
-        </Stack>
+        {!isReadOnly && (
+          <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
+            <Button
+              variant="tertiary"
+              size="small"
+              startIcon={<AddOutlined fontSize="small" />}
+              onClick={handleAddCondition}
+              data-testid={`filter-group-add-condition-${groupId ?? 'root'}`}
+            >
+              {t_i18n('Condition')}
+            </Button>
+            <Button
+              variant="tertiary"
+              size="small"
+              startIcon={<LibraryAddOutlinedIcon fontSize="small" />}
+              onClick={() => helpers?.handleAddFilterGroup(groupId, getFirstDefaultConditionFilter(keyOptions, filterKeysMap))}
+              data-testid={`filter-group-add-group-${groupId ?? 'root'}`}
+            >
+              {t_i18n('Group')}
+            </Button>
+            <IconButton
+              priority="tertiary"
+              variant="destructive"
+              onClick={() => helpers?.handleRemoveFilterGroup(groupId ?? '')}
+              data-testid={`filter-group-remove-${groupId ?? 'root'}`}
+              aria-label={t_i18n('Delete')}
+              icon={<CloseOutlined fontSize="small" />}
+            />
+          </Stack>
+        )}
       </Stack>
       <Stack sx={{ gap: 1 }}>
         {group.filters.length === 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            {`${t_i18n('No rule apply')} - `}
-            <Button
-              variant="tertiary"
-              onClick={handleAddCondition}
-              data-testid={`filter-group-add-condition-link-${groupId ?? 'root'}`}
-              style={{ textDecoration: 'underline', padding: 0, minWidth: 'auto' }}
-            >
-              {t_i18n('add a condition')}
-            </Button>
+            {isReadOnly
+              ? t_i18n('No rule apply')
+              : (
+                  <>
+                    {`${t_i18n('No rule apply')} - `}
+                    <Button
+                      variant="tertiary"
+                      onClick={handleAddCondition}
+                      data-testid={`filter-group-add-condition-link-${groupId ?? 'root'}`}
+                      style={{ textDecoration: 'underline', padding: 0, minWidth: 'auto' }}
+                    >
+                      {t_i18n('add a condition')}
+                    </Button>
+                  </>
+                )}
           </Box>
         )}
         {group.filters.map((filter, index) => (
@@ -138,6 +147,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
                 paddingLeft: 2,
                 paddingY: 2,
                 borderLeft: 2,
+                borderRadius: 2,
                 borderColor: 'primary.main',
               }}
             >

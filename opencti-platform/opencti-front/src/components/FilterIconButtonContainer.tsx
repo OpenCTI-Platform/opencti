@@ -42,6 +42,13 @@ export interface FilterIconButtonSharedProps {
    * trigger is more appropriate than growing the layout.
    */
   floating?: boolean;
+  /**
+   * When true on a read-only filter (no `helpers`/`handleRemoveFilter`), nested filter groups
+   * are shown as the "Filters are not fully displayed" action instead of the clickable group
+   * chip. No-op on a read-write filter. Only opted into by the Activity table (alerting list),
+   * which has no edit affordance for its triggers' filters.
+   */
+  showGroupsSummaryButtonOnReadOnly?: boolean;
 }
 
 interface FilterIconButtonContainerProps extends FilterIconButtonSharedProps {
@@ -86,6 +93,7 @@ const FilterIconButtonContainer: FunctionComponent<
   setFilterChipsParams,
   availableFilterKeys,
   floating,
+  showGroupsSummaryButtonOnReadOnly,
 }) => {
   const displayedFilters = filters.filters;
   const displayedFilterGroups = filters.filterGroups ?? [];
@@ -121,6 +129,7 @@ const FilterIconButtonContainer: FunctionComponent<
         displayedFilters={displayedFilters}
         displayedFilterGroups={displayedFilterGroups}
         globalMode={filters.mode}
+        showGroupsSummaryButtonOnReadOnly={showGroupsSummaryButtonOnReadOnly}
         filterKeysMap={filterKeysMap}
         filtersRepresentativesMap={filtersRepresentativesMap}
         variant={variant}
@@ -159,23 +168,21 @@ const FilterIconButtonContainer: FunctionComponent<
           />
         )}
       </FilterChipLine>
-      {helpers && (
-        <FilterGroupPanelHost
-          group={openedGroup}
-          floating={floating}
-          anchorRef={filterLineRef}
-          onClickAway={handleClickAwayPanel}
-          helpers={helpers}
-          availableFilterKeys={panelFilterKeys}
-          entityTypes={entityTypes}
-          filtersRepresentativesMap={filtersRepresentativesMap}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationshipTypes={availableRelationshipTypes}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          searchContext={searchContext}
-          host={host}
-        />
-      )}
+      <FilterGroupPanelHost
+        group={openedGroup}
+        floating={floating}
+        anchorRef={filterLineRef}
+        onClickAway={handleClickAwayPanel}
+        helpers={helpers}
+        availableFilterKeys={panelFilterKeys}
+        entityTypes={entityTypes}
+        filtersRepresentativesMap={filtersRepresentativesMap}
+        availableEntityTypes={availableEntityTypes}
+        availableRelationshipTypes={availableRelationshipTypes}
+        availableRelationFilterTypes={availableRelationFilterTypes}
+        searchContext={searchContext}
+        host={host}
+      />
     </Box>
   );
 };
