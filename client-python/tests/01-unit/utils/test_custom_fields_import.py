@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pycti import OpenCTIApiClient, OpenCTIStix2
+from pycti.entities.opencti_security_coverage_result import SecurityCoverageResult
 
 
 @pytest.fixture
@@ -101,4 +102,38 @@ def test_import_sighting_forwards_custom_properties(opencti_stix2: OpenCTIStix2)
 
     assert mocked_create.call_args.kwargs["custom_properties"] == [
         {"field_name": "x_opencti_cf_triage_status", "value": "confirmed"}
+    ]
+
+
+def test_import_security_coverage_result_sends_custom_field_values(
+    opencti_stix2: OpenCTIStix2,
+):
+    stix_object = {
+        "type": "security-coverage-result",
+        "id": "security-coverage-result--6f7a8b9c-1d2e-4f3a-8b4c-5d6e7f8a9b10",
+        "name": "Result",
+        "result_of_ref": "security-coverage--7a8b9c1d-2e3f-4a4b-9c5d-6e7f8a9b1c20",
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "data": {"securityCoverageResultAdd": {"id": "security-coverage-result--fake"}}
+    }
+
+    with patch.object(
+        opencti_stix2.opencti.session, "post", return_value=mock_response
+    ) as mocked_post:
+        SecurityCoverageResult(opencti_stix2.opencti).import_from_stix2(
+            stixObject=stix_object,
+            extras={
+                "custom_properties": [
+                    {"field_name": "x_opencti_cf_review", "value": ["done"]}
+                ]
+            },
+        )
+
+    sent_input = mocked_post.call_args.kwargs["json"]["variables"]["input"]
+    assert sent_input["customFieldValues"] == [
+        {"field_name": "x_opencti_cf_review", "value": ["done"]}
     ]

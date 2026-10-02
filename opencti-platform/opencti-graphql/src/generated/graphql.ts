@@ -30909,6 +30909,7 @@ export type SecurityCoverageResultAddInput = {
   coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
