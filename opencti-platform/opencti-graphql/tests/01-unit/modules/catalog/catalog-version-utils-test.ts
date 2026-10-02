@@ -351,6 +351,12 @@ describe('catalog-version-utils', () => {
       has_newer_incompatible_version: false,
     });
     expect(buildConnectorUpdateStatus('rolling', [{ version: 'rolling' }, { version: '2.0.0' }], options).update_available).toBe(false);
+    // A rolling version that needs a newer platform is the newer incompatible version
+    expect(buildConnectorUpdateStatus('1.0.0', [{ version: 'rolling', min_version: '9999.0.0' }, { version: '2.0.0' }], options)).toEqual({
+      update_available: true,
+      latest_compatible_version: '2.0.0',
+      has_newer_incompatible_version: true,
+    });
     expect(buildConnectorUpdateStatus(null, [{ version: '2.0.0' }], options).update_available).toBe(false);
   });
 });
