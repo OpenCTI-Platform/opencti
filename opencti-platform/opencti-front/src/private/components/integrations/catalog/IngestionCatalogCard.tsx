@@ -103,6 +103,8 @@ const ConnectorActions = ({
   const canDeploy = canDeployConnector(connector);
   const compatibilityMessage = useConnectorCompatibilityMessage(connector);
   const shouldRenderDeploy = connector.manager_supported === true;
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
 
   return (
     <CardActions
@@ -124,8 +126,12 @@ const ConnectorActions = ({
           onClick={(e) => e.stopPropagation()}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            {/* The EE upsell only when EE would make the connector deployable */}
-            {isEnterpriseEdition || !canDeploy ? (
+            {showEnterpriseUpsell ? (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            ) : (
               <IngestionCatalogCardDeployButton
                 deploymentCount={deploymentCount}
                 deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
@@ -133,11 +139,6 @@ const ConnectorActions = ({
                 disabledReason={compatibilityMessage}
                 onClick={onClickDeploy}
               />
-            ) : (
-              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-              </Box>
             )}
           </Security>
         </Stack>

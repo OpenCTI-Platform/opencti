@@ -1,10 +1,16 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { BYPASS } from '../../../../utils/hooks/useGranted';
 import type { IngestionConnector } from './types';
 import IngestionCatalogConnectorHeader from './IngestionCatalogConnectorHeader';
+
+// The real upsell mounts the feedback drawer, which needs entity settings this test does not provide
+vi.mock('@components/common/entreprise_edition/EnterpriseEditionButton', () => ({
+  __esModule: true,
+  default: ({ title }: { title: string }) => <button type="button" data-testid="enterprise-upsell">{title}</button>,
+}));
 
 const buildConnector = (overrides: Partial<IngestionConnector> = {}): IngestionConnector => ({
   title: 'CrowdStrike Falcon Intel',
@@ -89,6 +95,7 @@ describe('IngestionCatalogConnectorHeader', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeDisabled();
+    expect(screen.queryByTestId('enterprise-upsell')).not.toBeInTheDocument();
   });
 
   it('explains on hover why Deploy is disabled, and lets keyboard users reach the reason', async () => {
@@ -128,6 +135,36 @@ describe('IngestionCatalogConnectorHeader', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeEnabled();
+  });
+
+  it('shows the Enterprise Edition upsell in Community Edition for a compatible managed connector', () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: true,
+        latest_compatible_version: '7.260828.0',
+        minimum_platform_version: null,
+        maximum_platform_version: null,
+      },
+    });
+
+    testRender(
+      <IngestionCatalogConnectorHeader connector={connector} isEnterpriseEdition={false} onClickDeploy={() => {}} />,
+      { userContext: buildUserContext() },
+    );
+
+    expect(screen.getByTestId('enterprise-upsell')).toHaveTextContent('Deploy');
+  });
+
+  it('renders neither Deploy nor the Enterprise Edition upsell in Community Edition for unmanaged connectors', () => {
+    const connector = buildConnector({ manager_supported: false });
+
+    testRender(
+      <IngestionCatalogConnectorHeader connector={connector} isEnterpriseEdition={false} onClickDeploy={() => {}} />,
+      { userContext: buildUserContext() },
+    );
+
+    expect(screen.queryByRole('button', { name: 'Deploy' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('enterprise-upsell')).not.toBeInTheDocument();
   });
 
   it('does not render Deploy for unmanaged connectors', () => {
