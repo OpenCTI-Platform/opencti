@@ -10,8 +10,9 @@ interface NavBadgeProps {
 
 const NavBadge: React.FC<NavBadgeProps> = ({ badge, compact }) => (
   <Tooltip>
+    {/* Focusable and not hidden, so keyboard and screen reader users reach the count and its tooltip */}
     <TooltipTrigger asChild>
-      <span className="inline-flex" aria-hidden="true">
+      <span className="inline-flex" tabIndex={0}>
         <Badge
           bareAnchor={compact ? false : 'md'}
           content={badge.content}
