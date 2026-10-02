@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery } from '../../../relay/environment';
 import useGranted, { MODULES } from '../../../utils/hooks/useGranted';
@@ -32,32 +32,33 @@ const refreshIntegrationsNavBadge = () => {
     });
 };
 
-const useIntegrationsNavBadge = (): NavItemBadge | undefined => {
-  const { t_i18n } = useFormatter();
-  // Same capability as the connectors query: without it, nothing is fetched and no badge is shown
+// Loaded next to the navigation query, not after it, and only with the capability to read connectors.
+// The badge reads it behind its own Suspense boundary, so the navigation never waits for it.
+export const useIntegrationsNavBadgeQueryRef = () => {
   const canReadConnectors = useGranted([MODULES]);
-  const data = useLazyLoadQuery<useIntegrationsNavBadgeQuery>(
-    integrationsNavBadgeQuery,
-    {},
-    { fetchPolicy: canReadConnectors ? 'store-and-network' : 'store-only' },
-  );
+  const [queryRef, loadQuery] = useQueryLoader<useIntegrationsNavBadgeQuery>(integrationsNavBadgeQuery);
+  useEffect(() => {
+    if (canReadConnectors) {
+      loadQuery({}, { fetchPolicy: 'store-and-network' });
+    }
+  }, [canReadConnectors]);
+  return canReadConnectors ? queryRef : null;
+};
+
+const useIntegrationsNavBadge = (queryRef: PreloadedQuery<useIntegrationsNavBadgeQuery>): NavItemBadge | undefined => {
+  const { t_i18n } = useFormatter();
+  const data = usePreloadedQuery<useIntegrationsNavBadgeQuery>(integrationsNavBadgeQuery, queryRef);
 
   useEffect(() => {
-    if (!canReadConnectors) {
-      return undefined;
-    }
     const interval = setInterval(refreshIntegrationsNavBadge, CATALOG_POLLING_INTERVAL_MS);
     document.addEventListener('visibilitychange', refreshIntegrationsNavBadge);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', refreshIntegrationsNavBadge);
     };
-  }, [canReadConnectors]);
+  }, []);
 
   return useMemo(() => {
-    if (!canReadConnectors) {
-      return undefined;
-    }
     const count = data.connectors.reduce(
       (total, connector) => total + (connector.update_available ? 1 : 0),
       0,
@@ -71,7 +72,7 @@ const useIntegrationsNavBadge = (): NavItemBadge | undefined => {
       content: count,
       accessibleText: t_i18n('{count} connector update available', { values: { count } }),
     };
-  }, [canReadConnectors, data, t_i18n]);
+  }, [data, t_i18n]);
 };
 
 export default useIntegrationsNavBadge;
