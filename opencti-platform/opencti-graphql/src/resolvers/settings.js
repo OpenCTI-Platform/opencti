@@ -36,6 +36,7 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 
 const settingsResolvers = {
   Query: {
@@ -68,6 +69,7 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
@@ -98,6 +100,10 @@ const settingsResolvers = {
         size: meta.contentLength ?? 0,
       };
     },
+  },
+  PublicSettings: {
+    // Read by the login page: 0 whenever the rule is off, so no screen shows it
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

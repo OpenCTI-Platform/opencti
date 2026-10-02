@@ -178,4 +178,14 @@ describe('removeResolvedRefs', () => {
     const instance = { id: 'a', name: 'B', description: 'C' };
     expect(removeResolvedRefs(instance)).toEqual(instance);
   });
+
+  it('should strip password hashes from a user before it is broadcast', () => {
+    const instance = { id: 'user-1', entity_type: 'User', name: 'Jane', password: '$2b$10$hash', password_history: ['$2b$10$old'] };
+    expect(removeResolvedRefs(instance)).toEqual({ id: 'user-1', entity_type: 'User', name: 'Jane' });
+  });
+
+  it('should keep a password field on an entity that is not a user', () => {
+    const instance = { id: 'smtp-1', entity_type: 'SmtpConfiguration', password: 'kept' };
+    expect(removeResolvedRefs(instance)).toEqual(instance);
+  });
 });

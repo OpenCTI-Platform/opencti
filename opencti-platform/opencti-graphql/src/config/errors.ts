@@ -228,6 +228,29 @@ export const WorkNotALiveError = () => error(WORK_NOT_ALIVE_ERROR, 'Work is no l
   genre: CATEGORY_BUSINESS,
 });
 
+// The frontend reads these codes to show its own translated message on the password screens
+export const PASSWORD_REUSED = 'PASSWORD_REUSED';
+export const PasswordReused = (data?: any) => error(PASSWORD_REUSED, 'This password has already been used recently. Please choose a different one.', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+export const PASSWORD_CHANGE_THROTTLED = 'PASSWORD_CHANGE_THROTTLED';
+export const PasswordChangeThrottled = (data?: any) => error(PASSWORD_CHANGE_THROTTLED, 'Too many password change attempts. Please try again in a few minutes.', {
+  http_status: 429,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+// The reset code ran out while the user was on the new-password step
+export const PASSWORD_RESET_EXPIRED = 'PASSWORD_RESET_EXPIRED';
+export const PasswordResetExpired = (data?: any) => error(PASSWORD_RESET_EXPIRED, 'Password reset code expired or not found. Please request a new one.', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const FUNCTIONAL_ERRORS = [
   FUNCTIONAL_ERROR,
   ALREADY_DELETED_ERROR,
@@ -236,5 +259,8 @@ export const FUNCTIONAL_ERRORS = [
   RESOURCE_NOT_FOUND_ERROR,
   TYPE_LOCK_ERROR,
   CLIENT_ABORT_ERROR,
+  PASSWORD_REUSED,
+  PASSWORD_CHANGE_THROTTLED,
+  PASSWORD_RESET_EXPIRED,
 ];
 // endregion
