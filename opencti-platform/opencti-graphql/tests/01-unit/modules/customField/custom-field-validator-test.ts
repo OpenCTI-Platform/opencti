@@ -525,6 +525,22 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
     expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' });
   });
 
+  it('resolves the @now date default value to the current date', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-02T12:34:56.000Z'));
+    try {
+      const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'date', entity_type_settings: settingsFor('@now') });
+      expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-10-02T12:34:56.000Z' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('ignores an invalid date default value', () => {
+    const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'date', entity_type_settings: settingsFor('not-a-date') });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toBeUndefined();
+  });
+
   it('builds a multi_select default value, wrapping the single default_value into an array', () => {
     const definition = makeDefinition({
       id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'multi_select', select_options: ['a', 'b'], entity_type_settings: settingsFor('a'),
