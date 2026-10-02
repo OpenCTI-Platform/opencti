@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { isFilterGroupNotEmptyShallow, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
-import { DataColumns } from './list_lines';
 
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonContainer, { FilterIconButtonSharedProps } from './FilterIconButtonContainer';
@@ -11,7 +10,6 @@ import { FilterChipsParameter } from './filters/FilterChipPopover';
 
 export interface FilterIconButtonProps extends FilterIconButtonSharedProps {
   filters?: FilterGroup | null;
-  dataColumns?: DataColumns;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {

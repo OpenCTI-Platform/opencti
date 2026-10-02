@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import { FilterSearchContext, FiltersRestrictions } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
-import { DataColumns } from './list_lines';
 
 import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
@@ -47,7 +46,6 @@ export interface FilterIconButtonSharedProps {
 
 interface FilterIconButtonContainerProps extends FilterIconButtonSharedProps {
   filters: FilterGroup;
-  dataColumns?: DataColumns;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterValuesContentQuery>;
   hasRendered: boolean;
   setHasRendered: (value: boolean) => void;

@@ -185,7 +185,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 {isFilterGroupNotEmpty(filters) ? (
                   <FilterIconButton
                     filters={filters}
-                    dataColumns={dataColumns}
                     variant="small"
                     redirection
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
