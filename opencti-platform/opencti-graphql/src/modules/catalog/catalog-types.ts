@@ -18,6 +18,22 @@ export type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   format?: string;
 };
 
+export interface CatalogContractVersion {
+  version: string;
+  support_version?: string | null;
+  min_version?: string | null;
+  max_version?: string | null;
+}
+
+export interface CatalogContractCompatibility {
+  is_compatible: boolean;
+  latest_compatible_version: string | null;
+  // Set only when no version is compatible: the platform version to upgrade to
+  minimum_platform_version: string | null;
+  // Set only when no version is compatible because the platform is newer than all of them
+  maximum_platform_version: string | null;
+}
+
 export interface CatalogContract {
   title: string;
   slug: string;
@@ -34,6 +50,8 @@ export interface CatalogContract {
   source_code: string;
   manager_supported: boolean;
   container_version: string;
+  versions?: CatalogContractVersion[] | null;
+  compatibility?: CatalogContractCompatibility | null;
   container_image: string;
   container_type: IngestionConnectorType;
   config_schema: {

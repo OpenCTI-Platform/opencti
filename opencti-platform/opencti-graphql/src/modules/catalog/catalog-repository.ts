@@ -192,12 +192,12 @@ export const findCatalogContractsByCatalogId = async (
   }, new Map<string, BasicStoreEntityCatalogContract>());
 };
 
-export const findLatestCompatibleCatalogContractsByCatalogId = async (
+export const findCatalogContractsBySlug = async (
   context: AuthContext,
   user: AuthUser,
-  catalogId: string,
+  contractSlug: string,
 ) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
@@ -205,29 +205,14 @@ export const findLatestCompatibleCatalogContractsByCatalogId = async (
       indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
         filters: [{
-          key: ['catalog_id'],
-          values: [catalogId],
+          key: ['slug'],
+          values: [contractSlug],
         }],
         filterGroups: [],
         mode: FilterMode.And,
       },
     },
   );
-  const compatibleContracts = filterAndSortLatestCompatibleContracts(contracts);
-  logApp.debug('[OPENCTI-MODULE] Loaded compatible catalog contracts', {
-    module: 'catalog',
-    catalogId,
-    platformVersion: PLATFORM_VERSION,
-    compatibleContractsCount: compatibleContracts.length,
-  });
-  // Keep latest compatible version by slug (results are sorted by version desc).
-  return compatibleContracts.reduce((map, contract) => {
-    if (map.has(contract.slug)) {
-      return map;
-    }
-    map.set(contract.slug, contract);
-    return map;
-  }, new Map<string, BasicStoreEntityCatalogContract>());
 };
 
 export const findLatestCompatibleCatalogContractBySlug = async (
@@ -254,12 +239,12 @@ export const findLatestCompatibleCatalogContractBySlug = async (
   return filterAndSortLatestCompatibleContracts(contracts)[0];
 };
 
-export const findLatestCompatibleCatalogContractByImageName = async (
+export const findCatalogContractsByImageName = async (
   context: AuthContext,
   user: AuthUser,
   imageName: string,
 ) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
@@ -275,6 +260,14 @@ export const findLatestCompatibleCatalogContractByImageName = async (
       },
     },
   );
+};
+
+export const findLatestCompatibleCatalogContractByImageName = async (
+  context: AuthContext,
+  user: AuthUser,
+  imageName: string,
+) => {
+  const contracts = await findCatalogContractsByImageName(context, user, imageName);
   const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
     logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
