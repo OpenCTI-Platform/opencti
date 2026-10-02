@@ -282,7 +282,12 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
-import { transformCustomFieldValueAddInput, validateCustomFieldValues, validateCustomFieldValuesEditInput } from '../modules/customField/custom-field-validator';
+import {
+  normalizeCustomFieldValuesDates,
+  transformCustomFieldValueAddInput,
+  validateCustomFieldValues,
+  validateCustomFieldValuesEditInput,
+} from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -3018,16 +3023,19 @@ export const updateAttribute = async <T extends StoreObject>(
   if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
     throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
   }
+  let finalInputs = inputs;
   const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
   if (customFieldValuesInput) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(customFieldValuesInput.value ?? []) };
+      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
+      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }
   }
   // Continue update
-  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);

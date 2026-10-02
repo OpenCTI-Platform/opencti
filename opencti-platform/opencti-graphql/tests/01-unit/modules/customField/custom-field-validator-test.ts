@@ -4,6 +4,7 @@ import {
   extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
   getCustomFieldDefaultValueFromEntitySettings,
+  normalizeCustomFieldValuesDates,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
@@ -157,6 +158,12 @@ describe('validateCustomFieldValues', () => {
       const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' }];
       await expect(validate(values)).resolves.not.toThrow();
     });
+
+    it.each(['09/29/2026', '2026-09-29'])('throws when date_value is not an RFC 3339 date-time (%s)', async (dateValue) => {
+      seed(makeDefinition({ field_type: 'date' }));
+      const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: dateValue }];
+      await expect(validate(values)).rejects.toThrow('date_value must be a valid ISO date string');
+    });
   });
 
   describe('select fields', () => {
@@ -294,6 +301,18 @@ describe('transformCustomFieldValueAddInput', () => {
     expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' }]);
   });
 
+  it('normalizes a date input with a timezone offset to ISO UTC', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'date' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['2026-09-29T02:00:00+02:00'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-09-29T00:00:00.000Z' }]);
+  });
+
+  it.each(['09/29/2026', '2026-09-29', 'not-a-date', 1790000000])('drops a date input that is not an RFC 3339 date-time (%s)', async (dateValue) => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'date' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: [dateValue] } as any]);
+    expect(result).toEqual([]);
+  });
+
   it('transforms a select input', async () => {
     seed(makeDefinition({ id: 'cf-id-1', field_type: 'select', select_options: ['a', 'b'] }));
     const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['a'] } as any]);
@@ -345,6 +364,24 @@ describe('transformCustomFieldValueAddInput', () => {
     ]);
   });
 });
+describe('normalizeCustomFieldValuesDates', () => {
+  it('normalizes valid date values to ISO UTC and leaves other entries untouched', () => {
+    const values: CustomFieldValue[] = [
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T02:00:00+02:00' },
+      { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
+    ];
+    expect(normalizeCustomFieldValuesDates(values)).toEqual([
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T00:00:00.000Z' },
+      { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
+    ]);
+  });
+
+  it('leaves an invalid date as is so that validation rejects it', () => {
+    const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '09/29/2026' }];
+    expect(normalizeCustomFieldValuesDates(values)).toEqual(values);
+  });
+});
+
 describe('validateCustomFieldValuesEditInput', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -480,6 +517,11 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
 
   it('builds a date default value', () => {
     const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'date', entity_type_settings: settingsFor('2026-01-01T00:00:00.000Z') });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' });
+  });
+
+  it('normalizes a fixed date default value to ISO UTC', () => {
+    const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'date', entity_type_settings: settingsFor('2026-01-01T02:00:00+02:00') });
     expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' });
   });
 
