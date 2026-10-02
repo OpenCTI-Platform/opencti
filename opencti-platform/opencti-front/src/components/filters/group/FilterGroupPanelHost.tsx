@@ -10,7 +10,7 @@ import FilterGroupPanel from './FilterGroupPanel';
 // Stable identity: a fresh `new Map()` default would defeat the provider's memoization.
 const EMPTY_REPRESENTATIVES_MAP: FilterEditorContextValue['filtersRepresentativesMap'] = new Map();
 
-interface FilterGroupPanelHostProps extends Omit<FilterEditorContextValue, 'filtersRepresentativesMap'> {
+interface FilterGroupPanelHostProps extends Omit<FilterEditorContextValue, 'filtersRepresentativesMap' | 'isReadOnly'> {
   /** Group being edited, `undefined` closes the host. */
   group?: FilterGroup;
   filtersRepresentativesMap?: FilterEditorContextValue['filtersRepresentativesMap'];

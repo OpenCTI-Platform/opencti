@@ -17,6 +17,8 @@ import { FilterRepresentative } from '../FiltersModel';
 export interface FilterEditorContextValue {
   /** Absent only in read-only-ish callers of the chip popover, hence optional as before. */
   helpers?: handleFilterHelpers;
+  /** Derived from `helpers`: true when there is none, i.e. a pure consultation render. Consumers that only need to know whether editing is allowed (not call into `helpers` itself) should read this instead. */
+  isReadOnly: boolean;
   /** Filter keys offered by the nested-group row key picker. Empty in the chip popover, which edits an existing filter and never offers a key. */
   availableFilterKeys: string[];
   entityTypes?: string[];
@@ -30,7 +32,7 @@ export interface FilterEditorContextValue {
 
 const FilterEditorContext = createContext<FilterEditorContextValue | undefined>(undefined);
 
-interface FilterEditorProviderProps extends FilterEditorContextValue {
+interface FilterEditorProviderProps extends Omit<FilterEditorContextValue, 'isReadOnly'> {
   children: ReactNode;
 }
 
@@ -53,6 +55,7 @@ export const FilterEditorProvider: FunctionComponent<FilterEditorProviderProps> 
   // identity would invalidate every consumer of the tree each time.
   const value = useMemo<FilterEditorContextValue>(() => ({
     helpers,
+    isReadOnly: !helpers,
     availableFilterKeys,
     entityTypes,
     filtersRepresentativesMap,
