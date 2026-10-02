@@ -5,7 +5,8 @@ import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { wait } from '../../../src/database/utils';
+import { INDEX_DELETED_OBJECTS, wait } from '../../../src/database/utils';
+import { elReindexElements } from '../../../src/database/engine';
 import { execChildPython } from '../../../src/python/pythonBridge';
 
 const CREATE_REPORT_QUERY = gql`
@@ -266,5 +267,52 @@ describe('Delete operation resolver testing', () => {
     expect(reportQueryAfterResult.data?.report.objects.edges[0].node.standard_id).toEqual('campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7');
 
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId } });
+  });
+
+  it('should deleteOperation confirm only purge the trash when main entity is also live', async () => {
+    // Create a report with a file, then delete it
+    const REPORT_TO_CREATE = {
+      input: {
+        name: 'Report both live and in trash',
+        description: 'Report both live and in trash description',
+        published: '2020-02-26T00:51:35.000Z',
+      },
+    };
+    const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
+    const liveReportId = report.data?.reportAdd.id;
+    expect(liveReportId).toBeDefined();
+    const uploadOpts = [API_URI, ADMIN_API_TOKEN, liveReportId, filename, [MARKING_TLP_AMBER_STRICT]];
+    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
+    expect(execution.status).toEqual('success');
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
+
+    const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'main_entity_id', values: [liveReportId], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        } } });
+    expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
+    const liveDeleteOperation = getAllDeletedOperations.data?.deleteOperations.edges[0].node;
+    const mainDeletedElement = liveDeleteOperation.deleted_elements.find((el: { id: string }) => el.id === liveReportId);
+    expect(mainDeletedElement.source_index).toBeDefined();
+
+    // Simulate the inconsistent state: copy the trashed report back to its live index (trash copy is kept)
+    await elReindexElements(testContext, ADMIN_USER, [liveReportId], INDEX_DELETED_OBJECTS, mainDeletedElement.source_index);
+    const reportBackLive = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
+    expect(reportBackLive.data?.report.id).toBe(liveReportId);
+
+    // Confirm must not fail on duplicate hits, and must only purge the trash
+    await queryAsAdminWithSuccess({ query: DELETE_CONFIRM_MUTATION, variables: { id: liveDeleteOperation.id } });
+    const deleteOperationResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: liveDeleteOperation.id } });
+    expect(deleteOperationResult.data?.deleteOperation).toBeNull();
+
+    // Live report and its file are untouched
+    const reportAfterConfirm = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
+    expect(reportAfterConfirm.data?.report.id).toBe(liveReportId);
+    expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
+
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
   });
 });
