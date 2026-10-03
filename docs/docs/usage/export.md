@@ -40,6 +40,8 @@ Both ways add your export in the Exported files list in the Data tab.
 
 All entities in your instance can be exported either directly via Generate Export or indirectly via Export List in .json and .csv formats.
 
+Incidents and cases can also be exported as their timeline, in PDF, CSV, PNG or SVG format, with the **Incident and case timeline** export (see [Incident and case timeline](case-timeline.md#exports)).
+
 ### Export a list of entities
 
 You have the option to export either a single element, such as a report, or a collection of elements, such as multiple reports. These exports may contain not only the entity itself but also related elements, depending on the type of export you select: "simple" or "full". See the [Export types (simple and full)](export.md#export-type-section) section.

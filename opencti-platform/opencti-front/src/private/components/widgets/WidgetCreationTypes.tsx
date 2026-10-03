@@ -13,7 +13,7 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
-import { TIMELINE_CONTAINER_TYPES } from '../common/timeline/ContainerTimelineWidgetParameters';
+import { TIMELINE_CONTAINER_TYPES } from '../common/timeline/timelineUtils';
 
 export const getVisualizationTypes = (host: WidgetHost) => {
   return host.kind === 'workspace'

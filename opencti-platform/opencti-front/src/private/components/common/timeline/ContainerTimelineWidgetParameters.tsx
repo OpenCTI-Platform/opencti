@@ -23,9 +23,8 @@ import { fetchQuery } from '../../../../relay/environment';
 import type { ContainerTimelineWidgetParametersSearchQuery } from './__generated__/ContainerTimelineWidgetParametersSearchQuery.graphql';
 import type { ContainerTimelineWidgetParametersSelectedQuery } from './__generated__/ContainerTimelineWidgetParametersSelectedQuery.graphql';
 import type { ContainerTimelineWidgetParameters as Parameters } from './ContainerTimelineWidget';
-import { TIMELINE_LANE_LABELS, TIMELINE_LANES, TIMELINE_ZOOM_LABELS, TIMELINE_ZOOM_WINDOWS } from './timelineUtils';
+import { TIMELINE_CONTAINER_TYPES, TIMELINE_LANE_LABELS, TIMELINE_LANES, TIMELINE_ZOOM_LABELS, TIMELINE_ZOOM_WINDOWS } from './timelineUtils';
 
-export const TIMELINE_CONTAINER_TYPES = ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'];
 const SEARCH_SIZE = 20;
 
 const containerSearchQuery = graphql`

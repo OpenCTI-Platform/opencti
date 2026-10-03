@@ -49,6 +49,8 @@ Leveraging the filters, users can meticulously **define the criteria that activa
 
 Beyond filters, a trigger can be configured to **respond to three event types**: creation, modification, and deletion.
 
+Live triggers on incidents and cases can also respond to two timeline event types: **Timeline anchor changed** (for example when the containment of a case is recorded) and **Timeline milestone added**. See [Incident and case timeline](case-timeline.md#notifications).
+
 ![Trigger configuration](assets/trigger-configuration.png)
 
 ### Instance triggers

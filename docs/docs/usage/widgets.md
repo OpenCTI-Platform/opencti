@@ -11,6 +11,7 @@ Users can select from 15 diverse visualization options to highlight different as
 - Line and Area views: Ideal for visualizing activity volumes over time.
 - Horizontal bar views: Designed to identify top entities that best satisfy applied filters (e.g., top malware targeting the Finance sector).
 - Tree views: Useful for comparing activity volumes.
+- Incident and case timeline: Displays the timeline of an incident or a case, with a choice of lanes and time window (see [Incident and case timeline](case-timeline.md#dashboards-and-custom-views)).
 - ...
 
 ![Widget visualization](assets/widget-visualization.png)
