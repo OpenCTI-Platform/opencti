@@ -62,14 +62,14 @@ import {
   RECOMMENDATION_STATUS_APPLIED,
 } from './sourceIntelligence-types';
 import { buildResolverFromSources } from './sourceIntelligence-domain';
-import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, PROVENANCE_ATTRIBUTE, sourceRefKey } from './sourceIntelligence-provenance';
+import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, sourceRefKey } from './sourceIntelligence-provenance';
+import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
 import { applySourceRecommendation, findOrCreateProposal, findRecommendationsByFingerprint, listAccessiblePirIds, upsertProposals } from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
-// Sources are bounded by the discovery settings: one bucket per source id is far below this bound
-const MAX_COVERAGE_SOURCE_BUCKETS = 2000;
+const COVERAGE_PAGE_SIZE = 1000;
 const MAX_COVERING_SOURCES = 10;
 const LOCAL_CATALOG_WEIGHT = 0.6;
 const RELATION_TO_FILTER_KEY = 'toId';
@@ -171,7 +171,29 @@ const countMatchingRelationships = async (context: AuthContext, filters: FilterG
   });
 };
 
-type TermsBuckets = { buckets?: Array<{ key: string; doc_count: number; ids?: TermsBuckets }> };
+type CompositeBuckets = { buckets?: Array<{ key: { id: string }; doc_count: number }>; after_key?: { id: string } };
+
+/**
+ * Number of matching relationships per value of `field`, for every value: a composite aggregation read page after page
+ * (a terms aggregation would silently drop the smallest buckets above its size).
+ */
+export const countRelationshipsByValue = async (
+  aggregate: (aggregations: Record<string, unknown>) => Promise<Record<string, any>>,
+  field: string,
+) => {
+  const counts = new Map<string, number>();
+  let after: { id: string } | undefined;
+  do {
+    const data = await aggregate({
+      values: { composite: { size: COVERAGE_PAGE_SIZE, sources: [{ id: { terms: { field } } }], ...(after ? { after } : {}) } },
+    });
+    const page = data.values as CompositeBuckets | undefined;
+    const buckets = page?.buckets ?? [];
+    buckets.forEach((bucket) => counts.set(bucket.key.id, bucket.doc_count));
+    after = buckets.length === COVERAGE_PAGE_SIZE ? page?.after_key : undefined;
+  } while (after);
+  return counts;
+};
 
 /**
  * Sources covering a criterion, over every matching relationship of the window (aggregations, no sampling), with the
@@ -188,49 +210,39 @@ const aggregateCoveringSources = async (
 ) => {
   const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
   const withProvenance = isProvenanceAttributeAvailable();
-  const withoutAssertions = {
-    bool: { must_not: [{ nested: { path: PROVENANCE_ATTRIBUTE, ignore_unmapped: true, query: { exists: { field: `${PROVENANCE_ATTRIBUTE}.source_id` } } } }] },
-  };
-  const aggregations: Record<string, unknown> = {
-    creators: {
-      filter: withProvenance ? withoutAssertions : { match_all: {} },
-      aggs: { ids: { terms: { field: 'creator_id.keyword', size: MAX_COVERAGE_SOURCE_BUCKETS } } },
-    },
-    authors: { terms: { field: 'rel_created-by.internal_id.keyword', size: MAX_COVERAGE_SOURCE_BUCKETS } },
-    ...(withProvenance ? {
-      assertions: {
-        nested: { path: PROVENANCE_ATTRIBUTE },
-        aggs: {
-          kinds: {
-            terms: { field: `${PROVENANCE_ATTRIBUTE}.source_kind.keyword`, size: 20 },
-            aggs: { ids: { terms: { field: `${PROVENANCE_ATTRIBUTE}.source_id.keyword`, size: MAX_COVERAGE_SOURCE_BUCKETS } } },
-          },
-        },
+  const aggregate = (extraFilters: Array<Record<string, unknown>> = []) => (aggregations: Record<string, unknown>) => {
+    return elFilteredAggregations(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
+      types: [ABSTRACT_STIX_CORE_RELATIONSHIP],
+      filters: {
+        mode: 'and',
+        filters: [{ key: ['updated_at'], values: [since], operator: 'gte', mode: 'or' }, ...extraFilters],
+        filterGroups: [filters],
       },
-    } : {}),
+    } as any, aggregations);
   };
-  const data = await elFilteredAggregations(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
-    types: [ABSTRACT_STIX_CORE_RELATIONSHIP],
-    filters: {
-      mode: 'and',
-      filters: [{ key: ['updated_at'], values: [since], operator: 'gte', mode: 'or' }],
-      filterGroups: [filters],
-    },
-  } as any, aggregations);
+  // Every asserting source is kept in the flat source ids, also beyond the bounded assertion details
+  const assertionCounts = withProvenance
+    ? await countRelationshipsByValue(aggregate(), `${ATTRIBUTE_ASSERTION_SOURCE_IDS}.keyword`)
+    : new Map<string, number>();
+  const withoutAssertions = withProvenance ? [{ key: [ATTRIBUTE_ASSERTION_SOURCE_IDS], values: [], operator: 'nil', mode: 'or' }] : [];
+  const creatorCounts = await countRelationshipsByValue(aggregate(withoutAssertions), 'creator_id.keyword');
+  const authorCounts = await countRelationshipsByValue(aggregate(), 'rel_created-by.internal_id.keyword');
   const resolver = buildResolverFromSources(sources);
+  // Assertion source ids are platform ids (connector, feed, author, user), unique across source kinds
+  const byAssertedId = new Map<string, string>();
+  Object.values(ASSERTION_KIND_TO_SOURCE_KIND).forEach((kind) => {
+    const prefix = sourceRefKey(kind, '');
+    resolver.byRef.forEach((sourceId, key) => {
+      if (key.startsWith(prefix)) byAssertedId.set(key.substring(prefix.length), sourceId);
+    });
+  });
   const counts = new Map<string, number>();
   const add = (sourceId: string | undefined, count: number) => {
     if (sourceId) counts.set(sourceId, (counts.get(sourceId) ?? 0) + count);
   };
-  ((data.assertions?.kinds as TermsBuckets | undefined)?.buckets ?? []).forEach((kindBucket) => {
-    const kind = ASSERTION_KIND_TO_SOURCE_KIND[kindBucket.key];
-    if (!kind) return;
-    (kindBucket.ids?.buckets ?? []).forEach((idBucket) => add(resolver.byRef.get(sourceRefKey(kind, idBucket.key)), idBucket.doc_count));
-  });
-  ((data.creators?.ids as TermsBuckets | undefined)?.buckets ?? []).forEach((bucket) => {
-    (resolver.byUser.get(bucket.key) ?? []).forEach((sourceId) => add(sourceId, bucket.doc_count));
-  });
-  ((data.authors as TermsBuckets | undefined)?.buckets ?? []).forEach((bucket) => add(resolver.byAuthor.get(bucket.key), bucket.doc_count));
+  assertionCounts.forEach((count, assertedId) => add(byAssertedId.get(assertedId), count));
+  creatorCounts.forEach((count, userId) => (resolver.byUser.get(userId) ?? []).forEach((sourceId) => add(sourceId, count)));
+  authorCounts.forEach((count, authorId) => add(resolver.byAuthor.get(authorId), count));
   const covering = Array.from(counts.entries())
     .map(([source_id, count]) => {
       const matched_count = Math.min(count, total);

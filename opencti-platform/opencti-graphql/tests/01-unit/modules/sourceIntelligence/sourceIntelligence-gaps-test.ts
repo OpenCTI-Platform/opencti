@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { hubCatalogStatusOf, mergeRecommendedConnectors } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
+import { countRelationshipsByValue, hubCatalogStatusOf, mergeRecommendedConnectors } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
 import type { CollectionGapRecommendedConnector } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import type { HubIntegrationCoverageMatch } from '../../../../src/modules/xtm/hub/xtm-hub-client';
@@ -65,5 +65,21 @@ describe('Source intelligence collection gaps', () => {
   it('should keep at most the requested number of recommendations', () => {
     const merged = mergeRecommendedConnectors([hubMatch('alpha', 40)], [localMatch('gamma', 70), localMatch('delta', 20)], [], new Set(), 2);
     expect(merged.map((connector) => connector.slug)).toEqual(['gamma', 'alpha']);
+  });
+
+  it('should count every covering source, page after page', async () => {
+    const page = (from: number, size: number) => Array.from({ length: size }, (_, i) => ({ key: { id: `source-${from + i}` }, doc_count: 1 }));
+    const requests: Array<Record<string, any>> = [];
+    const aggregate = async (aggregations: Record<string, any>) => {
+      requests.push(aggregations.values.composite);
+      return requests.length === 1
+        ? { values: { buckets: page(0, 1000), after_key: { id: 'source-999' } } }
+        : { values: { buckets: page(1000, 3), after_key: { id: 'source-1002' } } };
+    };
+    const counts = await countRelationshipsByValue(aggregate, 'creator_id.keyword');
+    expect(counts.size).toBe(1003);
+    expect(requests.length).toBe(2);
+    expect(requests[0]).toEqual({ size: 1000, sources: [{ id: { terms: { field: 'creator_id.keyword' } } }] });
+    expect(requests[1].after).toEqual({ id: 'source-999' });
   });
 });

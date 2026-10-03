@@ -116,29 +116,66 @@ describe('Source intelligence live deletion accounting', () => {
     });
   });
 
-  it('should debit the creators and the author of a deleted object, not the deleting user', async () => {
-    const event = {
-      id: `${DELETED_AT}-0`,
-      event: 'delete',
+  const deleteEvent = {
+    id: `${DELETED_AT}-0`,
+    event: 'delete',
+    data: {
+      type: 'delete',
+      origin: { user_id: 'user-analyst' },
       data: {
-        type: 'delete',
-        origin: { user_id: 'user-analyst' },
-        data: {
-          extensions: {
-            [STIX_EXT_OCTI]: {
-              id: 'indicator-1',
-              type: 'Indicator',
-              created_at: iso(DELETED_AT - 10 * DAY),
-              updated_at: iso(DELETED_AT - 10 * DAY),
-              creator_ids: ['user-connector'],
-            },
-            // Streams carry the provenance dates only: the last assertion keeps the object in the short periods
-            [STIX_EXT_OCTI_PROVENANCE]: { last_asserted: iso(DELETED_AT - 3 * HOUR) },
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'indicator-1',
+            type: 'Indicator',
+            created_at: iso(DELETED_AT - 10 * DAY),
+            updated_at: iso(DELETED_AT - 10 * DAY),
+            creator_ids: ['user-connector'],
           },
+          // Streams carry the provenance dates only: the last assertion keeps the object in the short periods
+          [STIX_EXT_OCTI_PROVENANCE]: { last_asserted: iso(DELETED_AT - 3 * HOUR) },
         },
       },
+    },
+  };
+
+  it('should debit the sources recorded on the trash copy of a deleted object, not the deleting user', async () => {
+    const trashCopy = {
+      internal_id: 'indicator-1',
+      created_at: iso(DELETED_AT - 10 * DAY),
+      updated_at: iso(DELETED_AT - 10 * DAY),
+      creator_id: ['user-connector'],
+      x_opencti_assertions: [
+        { source_kind: 'connector', source_id: 'connector-1', first_asserted_at: iso(DELETED_AT - 10 * DAY), last_asserted_at: iso(DELETED_AT - 10 * DAY) },
+        // A feed asserting the object later, never one of its creators
+        { source_kind: 'feed', source_id: 'feed-1', first_asserted_at: iso(DELETED_AT - 3 * DAY), last_asserted_at: iso(DELETED_AT - 3 * HOUR) },
+      ],
     };
-    const { increments, deletions } = await computeEventIncrements({} as AuthContext, [event] as any, resolver, { enterprise: false, huntRunType: null });
+    const requested: string[][] = [];
+    const loadDeletedDocuments = async (ids: string[]) => {
+      requested.push(ids);
+      return new Map([['indicator-1', trashCopy]]);
+    };
+    const { increments, deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
+      enterprise: false,
+      huntRunType: null,
+      loadDeletedDocuments,
+    });
+    expect(requested).toEqual([['indicator-1']]);
+    expect(increments.size).toBe(0);
+    expect(Array.from(deletions.get('LAST_7_DAYS')?.keys() ?? []).sort()).toEqual(['source-feed']);
+    expect(deletions.get('LAST_7_DAYS')?.get('source-feed')).toEqual({
+      volume_total: -1, new_objects: -1, volume_last_day: -1, volume_entities: -1, volume_indicators: -1,
+    });
+    expect(Array.from(deletions.get('LAST_30_DAYS')?.keys() ?? []).sort()).toEqual(['source-connector', 'source-feed']);
+    expect(deletions.get('LAST_30_DAYS')?.get('source-connector')).toEqual({ volume_total: -1, new_objects: -1, volume_entities: -1, volume_indicators: -1 });
+  });
+
+  it('should debit the creators and the author of a deleted object without trash copy, not the deleting user', async () => {
+    const { increments, deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
+      enterprise: false,
+      huntRunType: null,
+      loadDeletedDocuments: async () => new Map(),
+    });
     expect(increments.size).toBe(0);
     expect(Array.from(deletions.keys())).toEqual(['LAST_7_DAYS', 'LAST_30_DAYS', 'LAST_90_DAYS']);
     SCORECARD_PERIODS.forEach((period) => expect(Array.from(deletions.get(period)?.keys() ?? [])).toEqual(['source-connector']));
