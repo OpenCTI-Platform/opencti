@@ -16,6 +16,8 @@ export const containerTimelineStripQuery = graphql`
   query ContainerTimelineStripQuery($id: String!, $count: Int!) {
     containerTimelineSummary(id: $id) {
       total
+      first_event_time
+      last_event_time
       anchors {
         first_adversary_activity
         first_detection
@@ -29,7 +31,7 @@ export const containerTimelineStripQuery = graphql`
         default_grouping
       }
     }
-    containerTimeline(id: $id, first: $count) {
+    containerTimeline(id: $id, first: $count, orderMode: desc) {
       edges {
         node {
           id
@@ -58,9 +60,14 @@ const ContainerTimelineStripContent = ({ queryRef, timelinePath }: ContainerTime
   const { t_i18n, n } = useFormatter();
   const navigate = useNavigate();
   const { containerTimelineSummary: summary, containerTimeline } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
-  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node), [containerTimeline]);
+  // The latest events in chronological order, drawn over the whole span of the timeline
+  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
   const lanes = TIMELINE_LANES.filter((lane) => (summary?.settings.enabled_lanes ?? TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
-  const extent = computeTimelineExtent(events, TIMELINE_ANCHOR_KEYS.map((key) => summary?.anchors?.[key]));
+  const extent = computeTimelineExtent(events, [
+    ...TIMELINE_ANCHOR_KEYS.map((key) => summary?.anchors?.[key]),
+    summary?.first_event_time,
+    summary?.last_event_time,
+  ]);
   return (
     <div data-testid="timeline-strip">
       <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} />

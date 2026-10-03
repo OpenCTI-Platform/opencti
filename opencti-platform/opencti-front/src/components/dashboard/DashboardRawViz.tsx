@@ -35,9 +35,8 @@ const DashboardRawViz = ({
         <ContainerTimelineWidget
           parameters={{
             ...widget.parameters,
-            // In a custom view, the widget shows the timeline of the incident or case it is displayed on
-            container_id: widget.parameters?.container_id
-              || (host?.kind === 'custom-view' ? host.customViewTargetEntityId : null),
+            // In a custom view, the widget always shows the timeline of the incident or case it is displayed on
+            container_id: host?.kind === 'custom-view' ? host.customViewTargetEntityId : widget.parameters?.container_id,
           }}
           popover={popover}
         />

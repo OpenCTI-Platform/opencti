@@ -185,7 +185,6 @@ const runConsistencyPass = async (context: AuthContext) => {
   const nowTime = Date.now();
   const lastRun = await getTimelineConsistencyLastRun();
   if (!isTimelineConsistencyPassDue(lastRun, nowTime, TIMELINE_MANAGER_CONSISTENCY_HOUR)) return;
-  await setTimelineConsistencyLastRun(nowTime);
   let scheduled = 0;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
     baseData: true,
@@ -194,6 +193,8 @@ const runConsistencyPass = async (context: AuthContext) => {
       scheduled += containers.length;
     },
   } as any);
+  // Recorded once every container is scheduled: an interrupted pass runs again at the next manager run
+  await setTimelineConsistencyLastRun(nowTime);
   logApp.info('[TIMELINE] Consistency pass scheduled', { scheduled });
 };
 
