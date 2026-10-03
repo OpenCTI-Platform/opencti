@@ -210,11 +210,11 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
       previous_bundle: JSON.stringify(previousStepBundle ?? bundle),
     };
     const runs: BasicStoreEntityHuntRun[] = [];
+    const waiting = configuration.wait_for_results !== false && serializedBundle.length <= HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH;
     try {
       const inScope = bundle.objects.filter((object) => isBundleElementInScope(object, configuration.applyToElements, dataInstanceId));
       const elements = await filterBundleElements(context, inScope, configuration.applyWithFilters);
       const hunts = elements.length > 0 ? await resolvePlaybookHunts(context, elements, configuration) : [];
-      const waiting = configuration.wait_for_results !== false && serializedBundle.length <= HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH;
       for (let index = 0; index < hunts.length; index += 1) {
         const hunt = hunts[index];
         // Check and creation are serialized per hunt: concurrent executions cannot both find no recent run and both start
@@ -244,6 +244,14 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
       }
     } catch (error) {
       logApp.error('[OPENCTI-MODULE] Playbook hunt step failed to start its runs', { cause: error, playbookId, stepId: playbookNode.id });
+      // A run created before the failure can already hold the continuation: the hunt manager resumes the step from it
+      // once the runs of the step are settled, so resuming here as well would run the next steps twice
+      if (waiting) {
+        const started = await findPlaybookHuntRuns(context, executionId, playbookNode.id);
+        if (started.some((run) => run.playbook_leader)) {
+          return;
+        }
+      }
     }
     // Nothing to wait for: continue right away (the executor routes to no-hunt when no run was started)
     await resumeHuntPlaybookStep(context, { ...playbookContext, include_results: false }, runs);
