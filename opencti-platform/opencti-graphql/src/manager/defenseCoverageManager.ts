@@ -4,24 +4,9 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import type { DataEvent, SseEvent } from '../types/event';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/utils';
-import { STIX_TYPE_RELATION } from '../schema/general';
-import {
-  RELATION_DEPLOYED_ON,
-  RELATION_DETECTS,
-  RELATION_HAS_COVERED,
-  RELATION_INDICATES,
-  RELATION_MITIGATES,
-  RELATION_PROVIDES,
-  RELATION_SUBTECHNIQUE_OF,
-} from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_DETECTS, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
+import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import {
   consumeFullComputationRequest,
   getLastFullComputation,
@@ -41,89 +26,10 @@ const DEFENSE_COVERAGE_MANAGER_STREAM_KEY = conf.get('defense_coverage_manager:s
 const DEFENSE_COVERAGE_COMPUTE_KEY = 'defense_coverage_compute_lock';
 const SCHEDULE_TIME = conf.get('defense_coverage_manager:interval') || 300000; // 5 minutes
 const FULL_COMPUTATION_INTERVAL = conf.get('defense_coverage_manager:full_computation_interval') || 86400000; // 1 day
+const STREAM_SCHEDULE_TIME = conf.get('defense_coverage_manager:stream_interval') || 10000;
 const STREAM_BUFFER_TIME = conf.get('defense_coverage_manager:stream_buffer_time') || 10000;
 const MAX_INCREMENTAL_TECHNIQUES = conf.get('defense_coverage_manager:max_incremental_techniques') || 300;
 const COMPUTE_LOCK_RETRY_COUNT = 30;
-
-// Deleting or merging one of these entities removes relationships without dedicated events: recompute everything.
-const FULL_RECOMPUTE_ENTITY_TYPES = [
-  ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
-  ENTITY_TYPE_IDENTITY_SYSTEM,
-  ENTITY_TYPE_DATA_COMPONENT,
-  ENTITY_TYPE_COURSE_OF_ACTION,
-  ENTITY_TYPE_INDICATOR,
-  ENTITY_TYPE_SECURITY_COVERAGE,
-  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  ENTITY_TYPE_ATTACK_PATTERN,
-];
-const TECHNIQUE_RELATIONSHIPS = [RELATION_DETECTS, RELATION_INDICATES, RELATION_MITIGATES, RELATION_HAS_COVERED, RELATION_SUBTECHNIQUE_OF];
-
-export interface DefenseImpact {
-  full: boolean;
-  techniqueIds: Set<string>;
-  dataComponentIds: Set<string>;
-  ruleIds: Set<string>;
-}
-
-interface StixEventData {
-  type: string;
-  relationship_type?: string;
-  extensions: Record<string, {
-    id: string;
-    type: string;
-    source_ref?: string;
-    source_type?: string;
-    target_ref?: string;
-    target_type?: string;
-  }>;
-}
-
-/**
- * Impact of a batch of stream events on the stored coverage.
- */
-export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): DefenseImpact => {
-  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set() };
-  events.forEach((event) => {
-    const eventType = event.data.type;
-    const data = event.data.data as unknown as StixEventData;
-    const extension = data.extensions?.[STIX_EXT_OCTI];
-    if (!extension) return;
-    if (data.type === STIX_TYPE_RELATION) {
-      const relationshipType = data.relationship_type ?? '';
-      if (TECHNIQUE_RELATIONSHIPS.includes(relationshipType)) {
-        if (extension.target_type === ENTITY_TYPE_ATTACK_PATTERN && extension.target_ref) impact.techniqueIds.add(extension.target_ref);
-        if (relationshipType === RELATION_SUBTECHNIQUE_OF && extension.source_ref) impact.techniqueIds.add(extension.source_ref);
-      } else if (relationshipType === RELATION_PROVIDES && extension.target_ref) {
-        impact.dataComponentIds.add(extension.target_ref);
-      } else if (relationshipType === RELATION_DEPLOYED_ON && extension.source_ref) {
-        impact.ruleIds.add(extension.source_ref);
-      }
-      return;
-    }
-    if (eventType === EVENT_TYPE_MERGE) {
-      if (FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) impact.full = true;
-      return;
-    }
-    if (eventType === EVENT_TYPE_DELETE && FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) {
-      impact.full = true;
-      return;
-    }
-    if (extension.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM && eventType === EVENT_TYPE_CREATE) {
-      // A new platform brings a new column of gaps
-      impact.full = true;
-      return;
-    }
-    if (extension.type === ENTITY_TYPE_ATTACK_PATTERN && (eventType === EVENT_TYPE_CREATE || eventType === EVENT_TYPE_UPDATE)) {
-      impact.techniqueIds.add(extension.id);
-      return;
-    }
-    if (extension.type === ENTITY_TYPE_INDICATOR && eventType === EVENT_TYPE_UPDATE) {
-      // Pattern type, log source or revocation changes move a rule in or out of the detection layer
-      impact.ruleIds.add(extension.id);
-    }
-  });
-  return impact;
-};
 
 const runComputation = async (context: AuthContext, attackPatternIds?: string[]) => {
   let lock;
@@ -159,6 +65,9 @@ export const defenseCoverageCronHandler = async () => {
   }
 };
 
+/**
+ * Incremental computation of the techniques impacted by a batch of stream events.
+ */
 export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   if (streamEvents.length === 0) return;
   const context = executionContext(DEFENSE_COVERAGE_MANAGER_CONTEXT);
@@ -202,7 +111,7 @@ const DEFENSE_COVERAGE_MANAGER_DEFINITION: ManagerDefinition = {
   },
   streamSchedulerHandler: {
     handler: defenseCoverageStreamHandler,
-    interval: SCHEDULE_TIME,
+    interval: STREAM_SCHEDULE_TIME,
     lockKey: DEFENSE_COVERAGE_MANAGER_STREAM_KEY,
     streamOpts: { bufferTime: STREAM_BUFFER_TIME },
     streamProcessorStartFrom: () => 'live',

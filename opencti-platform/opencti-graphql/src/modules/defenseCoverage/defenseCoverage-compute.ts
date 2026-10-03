@@ -157,7 +157,7 @@ const loadDeployments = async (context: AuthContext, user: AuthUser, ruleIds: st
 // endregion
 
 // region vector building
-interface ComputationGraph {
+export interface ComputationGraph {
   platforms: DefensePlatform[];
   platformIdByStixId: Map<string, string>;
   detectsByTechnique: Map<string, BasicStoreRelation[]>;

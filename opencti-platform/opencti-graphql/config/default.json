@@ -349,6 +349,7 @@
     "stream_lock_key": "defense_coverage_manager_stream_lock",
     "interval": 300000,
     "full_computation_interval": 86400000,
+    "stream_interval": 10000,
     "stream_buffer_time": 10000,
     "max_incremental_techniques": 300,
     "validation_success_threshold": 50,
