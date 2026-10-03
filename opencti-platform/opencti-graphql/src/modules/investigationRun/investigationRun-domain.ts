@@ -296,6 +296,7 @@ export const addInvestigationRun = async (
     case_ids: isCase ? [subject.internal_id, subject.standard_id] : [],
     policy_id: policy.internal_id,
     agent_slug: policy.agent_slug || INVESTIGATION_DEFAULT_AGENT_SLUG,
+    pack_id: policy.pack_id || null,
     run_trigger: trigger,
     run_status: InvestigationRunStatus.Planned,
     run_phase: InvestigationRunPhase.Initializing,

@@ -655,6 +655,7 @@ const runAgentPhase = async (exec: RunExecution) => {
       hypotheses: scored ?? current.hypotheses,
       recommendations: mergeRecommendations(current.recommendations, grounded.recommendations),
       summary: grounded.summary ?? current.summary ?? null,
+      goal_plan: grounded.goal_plan ?? current.goal_plan ?? null,
       enrichment_requests: next.enrichment_requests,
       approvals: [...current.approvals, ...newApprovals].slice(-INVESTIGATION_LIMITS.approvals),
       steps: appendLedger(current.steps, [ledger(current, now, {

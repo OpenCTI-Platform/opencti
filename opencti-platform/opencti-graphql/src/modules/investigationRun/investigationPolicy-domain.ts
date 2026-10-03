@@ -49,6 +49,7 @@ const EDITABLE_POLICY_KEYS = [
   'name',
   'description',
   'agent_slug',
+  'pack_id',
   'allowed_actions',
   'enrichment_connector_ids',
   'approval_connector_ids',
@@ -91,6 +92,16 @@ const assertEnrichmentConnectors = async (context: AuthContext, user: AuthUser, 
   }
 };
 
+// The enrichment connectors a policy can allow, for administrators who do not
+// manage connectors themselves.
+export const listInvestigationEnrichmentConnectors = async (context: AuthContext, user: AuthUser) => {
+  await checkEnterpriseEdition(context);
+  const connectors = await connectorsForEnrichment(context, user, null, false) as Array<{ internal_id: string; name: string; active?: boolean; connector_scope?: string[] }>;
+  return connectors
+    .map((connector) => ({ id: connector.internal_id, name: connector.name, active: connector.active === true, connector_scope: connector.connector_scope ?? [] }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+};
+
 export const findInvestigationPolicyById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
   return storeLoadById<BasicStoreEntityInvestigationPolicy>(context, user, id, ENTITY_TYPE_INVESTIGATION_POLICY);
@@ -128,6 +139,7 @@ const buildPolicyInput = (input: Partial<InvestigationPolicyAddInput>) => ({
   description: input.description ?? null,
   is_default: input.is_default ?? false,
   agent_slug: input.agent_slug?.trim() || null,
+  pack_id: input.pack_id?.trim() || null,
   allowed_actions: input.allowed_actions ?? DEFAULT_POLICY_VALUES.allowed_actions,
   enrichment_connector_ids: input.enrichment_connector_ids ?? DEFAULT_POLICY_VALUES.enrichment_connector_ids,
   approval_connector_ids: input.approval_connector_ids ?? DEFAULT_POLICY_VALUES.approval_connector_ids,

@@ -73,6 +73,8 @@ const INVESTIGATION_RUN_DEFINITION: ModuleDefinition<StoreEntityInvestigationRun
     { name: 'draft_id', label: 'Draft', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_DRAFT_WORKSPACE], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'policy_id', label: 'Policy', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_INVESTIGATION_POLICY], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'agent_slug', label: 'Agent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pack_id', label: 'Investigation pack', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'goal_plan', label: 'Goal plan', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'run_trigger', label: 'Run trigger', type: 'string', format: 'enum', values: INVESTIGATION_RUN_TRIGGERS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'run_status', label: 'Run status', type: 'string', format: 'enum', values: INVESTIGATION_RUN_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'run_phase', label: 'Run phase', type: 'string', format: 'enum', values: INVESTIGATION_RUN_PHASES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

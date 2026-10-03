@@ -43,6 +43,7 @@ import {
   editInvestigationPolicy,
   findInvestigationPoliciesPaginated,
   findInvestigationPolicyById,
+  listInvestigationEnrichmentConnectors,
 } from './investigationPolicy-domain';
 import { acceptanceRate, computeAcceptance, computeUsedMinutes } from './investigationRun-state';
 import { buildInvestigationReportSections } from './investigationRun-report';
@@ -61,6 +62,7 @@ const investigationRunResolvers: Resolvers = {
     investigationRuns: (_, args, context) => findInvestigationRunsPaginated(context, context.user, args),
     investigationPolicy: (_, { id }, context) => findInvestigationPolicyById(context, context.user, id),
     investigationPolicies: (_, args, context) => findInvestigationPoliciesPaginated(context, context.user, args),
+    investigationEnrichmentConnectors: (_, __, context) => listInvestigationEnrichmentConnectors(context, context.user),
   },
   InvestigationRun: {
     creators: (run, _, context) => loadCreators(context, context.user, run),

@@ -54,6 +54,7 @@ const INVESTIGATION_POLICY_DEFINITION: ModuleDefinition<StoreEntityInvestigation
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'is_default', label: 'Default policy', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'agent_slug', label: 'Pinned agent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pack_id', label: 'Investigation pack', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'allowed_actions', label: 'Allowed autonomous actions', type: 'string', format: 'enum', values: INVESTIGATION_AUTONOMOUS_ACTIONS, mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'enrichment_connector_ids', label: 'Enrichment connectors allowed', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_CONNECTOR], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'approval_connector_ids', label: 'Enrichment connectors requiring approval', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_CONNECTOR], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },

@@ -9443,6 +9443,7 @@ type Query {
   investigationRuns(first: Int, after: ID, orderBy: InvestigationRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, subjectId: String, caseId: String): InvestigationRunConnection
   investigationPolicy(id: ID!): InvestigationPolicy
   investigationPolicies(first: Int, after: ID, orderBy: InvestigationPoliciesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): InvestigationPolicyConnection
+  investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -16065,6 +16066,8 @@ type InvestigationRun implements InternalObject & BasicObject {
   policy_id: String
   policy: InvestigationPolicy
   agent_slug: String
+  pack_id: String
+  goal_plan: JSON
   run_trigger: InvestigationRunTrigger!
   run_status: InvestigationRunStatus!
   run_phase: InvestigationRunPhase!
@@ -16104,6 +16107,7 @@ type InvestigationPolicy implements InternalObject & BasicObject {
   description: String
   is_default: Boolean!
   agent_slug: String
+  pack_id: String
   allowed_actions: [InvestigationAutonomousAction!]!
   enrichment_connector_ids: [String!]!
   approval_connector_ids: [String!]!
@@ -16173,6 +16177,13 @@ type InvestigationRunEnrichmentRequestResult {
   rejected: [InvestigationRunEnrichmentRejected!]!
 }
 
+type InvestigationEnrichmentConnector {
+  id: String!
+  name: String!
+  active: Boolean!
+  connector_scope: [String!]!
+}
+
 input InvestigationRunFeedbackInput {
   item_type: InvestigationFeedbackItemType!
   item_ref: String!
@@ -16233,7 +16244,12 @@ input InvestigationPolicyAddInput {
   name: String!
   description: String
   is_default: Boolean
+
+  "*Constraints:*\n* Maximal length: `200`\n"
   agent_slug: String
+
+  "*Constraints:*\n* Maximal length: `200`\n"
+  pack_id: String
   allowed_actions: [InvestigationAutonomousAction!]
   enrichment_connector_ids: [String!]
   approval_connector_ids: [String!]

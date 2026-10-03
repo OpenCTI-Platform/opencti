@@ -327,6 +327,8 @@ type InvestigationRun implements InternalObject & BasicObject {
   policy_id: String
   policy: InvestigationPolicy
   agent_slug: String
+  pack_id: String
+  goal_plan: JSON
   run_trigger: InvestigationRunTrigger!
   run_status: InvestigationRunStatus!
   run_phase: InvestigationRunPhase!
@@ -367,6 +369,7 @@ type InvestigationPolicy implements InternalObject & BasicObject {
   description: String
   is_default: Boolean!
   agent_slug: String
+  pack_id: String
   allowed_actions: [InvestigationAutonomousAction!]!
   enrichment_connector_ids: [String!]!
   approval_connector_ids: [String!]!
@@ -436,6 +439,13 @@ type InvestigationRunEnrichmentRequestResult {
   rejected: [InvestigationRunEnrichmentRejected!]!
 }
 
+type InvestigationEnrichmentConnector {
+  id: String!
+  name: String!
+  active: Boolean!
+  connector_scope: [String!]!
+}
+
 extend interface Case {
   latestInvestigationRun: InvestigationRun
 }
@@ -476,6 +486,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): InvestigationPolicyConnection @auth(for: [KNOWLEDGE])
+  investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 input InvestigationRunFeedbackInput {
@@ -518,7 +529,8 @@ input InvestigationPolicyAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   is_default: Boolean
-  agent_slug: String
+  agent_slug: String @constraint(maxLength: 200)
+  pack_id: String @constraint(maxLength: 200)
   allowed_actions: [InvestigationAutonomousAction!]
   enrichment_connector_ids: [String!]
   approval_connector_ids: [String!]
@@ -541,9 +553,9 @@ type Mutation {
   investigationRunEnrichmentRequest(id: ID!, input: InvestigationRunEnrichmentRequestInput!): InvestigationRunEnrichmentRequestResult @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunStepRecord(id: ID!, input: InvestigationRunStepInput!): InvestigationLedgerEntry @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunHypothesesPropose(id: ID!, input: [InvestigationHypothesisInput!]!): [InvestigationHypothesis!] @auth(for: [KNOWLEDGE_KNUPDATE])
-  investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
-  investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
-  investigationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETPARAMETERS])
+  investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  investigationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type Subscription {

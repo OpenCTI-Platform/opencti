@@ -86,6 +86,7 @@ export const INVESTIGATION_LIMITS = {
   feedback: 500,
   textLength: 2000,
   summaryLength: 20000,
+  goalPlanLength: 65536,
   agentRetries: 2,
 };
 
@@ -244,6 +245,10 @@ interface InvestigationRunAttributes {
   draft_id?: string | null;
   policy_id?: string | null;
   agent_slug?: string | null;
+  // Investigation pack of the XTM One investigation engine the run uses, and
+  // the engine's goal plan as it last answered it.
+  pack_id?: string | null;
+  goal_plan?: Record<string, unknown> | null;
   run_trigger: InvestigationRunTrigger;
   run_status: InvestigationRunStatus;
   run_phase: InvestigationRunPhase;
@@ -297,6 +302,7 @@ interface InvestigationPolicyAttributes {
   name: string;
   is_default: boolean;
   agent_slug?: string | null;
+  pack_id?: string | null;
   allowed_actions: InvestigationAutonomousAction[];
   enrichment_connector_ids: string[];
   approval_connector_ids: string[];

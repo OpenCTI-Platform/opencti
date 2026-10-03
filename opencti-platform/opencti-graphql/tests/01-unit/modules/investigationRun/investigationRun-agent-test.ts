@@ -9,6 +9,7 @@ import {
 } from '../../../../src/generated/graphql';
 import {
   agentPhaseFor,
+  boundGoalPlan,
   buildAgentRequest,
   buildAllowedIds,
   groundAgentResponse,
@@ -142,5 +143,24 @@ describe('Case Autopilot agent contract', () => {
     expect(grounded.hypotheses).toHaveLength(INVESTIGATION_LIMITS.hypotheses);
     expect(grounded.hypotheses[0].rationale?.length).toBe(4000);
     expect(grounded.summary?.length).toBe(INVESTIGATION_LIMITS.summaryLength);
+  });
+
+  it('sends the investigation pack of the run to the engine', () => {
+    const allowed = buildAllowedIds(context);
+    const request = JSON.parse(buildAgentRequest(buildRun({ pack_id: 'opencti-case-investigation' }), 'plan', context, { new_entity_ids: [], new_relationship_ids: [], enrichments: [] }, allowed, 10));
+    expect(request.run.pack_id).toBe('opencti-case-investigation');
+    const withoutPack = JSON.parse(buildAgentRequest(buildRun(), 'plan', context, { new_entity_ids: [], new_relationship_ids: [], enrichments: [] }, allowed, 10));
+    expect(withoutPack.run.pack_id).toBeNull();
+  });
+
+  it('keeps the engine goal plan as a bounded JSON object', () => {
+    const goalPlan = { goals: [{ id: 'g1', title: 'Attribute the intrusion', status: 'in_progress' }] };
+    expect(boundGoalPlan(goalPlan)).toEqual(goalPlan);
+    expect(boundGoalPlan([goalPlan])).toBeNull();
+    expect(boundGoalPlan('plan')).toBeNull();
+    expect(boundGoalPlan({ notes: 'z'.repeat(INVESTIGATION_LIMITS.goalPlanLength) })).toBeNull();
+    const allowed = buildAllowedIds(context);
+    expect(groundAgentResponse({ goal_plan: goalPlan }, allowed, new Map()).goal_plan).toEqual(goalPlan);
+    expect(groundAgentResponse({}, allowed, new Map()).goal_plan).toBeNull();
   });
 });

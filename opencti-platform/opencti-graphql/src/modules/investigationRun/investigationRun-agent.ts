@@ -122,9 +122,26 @@ export interface GroundedAgentResponse {
   hypotheses: AchHypothesisInput[];
   recommendations: InvestigationRecommendation[];
   summary: string | null;
+  // The investigation engine's own goal plan, kept as it answered it (bounded).
+  goal_plan: Record<string, unknown> | null;
   done: boolean;
   dropped: number;
 }
+
+/**
+ * Keep the goal plan of the investigation engine as an opaque, bounded JSON
+ * object: the run renders it, nothing in OpenCTI acts on it.
+ */
+export const boundGoalPlan = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  try {
+    const serialized = JSON.stringify(value);
+    if (serialized.length > INVESTIGATION_LIMITS.goalPlanLength) return null;
+    return JSON.parse(serialized) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
 
 // Recommendation kinds that act on the case or reach people outside the
 // platform: always behind a human approval, whatever the agent says.
@@ -208,6 +225,7 @@ export const buildAgentRequest = (
       id: run.internal_id,
       iteration: run.iteration,
       trigger: run.run_trigger,
+      pack_id: run.pack_id ?? null,
       subject: context.subject,
       case_id: run.case_id ?? null,
       draft_id: run.draft_id ?? null,
@@ -469,6 +487,7 @@ export const groundAgentResponse = (
     hypotheses,
     recommendations,
     summary: truncate(response.summary, INVESTIGATION_LIMITS.summaryLength),
+    goal_plan: boundGoalPlan(response.goal_plan),
     done: response.done === true,
     dropped: droppedPlan + droppedRequests + droppedHypotheses + droppedRecommendations,
   };
