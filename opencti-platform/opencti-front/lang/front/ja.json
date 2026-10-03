@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "この決定を送信できませんでした。チャットを再読み込みして、もう一度お試しください。",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "このエンティティは期間の開始時点では存在せず、その作成は変更に含まれます。",
   "This entity did not exist on": "このエンティティは次の日付時点で存在しませんでした",
+  "This entity did not exist yet during this period.": "このエンティティはこの期間中にはまだ存在していませんでした。",
   "This entity has been deleted on": "このエンティティは次の日付に削除されました",
   "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",
   "This entity type is managed by a workflow, status is read-only here": "このエンティティタイプはワークフローによって管理されており、ここではステータスは読み取り専用です",

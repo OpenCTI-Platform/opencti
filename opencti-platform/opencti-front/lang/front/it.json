@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "Non è stato possibile inviare questa decisione. Ricarica la chat e riprova.",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "Questa entità non esisteva all'inizio del periodo, la sua creazione fa parte delle modifiche.",
   "This entity did not exist on": "Questa entità non esisteva il",
+  "This entity did not exist yet during this period.": "Questa entità non esisteva ancora in questo periodo.",
   "This entity has been deleted on": "Questa entità è stata eliminata il",
   "This entity has several key fields, which is incompatible with bulk creation": "Questa entità ha più campi chiave, che sono incompatibili con la creazione in blocco",
   "This entity type is managed by a workflow, status is read-only here": "Questo tipo di entità è gestito da un flusso di lavoro; in questo caso lo stato è di sola lettura",

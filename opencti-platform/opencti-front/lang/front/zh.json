@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "无法发送此决策。请刷新聊天界面并重试。",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "该实体在期间开始时不存在，其创建属于变更的一部分。",
   "This entity did not exist on": "该实体在以下时间不存在",
+  "This entity did not exist yet during this period.": "该实体在此期间尚不存在。",
   "This entity has been deleted on": "该实体已于以下时间删除",
   "This entity has several key fields, which is incompatible with bulk creation": "该实体有几个关键字段，与批量创建不兼容",
   "This entity type is managed by a workflow, status is read-only here": "此实体类型由工作流管理，此处的状态为只读",

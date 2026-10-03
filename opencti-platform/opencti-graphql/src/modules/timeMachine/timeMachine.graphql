@@ -123,6 +123,7 @@ type EntityDiff {
     from: DateTime!
     to: DateTime!
     existed_at_from: Boolean!
+    exists_at_to: Boolean!
     restricted: Boolean!
     complete: Boolean!
     warnings: [String!]!

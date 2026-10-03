@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "이 결정은 전송되지 않았습니다. 채팅을 새로고침하고 다시 시도해 주세요.",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "이 엔터티는 기간 시작 시점에 존재하지 않았으며, 생성 자체가 변경 사항에 포함됩니다.",
   "This entity did not exist on": "이 엔터티는 다음 시점에 존재하지 않았습니다",
+  "This entity did not exist yet during this period.": "이 엔티티는 이 기간 동안 아직 존재하지 않았습니다.",
   "This entity has been deleted on": "이 엔터티는 다음 시점에 삭제되었습니다",
   "This entity has several key fields, which is incompatible with bulk creation": "이 엔티티에는 대량 생성과 호환되지 않는 몇 가지 주요 필드가 있습니다",
   "This entity type is managed by a workflow, status is read-only here": "이 엔티티 유형은 워크플로우에 의해 관리되며, 여기에서 상태는 읽기 전용입니다.",

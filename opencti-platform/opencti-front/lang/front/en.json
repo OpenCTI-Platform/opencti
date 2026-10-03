@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "This decision could not be sent. Reload the chat and try again.",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "This entity did not exist at the start of the period, its creation is part of the changes.",
   "This entity did not exist on": "This entity did not exist on",
+  "This entity did not exist yet during this period.": "This entity did not exist yet during this period.",
   "This entity has been deleted on": "This entity has been deleted on",
   "This entity has several key fields, which is incompatible with bulk creation": "This entity has several key fields, which is incompatible with bulk creation",
   "This entity type is managed by a workflow, status is read-only here": "This entity type is managed by a workflow, status is read-only here",

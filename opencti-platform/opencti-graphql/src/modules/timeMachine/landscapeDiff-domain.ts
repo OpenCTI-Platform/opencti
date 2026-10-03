@@ -23,7 +23,7 @@ import { ENTITY_DOMAIN_NAME, ENTITY_HOSTNAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_SAVED_FILTER, type BasicStoreEntitySavedFilter } from '../savedFilter/savedFilter-types';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from '../customView/customView-types';
-import { schemaTypesDefinition } from '../../schema/schema-types';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { executionContext } from '../../utils/access';
 import { now, utcDate } from '../../utils/format';
@@ -128,7 +128,7 @@ const parseFilters = (filters: string | null | undefined): FilterGroup | null =>
 
 const validateEntityTypes = (types: string[]) => {
   types.forEach((type) => {
-    if (!schemaTypesDefinition.isTypeIncludedIn(type, 'Stix-Core-Object') && type !== 'Stix-Core-Object') {
+    if (!isStixCoreObject(type)) {
       throw ValidationError('Landscape diff only supports STIX core object types', 'entity_types', { type });
     }
   });
@@ -629,10 +629,22 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
     const cached = await findLandscapeDiff(context, user, cachedId);
     if (cached && cached.status !== 'failed') return cached;
   }
+  // Slots are reserved before any await so concurrent requests cannot exceed the limits
   const userRunning = runningByUser.get(user.id) ?? 0;
   if (userRunning >= LANDSCAPE_MAX_RUNNING_PER_USER || runningTotal >= LANDSCAPE_MAX_RUNNING) {
     throw FunctionalError('Too many landscape diffs are being computed, please retry later');
   }
+  runningByUser.set(user.id, userRunning + 1);
+  runningTotal += 1;
+  const releaseSlot = () => {
+    const remaining = (runningByUser.get(user.id) ?? 1) - 1;
+    if (remaining > 0) {
+      runningByUser.set(user.id, remaining);
+    } else {
+      runningByUser.delete(user.id);
+    }
+    runningTotal = Math.max(0, runningTotal - 1);
+  };
   const createdAt = now();
   const state: LandscapeDiffState = {
     id: uuidv4(),
@@ -651,17 +663,17 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
     aggregates: null,
     entities: [],
   };
-  await writeState(state);
-  await getClientBase().set(cacheKey, state.id, 'EX', LANDSCAPE_CACHE_TTL);
-  runningByUser.set(user.id, userRunning + 1);
-  runningTotal += 1;
+  try {
+    await writeState(state);
+    await getClientBase().set(cacheKey, state.id, 'EX', LANDSCAPE_CACHE_TTL);
+  } catch (err) {
+    releaseSlot();
+    throw err;
+  }
   // The computation runs in the background, its progress is polled through the landscapeDiff query
   void executeLandscapeDiff(context, user, state, scope).catch((err) => {
     logApp.error('[TIME MACHINE] Landscape diff execution error', { cause: err, id: state.id });
-  }).finally(() => {
-    runningByUser.set(user.id, Math.max(0, (runningByUser.get(user.id) ?? 1) - 1));
-    runningTotal = Math.max(0, runningTotal - 1);
-  });
+  }).finally(releaseSlot);
   return state;
 };
 
