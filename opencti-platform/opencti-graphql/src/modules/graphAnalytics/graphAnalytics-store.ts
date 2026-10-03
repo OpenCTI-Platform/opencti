@@ -44,6 +44,10 @@ const GRAPH_METRICS_UPDATE_SCRIPT = 'if (ctx._source.x_opencti_graph_metrics == 
   + ' else { ctx._source.x_opencti_graph_metrics[entry.getKey()] = entry.getValue(); } }';
 const GRAPH_METRICS_CLEAR_FIELDS_SCRIPT = 'if (ctx._source.x_opencti_graph_metrics != null) {'
   + ' for (key in params.fields) { ctx._source.x_opencti_graph_metrics.remove(key); } }';
+// Appends on the stored document, so concurrent promotions of one cluster all remain linked
+const CLUSTER_ADD_PROMOTION_SCRIPT = 'if (ctx._source.promoted_to_ids == null) { ctx._source.promoted_to_ids = [params.id]; }'
+  + ' else if (!ctx._source.promoted_to_ids.contains(params.id)) { ctx._source.promoted_to_ids.add(params.id); }'
+  + ' else { ctx.op = \'noop\'; }';
 // Metrics owned by a clustering run (platform clustering or opencti-analytics process)
 const RUN_METRIC_FIELDS = ['cluster_id', 'cluster_size', 'cluster_kind', 'betweenness_approx', 'run_id'];
 
@@ -432,14 +436,12 @@ export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser
 };
 
 export const addClusterPromotion = async (context: AuthContext, cluster: BasicStoreEntityGraphCluster, promotedId: string) => {
-  const promoted = Array.from(new Set([...(cluster.promoted_to_ids ?? []), promotedId]));
   await elBulk(context, {
     refresh: true,
     body: [
       { update: { _index: cluster._index, _id: cluster.internal_id, retry_on_conflict: 5 } },
-      { doc: { promoted_to_ids: promoted } },
+      { script: { source: CLUSTER_ADD_PROMOTION_SCRIPT, lang: 'painless', params: { id: promotedId } } },
     ],
   });
-  return promoted;
 };
 // endregion
