@@ -727,3 +727,17 @@ export const buildProcedureConflictDraft = (conflict: ProcedureConflict): Propos
   };
 };
 // endregion
+
+// region merge target
+export interface MergeTargetCandidate {
+  id: string;
+  relationships: number;
+  names: number;
+}
+
+/** The surviving entity of a merge is the richest one (most relationships), then the one with the most names. */
+export const selectMergeTarget = (candidates: MergeTargetCandidate[]): string | undefined => {
+  const sorted = [...candidates].sort((a, b) => (b.relationships - a.relationships) || (b.names - a.names) || a.id.localeCompare(b.id));
+  return sorted[0]?.id;
+};
+// endregion

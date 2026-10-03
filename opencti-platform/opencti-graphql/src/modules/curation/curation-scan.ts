@@ -66,6 +66,7 @@ import {
   type NeighborSets,
   type PairSignals,
   pairKey,
+  selectMergeTarget,
   toCuratedEntity,
 } from './curation-detectors';
 import { getTaxonomyFamily } from './curation-normalization';
@@ -228,17 +229,17 @@ const countRelationships = async (context: AuthContext, entityId: string) => {
   } as any);
 };
 
-/**
- * The surviving entity of a merge is the richest one (most relationships), then the one with the most names.
- */
-const chooseMergeTarget = async (context: AuthContext, draft: ProposalDraft, entitiesById: Map<string, CuratedEntity>) => {
-  const scored = await Promise.all(draft.subjects.map(async (subject) => ({
-    id: subject.id,
-    relationships: await countRelationships(context, subject.id),
-    names: entitiesById.get(subject.id)?.names.length ?? 0,
-  })));
-  scored.sort((a, b) => (b.relationships - a.relationships) || (b.names - a.names) || a.id.localeCompare(b.id));
-  return scored[0]?.id ?? draft.subjects[0].id;
+const RELATIONSHIP_COUNT_CONCURRENCY = 5;
+
+/** Relationship counts of the given entities, each entity counted once whatever the number of pairs it is part of. */
+const countRelationshipsByEntity = async (context: AuthContext, entityIds: string[]) => {
+  const counts = new Map<string, number>();
+  const chunks = R.splitEvery(RELATIONSHIP_COUNT_CONCURRENCY, R.uniq(entityIds));
+  for (let index = 0; index < chunks.length; index += 1) {
+    const values = await Promise.all(chunks[index].map((entityId) => countRelationships(context, entityId)));
+    chunks[index].forEach((entityId, position) => counts.set(entityId, values[position]));
+  }
+  return counts;
 };
 // endregion
 
@@ -290,6 +291,7 @@ export const detectDuplicateDrafts = async (
   const relevantPairs = [...pairs.values()].filter((signals) => !focusIds || focusIds.has(signals.left.internal_id) || focusIds.has(signals.right.internal_id));
   const graphSimilarity = await loadGraphSimilarity(context, R.uniq(relevantPairs.flatMap((signals) => [signals.left.internal_id, signals.right.internal_id])));
   const entitiesById = new Map(entities.map((entity) => [entity.internal_id, entity]));
+  const pairDrafts: ProposalDraft[] = [];
   for (let index = 0; index < relevantPairs.length; index += 1) {
     const draft = buildPairDraft(relevantPairs[index], {
       neighbors: behaviorEnabled ? neighbors : undefined,
@@ -297,13 +299,19 @@ export const detectDuplicateDrafts = async (
       minConfidence: settings.proposal_min_confidence,
       behaviorThreshold: settings.behavior_threshold,
     });
-    if (draft) {
-      if (draft.kind === PROPOSAL_KIND_MERGE) {
-        draft.target_id = await chooseMergeTarget(context, draft, entitiesById);
-      }
-      drafts.push(draft);
-    }
+    if (draft) pairDrafts.push(draft);
   }
+  const mergeDrafts = pairDrafts.filter((draft) => draft.kind === PROPOSAL_KIND_MERGE);
+  const relationshipCounts = await countRelationshipsByEntity(context, mergeDrafts.flatMap((draft) => draft.subjects.map((subject) => subject.id)));
+  mergeDrafts.forEach((draft) => {
+    const candidates = draft.subjects.map((subject) => ({
+      id: subject.id,
+      relationships: relationshipCounts.get(subject.id) ?? 0,
+      names: entitiesById.get(subject.id)?.names.length ?? 0,
+    }));
+    draft.target_id = selectMergeTarget(candidates) ?? draft.subjects[0].id;
+  });
+  drafts.push(...pairDrafts);
   return drafts;
 };
 
