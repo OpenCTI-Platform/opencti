@@ -1,7 +1,7 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
-import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../domain/xtm-hub';
+import { autoRegisterOpenCTIOnStartup, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../domain/xtm-hub';
 import { XtmHubRegistrationStatus } from '../generated/graphql';
 import { cleanOldNewsFeedItems } from '../modules/xtm/hub/news-feed/news-feed-domain';
 import moment from 'moment';
@@ -11,6 +11,8 @@ const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key
 const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 * 1000; // 1 hour
 const NEWS_FEED_CLEANUP_INTERVAL_VALUE = conf.get('hub_registration_manager:news_feed_cleanup_interval_value') || 180;
 const NEWS_FEED_CLEANUP_INTERVAL_UNIT = conf.get('hub_registration_manager:news_feed_cleanup_interval_unit') || 'days';
+const BOOT_DELAY = 35_000; // Run shortly after XTM One startup registration (30s)
+const XTM_HUB_PLATFORM_TOKEN = process.env.XTM_HUB_PLATFORM_TOKEN?.trim();
 
 const VALID_CLEANUP_UNITS = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'] as const;
 type ValidCleanupUnit = typeof VALID_CLEANUP_UNITS[number];
@@ -62,6 +64,15 @@ export const hubRegistrationManager = async () => {
   }
 };
 
+export const autoRegisterOnBoot = async (platformToken: string): Promise<void> => {
+  const context = executionContext('hub_registration_boot_auto_register');
+  try {
+    await autoRegisterOpenCTIOnStartup(context, HUB_REGISTRATION_MANAGER_USER, platformToken);
+  } catch (error) {
+    logApp.warn('[XTMH][AUTO-REGISTER][BOOT] Startup auto-registration manager failed', { error });
+  }
+};
+
 const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'HUB_REGISTRATION_MANAGER',
   label: 'XTM Hub registration manager',
@@ -80,3 +91,9 @@ const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);
+
+if (HUB_REGISTRATION_MANAGER_ENABLED && XTM_HUB_PLATFORM_TOKEN) {
+  setTimeout(() => {
+    void autoRegisterOnBoot(XTM_HUB_PLATFORM_TOKEN);
+  }, BOOT_DELAY);
+}
