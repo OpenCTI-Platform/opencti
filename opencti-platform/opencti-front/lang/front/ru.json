@@ -5987,6 +5987,7 @@
   "XTM Hub News Feed": "Лента новостей XTM Hub",
   "XTM Hub News Feed settings": "Настройки ленты новостей XTM Hub",
   "XTM Hub Registration": "Регистрация концентратора XTM",
+  "XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.": "XTM Hub вернул неполный рейтинг: первые совпадения объединены с коннекторами локального каталога.",
   "XTM Hub returned an error: only the connectors of the local catalog are recommended.": "XTM Hub вернул ошибку: рекомендуются только коннекторы локального каталога.",
   "XTM One (Agentic AI)": "XTM One (агентский искусственный интеллект)",
   "XTM One (Ask Ariane)": "XTM One (Спросите Ариану)",

@@ -5987,6 +5987,7 @@
   "XTM Hub News Feed": "XTMハブ・ニュース・フィード",
   "XTM Hub News Feed settings": "XTM Hubのニュースフィード設定",
   "XTM Hub Registration": "XTMハブ登録",
+  "XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.": "XTM Hub は部分的なランキングを返しました。上位の一致結果がローカルカタログのコネクタと組み合わされています。",
   "XTM Hub returned an error: only the connectors of the local catalog are recommended.": "XTM Hub がエラーを返しました。ローカルカタログのコネクタのみが推奨されます。",
   "XTM One (Agentic AI)": "XTMワン（エージェントAI）",
   "XTM One (Ask Ariane)": "XTMワン（アリアンに聞く）",

@@ -5987,6 +5987,7 @@
   "XTM Hub News Feed": "Fil d'actualité du XTM Hub",
   "XTM Hub News Feed settings": "Paramètres du fil d'actualité de XTM Hub",
   "XTM Hub Registration": "Enregistrement du XTM Hub",
+  "XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.": "XTM Hub a renvoyé un classement partiel : ses premiers résultats sont combinés avec les connecteurs du catalogue local.",
   "XTM Hub returned an error: only the connectors of the local catalog are recommended.": "XTM Hub a renvoyé une erreur : seuls les connecteurs du catalogue local sont recommandés.",
   "XTM One (Agentic AI)": "XTM One (IA agentique)",
   "XTM One (Ask Ariane)": "XTM One (Demander à Ariane)",

@@ -230,7 +230,9 @@ export interface CollectionGapRecommendedConnector {
   matched_regions: string[];
 }
 
-export type HubCatalogStatus = 'ok' | 'unreachable' | 'not_registered' | 'error';
+// partial: XTM Hub matched more integrations than it ranks, its matches are combined with the local catalog
+export const HUB_CATALOG_STATUSES = ['ok', 'partial', 'unreachable', 'not_registered', 'error'] as const;
+export type HubCatalogStatus = typeof HUB_CATALOG_STATUSES[number];
 
 interface CollectionGapFields {
   name: string;
