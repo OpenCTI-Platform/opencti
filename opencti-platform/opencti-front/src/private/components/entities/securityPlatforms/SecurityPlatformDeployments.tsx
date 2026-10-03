@@ -5,14 +5,13 @@ import LiveDeploymentsValidationButton from '../../data/dissemination_assurance/
 
 interface SecurityPlatformDeploymentsProps {
   securityPlatformId: string;
-  securityPlatformName: string;
 }
 
 /** Indicators the stream connectors deployed on this platform, their lifecycle, hits and validation proof. */
-const SecurityPlatformDeployments = ({ securityPlatformId, securityPlatformName }: SecurityPlatformDeploymentsProps) => (
+const SecurityPlatformDeployments = ({ securityPlatformId }: SecurityPlatformDeploymentsProps) => (
   <Stack gap={3} data-testid="security-platform-deployments-tab">
     <Stack direction="row" justifyContent="flex-end">
-      <LiveDeploymentsValidationButton side="platform" entityId={securityPlatformId} entityName={securityPlatformName} />
+      <LiveDeploymentsValidationButton side="platform" entityId={securityPlatformId} />
     </Stack>
     <DisseminationAssuranceMetrics platformId={securityPlatformId} />
     <DeployedOnRelationships side="platform" entityId={securityPlatformId} />

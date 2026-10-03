@@ -38,10 +38,9 @@ const liveDeploymentsQuery = graphql`
 interface LiveDeploymentsValidationButtonProps {
   side: 'indicator' | 'platform';
   entityId: string;
-  entityName: string;
 }
 
-const LiveDeploymentsDialog = ({ side, entityId, entityName, onClose }: LiveDeploymentsValidationButtonProps & { onClose: () => void }) => {
+const LiveDeploymentsDialog = ({ side, entityId, onClose }: LiveDeploymentsValidationButtonProps & { onClose: () => void }) => {
   const { t_i18n, n } = useFormatter();
   const { stixCoreRelationships } = useLazyLoadQuery<LiveDeploymentsValidationButtonQuery>(
     liveDeploymentsQuery,
@@ -82,7 +81,7 @@ const LiveDeploymentsDialog = ({ side, entityId, entityName, onClose }: LiveDepl
       onClose={onClose}
       indicatorIds={platformOptions.length > 0 ? indicatorIds : []}
       platforms={platformOptions}
-      defaultName={`${t_i18n('Validation of')} ${entityName}`}
+      defaultName={`${t_i18n('Validation of')} ${n(platformOptions.length)} ${t_i18n('security platform(s)')}`}
       summary={platformOptions.length > 0 ? summary : t_i18n('No live deployment to validate')}
     />
   );

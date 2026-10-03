@@ -205,10 +205,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   />
                 ),
                 deployments: (
-                  <SecurityPlatformDeployments
-                    securityPlatformId={securityPlatform.id}
-                    securityPlatformName={securityPlatform.name}
-                  />
+                  <SecurityPlatformDeployments securityPlatformId={securityPlatform.id} />
                 ),
                 files: (
                   <FileManager

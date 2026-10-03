@@ -22,7 +22,7 @@ import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indica
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import {
   type BasicStoreRelationDeployedOn,
-  DEPLOYMENT_STATUS_REMOVED,
+  LIVE_DEPLOYMENT_STATUSES,
   RELATION_DEPLOYED_ON,
   VALIDATION_STATUS_ERROR,
   VALIDATION_STATUS_NOT_REQUESTED,
@@ -222,8 +222,8 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
       const deployment = deployments.find((d) => d.fromId === ioc.indicator_id && d.toId === platform.internal_id);
       if (!deployment) {
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not deployed on this security platform' });
-      } else if (deployment.deployment_status === DEPLOYMENT_STATUS_REMOVED) {
-        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Removed from this security platform' });
+      } else if (!LIVE_DEPLOYMENT_STATUSES.includes(deployment.deployment_status)) {
+        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: `Not live on this security platform (${deployment.deployment_status})` });
       } else {
         pairs.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, deployed_on_id: deployment.internal_id });
         pairDeployments.push(deployment);
@@ -269,10 +269,13 @@ const patchRequest = async (context: AuthContext, user: AuthUser, id: string, pa
  * Push the request to the OpenAEV IOC validation connector listen queue.
  * The OpenCTI worker relays the message to the OpenAEV callback, exactly as for security coverage.
  * When the connector is not alive the request stays pending and the manager retries.
+ * A request bound to a connector is never rerouted: connectors can target different OpenAEV tenants.
  */
 export const dispatchIocValidationRequest = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
   const connectors = await findIocValidationConnectors(context, SYSTEM_USER, true);
-  const connector = connectors.find((c: BasicStoreBase) => c.internal_id === request.connector_id) ?? connectors[0];
+  const connector = request.connector_id
+    ? connectors.find((c: BasicStoreBase) => c.internal_id === request.connector_id)
+    : connectors[0];
   if (!connector) {
     if (request.status_message !== 'Waiting for an active OpenAEV IOC validation connector') {
       return patchRequest(context, SYSTEM_USER, request.internal_id, { status_message: 'Waiting for an active OpenAEV IOC validation connector' });
@@ -524,5 +527,24 @@ export const filterReadableSkipped = async (context: AuthContext, user: AuthUser
   ]);
   const platforms = new Set(readablePlatforms);
   return (request.skipped ?? []).filter((s) => readable.has(s.indicator_id) && (!s.platform_id || platforms.has(s.platform_id)));
+};
+
+export const readableResultsSummary = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  const [readableIndicators, readablePlatforms] = await Promise.all([
+    findReadableIndicatorIds(context, user, request.indicator_ids ?? []),
+    filterReadablePlatformIds(context, user, request),
+  ]);
+  const platforms = new Set(readablePlatforms);
+  const fullyReadable = (request.indicator_ids ?? []).every((id) => readableIndicators.has(id))
+    && (request.platform_ids ?? []).every((id) => platforms.has(id));
+  if (fullyReadable) {
+    return request.results_summary ?? emptyResultsSummary();
+  }
+  const pairs = (request.pairs ?? []).filter((pair) => readableIndicators.has(pair.indicator_id) && platforms.has(pair.platform_id));
+  const skipped = await filterReadableSkipped(context, user, request);
+  const pairDeploymentIds = new Set(pairs.map((pair) => pair.deployed_on_id));
+  const deployments = (await loadRequestDeployments(context, user, request))
+    .filter((d) => pairDeploymentIds.has(d.internal_id) && d.validation_run_id === request.internal_id);
+  return summarizeValidationResults(pairs.length, skipped.length, deployments.map((d) => d.validation_status));
 };
 // endregion

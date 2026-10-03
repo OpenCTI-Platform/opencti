@@ -47,6 +47,8 @@ describe('Dissemination assurance stix filter testers (triggers)', () => {
     expect(FILTER_KEY_TESTERS_MAP.deployment_platforms_count).toBeDefined();
     expect(testers.testDeploymentPlatformsCount(indicator(true, 2), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(true);
     expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(false);
+    expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'eq'))).toEqual(true);
+    expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'not_eq'))).toEqual(false);
     expect(testers.testRevoked(indicator(true, 2), filter('revoked', ['true']))).toEqual(true);
   });
 });

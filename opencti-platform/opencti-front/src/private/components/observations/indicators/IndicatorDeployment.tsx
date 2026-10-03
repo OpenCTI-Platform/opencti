@@ -9,8 +9,6 @@ import type { IndicatorDeployment_indicator$key } from './__generated__/Indicato
 const indicatorDeploymentFragment = graphql`
   fragment IndicatorDeployment_indicator on Indicator {
     id
-    name
-    pattern
     deployment_platforms_count
     deployment_failed_count
     validated_platforms_count
@@ -52,7 +50,7 @@ const IndicatorDeployment = ({ indicator }: IndicatorDeploymentProps) => {
             <Counter testId="indicator-hit-platforms" label={t_i18n('Platforms with hits')} value={n(data.hit_platforms_count ?? 0)} />
           </Grid>
         </Grid>
-        <LiveDeploymentsValidationButton side="indicator" entityId={data.id} entityName={data.name ?? data.pattern ?? ''} />
+        <LiveDeploymentsValidationButton side="indicator" entityId={data.id} />
       </Stack>
       <DeployedOnRelationships side="indicator" entityId={data.id} />
     </Stack>
