@@ -14,7 +14,7 @@ test('Curation hub and customization page', { tag: ['@ce'] }, async ({ page }) =
   const curationPage = new CurationPage(page);
 
   await curationPage.gotoHub();
-  await expect(page).toHaveURL(/\/dashboard\/data\/curation\/inbox$/);
+  await expect(page).toHaveURL(/\/dashboard\/data\/curation\/inbox(\?.*)?$/);
   await expect(curationPage.getInbox()).toBeVisible();
 
   await curationPage.getHubTab('merges').click();

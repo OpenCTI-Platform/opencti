@@ -115,10 +115,10 @@ export const computeTargetRevertInputs = (
         });
       }
       if (toRemove.length > 0) {
-        const currentValues = asArray(current);
         const removeKeys = toKeySet(toRemove);
-        // Remove with the exact casing stored on the live target.
-        inputs.push({ key, value: currentValues.filter((value) => removeKeys.has(valueKey(value))), operation: 'remove' });
+        // The remaining values replace the attribute: an alias input is always applied as a replacement by the update
+        // (its operation is not kept), and the target is locked for the whole unmerge.
+        inputs.push({ key, value: asArray(current).filter((value) => !removeKeys.has(valueKey(value))), operation: 'replace' });
       }
       return;
     }
