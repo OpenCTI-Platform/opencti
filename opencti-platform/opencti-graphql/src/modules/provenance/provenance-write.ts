@@ -1,5 +1,5 @@
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { elUpdate } from '../../database/engine';
+import { elRawGet, elUpdate } from '../../database/engine';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { addProvenanceConflictDetectedCount } from '../../manager/telemetryManager';
 import { resolveAssertionSource } from './provenance-source';
 import type { ConflictAddition, ConflictRemoval } from './provenance-conflicts';
-import { notifyProvenanceChange, type ProvenanceChange as ProvenanceTriggerChange } from './provenance-notification';
+import { hasProvenanceTriggers, notifyProvenanceChange, type ProvenanceChange as ProvenanceTriggerChange } from './provenance-notification';
 import {
   type AssertionSource,
   ATTRIBUTE_ASSERTION_SOURCE_IDS,
@@ -366,6 +366,36 @@ export const publishProvenanceChange = async (context: AuthContext, element: Pro
   }
 };
 
+const PROVENANCE_SNAPSHOT_FIELDS = [`${ATTRIBUTE_ASSERTIONS}.source_id`, ATTRIBUTE_CONFLICTS];
+
+/**
+ * Provenance of the element as currently stored (realtime get, not a search), so that trigger events
+ * are computed from the exact state even when the previous write is not yet visible to searches.
+ */
+export const loadProvenanceSnapshot = async (element: ProvenanceTarget): Promise<Partial<StoreProvenanceFields>> => {
+  const response = await elRawGet({
+    id: element._id ?? element.internal_id,
+    index: element._index,
+    _source_includes: PROVENANCE_SNAPSHOT_FIELDS,
+  } as { id: string; index: string });
+  return (response?._source ?? {}) as Partial<StoreProvenanceFields>;
+};
+
+/**
+ * State used to compute the provenance change of a write: exact when provenance triggers are listening.
+ */
+export const resolveProvenanceBeforeWrite = async (context: AuthContext, element: ProvenanceTarget & Partial<StoreProvenanceFields>) => {
+  if (!(await hasProvenanceTriggers(context))) {
+    return element;
+  }
+  try {
+    return await loadProvenanceSnapshot(element);
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Unable to load the provenance snapshot, using the loaded element', { cause: err, id: element.internal_id });
+    return element;
+  }
+};
+
 /**
  * Refresh the assertion of the writing source on an existing element after upsert resolution.
  * A provenance failure never fails the knowledge write itself.
@@ -383,6 +413,7 @@ export const recordUpsertProvenance = async (
   try {
     const source = record.source ?? await resolveAssertionSource(context, user, record.input, { fromRule: record.fromRule });
     const assertion = buildStoreAssertion(source, record.confidence, record.at ?? now());
+    const before = await resolveProvenanceBeforeWrite(context, element);
     await applyProvenanceUpdate(context, element, {
       assertions: [assertion],
       countMode: 'sum',
@@ -391,7 +422,7 @@ export const recordUpsertProvenance = async (
       proceduresAdd: record.proceduresAdd,
       resetFreshness: true,
     }, opts);
-    await publishProvenanceChange(context, element, computeProvenanceChange(element, [source.source_id], record.conflictsAdd));
+    await publishProvenanceChange(context, element, computeProvenanceChange(before, [source.source_id], record.conflictsAdd));
     return { source, assertion };
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to record the assertion', { cause: err, id: element.internal_id, type: element.entity_type });

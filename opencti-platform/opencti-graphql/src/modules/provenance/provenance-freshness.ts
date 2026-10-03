@@ -105,7 +105,8 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   const policy = rule.freshness_policy ?? FRESHNESS_POLICY_FLAG;
   const at = now();
   const isFlagOnly = policy === FRESHNESS_POLICY_FLAG;
-  await applyProvenanceUpdate(context, element, { freshnessFlag: { rule_id: rule.id, at } }, { refresh: !isFlagOnly });
+  // The policy update must load the flagged element: refresh before it, flag only follows the default
+  await applyProvenanceUpdate(context, element, { freshnessFlag: { rule_id: rule.id, at } }, isFlagOnly ? {} : { refresh: true });
   result.flagged += 1;
   try {
     if (policy === FRESHNESS_POLICY_LOWER_CONFIDENCE) {

@@ -4,7 +4,7 @@ import type { BasicStoreEntityConnector } from '../../types/connector';
 import type { BasicStoreEntity } from '../../types/store';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { OPENCTI_NAMESPACE, RULE_PREFIX } from '../../schema/general';
 import { INTERNAL_USERS, RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { rule_definitions } from '../../rules/rules-definition';
@@ -42,8 +42,9 @@ const OPENAEV_COVERAGE_CONNECTOR_PREFIX = 'openaev coverage';
 const BUILT_IN_FEED_NAME_PREFIX = /^\[FEED - [^\]]+\]\s*/;
 
 type FeedReference = { id: string; name: string };
-const feedIndex: { byConnectorId: Map<string, FeedReference>; loadedAt: number } = {
+const feedIndex: { byConnectorId: Map<string, FeedReference>; synchronizersByUser: Map<string, FeedReference[]>; loadedAt: number } = {
   byConnectorId: new Map(),
+  synchronizersByUser: new Map(),
   loadedAt: 0,
 };
 
@@ -72,13 +73,22 @@ const loadFeedIndex = async (context: AuthContext) => {
     const feed = feeds[index];
     byConnectorId.set(uuidv5(feed.internal_id, OPENCTI_NAMESPACE), { id: feed.internal_id, name: feed.name });
   }
+  // Synchronizers (remote OpenCTI streams) push their bundles without work, they are known by their user
+  const synchronizers = await fullEntitiesList<BasicStoreEntity & { name: string; user_id?: string }>(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
+  const synchronizersByUser = new Map<string, FeedReference[]>();
+  for (let index = 0; index < synchronizers.length; index += 1) {
+    const synchronizer = synchronizers[index];
+    if (synchronizer.user_id) {
+      synchronizersByUser.set(synchronizer.user_id, [...(synchronizersByUser.get(synchronizer.user_id) ?? []), { id: synchronizer.internal_id, name: synchronizer.name }]);
+    }
+  }
   feedIndex.byConnectorId = byConnectorId;
+  feedIndex.synchronizersByUser = synchronizersByUser;
   feedIndex.loadedAt = Date.now();
 };
 
-const resolveFeedOfConnector = async (context: AuthContext, connectorId: string): Promise<FeedReference | undefined> => {
+const refreshFeedIndex = async (context: AuthContext, isMiss: boolean) => {
   const age = Date.now() - feedIndex.loadedAt;
-  const isMiss = !feedIndex.byConnectorId.has(connectorId);
   if (age > FEED_INDEX_TTL_MS || (isMiss && age > FEED_INDEX_MISS_REFRESH_MS)) {
     try {
       await loadFeedIndex(context);
@@ -86,7 +96,20 @@ const resolveFeedOfConnector = async (context: AuthContext, connectorId: string)
       logApp.warn('[PROVENANCE] Unable to refresh the ingestion feeds index', { cause: err });
     }
   }
+};
+
+const resolveFeedOfConnector = async (context: AuthContext, connectorId: string): Promise<FeedReference | undefined> => {
+  await refreshFeedIndex(context, !feedIndex.byConnectorId.has(connectorId));
   return feedIndex.byConnectorId.get(connectorId);
+};
+
+/**
+ * Synchronizer behind a synchronized write, when its user is not shared with another synchronizer.
+ */
+const resolveSynchronizerOfUser = async (context: AuthContext, userId: string): Promise<FeedReference | undefined> => {
+  await refreshFeedIndex(context, !feedIndex.synchronizersByUser.has(userId));
+  const synchronizers = feedIndex.synchronizersByUser.get(userId) ?? [];
+  return synchronizers.length === 1 ? synchronizers[0] : undefined;
 };
 
 const uniqueConnectorOfUser = (connectors: BasicStoreEntityConnector[], userId: string) => {
@@ -168,6 +191,12 @@ export const resolveAssertionSource = async (
   const connector = await resolveWritingConnector(context, user);
   if (connector) {
     return sourceFromConnector(context, connector, workId);
+  }
+  if (context.synchronizedUpsert) {
+    const synchronizer = await resolveSynchronizerOfUser(context, user.id);
+    if (synchronizer) {
+      return { source_id: synchronizer.id, source_kind: SOURCE_KIND_FEED, source_name: synchronizer.name, work_id: workId };
+    }
   }
   const author = input?.createdBy;
   if (author?.internal_id) {

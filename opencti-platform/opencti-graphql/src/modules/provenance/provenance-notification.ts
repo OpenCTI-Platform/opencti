@@ -43,7 +43,7 @@ export const computeListeningTriggers = (triggers: BasicStoreEntityTrigger[], ch
   const listening = new Map<string, ProvenanceEventType[]>();
   for (let index = 0; index < triggers.length; index += 1) {
     const trigger = triggers[index];
-    if (trigger.trigger_type !== 'live' || trigger.trigger_scope !== 'knowledge') {
+    if (!isProvenanceTrigger(trigger)) {
       continue;
     }
     const eventTypes: ProvenanceEventType[] = [];
@@ -62,6 +62,20 @@ export const computeListeningTriggers = (triggers: BasicStoreEntityTrigger[], ch
     }
   }
   return listening;
+};
+
+const isProvenanceTrigger = (trigger: BasicStoreEntityTrigger) => {
+  const eventTypes = trigger.event_types ?? [];
+  return trigger.trigger_type === 'live' && trigger.trigger_scope === 'knowledge'
+    && (eventTypes.includes(PROVENANCE_EVENT_CORROBORATION) || eventTypes.includes(PROVENANCE_EVENT_CONFLICT));
+};
+
+/**
+ * Cheap guard of the write path (cache only): is any live trigger listening to provenance events.
+ */
+export const hasProvenanceTriggers = async (context: AuthContext) => {
+  const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
+  return triggers.some(isProvenanceTrigger);
 };
 
 export const describeProvenanceChange = (eventType: ProvenanceEventType, change: ProvenanceChange) => {
