@@ -34,7 +34,8 @@ up with the other sightings of the indicator.
 
 ### Supported connectors
 
-The following stream connectors report deployments and hits:
+The following stream connectors report deployments, and hits when the security platform exposes its detections
+(see the README of each connector):
 
 - Microsoft Sentinel Intel
 - Microsoft Defender Intel
@@ -90,7 +91,8 @@ Go to **Defense > Dissemination assurance**.
 An IOC validation request asks OpenAEV to prove that deployed indicators are detected or prevented by the
 security platforms. Use the **Request validation** button on the deployments of an indicator or a platform: the
 request covers the live deployments, never validated first. Choose the benign test kinds, then send the request.
-It is delivered to OpenAEV by the IOC validation connector.
+It is delivered to OpenAEV by the IOC validation connector. A deployment already waiting for the results of another
+request is skipped, and listed with the reason in the new request.
 
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
 kinds allowed in its settings. By default, the validation never contacts adversary infrastructure: DNS resolution
