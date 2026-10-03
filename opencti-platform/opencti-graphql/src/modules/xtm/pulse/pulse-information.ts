@@ -160,25 +160,33 @@ export const writePulseDocuments = async (context: AuthContext, updates: PulseDo
   await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
 };
 
-const CLEAR_NETWORK_SCRIPT = [
+const PULSE_NETWORK_ATTRIBUTES = [
   PULSE_ATTRIBUTE_PREVALENCE,
   PULSE_ATTRIBUTE_TREND,
   PULSE_ATTRIBUTE_SECTOR_TREND,
   PULSE_ATTRIBUTE_FIRST_SEEN,
   PULSE_ATTRIBUTE_UNIQUENESS,
   PULSE_ATTRIBUTE_INFORMATION,
-].map((attribute) => `ctx._source.remove('${attribute}');`).join(' ');
+];
+
+const CLEAR_NETWORK_SCRIPT = [
+  'boolean changed = false;',
+  'for (String attribute : params.attributes) { if (ctx._source.containsKey(attribute)) { ctx._source.remove(attribute); changed = true; } }',
+  "if (!changed) { ctx.op = 'noop'; }",
+].join(' ');
 
 // Removes every network statistic from the entities, when reading is turned off: the local keys stay.
+// pulse_information is not indexed: the documents are found through the indexed fields written with it.
 export const clearPulseNetworkInformation = async () => {
+  const indexedFields = [PULSE_ATTRIBUTE_KEYS, ...PULSE_NETWORK_ATTRIBUTES.filter((attribute) => attribute !== PULSE_ATTRIBUTE_INFORMATION)];
   const result = await elRawUpdateByQuery({
     index: READ_INDEX_STIX_DOMAIN_OBJECTS,
     refresh: true,
     conflicts: 'proceed',
     wait_for_completion: true,
     body: {
-      script: { source: CLEAR_NETWORK_SCRIPT, lang: 'painless' },
-      query: { exists: { field: `${PULSE_ATTRIBUTE_INFORMATION}.updated_at` } },
+      script: { source: CLEAR_NETWORK_SCRIPT, lang: 'painless', params: { attributes: PULSE_NETWORK_ATTRIBUTES } },
+      query: { bool: { should: indexedFields.map((field) => ({ exists: { field } })), minimum_should_match: 1 } },
     },
   });
   logApp.info('[THREAT PULSE] Network information cleared from entities', { updated: result?.updated });

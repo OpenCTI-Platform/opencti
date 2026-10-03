@@ -46,26 +46,8 @@ const pulseEntityAttributes: Array<AttributeDefinition> = [
   { name: PULSE_ATTRIBUTE_SECTOR_TREND, label: 'Sector trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   { name: PULSE_ATTRIBUTE_FIRST_SEEN, label: 'Network first seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   { name: PULSE_ATTRIBUTE_UNIQUENESS, label: 'Community uniqueness', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
-  {
-    name: PULSE_ATTRIBUTE_INFORMATION,
-    label: 'Threat Pulse information',
-    type: 'object',
-    format: 'standard',
-    mandatoryType: 'no',
-    editDefault: false,
-    multiple: false,
-    upsert: false,
-    update: false,
-    isFilterable: false,
-    mappings: [
-      { name: 'published', label: 'Published on Threat Pulse', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'preview', label: 'Threat Pulse preview signal', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'platforms_bucket', label: 'Contributing platforms', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'last_seen_network', label: 'Network last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'trend_series', label: 'Community trend series', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-      { name: 'sector_platforms_bucket', label: 'Sector contributing platforms', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'updated_at', label: 'Threat Pulse update date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    ],
-  },
+  // Read from the document source only, never searched: not indexed, so it costs one field of the index mapping.
+  // Its shape is PulseStoredInformation (pulse-types.ts).
+  { name: PULSE_ATTRIBUTE_INFORMATION, label: 'Threat Pulse information', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
 ];
 PULSE_SCOPE_ENTITY_TYPES.forEach((entityType) => schemaAttributesDefinition.registerAttributes(entityType, pulseEntityAttributes));
