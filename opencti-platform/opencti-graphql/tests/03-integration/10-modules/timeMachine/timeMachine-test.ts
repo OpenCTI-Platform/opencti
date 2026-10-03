@@ -215,6 +215,17 @@ describe('Knowledge time machine', () => {
     expect(added.is_source).toBe(true);
   });
 
+  it('should report no change over a period ending before the creation of the entity', async () => {
+    const createdTime = new Date(createdAt).getTime();
+    const variables = { id: intrusionSetId, from: new Date(createdTime - 120000).toISOString(), to: new Date(createdTime - 60000).toISOString() };
+    const { data } = await queryAsAdminWithSuccess({ query: DIFF, variables });
+    expect(data.entityDiff.existed_at_from).toEqual(false);
+    expect(data.entityDiff.restricted).toEqual(false);
+    expect(data.entityDiff.summary.attributes_changed).toEqual(0);
+    expect(data.entityDiff.attributes).toEqual([]);
+    expect(data.entityDiff.relationships).toEqual([]);
+  });
+
   it('should reject invalid diff periods', async () => {
     const result = await queryAsUser(USER_PARTICIPATE, { query: DIFF, variables: { id: intrusionSetId, from: new Date().toISOString(), to: createdAt } });
     expect(result.errors).toBeDefined();

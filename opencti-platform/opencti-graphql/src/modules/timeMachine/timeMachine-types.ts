@@ -219,6 +219,8 @@ export interface LandscapeDiffAggregates {
 export interface LandscapeDiffState {
   id: string;
   user_id: string;
+  // Rights the result was computed with: a result is never returned once the rights of its user changed
+  access_fingerprint: string;
   status: LandscapeDiffStatus;
   progress: number;
   total: number;

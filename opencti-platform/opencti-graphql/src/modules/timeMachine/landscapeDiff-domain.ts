@@ -540,9 +540,27 @@ const writeState = async (state: LandscapeDiffState) => {
   await getClientBase().set(stateKey(state.id), JSON.stringify(state), 'EX', ttl);
 };
 
-export const landscapeDiffCacheKey = (userId: string, input: LandscapeDiffInputData, scope: LandscapeScope) => {
+/**
+ * Fingerprint of everything the results depend on in the rights of the user: a cached result
+ * computed before a change of capabilities, markings, organizations or groups is never reused.
+ */
+export const userAccessFingerprint = (context: AuthContext, user: AuthUser) => {
+  const ids = (items: Array<{ internal_id?: string; id?: string }> | undefined) => (items ?? []).map((item) => item.internal_id ?? item.id ?? '').sort();
+  const payload = JSON.stringify({
+    capabilities: (user.capabilities ?? []).map((capability) => capability.name).sort(),
+    markings: ids(user.allowed_marking),
+    organizations: ids(user.organizations),
+    groups: ids(user.groups),
+    inside_platform_organization: context.user_inside_platform_organization ?? null,
+    draft: context.draft_context ?? null,
+  });
+  return createHash('sha256').update(payload).digest('hex');
+};
+
+export const landscapeDiffCacheKey = (userId: string, accessFingerprint: string, input: LandscapeDiffInputData, scope: LandscapeScope) => {
   const payload = JSON.stringify({
     user: userId,
+    access: accessFingerprint,
     filters: scope.filters,
     types: [...scope.entityTypes].sort(),
     from: input.from,
@@ -603,8 +621,9 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
   const dates = normalizeLandscapeDates(rawInput);
   const input: LandscapeDiffInputData = { ...rawInput, ...dates, group_by: groupBy };
   const scope = await resolveLandscapeScope(context, user, input);
-  // Results are cached per user (they are computed with the rights of the user)
-  const cacheKey = `${LANDSCAPE_KEY_PREFIX}${landscapeDiffCacheKey(user.id, input, scope)}`;
+  // Results are cached per user and rights (they are computed with the rights of the user)
+  const accessFingerprint = userAccessFingerprint(context, user);
+  const cacheKey = `${LANDSCAPE_KEY_PREFIX}${landscapeDiffCacheKey(user.id, accessFingerprint, input, scope)}`;
   const cachedId = await getClientBase().get(cacheKey);
   if (cachedId) {
     const cached = await findLandscapeDiff(context, user, cachedId);
@@ -618,6 +637,7 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
   const state: LandscapeDiffState = {
     id: uuidv4(),
     user_id: user.id,
+    access_fingerprint: accessFingerprint,
     status: 'pending',
     progress: 0,
     total: 0,
@@ -669,7 +689,7 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
   const to = utcDate(dates.to).startOf('minute').toISOString();
   const input: LandscapeDiffInputData = { ...rawInput, from: dates.from, to, group_by: groupBy };
   const scope = await resolveLandscapeScope(context, user, input);
-  const cacheKey = `${LANDSCAPE_SUMMARY_PREFIX}${landscapeDiffCacheKey(user.id, input, scope)}`;
+  const cacheKey = `${LANDSCAPE_SUMMARY_PREFIX}${landscapeDiffCacheKey(user.id, userAccessFingerprint(context, user), input, scope)}`;
   const cached = await getClientBase().get(cacheKey);
   if (cached) {
     try {
@@ -693,10 +713,10 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
   return result;
 };
 
-export const findLandscapeDiff = async (_context: AuthContext, user: AuthUser, id: string): Promise<LandscapeDiffState | null> => {
+export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id: string): Promise<LandscapeDiffState | null> => {
   const state = await readState(id);
-  // A landscape diff is only visible to the user who requested it
-  if (!state || state.user_id !== user.id) return null;
+  // A landscape diff is only visible to the user who requested it, with the rights it was computed with
+  if (!state || state.user_id !== user.id || state.access_fingerprint !== userAccessFingerprint(context, user)) return null;
   const isRunning = state.status === 'running' || state.status === 'pending';
   if (isRunning && utcDate().diff(utcDate(state.updated_at), 'seconds') > LANDSCAPE_STALE_SECONDS) {
     const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: 'Landscape diff computation was interrupted', updated_at: now() };
