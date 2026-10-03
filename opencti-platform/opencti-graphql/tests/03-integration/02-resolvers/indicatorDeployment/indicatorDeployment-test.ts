@@ -1,9 +1,10 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { flagExpiredDeployments, refreshIndicatorDeploymentCounters } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { stixLoadById } from '../../../../src/database/middleware';
+import { deleteElementById, stixLoadById } from '../../../../src/database/middleware';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -240,6 +241,24 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(new Date(deployment.last_hit_at).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
   });
 
+  it('should restore a lost hits sighting on replay without counting the hits twice', async () => {
+    const current = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
+    });
+    // A deployment written without its sighting, as left by a failed second write
+    await deleteElementById(testContext, ADMIN_USER, current.data?.indicatorReportHits.id, STIX_SIGHTING_RELATIONSHIP);
+    const retried = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
+    });
+    expect(retried.data?.indicatorReportHits.attribute_count).toEqual(5);
+    expect(new Date(retried.data?.indicatorReportHits.last_seen).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
+    const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
+    const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
+    expect(deployment.hit_count).toEqual(5);
+  });
+
   it('should refresh the derived indicator counters', async () => {
     await refreshIndicatorDeploymentCounters(testContext, [indicatorId, secondIndicatorId]);
     const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
@@ -260,6 +279,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   it('should support analyst retry and withdrawal', async () => {
     const removed = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_REMOVE, variables: { id: deploymentId } });
     expect(removed.data?.indicatorDeploymentRemove.revoked).toEqual(true);
+    // Still active on the platform: nothing to retry
+    await queryAsAdminWithError(
+      { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } },
+      'Only a failed, removed or expired deployment can be retried',
+    );
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'failed', metadata: { error_message: 'Indicator quota exceeded' } },
+    });
     const retried = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } });
     expect(retried.data?.indicatorDeploymentRetry.revoked).toEqual(false);
     expect(retried.data?.indicatorDeploymentRetry.deployment_status).toEqual('pending');
