@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
+import { AccessOperation, executionContext, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../database/engine';
@@ -31,6 +31,7 @@ import {
   ATTRIBUTE_TIMELINE_ANCHORS,
   ENTITY_TYPE_TIMELINE_EVENT,
   type StixTimelineExtension,
+  type StixTimelineExtensionEvent,
   TIMELINE_CONTAINER_TYPES,
   TIMELINE_DEFAULT_SETTINGS,
   TIMELINE_MILESTONE_KINDS,
@@ -45,6 +46,7 @@ import {
   containerAccessFields,
   deleteTimelineDocuments,
   getTimelineRules,
+  loadStoredTimelineEvents,
   loadTimelineSettings,
   publishTimelineUpdate,
   refreshTimelineContributions,
@@ -152,9 +154,12 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
 // region reads
 const ensureTimelineGenerated = async (context: AuthContext, container: AnyStoreElement) => {
   if (container[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return container;
-  // First opening of a container that was never processed: build its timeline now
-  await regenerateContainerTimeline(context, container.internal_id);
-  return internalLoadById<AnyStoreElement>(context, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
+  // First opening of a container that was never processed: build its timeline now, always on the
+  // live knowledge (never inside the draft the reader may be working in)
+  const generationContext = executionContext('timeline_generation');
+  await regenerateContainerTimeline(generationContext, container.internal_id);
+  const generated = await internalLoadById<AnyStoreElement>(generationContext, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
+  return generated ?? container;
 };
 
 interface TimelineFilterArgs {
@@ -598,10 +603,23 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
     : {};
   const access = containerAccessFields(container);
   const allowedMarkings = new Set(user.allowed_marking.map((m) => m.internal_id));
-  const docs = await Promise.all(events.filter((e) => e.title && e.event_time).map(async (event) => {
+  // A manual event travelling back to a platform that already knows it (same STIX id, or the id it
+  // was originally imported from) must update it, never duplicate it.
+  const storedManual = (await loadStoredTimelineEvents(context, container.internal_id)).filter((e) => e.event_source === 'manual');
+  const storedByStandardId = new Map(storedManual.map((e) => [e.standard_id as string, e]));
+  const storedByExternalId = new Map(storedManual.filter((e) => !!e.external_id).map((e) => [e.external_id as string, e]));
+  const findKnownEvent = (event: StixTimelineExtensionEvent) => {
+    const keys = [event.id, event.external_id].filter((key): key is string => !!key);
+    for (let index = 0; index < keys.length; index += 1) {
+      const known = storedByStandardId.get(keys[index]) ?? storedByExternalId.get(keys[index]);
+      if (known) return known;
+    }
+    return null;
+  };
+  const docs = events.filter((e) => e.title && e.event_time).map((event) => {
     validateWindow(event.event_time, event.event_end_time);
-    const internalId = computeManualEventId(container.internal_id, event.external_id ?? event.id);
-    const existing = await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent;
+    const existing = findKnownEvent(event);
+    const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
     const element = event.element_ref ? resolved[event.element_ref] : null;
     const markings = (event.object_marking_refs ?? []).map((ref) => resolved[ref]?.internal_id).filter((id): id is string => !!id && allowedMarkings.has(id));
     return buildTimelineEventDoc({
@@ -624,13 +642,13 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
       confidence: event.confidence ?? null,
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
-      external_id: event.external_id ?? event.id,
+      external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
       markings: [...markings, ...access.markings],
       created_by_id: event.created_by_ref ? resolved[event.created_by_ref]?.internal_id : null,
-      creator_ids: [user.id],
+      creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,
     }, existing);
-  }));
+  });
   if (docs.length > 0) {
     await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, docs);
   }

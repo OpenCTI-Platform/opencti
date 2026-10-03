@@ -6,6 +6,7 @@ import {
   deploymentRule,
   deriveTimelineEvents,
   huntRunRule,
+  MAX_DETAILED_OBJECT_ADDITIONS,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
   TIMELINE_CORE_RULES,
@@ -259,8 +260,8 @@ describe('Timeline response rules', () => {
 });
 
 describe('Timeline knowledge rules', () => {
-  it('should group objects added by history entry and derive relations and merges', () => {
-    const names = Array.from({ length: 12 }, (_, i) => ({ raw: `obj-${i}`, name: `Object ${i}` }));
+  it('should summarize bulk additions without names and derive relations and merges', () => {
+    const names = Array.from({ length: MAX_DETAILED_OBJECT_ADDITIONS + 2 }, (_, i) => ({ raw: `obj-${i}`, name: `Object ${i}` }));
     const input = buildInput({
       relationships: [element({ id: 'rel-9', entity_type: 'uses', relationship_type: 'uses', from_name: 'APT', to_name: 'Phishing', created_at: '2026-03-10T13:00:00.000Z' })],
       history: [
@@ -269,11 +270,34 @@ describe('Timeline knowledge rules', () => {
       ],
     });
     const events = derive(input);
-    const added = events.find((e) => e.kind === 'object_added');
-    expect(added).toMatchObject({ name: '12 objects added', element_id: null, discriminator: 'h-objects', lane: 'knowledge' });
-    expect(added?.description).toContain('and 2 more');
+    const added = events.filter((e) => e.kind === 'object_added');
+    expect(added).toHaveLength(1);
+    // A bulk addition carries a count only: names would bypass the per-element access filter
+    expect(added[0]).toMatchObject({ name: `${MAX_DETAILED_OBJECT_ADDITIONS + 2} objects added`, element_id: null, discriminator: 'h-objects', lane: 'knowledge' });
+    expect(added[0].description).toBeUndefined();
     expect(events.find((e) => e.kind === 'relation_created')).toMatchObject({ name: 'APT uses Phishing' });
     expect(events.find((e) => e.kind === 'merged')).toMatchObject({ element_id: 'obj-1', name: 'Ryuk merged' });
+  });
+
+  it('should give each object of a small addition its own event pointing to it', () => {
+    const input = buildInput({
+      history: [{
+        id: 'h-two',
+        timestamp: '2026-03-10T12:30:00.000Z',
+        event_scope: 'update',
+        entity_id: 'case-1',
+        entity_type: 'Case-Incident',
+        entity_name: 'x',
+        message: 'adds',
+        markings: [],
+        changes: [{ field: 'Case-Incident--objects', added: [{ raw: 'obj-a', name: 'Emotet' }, { raw: 'obj-b' }], removed: [] }],
+      }],
+    });
+    const added = derive(input).filter((e) => e.kind === 'object_added');
+    expect(added).toEqual([
+      expect.objectContaining({ element_id: 'obj-a', name: 'Emotet added', discriminator: 'h-two|obj-a' }),
+      expect.objectContaining({ element_id: 'obj-b', name: 'obj-b added', discriminator: 'h-two|obj-b' }),
+    ]);
   });
 });
 

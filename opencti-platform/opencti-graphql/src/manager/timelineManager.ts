@@ -150,7 +150,7 @@ const consumeStream = async (context: AuthContext) => {
   }
 };
 
-const processDueRegenerations = async (context: AuthContext) => {
+export const processDueTimelineRegenerations = async (context: AuthContext) => {
   const due = await claimDueTimelineRegenerations(TIMELINE_MANAGER_REGENERATION_BATCH);
   await BluePromise.map(due, async (containerId) => {
     try {
@@ -191,7 +191,7 @@ const runConsistencyPass = async (context: AuthContext) => {
 export const timelineManagerHandler = async () => {
   const context = executionContext(TIMELINE_MANAGER_CONTEXT);
   await consumeStream(context);
-  await processDueRegenerations(context);
+  await processDueTimelineRegenerations(context);
   await runConsistencyPass(context);
 };
 

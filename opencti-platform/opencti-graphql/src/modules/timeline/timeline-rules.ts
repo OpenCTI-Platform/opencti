@@ -674,38 +674,43 @@ const opinionRule = containerContributionRule('opinion-added', 'opinion_added', 
 // endregion
 
 // region knowledge rules
-const MAX_NAMES_IN_DESCRIPTION = 10;
+// Up to this number of objects added at once, each object gets its own event (pointing to it, so that
+// viewers only see the additions of the objects they can access). Above, a bulk addition (usually an
+// import) is summarized in one event carrying a count only: names would leak past the access filter.
+export const MAX_DETAILED_OBJECT_ADDITIONS = 10;
 
 const objectAddedRule: TimelineRule = {
   id: 'object-added',
   label: 'Objects added to the case, read from the history',
   kinds: ['object_added'],
-  derive: (input) => input.history.flatMap((entry) => {
+  derive: (input) => input.history.flatMap((entry): DerivedTimelineEvent[] => {
     if (entry.entity_id !== input.container.id) return [];
     const time = toTimelineTime(entry.timestamp);
     if (time === null) return [];
     const added = entry.changes
       .filter((change) => changeField(change) === 'objects')
-      .flatMap((change) => change.added);
+      .flatMap((change) => change.added)
+      .filter((a) => !!a.raw);
     if (added.length === 0) return [];
-    const names = added.map((a) => a.name ?? a.raw);
-    const displayed = names.slice(0, MAX_NAMES_IN_DESCRIPTION).join(', ');
-    const more = names.length > MAX_NAMES_IN_DESCRIPTION ? ` and ${names.length - MAX_NAMES_IN_DESCRIPTION} more` : '';
-    const single = added.length === 1 ? added[0].raw : null;
-    return [{
+    const base = {
       rule_id: 'object-added',
-      kind: 'object_added',
-      lane: 'knowledge',
-      discriminator: entry.id,
-      element_id: single,
-      element_type: null,
+      kind: 'object_added' as const,
+      lane: 'knowledge' as const,
       event_time: iso(time),
-      time_precision: 'exact',
-      name: added.length === 1 ? `${names[0]} added` : `${added.length} objects added`,
-      description: `${displayed}${more}`,
+      time_precision: 'exact' as const,
       markings: mergeMarkings(entry.markings),
       creator_ids: entry.user_id ? [entry.user_id] : [],
-    } satisfies DerivedTimelineEvent];
+    };
+    if (added.length > MAX_DETAILED_OBJECT_ADDITIONS) {
+      return [{ ...base, discriminator: entry.id, element_id: null, element_type: null, name: `${added.length} objects added` }];
+    }
+    return added.map((object) => ({
+      ...base,
+      discriminator: `${entry.id}|${object.raw}`,
+      element_id: object.raw,
+      element_type: null,
+      name: `${object.name ?? object.raw} added`,
+    }));
   }),
 };
 
