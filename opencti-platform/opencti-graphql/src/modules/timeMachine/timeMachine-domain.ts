@@ -29,6 +29,7 @@ import {
   extractAttributeValues,
   firstNumber,
   flagReplayBeyondWindow,
+  rebuildElementAt,
   replayBackward,
   replayForward,
 } from './timeMachine-replay';
@@ -544,8 +545,7 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       : !utcDate(event.timestamp).isAfter(utcDate(date))));
     containerObjectsCount = containerObjectsCountAt(anchorContainerObjectsCount, between, direction);
   }
-  const nameKey = Object.prototype.hasOwnProperty.call(document, 'name') ? 'name' : null;
-  const representative = nameKey ? document[nameKey][0] : extractEntityRepresentativeName(element);
+  const representative = extractEntityRepresentativeName(rebuildElementAt(element, replay.document));
   addTimeMachineAsOfCount();
   return {
     ...base,

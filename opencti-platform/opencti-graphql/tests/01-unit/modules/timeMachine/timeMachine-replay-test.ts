@@ -8,10 +8,12 @@ import {
   flagReplayBeyondWindow,
   forwardOperationsForChange,
   isMultipleAttribute,
+  rebuildElementAt,
   replayBackward,
   replayForward,
   reverseOperationsForChange,
 } from '../../../../src/modules/timeMachine/timeMachine-replay';
+import { extractEntityRepresentativeName } from '../../../../src/database/entity-representative';
 import type { AttributeValues, TimeMachineHistoryEvent } from '../../../../src/modules/timeMachine/timeMachine-types';
 
 const ENTITY_TYPE = 'Intrusion-Set';
@@ -206,5 +208,29 @@ describe('Time machine replay', () => {
     expect(firstNumber([])).toBeNull();
     expect(firstNumber(undefined)).toBeNull();
     expect(firstNumber(['not-a-number'])).toBeNull();
+  });
+});
+
+describe('Element rebuilt at a date', () => {
+  it('should represent an observable by its value at that date', () => {
+    const observable = { entity_type: 'IPv4-Addr', value: '2.2.2.2', x_opencti_score: 80 };
+    const rebuilt = rebuildElementAt(observable, { value: ['1.1.1.1'], x_opencti_score: ['50'] });
+    expect(rebuilt.value).toEqual('1.1.1.1');
+    expect(rebuilt.x_opencti_score).toEqual(50);
+    expect(extractEntityRepresentativeName(rebuilt)).toEqual('1.1.1.1');
+    expect(extractEntityRepresentativeName(observable)).toEqual('2.2.2.2');
+  });
+
+  it('should decode every attribute type and empty the attributes absent at that date', () => {
+    const intrusionSet = { entity_type: ENTITY_TYPE, name: 'APT-NEW', description: 'current', revoked: false, aliases: ['NEW'] };
+    const rebuilt = rebuildElementAt(intrusionSet, { name: ['APT-OLD'], revoked: ['true'], aliases: ['OLD-1', 'OLD-2'] });
+    expect(rebuilt.name).toEqual('APT-OLD');
+    expect(rebuilt.revoked).toBe(true);
+    expect(rebuilt.aliases).toEqual(['OLD-1', 'OLD-2']);
+    expect(rebuilt.description).toBeUndefined();
+    expect(extractEntityRepresentativeName(rebuilt)).toEqual('APT-OLD');
+    const currentFile = { entity_type: 'StixFile', hashes: { MD5: 'current' } };
+    const file = rebuildElementAt(currentFile, { hashes: [JSON.stringify({ MD5: 'past' })] });
+    expect(file.hashes).toEqual({ MD5: 'past' });
   });
 });

@@ -87,6 +87,36 @@ export const toRawValue = (definition: AttributeDefinition | RefAttribute, value
   return typeof value === 'string' ? value : JSON.stringify(value);
 };
 
+const fromRawValue = (definition: AttributeDefinition, raw: string): unknown => {
+  if (definition.type === 'numeric') {
+    const value = Number(raw);
+    return Number.isNaN(value) ? raw : value;
+  }
+  if (definition.type === 'boolean') return raw === 'true';
+  if (definition.type === 'object') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  return raw;
+};
+
+/**
+ * The element as it was in a rebuilt document: its attributes take their value at that date (absent when they were
+ * empty), its other fields stay the current ones. Used to apply the representative rules of the type to a past state.
+ */
+export const rebuildElementAt = (element: { entity_type: string }, document: AttributeValues): Record<string, unknown> & { entity_type: string } => {
+  const rebuilt: Record<string, unknown> & { entity_type: string } = { ...element };
+  schemaAttributesDefinition.getAttributes(element.entity_type).forEach((attribute) => {
+    if (!isTimeMachineAttribute(attribute)) return;
+    const values = (document[attribute.name] ?? []).map((raw) => fromRawValue(attribute, raw));
+    rebuilt[attribute.name] = attribute.multiple ? values : values[0];
+  });
+  return rebuilt;
+};
+
 const toRawValues = (definition: AttributeDefinition | RefAttribute, value: unknown): string[] => {
   const values = Array.isArray(value) ? value : [value];
   const raws: string[] = [];
