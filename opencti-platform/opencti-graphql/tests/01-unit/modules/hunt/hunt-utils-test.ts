@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { clampInteger, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup, sanitizeEvidence, sha256, truncate } from '../../../../src/modules/hunt/hunt-utils';
+import {
+  clampInteger,
+  isAutonomousHunt,
+  normalizeNativeQueries,
+  parseHuntFilterGroup,
+  sanitizeEvidence,
+  sha256,
+  techniqueValidationStatus,
+  truncate,
+} from '../../../../src/modules/hunt/hunt-utils';
 import { mergeHuntDetectedCoverage, preservePlatformCoverage } from '../../../../src/modules/hunt/hunt-coverage-utils';
 import { parseIncidentProposal } from '../../../../src/modules/hunt/hunt-incident';
 
@@ -88,6 +97,14 @@ describe('Hunt helpers', () => {
     expect(clampInteger(4.4, 1, 10, 5)).toBe(4);
     expect(truncate('abcdef', 10)).toBe('abcdef');
     expect(truncate('abcdefghijkl', 6)).toBe('abc...');
+  });
+
+  it('should derive the validation of a technique from the counts of all its emulation runs', () => {
+    expect(techniqueValidationStatus({ runs: 0, detected: 0, active: 0, completed: 0 })).toBe('not_validated');
+    expect(techniqueValidationStatus({ runs: 250, detected: 1, active: 3, completed: 240 })).toBe('validated');
+    expect(techniqueValidationStatus({ runs: 4, detected: 0, active: 1, completed: 3 })).toBe('in_progress');
+    expect(techniqueValidationStatus({ runs: 3, detected: 0, active: 0, completed: 3 })).toBe('not_detected');
+    expect(techniqueValidationStatus({ runs: 2, detected: 0, active: 0, completed: 0 })).toBe('not_validated');
   });
 });
 

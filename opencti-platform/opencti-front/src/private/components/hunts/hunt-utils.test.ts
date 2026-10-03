@@ -8,7 +8,6 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntStatusTransitions,
-  huntTechniqueValidationStatus,
   isAutonomousHunt,
   isFilterGroupJsonEmpty,
   isHuntableEntityPath,
@@ -199,22 +198,5 @@ describe('Hunt utils', () => {
     expect(isHuntableEntityPath('/dashboard/pirs/abc/analyses')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets')).toBe(false);
     expect(isHuntableEntityPath('/dashboard/defense/hunts/abc')).toBe(false);
-  });
-
-  describe('huntTechniqueValidationStatus()', () => {
-    it('should prove a technique with a completed emulation run with hits', () => {
-      const runs = [
-        { technique_id: 'ap-1', hunt_run_status: 'completed', hits_count: 0 },
-        { technique_id: 'ap-1', hunt_run_status: 'completed', hits_count: 2 },
-        { technique_id: 'ap-2', hunt_run_status: 'completed', hits_count: 0 },
-        { technique_id: 'ap-3', hunt_run_status: 'running', hits_count: null },
-        { technique_id: 'ap-4', hunt_run_status: 'failed', hits_count: null },
-      ];
-      expect(huntTechniqueValidationStatus('ap-1', runs)).toEqual('validated');
-      expect(huntTechniqueValidationStatus('ap-2', runs)).toEqual('not_detected');
-      expect(huntTechniqueValidationStatus('ap-3', runs)).toEqual('in_progress');
-      expect(huntTechniqueValidationStatus('ap-4', runs)).toEqual('not_validated');
-      expect(huntTechniqueValidationStatus('ap-5', runs)).toEqual('not_validated');
-    });
   });
 });

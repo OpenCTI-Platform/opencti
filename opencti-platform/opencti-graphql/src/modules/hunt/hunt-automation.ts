@@ -43,7 +43,7 @@ import {
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
 } from './huntRun/huntRun-types';
-import { computeRetryAt, createHuntRuns, expireHuntRun } from './huntRun/huntRun-domain';
+import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
@@ -159,13 +159,13 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
   ], 'next_retry_at');
   let retried = 0;
   for (let index = 0; index < runs.length; index += 1) {
-    const run = runs[index];
-    const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
+    const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, runs[index].hunt_id, { type: ENTITY_TYPE_HUNT });
+    // The retry schedule is consumed first, under the run lock: a crash between the two steps never retries a run
+    // twice, and a retry an analyst already started is not created again
+    const { run, planned } = await consumeScheduledRetry(context, runs[index].internal_id);
     const expiredSince = run.completed_at ? Date.now() - new Date(run.completed_at).getTime() : 0;
     const giveUp = !hunt || [HUNT_STATUS_DRAFT, HUNT_STATUS_RETIRED].includes(hunt.hunt_status) || expiredSince > HUNT_CONFIG.queueExpiryHours * 3600000;
-    // The retry schedule is consumed first: a crash between the two steps never retries a run twice
-    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: null });
-    if (!giveUp && hunt) {
+    if (planned && !giveUp && hunt) {
       try {
         const created = await createHuntRuns(context, hunt, {
           trigger: HUNT_RUN_TRIGGER_RETRY,

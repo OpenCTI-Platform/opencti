@@ -40,11 +40,33 @@ const validateInteger = (value: number | null | undefined, field: string, min: n
 };
 
 /**
+ * What a hunt misses to run, null when it has the logic of its type: a Sigma rule or a telemetry native query for a
+ * telemetry hunt, an internet native query for an infrastructure hunt.
+ */
+export const huntLogicError = (
+  state: { hunt_type?: string | null; sigma_rule?: string | null; native_queries?: unknown },
+): { message: string; field: string } | null => {
+  const huntType = state.hunt_type ?? HUNT_TYPE_TELEMETRY;
+  const sigmaRule = typeof state.sigma_rule === 'string' ? state.sigma_rule : '';
+  const nativeQueries: HuntNativeQuery[] = normalizeNativeQueries(state.native_queries);
+  if (huntType === HUNT_TYPE_TELEMETRY) {
+    const hasTelemetryQuery = nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
+    if (sigmaRule.trim().length === 0 && !hasTelemetryQuery) {
+      return { message: 'A telemetry hunt needs a Sigma rule or a native query', field: 'sigma_rule' };
+    }
+  }
+  if (huntType === HUNT_TYPE_INFRASTRUCTURE && !nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET)) {
+    return { message: 'An infrastructure hunt needs a native query for the internet platform', field: 'native_queries' };
+  }
+  return null;
+};
+
+/**
  * Functional validation of a hunt (the merged state of the stored hunt and the requested change).
- * Logic is only required once the hunt is active: drafts and paused hunts can be saved incomplete.
+ * Logic is only required once the hunt is active: drafts and paused hunts can be saved incomplete, and every
+ * executed run checks the logic again.
  */
 export const validateHuntState = async (context: AuthContext, state: HuntValidationState) => {
-  const huntType = state.hunt_type ?? HUNT_TYPE_TELEMETRY;
   const sigmaRule = typeof state.sigma_rule === 'string' ? state.sigma_rule : '';
   if (sigmaRule.trim().length > 0) {
     const sigmaValidation = validateSigmaRule(sigmaRule);
@@ -52,16 +74,10 @@ export const validateHuntState = async (context: AuthContext, state: HuntValidat
       throw ValidationError(`Invalid Sigma rule: ${sigmaValidation.errors.join('; ')}`, 'sigma_rule');
     }
   }
-  const nativeQueries: HuntNativeQuery[] = normalizeNativeQueries(state.native_queries);
   if (state.hunt_status === HUNT_STATUS_ACTIVE) {
-    if (huntType === HUNT_TYPE_TELEMETRY) {
-      const hasTelemetryQuery = nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
-      if (sigmaRule.trim().length === 0 && !hasTelemetryQuery) {
-        throw ValidationError('An active telemetry hunt needs a Sigma rule or a native query', 'sigma_rule');
-      }
-    }
-    if (huntType === HUNT_TYPE_INFRASTRUCTURE && !nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET)) {
-      throw ValidationError('An active infrastructure hunt needs a native query for the internet platform', 'native_queries');
+    const logicError = huntLogicError(state);
+    if (logicError) {
+      throw ValidationError(`An active hunt cannot run: ${logicError.message}`, logicError.field);
     }
   }
   const schedule = state.hunt_schedule ?? HUNT_SCHEDULE_MANUAL;

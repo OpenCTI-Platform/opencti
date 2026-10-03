@@ -20,7 +20,7 @@ import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_CONFIG } from './hunt-utils';
-import { computeHuntStatistics, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
+import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
 
 const huntResolvers: Resolvers = {
   Query: {
@@ -36,6 +36,7 @@ const huntResolvers: Resolvers = {
     huntTechniques: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_TECHNIQUES),
     huntSources: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_SOURCES),
     scopePlatforms: (hunt, _, context) => loadHuntScopePlatforms(context, context.user, hunt),
+    techniqueValidations: (hunt, _, context) => computeHuntTechniqueValidations(context, context.user, hunt),
     sigmaValidation: (hunt) => huntSigmaValidation(hunt),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),

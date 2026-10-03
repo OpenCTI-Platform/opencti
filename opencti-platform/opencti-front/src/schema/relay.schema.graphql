@@ -16280,6 +16280,20 @@ type HuntConfiguration {
   min_schedule_interval_minutes: Int!
 }
 
+enum HuntTechniqueValidationStatus {
+  validated
+  not_detected
+  in_progress
+  not_validated
+}
+
+type HuntTechniqueValidation {
+  technique_id: String!
+  status: HuntTechniqueValidationStatus!
+  emulation_runs_count: Int!
+  detected_runs_count: Int!
+}
+
 type HuntSigmaValidation {
   valid: Boolean!
   errors: [String!]!
@@ -16349,6 +16363,7 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   native_queries: [HuntNativeQuery!]
   hunt_scope: String
   scopePlatforms: [SecurityPlatform!]
+  techniqueValidations: [HuntTechniqueValidation!]!
   hunt_schedule: String!
   trigger_filters: String
   hunt_pir_activation: Boolean
@@ -16577,7 +16592,7 @@ type HuntRun implements BasicObject & InternalObject {
   distinct_entities: Int
   evidence_sample: [HuntEvidence!]
   result_ids: [String!]
-  results(first: Int): StixObjectOrStixRelationshipConnection
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
   verdict: HuntRunVerdict!
   verdict_source: HuntVerdictSource
   verdict_rationale: String

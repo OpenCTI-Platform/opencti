@@ -26,7 +26,7 @@ import {
   HUNT_RUN_TRIGGER_SCHEDULE,
   HUNT_RUN_TRIGGER_STANDING,
 } from '../../../src/modules/hunt/huntRun/huntRun-types';
-import { createHuntRuns, expireHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-domain';
+import { createHuntRuns, expireHuntRun, findHuntRunResultIds, findHuntRunResults, retryHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-domain';
 import { HUNT_CONFIG } from '../../../src/modules/hunt/hunt-utils';
 import { dispatchHuntRun } from '../../../src/modules/hunt/hunt-dispatch';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
@@ -269,6 +269,55 @@ describe('Hunt manager', () => {
     }
     for (let index = 0; index < runs.length; index += 1) {
       await expireHuntRun(testContext, await loadRun(runs[index].internal_id), 'Hunt manager test');
+    }
+  });
+
+  it('should replace the planned automatic retry of a run by a manual retry, as its next attempt', async () => {
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: hoursAgo(2) });
+    await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
+    const expired = await loadRun(run.internal_id);
+    expect(expired.next_retry_at).toBeTruthy();
+    const replacement = await retryHuntRun(testContext, ADMIN_USER, run.internal_id);
+    expect(replacement.attempt).toEqual((expired.attempt ?? 1) + 1);
+    expect(replacement.hunt_run_trigger).toEqual(HUNT_RUN_TRIGGER_RETRY);
+    expect((await loadRun(run.internal_id)).next_retry_at).toBeFalsy();
+    const retries = () => listHuntRuns(huntId).then((list) => list.filter((item) => item.hunt_run_trigger === HUNT_RUN_TRIGGER_RETRY).length);
+    const retriesAfterManual = await retries();
+    await retryFailedHuntRuns(testContext);
+    expect(await retries()).toEqual(retriesAfterManual);
+    await expireHuntRun(testContext, await loadRun(replacement.internal_id), 'Hunt manager test');
+  });
+
+  it('should paginate the readable results of a run and count only them', async () => {
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    const missing = 'indicator--4b1f1a2e-8f2c-4c1e-9d5b-0a6c2f9e7d31';
+    await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { result_ids: [intrusionSetId, missing, securityPlatformId] });
+    const recorded = await loadRun(run.internal_id);
+    const firstPage = await findHuntRunResults(testContext, ADMIN_USER, recorded, 1);
+    expect(firstPage.pageInfo).toMatchObject({ globalCount: 2, hasNextPage: true, hasPreviousPage: false });
+    expect(firstPage.edges.map((edge) => edge.node.internal_id)).toEqual([intrusionSetId]);
+    const secondPage = await findHuntRunResults(testContext, ADMIN_USER, recorded, 1, firstPage.pageInfo.endCursor);
+    expect(secondPage.edges.map((edge) => edge.node.internal_id)).toEqual([securityPlatformId]);
+    expect(secondPage.pageInfo).toMatchObject({ globalCount: 2, hasNextPage: false, hasPreviousPage: true });
+    expect(await findHuntRunResultIds(testContext, ADMIN_USER, recorded)).toEqual([intrusionSetId, securityPlatformId]);
+    await expireHuntRun(testContext, recorded, 'Hunt manager test');
+  });
+
+  it('should refuse to execute a hunt whose logic was cleared while paused', async () => {
+    const before = await loadHunt(huntId);
+    await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_status: 'paused', sigma_rule: '', native_queries: [] });
+    try {
+      await expect(createHuntRuns(testContext, await loadHunt(huntId), { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false }))
+        .rejects.toThrow('needs a Sigma rule or a native query');
+    } finally {
+      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, {
+        hunt_status: before.hunt_status,
+        sigma_rule: before.sigma_rule,
+        native_queries: before.native_queries,
+      });
     }
   });
 });

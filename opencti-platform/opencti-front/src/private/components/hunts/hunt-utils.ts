@@ -535,32 +535,8 @@ export const isHuntableEntityPath = (pathname: string) => HUNTABLE_ENTITY_PATHS.
 // endregion
 
 // region coverage
+// Computed by the platform over every emulation run of the hunt (Hunt.techniqueValidations)
 export type HuntTechniqueValidationStatus = 'validated' | 'not_detected' | 'in_progress' | 'not_validated';
-
-export interface HuntEmulationRun {
-  technique_id?: string | null;
-  hunt_run_status: string;
-  hits_count?: number | null;
-}
-
-/**
- * Validation status of a technique from the emulation runs of the hunt: validated when a completed
- * emulation run found hits, not detected when every completed emulation run found nothing.
- */
-export const huntTechniqueValidationStatus = (techniqueId: string, emulationRuns: HuntEmulationRun[]): HuntTechniqueValidationStatus => {
-  const runs = emulationRuns.filter((run) => run.technique_id === techniqueId);
-  if (runs.length === 0) {
-    return 'not_validated';
-  }
-  const completed = runs.filter((run) => run.hunt_run_status === 'completed');
-  if (completed.some((run) => (run.hits_count ?? 0) > 0)) {
-    return 'validated';
-  }
-  if (runs.some((run) => !isTerminalHuntRun(run.hunt_run_status))) {
-    return 'in_progress';
-  }
-  return completed.length > 0 ? 'not_detected' : 'not_validated';
-};
 
 export const huntTechniqueValidationLabel = (status: HuntTechniqueValidationStatus) => {
   switch (status) {

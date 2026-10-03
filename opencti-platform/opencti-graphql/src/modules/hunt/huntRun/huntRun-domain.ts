@@ -7,7 +7,7 @@ import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundErr
 import { lockResources } from '../../../lock/master-lock';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
-import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
+import { elAggregationCount, elCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
 import { publishUserAction } from '../../../listener/UserActionListener';
@@ -43,7 +43,8 @@ import {
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
 import { dispatchHuntRun, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
-import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, sanitizeEvidence, truncate } from '../hunt-utils';
+import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, sanitizeEvidence, techniqueValidationStatus, truncate } from '../hunt-utils';
+import { huntLogicError } from '../hunt-validators';
 import { updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
 import { createHuntIncidentDraft, parseIncidentProposal } from '../hunt-incident';
@@ -51,6 +52,7 @@ import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
+  HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_AUTONOMOUS_TRIGGERS,
   HUNT_RUN_MODE_EXECUTE,
   HUNT_RUN_MODE_PREVIEW,
@@ -60,6 +62,7 @@ import {
   HUNT_RUN_STATUS_RUNNING,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TERMINAL_STATUSES,
+  HUNT_RUN_TRIGGER_EMULATION,
   HUNT_RUN_TRIGGER_PREVIEW,
   HUNT_RUN_TRIGGER_RETRY,
   HUNT_VERDICT_BENIGN,
@@ -92,27 +95,54 @@ export const findHuntRunsForHunt = (context: AuthContext, user: AuthUser, huntId
   return findHuntRunsPaginated(context, user, { orderBy: 'created_at', orderMode: OrderingMode.Desc, ...args, filters });
 };
 
+// The results of a run the user can read, in the order the run recorded them (markings and organizations of every
+// object apply). Access is resolved over every recorded id before any pagination, so counts never include the
+// objects the user cannot read.
+const readableHuntRunResults = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const ids = run.result_ids ?? [];
+  if (ids.length === 0) {
+    return { elements: [] as BasicStoreObject[], visibleIds: [] as string[] };
+  }
+  const readable = await findByIds<BasicStoreObject>(context, user, ids);
+  const byId = new Map<string, BasicStoreObject>();
+  readable.forEach((element) => {
+    [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])].forEach((id) => byId.set(id, element));
+  });
+  const seen = new Set<string>();
+  const elements: BasicStoreObject[] = [];
+  ids.forEach((id) => {
+    const element = byId.get(id);
+    if (element && !seen.has(element.internal_id)) {
+      seen.add(element.internal_id);
+      elements.push(element);
+    }
+  });
+  return { elements, visibleIds: ids.filter((id) => byId.has(id)) };
+};
+
 /**
- * Objects produced by a run, as visible to the user (markings and organizations of every object apply).
+ * Objects produced by a run, as visible to the user, paginated after the cursor of the previous page.
  */
-export const findHuntRunResults = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, first = 50) => {
-  const ids = (run.result_ids ?? []).slice(0, Math.min(Math.max(first, 1), 500));
-  const elements = ids.length > 0 ? await findByIds<BasicStoreObject>(context, user, ids) : [];
+export const findHuntRunResults = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, first = 50, after?: string | null) => {
+  const { elements } = await readableHuntRunResults(context, user, run);
+  const start = after ? elements.findIndex((element) => element.internal_id === after) + 1 : 0;
+  const page = elements.slice(start, start + Math.min(Math.max(first, 1), 500));
   return {
-    edges: elements.map((element) => ({ cursor: element.internal_id, node: element })),
-    pageInfo: { startCursor: '', endCursor: '', hasNextPage: (run.result_ids ?? []).length > ids.length, hasPreviousPage: false, globalCount: (run.result_ids ?? []).length },
+    edges: page.map((element) => ({ cursor: element.internal_id, node: element })),
+    pageInfo: {
+      startCursor: page[0]?.internal_id ?? '',
+      endCursor: page[page.length - 1]?.internal_id ?? '',
+      hasNextPage: start + page.length < elements.length,
+      hasPreviousPage: start > 0,
+      globalCount: elements.length,
+    },
   };
 };
 
 // The result ids of a run are only disclosed for the result objects the caller can read, like its results
 export const findHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
-  const ids = run.result_ids ?? [];
-  if (ids.length === 0) {
-    return [];
-  }
-  const readable = await findByIds<BasicStoreObject>(context, user, ids);
-  const visible = new Set<string>(readable.flatMap((element) => [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
-  return ids.filter((id) => visible.has(id));
+  const { visibleIds } = await readableHuntRunResults(context, user, run);
+  return visibleIds;
 };
 
 const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
@@ -161,6 +191,11 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   // Draft and retired hunts never execute, their logic can still be previewed
   if (mode === HUNT_RUN_MODE_EXECUTE && [HUNT_STATUS_DRAFT, HUNT_STATUS_RETIRED].includes(hunt.hunt_status)) {
     throw FunctionalError(`A hunt in ${hunt.hunt_status} status does not run`, { huntId: hunt.internal_id, status: hunt.hunt_status });
+  }
+  // Paused hunts can be saved without logic and still be run manually
+  const logicError = mode === HUNT_RUN_MODE_EXECUTE ? huntLogicError(hunt) : null;
+  if (logicError) {
+    throw FunctionalError(`The hunt cannot run: ${logicError.message}`, { huntId: hunt.internal_id, field: logicError.field });
   }
   let targets = await resolveHuntConnectorTargets(context, HUNT_MANAGER_USER, hunt, request.securityPlatformIds ?? []);
   if (request.connectorIds && request.connectorIds.length > 0) {
@@ -268,32 +303,6 @@ export const startHuntPreview = async (context: AuthContext, user: AuthUser, hun
   return runs[0];
 };
 
-export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
-  const run = await findHuntRunById(context, user, runId);
-  if (!run) {
-    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
-  }
-  if (!HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
-    throw FunctionalError('Only a terminated run can be retried', { runId, status: run.hunt_run_status });
-  }
-  const hunt = await loadHuntForRun(context, user, run);
-  const runs = await createHuntRuns(context, hunt, {
-    trigger: HUNT_RUN_TRIGGER_RETRY,
-    mode: run.hunt_run_mode,
-    securityPlatformIds: run.security_platform_id ? [run.security_platform_id] : [],
-    connectorIds: run.connector_id ? [run.connector_id] : [],
-    windowStart: run.time_window_start,
-    windowEnd: run.time_window_end,
-    aevInjectId: run.aev_inject_id,
-    securityCoverageId: run.security_coverage_id,
-    techniqueId: run.technique_id,
-    triggeredBy: user.id,
-  });
-  if (runs.length === 0) {
-    throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: run.connector_id });
-  }
-  return runs[0];
-};
 // endregion
 
 // region completion
@@ -451,6 +460,63 @@ const withHuntRunTransition = async <T>(
     if (lock) {
       await lock.unlock();
     }
+  }
+};
+
+/**
+ * Consumes the automatic retry planned on a terminated run, under its transition lock, so that the hunt manager and a
+ * manual retry never both replace the run. Returns the run as read under the lock and whether a retry was planned.
+ */
+export const consumeScheduledRetry = async (context: AuthContext, runId: string) => {
+  return withHuntRunTransition(context, runId, async (run) => {
+    const planned = !!run.next_retry_at;
+    if (planned) {
+      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: null });
+    }
+    return { run, planned };
+  });
+};
+
+/**
+ * Manual retry of a terminated run: the next attempt on the same connector and window. It replaces the automatic retry
+ * planned on the run, if any, which is restored when the replacement cannot be created.
+ */
+export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
+  const reachable = await findHuntRunById(context, user, runId);
+  if (!reachable) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  if (!HUNT_RUN_TERMINAL_STATUSES.includes(reachable.hunt_run_status)) {
+    throw FunctionalError('Only a terminated run can be retried', { runId, status: reachable.hunt_run_status });
+  }
+  const hunt = await loadHuntForRun(context, user, reachable);
+  const { run, planned } = await consumeScheduledRetry(context, reachable.internal_id);
+  try {
+    const runs = await createHuntRuns(context, hunt, {
+      trigger: HUNT_RUN_TRIGGER_RETRY,
+      mode: run.hunt_run_mode,
+      securityPlatformIds: run.security_platform_id ? [run.security_platform_id] : [],
+      connectorIds: run.connector_id ? [run.connector_id] : [],
+      windowStart: run.time_window_start,
+      windowEnd: run.time_window_end,
+      aevInjectId: run.aev_inject_id,
+      securityCoverageId: run.security_coverage_id,
+      techniqueId: run.technique_id,
+      triggeredBy: user.id,
+      attempt: (run.attempt ?? 1) + 1,
+      playbook: planned && run.playbook_id && run.playbook_execution_id && run.playbook_step_id
+        ? { playbookId: run.playbook_id, executionId: run.playbook_execution_id, stepId: run.playbook_step_id }
+        : null,
+    });
+    if (runs.length === 0) {
+      throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: run.connector_id });
+    }
+    return runs[0];
+  } catch (error) {
+    if (planned) {
+      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: run.next_retry_at });
+    }
+    throw error;
   }
 };
 
@@ -774,6 +840,48 @@ interface HuntStatisticsArgs {
 
 const HUNT_STATISTICS_DEFAULT_DAYS = 30;
 const HUNT_STATISTICS_INTERVALS = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
+
+/**
+ * Validation of each technique of a hunt by the OpenAEV emulations, counted over every emulation run of the hunt the
+ * user can read.
+ */
+export const computeHuntTechniqueValidations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
+  const countEmulationRuns = (techniqueId: string, extra: { key: string; values: string[]; operator?: FilterOperator }[]) => {
+    return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_HUNT_RUN],
+      noFiltersChecking: true,
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          { key: ['hunt_id'], values: [hunt.internal_id] },
+          { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_EMULATION] },
+          { key: ['technique_id'], values: [techniqueId] },
+          ...extra.map((filter) => ({ key: [filter.key], values: filter.values, operator: filter.operator ?? FilterOperator.Eq })),
+        ],
+        filterGroups: [],
+      },
+    });
+  };
+  const techniqueIds = hunt[RELATION_HUNT_TECHNIQUES] ?? [];
+  const validations = [];
+  for (let index = 0; index < techniqueIds.length; index += 1) {
+    const techniqueId = techniqueIds[index];
+    const completedFilter = { key: 'hunt_run_status', values: [HUNT_RUN_STATUS_COMPLETED] };
+    const [runs, detected, active, completed] = await Promise.all([
+      countEmulationRuns(techniqueId, []),
+      countEmulationRuns(techniqueId, [completedFilter, { key: 'hits_count', values: ['0'], operator: FilterOperator.Gt }]),
+      countEmulationRuns(techniqueId, [{ key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES }]),
+      countEmulationRuns(techniqueId, [completedFilter]),
+    ]);
+    validations.push({
+      technique_id: techniqueId,
+      status: techniqueValidationStatus({ runs, detected, active, completed }),
+      emulation_runs_count: runs,
+      detected_runs_count: detected,
+    });
+  }
+  return validations;
+};
 
 export const computeHuntStatistics = async (context: AuthContext, user: AuthUser, args: HuntStatisticsArgs) => {
   const endDate = args.endDate ? new Date(args.endDate) : new Date();

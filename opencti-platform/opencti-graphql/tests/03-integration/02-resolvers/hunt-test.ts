@@ -139,6 +139,7 @@ describe('Hunt resolvers', () => {
   let huntId: string;
   let firstRunId: string;
   let secondRunId: string;
+  let emulationRunId: string;
   const draftIds: string[] = [];
   const huntIds: string[] = [];
 
@@ -433,10 +434,24 @@ describe('Hunt resolvers', () => {
     expect(validation.hunts_count).toEqual(1);
     expect(validation.runs).toHaveLength(1);
     expect(validation.runs[0]).toMatchObject({ hunt_run_trigger: 'emulation', aev_inject_id: 'hunt-test-inject', technique_id: techniqueId });
+    emulationRunId = validation.runs[0].id;
     const second = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
     expect(second.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
     const invalidWindow = await queryAsAdmin({ query: HUNT_VALIDATE_EMULATION, variables: { input: { ...input, window_start: input.window_end } } });
     expect(invalidWindow.errors?.[0].message).toContain('The emulation window is invalid');
+  });
+
+  it('should compute the validation of each technique over all its emulation runs', async () => {
+    const query = gql`query HuntTechniqueValidations($id: String!) { hunt(id: $id) { techniqueValidations { technique_id status emulation_runs_count detected_runs_count } } }`;
+    const pending = await queryAsAdminWithSuccess({ query, variables: { id: huntId } });
+    expect(pending.data?.hunt.techniqueValidations).toEqual([
+      { technique_id: techniqueId, status: 'in_progress', emulation_runs_count: 1, detected_runs_count: 0 },
+    ]);
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: emulationRunId, input: { status: 'completed', hits_count: 2 } } });
+    const validated = await queryAsAdminWithSuccess({ query, variables: { id: huntId } });
+    expect(validated.data?.hunt.techniqueValidations).toEqual([
+      { technique_id: techniqueId, status: 'validated', emulation_runs_count: 1, detected_runs_count: 1 },
+    ]);
   });
 
   it('should delete a hunt', async () => {

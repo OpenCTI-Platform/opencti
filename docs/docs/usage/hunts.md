@@ -24,7 +24,7 @@ Hunts live in the **Defense** area of the navigation, under **Hunts**.
 |---|---|
 | Draft | The hunt is being designed or awaits validation. It can be previewed but never executes. Hunts proposed by an agent or imported for review start as drafts. |
 | Active | The hunt executes manually and, when configured, automatically. |
-| Paused | Automatic execution is suspended. Manual runs remain possible. |
+| Paused | Automatic execution is suspended. Manual runs remain possible as long as the hunt has its logic (a paused hunt can be saved without it, but does not run). |
 | Retired | The hunt is kept for history. It never executes again. |
 
 ## Create a hunt
@@ -48,7 +48,7 @@ You can also start a hunt from a threat: the **Hunt this** action of the more ac
 - **Run now** executes the hunt on every security platform of its scope, each through the hunt connector registered for it. Each platform gets its own run.
 - **Test query** asks one hunt connector to translate the logic without executing it: the translated query is displayed in the **Logic** tab. Use it to review what will be executed on a platform before the first run.
 
-Runs follow the statuses `queued`, `running`, then `completed`, `failed` or `timeout`. A run waits in the queue while its connector is unavailable or busy (each connector has a concurrency and a daily budget). Failed and timed out runs are retried automatically with an exponential backoff.
+Runs follow the statuses `queued`, `running`, then `completed`, `failed` or `timeout`. A run waits in the queue while its connector is unavailable or busy (each connector has a concurrency and a daily budget). Failed and timed out runs are retried automatically with an exponential backoff. Retrying a terminated run by hand starts its next attempt at once and replaces the automatic retry planned for it, so a run is never retried twice.
 
 Runs are visible in the **Runs** tab of the hunt and in the **Hunt runs** list. The work of each run is also listed in the connector works.
 
@@ -86,6 +86,8 @@ Analysts set the final verdict from the run, with an optional feedback. Hunt sta
 ## Validation with OpenAEV
 
 When OpenAEV executes an attack simulation for a technique, it asks OpenCTI to run the hunts covering that technique on the security platform of the targeted asset, over the execution window. When those runs complete, the detection result is written on the security coverage of the simulation as the `hunt_detected` coverage, next to the coverages computed by OpenAEV. See [Security coverage](security-coverage.md).
+
+The **Coverage** tab of a hunt gives the status of each of its techniques over every emulation run of the hunt: **Detection proven** once a completed emulation run found hits, **Not detected** when the completed ones found nothing, **Validation in progress** while one is running, **Not validated** before the first one. It also lists the latest emulation runs.
 
 ## Hunt packs
 

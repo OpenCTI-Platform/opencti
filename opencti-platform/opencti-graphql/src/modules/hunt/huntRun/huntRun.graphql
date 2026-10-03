@@ -74,7 +74,7 @@ type HuntRun implements BasicObject & InternalObject {
   distinct_entities: Int
   evidence_sample: [HuntEvidence!]
   result_ids: [String!]
-  results(first: Int): StixObjectOrStixRelationshipConnection
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
   verdict: HuntRunVerdict!
   verdict_source: HuntVerdictSource
   verdict_rationale: String

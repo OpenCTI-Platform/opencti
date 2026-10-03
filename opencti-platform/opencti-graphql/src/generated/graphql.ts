@@ -11220,6 +11220,7 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  techniqueValidations: Array<HuntTechniqueValidation>;
   time_window_hours: Scalars['Int']['output'];
   toStix?: Maybe<Scalars['String']['output']>;
   toStixBundle?: Maybe<Scalars['String']['output']>;
@@ -11613,6 +11614,7 @@ export type HuntRun = BasicObject & InternalObject & {
 
 
 export type HuntRunResultsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -11756,6 +11758,21 @@ export enum HuntStatus {
   Draft = 'draft',
   Paused = 'paused',
   Retired = 'retired'
+}
+
+export type HuntTechniqueValidation = {
+  __typename?: 'HuntTechniqueValidation';
+  detected_runs_count: Scalars['Int']['output'];
+  emulation_runs_count: Scalars['Int']['output'];
+  status: HuntTechniqueValidationStatus;
+  technique_id: Scalars['String']['output'];
+};
+
+export enum HuntTechniqueValidationStatus {
+  InProgress = 'in_progress',
+  NotDetected = 'not_detected',
+  NotValidated = 'not_validated',
+  Validated = 'validated'
 }
 
 export enum HuntType {
@@ -41882,6 +41899,8 @@ export type ResolversTypes = ResolversObject<{
   HuntStatisticsBucket: ResolverTypeWrapper<HuntStatisticsBucket>;
   HuntStatisticsPoint: ResolverTypeWrapper<HuntStatisticsPoint>;
   HuntStatus: HuntStatus;
+  HuntTechniqueValidation: ResolverTypeWrapper<HuntTechniqueValidation>;
+  HuntTechniqueValidationStatus: HuntTechniqueValidationStatus;
   HuntType: HuntType;
   HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
   HuntValidation: ResolverTypeWrapper<Omit<HuntValidation, 'runs'> & { runs: Array<ResolversTypes['HuntRun']> }>;
@@ -43042,6 +43061,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntStatistics: HuntStatistics;
   HuntStatisticsBucket: HuntStatisticsBucket;
   HuntStatisticsPoint: HuntStatisticsPoint;
+  HuntTechniqueValidation: HuntTechniqueValidation;
   HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
   HuntValidation: Omit<HuntValidation, 'runs'> & { runs: Array<ResolversParentTypes['HuntRun']> };
   ICCID: Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -47577,6 +47597,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HuntStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  techniqueValidations?: Resolver<Array<ResolversTypes['HuntTechniqueValidation']>, ParentType, ContextType>;
   time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HuntToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47754,6 +47775,13 @@ export type HuntStatisticsBucketResolvers<ContextType = any, ParentType extends 
 export type HuntStatisticsPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntStatisticsPoint'] = ResolversParentTypes['HuntStatisticsPoint']> = ResolversObject<{
   date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntTechniqueValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntTechniqueValidation'] = ResolversParentTypes['HuntTechniqueValidation']> = ResolversObject<{
+  detected_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  emulation_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntTechniqueValidationStatus'], ParentType, ContextType>;
+  technique_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type HuntValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntValidation'] = ResolversParentTypes['HuntValidation']> = ResolversObject<{
@@ -56392,6 +56420,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
   HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;
   HuntStatisticsPoint?: HuntStatisticsPointResolvers<ContextType>;
+  HuntTechniqueValidation?: HuntTechniqueValidationResolvers<ContextType>;
   HuntValidation?: HuntValidationResolvers<ContextType>;
   ICCID?: IccidResolvers<ContextType>;
   IMEI?: ImeiResolvers<ContextType>;

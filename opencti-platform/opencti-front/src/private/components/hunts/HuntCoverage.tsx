@@ -10,11 +10,12 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { PATH_ATTACK_PATTERN, PATH_HUNT, PATH_SECURITY_COVERAGE } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntTechniqueValidationChip } from './HuntChips';
-import { HUNT_RUN_ENTITY_TYPE, huntTechniqueValidationStatus } from './hunt-utils';
+import { HUNT_RUN_ENTITY_TYPE, type HuntTechniqueValidationStatus } from './hunt-utils';
 import { HuntCoverage_hunt$key } from './__generated__/HuntCoverage_hunt.graphql';
 import { HuntCoverageEmulationRunsQuery, HuntCoverageEmulationRunsQuery$variables } from './__generated__/HuntCoverageEmulationRunsQuery.graphql';
 
-const EMULATION_RUNS_COUNT = 200;
+// Latest runs only: the status of each technique comes from Hunt.techniqueValidations, computed over every run
+const EMULATION_RUNS_COUNT = 50;
 
 const huntCoverageFragment = graphql`
   fragment HuntCoverage_hunt on Hunt {
@@ -24,8 +25,24 @@ const huntCoverageFragment = graphql`
       name
       x_mitre_id
     }
+    techniqueValidations {
+      technique_id
+      status
+    }
   }
 `;
+
+interface HuntCoverageHunt {
+  id: string;
+  huntTechniques?: ReadonlyArray<{ id: string; name: string; x_mitre_id?: string | null }> | null;
+  techniqueValidations: ReadonlyArray<{ technique_id: string; status: string }>;
+}
+
+const VALIDATION_STATUSES: HuntTechniqueValidationStatus[] = ['validated', 'not_detected', 'in_progress', 'not_validated'];
+
+const toValidationStatus = (status: string | undefined): HuntTechniqueValidationStatus => {
+  return VALIDATION_STATUSES.find((known) => known === status) ?? 'not_validated';
+};
 
 const huntCoverageEmulationRunsQuery = graphql`
   query HuntCoverageEmulationRunsQuery($filters: FilterGroup, $count: Int!) {
@@ -50,7 +67,7 @@ const huntCoverageEmulationRunsQuery = graphql`
   }
 `;
 
-const HuntCoverageComponent = ({ hunt }: { hunt: { id: string; huntTechniques?: ReadonlyArray<{ id: string; name: string; x_mitre_id?: string | null }> | null } }) => {
+const HuntCoverageComponent = ({ hunt }: { hunt: HuntCoverageHunt }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const filters: HuntCoverageEmulationRunsQuery$variables['filters'] = {
@@ -70,7 +87,9 @@ const HuntCoverageComponent = ({ hunt }: { hunt: { id: string; huntTechniques?: 
   const emulationRuns = (huntRuns?.edges ?? []).map(({ node }) => node);
   const techniques = [...(hunt.huntTechniques ?? [])].sort((a, b) => (a.x_mitre_id ?? a.name).localeCompare(b.x_mitre_id ?? b.name));
   const coverageIds = Array.from(new Set(emulationRuns.map((run) => run.security_coverage_id).filter((id): id is string => !!id)));
-  const validated = techniques.filter((technique) => huntTechniqueValidationStatus(technique.id, [...emulationRuns]) === 'validated').length;
+  const statusByTechnique = new Map(hunt.techniqueValidations.map((validation) => [validation.technique_id, toValidationStatus(validation.status)]));
+  const statusOf = (techniqueId: string) => statusByTechnique.get(techniqueId) ?? 'not_validated';
+  const validated = techniques.filter((technique) => statusOf(technique.id) === 'validated').length;
 
   return (
     <Grid container spacing={3}>
@@ -85,7 +104,7 @@ const HuntCoverageComponent = ({ hunt }: { hunt: { id: string; huntTechniques?: 
               </Text>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="hunt-coverage-techniques">
                 {techniques.map((technique) => {
-                  const status = huntTechniqueValidationStatus(technique.id, [...emulationRuns]);
+                  const status = statusOf(technique.id);
                   return (
                     <li key={technique.id} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), padding: theme.spacing(1, 0), borderBottom: `1px solid ${theme.palette.divider}` }}>
                       <Link to={PATH_ATTACK_PATTERN(technique.id)} style={{ flex: 1, minWidth: 0 }}>
