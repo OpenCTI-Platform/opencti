@@ -3,11 +3,11 @@ import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreRelation } from '../../types/store';
 import { createRelation, distributionRelations, patchAttribute } from '../../database/middleware';
-import { fullEntitiesList, fullRelationsList, internalLoadById, storeLoadById, topRelationsList } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, topRelationsList } from '../../database/middleware-loader';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elRawUpdateByQuery, elUpdate } from '../../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
-import { notify } from '../../database/redis';
+import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
@@ -28,8 +28,10 @@ import {
   DEPLOYMENT_STATUS_PENDING,
   DEPLOYMENT_STATUS_REMOVED,
   type DeploymentStatus,
+  INDICATOR_DEPLOYMENT_EXPIRED_COUNT,
   INDICATOR_DEPLOYMENT_FAILED_COUNT,
   INDICATOR_DEPLOYMENT_PLATFORMS_COUNT,
+  INDICATOR_DEPLOYMENTS_COUNT,
   INDICATOR_HIT_PLATFORMS_COUNT,
   INDICATOR_VALIDATED_PLATFORMS_COUNT,
   type IndicatorDeploymentCounters,
@@ -149,8 +151,10 @@ export const computeDeploymentChange = (
 
 export const computeIndicatorDeploymentCounters = (relations: Array<Partial<DeployedOnAttributes>>): IndicatorDeploymentCounters => {
   return {
+    [INDICATOR_DEPLOYMENTS_COUNT]: relations.length,
     [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT]: relations.filter((r) => isLive(r.deployment_status)).length,
     [INDICATOR_DEPLOYMENT_FAILED_COUNT]: relations.filter((r) => r.deployment_status === DEPLOYMENT_STATUS_FAILED).length,
+    [INDICATOR_DEPLOYMENT_EXPIRED_COUNT]: relations.filter((r) => r.deployment_status === DEPLOYMENT_STATUS_EXPIRED).length,
     [INDICATOR_VALIDATED_PLATFORMS_COUNT]: relations.filter((r) => PROVEN_VALIDATION_STATUSES.includes(r.validation_status as never)).length,
     [INDICATOR_HIT_PLATFORMS_COUNT]: relations.filter((r) => (r.hit_count ?? 0) > 0).length,
   };
@@ -495,22 +499,22 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
   } else {
     const createdDates = dateRangeFilters('created_at', args.startDate, args.endDate);
     const isDeployed: FilterContent = { key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [0], operator: 'gt' };
-    const disseminatedGroup = filterGroup([
-      { key: ['x_opencti_detection'], values: [true] },
-      isDeployed,
-      { key: [INDICATOR_DEPLOYMENT_FAILED_COUNT], values: [0], operator: 'gt' },
-    ], [], 'or');
-    const expiredGroup = filterGroup([
+    // Disseminated: a stream connector recorded the indicator on a platform, whatever the outcome.
+    const isDisseminated: FilterContent = { key: [INDICATOR_DEPLOYMENTS_COUNT], values: [0], operator: 'gt' };
+    // Expired still deployed: expired or revoked but still live, or flagged expired (removal never confirmed).
+    const expiredStillDeployedGroup = filterGroup([
+      { key: [INDICATOR_DEPLOYMENT_EXPIRED_COUNT], values: [0], operator: 'gt' },
+    ], [filterGroup([isDeployed], [filterGroup([
       { key: ['revoked'], values: [true] },
       { key: ['valid_until'], values: [now], operator: 'lt' },
-    ], [], 'or');
+    ], [], 'or')])], 'or');
     const [created, disseminated, deployed, validated, hit, expired] = await Promise.all([
       countIndicators(context, user, createdDates),
-      countIndicators(context, user, createdDates, [disseminatedGroup]),
+      countIndicators(context, user, [...createdDates, isDisseminated]),
       countIndicators(context, user, [...createdDates, isDeployed]),
       countIndicators(context, user, [...createdDates, { key: [INDICATOR_VALIDATED_PLATFORMS_COUNT], values: [0], operator: 'gt' }]),
       countIndicators(context, user, [...createdDates, { key: [INDICATOR_HIT_PLATFORMS_COUNT], values: [0], operator: 'gt' }]),
-      countIndicators(context, user, [...createdDates, isDeployed], [expiredGroup]),
+      countIndicators(context, user, createdDates, [expiredStillDeployedGroup]),
     ]);
     funnel = { created, disseminated, deployed, validated, hit, expired_still_deployed: expired };
   }
@@ -644,14 +648,23 @@ export const repairRecentDeploymentCounters = async (context: AuthContext, since
 
 // region derived counters
 const COUNTERS_BACKFILL_SOURCE = 'for (field in params.fields) { if (ctx._source[field] == null) { ctx._source[field] = 0; } }';
-const COUNTER_FIELDS = [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT, INDICATOR_DEPLOYMENT_FAILED_COUNT, INDICATOR_VALIDATED_PLATFORMS_COUNT, INDICATOR_HIT_PLATFORMS_COUNT];
+export const COUNTER_FIELDS = [
+  INDICATOR_DEPLOYMENTS_COUNT,
+  INDICATOR_DEPLOYMENT_PLATFORMS_COUNT,
+  INDICATOR_DEPLOYMENT_FAILED_COUNT,
+  INDICATOR_DEPLOYMENT_EXPIRED_COUNT,
+  INDICATOR_VALIDATED_PLATFORMS_COUNT,
+  INDICATOR_HIT_PLATFORMS_COUNT,
+];
 
 /**
- * Indicators created before dissemination assurance have no counters (new ones get 0 by default value).
- * They are backfilled with 0 in bounded batches by the deployment manager instead of a blocking startup migration.
- * Idempotent: only documents without the counter are touched, no stream event, no history.
+ * Indicators created before dissemination assurance (or before a counter was added) lack counters
+ * (new ones get 0 by default value). They are backfilled in bounded batches by the deployment manager
+ * instead of a blocking startup migration: with 0 when the indicator has no counter at all, otherwise by
+ * a recomputation from its relationships, since a newer counter of a deployed indicator is not 0.
+ * Idempotent: only documents missing a counter are touched, no stream event, no history.
  */
-export const backfillIndicatorDeploymentCounters = async (batchSize: number) => {
+export const backfillIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number) => {
   const result = await elRawUpdateByQuery({
     index: READ_INDEX_STIX_DOMAIN_OBJECTS,
     refresh: true,
@@ -667,7 +680,65 @@ export const backfillIndicatorDeploymentCounters = async (batchSize: number) => 
       },
     },
   }) as { updated?: number };
-  return result?.updated ?? 0;
+  const partial = await fullEntitiesList<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
+    filters: {
+      mode: 'and' as never,
+      filters: [{ key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [], operator: 'not_nil' as never }],
+      filterGroups: [{
+        mode: 'or' as never,
+        filters: COUNTER_FIELDS.map((field) => ({ key: [field], values: [], operator: 'nil' as never })),
+        filterGroups: [],
+      }],
+    },
+    noFiltersChecking: true,
+    maxSize: batchSize,
+  } as never);
+  const recomputed = await refreshIndicatorDeploymentCounters(context, partial.map((indicator) => indicator.internal_id));
+  return (result?.updated ?? 0) + recomputed;
+};
+
+const RECONCILIATION_CURSOR_STATE = 'indicator_deployment_counters_reconciliation';
+
+/**
+ * Rolling reconciliation of the counters of every indicator with a positive counter, one page per call.
+ * Deleting a Security Platform (or trashing, merging, restoring it) cascades to its deployed-on relationships
+ * without any relationship event, so the counters of the indicators cannot be refreshed from the stream.
+ * The cursor is kept in Redis; the scan restarts from the beginning once the end is reached.
+ * @returns the number of indicators checked and whether the scan reached the end.
+ */
+export const reconcileIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number) => {
+  const after = (await redisGetManagerEventState(RECONCILIATION_CURSOR_STATE)) || undefined;
+  const page = await pageEntitiesConnection<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
+    first: batchSize,
+    after,
+    orderBy: 'internal_id',
+    orderMode: 'asc',
+    filters: {
+      mode: 'or' as never,
+      filters: COUNTER_FIELDS.map((field) => ({ key: [field], values: [0], operator: 'gt' as never })),
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  } as never);
+  const ids = page.edges.map((edge) => edge.node.internal_id);
+  const updated = await refreshIndicatorDeploymentCounters(context, ids);
+  const done = !page.pageInfo.hasNextPage || !page.pageInfo.endCursor;
+  await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
+  return { checked: ids.length, updated, done };
+};
+
+/** Full reconciliation pass, from the beginning, bounded by maxPages (after a Security Platform deletion). */
+export const reconcileAllIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number, maxPages: number) => {
+  await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, '');
+  let updated = 0;
+  for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
+    const result = await reconcileIndicatorDeploymentCounters(context, batchSize);
+    updated += result.updated;
+    if (result.done) {
+      break;
+    }
+  }
+  return updated;
 };
 
 /**

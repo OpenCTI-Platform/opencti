@@ -4,9 +4,12 @@ import { EXPIRATION_MANAGER_USER, executionContext } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_DEPLOYED_ON } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 import {
   backfillIndicatorDeploymentCounters,
   flagExpiredDeployments,
+  reconcileAllIndicatorDeploymentCounters,
+  reconcileIndicatorDeploymentCounters,
   refreshIndicatorDeploymentCounters,
   repairRecentDeploymentCounters,
 } from '../modules/indicatorDeployment/indicatorDeployment-domain';
@@ -26,6 +29,8 @@ const BATCH_SIZE = toPositiveNumber(conf.get('indicator_deployment_manager:batch
 const BACKFILL_BATCH_SIZE = toPositiveNumber(conf.get('indicator_deployment_manager:backfill_batch_size'), 10000);
 // Time given to the connectors to confirm a removal before the deployment is flagged expired.
 const REMOVAL_GRACE_PERIOD = toPositiveNumber(conf.get('indicator_deployment_manager:removal_grace_period'), 24 * 3600 * 1000);
+// Bound of the full counters reconciliation run after a Security Platform deletion (pages of BATCH_SIZE indicators).
+const RECONCILIATION_MAX_PAGES = toPositiveNumber(conf.get('indicator_deployment_manager:reconciliation_max_pages'), 1000);
 
 const CONTEXT_NAME = 'indicator_deployment_manager';
 
@@ -33,16 +38,23 @@ export const indicatorDeploymentCronHandler = async () => {
   const context = executionContext(CONTEXT_NAME);
   const flagged = await flagExpiredDeployments(context, EXPIRATION_MANAGER_USER, REMOVAL_GRACE_PERIOD, BATCH_SIZE);
   const repaired = await repairRecentDeploymentCounters(context, SCHEDULE_TIME * 2, BATCH_SIZE);
+  const reconciled = await reconcileIndicatorDeploymentCounters(context, BATCH_SIZE);
   const requests = await maintainIocValidationRequests(context);
-  const backfilled = await backfillIndicatorDeploymentCounters(BACKFILL_BATCH_SIZE);
-  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, requests, backfilled });
+  const backfilled = await backfillIndicatorDeploymentCounters(context, BACKFILL_BATCH_SIZE);
+  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, reconciled, requests, backfilled });
+};
+
+type DeploymentEventData = {
+  type?: string;
+  relationship_type?: string;
+  extensions?: Record<string, { source_ref?: string; type?: string }>;
 };
 
 // Indicators whose deployed-on relationships changed in this batch of events.
 export const extractDeploymentIndicatorIds = (events: Array<SseEvent<DataEvent>>) => {
   const ids = new Set<string>();
   events.forEach((event) => {
-    const data = event.data?.data as { type?: string; relationship_type?: string; extensions?: Record<string, { source_ref?: string }> } | undefined;
+    const data = event.data?.data as DeploymentEventData | undefined;
     if (data?.type === 'relationship' && data.relationship_type === RELATION_DEPLOYED_ON) {
       const sourceRef = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
       if (sourceRef) ids.add(sourceRef);
@@ -51,11 +63,23 @@ export const extractDeploymentIndicatorIds = (events: Array<SseEvent<DataEvent>>
   return [...ids];
 };
 
+// A Security Platform deleted or merged away takes its deployed-on relationships with it, without relationship events.
+export const hasSecurityPlatformRemoval = (events: Array<SseEvent<DataEvent>>) => events.some((event) => {
+  const data = event.data?.data as DeploymentEventData | undefined;
+  const isRemoval = event.data?.type === 'delete' || event.data?.type === 'merge';
+  return isRemoval && data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM;
+});
+
 export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const indicatorIds = extractDeploymentIndicatorIds(events);
   if (indicatorIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
     await refreshIndicatorDeploymentCounters(context, indicatorIds);
+  }
+  if (hasSecurityPlatformRemoval(events)) {
+    const context = executionContext(CONTEXT_NAME);
+    const updated = await reconcileAllIndicatorDeploymentCounters(context, BATCH_SIZE, RECONCILIATION_MAX_PAGES);
+    logApp.info('[OPENCTI-MODULE] Indicator deployment counters reconciled after a security platform removal', { updated });
   }
   // Saved after the refresh so a restart replays the events received while the manager was stopped.
   if (lastEventId) {

@@ -61,15 +61,19 @@ extend input StixCoreRelationshipAddInput {
 
 # Derived counters, recomputed from the deployed-on relationships of the indicator.
 extend type Indicator {
+  deployments_count: Int
   deployment_platforms_count: Int
   deployment_failed_count: Int
+  deployment_expired_count: Int
   validated_platforms_count: Int
   hit_platforms_count: Int
 }
 
 extend enum IndicatorsOrdering {
+  deployments_count
   deployment_platforms_count
   deployment_failed_count
+  deployment_expired_count
   validated_platforms_count
   hit_platforms_count
 }

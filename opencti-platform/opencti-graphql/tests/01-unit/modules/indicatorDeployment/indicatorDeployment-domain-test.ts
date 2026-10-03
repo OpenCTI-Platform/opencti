@@ -7,7 +7,7 @@ import {
   hitsSightingStixId,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { extractDeploymentIndicatorIds } from '../../../../src/manager/indicatorDeploymentManager';
+import { extractDeploymentIndicatorIds, hasSecurityPlatformRemoval } from '../../../../src/manager/indicatorDeploymentManager';
 import type { DataEvent, SseEvent } from '../../../../src/types/event';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z');
@@ -77,25 +77,30 @@ describe('computeDeploymentChange on update', () => {
 });
 
 describe('derived counters', () => {
-  it('should count live, failed, proven and hit deployments', () => {
+  it('should count recorded, live, failed, expired, proven and hit deployments', () => {
     const counters = computeIndicatorDeploymentCounters([
       { deployment_status: 'deployed', validation_status: 'detected', hit_count: 0 },
       { deployment_status: 'active', validation_status: 'missed', hit_count: 3 },
       { deployment_status: 'failed', validation_status: 'not_requested' },
       { deployment_status: 'removed', validation_status: 'prevented', hit_count: 1 },
       { deployment_status: 'expired', validation_status: 'requested' },
+      { deployment_status: 'pending' },
     ]);
     expect(counters).toEqual({
+      deployments_count: 6,
       deployment_platforms_count: 2,
       deployment_failed_count: 1,
+      deployment_expired_count: 1,
       validated_platforms_count: 2,
       hit_platforms_count: 2,
     });
   });
   it('should return zeros without deployment', () => {
     expect(computeIndicatorDeploymentCounters([])).toEqual({
+      deployments_count: 0,
       deployment_platforms_count: 0,
       deployment_failed_count: 0,
+      deployment_expired_count: 0,
       validated_platforms_count: 0,
       hit_platforms_count: 0,
     });
@@ -127,5 +132,15 @@ describe('deployment manager stream extraction', () => {
       event({ type: 'indicator', extensions: { [ext]: { id: 'ind-3' } } }),
     ]);
     expect(ids).toEqual(['ind-1']);
+  });
+  it('should detect a security platform deleted or merged away', () => {
+    const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
+    const platform = { type: 'identity', extensions: { [ext]: { type: 'SecurityPlatform' } } };
+    const typed = (type: string, data: Record<string, unknown>) => ({ id: '1', event: type, data: { type, data } }) as unknown as SseEvent<DataEvent>;
+    expect(hasSecurityPlatformRemoval([typed('delete', platform)])).toEqual(true);
+    expect(hasSecurityPlatformRemoval([typed('merge', platform)])).toEqual(true);
+    expect(hasSecurityPlatformRemoval([typed('update', platform)])).toEqual(false);
+    expect(hasSecurityPlatformRemoval([typed('delete', { type: 'identity', extensions: { [ext]: { type: 'Organization' } } })])).toEqual(false);
+    expect(hasSecurityPlatformRemoval([])).toEqual(false);
   });
 });
