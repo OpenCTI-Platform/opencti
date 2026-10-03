@@ -5,6 +5,19 @@ import IntrusionSetPage from '../model/intrusionSet.pageModel';
 import IntrusionSetFormPage from '../model/form/intrusionSetForm.pageModel';
 import IntrusionSetDetailsPage from '../model/intrusionSetDetails.pageModel';
 
+// The reachability of XTM Hub is null until the platform checks it and false afterwards on the e2e platform.
+const markHubReachable = (value: unknown): void => {
+  if (Array.isArray(value)) {
+    value.forEach(markHubReachable);
+  } else if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if ('xtm_hub_backend_is_reachable' in record) {
+      record.xtm_hub_backend_is_reachable = true;
+    }
+    Object.values(record).forEach(markHubReachable);
+  }
+};
+
 /**
  * The e2e platform is not registered on XTM Hub, so the Threat Pulse answers of the platform are served by the browser:
  * each listed operation gets the given data, every other request reaches the platform. With `hubReachable`, the
@@ -25,7 +38,13 @@ const mockThreatPulse = async (page: Page, answers: Record<string, unknown>, { h
     }
     const response = await route.fetch();
     const text = await response.text();
-    await route.fulfill({ response, body: text.replaceAll('"xtm_hub_backend_is_reachable":false', '"xtm_hub_backend_is_reachable":true') });
+    if (!text.includes('"xtm_hub_backend_is_reachable"')) {
+      await route.fulfill({ response, body: text });
+      return;
+    }
+    const json = JSON.parse(text);
+    markHubReachable(json);
+    await route.fulfill({ response, body: JSON.stringify(json) });
   });
 };
 
