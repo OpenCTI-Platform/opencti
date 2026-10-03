@@ -168,13 +168,14 @@ export const findReadableIndicatorIds = async (context: AuthContext, user: AuthU
 // endregion
 
 // region deployed-on validation markers (side-channel, the result bundle carries the real outcome)
+// No stream event nor history, but updated_at moves: incremental readers see every validation status change.
 const setPairsValidationStatus = async (
   context: AuthContext,
   relations: Array<BasicStoreRelationDeployedOn & { _index: string }>,
   attributes: Record<string, unknown>,
 ) => {
   await BluePromise.map(relations, async (relation) => {
-    const params = buildReplaceScriptParams(attributes);
+    const params = buildReplaceScriptParams({ ...attributes, updated_at: new Date() });
     await elUpdate(context, relation._index, relation.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
   }, { concurrency: CONCURRENCY });
   await refreshIndicatorDeploymentCounters(context, relations.map((r) => r.fromId));
@@ -202,7 +203,7 @@ const resolvePendingPairs = async (context: AuthContext, requestId: string, stat
       try {
         const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
         if (current && current.validation_status === VALIDATION_STATUS_REQUESTED && current.validation_run_id === requestId) {
-          const params = buildReplaceScriptParams(attributes);
+          const params = buildReplaceScriptParams({ ...attributes, updated_at: new Date() });
           await elUpdate(context, current._index, current.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
           resolved.push(current);
         }
@@ -309,6 +310,8 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not deployed on this security platform' });
       } else if (!LIVE_DEPLOYMENT_STATUSES.includes(deployment.deployment_status)) {
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: `Not live on this security platform (${deployment.deployment_status})` });
+      } else if (deployment.revoked === true) {
+        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Removal requested on this security platform' });
       } else if (deployment.validation_status === VALIDATION_STATUS_REQUESTED && deployment.validation_run_id) {
         // The pair belongs to the run that marked it until that run resolves or is deleted
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Already waiting for the results of another validation request' });

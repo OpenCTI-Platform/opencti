@@ -42,7 +42,7 @@ const REPORT_DEPLOYMENT = gql`
 `;
 const DEPLOYMENT_READ = gql`
   query DeploymentRead($id: String!) {
-    stixCoreRelationship(id: $id) { id validation_status validation_run_id }
+    stixCoreRelationship(id: $id) { id validation_status validation_run_id updated_at }
   }
 `;
 const REQUEST_FIELDS = `
@@ -241,6 +241,7 @@ describe('IOC validation requests', () => {
   });
 
   it('should resolve the waiting pairs as errors when OpenAEV reports a failure', async () => {
+    const waiting = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     const failed = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: STATUS_UPDATE,
       variables: { id: requestId, input: { status: 'failed', message: 'No endpoint available' } },
@@ -251,6 +252,9 @@ describe('IOC validation requests', () => {
     expect(request.results_summary).toEqual({ total: 1, requested: 0, error: 1, skipped: 1 });
     const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('error');
+    // Incremental readers (updated_at) see the resolution, although it is written without stream event
+    expect(new Date(deployment.data?.stixCoreRelationship.updated_at).getTime())
+      .toBeGreaterThan(new Date(waiting.data?.stixCoreRelationship.updated_at).getTime());
     // A late lifecycle event never reopens a final request
     const late = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: STATUS_UPDATE,
