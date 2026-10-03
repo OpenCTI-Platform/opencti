@@ -2,6 +2,7 @@ import { useFormatter } from '../../../components/i18n';
 import LoginAlert from './LoginAlert';
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
+import { passwordChangeErrorMessages } from '../../../utils/passwordChangeErrors';
 
 const AlertChangePwd = () => {
   const { t_i18n } = useFormatter();
@@ -9,6 +10,7 @@ const AlertChangePwd = () => {
     pwdChanged,
     resetPwdStep,
     changePasswordInError,
+    changePasswordErrorCode,
   } = useLoginContext();
 
   const inResetStep = resetPwdStep === ResetPwdStep.RESET_PASSWORD;
@@ -22,7 +24,8 @@ const AlertChangePwd = () => {
         <>
           {changePasswordInError ? (
             <LoginAlert severity="error">
-              {t_i18n('This new password does not comply with the platform policies.')}
+              {passwordChangeErrorMessages(t_i18n)[changePasswordErrorCode ?? '']
+                ?? t_i18n('This new password does not comply with the platform policies.')}
             </LoginAlert>
           ) : (
             <LoginAlert severity="info">

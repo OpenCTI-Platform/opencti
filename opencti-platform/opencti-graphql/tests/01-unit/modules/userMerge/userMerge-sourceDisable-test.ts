@@ -9,9 +9,16 @@ interface StoredSource {
 
 let stored: StoredSource | undefined;
 const edits: { userId: string; inputs: { key: string; value: string[] }[]; opts?: Record<string, unknown> }[] = [];
+const patches: { id: string; patch: Record<string, unknown>; opts?: Record<string, unknown> }[] = [];
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
   storeLoadById: async () => stored,
+}));
+
+vi.mock('../../../../src/database/middleware', () => ({
+  patchAttribute: async (_context: unknown, _user: unknown, id: string, _type: string, patch: Record<string, unknown>, opts?: Record<string, unknown>) => {
+    patches.push({ id, patch, opts });
+  },
 }));
 
 vi.mock('../../../../src/modules/user/user-domain', () => ({
@@ -31,6 +38,7 @@ describe('source disable handler', () => {
   beforeEach(() => {
     stored = { account_status: 'Active' };
     edits.length = 0;
+    patches.length = 0;
   });
 
   it('should plan the disable of an active source', async () => {
@@ -67,13 +75,20 @@ describe('source disable handler', () => {
     }]);
   });
 
+  it('should empty the password history of the source when it applies', async () => {
+    await userMergeSourceDisableHandler.apply(handlerContext, await compute());
+    expect(patches).toEqual([{ id: 'source-id', patch: { password_history: [] }, opts: { skipUserIndividualSync: true } }]);
+  });
+
   it('should write nothing when the plan holds no change', async () => {
     stored = { account_status: ACCOUNT_STATUS_EXPIRED, merged_into: 'target-id' };
     expect(await userMergeSourceDisableHandler.apply(handlerContext, await compute())).toEqual(0);
     expect(edits).toEqual([]);
+    expect(patches).toEqual([]);
   });
 
-  it('should declare both written fields, so the disjointness check sees them', () => {
+  it('should declare every written field, so the disjointness check sees them', () => {
     expect(userMergeSourceDisableHandler.writes).toContain('User.merged_into');
+    expect(userMergeSourceDisableHandler.writes).toContain('User.password_history');
   });
 });

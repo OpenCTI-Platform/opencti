@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import { Box, Stack } from '@mui/material';
@@ -8,6 +8,7 @@ import Button from '@common/button/Button';
 import { useFormatter } from './i18n';
 import useApiMutation from '../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../relay/environment';
+import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages } from '../utils/passwordChangeErrors';
 
 export const forcePasswordChangeMutation = graphql`
   mutation ForcePasswordChangeFormMutation(
@@ -45,11 +46,7 @@ const ForcePasswordChangeForm = ({
 
   const onSubmit = (
     values: { password: string; confirmation: string },
-    { setSubmitting, resetForm, setErrors }: {
-      setSubmitting: (isSubmitting: boolean) => void;
-      resetForm: () => void;
-      setErrors: (errors: Record<string, string>) => void;
-    },
+    { setSubmitting, resetForm, setErrors }: FormikHelpers<{ password: string; confirmation: string }>,
   ) => {
     commitMutation({
       variables: {
@@ -61,7 +58,16 @@ const ForcePasswordChangeForm = ({
         onSuccess();
       },
       onError: (error) => {
-        handleErrorInForm(error, setErrors);
+        if (passwordChangeErrorCode(error) === PASSWORD_REUSED) {
+          // The typed password is known to be refused: clear both fields and say why under the first one
+          resetForm({
+            values: { password: '', confirmation: '' },
+            errors: { password: passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED] },
+            touched: { password: true },
+          });
+        } else {
+          handleErrorInForm(error, setErrors);
+        }
         setSubmitting(false);
       },
     });

@@ -24,7 +24,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -296,6 +296,10 @@ const buildAuthorizedSettingsKeys = (user) => {
 };
 
 export const settingsEditField = async (context, user, settingsId, input) => {
+  // Only updateLocalAuth writes it: it checks the bounds and the feature flag, and removes the hashes no longer needed
+  if (input.some((i) => i.key === 'password_policy_history_count')) {
+    throw FunctionalError('The password history count can only be changed with the local authentication settings');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);

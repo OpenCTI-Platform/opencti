@@ -37,6 +37,7 @@ This section encompasses a comprehensive set of parameters defining the local pa
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
 | `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
+| `Number of recent passwords that cannot be reused (0 equals disabled)` | Refuse a new password equal to the current one or to one of the previous ones, from `0` to `24`. See [Password history](#password-history). |
 
 ![Local password policies](./assets/local-password-policies.png)
 
@@ -63,6 +64,41 @@ When a non-zero password validity duration is configured, each user's password i
 - **Authenticated users**: When a password expires while the user is logged in, they are redirected to a dedicated full-screen password change page.
 - **At login**: If the password is already expired at login time, the user is shown a password change form directly within the login page.
 - **Session invalidation**: After changing an expired password, all other active sessions for that user are terminated.
+
+## Password history
+
+!!! note "Feature in development"
+
+    Password history is behind the `PASSWORD_HISTORY` development feature flag. The setting only appears, and is only enforced, when the flag is enabled.
+
+Password history prevents users from going back to a password they used recently. It applies to local accounts only: accounts authenticated by an external provider (SSO, LDAP, etc.) and service accounts are not concerned.
+
+### How it works
+
+1. **Admin configures the policy**: In "Settings > Security > Policies > Local password policies", set "Number of recent passwords that cannot be reused" to a value between `1` and `24`.
+2. **The count includes the current password**: with `1`, a new password only has to differ from the current one. With `5`, it must differ from the current password and the 4 before it.
+3. **Every password change is checked**: when users change their own password (profile, forced change, forgot password) and when an administrator sets a password for a user.
+4. **Only hashes are kept**: the platform stores the hashes of the previous passwords, never the passwords themselves. Comparison is an exact match: a slightly different password (`Summer2025!` instead of `Summer2024!`) is accepted.
+
+The history starts from the moment the rule is enabled: passwords set before that are not known to the platform. Lowering the value drops the oldest passwords beyond the new count. Setting it back to `0` disables the rule and deletes every user's password history, so enabling it again starts from scratch.
+
+!!! warning "Long passwords"
+
+    Passwords are compared on their first 72 bytes, a limit of the bcrypt hashing algorithm. Two passwords that share their first 72 bytes are considered identical.
+
+### User experience
+
+- The password rules shown next to the password fields include "Must be different from your last N passwords" (or "your current password" when the value is `1`). This rule cannot be checked while typing, since only the platform knows the previous passwords.
+- A refused password shows: "This password has already been used recently. Please choose a different one." In the forgot password flow, the user stays on the new password step and can try again with the same code.
+- To limit guessing, a user can submit at most 5 password changes per 15 minutes, counted once the new password meets the other policies. Beyond that, the change is refused with "Too many password change attempts. Please try again in a few minutes." Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)).
+
+### Audit and alerting
+
+Each refused reuse is recorded in the audit log as an unauthorized action (`password_reuse`), with the target user and the flow (`self`, `admin` or `reset`), and never with the password itself. The platform also writes a warning line in its application log. With an Enterprise Edition license, you can build alerts on these activity events.
+
+### Backups and API
+
+Password hashes, current and previous, live in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API, and a password change must be sent on its own, without any other field in the same request.
 
 ## Login messages
 

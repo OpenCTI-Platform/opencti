@@ -20,11 +20,32 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, PASSWORD_HISTORY_FEATURE_FLAG } from '../config/conf';
+import { FunctionalError } from '../config/errors';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
+import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
+
+// The password history count sent with the local settings, once validated; undefined when it must not be saved.
+// With the feature flag off, the hidden form field still sends 0: that is ignored, any other value refused.
+export const resolvePasswordHistoryCount = (input: Pick<LocalAuthConfigInput, 'password_policy_history_count'>): number | undefined => {
+  const value = input.password_policy_history_count;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (!isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
+    if (value !== 0) {
+      throw FunctionalError('Password history is not available on this platform');
+    }
+    return undefined;
+  }
+  if (!isValidPasswordHistoryCount(value)) {
+    throw FunctionalError(`Password history count must be an integer between 0 and ${PASSWORD_HISTORY_MAX_COUNT}`, { value });
+  }
+  return value;
+};
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -59,6 +80,8 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
   // Read previous validity days before patching
   const currentSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const oldValidityDays = Number(currentSettings.password_policy_validity_days ?? 0);
+  const oldHistoryCount = readPasswordHistoryCount(currentSettings);
+  const newHistoryCount = resolvePasswordHistoryCount(input);
 
   const patch = {
     local_auth: { enabled: input.enabled },
@@ -70,8 +93,14 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
     ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
     ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
+    ...(newHistoryCount !== undefined && { password_policy_history_count: newHistoryCount }),
   };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
+
+  // A lower count drops the hashes no longer needed at once; 0 deletes every password history
+  if (newHistoryCount !== undefined && newHistoryCount < oldHistoryCount) {
+    await trimAllUsersPasswordHistory(newHistoryCount);
+  }
 
   // Propagate password_valid_until changes to all internal users
   if (input.password_policy_validity_days !== undefined) {

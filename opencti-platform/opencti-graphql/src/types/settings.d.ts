@@ -98,5 +98,6 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   password_policy_min_lowercase?: number;
   password_policy_min_uppercase?: number;
   password_policy_validity_days?: number;
+  password_policy_history_count?: number;
   smtp_configuration?: SmtpConfiguration;
 }

@@ -64,6 +64,7 @@ export const rootPublicQuery = graphql`
       password_policy_min_words
       password_policy_min_lowercase
       password_policy_min_uppercase
+      password_policy_history_count
     }
   }
 `;

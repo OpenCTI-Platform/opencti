@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../utils/tests/test-render';
-import PasswordPoliciesAlert, { countDigits, countLowercase, countSymbols, countUppercase, countWords } from './PasswordPoliciesAlert';
+import PasswordPoliciesAlert, { countDigits, countLowercase, countSymbols, countUppercase, countWords, passwordHistoryRuleLabel } from './PasswordPoliciesAlert';
 
 describe('countSymbols', () => {
   it('returns 0 for an empty string', () => expect(countSymbols('')).toBe(0));
@@ -94,5 +94,45 @@ describe('PasswordPoliciesAlert', () => {
     expect(screen.getByText(/Number of words/)).toBeInTheDocument();
     expect(screen.getByText(/Number of lowercase chars must be greater or equals to/)).toBeInTheDocument();
     expect(screen.getByText(/Number of uppercase chars must be greater or equals to/)).toBeInTheDocument();
+  });
+
+  it('renders the alert for the password history rule alone', () => {
+    testRender(<PasswordPoliciesAlert policies={{ historyCount: 5 }} />);
+    expect(screen.getByText('Password security policies')).toBeInTheDocument();
+    expect(screen.getByText('Must be different from your last 5 passwords')).toBeInTheDocument();
+  });
+
+  it('renders nothing for a history count of 0', () => {
+    const { container } = testRender(<PasswordPoliciesAlert policies={{ historyCount: 0 }} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('uses the admin wording when the password is set for someone else', () => {
+    testRender(<PasswordPoliciesAlert policies={{ historyCount: 5 }} audience="admin" />);
+    expect(screen.getByText('Must be different from the last 5 passwords')).toBeInTheDocument();
+    expect(screen.queryByText(/your last/)).not.toBeInTheDocument();
+  });
+
+  it('never ticks the history rule while typing, since only the server can check it', () => {
+    const { container } = testRender(<PasswordPoliciesAlert policies={{ minLength: 1, historyCount: 3 }} value="a" />);
+    const historyLine = screen.getByText('Must be different from your last 3 passwords').parentElement as HTMLElement;
+    expect(historyLine.querySelector('[data-testid="HistoryOutlinedIcon"]')).not.toBeNull();
+    expect(historyLine.querySelector('[data-testid="CheckCircleOutlinedIcon"]')).toBeNull();
+    // The length rule next to it is met and ticked
+    expect(container.querySelectorAll('[data-testid="CheckCircleOutlinedIcon"]')).toHaveLength(1);
+  });
+});
+
+describe('passwordHistoryRuleLabel', () => {
+  const t = (message: string, options?: { values: Record<string, number> }) => message.replace('{count}', String(options?.values.count ?? '{count}'));
+
+  it('names the current password when only that one is refused', () => {
+    expect(passwordHistoryRuleLabel(t, 1, 'self')).toBe('Must be different from your current password');
+    expect(passwordHistoryRuleLabel(t, 1, 'admin')).toBe('Must be different from the current password');
+  });
+
+  it('gives the count, which includes the current password', () => {
+    expect(passwordHistoryRuleLabel(t, 24, 'self')).toBe('Must be different from your last 24 passwords');
+    expect(passwordHistoryRuleLabel(t, 2, 'admin')).toBe('Must be different from the last 2 passwords');
   });
 });

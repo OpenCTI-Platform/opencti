@@ -115,6 +115,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
                       minWords: settings.password_policy_min_words,
                       minLowercase: settings.password_policy_min_lowercase,
                       minUppercase: settings.password_policy_min_uppercase,
+                      historyCount: settings.password_policy_history_count,
                     }}
                   />
                 )}
@@ -128,6 +129,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
                       minWords: settings.password_policy_min_words,
                       minLowercase: settings.password_policy_min_lowercase,
                       minUppercase: settings.password_policy_min_uppercase,
+                      historyCount: settings.password_policy_history_count,
                     }}
                   />
                 )}

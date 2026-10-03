@@ -6,9 +6,9 @@ import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
-import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
-import { createEntity, loadEntity } from './database/middleware';
+import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
@@ -22,7 +22,9 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './modules/user/user-domain';
+import { cleanUpPasswordHistoryWhenDisabled } from './modules/user/user-password-history';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
+import type { BasicStoreSettings } from './types/settings';
 import type { AuthContext } from './types/user';
 
 // region Platform constants
@@ -64,6 +66,17 @@ const isCompatiblePlatform = async (context: AuthContext) => {
   }
 };
 
+// With the password history feature flag off, no password history may stay behind
+const cleanUpPasswordHistory = async (context: AuthContext) => {
+  const settings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  if (!settings) {
+    return;
+  }
+  await cleanUpPasswordHistoryWhenDisabled(settings, () => {
+    return patchAttribute(context, SYSTEM_USER, settings.id, ENTITY_TYPE_SETTINGS, { password_policy_history_count: 0 });
+  });
+};
+
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
@@ -103,6 +116,7 @@ const platformInit = async (withMarkings = true) => {
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await applyMigration(context);
+      await cleanUpPasswordHistory(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
