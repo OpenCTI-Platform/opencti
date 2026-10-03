@@ -16,6 +16,7 @@ import ContainerTimelineEventForm from './ContainerTimelineEventForm';
 import ContainerTimelineLanes from './ContainerTimelineLanes';
 import ContainerTimelineList from './ContainerTimelineList';
 import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
+import { ContainerTimelineEmptyState, ContainerTimelineSkeleton } from './ContainerTimelineStates';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
 import {
@@ -260,6 +261,10 @@ interface ContainerTimelineEventsViewProps {
   onDomainChange: (domain: TimelineDomain | null) => void;
   onSelect: (eventId: string | null) => void;
   onEdit: (event: TimelineEventDetails) => void;
+  onAdd: () => void;
+  onRegenerate: () => void;
+  onClearFilters: () => void;
+  regenerating: boolean;
   actions: TimelineActions;
 }
 
@@ -275,6 +280,10 @@ const ContainerTimelineEventsView = ({
   onDomainChange,
   onSelect,
   onEdit,
+  onAdd,
+  onRegenerate,
+  onClearFilters,
+  regenerating,
   actions,
 }: ContainerTimelineEventsViewProps) => {
   const { t_i18n, n } = useFormatter();
@@ -308,9 +317,14 @@ const ContainerTimelineEventsView = ({
   return (
     <>
       {events.length === 0 ? (
-        <div style={{ padding: 30, textAlign: 'center' }} data-testid="timeline-empty">
-          {summary.total === 0 ? t_i18n('This timeline has no event yet') : t_i18n('No event matches the current filters')}
-        </div>
+        <ContainerTimelineEmptyState
+          filtered={summary.total > 0}
+          canEdit={summary.can_edit}
+          regenerating={regenerating}
+          onAdd={onAdd}
+          onRegenerate={onRegenerate}
+          onClearFilters={onClearFilters}
+        />
       ) : (
         <>
           {state.view === 'lanes' ? (
@@ -377,7 +391,7 @@ interface ContainerTimelineContentProps {
 }
 
 const ContainerTimelineContent = ({ containerId, containerName, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n, nsdt } = useFormatter();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
   const [searchParams, setSearchParams] = useSearchParams();
   const settings = summary?.settings;
@@ -549,9 +563,16 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           updateState({ view: 'lanes', domain: centered });
         }}
       />
+      <div style={{ marginTop: 8, fontSize: 12 }} data-testid="timeline-status">
+        {t_i18n('{count} events', { values: { count: n(summary.total) } })}
+        {summary.generated_at && ` - ${t_i18n('Last update')} ${nsdt(summary.generated_at)}`}
+      </div>
       {summary.truncated && (
         <div style={{ marginTop: 12 }}>
-          <Alert severity="info" content={t_i18n('This case is very large: its timeline is built from a bounded number of objects and history entries.')} />
+          <Alert
+            severity="info"
+            content={t_i18n('This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.')}
+          />
         </div>
       )}
       <Card sx={{ marginTop: 2 }}>
@@ -574,7 +595,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           onFit={() => onDomainChange(null)}
         />
         {eventsRef ? (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <Suspense fallback={<ContainerTimelineSkeleton />}>
             <ContainerTimelineEventsView
               queryRef={eventsRef}
               linkedEventId={linkedEventId}
@@ -590,11 +611,18 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
                 setFormEvent(event);
                 setFormOpen(true);
               }}
+              onAdd={() => {
+                setFormEvent(null);
+                setFormOpen(true);
+              }}
+              onRegenerate={regenerate}
+              onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
+              regenerating={regenerating}
               actions={actions}
             />
           </Suspense>
         ) : (
-          <Loader variant={LoaderVariant.inElement} />
+          <ContainerTimelineSkeleton />
         )}
       </Card>
       <ContainerTimelineEventForm
