@@ -140,6 +140,16 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of PIRs
 - The number of decay rules created
 
+### Knowledge time machine
+
+- The number of entity views rebuilt at a past date ("View as of")
+- The number of entity diffs computed
+- The number of landscape diffs computed (Landscape changes page and widgets)
+- The number of last visit markers recorded ("new since your last visit")
+- The number of change digests sent (one per recipient)
+- The number of change digest triggers
+- The number of knowledge snapshots
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform
