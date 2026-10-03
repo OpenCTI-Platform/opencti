@@ -9,9 +9,13 @@ import { createRelation, deleteElementById } from '../../../../src/database/midd
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
+import * as curationSettings from '../../../../src/modules/curation/curation-settings';
 import { getCurationSettings } from '../../../../src/modules/curation/curation-settings';
+import { addOrganization } from '../../../../src/modules/organization/organization-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { runContradictionScan, runIncrementalDuplicateDetection } from '../../../../src/modules/curation/curation-scan';
 import {
+  AUTHORITY_SOURCE_AUTHOR,
   ENTITY_TYPE_CURATION_POLICY,
   ENTITY_TYPE_CURATION_PROPOSAL,
   ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT,
@@ -415,6 +419,45 @@ describe('Knowledge curation', () => {
     expect(health.data?.knowledgeHealth.id).toBe(snapshot.id);
     expect(health.data?.curationStatistics.open_count).toBeGreaterThanOrEqual(0);
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: HEALTH_REFRESH_MUTATION, variables: {} });
+  });
+
+  describe('source field authority', () => {
+    let authoritative: { id: string };
+    let secondary: { id: string };
+
+    beforeAll(async () => {
+      authoritative = await addOrganization(testContext, ADMIN_USER, { name: 'Zcuraxor authoritative source' });
+      secondary = await addOrganization(testContext, ADMIN_USER, { name: 'Zcuraxor secondary source' });
+      createdEntities.push({ id: authoritative.id, type: ENTITY_TYPE_IDENTITY_ORGANIZATION }, { id: secondary.id, type: ENTITY_TYPE_IDENTITY_ORGANIZATION });
+      const settings = await getCurationSettings(testContext);
+      vi.spyOn(curationSettings, 'getCurationSettings').mockResolvedValue({
+        ...settings,
+        field_authority_enabled: true,
+        field_authority_rules: [{
+          entity_type: ENTITY_TYPE_INTRUSION_SET,
+          attribute: 'description',
+          sources: [
+            { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: authoritative.id },
+            { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: secondary.id },
+          ],
+        }],
+      });
+    });
+
+    afterAll(() => {
+      vi.mocked(curationSettings.getCurationSettings).mockRestore();
+    });
+
+    it('should keep the value of the more authoritative source on upsert, whatever the confidence', async () => {
+      const name = 'Zcuraxor field authority actor';
+      const created = await createIntrusionSet({ name, description: 'From the authoritative source', createdBy: authoritative.id });
+      await addIntrusionSet(testContext, ADMIN_USER, { name, description: 'From the secondary source', createdBy: secondary.id });
+      const afterSecondary = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INTRUSION_SET) as BasicStoreEntity;
+      expect(afterSecondary.description).toBe('From the authoritative source');
+      await addIntrusionSet(testContext, ADMIN_USER, { name, description: 'Updated by the authoritative source', createdBy: authoritative.id });
+      const afterAuthoritative = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INTRUSION_SET) as BasicStoreEntity;
+      expect(afterAuthoritative.description).toBe('Updated by the authoritative source');
+    });
   });
 
   describe('curation policies (Enterprise Edition)', () => {

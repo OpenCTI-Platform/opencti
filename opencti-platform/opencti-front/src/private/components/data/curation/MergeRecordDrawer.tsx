@@ -262,7 +262,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
           <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={unmerging}>
             {t_i18n('Cancel')}
           </Button>
-          <Button intent="destructive" onClick={unmerge} disabled={unmerging}>
+          <Button intent="destructive" onClick={unmerge} disabled={unmerging} data-testid="merge-record-unmerge-confirm">
             {t_i18n('Unmerge')}
           </Button>
         </DialogActions>
