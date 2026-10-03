@@ -176,6 +176,15 @@ export class TelemetryMeterManager {
   // Number of PIR
   pirCount = 0;
 
+  // Threat Pulse contribution is enabled (0 or 1)
+  isThreatPulseEnabled = 0;
+
+  // Number of Threat Pulse records (hash and count) contributed to XTM Hub
+  threatPulseRecordsCount = 0;
+
+  // Number of Threat Pulse lookups (hashes) sent to XTM Hub
+  threatPulseLookupsCount = 0;
+
   // Number of connectors deployed
   connectorDeployedCount = 0;
 
@@ -491,6 +500,18 @@ export class TelemetryMeterManager {
     this.pirCount = n;
   }
 
+  setIsThreatPulseEnabled(n: number) {
+    this.isThreatPulseEnabled = n;
+  }
+
+  setThreatPulseRecordsCount(n: number) {
+    this.threatPulseRecordsCount = n;
+  }
+
+  setThreatPulseLookupsCount(n: number) {
+    this.threatPulseLookupsCount = n;
+  }
+
   setConnectorDeployedCount(n: number) {
     this.connectorDeployedCount = n;
   }
@@ -744,6 +765,9 @@ export class TelemetryMeterManager {
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
+    this.registerGauge('is_threat_pulse_enabled', 'Threat Pulse contribution is enabled', 'isThreatPulseEnabled', { unit: 'boolean' });
+    this.registerGauge('threat_pulse_records_count', 'Number of Threat Pulse records contributed to XTM Hub', 'threatPulseRecordsCount');
+    this.registerGauge('threat_pulse_lookups_count', 'Number of Threat Pulse lookups sent to XTM Hub', 'threatPulseLookupsCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
     this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
     this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');

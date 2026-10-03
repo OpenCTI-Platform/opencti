@@ -6,6 +6,7 @@ import type { BasicStoreEntityLanguage } from '../modules/language/language-type
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
 import type { BasicStoreEntityNarrative } from '../modules/narrative/narrative-types';
 import type { BasicStoreEntityGrouping } from '../modules/grouping/grouping-types';
+import type { PulseSettingsOutput } from '../modules/xtm/pulse/pulse-types';
 import type { BasicStoreEntityDataSource } from '../modules/dataSource/dataSource-types';
 import type { BasicStoreEntityDataComponent } from '../modules/dataComponent/dataComponent-types';
 import type { BasicStoreEntityVocabulary } from '../modules/vocabulary/vocabulary-types';
@@ -984,6 +985,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -12951,6 +12953,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   pattern_version?: Maybe<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -14426,6 +14429,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -16009,6 +16013,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -17568,6 +17573,8 @@ export type Mutation = {
   publicDashboardAdd?: Maybe<PublicDashboard>;
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
+  pulseConfigure: PulseSettings;
+  pulsePurge: PulsePurgeResult;
   queryTaskAdd: BackgroundTask;
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
@@ -19526,6 +19533,11 @@ export type MutationPublicDashboardDeleteArgs = {
 export type MutationPublicDashboardFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationPulseConfigureArgs = {
+  input: PulseConfigurationInput;
 };
 
 
@@ -24739,6 +24751,230 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   playground_enabled: Scalars['Boolean']['output'];
 };
 
+export type PulseBenchmark = {
+  __typename?: 'PulseBenchmark';
+  entries: Array<PulseBenchmarkEntry>;
+  metrics: Array<PulseBenchmarkMetric>;
+  period: PulsePeriod;
+  readable: Scalars['Boolean']['output'];
+  region_bucket?: Maybe<PulseRegionBucket>;
+  sector_bucket?: Maybe<PulseSectorBucket>;
+  sector_platforms_bucket?: Maybe<Scalars['String']['output']>;
+  unavailable_reason?: Maybe<PulseUnavailableReason>;
+};
+
+export type PulseBenchmarkEntry = {
+  __typename?: 'PulseBenchmarkEntry';
+  entity: StixCoreObject;
+  object_type: Scalars['String']['output'];
+  platform_count: Scalars['Int']['output'];
+  ratio: Scalars['Float']['output'];
+  sector_median: Scalars['Float']['output'];
+};
+
+export type PulseBenchmarkMetric = {
+  __typename?: 'PulseBenchmarkMetric';
+  event_kind: Scalars['String']['output'];
+  network_median?: Maybe<Scalars['Float']['output']>;
+  object_type: Scalars['String']['output'];
+  platform_count: Scalars['Int']['output'];
+  ratio?: Maybe<Scalars['Float']['output']>;
+  sector_median?: Maybe<Scalars['Float']['output']>;
+};
+
+export type PulseConfigurationInput = {
+  consent_version?: InputMaybe<Scalars['String']['input']>;
+  excluded_markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  mode: PulseMode;
+  region_bucket?: InputMaybe<PulseRegionBucket>;
+  scopes?: InputMaybe<Array<Scalars['String']['input']>>;
+  sector_bucket?: InputMaybe<PulseSectorBucket>;
+};
+
+export type PulseContributionDay = {
+  __typename?: 'PulseContributionDay';
+  day: Scalars['String']['output'];
+  objects: Scalars['Int']['output'];
+  records: Scalars['Int']['output'];
+};
+
+export type PulseContributionStats = {
+  __typename?: 'PulseContributionStats';
+  by_type: Array<PulseContributionType>;
+  days: Array<PulseContributionDay>;
+  last_error?: Maybe<Scalars['String']['output']>;
+  last_push_at?: Maybe<Scalars['DateTime']['output']>;
+  last_refresh_at?: Maybe<Scalars['DateTime']['output']>;
+  total_records: Scalars['Int']['output'];
+};
+
+export type PulseContributionType = {
+  __typename?: 'PulseContributionType';
+  entity_type: Scalars['String']['output'];
+  records: Scalars['Int']['output'];
+};
+
+export type PulseEntityInformation = {
+  __typename?: 'PulseEntityInformation';
+  id: Scalars['ID']['output'];
+  information?: Maybe<PulseInformation>;
+  readable: Scalars['Boolean']['output'];
+  sector_bucket?: Maybe<PulseSectorBucket>;
+  unavailable_reason?: Maybe<PulseUnavailableReason>;
+};
+
+export type PulseInformation = {
+  __typename?: 'PulseInformation';
+  community_uniqueness?: Maybe<Scalars['Int']['output']>;
+  first_seen_network?: Maybe<Scalars['DateTime']['output']>;
+  last_seen_network?: Maybe<Scalars['DateTime']['output']>;
+  platforms_bucket?: Maybe<Scalars['String']['output']>;
+  prevalence?: Maybe<PulsePrevalence>;
+  published: Scalars['Boolean']['output'];
+  sector_platforms_bucket?: Maybe<Scalars['String']['output']>;
+  sector_trend?: Maybe<PulseTrend>;
+  trend?: Maybe<PulseTrend>;
+  trend_series: Array<Scalars['Int']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export enum PulseMode {
+  Contribute = 'contribute',
+  ContributeAndRead = 'contribute_and_read',
+  Off = 'off'
+}
+
+export type PulseNetworkStatus = {
+  __typename?: 'PulseNetworkStatus';
+  contributors_bucket?: Maybe<Scalars['String']['output']>;
+  k_threshold?: Maybe<Scalars['Int']['output']>;
+  last_contribution_day?: Maybe<Scalars['String']['output']>;
+  reachable: Scalars['Boolean']['output'];
+  read_access?: Maybe<Scalars['Boolean']['output']>;
+  retention_months?: Maybe<Scalars['Int']['output']>;
+};
+
+export enum PulsePeriod {
+  Last_7Days = 'last_7_days',
+  Last_30Days = 'last_30_days',
+  Last_90Days = 'last_90_days'
+}
+
+export enum PulsePrevalence {
+  Common = 'common',
+  Rare = 'rare',
+  Uncommon = 'uncommon',
+  Widespread = 'widespread'
+}
+
+export type PulsePurgeResult = {
+  __typename?: 'PulsePurgeResult';
+  deleted_records: Scalars['Int']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
+export enum PulseRegionBucket {
+  Africa = 'africa',
+  AsiaPacific = 'asia_pacific',
+  Europe = 'europe',
+  Global = 'global',
+  LatinAmerica = 'latin_america',
+  MiddleEast = 'middle_east',
+  NorthAmerica = 'north_america',
+  Undisclosed = 'undisclosed'
+}
+
+export enum PulseSectorBucket {
+  Defense = 'defense',
+  EducationResearch = 'education_research',
+  EnergyUtilities = 'energy_utilities',
+  Finance = 'finance',
+  Government = 'government',
+  Healthcare = 'healthcare',
+  Manufacturing = 'manufacturing',
+  NonProfit = 'non_profit',
+  Other = 'other',
+  RetailConsumer = 'retail_consumer',
+  Technology = 'technology',
+  Telecommunications = 'telecommunications',
+  Transportation = 'transportation',
+  Undisclosed = 'undisclosed'
+}
+
+export type PulseSettings = {
+  __typename?: 'PulseSettings';
+  available_scopes: Array<Scalars['String']['output']>;
+  consent_accepted_version?: Maybe<Scalars['String']['output']>;
+  consent_date?: Maybe<Scalars['DateTime']['output']>;
+  consent_user_name?: Maybe<Scalars['String']['output']>;
+  consent_version: Scalars['String']['output'];
+  contribution: PulseContributionStats;
+  enabled: Scalars['Boolean']['output'];
+  excluded_markings: Array<MarkingDefinition>;
+  forced_excluded_markings: Array<MarkingDefinition>;
+  hub_registered: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  mode: PulseMode;
+  network: PulseNetworkStatus;
+  readable: Scalars['Boolean']['output'];
+  region_bucket?: Maybe<PulseRegionBucket>;
+  scopes: Array<Scalars['String']['output']>;
+  sector_bucket?: Maybe<PulseSectorBucket>;
+  suggested_region_bucket: PulseRegionBucket;
+  suggested_sector_bucket: PulseSectorBucket;
+};
+
+export type PulseStatus = {
+  __typename?: 'PulseStatus';
+  enabled: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  mode: PulseMode;
+  readable: Scalars['Boolean']['output'];
+  region_bucket?: Maybe<PulseRegionBucket>;
+  scopes: Array<Scalars['String']['output']>;
+  sector_bucket?: Maybe<PulseSectorBucket>;
+};
+
+export enum PulseTrend {
+  Falling = 'falling',
+  Rising = 'rising',
+  Stable = 'stable'
+}
+
+export type PulseTrending = {
+  __typename?: 'PulseTrending';
+  day?: Maybe<Scalars['String']['output']>;
+  entries: Array<PulseTrendingEntry>;
+  network_items_count: Scalars['Int']['output'];
+  period: PulsePeriod;
+  readable: Scalars['Boolean']['output'];
+  region_bucket?: Maybe<PulseRegionBucket>;
+  sector_bucket?: Maybe<PulseSectorBucket>;
+  unavailable_reason?: Maybe<PulseUnavailableReason>;
+};
+
+export type PulseTrendingEntry = {
+  __typename?: 'PulseTrendingEntry';
+  entity: StixCoreObject;
+  first_seen_network: Scalars['DateTime']['output'];
+  growth: Scalars['Float']['output'];
+  object_type: Scalars['String']['output'];
+  platforms_bucket: Scalars['String']['output'];
+  prevalence: PulsePrevalence;
+  trend: PulseTrend;
+};
+
+export enum PulseUnavailableReason {
+  ContributionRequired = 'contribution_required',
+  EnterpriseEditionRequired = 'enterprise_edition_required',
+  Excluded = 'excluded',
+  HubUnreachable = 'hub_unreachable',
+  NotEnabled = 'not_enabled',
+  NotRegistered = 'not_registered',
+  OutOfScope = 'out_of_scope',
+  RateLimited = 'rate_limited'
+}
+
 export type Query = {
   __typename?: 'Query';
   about?: Maybe<AppInfo>;
@@ -25016,6 +25252,11 @@ export type Query = {
   publicStixRelationshipsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixRelationshipsNumber?: Maybe<Number>;
+  pulseBenchmark: PulseBenchmark;
+  pulseEntity: PulseEntityInformation;
+  pulseSettings: PulseSettings;
+  pulseStatus: PulseStatus;
+  pulseTrending: PulseTrending;
   rabbitMQMetrics?: Maybe<RabbitMqMetrics>;
   redisStreamInfo?: Maybe<RedisStreamInfo>;
   region?: Maybe<Region>;
@@ -27078,6 +27319,25 @@ export type QueryPublicStixRelationshipsNumberArgs = {
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPulseBenchmarkArgs = {
+  period: PulsePeriod;
+};
+
+
+export type QueryPulseEntityArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPulseTrendingArgs = {
+  entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  period: PulsePeriod;
+  region_bucket?: InputMaybe<PulseRegionBucket>;
+  sector_bucket?: InputMaybe<PulseSectorBucket>;
 };
 
 
@@ -36364,6 +36624,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -36931,6 +37192,7 @@ export type TriggerEdge = {
 export enum TriggerEventType {
   Create = 'create',
   Delete = 'delete',
+  PulseTrending = 'pulse_trending',
   Update = 'update'
 }
 
@@ -38192,6 +38454,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
+  pulse?: Maybe<PulseInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -41336,6 +41599,28 @@ export type ResolversTypes = ResolversObject<{
   PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   PublicProvider: ResolverTypeWrapper<PublicProvider>;
   PublicSettings: ResolverTypeWrapper<Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversTypes['Theme']> }>;
+  PulseBenchmark: ResolverTypeWrapper<Omit<PulseBenchmark, 'entries'> & { entries: Array<ResolversTypes['PulseBenchmarkEntry']> }>;
+  PulseBenchmarkEntry: ResolverTypeWrapper<Omit<PulseBenchmarkEntry, 'entity'> & { entity: ResolversTypes['StixCoreObject'] }>;
+  PulseBenchmarkMetric: ResolverTypeWrapper<PulseBenchmarkMetric>;
+  PulseConfigurationInput: PulseConfigurationInput;
+  PulseContributionDay: ResolverTypeWrapper<PulseContributionDay>;
+  PulseContributionStats: ResolverTypeWrapper<PulseContributionStats>;
+  PulseContributionType: ResolverTypeWrapper<PulseContributionType>;
+  PulseEntityInformation: ResolverTypeWrapper<PulseEntityInformation>;
+  PulseInformation: ResolverTypeWrapper<PulseInformation>;
+  PulseMode: PulseMode;
+  PulseNetworkStatus: ResolverTypeWrapper<PulseNetworkStatus>;
+  PulsePeriod: PulsePeriod;
+  PulsePrevalence: PulsePrevalence;
+  PulsePurgeResult: ResolverTypeWrapper<PulsePurgeResult>;
+  PulseRegionBucket: PulseRegionBucket;
+  PulseSectorBucket: PulseSectorBucket;
+  PulseSettings: ResolverTypeWrapper<PulseSettingsOutput>;
+  PulseStatus: ResolverTypeWrapper<PulseStatus>;
+  PulseTrend: PulseTrend;
+  PulseTrending: ResolverTypeWrapper<Omit<PulseTrending, 'entries'> & { entries: Array<ResolversTypes['PulseTrendingEntry']> }>;
+  PulseTrendingEntry: ResolverTypeWrapper<Omit<PulseTrendingEntry, 'entity'> & { entity: ResolversTypes['StixCoreObject'] }>;
+  PulseUnavailableReason: PulseUnavailableReason;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   QueryAttribute: QueryAttribute;
   QueryTask: ResolverTypeWrapper<Omit<QueryTask, 'initiator' | 'work'> & { initiator?: Maybe<ResolversTypes['Creator']>, work?: Maybe<ResolversTypes['Work']> }>;
@@ -42418,6 +42703,21 @@ export type ResolversParentTypes = ResolversObject<{
   PublicDistribution: Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   PublicProvider: PublicProvider;
   PublicSettings: Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversParentTypes['Theme']> };
+  PulseBenchmark: Omit<PulseBenchmark, 'entries'> & { entries: Array<ResolversParentTypes['PulseBenchmarkEntry']> };
+  PulseBenchmarkEntry: Omit<PulseBenchmarkEntry, 'entity'> & { entity: ResolversParentTypes['StixCoreObject'] };
+  PulseBenchmarkMetric: PulseBenchmarkMetric;
+  PulseConfigurationInput: PulseConfigurationInput;
+  PulseContributionDay: PulseContributionDay;
+  PulseContributionStats: PulseContributionStats;
+  PulseContributionType: PulseContributionType;
+  PulseEntityInformation: PulseEntityInformation;
+  PulseInformation: PulseInformation;
+  PulseNetworkStatus: PulseNetworkStatus;
+  PulsePurgeResult: PulsePurgeResult;
+  PulseSettings: PulseSettingsOutput;
+  PulseStatus: PulseStatus;
+  PulseTrending: Omit<PulseTrending, 'entries'> & { entries: Array<ResolversParentTypes['PulseTrendingEntry']> };
+  PulseTrendingEntry: Omit<PulseTrendingEntry, 'entity'> & { entity: ResolversParentTypes['StixCoreObject'] };
   Query: Record<PropertyKey, never>;
   QueryAttribute: QueryAttribute;
   QueryTask: Omit<QueryTask, 'initiator' | 'work'> & { initiator?: Maybe<ResolversParentTypes['Creator']>, work?: Maybe<ResolversParentTypes['Work']> };
@@ -43132,6 +43432,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<AttackPatternPirInformationArgs, 'pirId'>>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AttackPatternReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -47074,6 +47375,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   pattern_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndicatorPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IndicatorPirInformationArgs, 'pirId'>>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IndicatorReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -47658,6 +47960,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IntrusionSetPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IntrusionSetReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -48223,6 +48526,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwarePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<MalwarePirInformationArgs, 'pirId'>>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MalwareReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -49036,6 +49340,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   publicDashboardAdd?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardAddArgs, 'input'>>;
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
+  pulseConfigure?: Resolver<ResolversTypes['PulseSettings'], ParentType, ContextType, RequireFields<MutationPulseConfigureArgs, 'input'>>;
+  pulsePurge?: Resolver<ResolversTypes['PulsePurgeResult'], ParentType, ContextType>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
@@ -50625,6 +50931,143 @@ export type PublicSettingsResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PulseBenchmarkResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseBenchmark'] = ResolversParentTypes['PulseBenchmark']> = ResolversObject<{
+  entries?: Resolver<Array<ResolversTypes['PulseBenchmarkEntry']>, ParentType, ContextType>;
+  metrics?: Resolver<Array<ResolversTypes['PulseBenchmarkMetric']>, ParentType, ContextType>;
+  period?: Resolver<ResolversTypes['PulsePeriod'], ParentType, ContextType>;
+  readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
+  sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
+  sector_platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unavailable_reason?: Resolver<Maybe<ResolversTypes['PulseUnavailableReason']>, ParentType, ContextType>;
+}>;
+
+export type PulseBenchmarkEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseBenchmarkEntry'] = ResolversParentTypes['PulseBenchmarkEntry']> = ResolversObject<{
+  entity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
+  object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platform_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ratio?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  sector_median?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type PulseBenchmarkMetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseBenchmarkMetric'] = ResolversParentTypes['PulseBenchmarkMetric']> = ResolversObject<{
+  event_kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  network_median?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platform_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ratio?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  sector_median?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
+export type PulseContributionDayResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseContributionDay'] = ResolversParentTypes['PulseContributionDay']> = ResolversObject<{
+  day?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objects?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  records?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type PulseContributionStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseContributionStats'] = ResolversParentTypes['PulseContributionStats']> = ResolversObject<{
+  by_type?: Resolver<Array<ResolversTypes['PulseContributionType']>, ParentType, ContextType>;
+  days?: Resolver<Array<ResolversTypes['PulseContributionDay']>, ParentType, ContextType>;
+  last_error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_push_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_refresh_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  total_records?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type PulseContributionTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseContributionType'] = ResolversParentTypes['PulseContributionType']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  records?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type PulseEntityInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseEntityInformation'] = ResolversParentTypes['PulseEntityInformation']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  information?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
+  readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
+  unavailable_reason?: Resolver<Maybe<ResolversTypes['PulseUnavailableReason']>, ParentType, ContextType>;
+}>;
+
+export type PulseInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseInformation'] = ResolversParentTypes['PulseInformation']> = ResolversObject<{
+  community_uniqueness?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  first_seen_network?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_seen_network?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  prevalence?: Resolver<Maybe<ResolversTypes['PulsePrevalence']>, ParentType, ContextType>;
+  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  sector_platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sector_trend?: Resolver<Maybe<ResolversTypes['PulseTrend']>, ParentType, ContextType>;
+  trend?: Resolver<Maybe<ResolversTypes['PulseTrend']>, ParentType, ContextType>;
+  trend_series?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type PulseNetworkStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseNetworkStatus'] = ResolversParentTypes['PulseNetworkStatus']> = ResolversObject<{
+  contributors_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  k_threshold?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_contribution_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reachable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  read_access?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  retention_months?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+}>;
+
+export type PulsePurgeResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulsePurgeResult'] = ResolversParentTypes['PulsePurgeResult']> = ResolversObject<{
+  deleted_records?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type PulseSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseSettings'] = ResolversParentTypes['PulseSettings']> = ResolversObject<{
+  available_scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  consent_accepted_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  consent_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  consent_user_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  consent_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  contribution?: Resolver<ResolversTypes['PulseContributionStats'], ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  excluded_markings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
+  forced_excluded_markings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
+  hub_registered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['PulseMode'], ParentType, ContextType>;
+  network?: Resolver<ResolversTypes['PulseNetworkStatus'], ParentType, ContextType>;
+  readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
+  scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
+  suggested_region_bucket?: Resolver<ResolversTypes['PulseRegionBucket'], ParentType, ContextType>;
+  suggested_sector_bucket?: Resolver<ResolversTypes['PulseSectorBucket'], ParentType, ContextType>;
+}>;
+
+export type PulseStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseStatus'] = ResolversParentTypes['PulseStatus']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['PulseMode'], ParentType, ContextType>;
+  readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
+  scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
+}>;
+
+export type PulseTrendingResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseTrending'] = ResolversParentTypes['PulseTrending']> = ResolversObject<{
+  day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entries?: Resolver<Array<ResolversTypes['PulseTrendingEntry']>, ParentType, ContextType>;
+  network_items_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  period?: Resolver<ResolversTypes['PulsePeriod'], ParentType, ContextType>;
+  readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
+  sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
+  unavailable_reason?: Resolver<Maybe<ResolversTypes['PulseUnavailableReason']>, ParentType, ContextType>;
+}>;
+
+export type PulseTrendingEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseTrendingEntry'] = ResolversParentTypes['PulseTrendingEntry']> = ResolversObject<{
+  entity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
+  first_seen_network?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  growth?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platforms_bucket?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  prevalence?: Resolver<ResolversTypes['PulsePrevalence'], ParentType, ContextType>;
+  trend?: Resolver<ResolversTypes['PulseTrend'], ParentType, ContextType>;
+}>;
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
@@ -50899,6 +51342,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsNumberArgs, 'uriKey' | 'widgetId'>>;
+  pulseBenchmark?: Resolver<ResolversTypes['PulseBenchmark'], ParentType, ContextType, RequireFields<QueryPulseBenchmarkArgs, 'period'>>;
+  pulseEntity?: Resolver<ResolversTypes['PulseEntityInformation'], ParentType, ContextType, RequireFields<QueryPulseEntityArgs, 'id'>>;
+  pulseSettings?: Resolver<ResolversTypes['PulseSettings'], ParentType, ContextType>;
+  pulseStatus?: Resolver<ResolversTypes['PulseStatus'], ParentType, ContextType>;
+  pulseTrending?: Resolver<ResolversTypes['PulseTrending'], ParentType, ContextType, RequireFields<QueryPulseTrendingArgs, 'period'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
   redisStreamInfo?: Resolver<Maybe<ResolversTypes['RedisStreamInfo']>, ParentType, ContextType>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<QueryRegionArgs, 'id'>>;
@@ -53727,6 +54175,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ToolPirInformationArgs, 'pirId'>>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ToolReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -54314,6 +54763,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<VulnerabilityPirInformationArgs, 'pirId'>>;
+  pulse?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<VulnerabilityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -55377,6 +55827,20 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PublicDistribution?: PublicDistributionResolvers<ContextType>;
   PublicProvider?: PublicProviderResolvers<ContextType>;
   PublicSettings?: PublicSettingsResolvers<ContextType>;
+  PulseBenchmark?: PulseBenchmarkResolvers<ContextType>;
+  PulseBenchmarkEntry?: PulseBenchmarkEntryResolvers<ContextType>;
+  PulseBenchmarkMetric?: PulseBenchmarkMetricResolvers<ContextType>;
+  PulseContributionDay?: PulseContributionDayResolvers<ContextType>;
+  PulseContributionStats?: PulseContributionStatsResolvers<ContextType>;
+  PulseContributionType?: PulseContributionTypeResolvers<ContextType>;
+  PulseEntityInformation?: PulseEntityInformationResolvers<ContextType>;
+  PulseInformation?: PulseInformationResolvers<ContextType>;
+  PulseNetworkStatus?: PulseNetworkStatusResolvers<ContextType>;
+  PulsePurgeResult?: PulsePurgeResultResolvers<ContextType>;
+  PulseSettings?: PulseSettingsResolvers<ContextType>;
+  PulseStatus?: PulseStatusResolvers<ContextType>;
+  PulseTrending?: PulseTrendingResolvers<ContextType>;
+  PulseTrendingEntry?: PulseTrendingEntryResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   QueryTask?: QueryTaskResolvers<ContextType>;
   QueueArguments?: QueueArgumentsResolvers<ContextType>;

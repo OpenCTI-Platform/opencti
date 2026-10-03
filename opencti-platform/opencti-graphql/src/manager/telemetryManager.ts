@@ -65,6 +65,7 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { isPulseContributing, readPulseSettings } from '../modules/xtm/pulse/pulse-settings';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -155,6 +156,8 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_RECORDS = 'threatPulseRecordsCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS = 'threatPulseLookupsCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -208,6 +211,17 @@ export const addDisseminationCount = async () => {
 export const addNlqQueryCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1)
     .catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
+};
+// Fire-and-forget: a telemetry failure must never break a Threat Pulse contribution or lookup.
+export const addThreatPulseRecordsCount = (count: number) => {
+  if (count <= 0) return;
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_RECORDS, count)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse records count to telemetry', { reason }));
+};
+export const addThreatPulseLookupsCount = (count: number) => {
+  if (count <= 0) return;
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS, count)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse lookups count to telemetry', { reason }));
 };
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
@@ -472,6 +486,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsChatbotCguAccepted(settings.filigran_chatbot_ai_cgu_status === 'enabled' ? 1 : 0);
     manager.setIsOrganizationSegregationEnabled(settings.platform_organization ? 1 : 0);
     manager.setIsXtmHubRegistered(settings.xtm_hub_registration_status === 'registered' ? 1 : 0);
+    manager.setIsThreatPulseEnabled(isPulseContributing(readPulseSettings(settings)) ? 1 : 0);
     // endregion
 
     // region Cluster information
@@ -726,6 +741,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDisseminationCount(disseminationCountInRedis);
     const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
     manager.setNlqQueryCount(nlqQueryCountInRedis);
+    const threatPulseRecordsCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_THREAT_PULSE_RECORDS);
+    manager.setThreatPulseRecordsCount(threatPulseRecordsCountInRedis);
+    const threatPulseLookupsCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS);
+    manager.setThreatPulseLookupsCount(threatPulseLookupsCountInRedis);
     const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS);
     manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
     const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);

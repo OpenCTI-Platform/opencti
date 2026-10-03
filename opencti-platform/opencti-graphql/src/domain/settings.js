@@ -35,6 +35,7 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
+import { PULSE_SETTINGS_KEYS } from '../modules/xtm/pulse/pulse-types';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -304,6 +305,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     .filter((key) => !allowedKeys.has(key)))];
   if (!hasBypassCapability && unauthorizedKeys.length > 0) {
     throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
+  }
+  // Threat Pulse settings carry a consent and an audit trail: they only change through pulseConfigure.
+  const pulseKeys = input.map((i) => i.key).filter((key) => PULSE_SETTINGS_KEYS.includes(key));
+  if (pulseKeys.length > 0) {
+    throw ForbiddenAccess('Threat Pulse settings can only be changed through the Threat Pulse configuration.', { pulseKeys });
   }
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
