@@ -10,7 +10,7 @@ This page explains what the detectors find, how a proposal is scored, how to rev
 
 ## What is knowledge curation?
 
-Knowledge curation lives in three places: **Data > Curation**, the data-quality hub, with the **Inbox**, **Merges** and **Knowledge health** tabs; the **Changes** tab of every entity, whose **Merges** view lists the merges the entity took part in; and **Settings > Customization > Curation**, with the curation **Settings** and **Policies** tabs. A **Knowledge health** dashboard template and three dashboard widgets show the score on any dashboard. It relies on the following concepts:
+Knowledge curation lives in three places: **Data > Curation**, the data-quality hub, with the **Inbox**, **Merges** and **Knowledge health** tabs (next to the **Conflicts** and **Stale knowledge** tabs described in [Provenance](provenance.md)); the **Changes** tab of every entity, whose **Merges** view lists the merges the entity took part in; and **Settings > Customization > Curation**, with the curation **Settings** and **Policies** tabs. A **Knowledge health** dashboard template and three dashboard widgets show the score on any dashboard. It relies on the following concepts:
 
 | Concept          | Description                                                                                                                                                                       |
 |:-----------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
