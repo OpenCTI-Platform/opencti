@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
@@ -7,9 +6,9 @@ import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/
 
 /**
  * Visual regression of the graph surfaces, on constant data and deterministic layouts so that
- * the same build draws the same pixels. Baselines are Linux renderings, taken by the CI runner:
- * a missing baseline is written to the test output (uploaded with the CI artifacts) for review
- * instead of failing, then committed next to this file.
+ * the same build draws the same pixels. Baselines are Linux renderings of the CI runner, committed
+ * in `graphVisual.spec.ts-snapshots/`: a missing or different baseline fails, and the actual
+ * rendering is uploaded with the CI artifacts for review.
  */
 test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
   test.describe.configure({ mode: 'serial' });
@@ -24,16 +23,9 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
   });
 
   const expectGraphScreenshot = async (page: Page, target: Locator, name: string, mask: Locator[] = []) => {
-    const info = test.info();
-    const options = { animations: 'disabled' as const, mask, maxDiffPixelRatio: 0.01 };
-    if (fs.existsSync(info.snapshotPath(name, { kind: 'screenshot' }))) {
-      await expect(target).toHaveScreenshot(name, options);
-    } else {
-      await target.screenshot({ ...options, path: info.outputPath(name) });
-      info.annotations.push({ type: 'missing visual baseline', description: name });
-    }
-    // The documentation shows the same states, taken on the whole page.
-    await page.screenshot({ path: info.outputPath(`page-${name}`), animations: 'disabled', mask });
+    await expect(target).toHaveScreenshot(name, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
+    // The documentation shows the same states on the whole page, details panel included.
+    await page.screenshot({ path: test.info().outputPath(`page-${name}`), animations: 'disabled' });
   };
 
   const arrangeByTier = async (graph: GraphPage, minNodes: number) => {

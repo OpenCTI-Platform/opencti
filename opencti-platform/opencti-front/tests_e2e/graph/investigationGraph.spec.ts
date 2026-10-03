@@ -51,7 +51,12 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     expect((await graph.nodeIds()).length).toBeGreaterThan(initialCount);
 
     await graph.getToolbarButton('Restore the state of the graphic before the last expansion').click();
+    const rollbackDialog = page.getByRole('dialog', { name: /Revert to Pre-Expansion State/ });
+    await expect(rollbackDialog).toBeVisible();
+    await rollbackDialog.getByRole('button', { name: 'Validate' }).click();
+    await expect(rollbackDialog).toBeHidden();
     await expect.poll(async () => (await graph.nodeIds()).length).toBe(initialCount);
+    expect(await graph.nodeIds()).not.toContain(fixture.ipv4.id);
   });
 
   test('opens the expansion with a double click on a node', async ({ page }) => {
