@@ -98,6 +98,13 @@ const WidgetCreationPerspective = () => {
         sort_by: type === 'bubble' ? 'volume_total' : null,
         sort_mode: type === 'number' || type === 'line' ? 'avg' : 'desc',
       } : {}),
+      // Scorecard metrics mean nothing to the other perspectives: back to the defaults of a new widget
+      ...(n.perspective === 'sources' && perspective !== 'sources' ? {
+        attribute: 'entity_type',
+        field: undefined,
+        sort_by: 'created_at',
+        sort_mode: 'desc',
+      } : {}),
     }
     ));
     setConfigWidget({
