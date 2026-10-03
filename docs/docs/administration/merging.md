@@ -25,7 +25,7 @@ A common concern when merging entities lies in the potential loss of information
 
 ## Important considerations
 
-- **Reversible during a retention window only:** Every merge is recorded in a merge record, and can be reverted from **Data > Curation > Merge history** during the merge record retention window (365 days by default), as long as the merged entity still exists. Past that window, or for merges without a merge record (for example merges done in a draft or before merge records existed), a merge is irreversible. Careful consideration and validation remain crucial before initiating the merge process. See [Knowledge curation](../usage/knowledge-curation.md#reversible-merges-and-unmerge).
+- **Reversible during a retention window only:** Every merge is recorded in a merge record, and can be reverted from **Data > Curation > Merges** or from the **Merges** view of the entity's **Changes** tab during the merge record retention window (365 days by default), as long as the merged entity still exists. Past that window, or for merges without a merge record (for example merges done in a draft or before merge records existed), a merge is irreversible. Careful consideration and validation remain crucial before initiating the merge process. See [Knowledge curation](../usage/knowledge-curation.md#reversible-merges-and-unmerge).
 - **Loss of fields in aliased entities:** Fields, such as descriptions, in aliased entities - entities that have not been chosen as the main - will be lost during the merge (an unmerge restores them). Ensuring that essential information is captured in the primary entity is crucial to prevent data loss.
 
 

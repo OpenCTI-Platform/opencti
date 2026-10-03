@@ -10,7 +10,7 @@ This page explains what the detectors find, how a proposal is scored, how to rev
 
 ## What is knowledge curation?
 
-Knowledge curation is available in **Data > Curation**, organized in five tabs: **Inbox**, **Merge history**, **Policies**, **Knowledge Health** and **Settings**. It relies on the following concepts:
+Knowledge curation lives in three places: **Data > Curation**, the data-quality hub, with the **Inbox**, **Merges** and **Knowledge health** tabs; the **Changes** tab of every entity, whose **Merges** view lists the merges the entity took part in; and **Settings > Customization > Curation**, with the curation **Settings** and **Policies** tabs. A **Knowledge health** dashboard template and three dashboard widgets show the score on any dashboard. It relies on the following concepts:
 
 | Concept          | Description                                                                                                                                                                       |
 |:-----------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -179,7 +179,7 @@ A reverted proposal is never proposed again. Every decision (accept, reject, rev
 
 Every merge is recorded in a **merge record**, whatever triggered it: the Merge action of **Data > Entities**, the API, the platform deduplication at creation, a data consistency operation or a curation proposal. Merges done inside a [draft](draftWorkspaces.md) are not recorded: they are reverted with the draft.
 
-Before the merge runs, the merge record snapshots the surviving entity and every merged entity (attributes, references such as markings, labels or author, relationships and files), along with what each merged entity brings to the survivor. Go to **Data > Curation > Merge history** to see the merge records: merged entity, merged sources, status, merged by, date, reversible until, and number of relationships redirected. Opening a record shows each source with its aliases and its relationship counts, and the alias provenance: for each source, its name, its aliases and the relationships it brought to the merged entity.
+Before the merge runs, the merge record snapshots the surviving entity and every merged entity (attributes, references such as markings, labels or author, relationships and files), along with what each merged entity brings to the survivor. Go to **Data > Curation > Merges** to see every merge record, or open the **Changes** tab of an entity and its **Merges** view to see the merges the entity took part in, as the surviving entity or as a merged one. A merge record shows: merged entity, merged sources, status, merged by, date, reversible until, and number of relationships redirected. Opening a record shows each source with its aliases and its relationship counts, and the alias provenance: for each source, its name, its aliases and the relationships it brought to the merged entity.
 
 | Status               | Meaning                                                                                                   |
 |:---------------------|:----------------------------------------------------------------------------------------------------------|
@@ -208,9 +208,9 @@ To revert a merge, open its record and click **Unmerge**, for all the sources or
 
 !!! tip "Enterprise edition"
 
-    Curation policies are available under the **OpenCTI Enterprise Edition** licence. Creating, editing, deleting, testing and applying a policy requires the `Manage parameters` capability.
+    Curation policies are available under the **OpenCTI Enterprise Edition** licence. Creating, editing, deleting, testing and applying a policy requires the `Manage customization` capability.
 
-A curation policy applies eligible proposals automatically. Create policies in **Data > Curation > Policies**:
+A curation policy applies eligible proposals automatically. Create policies in **Settings > Customization > Curation**, tab **Policies**:
 
 | Field                                  | Description                                                                                                                                                                                          |
 |:---------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -247,13 +247,13 @@ The enabled policies run automatically every 15 minutes, with the rights of the 
 
     - A merge is never applied automatically between subjects that do not carry exactly the same markings, or that are not shared with exactly the same organizations.
     - Choices that need a human are never applied automatically: which attribution to keep in an attribution conflict, and split (unmerge) proposals.
-    - Every automatic apply is recorded in the activity log and reversible like any accepted proposal: revert it from the inbox, or unmerge it from the merge history.
+    - Every automatic apply is recorded in the activity log and reversible like any accepted proposal: revert it from the inbox, or unmerge it from its merge record (**Data > Curation > Merges**).
 
 ### Read the Knowledge Health score
 
-Go to **Data > Curation > Knowledge Health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. The home dashboard displays a Knowledge Health badge.
+Go to **Data > Curation > Knowledge health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. To follow the score on a dashboard, create one from the built-in template (**Dashboards**, **Create from template**, **Knowledge health**), or add the **Knowledge Health score**, **Knowledge Health trend** and **Open curation proposals by kind** widgets to an existing dashboard. These widgets take no filters: the score covers every curated entity of the platform.
 
-The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage parameters` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
+The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage customization` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
 
 | Component          | What it measures                                                                                                                       | Weight | Scores 0 when             |
 |:-------------------|:---------------------------------------------------------------------------------------------------------------------------------------|:-------|:--------------------------|
@@ -275,7 +275,7 @@ With the Enterprise Edition and XTM One, the **OpenCTI Knowledge Health Analyst*
 
 Field authority lets you decide which source wins on a given attribute, whatever the confidence of the data. It is a **merge policy**, consulted when incoming data updates an existing entity (the [update behavior of deduplication](deduplication.md#update-behavior)); it is **not an ingestion transformation**: it never rewrites incoming data, and never creates or drops objects.
 
-Configure it in **Data > Curation > Settings**: enable field authority, then add rules. A rule targets one attribute of one entity type (for example `description` of `Intrusion-Set`) and lists sources in order, the first one being the most authoritative. A source is either an **author** (the identity set as author of the data) or a **connector**.
+Configure it in **Settings > Customization > Curation**, tab **Settings**: enable field authority, then add rules. A rule targets one attribute of one entity type (for example `description` of `Intrusion-Set`) and lists sources in order, the first one being the most authoritative. A source is either an **author** (the identity set as author of the data) or a **connector**.
 
 When incoming data matches an existing entity, for each attribute that has a rule:
 
@@ -330,7 +330,7 @@ The [ImportDocumentAI connector](https://github.com/OpenCTI-Platform/connectors/
 
 ### Configure curation
 
-Go to **Data > Curation > Settings** (changing the settings requires the `Manage parameters` capability):
+Go to **Settings > Customization > Curation**, tab **Settings** (changing the settings requires the `Manage customization` capability):
 
 | Setting                         | Default                                                                                                                                  | Description                                                                                                                                                                                                       |
 |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -367,11 +367,11 @@ Platform administrators can tune the manager schedules and the merge record limi
 
 | Action                                                                                           | Required capability                                    |
 |:-------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
-| See the proposals, the merge history, the policies and the Knowledge Health                      | `Access knowledge`                                     |
+| See the proposals, the merges, the policies and the Knowledge Health                             | `Access knowledge`                                     |
 | Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
-| Accept or revert a `merge` or `split` proposal, unmerge from the merge history                   | `Merge knowledge`                                      |
+| Accept or revert a `merge` or `split` proposal, unmerge from a merge record                      | `Merge knowledge`                                      |
 | Accept an attribution conflict (deletes the attributions not kept)                               | `Delete knowledge`                                     |
-| Change the settings, run a scan now, refresh the Knowledge Health, manage and apply policies     | `Manage parameters`                                    |
+| Change the settings, run a scan now, refresh the Knowledge Health, manage and apply policies     | `Manage customization`                                 |
 
 See [Users and RBAC](../administration/users.md) for the capabilities.
 
@@ -386,7 +386,7 @@ Two connectors import the same ransomware: the first one creates the Malware `Cl
     Its confidence is `1 - (1 - 0.75) x (1 - 0.15) = 0.79`, inside the default ambiguous band. Had the second connector named it `Clop`, both names would have had the same full canonical form (weight 0.92) and the confidence would have reached `1 - (1 - 0.92) x (1 - 0.15) = 0.93`, above the band.
 2. With the Enterprise Edition and adjudication enabled, the OpenCTI Curator receives the proposal and answers `merge`, with a rationale citing the evidence and naming `Cl0p` as the entity to keep. The adjudication appears on the proposal.
 3. An analyst opens the proposal, compares the two entities side by side, keeps `Cl0p` as the surviving entity and clicks **Accept**. `Clop Ransomware` becomes an alias of `Cl0p`, and its relationships move to `Cl0p`.
-4. The merge record appears in **Merge history**, reversible for 365 days. If a later report shows that the two names designated different families, the analyst clicks **Unmerge**: `Clop Ransomware` comes back with its original identifiers, aliases and relationships, and the proposal becomes `reverted`, so it is never proposed again.
+4. The merge record appears in **Data > Curation > Merges** and in the **Merges** view of the **Changes** tab of `Cl0p`, reversible for 365 days. If a later report shows that the two names designated different families, the analyst clicks **Unmerge**: `Clop Ransomware` comes back with its original identifiers, aliases and relationships, and the proposal becomes `reverted`, so it is never proposed again.
 5. The next Knowledge Health snapshot counts one accepted proposal and one merge, and the duplicate estimate decreases.
 
 To let such merges happen without an analyst, an administrator creates a policy covering `merge` proposals for `Malware` and `Tool`, with a threshold of 0.9 and **Require adjudication agreement** enabled, runs a **Dry run** to check the eligible proposals and the exclusion reasons, then enables it.
