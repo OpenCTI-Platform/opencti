@@ -15,8 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
+import { FilterMode } from '../../generated/graphql';
 import { patchAttribute } from '../../database/middleware';
-import { storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { publishCacheResetEvent } from '../../database/redis';
 import { logApp } from '../../config/conf';
@@ -119,8 +120,10 @@ export const resolveFeedQuarantineDraftId = async (context: AuthContext, ingesti
 export const renewQuarantinesOfClosingDraft = async (context: AuthContext, draftId: string) => {
   // A draft can be validated from inside it: the renewal always works in the live knowledge
   const liveContext: AuthContext = { ...context, draft_context: '' };
-  const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(liveContext, SYSTEM_USER, ENTITY_TYPE_SOURCE);
-  const quarantined = sources.filter((source) => source.quarantined === true && source.quarantine_draft_id === draftId);
+  // Read from the store: a cache not yet reset on this node must never let a quarantine lapse
+  const filters = { mode: FilterMode.And, filters: [{ key: ['quarantined'], values: ['true'] }], filterGroups: [] };
+  const sources = await fullEntitiesList<BasicStoreEntitySource>(liveContext, SYSTEM_USER, [ENTITY_TYPE_SOURCE], { filters, noFiltersChecking: true });
+  const quarantined = sources.filter((source) => source.quarantine_draft_id === draftId);
   for (let i = 0; i < quarantined.length; i += 1) {
     await renewQuarantineDraft(liveContext, quarantined[i].internal_id, draftId);
   }

@@ -6,11 +6,14 @@ import { runFullComputation } from '../../../../src/manager/sourceIntelligenceMa
 import { getSourceIntelligenceSettings, listAllSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { deleteScorecardsOfSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
-import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import { deleteElementById } from '../../../../src/database/middleware';
-import { fullEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../../src/types/store';
+import { deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftStatuses';
 
 const SOURCES_QUERY = gql`
   query sources($first: Int, $orderBy: SourcesOrdering, $orderMode: OrderingMode) {
@@ -453,6 +456,46 @@ describe('Source intelligence', () => {
     expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
     const after = await queryAsAdminWithSuccess({ query: USER_CONFIDENCE_QUERY, variables: { id: connectorUserId } });
     expect(after.data.user.user_confidence_level?.max_confidence ?? null).toBe(previousMaxConfidence);
+  });
+
+  it('should open a new quarantine draft when the current one is deleted', async () => {
+    // A source without connector user: the quarantine is carried by the draft only, no real user changes context
+    const { data } = await queryAsAdminWithSuccess({ query: SOURCES_QUERY, variables: { first: 100 } });
+    const target = data.sources.edges.map((edge: { node: any }) => edge.node).find((source: any) => source.source_kind !== 'connector');
+    expect(target).toBeDefined();
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'quarantine',
+      source_id: target.id,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-quarantine`,
+      name: 'Quarantine the test source into a draft',
+      rationale: 'Integration test',
+      payload: { target: 'ingestion_feed' },
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(1);
+    const recommendationId = created[0].internal_id;
+    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: recommendationId } });
+    expect(applied.data.applySourceRecommendation.status).toBe('applied');
+    const quarantined = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_SOURCE);
+    expect(quarantined?.quarantined).toBe(true);
+    const firstDraftId = quarantined?.quarantine_draft_id as string;
+    expect(firstDraftId).toBeTruthy();
+
+    await deleteDraftWorkspace(testContext, ADMIN_USER, firstDraftId);
+    const renewed = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_SOURCE);
+    expect(renewed?.quarantined).toBe(true);
+    const renewedDraftId = renewed?.quarantine_draft_id as string;
+    expect(renewedDraftId).toBeTruthy();
+    expect(renewedDraftId).not.toBe(firstDraftId);
+    const renewedDraft = await storeLoadById<BasicStoreEntityDraftWorkspace>(testContext, ADMIN_USER, renewedDraftId, ENTITY_TYPE_DRAFT_WORKSPACE);
+    expect(renewedDraft?.draft_status).toBe(DRAFT_STATUS_OPEN);
+
+    const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: recommendationId } });
+    expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+    const lifted = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_SOURCE);
+    expect(lifted?.quarantined).toBe(false);
+    expect(lifted?.quarantine_draft_id ?? null).toBeNull();
+    await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
   });
 
   it('should dismiss a recommendation and not propose it again during the cooldown', async () => {
