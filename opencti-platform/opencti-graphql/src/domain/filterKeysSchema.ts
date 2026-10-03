@@ -24,6 +24,7 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   GRAPH_DEGREE_FILTER,
+  FRESHNESS_DAYS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -375,6 +376,17 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       filterKey: IS_INFERRED_FILTER,
       type: 'boolean',
       label: 'Is inferred',
+      multiple: false,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+    });
+  }
+  if (isStixCoreObject(type) || isStixRelationshipExceptRef(type)) {
+    // Days since the last assertion of any source (computed from last_asserted_at)
+    filterDefinitionsMap.set(FRESHNESS_DAYS_FILTER, {
+      filterKey: FRESHNESS_DAYS_FILTER,
+      type: 'integer',
+      label: 'Freshness (days since last assertion)',
       multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [],

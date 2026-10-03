@@ -3,10 +3,12 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STI
 import { type AttributeDefinition, opinionsMetrics } from '../../schema/attribute-definition';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { graphMetricsAttribute } from '../graphAnalytics/graphAnalytics-attributes';
+import { provenanceAttributes } from '../provenance/provenance-attributes';
 
 const stixCoreObjectAttributes: Array<AttributeDefinition> = [
   opinionsMetrics,
   graphMetricsAttribute,
+  ...provenanceAttributes,
 ];
 
 schemaTypesDefinition.add(

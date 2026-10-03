@@ -1484,6 +1484,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
   platform_notifier_auto_trigger_assignee: Boolean!
+  platform_procedures_preservation: Boolean!
+  platform_procedures_description_policy: ProceduresDescriptionPolicy!
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
@@ -2613,6 +2615,9 @@ enum StixCoreObjectsOrdering {
   graph_cluster_size
   _score
   authorized_members_activation_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCoreObjectConnection {
@@ -2643,6 +2648,15 @@ interface StixCoreObject {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2720,6 +2734,9 @@ enum StixDomainObjectsOrdering {
   x_opencti_cvss_base_severity
   pir_score
   last_pir_score_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixDomainObjectConnection {
@@ -2748,6 +2765,15 @@ interface StixDomainObject {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2828,6 +2854,9 @@ enum AttackPatternsOrdering {
   objectMarking
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type AttackPatternConnection {
@@ -2857,6 +2886,15 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2991,6 +3029,9 @@ enum CampaignsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CampaignConnection {
@@ -3020,6 +3061,15 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3119,6 +3169,9 @@ enum ContainersOrdering {
   creator
   entity_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ContainerConnection {
@@ -3197,6 +3250,9 @@ enum NotesOrdering {
   note_types
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type NoteConnection {
@@ -3226,6 +3282,15 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3351,6 +3416,9 @@ enum ObservedDatasOrdering {
   objectMarking
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ObservedDataConnection {
@@ -3380,6 +3448,15 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3478,6 +3555,9 @@ enum OpinionsOrdering {
   confidence
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type OpinionConnection {
@@ -3507,6 +3587,15 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3623,6 +3712,9 @@ enum ReportsOrdering {
   report_types
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ReportConnection {
@@ -3652,6 +3744,15 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3758,6 +3859,9 @@ enum CoursesOfActionOrdering {
   objectMarking
   x_mitre_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CourseOfActionConnection {
@@ -3787,6 +3891,15 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3878,6 +3991,9 @@ enum IdentitiesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IdentityConnection {
@@ -4003,6 +4119,9 @@ enum IndividualsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IndividualConnection {
@@ -4032,6 +4151,15 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4132,6 +4260,9 @@ enum SectorsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SectorConnection {
@@ -4162,6 +4293,15 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4258,6 +4398,9 @@ enum SystemsOrdering {
   modified
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SystemConnection {
@@ -4287,6 +4430,15 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4392,6 +4544,9 @@ enum InfrastructuresOrdering {
   objectMarking
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type InfrastructureConnection {
@@ -4421,6 +4576,15 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4520,6 +4684,9 @@ enum IntrusionSetsOrdering {
   confidence
   _score
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IntrusionSetConnection {
@@ -4549,6 +4716,15 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4654,6 +4830,9 @@ enum LocationsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type LocationConnection {
@@ -4774,6 +4953,9 @@ enum PositionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type PositionConnection {
@@ -4803,6 +4985,15 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4902,6 +5093,9 @@ enum CitiesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CityConnection {
@@ -4931,6 +5125,15 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5025,6 +5228,9 @@ enum CountriesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CountryConnection {
@@ -5054,6 +5260,15 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5146,6 +5361,9 @@ enum RegionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type RegionConnection {
@@ -5175,6 +5393,15 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5277,6 +5504,9 @@ enum MalwaresOrdering {
   x_opencti_score
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type MalwareConnection {
@@ -5311,6 +5541,15 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5424,6 +5663,9 @@ enum ThreatActorsOrdering {
   _score
   threat_actor_types
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ThreatActorGroupConnection {
@@ -5453,6 +5695,15 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5540,6 +5791,15 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5651,6 +5911,9 @@ enum ToolsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ToolConnection {
@@ -5680,6 +5943,15 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5782,6 +6054,9 @@ enum IncidentsOrdering {
   objectAssignee
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IncidentConnection {
@@ -5811,6 +6086,15 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5915,6 +6199,9 @@ enum StixCyberObservablesOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCyberObservableConnection {
@@ -5943,6 +6230,15 @@ interface StixCyberObservable {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5992,6 +6288,15 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6058,6 +6363,15 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6128,6 +6442,15 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6190,6 +6513,15 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6254,6 +6586,15 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6328,6 +6669,15 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6467,6 +6817,15 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6541,6 +6900,15 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6624,6 +6992,15 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6740,6 +7117,15 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6805,6 +7191,15 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6868,6 +7263,15 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6930,6 +7334,15 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6992,6 +7405,15 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7077,6 +7499,15 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7181,6 +7612,15 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7266,6 +7706,15 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7328,6 +7777,15 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7417,6 +7875,15 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7483,6 +7950,15 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7549,6 +8025,15 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7611,6 +8096,15 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7673,6 +8167,15 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7735,6 +8238,15 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7797,6 +8309,15 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7859,6 +8380,15 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7925,6 +8455,15 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7987,6 +8526,15 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8049,6 +8597,15 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8111,6 +8668,15 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8179,6 +8745,15 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8250,6 +8825,15 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8315,6 +8899,15 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8395,6 +8988,15 @@ type AIPrompt implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8456,6 +9058,15 @@ type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8512,6 +9123,15 @@ type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8568,6 +9188,15 @@ type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8658,6 +9287,9 @@ enum StixObjectOrStixRelationshipsOrdering {
   relationship_type
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixObjectOrStixRelationshipConnection {
@@ -8709,6 +9341,9 @@ enum StixRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixRelationshipConnection {
@@ -8787,6 +9422,9 @@ enum StixCoreRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCoreRelationshipConnection {
@@ -8827,6 +9465,16 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
+  procedures: [Procedure!]
   objectMarking: [MarkingDefinition!]
   draftVersion: DraftVersion
   description: String
@@ -8908,6 +9556,9 @@ enum StixSightingRelationshipsOrdering {
   attribute_count
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixSightingRelationshipConnection {
@@ -8948,6 +9599,15 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   objectMarking: [MarkingDefinition!]
   draftVersion: DraftVersion
   description: String
@@ -9502,6 +10162,11 @@ type Query {
   pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics!
+  provenanceFreshnessDistribution(types: [String!], filters: FilterGroup): [ProvenanceDistributionEntry!]!
+  provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]!
+  provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]!
+  provenanceBackfill: ProvenanceBackfill!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -10389,6 +11054,7 @@ type Mutation {
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
+  knowledgeDecayRuleAdd(input: KnowledgeDecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
   decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
@@ -10472,6 +11138,11 @@ type Mutation {
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
+  provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
+  provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
+  provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship
+  provenanceAssert(id: ID!): StixObjectOrStixRelationship
+  provenanceBackfillRestart: ProvenanceBackfill!
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -10767,6 +11438,15 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -10827,6 +11507,9 @@ enum ChannelsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ChannelConnection {
@@ -10925,6 +11608,15 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -10981,6 +11673,9 @@ enum LanguagesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type LanguageConnection {
@@ -11040,6 +11735,15 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11105,6 +11809,9 @@ enum EventsOrdering {
   start_time
   stop_time
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type EventConnection {
@@ -11168,6 +11875,15 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -11235,6 +11951,9 @@ enum GroupingsOrdering {
   x_opencti_workflow_id
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type GroupingConnection {
@@ -11302,6 +12021,15 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11364,6 +12092,9 @@ enum NarrativesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type NarrativeConnection {
@@ -11440,6 +12171,8 @@ enum TriggerEventType {
   create
   update
   delete
+  corroboration
+  conflict
 }
 
 input TriggerLiveAddInput {
@@ -11451,6 +12184,9 @@ input TriggerLiveAddInput {
   instance_trigger: Boolean!
   filters: String
   recipients: [String!]
+
+  "*Constraints:*\n* Minimal value: `2`\n* Maximal value: `200`\n"
+  corroboration_threshold: Int
 }
 
 input TriggerDigestAddInput {
@@ -11490,6 +12226,7 @@ type Trigger implements InternalObject & BasicObject {
   isDirectAdministrator: Boolean
   currentUserAccessRight: String
   instance_trigger: Boolean
+  corroboration_threshold: Int
 }
 
 type TriggerConnection {
@@ -11598,6 +12335,15 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11656,6 +12402,9 @@ enum DataComponentsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type DataComponentConnection {
@@ -11717,6 +12466,15 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11776,6 +12534,9 @@ enum DataSourcesOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type DataSourceConnection {
@@ -11964,6 +12725,15 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -12025,6 +12795,9 @@ enum AdministrativeAreasOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type AdministrativeAreaConnection {
@@ -12087,6 +12860,15 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12154,6 +12936,9 @@ enum TasksOrdering {
   due_date
   objectAssignee
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type TaskEdge {
@@ -12248,6 +13033,15 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12314,6 +13108,9 @@ enum CasesOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseConnection {
@@ -12382,6 +13179,15 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12457,6 +13263,9 @@ enum CaseIncidentsOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseIncidentConnection {
@@ -12532,6 +13341,15 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12606,6 +13424,9 @@ enum CaseRfisOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseRfiConnection {
@@ -12676,6 +13497,15 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12748,6 +13578,9 @@ enum CaseRftsOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseRftConnection {
@@ -12817,6 +13650,15 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12885,6 +13727,9 @@ enum FeedbacksOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type FeedbackConnection {
@@ -13086,6 +13931,15 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   x_opencti_inferences: [Inference]
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -13160,6 +14014,9 @@ enum MalwareAnalysesOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type MalwareAnalysisConnection {
@@ -13320,6 +14177,15 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -13403,6 +14269,9 @@ enum ThreatActorsIndividualOrdering {
   _score
   objectMarking
   threat_actor_types
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ThreatActorIndividualConnection {
@@ -14090,6 +14959,9 @@ enum IndicatorsOrdering {
   creator
   createdBy
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IndicatorConnection {
@@ -14155,6 +15027,15 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -14281,6 +15162,9 @@ enum VulnerabilitiesOrdering {
   creator
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type VulnerabilityConnection {
@@ -14326,6 +15210,15 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -14516,6 +15409,18 @@ type VulnerabilityEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
 }
 
+enum DecayRuleTargetScope {
+  indicator
+  relationship
+  entity
+}
+
+enum KnowledgeFreshnessPolicy {
+  flag
+  lower_confidence
+  revoke
+}
+
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -14538,6 +15443,12 @@ type DecayRule implements InternalObject & BasicObject {
   decay_revoke_score: Int!
   decaySettingsChartData: DecayData
   decay_filters: String
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  freshness_policy: KnowledgeFreshnessPolicy
+  stale_after_days: Int
+  freshness_confidence_step: Int
+  staleElementsCount: Int!
 }
 
 type DecayData {
@@ -14571,6 +15482,24 @@ input DecayRuleAddInput {
   decay_points: [Int!]
   decay_revoke_score: Int!
   decay_filters: String
+}
+
+input KnowledgeDecayRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  order: Int!
+  active: Boolean!
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  decay_filters: String
+  freshness_policy: KnowledgeFreshnessPolicy!
+
+  "*Constraints:*\n* Minimal value: `1`\n"
+  stale_after_days: Int!
+
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `100`\n"
+  freshness_confidence_step: Int
 }
 
 type DecayExclusionRule implements InternalObject & BasicObject {
@@ -14628,6 +15557,15 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -14703,6 +15641,9 @@ enum OrganizationsOrdering {
   x_opencti_workflow_id
   x_opencti_score
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type OrganizationConnection {
@@ -15851,6 +16792,95 @@ input PirRelationshipsTimeSeriesParameters {
   dynamicFrom: FilterGroup
 }
 
+enum AssertionSourceKind {
+  connector
+  feed
+  author
+  user
+  inference
+  emulation
+}
+
+enum ProceduresDescriptionPolicy {
+  longest
+  most_recent
+}
+
+type Assertion {
+  source_id: String!
+  source_kind: AssertionSourceKind!
+  source_name: String!
+  first_asserted_at: DateTime!
+  last_asserted_at: DateTime!
+  assert_count: Int!
+  confidence: Int
+  work_id: String
+}
+
+type SourceConflictValue {
+  value_hash: String!
+  display: String!
+  value: String
+  adoptable: Boolean!
+  source_id: String!
+  source_kind: AssertionSourceKind
+  source_name: String
+  confidence: Int
+  last_asserted_at: DateTime!
+}
+
+type SourceConflict {
+  field: String!
+  values: [SourceConflictValue!]!
+}
+
+type Procedure {
+  text: String!
+  source_id: String
+  last_asserted_at: DateTime
+}
+
+type ProvenanceSourceKindCount {
+  source_kind: AssertionSourceKind!
+  count: Int!
+}
+
+type ProvenanceStatistics {
+  total: Int!
+  with_provenance: Int!
+  single_sourced: Int!
+  corroborated: Int!
+  with_conflicts: Int!
+  stale: Int!
+}
+
+type ProvenanceDistributionEntry {
+  label: String!
+  value: Int!
+}
+
+type ProvenanceSingleSourcedEntry {
+  entity_type: String!
+  total: Int!
+  single_sourced: Int!
+}
+
+enum ProvenanceBackfillStatus {
+  pending
+  running
+  completed
+}
+
+type ProvenanceBackfill {
+  status: ProvenanceBackfillStatus!
+  processed: Int!
+  expected: Int!
+  updated: Int!
+  errors: Int!
+  started_at: DateTime
+  completed_at: DateTime
+}
+
 type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -15912,6 +16942,15 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -15973,6 +17012,9 @@ enum SecurityPlatformOrdering {
   updated_at
   security_platform_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SecurityPlatformConnection {
@@ -16029,6 +17071,15 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -16109,6 +17160,9 @@ enum SecurityCoverageOrdering {
   objectMarking
   coverage_last_result
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type AttackPatternCoverages {
@@ -16211,6 +17265,15 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -16278,6 +17341,9 @@ enum SecurityCoverageResultOrdering {
   updated_at
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SecurityCoverageResultConnection {
@@ -17144,6 +18210,7 @@ enum RetentionRuleScope {
   workbench
   history
   activity
+  conflicts
 }
 
 enum RetentionUnit {

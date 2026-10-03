@@ -5,6 +5,8 @@ import './garbageCollectionManager';
 import './graphAnalyticsManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
+import './knowledgeFreshnessManager';
+import './provenanceBackfillManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';
