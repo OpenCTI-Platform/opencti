@@ -2,7 +2,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { useGraphAnalyticsInvestigationMutation } from './__generated__/useGraphAnalyticsInvestigationMutation.graphql';
-import { type GraphAnalyticsPivotKind, recordGraphAnalyticsPivot } from './graphAnalyticsUtils';
+import { type GraphAnalyticsPivotKind, recordGraphAnalyticsPivot, reportPayloadErrors } from './graphAnalyticsUtils';
 
 const startInvestigationMutation = graphql`
   mutation useGraphAnalyticsInvestigationMutation($input: WorkspaceAddInput!) {
@@ -26,11 +26,10 @@ const useGraphAnalyticsInvestigation = () => {
     const uniqueIds = Array.from(new Set(ids)).slice(0, GRAPH_INVESTIGATION_MAX_ELEMENTS);
     commit({
       variables: { input: { type: 'investigation', name, investigated_entities_ids: uniqueIds } },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (reportPayloadErrors(errors) || !response.workspaceAdd?.id) return;
         recordGraphAnalyticsPivot(pivot);
-        if (response.workspaceAdd?.id) {
-          navigate(`/dashboard/workspaces/investigations/${response.workspaceAdd.id}`);
-        }
+        navigate(`/dashboard/workspaces/investigations/${response.workspaceAdd.id}`);
       },
     });
   };

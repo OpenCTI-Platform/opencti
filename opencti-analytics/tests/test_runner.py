@@ -104,14 +104,27 @@ class TestRun:
         make_runner(client).run_once()
         assert client.fetched_types == ["uses", "object"]
 
-    def test_max_edges_truncates(self) -> None:
+    def test_graph_above_max_edges_is_never_loaded_nor_written(self) -> None:
         client = FakeClient(platform_edges())
         runner = make_runner(client, max_edges=5)
         report = runner.run_once()
-        assert report.status == "success"
+        assert report.status == "failed"
+        assert report.reason == "max_edges_reached"
+        assert client.fetched_types == []
+        assert client.payloads == []
+        runner.logger.error.assert_called()
+
+    def test_graph_growing_past_max_edges_during_the_fetch_is_not_written(
+        self,
+    ) -> None:
+        # the counts are below the limit, the fetch is not
+        client = FakeClient(platform_edges(), counts={"uses": 2, "object": 1})
+        runner = make_runner(client, max_edges=5)
+        report = runner.run_once()
+        assert report.status == "failed"
+        assert report.reason == "max_edges_reached"
         assert report.fetched_edges == 5
-        assert client.fetched_types == ["uses"]
-        runner.logger.warning.assert_called()
+        assert client.payloads == []
 
     def test_failure_is_reported_not_raised(self) -> None:
         client = FakeClient(platform_edges(), fail_upsert=True)

@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import { commitMutation, defaultCommitMutation, MESSAGING$ } from '../../../../relay/environment';
 import type { graphAnalyticsUtilsRecordPivotMutation$variables } from './__generated__/graphAnalyticsUtilsRecordPivotMutation.graphql';
 
 export type GraphAnalyticsPivotKind = graphAnalyticsUtilsRecordPivotMutation$variables['kind'];
@@ -71,6 +71,16 @@ const recordPivotMutation = graphql`
     graphAnalyticsRecordPivot(kind: $kind)
   }
 `;
+
+/**
+ * GraphQL errors returned with a mutation payload still reach `onCompleted`: report the first one and tell the caller
+ * to stop, so a failed action is never followed by a success message, a navigation or a usage count.
+ */
+export const reportPayloadErrors = (errors: ReadonlyArray<{ message: string }> | null | undefined): boolean => {
+  if (!errors || errors.length === 0) return false;
+  MESSAGING$.notifyError(errors[0].message);
+  return true;
+};
 
 /** Fire-and-forget usage counter of the analyst pivots from graph analytics results. */
 export const recordGraphAnalyticsPivot = (kind: GraphAnalyticsPivotKind) => {

@@ -32,7 +32,8 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import GraphSimilarityEvidence from './GraphSimilarityEvidence';
 import GraphSimilarCompareDialog from './GraphSimilarCompareDialog';
 import useGraphAnalyticsInvestigation from './useGraphAnalyticsInvestigation';
-import { formatSimilarityScore, recordGraphAnalyticsPivot, similarityScoreSeverity } from './graphAnalyticsUtils';
+import { formatSimilarityScore, recordGraphAnalyticsPivot, reportPayloadErrors, similarityScoreSeverity } from './graphAnalyticsUtils';
+import { MESSAGING$ } from '../../../../relay/environment';
 import type { StixCoreObjectSimilarQuery, StixCoreObjectSimilarQuery$data } from './__generated__/StixCoreObjectSimilarQuery.graphql';
 import type { StixCoreObjectSimilarRecomputeMutation } from './__generated__/StixCoreObjectSimilarRecomputeMutation.graphql';
 
@@ -222,11 +223,7 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
   const canRecompute = useGranted([KNOWLEDGE_KNUPDATE]);
   const [minScore, setMinScore] = useState('0');
   const [onlyWithSecurityCoverage, setOnlyWithSecurityCoverage] = useState(false);
-  const [commitRecompute, recomputing] = useApiMutation<StixCoreObjectSimilarRecomputeMutation>(
-    recomputeMutation,
-    undefined,
-    { successMessage: t_i18n('The similarity of this entity will be refreshed in the next minutes') },
-  );
+  const [commitRecompute, recomputing] = useApiMutation<StixCoreObjectSimilarRecomputeMutation>(recomputeMutation);
   const queryRef = useQueryLoading<StixCoreObjectSimilarQuery>(stixCoreObjectSimilarQuery, {
     id: stixCoreObjectId,
     first: PAGE_SIZE,
@@ -261,7 +258,13 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
           <Button
             variant="tertiary"
             disabled={recomputing}
-            onClick={() => commitRecompute({ variables: { ids: [stixCoreObjectId] } })}
+            onClick={() => commitRecompute({
+              variables: { ids: [stixCoreObjectId] },
+              onCompleted: (_, errors) => {
+                if (reportPayloadErrors(errors)) return;
+                MESSAGING$.notifySuccess(t_i18n('The similarity of this entity will be refreshed in the next minutes'));
+              },
+            })}
           >
             {t_i18n('Refresh similarity')}
           </Button>

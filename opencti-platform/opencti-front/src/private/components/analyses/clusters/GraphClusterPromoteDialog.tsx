@@ -14,6 +14,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle, type FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { resolveLink } from '../../../../utils/Entity';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { reportPayloadErrors } from '../../common/graph_analytics/graphAnalyticsUtils';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import type { GraphClusterPromoteDialogMutation, GraphClusterPromotionTarget } from './__generated__/GraphClusterPromoteDialogMutation.graphql';
@@ -49,9 +51,7 @@ interface GraphClusterPromoteDialogProps {
 const GraphClusterPromoteDialog = ({ clusterId, clusterName, target, onClose }: GraphClusterPromoteDialogProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commit] = useApiMutation<GraphClusterPromoteDialogMutation>(promoteMutation, undefined, {
-    successMessage: target === 'Grouping' ? t_i18n('Grouping created from the cluster') : t_i18n('Campaign created from the cluster'),
-  });
+  const [commit] = useApiMutation<GraphClusterPromoteDialogMutation>(promoteMutation);
   const validation = Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
   });
@@ -75,11 +75,13 @@ const GraphClusterPromoteDialog = ({ clusterId, clusterName, target, onClose }: 
           include_features: values.include_features,
         },
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         setSubmitting(false);
-        onClose();
         const created = response.graphClusterPromote;
-        if (created) navigate(`${resolveLink(created.entity_type)}/${created.id}`);
+        if (reportPayloadErrors(errors) || !created) return;
+        MESSAGING$.notifySuccess(target === 'Grouping' ? t_i18n('Grouping created from the cluster') : t_i18n('Campaign created from the cluster'));
+        onClose();
+        navigate(`${resolveLink(created.entity_type)}/${created.id}`);
       },
       onError: () => setSubmitting(false),
     });

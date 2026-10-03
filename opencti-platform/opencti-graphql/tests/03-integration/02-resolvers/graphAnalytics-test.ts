@@ -59,6 +59,7 @@ const METRICS_QUERY = gql`
       x_opencti_graph_metrics {
         degree
         degree_by_type { relationship_type count }
+        betweenness_approx
         cluster_id
         cluster_size
         cluster_kind
@@ -351,16 +352,22 @@ describe('Graph analytics resolvers', () => {
       metrics: [
         { entity_id: ids.isA, betweenness_approx: 0.5, cluster_id: clusterId, cluster_size: 2, cluster_kind: 'campaign' },
         { entity_id: ids.isB, betweenness_approx: 0.1, cluster_id: clusterId, cluster_size: 2, cluster_kind: 'campaign' },
+        // analyzed by the run but in no cluster: detached from its platform cluster
+        { entity_id: ids.d2, betweenness_approx: 0.2, cluster_id: null, cluster_size: null, cluster_kind: null },
         { entity_id: 'unknown-entity-id', betweenness_approx: 0.9 },
       ],
       clusters: [{ cluster_id: clusterId, cluster_kind: 'campaign', members_count: 2, representative_ids: [ids.isA], features: [{ family: 'techniques', ids: [ids.t1, ids.t2] }] }],
     };
     const { data } = await queryAsAdminWithSuccess({ query: upsert, variables: { input } });
-    expect(data.graphAnalyticsUpsertMetrics).toEqual(expect.objectContaining({ updated_entities: 2, skipped_entities: 1, upserted_clusters: 1 }));
+    expect(data.graphAnalyticsUpsertMetrics).toEqual(expect.objectContaining({ updated_entities: 3, skipped_entities: 1, upserted_clusters: 1 }));
     expect(data.graphAnalyticsUpsertMetrics.removed_clusters).toBeGreaterThanOrEqual(1);
     // the platform infrastructure cluster is replaced by the analytics run
     const domain = await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.d1 } });
     expect(domain.data.stixCoreObject.x_opencti_graph_metrics.cluster_id).toBeNull();
+    const analyzed = await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.d2 } });
+    expect(analyzed.data.stixCoreObject.x_opencti_graph_metrics.cluster_id).toBeNull();
+    expect(analyzed.data.stixCoreObject.x_opencti_graph_metrics.cluster_size).toBeNull();
+    expect(analyzed.data.stixCoreObject.x_opencti_graph_metrics.betweenness_approx).toBe(0.2);
     const campaigns = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
     const campaignCluster = campaigns.data.graphClusters.edges.map((e: any) => e.node).find((n: any) => n.id === clusterId);
     expect(campaignCluster.cluster_source).toBe('analytics');
