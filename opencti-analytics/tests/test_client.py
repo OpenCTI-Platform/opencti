@@ -81,6 +81,17 @@ class TestPagination:
         assert all(call[1]["includeInferred"] is True for call in api.calls)
         assert all(call[1]["relationshipTypes"] == ["uses"] for call in api.calls)
 
+    def test_continues_after_an_empty_page_when_the_cursor_moves(self) -> None:
+        api = FakeApi(
+            [
+                page(["e1"], "c1", True),
+                page([], "c2", True),
+                page(["e3"], "c3", False),
+            ]
+        )
+        edges = list(make_client(api).iter_edges("uses", False))
+        assert [e.id for e in edges] == ["e1", "e3"]
+
     def test_fails_when_the_cursor_does_not_move(self) -> None:
         api = FakeApi([page(["e1"], "c1", True), page(["e2"], "c1", True)])
         with pytest.raises(EdgesPaginationError):

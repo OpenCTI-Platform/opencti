@@ -33,6 +33,7 @@ import { addWorkspace, findById as findWorkspaceById, workspaceEditField } from 
 import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
 import { getGraphAnalyticsComputeConfig, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
+import { keepAccessibleEndpoints } from './graphAnalytics-features';
 import { computeSimilarityScore } from './graphAnalytics-scoring';
 import {
   addClusterPromotion,
@@ -524,7 +525,11 @@ export interface GraphAnalyticsEdgesArgs {
   after?: string | null;
 }
 
-/** Compact edge export (ids and types only) for the opencti-analytics process, computed as the caller. */
+/**
+ * Compact edge export (ids and types only) for the opencti-analytics process, computed as the caller.
+ * An edge is only exported when the caller can read both endpoints; the page cursors are those of the
+ * underlying relationships, so a page can hold fewer edges than requested, or none, while the cursor moves on.
+ */
 export const listGraphAnalyticsEdges = async (context: AuthContext, user: AuthUser, args: GraphAnalyticsEdgesArgs) => {
   if (args.relationshipTypes.length === 0) {
     throw FunctionalError('At least one relationship type is required');
@@ -538,9 +543,11 @@ export const listGraphAnalyticsEdges = async (context: AuthContext, user: AuthUs
     baseData: true,
     withInferences: !!args.includeInferred,
   });
+  const relations = connection.edges.map((edge) => edge.node);
+  const visible = new Set(await keepAccessibleEndpoints(context, user, relations, !isBypassUser(user)));
   return {
     pageInfo: connection.pageInfo,
-    edges: connection.edges.map((edge) => ({
+    edges: connection.edges.filter((edge) => visible.has(edge.node)).map((edge) => ({
       cursor: edge.cursor,
       node: {
         id: edge.node.internal_id,

@@ -232,7 +232,9 @@ class AnalyticsClient:
             next_cursor = page_info.get("endCursor")
             if not page_info.get("hasNextPage"):
                 return
-            if not edges or not next_cursor or next_cursor == after:
+            # A page can be empty when the account cannot read the endpoints
+            # of its relationships: only the cursor tells the progress
+            if not next_cursor or next_cursor == after:
                 # A partial export must never complete a run: it would
                 # detach every omitted entity
                 raise EdgesPaginationError(

@@ -121,7 +121,7 @@ export interface FeatureExtractionOptions {
   checkEndpointsAccess?: boolean;
 }
 
-const keepAccessibleEndpoints = async (
+export const keepAccessibleEndpoints = async (
   context: AuthContext,
   user: AuthUser,
   relations: BasicStoreRelation[],
