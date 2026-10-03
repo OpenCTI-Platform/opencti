@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateValues } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-widgets';
+import { aggregateValues, dominantCostCurrency } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-widgets';
 import type { ScorecardAggregation } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
 
 describe('Source intelligence widget aggregations', () => {
@@ -18,5 +18,20 @@ describe('Source intelligence widget aggregations', () => {
 
   it('should reject an unknown aggregation mode', () => {
     expect(() => aggregateValues([1], 'median' as ScorecardAggregation)).toThrowError('Unknown source scorecard aggregation');
+  });
+});
+
+describe('Source intelligence cost currency', () => {
+  it('should aggregate costs in the currency declared by most sources', () => {
+    expect(dominantCostCurrency([{ cost_currency: 'USD' }, { cost_currency: 'EUR' }, { cost_currency: 'EUR' }, { cost_currency: null }])).toEqual('EUR');
+  });
+
+  it('should break a tie in alphabetical order', () => {
+    expect(dominantCostCurrency([{ cost_currency: 'USD' }, { cost_currency: 'EUR' }])).toEqual('EUR');
+  });
+
+  it('should return null without any cost', () => {
+    expect(dominantCostCurrency([{ cost_currency: null }])).toBeNull();
+    expect(dominantCostCurrency([])).toBeNull();
   });
 });

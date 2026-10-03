@@ -93,6 +93,32 @@ export const aggregateValues = (values: number[], aggregation: ScorecardAggregat
   }
 };
 
+const COST_METRIC_KEYS = new Set<string>(SCORECARD_METRICS.filter((metric) => metric.type === 'cost').map((metric) => metric.key));
+
+type WidgetEntry = { source: BasicStoreEntitySource; scorecard: StoreSourceScorecard };
+
+/**
+ * Costs are manual inputs in the currency of each source and are never converted: an aggregation over a cost metric
+ * only uses the currency declared by most of the selected sources (alphabetical order on a tie), the others are left out.
+ * Returns null when no selected source has a cost.
+ */
+export const dominantCostCurrency = (scorecards: Array<Pick<StoreSourceScorecard, 'cost_currency'>>): string | null => {
+  const counts = new Map<string, number>();
+  scorecards.forEach(({ cost_currency }) => {
+    if (cost_currency) counts.set(cost_currency, (counts.get(cost_currency) ?? 0) + 1);
+  });
+  const ranked = [...counts.entries()].sort(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b));
+  return ranked.length > 0 ? ranked[0][0] : null;
+};
+
+const restrictToCostCurrency = (data: WidgetEntry[], metrics: Array<string | null>): { data: WidgetEntry[]; currency: string | null } => {
+  if (!metrics.some((metric) => metric !== null && COST_METRIC_KEYS.has(metric))) {
+    return { data, currency: null };
+  }
+  const currency = dominantCostCurrency(data.map(({ scorecard }) => scorecard));
+  return { data: currency ? data.filter(({ scorecard }) => scorecard.cost_currency === currency) : [], currency };
+};
+
 /**
  * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...) with their live scorecard.
  * The number of sources is bounded by the source discovery settings (connectors, feeds, top authors and analysts).
@@ -113,7 +139,7 @@ export const sourceScorecardsDistribution = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; first?: number | null; orderMode?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
-  const data = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
+  const { data } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
   const direction = args.orderMode === 'asc' ? 1 : -1;
   return data
     .map(({ source, scorecard }) => ({ label: source.name, value: metricValue(scorecard, metric), entity: source }))
@@ -128,7 +154,7 @@ export const sourceScorecardsNumber = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; aggregation?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
-  const data = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
+  const { data } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
   const values = data.map(({ scorecard }) => metricValue(scorecard, metric)).filter((value): value is number => value !== null);
   const value = aggregateValues(values, assertAggregation(args.aggregation, 'sum'));
   return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: data.length };
@@ -141,11 +167,12 @@ export const sourceScorecardsTimeSeries = async (
 ) => {
   const metric = assertMetric(args.metric);
   const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
-  const data = await loadWidgetData(context, user, period, args.filters);
+  const { data, currency } = restrictToCostCurrency(await loadWidgetData(context, user, period, args.filters), [metric]);
   const points = await aggregateScorecardSnapshotsByDay(context, {
     sourceIds: data.map(({ source }) => source.internal_id),
     period,
     metric,
+    costCurrency: currency,
     aggregation: assertAggregation(args.aggregation, 'avg'),
     startDate: args.startDate ?? null,
     endDate: args.endDate ?? null,
@@ -161,7 +188,8 @@ export const sourceScorecardsScatter = async (
   const xMetric = assertMetric(args.xMetric);
   const yMetric = assertMetric(args.yMetric);
   const sizeMetric = args.sizeMetric ? assertMetric(args.sizeMetric) : null;
-  const data = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
+  const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
+  const { data } = restrictToCostCurrency(loaded, [xMetric, yMetric, sizeMetric]);
   return data
     .map(({ source, scorecard }) => ({
       entity: source,

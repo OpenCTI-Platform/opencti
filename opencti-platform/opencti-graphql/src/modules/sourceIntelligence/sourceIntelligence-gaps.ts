@@ -20,7 +20,8 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { lockResources } from '../../lock/master-lock';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import { elCount, elPaginate } from '../../database/engine';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -58,12 +59,19 @@ import {
   ENTITY_TYPE_COLLECTION_GAP,
   type HubCatalogStatus,
   RECOMMENDATION_ADD_CONNECTOR,
+  RECOMMENDATION_STATUS_APPLIED,
 } from './sourceIntelligence-types';
 import { buildResolverFromSources } from './sourceIntelligence-domain';
 import { resolveDocumentAssertions } from './sourceIntelligence-provenance';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
-import { applyAutonomousRecommendations, applySourceRecommendation, findOrCreateProposal, upsertProposals } from './sourceIntelligence-recommendations';
+import {
+  applyAutonomousRecommendations,
+  applySourceRecommendation,
+  findOrCreateProposal,
+  findRecommendationsByFingerprint,
+  upsertProposals,
+} from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
 const COVERAGE_SAMPLE_SIZE = 2000;
@@ -355,6 +363,8 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
   const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
   const deployedImages = new Set(connectors.map((connector) => connector.manager_contract_image).filter((image): image is string => !!image));
   const hubPlatform = await hubPlatformOf(context);
+  // Once XTM Hub fails during a run, the remaining criteria use the local catalog instead of waiting for each request
+  let hubFailure: HubCatalogStatus | null = null;
   const keptKeys = new Set<string>();
   const proposals: RecommendationProposal[] = [];
   const nowIso = new Date().toISOString();
@@ -384,11 +394,11 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
       ]);
       const coverage = computeGapCoverageScore({ recent: recentCount, window: windowCount, distinctSources: sample.distinct }, settings.gaps);
       const isGap = coverage < settings.thresholds.gap_coverage;
-      let hubStatus: HubCatalogStatus = hubPlatform ? 'ok' : 'not_registered';
+      let hubStatus: HubCatalogStatus = hubPlatform ? (hubFailure ?? 'ok') : 'not_registered';
       let recommended: CollectionGapRecommendedConnector[] = [];
       if (isGap) {
         let hubMatches: HubIntegrationCoverageMatch[] = [];
-        if (hubPlatform) {
+        if (hubPlatform && !hubFailure) {
           const hubResult = await xtmHubClient.integrationsByCoverage(hubPlatform, {
             objectTypes: resolved.objectTypes,
             sectors: resolved.sectors,
@@ -398,6 +408,10 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
           });
           hubStatus = hubResult.status;
           hubMatches = hubResult.matches;
+          if (hubResult.status === 'unreachable' || hubResult.status === 'error') {
+            hubFailure = hubResult.status;
+            logApp.warn('[OPENCTI-MODULE] Source intelligence stops querying XTM Hub for the rest of the run', { status: hubResult.status });
+          }
         }
         recommended = mergeRecommendedConnectors(hubMatches, matchLocalCatalog(resolved, contracts), contracts, deployedImages, settings.gaps.max_recommendations);
         gapsCount += 1;
@@ -514,8 +528,28 @@ export const deployCollectionGapConnector = async (
   if (!connector.manager_supported || !connector.contract_image) {
     throw FunctionalError('This connector cannot be deployed through XTM Composer, deploy it from the catalog page', { id: gapId, slug });
   }
+  const contractImage = connector.contract_image;
   const proposal = buildAddConnectorProposal(gap, pir.name, connector, settings.gaps.recent_days);
-  const recommendation = await findOrCreateProposal(context, proposal);
-  return applySourceRecommendation(context, user, recommendation.internal_id, settings);
+  // The gap only knows the deployments of its last computation: repeated requests are checked against the live state
+  let lock;
+  try {
+    lock = await lockResources([`collection-gap-deploy:${gap.internal_id}:${slug}`]);
+    const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
+    const applied = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_APPLIED]);
+    if (applied.length > 0 || connectors.some((deployed) => deployed.manager_contract_image === contractImage)) {
+      throw FunctionalError('This connector is already deployed', { id: gapId, slug });
+    }
+    const recommendation = await findOrCreateProposal(context, proposal);
+    return await applySourceRecommendation(context, user, recommendation.internal_id, settings);
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [gap.internal_id] });
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 // endregion

@@ -337,12 +337,13 @@ export const processDocument = (
   if (assertions.length === 0) {
     return;
   }
-  const distinctSources = assertions.length;
-  const otherSources = distinctSources - 1;
   for (let p = 0; p < SCORECARD_PERIODS.length; p += 1) {
     const period = SCORECARD_PERIODS[p];
     const windowStart = asOf - SCORECARD_PERIOD_DAYS[period] * DAY_MS;
+    // Peers, uniqueness and lead time of a period only consider the sources asserting the object during that period
     const inWindow = assertions.filter((assertion) => assertion.end >= windowStart);
+    const distinctSources = inWindow.length;
+    const otherSources = distinctSources - 1;
     for (let i = 0; i < inWindow.length; i += 1) {
       const assertion = inWindow[i];
       const acc = accumulatorOf(state, period, assertion.sourceId);
@@ -360,7 +361,7 @@ export const processDocument = (
       if (distinctSources >= 2) {
         acc.shared_count += 1;
         if (assertion.firstAt !== null) {
-          const othersFirst = assertions
+          const othersFirst = inWindow
             .filter((other) => other.sourceId !== assertion.sourceId && other.firstAt !== null)
             .map((other) => other.firstAt as number);
           const lead = computeLeadTimeHours(assertion.firstAt, othersFirst);

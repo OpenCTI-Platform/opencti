@@ -122,12 +122,24 @@ export type ScorecardAggregation = 'sum' | 'avg' | 'min' | 'max';
  */
 export const aggregateScorecardSnapshotsByDay = async (
   context: AuthContext,
-  options: { sourceIds: string[]; period: ScorecardPeriodValue; metric: string; aggregation: ScorecardAggregation; startDate?: string | null; endDate?: string | null },
+  options: {
+    sourceIds: string[];
+    period: ScorecardPeriodValue;
+    metric: string;
+    aggregation: ScorecardAggregation;
+    startDate?: string | null;
+    endDate?: string | null;
+    // Cost metrics are aggregated in one currency only
+    costCurrency?: string | null;
+  },
 ) => {
   if (options.sourceIds.length === 0) {
     return [];
   }
   const filter = buildScorecardFilter({ sourceIds: options.sourceIds, period: options.period, live: false, startDate: options.startDate, endDate: options.endDate });
+  if (options.costCurrency) {
+    filter.push({ term: { 'cost_currency.keyword': options.costCurrency } });
+  }
   const points: Array<{ day: string; value: number }> = [];
   let afterKey: Record<string, unknown> | undefined;
   let hasMore = true;
@@ -174,6 +186,20 @@ export const deleteScorecardsOfSources = async (context: AuthContext, sourceIds:
     body: { query: { terms: { 'source_id.keyword': sourceIds } } },
   }).catch((err: unknown) => {
     throw DatabaseError('Source scorecards deletion failed', { cause: err, sourceIds });
+  });
+};
+
+/** Live scorecards only: the daily snapshots of the sources stay as their history. */
+export const deleteLiveScorecardsOfSources = async (context: AuthContext, sourceIds: string[]) => {
+  if (sourceIds.length === 0) {
+    return;
+  }
+  await elRawDeleteByQuery({
+    index: READ_INDEX_SOURCE_SCORECARDS,
+    refresh: true,
+    body: { query: { bool: { filter: [{ terms: { 'source_id.keyword': sourceIds } }, { term: { is_live: true } }] } } },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Source live scorecards deletion failed', { cause: err, sourceIds });
   });
 };
 

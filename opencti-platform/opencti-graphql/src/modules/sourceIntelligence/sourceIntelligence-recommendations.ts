@@ -28,6 +28,8 @@ import { DatabaseError, FORBIDDEN_ACCESS, ForbiddenAccess, FunctionalError, Lock
 import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
+import { findPirPaginated } from '../pir/pir-domain';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -115,9 +117,18 @@ const requireCapability = (user: AuthUser, autonomous: boolean, ...capabilities:
   }
 };
 
+// Recommendations of a collection gap carry the name and criteria of their PIR: they follow the access to the PIR
+const canAccessRecommendationPir = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation) => {
+  if (!recommendation.pir_id) {
+    return true;
+  }
+  const pir = await storeLoadById(context, user, recommendation.pir_id, ENTITY_TYPE_PIR);
+  return !!pir;
+};
+
 const loadRecommendation = async (context: AuthContext, user: AuthUser, id: string) => {
   const recommendation = await storeLoadById<BasicStoreEntitySourceRecommendation>(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
-  if (!recommendation) {
+  if (!recommendation || !(await canAccessRecommendationPir(context, user, recommendation))) {
     throw FunctionalError('Source recommendation not found', { id });
   }
   return recommendation;
@@ -146,9 +157,18 @@ export const findRecommendationsPaginated = async (context: AuthContext, user: A
   if (status && status.length > 0) filters.push({ key: ['recommendation_status'], values: status, operator: 'eq', mode: 'or' });
   if (kind && kind.length > 0) filters.push({ key: ['recommendation_kind'], values: kind, operator: 'eq', mode: 'or' });
   if (sourceId) filters.push({ key: ['source_id'], values: [sourceId], operator: 'eq', mode: 'or' });
-  const finalFilters = filters.length > 0
-    ? { mode: 'and', filters, filterGroups: opts.filters ? [opts.filters] : [] }
-    : opts.filters;
+  // Only the collection gap recommendations of the PIRs the user can access
+  const accessiblePirs = await findPirPaginated(context, user, { first: 500 });
+  const accessiblePirIds = accessiblePirs.edges.map((edge) => edge.node.internal_id);
+  const pirAccessGroup = {
+    mode: 'or',
+    filters: [
+      { key: ['pir_id'], values: [], operator: 'nil', mode: 'or' },
+      ...(accessiblePirIds.length > 0 ? [{ key: ['pir_id'], values: accessiblePirIds, operator: 'eq', mode: 'or' }] : []),
+    ],
+    filterGroups: [],
+  };
+  const finalFilters = { mode: 'and', filters, filterGroups: [pirAccessGroup, ...(opts.filters ? [opts.filters] : [])] } as any;
   return pageEntitiesConnection<BasicStoreEntitySourceRecommendation>(context, user, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
     ...opts,
     filters: finalFilters,
@@ -159,7 +179,11 @@ export const findRecommendationsPaginated = async (context: AuthContext, user: A
 
 export const findRecommendationById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  return storeLoadById<BasicStoreEntitySourceRecommendation>(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+  const recommendation = await storeLoadById<BasicStoreEntitySourceRecommendation>(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+  if (!recommendation || !(await canAccessRecommendationPir(context, user, recommendation))) {
+    return null;
+  }
+  return recommendation;
 };
 
 export const countRecommendations = async (context: AuthContext, user: AuthUser, sourceId: string, status: string[]) => {
@@ -651,17 +675,21 @@ const createProposal = async (context: AuthContext, proposal: RecommendationProp
  * Live recommendation (proposed, or failed and retryable) of the proposal fingerprint, created when there is none.
  * Unlike upsertProposals, it never withdraws the other proposals of the same kind.
  */
-export const findOrCreateProposal = async (context: AuthContext, proposal: RecommendationProposal) => {
-  const existing = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+export const findRecommendationsByFingerprint = async (context: AuthContext, fingerprint: string, statuses: string[]) => {
+  return fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
     filters: {
       mode: 'and',
       filters: [
-        { key: ['fingerprint'], values: [proposal.fingerprint], operator: 'eq', mode: 'or' },
-        { key: ['recommendation_status'], values: [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED], operator: 'eq', mode: 'or' },
+        { key: ['fingerprint'], values: [fingerprint], operator: 'eq', mode: 'or' },
+        { key: ['recommendation_status'], values: statuses, operator: 'eq', mode: 'or' },
       ],
       filterGroups: [],
     },
   } as any);
+};
+
+export const findOrCreateProposal = async (context: AuthContext, proposal: RecommendationProposal) => {
+  const existing = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED]);
   if (existing.length > 0) {
     return existing[0];
   }

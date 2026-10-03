@@ -4,7 +4,7 @@ import { executionContext, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from 
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
-import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
+import { publishCacheResetEvent, redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { internalFindByIds } from '../database/middleware-loader';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
@@ -34,6 +34,7 @@ import {
   syncSources,
   updateSourceIntelligenceState,
   updateSourceLatestKpis,
+  clearDisabledSourcesLiveData,
 } from '../modules/sourceIntelligence/sourceIntelligence-domain';
 import {
   buildScorecardDocuments,
@@ -209,6 +210,8 @@ const processStreamIncrements = async (context: AuthContext) => {
     return;
   }
   const resolver = buildResolverFromSources(sources);
+  // Every source takes part in the attribution, only the enabled ones are scored
+  const disabledSourceIds = new Set(sources.filter((source) => source.enabled === false).map((source) => source.internal_id));
   const enterprise = await isEnterpriseEdition(context);
   const { huntRunType } = resolveSoftJoinAvailability();
   for (let batch = 0; batch < MAX_STREAM_BATCHES_PER_RUN; batch += 1) {
@@ -222,6 +225,7 @@ const processStreamIncrements = async (context: AuthContext) => {
     );
     if (events.length > 0) {
       const increments = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
+      disabledSourceIds.forEach((sourceId) => increments.delete(sourceId));
       await applyLiveIncrements(context, increments, SCORECARD_PERIODS);
     }
     if (nextEventId === lastEventId) {
@@ -289,6 +293,9 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
         });
       }
     }
+    // The latest KPIs are side-channel writes: the cached sources (telemetry, quarantine routing) are refreshed once
+    await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
+    await clearDisabledSourcesLiveData(context, sources.filter((source) => source.enabled === false));
     await purgeScorecardSnapshots(context, settings.snapshot_retention_days, now);
     if (enterprise) {
       await generateSourceRecommendations(context, tracked, settings);
