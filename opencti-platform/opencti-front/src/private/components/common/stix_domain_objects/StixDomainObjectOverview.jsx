@@ -36,7 +36,7 @@ import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOver
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
-import ProvenanceSummary from '../provenance/ProvenanceSummary';
+import ProvenanceOverviewColumn from '../provenance/ProvenanceOverviewColumn';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 
 const StixDomainObjectOverview = ({
@@ -135,7 +135,7 @@ const StixDomainObjectOverview = ({
   const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
 
   return (
-    <>
+    <ProvenanceOverviewColumn id={stixDomainObject.id}>
       <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
@@ -305,7 +305,6 @@ const StixDomainObjectOverview = ({
               </Label>
               <ItemCreators creators={stixDomainObject.creators ?? []} />
             </div>
-            <ProvenanceSummary id={stixDomainObject.id} sx={{ marginTop: 2 }} />
             <div style={{ marginTop: 20 }}>
               <Label
                 sx={{ marginTop: 2 }}
@@ -451,7 +450,7 @@ const StixDomainObjectOverview = ({
           </Dialog>
         )}
       </Formik>
-    </>
+    </ProvenanceOverviewColumn>
   );
 };
 

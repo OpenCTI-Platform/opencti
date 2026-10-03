@@ -41,8 +41,10 @@ test('Display the sources of a created entity and confirm it', { tag: ['@ce'] },
   await intrusionSetPage.getItemFromList(intrusionSetName).click();
   await expect(intrusionSetDetailsPage.getIntrusionSetDetailsPage()).toBeVisible();
 
-  // The creating user is the first source of the entity
-  await expect(page.getByTestId('provenance-summary')).toBeVisible();
+  // The creating user is the first source of the entity, listed by the Sources card of the overview
+  const sourcesCard = page.getByTestId('provenance-sources-card');
+  await expect(sourcesCard).toBeVisible();
+  await expect(sourcesCard.getByTestId('provenance-source-item')).toHaveCount(1);
   await page.getByTestId('provenance-open-sources').click();
   const panel = page.getByTestId('provenance-sources-panel');
   await expect(panel).toBeVisible();

@@ -37,9 +37,17 @@ These values are available as columns, sorts and filters in the lists of entitie
 
 In investigation graphs, nodes are surrounded by a ring whose width grows with their corroboration, and relationship labels show the number of sources between brackets.
 
-## Sources panel
+## Sources card and sources panel
 
-The overview of every entity, observable and relationship shows a "Provenance" field with the corroboration badge. The "View sources" button opens the sources panel, which lists:
+As soon as a source asserted it, the overview of every entity, observable, relationship and sighting shows a "Sources" card. The card displays:
+
+- the corroboration badge and the last assertion date;
+- the five most recent sources, each with its kind, its first and last assertion dates and its confidence. A source links to the page that describes it when there is one, for instance the organization or individual of an author;
+- the fields on which sources disagree.
+
+The card is not displayed for knowledge without provenance.
+
+The "View all", "more sources" and "Review conflicts" buttons of the card open the sources panel, which lists:
 
 - **Sources**: every source with its kind, first and last assertion dates, number of assertions and confidence.
 - **Conflicting values**: the values proposed by sources for a field that differ from the current value (see below).

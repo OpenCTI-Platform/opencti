@@ -133,3 +133,31 @@ export const freshnessColor = (theme: Theme, days: number | null | undefined, st
 export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined) => {
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
 };
+
+export const SOURCES_CARD_MAX_SOURCES = 5;
+
+export interface SourcesCardModel {
+  readonly sources: ProvenanceAssertion[];
+  readonly hiddenSourcesCount: number;
+  readonly conflictingFields: string[];
+}
+
+/**
+ * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the fields
+ * on which sources disagree. Null when no source asserted the element, so that the card is not rendered.
+ */
+export const buildSourcesCardModel = (
+  assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined,
+  conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
+  maxSources = SOURCES_CARD_MAX_SOURCES,
+): SourcesCardModel | null => {
+  const sorted = sortAssertionsByRecency(assertions);
+  if (sorted.length === 0) {
+    return null;
+  }
+  return {
+    sources: sorted.slice(0, maxSources),
+    hiddenSourcesCount: Math.max(0, sorted.length - maxSources),
+    conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field),
+  };
+};
