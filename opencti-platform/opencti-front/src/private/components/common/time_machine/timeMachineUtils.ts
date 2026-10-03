@@ -190,8 +190,11 @@ export interface LandscapeDiffData {
     readonly new_victims_by_country: ReadonlyArray<LandscapeBucketData>;
     readonly new_victims_by_region: ReadonlyArray<LandscapeBucketData>;
     readonly new_techniques: ReadonlyArray<LandscapeItemData>;
+    readonly new_techniques_count?: number;
     readonly new_malware: ReadonlyArray<LandscapeItemData>;
+    readonly new_malware_count?: number;
     readonly new_tools: ReadonlyArray<LandscapeItemData>;
+    readonly new_tools_count?: number;
     readonly new_infrastructure: ReadonlyArray<LandscapeItemData>;
   } | null;
   readonly entities: ReadonlyArray<{
@@ -420,6 +423,19 @@ export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, forma
       + `<th>${escapeHtml(t('Relationships removed'))}</th><th>${escapeHtml(t('Attributes changed'))}</th><th>${escapeHtml(t('Change score'))}</th></tr></thead><tbody>${rows}</tbody></table>`);
   }
   return parts.filter((part) => part.length > 0).join('\n');
+};
+
+// Failure messages stored by the platform for the cases an analyst can act upon
+const LANDSCAPE_INTERRUPTED_ERROR = 'Landscape diff computation was interrupted';
+const LANDSCAPE_ACCESS_CHANGED_ERROR = 'Access to the knowledge of this landscape diff changed, it must be computed again';
+
+/**
+ * Translation key explaining why a landscape diff failed, never the raw message of the platform.
+ */
+export const landscapeFailureReason = (error: string | null | undefined) => {
+  if (error === LANDSCAPE_INTERRUPTED_ERROR) return 'The computation stopped before its end, for example because the platform restarted.';
+  if (error === LANDSCAPE_ACCESS_CHANGED_ERROR) return 'Access to part of this knowledge changed since the computation, so its result can no longer be shown.';
+  return 'An unexpected error stopped the computation.';
 };
 
 export const exportFileName = (base: string, from: string, to: string, extension: string) => {

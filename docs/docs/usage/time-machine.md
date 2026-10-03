@@ -95,7 +95,9 @@ The **Landscape changes** page compares a whole set of entities between two date
 4. Choose the period.
 5. Click **Compute the landscape changes**.
 
-The computation runs in the background and a progress bar shows the entities already processed. The result stays available for one hour: its identifier is kept in the URL of the page, so you can come back to it while it is valid.
+The computation runs in the background and a progress bar shows the entities already processed. The result stays available for one hour: its identifier is kept in the URL of the page, so you can come back to it while it is valid. Once it has expired, **Compute again** runs it with the scope and period shown on the page.
+
+If a computation cannot complete, the page explains why (for example the platform restarted during the computation, or your access to part of the knowledge changed since it was computed) and **Compute again** runs it once more with its own scope and period.
 
 The result contains:
 
@@ -104,7 +106,7 @@ The result contains:
 | Key figures | Entities in scope, entities changed, new entities, new relationships, removed relationships, revocations, confidence changes, score changes, new infrastructure and new indicators. |
 | Group by breakdown | Displayed first: the changed entities by entity type, the new relationships by type or the new techniques by tactic, depending on the **Group by** choice. The PDF export starts with the same breakdown, and the JSON export carries it with the `group_by` value. |
 | New techniques by tactic | Attack patterns newly linked with a `uses` relationship, grouped by tactic (kill chain phase). |
-| New malware and new tools | Malware and tools newly linked with a `uses` relationship. |
+| New techniques, new malware and new tools | Attack patterns, malware and tools newly linked with a `uses` relationship. The 50 most frequent are listed; when there are more, the card shows the total (for example "50 most frequent of 120"), and change digests always report the totals. |
 | New victims | Sectors, countries and regions newly linked with a `targets` relationship. |
 | New infrastructure | Infrastructures, IP addresses, domain names, URLs and hostnames newly related to the entities. |
 | New relationships by type | All relationships created in the period, by relationship type. |

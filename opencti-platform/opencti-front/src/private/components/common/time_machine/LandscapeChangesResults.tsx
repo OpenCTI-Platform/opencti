@@ -33,17 +33,32 @@ const itemsToEntries = (items: ReadonlyArray<LandscapeItemData>) => items.map((i
   type: item.entity_type,
 }));
 
-const DistributionCard = ({ title, entries, testId }: { title: string; entries: Array<{ label: string; value: number; id?: string; type?: string }>; testId: string }) => {
-  const { t_i18n } = useFormatter();
+interface DistributionCardProps {
+  title: string;
+  entries: Array<{ label: string; value: number; id?: string; type?: string }>;
+  testId: string;
+  // Total number of items when the entries only keep the most frequent ones
+  total?: number;
+}
+
+const DistributionCard = ({ title, entries, testId, total }: DistributionCardProps) => {
+  const { t_i18n, n } = useFormatter();
   return (
     <Box data-testid={testId} sx={{ height: '100%' }}>
       <Card title={title}>
         {entries.length === 0 ? (
           <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No change during this period.')}</Text>
         ) : (
-          <Box sx={{ maxHeight: 320, overflow: 'auto' }}>
-            <WidgetDistributionList data={entries} />
-          </Box>
+          <>
+            <Box sx={{ maxHeight: 320, overflow: 'auto' }}>
+              <WidgetDistributionList data={entries} />
+            </Box>
+            {total !== undefined && total > entries.length && (
+              <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginTop: 8 }} data-testid={`${testId}-total`}>
+                {t_i18n('{shown} most frequent of {total}', { values: { shown: n(entries.length), total: n(total) } })}
+              </Text>
+            )}
+          </>
         )}
       </Card>
     </Box>
@@ -98,7 +113,7 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
           </Grid>
         )}
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New techniques')} entries={itemsToEntries(aggregates.new_techniques)} testId="landscape-techniques" />
+          <DistributionCard title={t_i18n('New techniques')} entries={itemsToEntries(aggregates.new_techniques)} total={aggregates.new_techniques_count} testId="landscape-techniques" />
         </Grid>
         {diff.group_by !== LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE && (
           <Grid size={{ xs: 12, md: 6, xl: 4 }}>
@@ -106,13 +121,13 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
           </Grid>
         )}
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New malware')} entries={itemsToEntries(aggregates.new_malware)} testId="landscape-malware" />
+          <DistributionCard title={t_i18n('New malware')} entries={itemsToEntries(aggregates.new_malware)} total={aggregates.new_malware_count} testId="landscape-malware" />
         </Grid>
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New tools')} entries={itemsToEntries(aggregates.new_tools)} testId="landscape-tools" />
+          <DistributionCard title={t_i18n('New tools')} entries={itemsToEntries(aggregates.new_tools)} total={aggregates.new_tools_count} testId="landscape-tools" />
         </Grid>
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New infrastructure')} entries={itemsToEntries(aggregates.new_infrastructure)} testId="landscape-infrastructure" />
+          <DistributionCard title={t_i18n('New infrastructure')} entries={itemsToEntries(aggregates.new_infrastructure)} total={aggregates.new_infrastructure_count} testId="landscape-infrastructure" />
         </Grid>
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           <DistributionCard title={t_i18n('New victims by sector')} entries={bucketsToEntries(aggregates.new_victims_by_sector, 'Sector')} testId="landscape-victims-sector" />
