@@ -30,7 +30,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(strip).toBeVisible();
     const tabNames = (await page.getByRole('tab').allTextContents()).map((name) => name.trim());
     expect(tabNames.indexOf('Timeline')).toBe(tabNames.indexOf('Content') + 1);
-    await strip.getByText('Open the timeline').click();
+    await page.getByRole('link', { name: 'Open the timeline' }).click();
     await expect(page).toHaveURL(new RegExp(`/${timelineCase.caseId}/timeline`));
     // endregion
 
