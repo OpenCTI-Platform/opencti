@@ -28,7 +28,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { isEnterpriseEditionFromXtmOne } from '../../../utils/hooks/useEnterpriseEdition';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useGranted, { SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
@@ -104,7 +104,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const { xtmOneConfigured } = useChatbot();
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
-  const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const data = usePreloadedQuery(experienceQuery, queryRef);
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
   const enterpriseEdition = settings.platform_enterprise_edition;
@@ -384,11 +383,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         <Grid item xs={6}>
           <XtmHubSettings />
         </Grid>
-        {isGrantedToXtmHub && (
-          <Grid item xs={12}>
-            <ThreatPulseSettings />
-          </Grid>
-        )}
+        <Grid item xs={12}>
+          <ThreatPulseSettings />
+        </Grid>
 
         {isGrantedToSupport && (
           <Grid item xs={12} style={{ marginTop: 15 }}>

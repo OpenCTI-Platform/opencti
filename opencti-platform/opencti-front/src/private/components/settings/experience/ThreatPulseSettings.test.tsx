@@ -85,8 +85,42 @@ describe('ThreatPulseSettings', () => {
     expect(accept.hasAttribute('disabled')).toBe(true);
     fireEvent.click(within(dialog).getByRole('checkbox'));
     expect(accept.hasAttribute('disabled')).toBe(false);
+    // The privacy choices are made in the consent step and travel with it
+    expect(within(dialog).getByTestId('threat-pulse-consent-privacy')).toBeDefined();
     fireEvent.click(accept);
-    expect(lastConfigureInput(relayEnv)).toEqual({ mode: 'contribute_and_read', sector_bucket: 'finance', region_bucket: 'europe', consent_version: '2026-10-1' });
+    expect(lastConfigureInput(relayEnv)).toEqual({
+      mode: 'contribute_and_read',
+      sector_bucket: 'finance',
+      region_bucket: 'europe',
+      scopes: ['Indicator', 'Malware'],
+      excluded_markings: [],
+      consent_version: '2026-10-1',
+    });
+  });
+
+  it('should keep the consent open when the contribution is not enabled', async () => {
+    const relayEnv = renderSettings(IN_PREVIEW);
+    fireEvent.click(await screen.findByTestId('threat-pulse-enable-button'));
+    const dialog = await screen.findByTestId('threat-pulse-consent-dialog');
+    fireEvent.click(within(dialog).getByRole('checkbox'));
+    fireEvent.click(screen.getByTestId('threat-pulse-consent-accept'));
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { pulseConfigure: null }, errors: [{ message: 'XTM Hub is unreachable' }] } as never);
+    });
+    expect(screen.getByTestId('threat-pulse-consent-dialog')).toBeDefined();
+  });
+
+  it('should not report a purge that XTM Hub rejected', async () => {
+    const relayEnv = renderSettings({ mode: 'contribute_and_read', access: 'full', enabled: true });
+    fireEvent.click(await screen.findByTestId('threat-pulse-purge-button'));
+    fireEvent.click(await screen.findByTestId('threat-pulse-purge-confirm'));
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.node.operation.name).toBe('ThreatPulseSettingsPurgeMutation');
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { pulsePurge: { success: false, deleted_records: 0 } } });
+    });
+    expect(screen.getByTestId('threat-pulse-purge-confirm')).toBeDefined();
+    expect(screen.queryByText(/contributions purged from XTM Hub/)).toBeNull();
   });
 
   it('should turn the preview off', async () => {
@@ -112,9 +146,26 @@ describe('ThreatPulseSettings', () => {
   });
 
   it('should show the state without any action to a user who cannot manage XTM Hub', async () => {
-    renderSettings(IN_PREVIEW, analyst);
+    const { relayEnv } = testRender(<ThreatPulseSettings />, { userContext: analyst });
+    const query = relayEnv.mock.getMostRecentOperation();
+    // Without the marking list, which only an administrator of XTM Hub needs to pick exclusions
+    expect(query.request.variables).toEqual({ withMarkings: false });
+    act(() => {
+      relayEnv.mock.resolve(query, MockPayloadGenerator.generate(query, { PulseSettings: () => ({ ...SETTINGS, ...IN_PREVIEW }) }));
+    });
     expect(await screen.findByTestId('threat-pulse-preview-status')).toBeDefined();
     expect(screen.queryByTestId('threat-pulse-enable-button')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-disable-button')).toBeNull();
+  });
+
+  it('should show the current exclusions to a user who cannot manage XTM Hub', async () => {
+    renderSettings({
+      mode: 'contribute_and_read',
+      access: 'full',
+      enabled: true,
+      excluded_markings: [{ id: 'marking-internal', definition: 'INTERNAL', x_opencti_color: '#ff0000' }],
+    }, analyst);
+    expect(await screen.findByTestId('threat-pulse-configuration')).toBeDefined();
+    expect(screen.getByText('INTERNAL')).toBeDefined();
   });
 });

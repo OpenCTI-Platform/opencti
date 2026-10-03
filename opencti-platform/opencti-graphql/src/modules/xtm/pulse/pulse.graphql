@@ -290,7 +290,7 @@ extend type Tool {
 
 type Query {
   pulseStatus: PulseStatus! @auth
-  pulseSettings: PulseSettings! @auth(for: [SETTINGS_SETMANAGEXTMHUB])
+  pulseSettings: PulseSettings! @auth(for: [SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB])
   pulseEntity(id: ID!): PulseEntityInformation! @auth(for: [KNOWLEDGE])
   pulseTrending(
     period: PulsePeriod!

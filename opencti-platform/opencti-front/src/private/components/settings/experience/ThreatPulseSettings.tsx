@@ -112,11 +112,11 @@ const threatPulseSettingsFragment = graphql`
 `;
 
 export const threatPulseSettingsQuery = graphql`
-  query ThreatPulseSettingsQuery {
+  query ThreatPulseSettingsQuery($withMarkings: Boolean!) {
     pulseSettings {
       ...ThreatPulseSettings_settings
     }
-    markingDefinitions(first: 500, orderBy: definition_type) {
+    markingDefinitions(first: 500, orderBy: definition_type) @include(if: $withMarkings) {
       edges {
         node {
           id
@@ -156,18 +156,118 @@ interface MarkingOption {
   x_opencti_color: string | null | undefined;
 }
 
+// The markings an administrator may exclude: the platform markings (fetched for administrators only) and the ones
+// already excluded, so that every user sees the current exclusions.
+const toMarkingOptions = (markings: MarkingOption[], settings: ThreatPulseSettings_settings$data): MarkingOption[] => {
+  const forcedIds = settings.forced_excluded_markings.map((marking) => marking.id);
+  const options = markings.filter((marking) => !forcedIds.includes(marking.id));
+  const missing = settings.excluded_markings.filter((excluded) => !options.some((marking) => marking.id === excluded.id));
+  return [...options, ...missing];
+};
+
+interface PrivacyFieldsProps {
+  availableScopes: readonly string[];
+  scopes: string[];
+  onScopesChange: (scopes: string[]) => void;
+  forcedMarkings: readonly MarkingOption[];
+  markingOptions: MarkingOption[];
+  excludedIds: string[];
+  onExcludedChange: (ids: string[]) => void;
+  disabled: boolean;
+}
+
+const ThreatPulsePrivacyFields = ({
+  availableScopes,
+  scopes,
+  onScopesChange,
+  forcedMarkings,
+  markingOptions,
+  excludedIds,
+  onExcludedChange,
+  disabled,
+}: PrivacyFieldsProps) => {
+  const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
+  const theme = useTheme<Theme>();
+  return (
+    <>
+      <Box sx={{ paddingY: 1.25 }}>
+        <Combobox<string>
+          multiple
+          options={[...availableScopes]}
+          value={scopes}
+          getOptionLabel={(scope) => translateEntityType(scope)}
+          disabled={disabled}
+          clearable={false}
+          onValueChange={(value) => {
+            const next = value as string[];
+            if (next.length > 0) onScopesChange(next);
+          }}
+        >
+          <ComboboxLabel>{t_i18n('Contributed entity types')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxChips aria-label={t_i18n('Contributed entity types')} />
+            <ComboboxInput name="pulse_scopes" />
+            <ComboboxControls><ComboboxTrigger /></ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Contributed entity types')} />
+        </Combobox>
+      </Box>
+      <Box sx={{ paddingY: 1.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n('Always excluded')}</Text>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {forcedMarkings.map((marking) => (
+            <Box key={marking.id} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <LockOutlined fontSize="small" color="disabled" />
+              <Chip label={marking.definition ?? ''} color={marking.x_opencti_color ?? undefined} />
+            </Box>
+          ))}
+        </Box>
+        <Combobox<MarkingOption>
+          multiple
+          options={markingOptions}
+          value={markingOptions.filter((marking) => excludedIds.includes(marking.id))}
+          getOptionLabel={(marking) => marking.definition ?? ''}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          getChipColor={(marking) => marking.x_opencti_color ?? undefined}
+          disabled={disabled}
+          onValueChange={(value) => onExcludedChange((value as MarkingOption[]).map((marking) => marking.id))}
+        >
+          <ComboboxLabel>{t_i18n('Additional excluded markings')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxChips aria-label={t_i18n('Additional excluded markings')} />
+            <ComboboxInput name="pulse_excluded_markings" />
+            <ComboboxControls><ComboboxTrigger /></ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Additional excluded markings')} />
+        </Combobox>
+      </Box>
+    </>
+  );
+};
+
+interface ConsentInput {
+  sector: PulseSectorBucket;
+  region: PulseRegionBucket;
+  scopes: string[];
+  excludedIds: string[];
+}
+
 interface ConsentDialogProps {
   open: boolean;
   settings: ThreatPulseSettings_settings$data;
+  markingOptions: MarkingOption[];
   onClose: () => void;
-  onAccept: (input: { sector: PulseSectorBucket; region: PulseRegionBucket }) => void;
+  onAccept: (input: ConsentInput) => void;
 }
 
-const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: ConsentDialogProps) => {
+const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onAccept }: ConsentDialogProps) => {
   const { t_i18n } = useFormatter();
   const [accepted, setAccepted] = useState(false);
   const [sector, setSector] = useState<PulseSectorBucket>(settings.sector_bucket ?? settings.suggested_sector_bucket);
   const [region, setRegion] = useState<PulseRegionBucket>(settings.region_bucket ?? settings.suggested_region_bucket);
+  const [scopes, setScopes] = useState<string[]>([...settings.scopes]);
+  const [excludedIds, setExcludedIds] = useState<string[]>(settings.excluded_markings.map((marking) => marking.id));
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Contribute to Threat Pulse')} size="medium">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-consent-dialog">
@@ -204,6 +304,19 @@ const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: Consent
             {REGION_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_REGION_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Box data-testid="threat-pulse-consent-privacy">
+          <Text variant="content-compact">{t_i18n('Choose what this platform contributes: these choices apply before anything is sent.')}</Text>
+          <ThreatPulsePrivacyFields
+            availableScopes={settings.available_scopes}
+            scopes={scopes}
+            onScopesChange={setScopes}
+            forcedMarkings={settings.forced_excluded_markings}
+            markingOptions={markingOptions}
+            excludedIds={excludedIds}
+            onExcludedChange={setExcludedIds}
+            disabled={false}
+          />
+        </Box>
         <Checkbox
           checked={accepted}
           onCheckedChange={(checked) => setAccepted(checked === true)}
@@ -213,7 +326,11 @@ const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: Consent
       </Box>
       <DialogActions>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-        <Button disabled={!accepted} onClick={() => onAccept({ sector, region })} data-testid="threat-pulse-consent-accept">
+        <Button
+          disabled={!accepted || scopes.length === 0}
+          onClick={() => onAccept({ sector, region, scopes, excludedIds })}
+          data-testid="threat-pulse-consent-accept"
+        >
           {t_i18n('Contribute')}
         </Button>
       </DialogActions>
@@ -238,8 +355,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const [commitConfigure, configuring] = useApiMutation<ThreatPulseSettingsConfigureMutation>(threatPulseSettingsConfigureMutation);
   const [commitPurge, purging] = useApiMutation<ThreatPulseSettingsPurgeMutation>(threatPulseSettingsPurgeMutation);
   const accent = theme.palette.xtmhub?.main ?? theme.palette.designSystem.primary.main;
-  const forcedIds = settings.forced_excluded_markings.map((marking) => marking.id);
-  const selectableMarkings = markings.filter((marking) => !forcedIds.includes(marking.id));
+  const markingOptions = toMarkingOptions(markings, settings);
 
   const configure = (input: Partial<ConfigureInput>) => {
     commitConfigure({ variables: { input: { mode: settings.mode, ...input } } });
@@ -247,7 +363,11 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const purge = () => {
     commitPurge({
       variables: {},
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if ((errors && errors.length > 0) || !response?.pulsePurge?.success) {
+          MESSAGING$.notifyError(t_i18n('XTM Hub did not purge the contributions of this platform. Try again later.'));
+          return;
+        }
         setOpenPurge(false);
         MESSAGING$.notifySuccess(`${n(response.pulsePurge.deleted_records)} ${t_i18n('contributions purged from XTM Hub')}`);
       },
@@ -393,57 +513,16 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           </SelectContent>
         </Select>
       </ExperienceDetailRow>
-      <Box sx={{ paddingY: 1.25 }}>
-        <Combobox<string>
-          multiple
-          options={[...settings.available_scopes]}
-          value={[...settings.scopes]}
-          getOptionLabel={(scope) => translateEntityType(scope)}
-          disabled={!isGranted || configuring}
-          clearable={false}
-          onValueChange={(value) => {
-            const scopes = value as string[];
-            if (scopes.length > 0) configure({ scopes });
-          }}
-        >
-          <ComboboxLabel>{t_i18n('Contributed entity types')}</ComboboxLabel>
-          <ComboboxField>
-            <ComboboxChips aria-label={t_i18n('Contributed entity types')} />
-            <ComboboxInput name="pulse_scopes" />
-            <ComboboxControls><ComboboxTrigger /></ComboboxControls>
-          </ComboboxField>
-          <ComboboxContent listAriaLabel={t_i18n('Contributed entity types')} />
-        </Combobox>
-      </Box>
-      <Box sx={{ paddingY: 1.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Text variant="content-compact" style={secondary}>{t_i18n('Always excluded')}</Text>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {settings.forced_excluded_markings.map((marking) => (
-            <Box key={marking.id} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <LockOutlined fontSize="small" color="disabled" />
-              <Chip label={marking.definition ?? ''} color={marking.x_opencti_color ?? undefined} />
-            </Box>
-          ))}
-        </Box>
-        <Combobox<MarkingOption>
-          multiple
-          options={selectableMarkings}
-          value={selectableMarkings.filter((marking) => settings.excluded_markings.some((excluded) => excluded.id === marking.id))}
-          getOptionLabel={(marking) => marking.definition ?? ''}
-          isOptionEqualToValue={(a, b) => a.id === b.id}
-          getChipColor={(marking) => marking.x_opencti_color ?? undefined}
-          disabled={!isGranted || configuring}
-          onValueChange={(value) => configure({ excluded_markings: (value as MarkingOption[]).map((marking) => marking.id) })}
-        >
-          <ComboboxLabel>{t_i18n('Additional excluded markings')}</ComboboxLabel>
-          <ComboboxField>
-            <ComboboxChips aria-label={t_i18n('Additional excluded markings')} />
-            <ComboboxInput name="pulse_excluded_markings" />
-            <ComboboxControls><ComboboxTrigger /></ComboboxControls>
-          </ComboboxField>
-          <ComboboxContent listAriaLabel={t_i18n('Additional excluded markings')} />
-        </Combobox>
-      </Box>
+      <ThreatPulsePrivacyFields
+        availableScopes={settings.available_scopes}
+        scopes={[...settings.scopes]}
+        onScopesChange={(scopes) => configure({ scopes })}
+        forcedMarkings={settings.forced_excluded_markings}
+        markingOptions={markingOptions}
+        excludedIds={settings.excluded_markings.map((marking) => marking.id)}
+        onExcludedChange={(ids) => configure({ excluded_markings: ids })}
+        disabled={!isGranted || configuring}
+      />
       <ExperienceDetailRow label={t_i18n('Consent')}>
         <Text variant="content-compact">
           {settings.consent_date ? `${settings.consent_accepted_version} - ${settings.consent_user_name ?? '-'} - ${fldt(settings.consent_date)}` : '-'}
@@ -498,11 +577,28 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         <ThreatPulseConsentDialog
           open={openConsent}
           settings={settings}
+          markingOptions={markingOptions}
           onClose={() => setOpenConsent(false)}
-          onAccept={({ sector, region }) => {
+          onAccept={({ sector, region, scopes, excludedIds }) => {
+            // The privacy choices travel with the consent: nothing is contributed before they apply.
             commitConfigure({
-              variables: { input: { mode: 'contribute_and_read', sector_bucket: sector, region_bucket: region, consent_version: settings.consent_version } },
-              onCompleted: () => setOpenConsent(false),
+              variables: {
+                input: {
+                  mode: 'contribute_and_read',
+                  sector_bucket: sector,
+                  region_bucket: region,
+                  scopes,
+                  excluded_markings: excludedIds,
+                  consent_version: settings.consent_version,
+                },
+              },
+              onCompleted: (response, errors) => {
+                if ((errors && errors.length > 0) || !response?.pulseConfigure) {
+                  MESSAGING$.notifyError(t_i18n('The contribution to Threat Pulse could not be enabled. Try again later.'));
+                  return;
+                }
+                setOpenConsent(false);
+              },
             });
           }}
         />
@@ -521,7 +617,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
 };
 
 const ThreatPulseSettingsLoader = () => {
-  const data = useLazyLoadQuery<ThreatPulseSettingsQuery>(threatPulseSettingsQuery, {}, { fetchPolicy: 'network-only' });
+  // Only a user who can change the exclusions picks markings; the others read the excluded ones from the settings.
+  const withMarkings = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const data = useLazyLoadQuery<ThreatPulseSettingsQuery>(threatPulseSettingsQuery, { withMarkings }, { fetchPolicy: 'network-only' });
   const markings = (data.markingDefinitions?.edges ?? []).map((edge) => edge.node);
   return <ThreatPulseSettingsComponent settingsKey={data.pulseSettings} markings={markings} />;
 };
