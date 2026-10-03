@@ -1,14 +1,15 @@
-import conf, { booleanConf } from '../../config/conf';
+import conf, { booleanConf, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreEntity } from '../../types/store';
 import { elAggregationSearch, elCount, elFindByIds, elHistogramCount, elList } from '../../database/engine';
 import { fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
-import { createRelation } from '../../database/middleware';
+import { createRelation, deleteElementById } from '../../database/middleware';
 import { fillTimeSeries, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreRelationship, RELATION_RELATED_TO, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_CAMPAIGN } from '../../schema/stixDomainObject';
 import { getParentTypes, isInternalId } from '../../schema/schemaUtils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import {
@@ -23,7 +24,7 @@ import {
 } from '../../generated/graphql';
 import { GRAPH_CLUSTER_ID_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { GRAPH_ANALYTICS_MANAGER_USER, isBypassUser } from '../../utils/access';
+import { GRAPH_ANALYTICS_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkPriority, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
 import { addGraphAnalyticsPivotCount, addGraphClusterPromotionCount, addGraphSimilarityQueryCount } from '../../manager/telemetryManager';
 import { addGrouping } from '../grouping/grouping-domain';
@@ -489,22 +490,31 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
     const objects = Array.from(new Set([...members.map((m) => m.internal_id), ...featureIds]));
     created = await addGrouping(context, user, { ...baseInput, context: 'suspicious-activity', objects }) as unknown as BasicStoreEntity;
   } else {
-    created = await addCampaign(context, user, baseInput) as BasicStoreEntity;
     const featureEntities = await accessibleMap<BasicStoreEntity>(context, user, featureIds);
     const targets = [...members, ...Object.values(featureEntities)];
-    for (let i = 0; i < targets.length; i += 1) {
-      const target = targets[i];
-      const relationshipType = await isRelationConsistent(context, user, RELATION_USES, created, target) ? RELATION_USES : RELATION_RELATED_TO;
-      if (await isRelationConsistent(context, user, relationshipType, created, target)) {
-        await createRelation(context, user, {
-          fromId: created.internal_id,
-          toId: target.internal_id,
-          relationship_type: relationshipType,
-          objectMarking: input.objectMarking ?? [],
-          createdBy: input.createdBy ?? undefined,
-        });
+    const campaign = await addCampaign(context, user, baseInput) as BasicStoreEntity;
+    try {
+      for (let i = 0; i < targets.length; i += 1) {
+        const target = targets[i];
+        const relationshipType = await isRelationConsistent(context, user, RELATION_USES, campaign, target) ? RELATION_USES : RELATION_RELATED_TO;
+        if (relationshipType === RELATION_USES || await isRelationConsistent(context, user, relationshipType, campaign, target)) {
+          await createRelation(context, user, {
+            fromId: campaign.internal_id,
+            toId: target.internal_id,
+            relationship_type: relationshipType,
+            objectMarking: input.objectMarking ?? [],
+            createdBy: input.createdBy ?? undefined,
+          });
+        }
       }
+    } catch (error) {
+      // a failed promotion must not leave a partially related Campaign: deleting it removes its relationships
+      await deleteElementById(context, SYSTEM_USER, campaign.internal_id, ENTITY_TYPE_CAMPAIGN).catch((rollbackError) => {
+        logApp.error('[OPENCTI-MODULE] Graph analytics campaign promotion rollback failed', { cause: rollbackError, campaignId: campaign.internal_id });
+      });
+      throw error;
     }
+    created = campaign;
   }
   await addClusterPromotion(context, cluster, created.internal_id);
   addGraphClusterPromotionCount();

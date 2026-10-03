@@ -67,6 +67,20 @@ describe('graph analytics path finder', () => {
     expect(longer.paths[2].node_ids).toEqual(['a', 'd', 'e', 'z']);
   });
 
+  it('should not return a detour rejoining a node reached by a shorter route', async () => {
+    const { expand } = buildGraph([
+      ['r1', 'uses', 'a', 'd'],
+      ['r2', 'uses', 'd', 'z'],
+      ['r3', 'uses', 'a', 'f'],
+      ['r4', 'uses', 'f', 'c'],
+      ['r5', 'uses', 'c', 'z'],
+      ['r6', 'uses', 'c', 'd'],
+    ]);
+    const result = await searchPaths(options(expand, { maxPaths: 10 }));
+    // a-f-c-d-z is a simple path of length 4, but c and d are both at their minimal depth on another route
+    expect(result.paths.map((p) => p.node_ids)).toEqual([['a', 'd', 'z'], ['a', 'd', 'c', 'z'], ['a', 'f', 'c', 'z']]);
+  });
+
   it('should respect the maximum depth', async () => {
     const { expand } = buildGraph([
       ['r1', 'uses', 'a', 'b'],

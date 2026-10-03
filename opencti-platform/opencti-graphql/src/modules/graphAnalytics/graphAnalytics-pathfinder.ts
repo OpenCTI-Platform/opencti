@@ -118,7 +118,9 @@ const buildPaths = (forward: SearchSide, backward: SearchSide, meetingNodes: str
  * Bidirectional breadth-first search between two nodes.
  * Levels are expanded completely, always on the smallest frontier, so every shortest path is found first;
  * the search then continues with longer paths until `maxPaths` paths are found or a cap is reached.
- * Each node keeps up to `maxParentsPerNode` parents at its minimal depth, which bounds the enumeration.
+ * Each node keeps up to `maxParentsPerNode` parents at its minimal depth, which bounds the enumeration: a longer
+ * path is only found when each of its nodes is at its minimal depth from one side, so a detour rejoining a node
+ * already reached by a shorter route is never returned (not a k shortest simple paths enumeration).
  */
 export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSearchResult> => {
   const now = opts.now ?? (() => Date.now());
