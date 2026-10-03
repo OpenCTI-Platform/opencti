@@ -1,4 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { loadCreator } from '../../database/members';
 import { connector as loadConnector } from '../../database/repository';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -15,7 +16,10 @@ import {
   getSourceIntelligenceSettings,
   getSourceIntelligenceStatus,
   isSourceIntelligenceRunning,
+  maskRestrictedNames,
+  maskRestrictedNamesInJson,
   requestSourceIntelligenceRecompute,
+  restrictedRecommendationNames,
   sourceEditField,
   sourceSetCost,
 } from './sourceIntelligence-domain';
@@ -37,6 +41,13 @@ import {
   sourceScorecardsTimeSeries,
 } from './sourceIntelligence-widgets';
 import { SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
+
+// Recommendation texts embed the names of their sources: names of restricted authors are masked for the requesting user
+const maskedRecommendationText = async (context: AuthContext, recommendation: any, field: 'name' | 'rationale' | 'payload' | 'evidence'): Promise<any> => {
+  const names = await restrictedRecommendationNames(context, context.user as AuthUser, recommendation);
+  const value = recommendation[field];
+  return field === 'payload' || field === 'evidence' ? maskRestrictedNamesInJson(value, names) : maskRestrictedNames(value, names);
+};
 
 const sourceIntelligenceResolvers: Resolvers = {
   Query: {
@@ -93,6 +104,10 @@ const sourceIntelligenceResolvers: Resolvers = {
     source: (covering: any, _, context) => findSourceById(context, context.user, covering.source_id) as any,
   },
   SourceRecommendation: {
+    name: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'name'),
+    rationale: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'rationale'),
+    payload: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'payload'),
+    evidence: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'evidence'),
     kind: (recommendation: any) => recommendation.recommendation_kind,
     status: (recommendation: any) => recommendation.recommendation_status,
     autonomous: (recommendation: any) => recommendation.autonomous === true,

@@ -10,7 +10,7 @@ import {
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../../database/utils';
-import { notify, publishCacheResetEvent, redisGetSourceIntelligenceState, redisSetSourceIntelligenceState } from '../../database/redis';
+import { notify, publishCacheResetEvent, redisGetSourceIntelligenceState, redisPatchSourceIntelligenceState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -54,7 +54,7 @@ import {
   type SourceKindValue,
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
-import { deleteScorecardsOfSources, findLiveScorecards, searchScorecards, writeScorecards } from './sourceIntelligence-store';
+import { deleteLiveScorecardsOfSources, deleteScorecardsOfSources, findLiveScorecards, searchScorecards, writeScorecards } from './sourceIntelligence-store';
 import { computeCostPerActionable } from './sourceIntelligence-scoring';
 import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
 import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
@@ -92,10 +92,8 @@ export const getSourceIntelligenceState = async (): Promise<SourceIntelligenceSt
 };
 
 export const updateSourceIntelligenceState = async (patch: Partial<SourceIntelligenceState>) => {
-  const current = await getSourceIntelligenceState();
-  const next = { ...current, ...patch };
-  await redisSetSourceIntelligenceState(next as Record<string, unknown>);
-  return next;
+  await redisPatchSourceIntelligenceState(patch as Record<string, unknown>);
+  return getSourceIntelligenceState();
 };
 
 export const getSourceIntelligenceManagerConfiguration = async (context: AuthContext) => {
@@ -175,6 +173,84 @@ export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(co
     }
     return source;
   });
+};
+
+// One resolution per request and recommendation: the masked fields of a recommendation share it
+const restrictedNamesByContext = new WeakMap<AuthContext, Map<string, Promise<string[]>>>();
+
+const parseJsonRecord = (value: string | null | undefined): Record<string, unknown> => {
+  try {
+    const parsed = value ? JSON.parse(value) : {};
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+/**
+ * Names of the author sources a recommendation refers to (its source, and the peer source of a redundancy) that the
+ * user cannot access. Recommendations persist these names in their texts at proposal time.
+ */
+export const restrictedRecommendationNames = (
+  context: AuthContext,
+  user: AuthUser,
+  recommendation: { internal_id: string; source_id?: string | null; payload?: string | null },
+): Promise<string[]> => {
+  let memo = restrictedNamesByContext.get(context);
+  if (!memo) {
+    memo = new Map();
+    restrictedNamesByContext.set(context, memo);
+  }
+  const cached = memo.get(recommendation.internal_id);
+  if (cached) {
+    return cached;
+  }
+  const resolution = (async () => {
+    const peerSourceId = parseJsonRecord(recommendation.payload).peer_source_id;
+    const sourceIds = [recommendation.source_id, typeof peerSourceId === 'string' ? peerSourceId : null].filter((id): id is string => !!id);
+    if (sourceIds.length === 0) {
+      return [];
+    }
+    const sourcesById = await getEntitiesMapFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
+    const authors = sourceIds
+      .map((id) => sourcesById.get(id))
+      .filter((source): source is BasicStoreEntitySource => source !== undefined && source.source_kind === SOURCE_KIND_AUTHOR);
+    if (authors.length === 0) {
+      return [];
+    }
+    const accessible = await sourceVisibleIds(context, user, authors);
+    return authors.filter((source) => !accessible.has(source.ref_id) && !!source.name).map((source) => source.name);
+  })();
+  memo.set(recommendation.internal_id, resolution);
+  return resolution;
+};
+
+export const maskRestrictedNames = (text: string | null | undefined, names: string[]): string | null | undefined => {
+  if (!text || names.length === 0) {
+    return text;
+  }
+  return names.reduce((masked, name) => masked.split(name).join(RESTRICTED_AUTHOR_NAME), text);
+};
+
+const maskJsonValue = (value: unknown, names: string[]): unknown => {
+  if (typeof value === 'string') return maskRestrictedNames(value, names);
+  if (Array.isArray(value)) return value.map((item) => maskJsonValue(item, names));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, maskJsonValue(item, names)]));
+  }
+  return value;
+};
+
+/** JSON text (payload, evidence) with the restricted names masked in every string value. */
+export const maskRestrictedNamesInJson = (json: string | null | undefined, names: string[]): string | null | undefined => {
+  if (!json || names.length === 0) {
+    return json;
+  }
+  try {
+    return JSON.stringify(maskJsonValue(JSON.parse(json), names));
+  } catch {
+    return maskRestrictedNames(json, names);
+  }
 };
 
 /**
@@ -398,6 +474,9 @@ export const sourceEditField = async (context: AuthContext, user: AuthUser, id: 
     if (!owner) throw FunctionalError('Source owner not found', { owner_id: patch.owner_id });
   }
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE, patch);
+  if (patch.enabled === false && source.enabled !== false) {
+    await clearDisabledSourcesLiveData(context, [element as unknown as BasicStoreEntitySource]);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -417,6 +496,39 @@ export const updateSourceLatestKpis = async (context: AuthContext, source: Basic
   const params = { kpis };
   const script = 'for (entry in params.kpis.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }';
   await elUpdate(context, source._index, source.internal_id, { script: { source: script, lang: 'painless', params } });
+};
+
+const CLEARED_LATEST_KPIS = {
+  last_computed_at: null,
+  latest_value_score: null,
+  latest_volume: null,
+  latest_unique_contribution: null,
+  latest_corroboration_rate: null,
+  latest_lead_time_hours: null,
+  latest_accuracy: null,
+  latest_relevance: null,
+  latest_impact_score: null,
+  latest_noise: null,
+  latest_freshness_hours: null,
+  latest_cost_per_actionable: null,
+  latest_community_uniqueness: null,
+};
+
+/**
+ * A disabled source is not scored anymore: its live scorecards and its latest KPIs are removed (its daily snapshots
+ * stay as history), so leaderboards, widgets and consumers of the latest KPIs never show stale values for it.
+ */
+export const clearDisabledSourcesLiveData = async (context: AuthContext, sources: BasicStoreEntitySource[]) => {
+  if (sources.length === 0) {
+    return;
+  }
+  await deleteLiveScorecardsOfSources(context, sources.map((source) => source.internal_id));
+  for (let i = 0; i < sources.length; i += 1) {
+    if (sources[i].last_computed_at) {
+      await updateSourceLatestKpis(context, sources[i], CLEARED_LATEST_KPIS);
+    }
+  }
+  await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
 };
 // endregion
 
