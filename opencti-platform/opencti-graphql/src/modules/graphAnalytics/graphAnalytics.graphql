@@ -351,3 +351,8 @@ type Mutation {
     graphAnalyticsRequestRecompute(ids: [String!]!): Int @auth(for: [KNOWLEDGE_KNUPDATE])
     graphAnalyticsRecordPivot(kind: GraphAnalyticsPivotKind!): Boolean @auth(for: [KNOWLEDGE])
 }
+
+# Live trigger event: an entity matching the trigger joined a graph cluster when a clustering run was published
+extend enum TriggerEventType {
+    graph_cluster_joined
+}

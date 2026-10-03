@@ -11436,6 +11436,7 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  graph_cluster_joined
   create
   update
   delete
