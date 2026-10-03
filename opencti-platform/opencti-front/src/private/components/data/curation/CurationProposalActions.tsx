@@ -12,7 +12,7 @@ import TextareaField from '../../../../components/TextareaField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useCurationLabels from './curationUtils';
+import useCurationLabels, { notifyPayloadErrors } from './curationUtils';
 import { CurationProposalActionsAcceptMutation } from './__generated__/CurationProposalActionsAcceptMutation.graphql';
 import { CurationProposalActionsRejectMutation } from './__generated__/CurationProposalActionsRejectMutation.graphql';
 import { CurationProposalActionsRevertMutation } from './__generated__/CurationProposalActionsRevertMutation.graphql';
@@ -62,8 +62,7 @@ interface CurationProposalActionsProps {
     proposal_status: string;
     recommended_action: string;
     can_apply: boolean;
-    merge_record_id?: string | null;
-    applied_patch?: string | null;
+    can_revert: boolean;
     in_ambiguous_band: boolean;
   };
   survivorId: string | null;
@@ -84,8 +83,7 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
   const [commitAdjudicate, adjudicating] = useApiMutation<CurationProposalActionsAdjudicateMutation>(adjudicateMutation);
   const busy = accepting || rejecting || reverting || adjudicating;
   const isOpen = proposal.proposal_status === 'open';
-  const isApplied = proposal.proposal_status === 'accepted' || proposal.proposal_status === 'auto_applied';
-  const canRevert = isApplied && (!!proposal.merge_record_id || !!proposal.applied_patch);
+  const canRevert = proposal.can_revert;
   const isTargeted = TARGETED_ACTIONS.includes(proposal.recommended_action);
   const isAttribution = proposal.recommended_action === ACTION_RESOLVE_ATTRIBUTION;
   const needsSelection = isTargeted || isAttribution;
@@ -101,7 +99,8 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
       };
       commitAccept({
         variables: { id: proposal.id, input },
-        onCompleted: () => {
+        onCompleted: (_, errors) => {
+          if (notifyPayloadErrors(errors)) return;
           MESSAGING$.notifySuccess(t_i18n('The curation proposal has been applied'));
           close();
         },
@@ -109,7 +108,8 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
     } else if (dialog === 'reject') {
       commitReject({
         variables: { id: proposal.id, rationale: trimmed },
-        onCompleted: () => {
+        onCompleted: (_, errors) => {
+          if (notifyPayloadErrors(errors)) return;
           MESSAGING$.notifySuccess(t_i18n('The curation proposal has been rejected'));
           close();
         },
@@ -117,7 +117,8 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
     } else if (dialog === 'revert') {
       commitRevert({
         variables: { id: proposal.id },
-        onCompleted: () => {
+        onCompleted: (_, errors) => {
+          if (notifyPayloadErrors(errors)) return;
           MESSAGING$.notifySuccess(t_i18n('The curation proposal has been reverted'));
           close();
         },
@@ -128,7 +129,10 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
   const adjudicate = () => {
     commitAdjudicate({
       variables: { id: proposal.id },
-      onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The OpenCTI Curator has adjudicated the proposal')),
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
+        MESSAGING$.notifySuccess(t_i18n('The OpenCTI Curator has adjudicated the proposal'));
+      },
     });
   };
 

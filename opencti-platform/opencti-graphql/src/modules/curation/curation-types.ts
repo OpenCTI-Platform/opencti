@@ -189,11 +189,19 @@ export interface AppliedPatch {
 // endregion
 
 // region merge records
+// Pending: the record is written before the merge mutates the graph, and becomes active once the merge succeeded.
+export const MERGE_STATUS_PENDING = 'pending';
 export const MERGE_STATUS_ACTIVE = 'active';
 export const MERGE_STATUS_REVERTED = 'reverted';
 export const MERGE_STATUS_PARTIALLY_REVERTED = 'partially_reverted';
 export const MERGE_STATUS_IRREVERSIBLE = 'irreversible';
-export const MERGE_STATUSES = [MERGE_STATUS_ACTIVE, MERGE_STATUS_REVERTED, MERGE_STATUS_PARTIALLY_REVERTED, MERGE_STATUS_IRREVERSIBLE] as const;
+export const MERGE_STATUSES = [
+  MERGE_STATUS_PENDING,
+  MERGE_STATUS_ACTIVE,
+  MERGE_STATUS_REVERTED,
+  MERGE_STATUS_PARTIALLY_REVERTED,
+  MERGE_STATUS_IRREVERSIBLE,
+] as const;
 export type MergeStatus = typeof MERGE_STATUSES[number];
 
 export interface MergeSnapshotRef {
@@ -277,6 +285,8 @@ export interface BasicStoreEntityMergeRecord extends BasicStoreEntity {
   proposal_id?: string | null;
   unmerged_at?: string | null;
   unmerged_by_id?: string | null;
+  // Sources of an unmerge that started but did not complete: the next unmerge resumes exactly them.
+  unmerge_pending_source_ids?: string[] | null;
 }
 
 export interface StoreEntityMergeRecord extends StoreEntity, Omit<BasicStoreEntityMergeRecord, keyof BasicStoreEntity> {}

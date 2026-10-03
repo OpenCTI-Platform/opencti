@@ -5,7 +5,7 @@ import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { logApp } from '../../config/conf';
 import { patchAttribute } from '../../database/middleware';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
-import { elAggregationCount, elCount } from '../../database/engine';
+import { elAggregationCount, elCount, elUpdate } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -20,8 +20,10 @@ import {
 } from '../../manager/telemetryManager';
 import { now } from '../../utils/format';
 import {
+  ACTION_FIX_DATES,
   ACTION_MERGE,
   ACTION_UNMERGE,
+  type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationAdjudication,
   type CurationDecision,
@@ -29,7 +31,6 @@ import {
   DECISION_ALIAS,
   DECISION_DISTINCT,
   DECISION_MERGE,
-  ENTITY_TYPE_CURATION_POLICY,
   ENTITY_TYPE_CURATION_PROPOSAL,
   ENTITY_TYPE_MERGE_RECORD,
   MERGE_STATUS_ACTIVE,
@@ -299,6 +300,13 @@ export const decideProposal = async (
   return element as unknown as BasicStoreEntityCurationProposal;
 };
 
+const POLICY_APPLIED_COUNT_SCRIPT = 'ctx._source.applied_count = (ctx._source.applied_count == null ? 0 : ctx._source.applied_count) + params.increment';
+
+// Policy tasks run in parallel workers: the counter is incremented in the index itself, never read-modify-written.
+const incrementPolicyAppliedCount = async (context: AuthContext, policy: BasicStoreEntityCurationPolicy) => {
+  await elUpdate(context, policy._index, policy.internal_id, { script: { source: POLICY_APPLIED_COUNT_SCRIPT, lang: 'painless', params: { increment: 1 } } });
+};
+
 /**
  * Apply executed by a background task: a bulk accept (no policy) or a policy auto-apply. A policy apply re-checks the
  * eligibility at apply time (the graph may have changed since the task was created) and skips silently otherwise.
@@ -334,7 +342,7 @@ export const applyProposalFromTask = async (context: AuthContext, user: AuthUser
     policyId: policy.internal_id,
     decision,
   });
-  await patchAttribute(context, SYSTEM_USER, policy.internal_id, ENTITY_TYPE_CURATION_POLICY, { applied_count: (policy.applied_count ?? 0) + 1 });
+  await incrementPolicyAppliedCount(context, policy);
   return applied;
 };
 
@@ -381,6 +389,16 @@ export const bulkRejectProposals = async (context: AuthContext, user: AuthUser, 
   return rejected;
 };
 
+/**
+ * An applied proposal is reverted from its merge record or its applied patch. A date fix is the exception: reverting
+ * it would write back an end date before the start date, which the platform refuses on every update.
+ */
+export const isProposalRevertible = (proposal: BasicStoreEntityCurationProposal) => {
+  const isApplied = proposal.proposal_status === PROPOSAL_STATUS_ACCEPTED || proposal.proposal_status === PROPOSAL_STATUS_AUTO_APPLIED;
+  const hasTrace = (proposal.recommended_action === ACTION_MERGE && !!proposal.merge_record_id) || !!proposal.applied_patch;
+  return isApplied && hasTrace && proposal.recommended_action !== ACTION_FIX_DATES;
+};
+
 export const revertProposal = async (context: AuthContext, user: AuthUser, id: string) => {
   const proposal = await findProposalById(context, user, id);
   if (!proposal) {
@@ -388,6 +406,9 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   }
   if (proposal.proposal_status !== PROPOSAL_STATUS_ACCEPTED && proposal.proposal_status !== PROPOSAL_STATUS_AUTO_APPLIED) {
     throw FunctionalError('Only applied curation proposals can be reverted', { id, status: proposal.proposal_status });
+  }
+  if (proposal.recommended_action === ACTION_FIX_DATES) {
+    throw FunctionalError('A date fix cannot be reverted: the original end date is before the start date, which the platform does not accept', { id });
   }
   if (!canUserApplyProposal(user, proposal)) {
     throw ForbiddenAccess('You are not allowed to revert this curation proposal');

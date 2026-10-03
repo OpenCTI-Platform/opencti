@@ -1,6 +1,8 @@
 import { useTheme } from '@mui/styles';
+import type { PayloadError } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 export const CURATION_PROPOSAL_KINDS = ['merge', 'alias', 'split', 'contradiction', 'stale', 'relationship_conflict', 'type_mismatch', 'field_precedence'] as const;
 export const CURATION_PROPOSAL_STATUSES = ['open', 'accepted', 'rejected', 'auto_applied', 'reverted'] as const;
@@ -22,6 +24,16 @@ export const parseJsonObject = (value: string | null | undefined): Record<string
   } catch {
     return null;
   }
+};
+
+/**
+ * useApiMutation hands GraphQL payload errors to onCompleted, not to onError: they are notified here and the caller
+ * must stop before its success flow when this returns true.
+ */
+export const notifyPayloadErrors = (errors: PayloadError[] | null | undefined): boolean => {
+  if (!errors || errors.length === 0) return false;
+  MESSAGING$.notifyError(errors.map((error) => error.message).join('\n'));
+  return true;
 };
 
 export const formatPercent = (value: number | null | undefined, digits = 0) => {

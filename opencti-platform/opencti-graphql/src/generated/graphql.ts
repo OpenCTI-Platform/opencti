@@ -6619,6 +6619,7 @@ export type CurationProposal = BasicObject & InternalObject & {
   adjudication_requested_at?: Maybe<Scalars['DateTime']['output']>;
   applied_patch?: Maybe<Scalars['String']['output']>;
   can_apply: Scalars['Boolean']['output'];
+  can_revert: Scalars['Boolean']['output'];
   confidence_score: Scalars['Float']['output'];
   created_at: Scalars['DateTime']['output'];
   decidedBy?: Maybe<Creator>;
@@ -17597,6 +17598,7 @@ export type MergeRecord = BasicObject & InternalObject & {
   sources: Array<MergeRecordSource>;
   standard_id: Scalars['String']['output'];
   target?: Maybe<StixCoreObject>;
+  unmerge_pending_source_ids?: Maybe<Array<Scalars['String']['output']>>;
   unmergedBy?: Maybe<Creator>;
   unmerged_at?: Maybe<Scalars['DateTime']['output']>;
   updated_at: Scalars['DateTime']['output'];
@@ -17647,6 +17649,7 @@ export enum MergeRecordStatus {
   Active = 'active',
   Irreversible = 'irreversible',
   PartiallyReverted = 'partially_reverted',
+  Pending = 'pending',
   Reverted = 'reverted'
 }
 
@@ -45710,6 +45713,7 @@ export type CurationProposalResolvers<ContextType = any, ParentType extends Reso
   adjudication_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   applied_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   can_apply?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  can_revert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   confidence_score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decidedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -49675,6 +49679,7 @@ export type MergeRecordResolvers<ContextType = any, ParentType extends Resolvers
   sources?: Resolver<Array<ResolversTypes['MergeRecordSource']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  unmerge_pending_source_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   unmergedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   unmerged_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

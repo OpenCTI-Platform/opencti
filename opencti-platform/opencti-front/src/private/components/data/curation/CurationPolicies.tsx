@@ -24,7 +24,7 @@ import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLo
 import { MESSAGING$ } from '../../../../relay/environment';
 import CurationPolicyDryRun from './CurationPolicyDryRun';
 import CurationPolicyForm, { CurationPolicyFormData } from './CurationPolicyForm';
-import useCurationLabels, { formatPercent } from './curationUtils';
+import useCurationLabels, { formatPercent, notifyPayloadErrors } from './curationUtils';
 import { CurationPoliciesListQuery, CurationPoliciesListQuery$variables } from './__generated__/CurationPoliciesListQuery.graphql';
 import { CurationPolicies_policies$data } from './__generated__/CurationPolicies_policies.graphql';
 import { CurationPolicies_policy$data } from './__generated__/CurationPolicies_policy.graphql';
@@ -157,7 +157,8 @@ const CurationPoliciesComponent = () => {
   const apply = (policy: CurationPolicies_policy$data) => {
     commitApply({
       variables: { id: policy.id },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(response.curationPolicyApply
           ? t_i18n('The eligible proposals are being applied by a background task')
           : t_i18n('No proposal is eligible for this policy'));
@@ -169,7 +170,8 @@ const CurationPoliciesComponent = () => {
     if (!deleting) return;
     commitDelete({
       variables: { id: deleting.id },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The curation policy has been deleted'));
         setDeleting(null);
         refresh();

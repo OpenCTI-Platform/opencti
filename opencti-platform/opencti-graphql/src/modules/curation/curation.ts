@@ -155,6 +155,7 @@ const MERGE_RECORD_DEFINITION: ModuleDefinition<StoreEntityMergeRecord, StixMerg
       upsert: false,
       isFilterable: false,
     },
+    { name: 'unmerge_pending_source_ids', label: 'Unmerge in progress', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
   relationsRefs: [

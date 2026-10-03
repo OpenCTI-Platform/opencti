@@ -14,6 +14,7 @@ import {
   bulkAcceptProposals,
   bulkRejectProposals,
   canUserApplyProposal,
+  isProposalRevertible,
   curationSettingsForApi,
   curationStatistics,
   decideProposal,
@@ -106,6 +107,7 @@ const curationResolvers: Resolvers = {
       return merge_record_id ? findMergeRecordById(context, context.user, merge_record_id) as any : null;
     },
     can_apply: (proposal, _, context) => canUserApplyProposal(context.user!, proposal as unknown as BasicStoreEntityCurationProposal),
+    can_revert: (proposal) => isProposalRevertible(proposal as unknown as BasicStoreEntityCurationProposal),
   },
   MergeRecord: {
     objectMarking: (record, _, context) => context.batch.markingsBatchLoader.load(record),

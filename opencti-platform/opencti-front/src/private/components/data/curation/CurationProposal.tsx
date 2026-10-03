@@ -56,6 +56,7 @@ const proposalDetailsFragment = graphql`
     merge_record_id
     applied_patch
     can_apply
+    can_revert
     created_at
     updated_at
     ...CurationProposalCompare_proposal
@@ -88,9 +89,11 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
   const attributionActorIds = isAttribution && Array.isArray(payload?.relationships)
     ? (payload.relationships as Array<{ actor_id?: string }>).map((relation) => relation.actor_id).filter((id): id is string => !!id)
     : [];
-  const [survivorId, setSurvivorId] = useState<string | null>(
-    isAttribution ? null : (proposal.target_id ?? proposal.subject_ids[0] ?? null),
-  );
+  const proposedSurvivorId = isAttribution ? null : (proposal.target_id ?? proposal.subject_ids[0] ?? null);
+  // The analyst's pick holds until the proposal target changes (an adjudication), then the new target is proposed.
+  const [selection, setSelection] = useState<{ survivorId: string | null; forTargetId: string | null } | null>(null);
+  const survivorId = selection && selection.forTargetId === (proposal.target_id ?? null) ? selection.survivorId : proposedSurvivorId;
+  const setSurvivorId = (id: string | null) => setSelection({ survivorId: id, forTargetId: proposal.target_id ?? null });
   const isOpen = proposal.proposal_status === 'open';
   const isTargeted = isAttribution || ['merge', 'add_aliases'].includes(proposal.recommended_action);
   const survivorIndex = survivorId ? proposal.subject_ids.indexOf(survivorId) : -1;

@@ -2038,7 +2038,8 @@ export const mergeEntities = async (
     const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
-    // Reversible merge: snapshot what the merge is about to change, from the exact plan the merge will execute.
+    // Reversible merge: the pre-merge state is stored, from the exact plan the merge will execute, before anything
+    // changes. A merge that cannot be recorded does not run.
     const mergeRecorder = getMergeRecorder();
     let plan: MergePlan | undefined;
     let mergeRecordPreparation: unknown;
@@ -2049,12 +2050,21 @@ export const mergeEntities = async (
       try {
         mergeRecordPreparation = await mergeRecorder.prepare(context, user, { target: initialInstance, sources, sourcesDependencies, plan, metadata: opts.mergeRecordMetadata });
       } catch (err) {
-        logApp.error('[OPENCTI] [MERGE] Merge record preparation failed, the merge continues without a reversible record', { cause: err, targetEntityId });
+        throw DatabaseError('Merge aborted, the merge record that makes it reversible cannot be stored', { cause: err, targetEntityId, sourceEntityIds });
       }
     }
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
-    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, { ...opts, plan });
+    try {
+      await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, { ...opts, plan });
+    } catch (err) {
+      if (mergeRecorder && mergeRecordPreparation) {
+        await mergeRecorder.abort(context, mergeRecordPreparation).catch((abortError) => {
+          logApp.error('[OPENCTI] [MERGE] Merge record of a failed merge cannot be discarded', { cause: abortError, targetEntityId });
+        });
+      }
+      throw err;
+    }
     const mergedInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
@@ -2065,7 +2075,8 @@ export const mergeEntities = async (
       try {
         await mergeRecorder.commit(context, user, mergeRecordPreparation, { mergedInstance, sources });
       } catch (err) {
-        logApp.error('[OPENCTI] [MERGE] Merge record persistence failed', { cause: err, targetEntityId });
+        // The pending record already holds the pre-merge state: the curation manager completes it from the live graph.
+        logApp.error('[OPENCTI] [MERGE] Merge record completion failed, it will be completed by the curation manager', { cause: err, targetEntityId });
       }
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
@@ -2151,7 +2162,8 @@ const EL_REMOVE_ENTITY_CONNECTION_SCRIPT = `if (ctx._source[params.key] != null)
  * Re-point relationships from one entity to another, in place (same relationship ids, edits kept): the exact reverse
  * of the connection rewrite done by the merge. Denormalized references are maintained on the three impacted
  * elements and one update event is emitted per relationship so that stream consumers follow.
- * Relationships no longer pointing to the previous entity are skipped and reported.
+ * Relationships no longer pointing to the previous entity are skipped and reported; the ones already pointing to the
+ * new entity (an interrupted operation being resumed) count as re-pointed.
  */
 export const repointRelationships = async (
   context: AuthContext,
@@ -2173,6 +2185,10 @@ export const repointRelationships = async (
       const move = group[moveIndex];
       const relation = beforeById.get(move.relationId);
       const currentSideId = move.side === 'from' ? relation?.fromId : relation?.toId;
+      if (relation && currentSideId === move.newEntity.internal_id) {
+        repointed.push(move.relationId);
+        continue;
+      }
       if (!relation || currentSideId !== move.previousEntityId || isInferredIndex(relation._index)) {
         skipped.push(move.relationId);
         continue;

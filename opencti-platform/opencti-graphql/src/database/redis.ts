@@ -1034,16 +1034,42 @@ export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<vo
 const CURATION_KEY_PREFIX = 'curation:';
 const CURATION_COUNTER_TTL_SECONDS = 400 * 24 * 3600;
 
+// Stored value: "<writer>\n<event id>\n<previous writer>". The script runs atomically, so concurrent writers each observe
+// their immediate predecessor, and replaying the same event returns the predecessor observed the first time.
+const CURATION_SWAP_FIELD_WRITER_SCRIPT = `
+local current = redis.call('GET', KEYS[1])
+local previous = ''
+if current then
+  local writer, event, before = string.match(current, '^([^\\n]*)\\n([^\\n]*)\\n(.*)$')
+  if event == ARGV[2] then
+    return {before, 1}
+  end
+  previous = writer or current
+end
+redis.call('SET', KEYS[1], ARGV[1] .. '\\n' .. ARGV[2] .. '\\n' .. previous, 'EX', tonumber(ARGV[3]))
+return {previous, 0}
+`;
+
+export interface CurationFieldWriterSwap {
+  previous: string | null;
+  // True when the event was already recorded (stream replay after a failed batch).
+  replayed: boolean;
+}
+
 /**
  * Remember the last writer of an entity field and return the previous one (if still within the TTL window).
  * Used to detect sources overwriting each other on the same field.
  */
-export const redisCurationSwapFieldWriter = async (entityId: string, field: string, writer: string, ttlSeconds: number): Promise<string | null> => {
+export const redisCurationSwapFieldWriter = async (
+  entityId: string,
+  field: string,
+  writer: string,
+  eventId: string,
+  ttlSeconds: number,
+): Promise<CurationFieldWriterSwap> => {
   const key = `${CURATION_KEY_PREFIX}writer:${entityId}:${field}`;
-  const client = getClientBase();
-  const previous = await client.get(key);
-  await client.set(key, writer, 'EX', ttlSeconds);
-  return previous;
+  const [previous, replayed] = await getClientBase().eval(CURATION_SWAP_FIELD_WRITER_SCRIPT, 1, key, writer, eventId, ttlSeconds) as [string, number];
+  return { previous: previous || null, replayed: replayed === 1 };
 };
 
 export const redisCurationIncrementCounter = async (name: string, day: string, increment = 1): Promise<number> => {

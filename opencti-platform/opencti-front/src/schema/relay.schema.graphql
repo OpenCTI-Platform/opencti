@@ -18203,6 +18203,7 @@ enum CurationDecision {
 }
 
 enum MergeRecordStatus {
+  pending
   active
   reverted
   partially_reverted
@@ -18279,6 +18280,7 @@ type CurationProposal implements InternalObject & BasicObject {
   mergeRecord: MergeRecord
   applied_patch: String
   can_apply: Boolean!
+  can_revert: Boolean!
 }
 
 enum CurationProposalOrdering {
@@ -18365,6 +18367,7 @@ type MergeRecord implements InternalObject & BasicObject {
   proposal_id: String
   unmerged_at: DateTime
   unmergedBy: Creator
+  unmerge_pending_source_ids: [String!]
 }
 
 enum MergeRecordOrdering {

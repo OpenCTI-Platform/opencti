@@ -23,7 +23,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMERGE } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useCurationLabels, { CURATION_PROPOSALS_PATH } from './curationUtils';
+import useCurationLabels, { CURATION_PROPOSALS_PATH, notifyPayloadErrors } from './curationUtils';
 import { MergeRecordDrawerQuery } from './__generated__/MergeRecordDrawerQuery.graphql';
 import { MergeRecordDrawerUnmergeMutation } from './__generated__/MergeRecordDrawerUnmergeMutation.graphql';
 
@@ -120,7 +120,8 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
   const unmerge = () => {
     commitUnmerge({
       variables: { mergeRecordId: mergeRecord.id, sourceIds: selected.length > 0 ? selected : null },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The merged entities have been restored'));
         setConfirmOpen(false);
         setSelected([]);

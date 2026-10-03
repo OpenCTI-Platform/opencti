@@ -13,7 +13,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useCurationLabels, { CURATION_PROPOSAL_KINDS, CURATION_SOURCE_CLASSES } from './curationUtils';
+import useCurationLabels, { CURATION_PROPOSAL_KINDS, CURATION_SOURCE_CLASSES, notifyPayloadErrors } from './curationUtils';
 import { CurationPolicyFormAddMutation } from './__generated__/CurationPolicyFormAddMutation.graphql';
 import { CurationPolicyFormEditMutation } from './__generated__/CurationPolicyFormEditMutation.graphql';
 
@@ -138,7 +138,11 @@ const CurationPolicyForm = ({ open, onClose, onSaved, policy, curatedEntityTypes
       }));
       commitEdit({
         variables: { id: policy.id, input: edits as never },
-        onCompleted: () => {
+        onCompleted: (_, errors) => {
+          if (notifyPayloadErrors(errors)) {
+            setSubmitting(false);
+            return;
+          }
           MESSAGING$.notifySuccess(t_i18n('The curation policy has been updated'));
           done();
         },
@@ -147,7 +151,11 @@ const CurationPolicyForm = ({ open, onClose, onSaved, policy, curatedEntityTypes
     } else {
       commitAdd({
         variables: { input: input as never },
-        onCompleted: () => {
+        onCompleted: (_, errors) => {
+          if (notifyPayloadErrors(errors)) {
+            setSubmitting(false);
+            return;
+          }
           MESSAGING$.notifySuccess(t_i18n('The curation policy has been created'));
           done();
         },

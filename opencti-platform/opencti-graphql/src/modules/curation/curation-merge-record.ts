@@ -7,6 +7,7 @@ import type { MergeCommitInput, MergePreparationInput, MergeRecorder } from '../
 import {
   createEntity,
   createRelation,
+  deleteElementById,
   patchAttribute,
   repointRelationships,
   restoreEntityFromMergeSnapshot,
@@ -37,6 +38,7 @@ import {
   MERGE_STATUS_ACTIVE,
   MERGE_STATUS_IRREVERSIBLE,
   MERGE_STATUS_PARTIALLY_REVERTED,
+  MERGE_STATUS_PENDING,
   MERGE_STATUS_REVERTED,
   type MergeRecreatableRelationship,
   type MergeRedirectedRelationship,
@@ -94,12 +96,21 @@ const nameOf = (element: unknown): string | undefined => (element as { name?: st
 const aliasesOf = (instance: Record<string, any>): string[] => [...(instance.aliases ?? []), ...(instance.x_opencti_aliases ?? [])];
 
 interface MergeRecordPreparation {
+  recordId: string;
   target: MergeTargetSnapshot;
   sources: MergeSourceSnapshot[];
-  aliasProvenance: AliasProvenance[];
   irreversibleReason: string | null;
-  metadata: Record<string, string>;
 }
+
+const entityFilesPath = (entity: { entity_type: string; internal_id: string }) => `/${entity.entity_type}/${entity.internal_id}/`;
+
+// Files of a source that the merge moves under the target: same name, unless the target already has a file with it.
+const predictMovedFileIds = (source: BasicStoreObject, target: BasicStoreObject): string[] => {
+  const targetFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
+  return (source.x_opencti_files ?? [])
+    .map((file) => file.id.replace(entityFilesPath(source), entityFilesPath(target)))
+    .filter((id) => id.includes(entityFilesPath(target)) && !targetFileIds.has(id));
+};
 
 const loadRecreatableRelationships = async (context: AuthContext, ids: string[]): Promise<Map<string, MergeRecreatableRelationship>> => {
   const result = new Map<string, MergeRecreatableRelationship>();
@@ -166,7 +177,7 @@ const prepareMergeRecord = async (context: AuthContext, user: AuthUser, input: M
       refs: snapshotRefs(source),
       redirected,
       recreatable: [],
-      moved_file_ids: [],
+      moved_file_ids: predictMovedFileIds(source, target),
       contributed_aliases: R.uniq(sourceNames.filter((name) => !targetAliasKeys.has(name.toLowerCase()))),
       contributed_stix_ids: [source.standard_id, ...(source.x_opencti_stix_ids ?? [])].filter((id) => !targetStixIds.has(id)),
       reverted_at: null,
@@ -197,77 +208,145 @@ const prepareMergeRecord = async (context: AuthContext, user: AuthUser, input: M
     source_aliases: aliasesOf(snapshot.attributes),
     relationship_ids: snapshot.redirected.map((relation) => relation.id),
   }));
-  return {
-    target: {
-      internal_id: target.internal_id,
-      standard_id: target.standard_id,
-      entity_type: target.entity_type,
-      name: nameOf(target) ?? target.standard_id,
-      attributes: snapshotAttributes(target),
-      refs: snapshotRefs(target),
-      post_attributes: {},
-      post_refs: {},
-      taken_from_source_id: sources[0]?.internal_id ?? null,
-    },
-    sources: sourceSnapshots,
-    aliasProvenance,
-    irreversibleReason,
-    metadata: metadata ?? {},
+  const targetSnapshot: MergeTargetSnapshot = {
+    internal_id: target.internal_id,
+    standard_id: target.standard_id,
+    entity_type: target.entity_type,
+    name: nameOf(target) ?? target.standard_id,
+    attributes: snapshotAttributes(target),
+    refs: snapshotRefs(target),
+    post_attributes: {},
+    post_refs: {},
+    taken_from_source_id: sources[0]?.internal_id ?? null,
   };
+  const settings = await getCurationSettings(context);
+  const reversibleUntil = new Date(Date.now() + settings.merge_record_retention_days * 24 * 3600 * 1000).toISOString();
+  // The merged entity ends up with the markings and the organizations of every participant: the record, which holds
+  // a copy of each of them, gets the same restrictions.
+  const participants = [targetSnapshot, ...sourceSnapshots];
+  const refIdsOf = (refs: MergeSnapshotRef, name: string) => (refs[name] as string[] | undefined) ?? [];
+  const record = {
+    name: `${targetSnapshot.name} <- ${sourceSnapshots.map((s) => s.name).join(', ')}`,
+    merge_target_id: target.internal_id,
+    merge_target_type: target.entity_type,
+    merge_target_name: targetSnapshot.name,
+    merge_source_ids: sourceSnapshots.map((s) => s.internal_id),
+    merge_source_names: sourceSnapshots.map((s) => s.name ?? s.standard_id),
+    merge_status: MERGE_STATUS_PENDING,
+    merge_snapshot: { target: targetSnapshot, sources: sourceSnapshots },
+    alias_provenance: aliasProvenance,
+    reversible_until: reversibleUntil,
+    irreversible_reason: irreversibleReason,
+    relationships_redirected_count: sourceSnapshots.reduce((acc, s) => acc + s.redirected.length, 0),
+    relationships_recreatable_count: sourceSnapshots.reduce((acc, s) => acc + s.recreatable.length, 0),
+    merged_by_id: user.id,
+    proposal_id: metadata?.proposal_id ?? null,
+    objectMarking: R.uniq(participants.flatMap((participant) => refIdsOf(participant.refs, INPUT_MARKINGS))),
+    objectOrganization: R.uniq(participants.flatMap((participant) => refIdsOf(participant.refs, 'objectOrganization'))),
+  };
+  // Created by the system user: the record carries the restrictions of every merged element, which the merging
+  // user may not be allowed to set (organization sharing), while merged_by_id keeps who merged.
+  const created = await createEntity(context, SYSTEM_USER, record, ENTITY_TYPE_MERGE_RECORD);
+  return { recordId: created.internal_id, target: targetSnapshot, sources: sourceSnapshots, irreversibleReason };
 };
 
-const commitMergeRecord = async (context: AuthContext, user: AuthUser, preparation: MergeRecordPreparation | null, input: MergeCommitInput) => {
+/**
+ * Turn a pending record into an active one: the state of the merged entity right after the merge is what allows the
+ * unmerge to tell the values the merge brought from the values the target already had.
+ */
+const completeMergeRecord = async (
+  context: AuthContext,
+  recordId: string,
+  target: MergeTargetSnapshot,
+  sources: MergeSourceSnapshot[],
+  mergedInstance: StoreObject,
+  irreversibleReason: string | null,
+) => {
+  const mergedName = nameOf(mergedInstance) ?? mergedInstance.standard_id;
+  const snapshot: MergeSnapshot = {
+    target: { ...target, post_attributes: snapshotAttributes(mergedInstance), post_refs: snapshotRefs(mergedInstance) },
+    sources,
+  };
+  await patchAttribute(context, SYSTEM_USER, recordId, ENTITY_TYPE_MERGE_RECORD, {
+    name: `${mergedName} <- ${sources.map((s) => s.name).join(', ')}`,
+    merge_target_name: mergedName,
+    merge_status: irreversibleReason ? MERGE_STATUS_IRREVERSIBLE : MERGE_STATUS_ACTIVE,
+    merge_snapshot: snapshot,
+  });
+  await addCurationMergeRecordCount();
+};
+
+const commitMergeRecord = async (context: AuthContext, _user: AuthUser, preparation: MergeRecordPreparation | null, input: MergeCommitInput) => {
   if (!preparation) {
     return;
   }
   const { mergedInstance, sources } = input;
-  const settings = await getCurationSettings(context);
-  const targetPathMarker = `/${mergedInstance.entity_type}/${mergedInstance.internal_id}/`;
+  const targetPathMarker = entityFilesPath(mergedInstance);
   const sourcesById = new Map(sources.map((source) => [source.internal_id, source]));
   const sourceSnapshots = preparation.sources.map((snapshot) => {
     const mutated = sourcesById.get(snapshot.internal_id);
     const movedFileIds = (mutated?.x_opencti_files ?? []).map((file) => file.id).filter((id) => id.includes(targetPathMarker));
     return { ...snapshot, moved_file_ids: movedFileIds };
   });
-  const snapshot: MergeSnapshot = {
-    target: { ...preparation.target, post_attributes: snapshotAttributes(mergedInstance), post_refs: snapshotRefs(mergedInstance) },
-    sources: sourceSnapshots,
-  };
-  const markingIds = R.uniq([
-    ...((snapshot.target.post_refs[INPUT_MARKINGS] as string[] | undefined) ?? []),
-    ...sourceSnapshots.flatMap((source) => (source.refs[INPUT_MARKINGS] as string[] | undefined) ?? []),
-  ]);
-  const organizationIds = (snapshot.target.post_refs.objectOrganization as string[] | undefined) ?? [];
-  const reversibleUntil = new Date(Date.now() + settings.merge_record_retention_days * 24 * 3600 * 1000).toISOString();
-  const record = {
-    name: `${nameOf(mergedInstance) ?? mergedInstance.standard_id} <- ${sourceSnapshots.map((s) => s.name).join(', ')}`,
-    merge_target_id: mergedInstance.internal_id,
-    merge_target_type: mergedInstance.entity_type,
-    merge_target_name: nameOf(mergedInstance) ?? mergedInstance.standard_id,
-    merge_source_ids: sourceSnapshots.map((s) => s.internal_id),
-    merge_source_names: sourceSnapshots.map((s) => s.name ?? s.standard_id),
-    merge_status: preparation.irreversibleReason ? MERGE_STATUS_IRREVERSIBLE : MERGE_STATUS_ACTIVE,
-    merge_snapshot: snapshot,
-    alias_provenance: preparation.aliasProvenance,
-    reversible_until: reversibleUntil,
-    irreversible_reason: preparation.irreversibleReason,
-    relationships_redirected_count: sourceSnapshots.reduce((acc, s) => acc + s.redirected.length, 0),
-    relationships_recreatable_count: sourceSnapshots.reduce((acc, s) => acc + s.recreatable.length, 0),
-    merged_by_id: user.id,
-    proposal_id: preparation.metadata.proposal_id ?? null,
-    objectMarking: markingIds,
-    objectOrganization: organizationIds,
-  };
-  // Created by the system user: the record carries the restrictions of every merged element, which the merging
-  // user may not be allowed to set (organization sharing), while merged_by_id keeps who merged.
-  await createEntity(context, SYSTEM_USER, record, ENTITY_TYPE_MERGE_RECORD);
-  await addCurationMergeRecordCount();
+  await completeMergeRecord(context, preparation.recordId, preparation.target, sourceSnapshots, mergedInstance, preparation.irreversibleReason);
+};
+
+const abortMergeRecord = async (context: AuthContext, preparation: MergeRecordPreparation | null) => {
+  if (!preparation) {
+    return;
+  }
+  await deleteElementById(context, SYSTEM_USER, preparation.recordId, ENTITY_TYPE_MERGE_RECORD);
 };
 
 export const curationMergeRecorder: MergeRecorder<MergeRecordPreparation | null> = {
   isEnabled: () => MERGE_RECORDS_ENABLED,
   prepare: prepareMergeRecord,
   commit: commitMergeRecord,
+  abort: abortMergeRecord,
+};
+
+const PENDING_RECORD_GRACE_MS = 10 * 60 * 1000;
+
+/**
+ * Complete the records left pending by a merge whose completion step failed (or by a stopped platform), from the
+ * live graph: merged sources are gone, so the merge ran and the record becomes active; sources still all there mean
+ * the merge never ran and the record is discarded; a partial state cannot be reverted safely.
+ */
+export const completePendingMergeRecords = async (context: AuthContext) => {
+  const filters = {
+    mode: 'and' as const,
+    filters: [
+      { key: ['merge_status'], values: [MERGE_STATUS_PENDING] },
+      { key: ['created_at'], values: [new Date(Date.now() - PENDING_RECORD_GRACE_MS).toISOString()], operator: 'lt' as const },
+    ],
+    filterGroups: [],
+  };
+  const pending = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], { filters: filters as any, first: 100 });
+  const result = { completed: 0, discarded: 0, irreversible: 0 };
+  for (let index = 0; index < pending.edges.length; index += 1) {
+    const record = pending.edges[index].node;
+    const existing = await internalFindByIds(context, SYSTEM_USER, record.merge_source_ids, { baseData: true, toMap: true }) as unknown as Record<string, BasicStoreObject>;
+    const remainingSourceIds = record.merge_source_ids.filter((id) => existing[id]);
+    if (remainingSourceIds.length === record.merge_source_ids.length) {
+      await deleteElementById(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD);
+      result.discarded += 1;
+      continue;
+    }
+    const target = await storeLoadByIdWithRefs<StoreObject>(context, SYSTEM_USER, record.merge_target_id);
+    if (!target || remainingSourceIds.length > 0) {
+      await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
+        merge_status: MERGE_STATUS_IRREVERSIBLE,
+        irreversible_reason: target ? 'The merge was interrupted before all the entities were merged' : 'The merged entity was deleted before the merge record was completed',
+      });
+      result.irreversible += 1;
+      continue;
+    }
+    const liveFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
+    const sources = record.merge_snapshot.sources.map((source) => ({ ...source, moved_file_ids: source.moved_file_ids.filter((id) => liveFileIds.has(id)) }));
+    await completeMergeRecord(context, record.internal_id, record.merge_snapshot.target, sources, target, record.irreversible_reason ?? null);
+    result.completed += 1;
+  }
+  return result;
 };
 // endregion
 
@@ -280,7 +359,11 @@ export const findMergeRecordsPaginated = async (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], opts);
 };
 
+const hasInterruptedUnmerge = (record: BasicStoreEntityMergeRecord) => (record.unmerge_pending_source_ids ?? []).length > 0;
+
 export const isMergeRecordReversible = (record: BasicStoreEntityMergeRecord) => {
+  // An interrupted unmerge can always be completed: the graph is half restored.
+  if (hasInterruptedUnmerge(record)) return true;
   const isOpen = record.merge_status === MERGE_STATUS_ACTIVE || record.merge_status === MERGE_STATUS_PARTIALLY_REVERTED;
   return isOpen && !record.irreversible_reason && new Date(record.reversible_until).getTime() >= Date.now();
 };
@@ -314,18 +397,26 @@ const moveFilesBack = async (
   target: StoreObject,
   restored: StoreObject,
   movedFileIds: string[],
+  locks: string[],
 ) => {
   if (movedFileIds.length === 0) return;
   const restoredFiles = [];
   const movedSet = new Set<string>();
   for (let index = 0; index < movedFileIds.length; index += 1) {
     const fileId = movedFileIds[index];
+    const restoredId = fileId.replace(entityFilesPath(target), entityFilesPath(restored));
     const document = await loadFile(context, SYSTEM_USER, fileId, { dontThrow: true });
     if (!document) {
-      logApp.warn('[CURATION] Merged file not found anymore, it cannot be moved back', { fileId });
+      // Already moved back by an interrupted unmerge: only the references are missing.
+      const alreadyRestored = await loadFile(context, SYSTEM_USER, restoredId, { dontThrow: true });
+      if (alreadyRestored) {
+        restoredFiles.push(storeFileConverter(user, alreadyRestored as any));
+        movedSet.add(fileId);
+      } else {
+        logApp.warn('[CURATION] Merged file not found anymore, it cannot be moved back', { fileId });
+      }
       continue;
     }
-    const restoredId = fileId.replace(`/${target.entity_type}/${target.internal_id}/`, `/${restored.entity_type}/${restored.internal_id}/`);
     const copied = await copyFile(context, { sourceId: fileId, targetId: restoredId, sourceDocument: document as any, targetEntityId: restored.internal_id });
     if (copied) {
       restoredFiles.push(storeFileConverter(user, copied));
@@ -334,13 +425,19 @@ const moveFilesBack = async (
     }
   }
   if (restoredFiles.length > 0) {
-    await patchAttribute(context, SYSTEM_USER, restored.internal_id, restored.entity_type, { x_opencti_files: restoredFiles });
+    const restoredFileIds = new Set(restoredFiles.map((file) => file.id));
+    const keptOnRestored = (restored.x_opencti_files ?? []).filter((file) => !restoredFileIds.has(file.id));
+    await patchAttribute(context, SYSTEM_USER, restored.internal_id, restored.entity_type, { x_opencti_files: [...keptOnRestored, ...restoredFiles] });
     const remaining = (target.x_opencti_files ?? []).filter((file) => !movedSet.has(file.id));
-    await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { x_opencti_files: remaining });
+    await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { x_opencti_files: remaining }, { locks });
   }
 };
 
-const recreateRelationship = async (context: AuthContext, user: AuthUser, relationship: MergeRecreatableRelationship) => {
+const recreateRelationship = async (context: AuthContext, user: AuthUser, relationship: MergeRecreatableRelationship, locks: string[]) => {
+  const [alreadyRecreated] = await internalFindByIds(context, SYSTEM_USER, [relationship.id], { baseData: true }) as BasicStoreObject[];
+  if (alreadyRecreated) {
+    return alreadyRecreated;
+  }
   const refs = await filterExistingRefs(context, relationship.refs);
   const relationInput = {
     ...relationship.attributes,
@@ -351,7 +448,7 @@ const recreateRelationship = async (context: AuthContext, user: AuthUser, relati
     fromId: relationship.from_id,
     toId: relationship.to_id,
   };
-  return createRelation(context, user, relationInput, { restore: true });
+  return createRelation(context, user, relationInput, { restore: true, locks });
 };
 
 export interface UnmergeResult {
@@ -362,12 +459,7 @@ export interface UnmergeResult {
   skipped_relationship_ids: string[];
 }
 
-/**
- * Revert a recorded merge, entirely or for some of its sources: the merged-away entities are recreated with their
- * original identifiers, attributes and references, the relationships they carried are re-pointed back (or recreated
- * when the merge had dropped them as duplicates), and what they brought to the target is removed from it.
- */
-export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, mergeRecordId: string, sourceIds?: string[] | null): Promise<UnmergeResult> => {
+const loadReversibleRecord = async (context: AuthContext, user: AuthUser, mergeRecordId: string) => {
   const record = await findMergeRecordById(context, user, mergeRecordId);
   if (!record) {
     throw FunctionalError('Merge record not found', { id: mergeRecordId });
@@ -379,17 +471,44 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
       reason: record.irreversible_reason ?? 'retention window expired',
     });
   }
-  const snapshot = record.merge_snapshot;
-  const pendingSources = snapshot.sources.filter((source) => !source.reverted_at);
-  const reverting = sourceIds && sourceIds.length > 0 ? pendingSources.filter((source) => sourceIds.includes(source.internal_id)) : pendingSources;
-  if (reverting.length === 0) {
-    throw FunctionalError('No merged entity left to restore for this merge record', { id: mergeRecordId, sourceIds });
+  return record;
+};
+
+const selectRevertedSources = (record: BasicStoreEntityMergeRecord, sourceIds?: string[] | null) => {
+  const pendingSources = record.merge_snapshot.sources.filter((source) => !source.reverted_at);
+  const requested = sourceIds && sourceIds.length > 0 ? sourceIds : null;
+  if (hasInterruptedUnmerge(record)) {
+    // An interrupted unmerge is resumed exactly as it started.
+    const interrupted = record.unmerge_pending_source_ids ?? [];
+    if (requested && (requested.length !== interrupted.length || requested.some((id) => !interrupted.includes(id)))) {
+      throw FunctionalError('An interrupted unmerge of this merge must be completed first', { id: record.internal_id, pending_source_ids: interrupted });
+    }
+    return pendingSources.filter((source) => interrupted.includes(source.internal_id));
   }
-  const remaining = pendingSources.filter((source) => !reverting.includes(source));
-  const lockIds = [mergeRecordId, record.merge_target_id];
+  return requested ? pendingSources.filter((source) => requested.includes(source.internal_id)) : pendingSources;
+};
+
+/**
+ * Revert a recorded merge, entirely or for some of its sources: the merged-away entities are recreated with their
+ * original identifiers, attributes and references, the relationships they carried are re-pointed back (or recreated
+ * when the merge had dropped them as duplicates), and what they brought to the target is removed from it.
+ * The reverted sources are written on the record before the first change: an unmerge that fails half way is resumed
+ * by the next call, every step skipping what was already restored.
+ */
+export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, mergeRecordId: string, sourceIds?: string[] | null): Promise<UnmergeResult> => {
+  const initialRecord = await loadReversibleRecord(context, user, mergeRecordId);
+  const lockIds = [mergeRecordId, initialRecord.merge_target_id];
   let lock;
   try {
     lock = await lockResources(lockIds);
+    // Read again under the lock: a concurrent unmerge may have changed the record.
+    const record = await loadReversibleRecord(context, user, mergeRecordId);
+    const snapshot = record.merge_snapshot;
+    const reverting = selectRevertedSources(record, sourceIds);
+    if (reverting.length === 0) {
+      throw FunctionalError('No merged entity left to restore for this merge record', { id: mergeRecordId, sourceIds });
+    }
+    const remaining = snapshot.sources.filter((source) => !source.reverted_at && !reverting.includes(source));
     const target = await storeLoadByIdWithRefs<StoreObject>(context, user, record.merge_target_id);
     if (!target) {
       throw FunctionalError('The entity the merge produced does not exist anymore (deleted or merged again). Revert its most recent merge first.', {
@@ -398,7 +517,13 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
       });
     }
     controlUserConfidenceAgainstElement(user, target);
+    if (!hasInterruptedUnmerge(record)) {
+      await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
+        unmerge_pending_source_ids: reverting.map((source) => source.internal_id),
+      }, { locks: lockIds });
+    }
     // 1. Remove from the target what the reverted sources brought (identifiers first, to free them for the restore).
+    // Only values still on the target are removed, so a resumed unmerge removes nothing twice.
     const revertInputs = computeTargetRevertInputs(
       snapshot.target,
       { attributes: snapshotAttributes(target), refs: snapshotRefs(target) },
@@ -424,12 +549,15 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
         internal_id: source.internal_id,
         standard_id: source.standard_id,
       };
-      const restored = await restoreEntityFromMergeSnapshot(context, user, restoreInput, source.entity_type);
+      const [alreadyRestored] = await internalFindByIds(context, SYSTEM_USER, [source.internal_id]) as unknown as StoreObject[];
+      const restored = alreadyRestored?.entity_type === source.entity_type
+        ? alreadyRestored
+        : await restoreEntityFromMergeSnapshot(context, user, restoreInput, source.entity_type);
       restoredIds.push(restored.internal_id);
       const restoredLoaded = await storeLoadByIdWithRefs<StoreObject>(context, SYSTEM_USER, restored.internal_id);
       const liveTarget = await storeLoadByIdWithRefs<StoreObject>(context, SYSTEM_USER, target.internal_id);
       if (restoredLoaded && liveTarget) {
-        await moveFilesBack(context, user, liveTarget, restoredLoaded, source.moved_file_ids);
+        await moveFilesBack(context, user, liveTarget, restoredLoaded, source.moved_file_ids, lockIds);
       }
       const { repointed, skipped } = await repointRelationships(context, user, source.redirected.map((relation) => ({
         relationId: relation.id,
@@ -447,7 +575,7 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
       for (let relationIndex = 0; relationIndex < source.recreatable.length; relationIndex += 1) {
         const relationship = source.recreatable[relationIndex];
         try {
-          await recreateRelationship(context, user, relationship);
+          await recreateRelationship(context, user, relationship, lockIds);
           recreatedCount += 1;
         } catch (err) {
           skippedRelationshipIds.push(relationship.id);
@@ -468,7 +596,8 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
       merge_status: status,
       unmerged_at: revertedAt,
       unmerged_by_id: user.id,
-    });
+      unmerge_pending_source_ids: [],
+    }, { locks: lockIds });
     const updatedRecord = updatedElement as unknown as BasicStoreEntityMergeRecord;
     if (record.proposal_id) {
       await patchAttribute(context, SYSTEM_USER, record.proposal_id, ENTITY_TYPE_CURATION_PROPOSAL, { proposal_status: PROPOSAL_STATUS_REVERTED });
@@ -514,9 +643,11 @@ export const expireMergeRecords = async (context: AuthContext) => {
     ],
     filterGroups: [],
   };
-  const expired = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], { filters: filters as any, first: 500 });
-  for (let index = 0; index < expired.edges.length; index += 1) {
-    const record = expired.edges[index].node;
+  const candidates = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], { filters: filters as any, first: 500 });
+  // A record with an interrupted unmerge keeps its snapshot until the unmerge is completed.
+  const expired = candidates.edges.map((edge) => edge.node).filter((record) => !hasInterruptedUnmerge(record));
+  for (let index = 0; index < expired.length; index += 1) {
+    const record = expired[index];
     const lightSnapshot: MergeSnapshot = {
       target: { ...record.merge_snapshot.target, attributes: {}, post_attributes: {}, refs: {}, post_refs: {} },
       sources: record.merge_snapshot.sources.map((source) => ({ ...source, attributes: {}, refs: {}, redirected: [], recreatable: [] })),
@@ -527,6 +658,6 @@ export const expireMergeRecords = async (context: AuthContext) => {
       merge_snapshot: lightSnapshot,
     });
   }
-  return expired.edges.length;
+  return expired.length;
 };
 // endregion

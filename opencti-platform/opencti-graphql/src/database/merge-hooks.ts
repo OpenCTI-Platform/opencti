@@ -37,13 +37,18 @@ export interface MergeCommitInput {
 }
 
 /**
- * A merge recorder captures what a merge changes (before it runs) and persists it once the merge succeeded, so that
- * the merge can later be reverted. Registered by the curation module, called by mergeEntities.
+ * A merge recorder captures what a merge changes so that the merge can later be reverted. Registered by the curation
+ * module, called by mergeEntities:
+ * - prepare runs before the merge mutates the graph and durably stores the pre-merge state; when it fails, the merge
+ *   does not run;
+ * - commit completes the record once the merge succeeded;
+ * - abort discards the prepared record when the merge itself failed.
  */
 export interface MergeRecorder<P = unknown> {
   isEnabled: () => boolean;
   prepare: (context: AuthContext, user: AuthUser, input: MergePreparationInput) => Promise<P>;
   commit: (context: AuthContext, user: AuthUser, preparation: P, input: MergeCommitInput) => Promise<void>;
+  abort: (context: AuthContext, preparation: P) => Promise<void>;
 }
 
 let mergeRecorder: MergeRecorder<any> | undefined;

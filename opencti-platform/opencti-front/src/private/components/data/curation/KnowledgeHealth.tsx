@@ -17,7 +17,7 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import KnowledgeHealthScore from './KnowledgeHealthScore';
-import useCurationLabels, { CURATION_PROPOSALS_PATH, formatPercent } from './curationUtils';
+import useCurationLabels, { CURATION_PROPOSALS_PATH, formatPercent, notifyPayloadErrors } from './curationUtils';
 import { KnowledgeHealthQuery } from './__generated__/KnowledgeHealthQuery.graphql';
 import { KnowledgeHealthRefreshMutation } from './__generated__/KnowledgeHealthRefreshMutation.graphql';
 
@@ -106,7 +106,8 @@ const KnowledgeHealth = () => {
   const refresh = () => {
     commitRefresh({
       variables: {},
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The Knowledge Health snapshot has been refreshed'));
         setFetchKey((key) => key + 1);
       },

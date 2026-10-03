@@ -21,7 +21,7 @@ import { runContradictionScan, runDuplicateScan, runIncrementalDuplicateDetectio
 import { createHealthSnapshot, findLatestHealthSnapshot, sendKnowledgeHealthDigest, SOURCE_CONFLICTS_COUNTER } from '../modules/curation/curation-health';
 import { adjudicateProposal, isAdjudicationAvailable } from '../modules/curation/curation-adjudication';
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
-import { expireMergeRecords } from '../modules/curation/curation-merge-record';
+import { completePendingMergeRecords, expireMergeRecords } from '../modules/curation/curation-merge-record';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isProcedureConflict } from '../modules/curation/curation-detectors';
 import { decideFieldAuthority } from '../modules/curation/curation-field-authority';
@@ -55,10 +55,13 @@ const CURATION_SNAPSHOT_INTERVAL_MS = Number(conf.get('curation_manager:snapshot
 const CURATION_POLICY_INTERVAL_MS = Number(conf.get('curation_manager:policy_interval') ?? 15 * 60 * 1000);
 const CURATION_ADJUDICATIONS_PER_TICK = Number(conf.get('curation_manager:adjudications_per_tick') ?? 5);
 const CURATION_STREAM_MAX_ENTITIES = Number(conf.get('curation_manager:stream_max_entities_per_batch') ?? 50);
+const CURATION_STREAM_MAX_ATTEMPTS = 5;
 const FIELD_WRITER_TTL_SECONDS = 30 * 24 * 3600;
 const DIGEST_MIN_INTERVAL_MS = 6 * 24 * 3600 * 1000;
 
 let streamStartFrom: string | undefined;
+let failedBatchKey: string | undefined;
+let failedBatchAttempts = 0;
 let lastPolicyRun = 0;
 let lastExpiryRun = 0;
 
@@ -151,6 +154,10 @@ export const curationManagerCronHandler = async () => {
   await runSnapshotAndDigest(context, await getCurationSettings(context));
   await runAdjudicationQueue(context, settings);
   await runPolicies(context);
+  const pendingRecords = await completePendingMergeRecords(context);
+  if (pendingRecords.completed + pendingRecords.discarded + pendingRecords.irreversible > 0) {
+    logApp.warn('[CURATION] Pending merge records completed from the live graph', pendingRecords);
+  }
   if (Date.now() - lastExpiryRun >= 24 * 3600 * 1000) {
     lastExpiryRun = Date.now();
     const expired = await expireMergeRecords(context);
@@ -186,15 +193,25 @@ const connectorSourcesOfUser = async (context: AuthContext, userId: string): Pro
  * field authority rule says the overwritten value came from a more authoritative source, a field precedence proposal
  * suggests to restore it.
  */
-const trackFieldWriters = async (context: AuthContext, settings: CurationSettings, event: UpdateEvent, entityId: string, entityType: string, drafts: ProposalDraft[]) => {
+const trackFieldWriters = async (
+  context: AuthContext,
+  settings: CurationSettings,
+  event: UpdateEvent,
+  eventId: string,
+  entityId: string,
+  entityType: string,
+  drafts: ProposalDraft[],
+) => {
   const writer = event.origin?.user_id;
   if (!writer || INTERNAL_USERS[writer]) return;
   const changes = topLevelReplacements(event);
   for (let index = 0; index < changes.length; index += 1) {
     const change = changes[index];
-    const previousWriter = await redisCurationSwapFieldWriter(entityId, change.field, writer, FIELD_WRITER_TTL_SECONDS);
+    const { previous: previousWriter, replayed } = await redisCurationSwapFieldWriter(entityId, change.field, writer, eventId, FIELD_WRITER_TTL_SECONDS);
     if (!previousWriter || previousWriter === writer || INTERNAL_USERS[previousWriter]) continue;
-    await redisCurationIncrementCounter(SOURCE_CONFLICTS_COUNTER, today());
+    if (!replayed) {
+      await redisCurationIncrementCounter(SOURCE_CONFLICTS_COUNTER, today());
+    }
     const rule = settings.field_authority_enabled
       ? settings.field_authority_rules.find((r) => r.entity_type === entityType && r.attribute === change.field)
       : undefined;
@@ -220,12 +237,12 @@ const trackFieldWriters = async (context: AuthContext, settings: CurationSetting
   }
 };
 
-const procedureConflictDraft = async (context: AuthContext, event: UpdateEvent, relationshipId: string): Promise<ProposalDraft | null> => {
+const procedureConflictDraft = async (context: AuthContext, event: UpdateEvent, eventId: string, relationshipId: string): Promise<ProposalDraft | null> => {
   const previous = ((event.context?.reverse_patch ?? []).find((operation: any) => operation.path === '/description') as any)?.value as string | undefined;
   const current = (event.data as any).description as string | undefined;
   if (!isProcedureConflict(previous, current)) return null;
   const writer = event.origin?.user_id ?? null;
-  const previousWriter = writer ? await redisCurationSwapFieldWriter(relationshipId, 'description', writer, FIELD_WRITER_TTL_SECONDS) : null;
+  const previousWriter = writer ? (await redisCurationSwapFieldWriter(relationshipId, 'description', writer, eventId, FIELD_WRITER_TTL_SECONDS)).previous : null;
   const ext = (event.data as any).extensions?.[STIX_EXT_OCTI] ?? {};
   const creators: string[] = ext.creator_ids ?? [];
   const isOtherSource = previousWriter ? previousWriter !== writer : !creators.includes(writer ?? '');
@@ -269,53 +286,83 @@ const dateInversionDraft = (stix: Record<string, any>, entityId: string, entityT
 
 const NAME_PATHS = ['/name', '/aliases', '/x_opencti_aliases', '/description'];
 
+/**
+ * Detections that need the event itself (previous writers, previous procedure text) are persisted event by event, so
+ * that a batch replayed after a failure finds them already recorded. Entities whose names changed are collected for
+ * the duplicate detection, which only needs the current graph.
+ */
+const processStreamEvent = async (context: AuthContext, settings: CurationSettings, streamEvent: SseEvent<DataEvent>, changedEntityIds: Set<string>) => {
+  const event = streamEvent.data as any;
+  const stix = event.data ?? {};
+  const ext = stix.extensions?.[STIX_EXT_OCTI] ?? {};
+  const entityId: string | undefined = ext.id;
+  const entityType: string | undefined = ext.type;
+  if (!entityId || !entityType || ![EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, 'merge'].includes(event.type)) return;
+  const detectors = settings.enabled_detectors as string[];
+  const drafts: ProposalDraft[] = [];
+  if (settings.curated_entity_types.includes(entityType)) {
+    const touchesNames = event.type !== EVENT_TYPE_UPDATE
+      || (event.context?.patch ?? []).some((operation: any) => NAME_PATHS.some((path) => typeof operation.path === 'string' && operation.path.startsWith(path)));
+    if (touchesNames) changedEntityIds.add(entityId);
+    if (event.type === EVENT_TYPE_UPDATE) {
+      await trackFieldWriters(context, settings, event as UpdateEvent, streamEvent.id, entityId, entityType, drafts);
+    }
+  }
+  if (detectors.includes(DETECTOR_CONTRADICTION)) {
+    const inversion = dateInversionDraft(stix, entityId, entityType);
+    if (inversion) drafts.push(inversion);
+  }
+  if (detectors.includes(DETECTOR_RELATIONSHIP_CONFLICT) && event.type === EVENT_TYPE_UPDATE && entityType === RELATION_USES
+    && ext.target_type === ENTITY_TYPE_ATTACK_PATTERN) {
+    const conflict = await procedureConflictDraft(context, event as UpdateEvent, streamEvent.id, entityId);
+    if (conflict) drafts.push(conflict);
+  }
+  const uniqueDrafts = R.uniqBy((draft) => `${draft.kind}|${draft.subjects.map((s) => s.id).join(',')}|${draft.recommended_action}`, drafts);
+  for (let index = 0; index < uniqueDrafts.length; index += 1) {
+    await persistProposalDraft(context, settings, uniqueDrafts[index]);
+  }
+};
+
+/**
+ * The stream position is saved only once a batch is fully processed. A failing batch makes the handler throw: the
+ * stream processor stops and the manager restarts it from the saved position, so the batch is processed again
+ * (every step is idempotent). A batch failing CURATION_STREAM_MAX_ATTEMPTS times in a row is skipped, so that one
+ * event that can never be processed does not block the curation of everything after it.
+ */
 export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
+  const batchKey = streamEvents[0]?.id ?? 'empty';
   try {
     const settings = await getCurationSettings(context);
     if (settings.curation_enabled) {
       const changedEntityIds = new Set<string>();
-      const drafts: ProposalDraft[] = [];
-      const detectors = settings.enabled_detectors as string[];
       for (let index = 0; index < streamEvents.length; index += 1) {
-        const event = streamEvents[index].data as any;
-        const stix = event.data ?? {};
-        const ext = stix.extensions?.[STIX_EXT_OCTI] ?? {};
-        const entityId: string | undefined = ext.id;
-        const entityType: string | undefined = ext.type;
-        if (!entityId || !entityType || ![EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, 'merge'].includes(event.type)) continue;
-        if (settings.curated_entity_types.includes(entityType)) {
-          const touchesNames = event.type !== EVENT_TYPE_UPDATE
-            || (event.context?.patch ?? []).some((operation: any) => NAME_PATHS.some((path) => typeof operation.path === 'string' && operation.path.startsWith(path)));
-          if (touchesNames) changedEntityIds.add(entityId);
-          if (event.type === EVENT_TYPE_UPDATE) {
-            await trackFieldWriters(context, settings, event as UpdateEvent, entityId, entityType, drafts);
-          }
-        }
-        if (detectors.includes(DETECTOR_CONTRADICTION)) {
-          const inversion = dateInversionDraft(stix, entityId, entityType);
-          if (inversion) drafts.push(inversion);
-        }
-        if (detectors.includes(DETECTOR_RELATIONSHIP_CONFLICT) && event.type === EVENT_TYPE_UPDATE && entityType === RELATION_USES
-          && ext.target_type === ENTITY_TYPE_ATTACK_PATTERN) {
-          const conflict = await procedureConflictDraft(context, event as UpdateEvent, entityId);
-          if (conflict) drafts.push(conflict);
-        }
+        await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
       }
-      if (changedEntityIds.size > 0) {
-        await runIncrementalDuplicateDetection(context, settings, [...changedEntityIds].slice(0, CURATION_STREAM_MAX_ENTITIES));
-      }
-      const uniqueDrafts = R.uniqBy((draft) => `${draft.kind}|${draft.subjects.map((s) => s.id).join(',')}|${draft.recommended_action}`, drafts);
-      for (let index = 0; index < uniqueDrafts.length; index += 1) {
-        await persistProposalDraft(context, settings, uniqueDrafts[index]);
+      const batches = R.splitEvery(CURATION_STREAM_MAX_ENTITIES, [...changedEntityIds]);
+      for (let index = 0; index < batches.length; index += 1) {
+        await runIncrementalDuplicateDetection(context, settings, batches[index]);
       }
     }
   } catch (error) {
-    logApp.error('[CURATION] Stream handling error', { cause: error, manager: CURATION_MANAGER_ID });
-  } finally {
-    streamStartFrom = lastEventId;
-    await redisSetManagerEventState(CURATION_STREAM_STATE, lastEventId);
+    failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
+    failedBatchKey = batchKey;
+    if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
+      logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
+      throw error;
+    }
+    logApp.error('[CURATION] Stream batch failed repeatedly and is skipped', {
+      cause: error,
+      attempts: failedBatchAttempts,
+      first_event_id: batchKey,
+      last_event_id: lastEventId,
+      manager: CURATION_MANAGER_ID,
+    });
   }
+  failedBatchKey = undefined;
+  failedBatchAttempts = 0;
+  streamStartFrom = lastEventId;
+  await redisSetManagerEventState(CURATION_STREAM_STATE, lastEventId);
 };
 // endregion
 

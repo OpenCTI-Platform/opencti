@@ -13,6 +13,7 @@ import { useDataTableContext } from '../../../../components/dataGrid/components/
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
+import { notifyPayloadErrors } from './curationUtils';
 import { CurationProposalsToolBarAcceptMutation } from './__generated__/CurationProposalsToolBarAcceptMutation.graphql';
 import { CurationProposalsToolBarRejectMutation } from './__generated__/CurationProposalsToolBarRejectMutation.graphql';
 
@@ -53,7 +54,8 @@ const CurationProposalsToolBar = ({ onDone }: CurationProposalsToolBarProps) => 
   const handleAccept = () => {
     commitAccept({
       variables: { ids: openIds },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The accepted proposals are being applied by a background task'));
         handleClearSelectedElements();
         onDone();
@@ -64,7 +66,8 @@ const CurationProposalsToolBar = ({ onDone }: CurationProposalsToolBarProps) => 
   const handleReject = (rationale: string) => {
     commitReject({
       variables: { ids: openIds, rationale: rationale.trim() || null },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(`${response.curationProposalsBulkReject.length} ${t_i18n('proposal(s) rejected')}`);
         setRejectOpen(false);
         handleClearSelectedElements();

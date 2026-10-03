@@ -26,7 +26,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { MESSAGING$ } from '../../../../relay/environment';
 import CurationAuthoritySourcesField, { AuthoritySourceOption, toAuthoritySourceOption } from './CurationAuthoritySourcesField';
-import useCurationLabels, { CURATION_RELATIONSHIP_CONFLICT_MODES, CURATION_WEEK_DAYS } from './curationUtils';
+import useCurationLabels, { CURATION_RELATIONSHIP_CONFLICT_MODES, CURATION_WEEK_DAYS, notifyPayloadErrors } from './curationUtils';
 import { CurationSettingsQuery, CurationSettingsQuery$data } from './__generated__/CurationSettingsQuery.graphql';
 import { CurationSettingsEditMutation } from './__generated__/CurationSettingsEditMutation.graphql';
 import { CurationSettingsScanMutation } from './__generated__/CurationSettingsScanMutation.graphql';
@@ -270,8 +270,9 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
     };
     commitEdit({
       variables: { input: input as never },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The curation settings have been saved'));
       },
       onError: () => setSubmitting(false),
@@ -281,7 +282,8 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
   const requestScan = () => {
     commitScan({
       variables: {},
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         setScanRequested(true);
         MESSAGING$.notifySuccess(t_i18n('A full curation scan will start at the next manager cycle'));
       },
