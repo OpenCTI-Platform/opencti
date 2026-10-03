@@ -19,7 +19,7 @@ import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/re
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import type { AttributeValues, CompactDocument, TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
 import { containerObjectsCountAt, currentContainerObjectsCount, extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
-import { fetchElementsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
+import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
 import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
 import { countRelationshipsByType } from '../modules/timeMachine/timeMachine-domain';
@@ -51,6 +51,8 @@ export interface SnapshotManagerState {
   // Window currently being processed, and the position in it when a run hit the per-run limit
   window_end?: string;
   after_key?: Record<string, string> | null;
+  // The position is in the relationship events of the window (the element events are done)
+  relationships_phase?: boolean;
   // Entities whose snapshot could not be rewound exactly: their changes are behind the cursor, so they are retried explicitly
   retry_ids?: string[];
 }
@@ -69,35 +71,48 @@ const writeState = async (state: SnapshotManagerState) => {
   await redisSetManagerEventState(SNAPSHOT_MANAGER_STATE, JSON.stringify(state));
 };
 
-// Ids of the elements with history events (creation, update, merge) in the window, paginated with a composite aggregation
+export interface ChangedElementsCursor {
+  relationships: boolean;
+  afterKey: Record<string, string> | null;
+}
+
+const changedElementsQuery = (from: string, to: string, relationships: boolean) => {
+  const window = [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } }, { range: { timestamp: { gt: from, lte: to } } }];
+  const relationshipTypes = { terms: { 'context_data.entity_type.keyword': TIME_MACHINE_RELATIONSHIP_TYPES } };
+  if (relationships) {
+    return { bool: { must: [...window, { terms: { 'event_scope.keyword': ['create', 'update', 'delete'] } }, relationshipTypes] } };
+  }
+  return { bool: { must: [...window, { terms: { 'event_scope.keyword': ['create', 'update', 'merge'] } }], must_not: [relationshipTypes] } };
+};
+
+/**
+ * Ids of the elements changed in the window, paginated with composite aggregations: first the elements with history
+ * events (creation, update, merge), then both sides of the relationships created, updated or deleted, whose relationship
+ * set changed. The returned cursor resumes the same window at the next run, null once both are read.
+ */
 export const findChangedElementIds = async (
   context: AuthContext,
   from: string,
   to: string,
-  afterKey: Record<string, string> | null | undefined,
+  cursor: ChangedElementsCursor | null,
   max: number,
 ) => {
-  const ids: string[] = [];
-  let currentAfter = afterKey ?? null;
+  const ids = new Set<string>();
+  let relationships = cursor?.relationships ?? false;
+  let currentAfter = cursor?.afterKey ?? null;
   let hasMore = true;
-  while (hasMore && ids.length < max) {
+  while (hasMore && ids.size < max) {
+    const sources = relationships
+      ? [{ from: { terms: { field: 'context_data.from_id.keyword' } } }, { to: { terms: { field: 'context_data.to_id.keyword' } } }]
+      : [{ id: { terms: { field: 'context_data.id.keyword' } } }];
     const body: any = {
       size: 0,
-      query: {
-        bool: {
-          must: [
-            { terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } },
-            { terms: { 'event_scope.keyword': ['create', 'update', 'merge'] } },
-            { range: { timestamp: { gt: from, lte: to } } },
-          ],
-          must_not: [{ terms: { 'context_data.entity_type.keyword': TIME_MACHINE_RELATIONSHIP_TYPES } }],
-        },
-      },
+      query: changedElementsQuery(from, to, relationships),
       aggs: {
         elements: {
           composite: {
-            size: Math.min(COMPOSITE_PAGE_SIZE, max - ids.length),
-            sources: [{ id: { terms: { field: 'context_data.id.keyword' } } }],
+            size: Math.max(1, Math.min(COMPOSITE_PAGE_SIZE, max - ids.size)),
+            sources,
             ...(currentAfter ? { after: currentAfter } : {}),
           },
         },
@@ -106,12 +121,21 @@ export const findChangedElementIds = async (
     const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, { index: READ_INDEX_HISTORY, body }).catch((err: unknown) => {
       throw DatabaseError('Snapshot manager history aggregation fail', { cause: err });
     });
-    const buckets: Array<{ key: { id: string } }> = data.aggregations?.elements?.buckets ?? [];
-    buckets.forEach((bucket) => ids.push(bucket.key.id));
+    const buckets: Array<{ key: Record<string, string | null> }> = data.aggregations?.elements?.buckets ?? [];
+    buckets.forEach((bucket) => Object.values(bucket.key).forEach((id) => {
+      if (id) ids.add(id);
+    }));
     currentAfter = data.aggregations?.elements?.after_key ?? null;
-    hasMore = buckets.length > 0 && !!currentAfter;
+    if (buckets.length === 0 || !currentAfter) {
+      if (relationships) {
+        hasMore = false;
+      } else {
+        relationships = true;
+        currentAfter = null;
+      }
+    }
   }
-  return { ids, afterKey: hasMore ? currentAfter : null };
+  return { ids: [...ids], cursor: hasMore ? { relationships, afterKey: currentAfter } : null };
 };
 
 export interface RewoundElement {
@@ -162,8 +186,25 @@ export const rewindAttributes = async (context: AuthContext, entities: BasicStor
 };
 
 /**
+ * Relationships of the entities deleted after `snapshotDate` that existed at that date (not created after it),
+ * or null when there are too many relationship changes since that date to rewind them exactly.
+ */
+export const findRelationshipsDeletedSince = async (context: AuthContext, ids: string[], snapshotDate: string) => {
+  const events = await fetchRelationshipsHistoryEvents(context, SYSTEM_USER, ids, {
+    from: snapshotDate,
+    scopes: ['create', 'delete'],
+    entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
+    max: MAX_REWIND_EVENTS_PER_BATCH + 1,
+  });
+  if (events.length > MAX_REWIND_EVENTS_PER_BATCH) return null;
+  const createdSince = new Set(events.filter((event) => event.event_scope === 'create').map((event) => event.context_id));
+  return events.filter((event) => event.event_scope === 'delete' && !createdSince.has(event.context_id));
+};
+
+/**
  * Compact documents at `snapshotDate`: raw attribute values, number of objects of containers,
- * relationship ids by type (capped) and exact relationship counts by type.
+ * relationship ids by type (capped) and exact relationship counts by type. The relationships are the ones
+ * created up to that date and still present, plus the ones deleted since that existed at that date.
  */
 export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, CompactDocument>> => {
   const documents = new Map<string, CompactDocument>();
@@ -178,6 +219,11 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
   });
   if (documents.size === 0) return documents;
   const ids = [...documents.keys()];
+  const deletedSince = await findRelationshipsDeletedSince(context, ids, snapshotDate);
+  if (!deletedSince) {
+    logApp.warn('[TIME MACHINE] Too many relationship changes since the snapshot date, the batch is snapshotted at the next window', { entities: ids.length });
+    return new Map();
+  }
   // One extra relationship is read to know whether the relationships of the batch were all read
   const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
@@ -188,20 +234,19 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
   const allRead = relations.length <= MAX_RELATIONSHIPS_PER_BATCH;
-  const register = (entityId: string, relation: BasicStoreRelation) => {
-    const document = documents.get(entityId);
+  const register = (entityId: string | undefined, relationshipId: string, type: string, counted: boolean) => {
+    const document = entityId ? documents.get(entityId) : undefined;
     if (!document) return;
-    const type = relation.entity_type;
-    if (allRead) document.relationships_count[type] = (document.relationships_count[type] ?? 0) + 1;
+    if (counted) document.relationships_count[type] = (document.relationships_count[type] ?? 0) + 1;
     const typeIds = document.relationships[type] ?? [];
     if (typeIds.length < MAX_RELATIONSHIP_IDS_PER_TYPE) {
-      typeIds.push(relation.internal_id);
+      typeIds.push(relationshipId);
       document.relationships[type] = typeIds;
     }
   };
   relations.slice(0, MAX_RELATIONSHIPS_PER_BATCH).forEach((relation) => {
-    register(relation.fromId, relation);
-    if (relation.toId !== relation.fromId) register(relation.toId, relation);
+    register(relation.fromId, relation.internal_id, relation.entity_type, allRead);
+    if (relation.toId !== relation.fromId) register(relation.toId, relation.internal_id, relation.entity_type, allRead);
   });
   if (!allRead) {
     // Too many relationships to read them all: the exact counts come from an aggregation per entity
@@ -213,6 +258,11 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
       });
     }
   }
+  // Deleted relationships are no longer indexed: they are added on top of the counts of the present ones
+  deletedSince.forEach((event) => {
+    register(event.from_id, event.context_id, event.context_entity_type, true);
+    if (event.to_id !== event.from_id) register(event.to_id, event.context_id, event.context_entity_type, true);
+  });
   return documents;
 };
 
@@ -251,7 +301,7 @@ export const snapshotHandler = async () => {
   const context = executionContext(SNAPSHOT_MANAGER_CONTEXT);
   const state = await readState();
   const currentDate = now();
-  const isWindowInProgress = !!state.window_end && !!state.after_key;
+  const isWindowInProgress = !!state.window_end && (!!state.after_key || !!state.relationships_phase);
   const cursor = state.cursor ?? utcDate(currentDate).subtract(PERIOD_DAYS, 'days').toISOString();
   if (!isWindowInProgress && state.cursor && utcDate(currentDate).diff(utcDate(state.cursor), 'days', true) < PERIOD_DAYS) {
     // Next snapshot window not reached yet
@@ -259,7 +309,8 @@ export const snapshotHandler = async () => {
   }
   const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
   logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, resume: isWindowInProgress });
-  const { ids: changedIds, afterKey } = await findChangedElementIds(context, cursor, windowEnd, state.after_key, MAX_ENTITIES_PER_RUN);
+  const resumeFrom = isWindowInProgress ? { relationships: !!state.relationships_phase, afterKey: state.after_key ?? null } : null;
+  const { ids: changedIds, cursor: nextCursor } = await findChangedElementIds(context, cursor, windowEnd, resumeFrom, MAX_ENTITIES_PER_RUN);
   const ids = [...new Set([...(state.retry_ids ?? []), ...changedIds])];
   const skippedIds: string[] = [];
   let snapshotsCount = 0;
@@ -285,14 +336,14 @@ export const snapshotHandler = async () => {
     logApp.warn('[TIME MACHINE] Too many snapshots to retry, the others wait for the next change of their entity', { skipped: skippedIds.length, retried: MAX_RETRY_IDS });
   }
   const retryIds = skippedIds.slice(0, MAX_RETRY_IDS);
-  if (afterKey) {
+  if (nextCursor) {
     // Per run limit reached, the same window (same lower bound) is resumed at the next run
-    await writeState({ cursor, window_end: windowEnd, after_key: afterKey, retry_ids: retryIds });
+    await writeState({ cursor, window_end: windowEnd, after_key: nextCursor.afterKey, relationships_phase: nextCursor.relationships, retry_ids: retryIds });
   } else {
-    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null, retry_ids: retryIds });
+    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null, relationships_phase: false, retry_ids: retryIds });
   }
   const retention = await applySnapshotRetention(context, currentDate);
-  logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, retry: retryIds.length, ...retention, complete: !afterKey });
+  logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, retry: retryIds.length, ...retention, complete: !nextCursor });
 };
 
 const SNAPSHOT_MANAGER_DEFINITION: ManagerDefinition = {

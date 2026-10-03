@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { awaitUntilCondition, queryAsAdmin, queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
-import { fetchElementHistoryEvents } from '../../../../src/modules/timeMachine/timeMachine-history';
-import { buildCompactDocuments } from '../../../../src/manager/snapshotManager';
+import { fetchElementHistoryEvents, fetchRelationshipsHistoryEvents } from '../../../../src/modules/timeMachine/timeMachine-history';
+import { buildCompactDocuments, type ChangedElementsCursor, findChangedElementIds } from '../../../../src/manager/snapshotManager';
 import { indexSnapshots, findSnapshotAtOrAfter, loadUserVisits } from '../../../../src/modules/timeMachine/timeMachine-store';
 import { buildChangeDigestData } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
@@ -32,6 +32,11 @@ const UPDATE_INTRUSION_SET = gql`
 const ADD_RELATION = gql`
   mutation TimeMachineRelationAdd($input: StixCoreRelationshipAddInput!) {
     stixCoreRelationshipAdd(input: $input) { id }
+  }
+`;
+const DELETE_RELATION = gql`
+  mutation TimeMachineRelationDelete($id: ID!) {
+    stixCoreRelationshipEdit(id: $id) { delete }
   }
 `;
 const DELETE_INTRUSION_SET = gql`
@@ -164,6 +169,7 @@ describe('Knowledge time machine', () => {
   let createdAt: string;
   let updatedAt: string;
   let relationAddedAt: string;
+  let relationId: string;
 
   beforeAll(async () => {
     const intrusionSet = await queryAsAdminWithSuccess({
@@ -185,10 +191,11 @@ describe('Knowledge time machine', () => {
     });
     const updates = await waitForHistory(intrusionSetId, 'update');
     updatedAt = updates[updates.length - 1];
-    await queryAsAdminWithSuccess({
+    const relation = await queryAsAdminWithSuccess({
       query: ADD_RELATION,
       variables: { input: { fromId: intrusionSetId, toId: malwareId, relationship_type: 'uses' } },
     });
+    relationId = relation.data.stixCoreRelationshipAdd.id;
     await awaitUntilCondition(async () => {
       const events = await fetchElementHistoryEvents(testContext, SYSTEM_USER, malwareId, { max: 10 });
       return events.length > 0;
@@ -441,4 +448,43 @@ describe('Knowledge time machine', () => {
     });
     expect(severalRecipients.errors?.[0]?.message).toContain('single recipient');
   });
+
+  it('should select both sides of the relationships changed in a snapshot window', async () => {
+    await awaitUntilCondition(async () => {
+      const events = await fetchRelationshipsHistoryEvents(testContext, SYSTEM_USER, [intrusionSetId], { scopes: ['create'], max: 10 });
+      return events.length > 0;
+    }, HISTORY_BUDGET_MS, { message: 'history create event of the relationship' });
+    const windowEnd = new Date().toISOString();
+    // The relationship created after the last update of the intrusion set selects both of its sides
+    const { ids, cursor } = await findChangedElementIds(testContext, updatedAt, windowEnd, null, 10000);
+    expect(cursor).toBeNull();
+    expect(ids).toEqual(expect.arrayContaining([intrusionSetId, malwareId]));
+    // Read one element at a time, a run resumes the element events then the relationship events of the window
+    const paged = new Set<string>();
+    let pageCursor: ChangedElementsCursor | null = null;
+    let pages = 0;
+    do {
+      const page = await findChangedElementIds(testContext, updatedAt, windowEnd, pageCursor, 1);
+      page.ids.forEach((id) => paged.add(id));
+      pageCursor = page.cursor;
+      pages += 1;
+    } while (pageCursor && pages < 1000);
+    expect(pageCursor).toBeNull();
+    expect([...paged]).toEqual(expect.arrayContaining([intrusionSetId, malwareId]));
+  });
+
+  it('should keep in a snapshot the relationships deleted after its date', async () => {
+    const snapshotDate = new Date().toISOString();
+    await queryAsAdminWithSuccess({ query: DELETE_RELATION, variables: { id: relationId } });
+    await awaitUntilCondition(async () => {
+      const events = await fetchRelationshipsHistoryEvents(testContext, SYSTEM_USER, [intrusionSetId], { scopes: ['delete'], max: 10 });
+      return events.length > 0;
+    }, HISTORY_BUDGET_MS, { message: 'history delete event of the relationship' });
+    const entity = await internalLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, intrusionSetId, { type: 'Intrusion-Set' });
+    const atSnapshotDate = await buildCompactDocuments(testContext, [entity], snapshotDate);
+    expect(atSnapshotDate.get(intrusionSetId)?.relationships_count.uses).toEqual(1);
+    expect(atSnapshotDate.get(intrusionSetId)?.relationships.uses).toEqual([relationId]);
+    const afterDeletion = await buildCompactDocuments(testContext, [entity], new Date().toISOString());
+    expect(afterDeletion.get(intrusionSetId)?.relationships_count.uses).toBeUndefined();
+  }, 2 * HISTORY_BUDGET_MS);
 });
