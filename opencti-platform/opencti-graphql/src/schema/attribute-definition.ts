@@ -504,6 +504,26 @@ export const coverageInformation: NestedObjectAttribute = {
   ],
 };
 
+// Per security platform breakdown of coverage_information, sent by OpenAEV on has-covered relationships.
+// platform_ref is the STIX id of the security platform identity present in the same bundle.
+export const coveragePlatformsInformation: NestedObjectAttribute = {
+  name: 'coverage_platforms_information',
+  label: 'Coverage per security platform',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  upsert_force_replace: true,
+  isFilterable: false,
+  mappings: [
+    { name: 'platform_ref', label: 'Security platform', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+  ],
+};
+
 export const opinionsMetrics: ObjectAttribute = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',

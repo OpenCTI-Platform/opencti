@@ -3,9 +3,9 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type Stix2SecurityPlatform, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
 import convertSecurityPlatformToStix, { convertSecurityPlatformToStix_2_0 } from './securityPlatform-converter';
-import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
+import { RELATION_PROVIDES, RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT } from '../../schema/stixDomainObject';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform, Stix2SecurityPlatform> = {
@@ -38,6 +38,12 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
       name: RELATION_SHOULD_COVER,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+      ],
+    },
+    {
+      name: RELATION_PROVIDES,
+      targets: [
+        { name: ENTITY_TYPE_DATA_COMPONENT, type: REL_NEW },
       ],
     },
   ],

@@ -16,6 +16,7 @@ const DecayRule = lazy(() => import('../decay/DecayRule'));
 const ExclusionLists = lazy(() => import('../exclusion_lists/ExclusionLists'));
 const FintelDesigns = lazy(() => import('../fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('../fintel_design/FintelDesign'));
+const DefenseLogsourceMappings = lazy(() => import('../defense_logsource_mappings/DefenseLogsourceMappings'));
 
 const RootCustomization = () => {
   const fallbackUrl = useSettingsFallbackUrl();
@@ -120,6 +121,14 @@ const RootCustomization = () => {
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Notifiers />
+              </Security>
+            )}
+          />
+          <Route
+            path="/telemetry_mappings"
+            element={(
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+                <DefenseLogsourceMappings />
               </Security>
             )}
           />

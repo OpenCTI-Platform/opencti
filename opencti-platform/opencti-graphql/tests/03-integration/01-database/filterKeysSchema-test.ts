@@ -156,7 +156,8 @@ describe('Filter keys schema generation testing', async () => {
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_NOTIFICATION)?.get('notification_content.events.operation');
     expect(filterDefinition?.filterKey).toEqual('notification_content.events.operation');
     expect(filterDefinition?.type).toEqual('enum');
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(5); // create, update, delete, corroboration, conflict
+    expect([...(filterDefinition?.elementsForFilterValuesSearch ?? [])].sort())
+      .toEqual(['conflict', 'corroboration', 'create', 'defense_level_decreased', 'defense_level_increased', 'delete', 'update']);
   });
   it('should construct correct filter definition for nested object attributes: case of relationships', () => {
     // 'fromId' for stix core relationships
@@ -234,7 +235,7 @@ describe('Filter keys schema generation testing', async () => {
 
     // Stix Core Relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(RELATION_FROM_FILTER);
-    expect(filterDefinition?.subEntityTypes.length).toEqual(61); // 60 stix core relationship types + abstract type 'stix-core-relationships'
+    expect(filterDefinition?.subEntityTypes.length).toEqual(62); // 61 stix core relationship types + abstract type 'stix-core-relationships'
     // Stix Cyber Observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables
     expect(filterDefinition?.subEntityTypes.length).toEqual(STIX_CYBER_OBSERVABLES.length + 1); // 31 observables + abstract type 'Stix-Cyber-Observable'

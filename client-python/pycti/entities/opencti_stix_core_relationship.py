@@ -444,6 +444,33 @@ class StixCoreRelationship:
             data.get("stop_time"),
         )
 
+    @staticmethod
+    def convert_coverage_platforms(raw_coverage_platforms):
+        """Convert the STIX coverage_platforms property of a has-covered relationship.
+
+        OpenAEV attributes each coverage score to the security platform that produced it:
+        ``[{"platform_ref": "identity--...", "name": "DETECTION", "score": 75}]``.
+
+        :param raw_coverage_platforms: the coverage_platforms property
+        :type raw_coverage_platforms: list
+        :return: the coverage_platforms_information input
+        :rtype: list
+        """
+        if not isinstance(raw_coverage_platforms, list):
+            return []
+        return [
+            {
+                "platform_ref": coverage["platform_ref"],
+                "coverage_name": coverage["name"],
+                "coverage_score": coverage["score"],
+            }
+            for coverage in raw_coverage_platforms
+            if isinstance(coverage, dict)
+            and coverage.get("platform_ref")
+            and coverage.get("name")
+            and coverage.get("score") is not None
+        ]
+
     def list(self, **kwargs):
         """List stix_core_relationship objects.
 
@@ -749,6 +776,9 @@ class StixCoreRelationship:
             (deployment_status, external_id, deployed_at, last_sync_at, removed_at, hit_count,
             last_hit_at, validation_status, last_validation_at, validation_run_id, error_message)
         :type deployment: dict
+        :param coverage_platforms_information: (optional) coverage information per security platform
+            ([{"platform_ref", "coverage_name", "coverage_score"}])
+        :type coverage_platforms_information: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
         :return: stix_core_relationship object
@@ -778,6 +808,9 @@ class StixCoreRelationship:
         external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
         deployment = kwargs.get("deployment", None)
+        coverage_platforms_information = kwargs.get(
+            "coverage_platforms_information", None
+        )
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
 
@@ -835,6 +868,12 @@ class StixCoreRelationship:
                     for key, value in deployment.items()
                     if key in DEPLOYED_ON_ATTRIBUTES and value is not None
                 }
+            )
+        # Only sent when supplied, so the client keeps working with platforms that do not know the field;
+        # an empty list is sent to clear a previous per-platform attribution
+        if coverage_platforms_information is not None:
+            relationship_input["coverage_platforms_information"] = (
+                coverage_platforms_information
             )
         result = self.opencti.query(query, {"input": relationship_input})
         return self.opencti.process_multiple_fields(
@@ -1437,6 +1476,11 @@ class StixCoreRelationship:
                 for cov in raw_coverages
                 if "score" in cov
             ]
+            coverage_platforms_information = (
+                self.convert_coverage_platforms(stix_relation["coverage_platforms"])
+                if "coverage_platforms" in stix_relation
+                else None
+            )
 
             deployment = None
             if stix_relation.get("relationship_type") == RELATION_DEPLOYED_ON:
@@ -1475,6 +1519,7 @@ class StixCoreRelationship:
                 ),
                 external_uri=external_uri,
                 coverage_information=coverage_information,
+                coverage_platforms_information=coverage_platforms_information,
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None
                 ),
