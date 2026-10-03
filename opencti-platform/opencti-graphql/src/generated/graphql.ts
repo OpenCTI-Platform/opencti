@@ -88,6 +88,7 @@ export type AiPrompt = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -97,12 +98,17 @@ export type AiPrompt = BasicObject & StixCoreObject & StixCyberObservable & Stix
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -118,6 +124,7 @@ export type AiPrompt = BasicObject & StixCoreObject & StixCyberObservable & Stix
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -126,6 +133,8 @@ export type AiPrompt = BasicObject & StixCoreObject & StixCyberObservable & Stix
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -317,6 +326,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   country?: Maybe<Country>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -331,12 +341,17 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -360,6 +375,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -371,6 +387,8 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -583,8 +601,11 @@ export type AdministrativeAreaEdge = {
 
 export enum AdministrativeAreasOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -695,6 +716,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -706,13 +728,18 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   hashes?: Maybe<Array<Maybe<Hash>>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   mime_type?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -730,6 +757,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -739,6 +767,8 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   updated_at: Scalars['DateTime']['output'];
   url?: Maybe<Scalars['String']['output']>;
   x_opencti_additional_names?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -917,6 +947,27 @@ export type AskSendOtpInput = {
   email: Scalars['String']['input'];
 };
 
+export type Assertion = {
+  __typename?: 'Assertion';
+  assert_count: Scalars['Int']['output'];
+  confidence?: Maybe<Scalars['Int']['output']>;
+  first_asserted_at: Scalars['DateTime']['output'];
+  last_asserted_at: Scalars['DateTime']['output'];
+  source_id: Scalars['String']['output'];
+  source_kind: AssertionSourceKind;
+  source_name: Scalars['String']['output'];
+  work_id?: Maybe<Scalars['String']['output']>;
+};
+
+export enum AssertionSourceKind {
+  Author = 'author',
+  Connector = 'connector',
+  Emulation = 'emulation',
+  Feed = 'feed',
+  Inference = 'inference',
+  User = 'user'
+}
+
 export type Assignee = {
   __typename?: 'Assignee';
   entity_type: Scalars['String']['output'];
@@ -945,6 +996,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   coursesOfAction?: Maybe<CourseOfActionConnection>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -960,7 +1012,11 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubAttackPattern?: Maybe<Scalars['Boolean']['output']>;
@@ -968,6 +1024,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -989,6 +1046,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -1004,6 +1062,8 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_mitre_permissions_required?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1320,8 +1380,11 @@ export type AttackPatternsMatrix = {
 
 export enum AttackPatternsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -1547,6 +1610,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -1556,12 +1620,17 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -1580,6 +1649,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   rir?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -1587,6 +1657,8 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1895,6 +1967,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -1904,13 +1977,18 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   iban?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -1926,6 +2004,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -1933,6 +2012,8 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2154,6 +2235,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -2168,12 +2250,17 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -2197,6 +2284,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -2207,6 +2295,8 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2455,9 +2545,12 @@ export type CampaignEditMutationsRelationDeleteArgs = {
 export enum CampaignsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
@@ -2562,6 +2655,7 @@ export type Case = {
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -2575,12 +2669,17 @@ export type Case = {
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -2603,6 +2702,7 @@ export type Case = {
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -2614,6 +2714,8 @@ export type Case = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2829,6 +2931,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -2843,12 +2946,17 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -2876,6 +2984,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   revoked: Scalars['Boolean']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
   severity?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -2887,6 +2996,8 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3133,10 +3244,13 @@ export enum CaseIncidentsOrdering {
   Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
@@ -3159,6 +3273,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -3172,13 +3287,18 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   information_types?: Maybe<Array<Scalars['String']['output']>>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -3204,6 +3324,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   requestAccessConfiguration?: Maybe<RfiRequestAccessConfiguration>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -3215,6 +3336,8 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3462,10 +3585,13 @@ export type CaseRfiEdge = {
 export enum CaseRfisOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
@@ -3488,6 +3614,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -3501,12 +3628,17 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -3531,6 +3663,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -3543,6 +3676,8 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3788,10 +3923,13 @@ export enum CaseRftsOrdering {
   Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
@@ -3847,10 +3985,13 @@ export enum CasesOrdering {
   Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -3929,6 +4070,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -3942,12 +4084,17 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -3968,6 +4115,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -3978,6 +4126,8 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -4191,8 +4341,11 @@ export enum ChannelsOrdering {
   Score = '_score',
   ChannelTypes = 'channel_types',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -4209,8 +4362,11 @@ export type CheckXtmHubConnectivityResponse = {
 export enum CitiesOrdering {
   Score = '_score',
   Aliases = 'aliases',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -4228,6 +4384,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   country?: Maybe<Country>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -4242,12 +4399,17 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -4271,6 +4433,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -4282,6 +4445,8 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -4998,11 +5163,14 @@ export type ContainerEditMutationsRelationDeleteArgs = {
 
 export enum ContainersOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -5035,8 +5203,11 @@ export type ContractConfigInput = {
 
 export enum CountriesOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -5051,6 +5222,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -5064,12 +5236,17 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -5094,6 +5271,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -5105,6 +5283,8 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -5357,6 +5537,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -5370,12 +5551,17 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -5396,6 +5582,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -5408,6 +5595,8 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_log_sources?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -5654,8 +5843,11 @@ export type CourseOfActionEditMutationsRelationDeleteArgs = {
 
 export enum CoursesOfActionOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -5696,6 +5888,7 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -5705,12 +5898,17 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -5726,6 +5924,7 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -5734,6 +5933,8 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -5912,6 +6113,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -5921,12 +6123,17 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -5942,6 +6149,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -5950,6 +6158,8 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -6124,6 +6334,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -6133,12 +6344,17 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -6154,6 +6370,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -6162,6 +6379,8 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -7001,6 +7220,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -7015,12 +7235,17 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -7041,6 +7266,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -7051,6 +7277,8 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -7263,8 +7491,11 @@ export type DataComponentEdge = {
 export enum DataComponentsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -7320,6 +7551,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -7334,12 +7566,17 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -7360,6 +7597,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -7371,6 +7609,8 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -7585,8 +7825,11 @@ export type DataSourceEdge = {
 export enum DataSourcesOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -7670,6 +7913,8 @@ export type DecayRule = BasicObject & InternalObject & {
   decay_revoke_score: Scalars['Int']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  freshness_confidence_step?: Maybe<Scalars['Int']['output']>;
+  freshness_policy?: Maybe<KnowledgeFreshnessPolicy>;
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -7677,7 +7922,11 @@ export type DecayRule = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
+  staleElementsCount: Scalars['Int']['output'];
+  stale_after_days?: Maybe<Scalars['Int']['output']>;
   standard_id: Scalars['String']['output'];
+  target_scope: DecayRuleTargetScope;
+  target_types?: Maybe<Array<Scalars['String']['output']>>;
   updated_at: Scalars['DateTime']['output'];
 };
 
@@ -7709,6 +7958,12 @@ export enum DecayRuleOrdering {
   Score = '_score',
   Name = 'name',
   Order = 'order'
+}
+
+export enum DecayRuleTargetScope {
+  Entity = 'entity',
+  Indicator = 'indicator',
+  Relationship = 'relationship'
 }
 
 export type DefaultMarking = {
@@ -7824,6 +8079,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -7834,12 +8090,17 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   mtime?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -7858,6 +8119,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -7865,6 +8127,8 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -8121,6 +8385,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -8130,12 +8395,17 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -8151,6 +8421,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -8159,6 +8430,8 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -8561,6 +8834,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -8571,12 +8845,17 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -8592,6 +8871,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -8600,6 +8880,8 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -8778,6 +9060,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
   content_type?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -8787,13 +9070,18 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   is_multipart?: Maybe<Scalars['Boolean']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   message_id?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
@@ -8811,6 +9099,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -8819,6 +9108,8 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   subject?: Maybe<Scalars['String']['output']>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9002,6 +9293,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   containersNumber?: Maybe<Number>;
   content_disposition?: Maybe<Scalars['String']['output']>;
   content_type?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -9011,12 +9303,17 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -9032,6 +9329,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -9039,6 +9337,8 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9314,6 +9614,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -9328,12 +9629,17 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -9354,6 +9660,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   start_time?: Maybe<Scalars['DateTime']['output']>;
@@ -9366,6 +9673,8 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9580,9 +9889,12 @@ export type EventEdge = {
 
 export enum EventsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   EventTypes = 'event_types',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -9954,6 +10266,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -9967,12 +10280,17 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -9996,6 +10314,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -10007,6 +10326,8 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -10247,10 +10568,13 @@ export enum FeedbacksOrdering {
   Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -10689,6 +11013,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
   context: Scalars['String']['output'];
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -10702,12 +11027,17 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -10731,6 +11061,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -10742,6 +11073,8 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -10982,10 +11315,13 @@ export type GroupingEdge = {
 export enum GroupingsOrdering {
   Score = '_score',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -11285,6 +11621,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -11294,12 +11631,17 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -11315,6 +11657,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -11323,6 +11666,8 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11497,6 +11842,7 @@ export type Iccid = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -11506,12 +11852,17 @@ export type Iccid = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -11527,6 +11878,7 @@ export type Iccid = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -11535,6 +11887,8 @@ export type Iccid = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11707,6 +12061,7 @@ export type Imei = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -11716,12 +12071,17 @@ export type Imei = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -11737,6 +12097,7 @@ export type Imei = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -11745,6 +12106,8 @@ export type Imei = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11917,6 +12280,7 @@ export type Imsi = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -11926,12 +12290,17 @@ export type Imsi = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -11947,6 +12316,7 @@ export type Imsi = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -11955,6 +12325,8 @@ export type Imsi = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12127,6 +12499,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -12137,12 +12510,17 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -12158,6 +12536,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -12166,6 +12545,8 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12342,6 +12723,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -12352,12 +12734,17 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -12373,6 +12760,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -12381,6 +12769,8 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12551,8 +12941,11 @@ export type IPv6AddrAddInput = {
 
 export enum IdentitiesOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -12889,6 +13282,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -12903,13 +13297,18 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   incident_type?: Maybe<Scalars['String']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -12934,6 +13333,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   revoked: Scalars['Boolean']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
   severity?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   source?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -12945,6 +13345,8 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13199,11 +13601,14 @@ export type IncidentEditMutationsRelationDeleteArgs = {
 export enum IncidentsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
   IncidentType = 'incident_type',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
@@ -13257,6 +13662,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -13277,7 +13683,11 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicator_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -13285,6 +13695,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -13309,6 +13720,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -13322,6 +13734,8 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_detection?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -13579,11 +13993,14 @@ export enum IndicatorFormat {
 export enum IndicatorsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
   IndicatorTypes = 'indicator_types',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -13607,6 +14024,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -13620,7 +14038,11 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
@@ -13628,6 +14050,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -13650,6 +14073,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -13661,6 +14085,8 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -13912,8 +14338,11 @@ export type IndividualEditMutationsRelationDeleteArgs = {
 
 export enum IndividualsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   Firstname = 'firstname',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Lastname = 'lastname',
   Modified = 'modified',
   Name = 'name',
@@ -13943,6 +14372,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -13957,7 +14387,11 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   infrastructure_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -13965,6 +14399,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -13986,6 +14421,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -13996,6 +14432,8 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14244,12 +14682,15 @@ export type InfrastructureEditMutationsRelationDeleteArgs = {
 export enum InfrastructuresOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
   InfrastructureTypes = 'infrastructure_types',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
@@ -14740,6 +15181,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -14754,13 +15196,18 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -14787,6 +15234,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   revoked: Scalars['Boolean']['output'];
   secondary_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   securityCoverage?: Maybe<SecurityCoverage>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -14797,6 +15245,8 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15050,8 +15500,11 @@ export type IntrusionSetEditMutationsRelationDeleteArgs = {
 export enum IntrusionSetsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -15286,6 +15739,25 @@ export enum KillChainPhasesOrdering {
   XOpenctiOrder = 'x_opencti_order'
 }
 
+export type KnowledgeDecayRuleAddInput = {
+  active: Scalars['Boolean']['input'];
+  decay_filters?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  freshness_confidence_step?: InputMaybe<Scalars['Int']['input']>;
+  freshness_policy: KnowledgeFreshnessPolicy;
+  name: Scalars['String']['input'];
+  order: Scalars['Int']['input'];
+  stale_after_days: Scalars['Int']['input'];
+  target_scope: DecayRuleTargetScope;
+  target_types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum KnowledgeFreshnessPolicy {
+  Flag = 'flag',
+  LowerConfidence = 'lower_confidence',
+  Revoke = 'revoke'
+}
+
 export type KnowledgeHealthComponent = {
   __typename?: 'KnowledgeHealthComponent';
   component: Scalars['String']['output'];
@@ -15436,6 +15908,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -15448,12 +15921,17 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -15474,6 +15952,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -15484,6 +15963,8 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15693,8 +16174,11 @@ export type LanguageEdge = {
 
 export enum LanguagesOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -16098,8 +16582,11 @@ export type LocationEditMutationsRelationDeleteArgs = {
 
 export enum LocationsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Latitude = 'latitude',
   Longitude = 'longitude',
   Modified = 'modified',
@@ -16163,6 +16650,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -16172,12 +16660,17 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -16193,6 +16686,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -16201,6 +16695,8 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -16380,6 +16876,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -16394,7 +16891,11 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   implementation_languages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   importFiles?: Maybe<FileConnection>;
@@ -16403,6 +16904,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   malware_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -16426,6 +16928,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   samples?: Maybe<Array<StixCyberObservable>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -16436,6 +16939,8 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -16647,8 +17152,11 @@ export type MalwareAddInput = {
 export enum MalwareAnalysesOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   CreatedBy = 'createdBy',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
   OperatingSystem = 'operatingSystem',
@@ -16672,6 +17180,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -16685,7 +17194,11 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   hostVm?: Maybe<Software>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
@@ -16693,6 +17206,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -16719,6 +17233,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   result_name: Scalars['String']['output'];
   revoked: Scalars['Boolean']['output'];
   sample?: Maybe<StixCyberObservable>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -16731,6 +17246,8 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   version?: Maybe<Scalars['String']['output']>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -17001,10 +17518,13 @@ export type MalwareEditMutationsRelationDeleteArgs = {
 export enum MalwaresOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
   IsFamily = 'is_family',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   MalwareTypes = 'malware_types',
   Modified = 'modified',
@@ -17311,6 +17831,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -17321,12 +17842,17 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   media_category?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
@@ -17344,6 +17870,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -17353,6 +17880,8 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   url?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -17982,6 +18511,7 @@ export type Mutation = {
   jsonMapperTest?: Maybe<JsonMapperTestResult>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
+  knowledgeDecayRuleAdd?: Maybe<DecayRule>;
   knowledgeHealthRefresh?: Maybe<KnowledgeHealthSnapshot>;
   labelAdd?: Maybe<Label>;
   labelEdit?: Maybe<LabelEditMutations>;
@@ -18074,6 +18604,11 @@ export type Mutation = {
   playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
+  provenanceAssert?: Maybe<StixObjectOrStixRelationship>;
+  provenanceBackfillRestart: ProvenanceBackfill;
+  provenanceConflictAdopt?: Maybe<StixObjectOrStixRelationship>;
+  provenanceConflictDismiss?: Maybe<StixObjectOrStixRelationship>;
+  provenanceProcedureAdopt?: Maybe<StixObjectOrStixRelationship>;
   publicDashboardAdd?: Maybe<PublicDashboard>;
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
@@ -19585,6 +20120,11 @@ export type MutationKillChainPhaseEditArgs = {
 };
 
 
+export type MutationKnowledgeDecayRuleAddArgs = {
+  input: KnowledgeDecayRuleAddInput;
+};
+
+
 export type MutationLabelAddArgs = {
   input: LabelAddInput;
 };
@@ -20091,6 +20631,31 @@ export type MutationPositionAddArgs = {
 
 export type MutationPositionEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationProvenanceAssertArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationProvenanceConflictAdoptArgs = {
+  field: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
+  value_hash: Scalars['String']['input'];
+};
+
+
+export type MutationProvenanceConflictDismissArgs = {
+  field: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
+  value_hash: Scalars['String']['input'];
+};
+
+
+export type MutationProvenanceProcedureAdoptArgs = {
+  id: Scalars['ID']['input'];
+  text: Scalars['String']['input'];
 };
 
 
@@ -21161,6 +21726,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -21170,12 +21736,17 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -21192,6 +21763,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -21199,6 +21771,8 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -21382,6 +21956,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -21395,13 +21970,18 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubNarrative?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -21424,6 +22004,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -21435,6 +22016,8 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -21646,8 +22229,11 @@ export type NarrativeEdge = {
 
 export enum NarrativesOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   NarrativeTypes = 'narrative_types',
@@ -21663,6 +22249,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -21678,13 +22265,18 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   exportFiles?: Maybe<FileConnection>;
   extensions?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_active?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -21701,6 +22293,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   src_byte_count?: Maybe<Scalars['Int']['output']>;
   src_packets?: Maybe<Scalars['Int']['output']>;
@@ -21713,6 +22306,8 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -21952,6 +22547,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
   content: Scalars['String']['output'];
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -21964,12 +22560,17 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   likelihood?: Maybe<Scalars['Int']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -21993,6 +22594,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -22003,6 +22605,8 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -22295,10 +22899,13 @@ export type NoteUserAddInput = {
 export enum NotesOrdering {
   Score = '_score',
   AttributeAbstract = 'attribute_abstract',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   NoteTypes = 'note_types',
   ObjectMarking = 'objectMarking',
@@ -22460,6 +23067,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -22473,12 +23081,17 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_observed: Scalars['DateTime']['output'];
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_observed: Scalars['DateTime']['output'];
   max_distinct_count?: Maybe<Scalars['Int']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -22505,6 +23118,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -22515,6 +23129,8 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -22786,10 +23402,13 @@ export type ObservedDataEditMutationsRelationDeleteArgs = {
 export enum ObservedDatasOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   FirstObserved = 'first_observed',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   LastObserved = 'last_observed',
   MaxDistinctCount = 'max_distinct_count',
   Modified = 'modified',
@@ -22860,6 +23479,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -22873,12 +23493,17 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -22901,6 +23526,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -22911,6 +23537,8 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -23208,10 +23836,13 @@ export type OpinionsMetrics = {
 export enum OpinionsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   ObjectMarking = 'objectMarking',
   Opinion = 'opinion',
@@ -23236,6 +23867,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -23251,14 +23883,19 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   grantable_groups?: Maybe<Array<Group>>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   members?: Maybe<UserConnection>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -23284,6 +23921,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   sectors?: Maybe<SectorConnection>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -23296,6 +23934,8 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -23543,8 +24183,11 @@ export type OrganizationsMappingInput = {
 export enum OrganizationsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -23624,6 +24267,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -23635,13 +24279,18 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   expiration_date?: Maybe<Scalars['DateTime']['output']>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   holder_name?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -23657,6 +24306,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -23664,6 +24314,8 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -23841,6 +24493,7 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -23850,12 +24503,17 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -23873,6 +24531,7 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -23880,6 +24539,8 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -24055,6 +24716,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -24064,12 +24726,17 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -24085,6 +24752,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -24093,6 +24761,8 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -24642,6 +25312,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -24655,12 +25326,17 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -24685,6 +25361,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -24697,6 +25374,8 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -24949,14 +25628,29 @@ export type PositionInput = {
 
 export enum PositionsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   PostalAddress = 'postal_address',
   PostalCode = 'postal_code',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
+export type Procedure = {
+  __typename?: 'Procedure';
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
+  source_id?: Maybe<Scalars['String']['output']>;
+  text: Scalars['String']['output'];
+};
+
+export enum ProceduresDescriptionPolicy {
+  Longest = 'longest',
+  MostRecent = 'most_recent'
 }
 
 export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -24967,6 +25661,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   created_time?: Maybe<Scalars['DateTime']['output']>;
@@ -24983,8 +25678,12 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   exportFiles?: Maybe<FileConnection>;
   extensions?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   group_name?: Maybe<Scalars['String']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
@@ -24992,6 +25691,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   is_hidden?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -25014,6 +25714,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   service_name?: Maybe<Scalars['String']['output']>;
   service_status?: Maybe<Scalars['String']['output']>;
   service_type?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   start_type?: Maybe<Scalars['String']['output']>;
@@ -25024,6 +25725,8 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   window_title?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -25211,6 +25914,52 @@ export type ProcessAddInput = {
   upsertOperations?: InputMaybe<Array<EditInput>>;
   window_title?: InputMaybe<Scalars['String']['input']>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ProvenanceBackfill = {
+  __typename?: 'ProvenanceBackfill';
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  errors: Scalars['Int']['output'];
+  expected: Scalars['Int']['output'];
+  processed: Scalars['Int']['output'];
+  started_at?: Maybe<Scalars['DateTime']['output']>;
+  status: ProvenanceBackfillStatus;
+  updated: Scalars['Int']['output'];
+};
+
+export enum ProvenanceBackfillStatus {
+  Completed = 'completed',
+  Pending = 'pending',
+  Running = 'running'
+}
+
+export type ProvenanceDistributionEntry = {
+  __typename?: 'ProvenanceDistributionEntry';
+  label: Scalars['String']['output'];
+  value: Scalars['Int']['output'];
+};
+
+export type ProvenanceSingleSourcedEntry = {
+  __typename?: 'ProvenanceSingleSourcedEntry';
+  entity_type: Scalars['String']['output'];
+  single_sourced: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+};
+
+export type ProvenanceSourceKindCount = {
+  __typename?: 'ProvenanceSourceKindCount';
+  count: Scalars['Int']['output'];
+  source_kind: AssertionSourceKind;
+};
+
+export type ProvenanceStatistics = {
+  __typename?: 'ProvenanceStatistics';
+  corroborated: Scalars['Int']['output'];
+  single_sourced: Scalars['Int']['output'];
+  stale: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+  with_conflicts: Scalars['Int']['output'];
+  with_provenance: Scalars['Int']['output'];
 };
 
 export type Provider = {
@@ -25603,6 +26352,11 @@ export type Query = {
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
+  provenanceBackfill: ProvenanceBackfill;
+  provenanceFreshnessDistribution: Array<ProvenanceDistributionEntry>;
+  provenanceSingleSourcedByType: Array<ProvenanceSingleSourcedEntry>;
+  provenanceSourceKindsDistribution: Array<ProvenanceSourceKindCount>;
+  provenanceStatistics: ProvenanceStatistics;
   publicBookmarks?: Maybe<StixDomainObjectConnection>;
   publicDashboard?: Maybe<PublicDashboard>;
   publicDashboardByUriKey?: Maybe<PublicDashboard>;
@@ -27662,6 +28416,30 @@ export type QueryPositionsArgs = {
 };
 
 
+export type QueryProvenanceFreshnessDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceSingleSourcedByTypeArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceSourceKindsDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceStatisticsArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
 export type QueryPublicBookmarksArgs = {
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
@@ -29204,6 +29982,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -29218,12 +29997,17 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -29248,6 +30032,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -29260,6 +30045,8 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -29505,8 +30292,11 @@ export type RegionEditMutationsRelationDeleteArgs = {
 
 export enum RegionsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -29555,6 +30345,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -29569,12 +30360,17 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -29600,6 +30396,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -29610,6 +30407,8 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -29895,10 +30694,13 @@ export type ReportEditMutationsRelationDeleteArgs = {
 
 export enum ReportsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -30038,6 +30840,7 @@ export enum RetentionRuleOrdering {
 
 export enum RetentionRuleScope {
   Activity = 'activity',
+  Conflicts = 'conflicts',
   File = 'file',
   History = 'history',
   Knowledge = 'knowledge',
@@ -30192,6 +30995,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -30205,7 +31009,11 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   externalReferences?: Maybe<ExternalReferenceConnection>;
   fingerprint_md5?: Maybe<Scalars['String']['output']>;
   fingerprint_sha256: Scalars['String']['output'];
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
@@ -30213,6 +31021,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   jobs?: Maybe<Array<Maybe<Work>>>;
   key_length?: Maybe<Scalars['String']['output']>;
   key_type?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -30229,6 +31038,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -30236,6 +31046,8 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30545,6 +31357,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -30558,7 +31371,11 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
@@ -30566,6 +31383,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -30588,6 +31406,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -30601,6 +31420,8 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30847,8 +31668,11 @@ export type SectorEditMutationsRelationDeleteArgs = {
 
 export enum SectorsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -30866,6 +31690,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   coverage_information?: Maybe<Array<CoverageResult>>;
   coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
@@ -30888,13 +31713,18 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   external_uri?: Maybe<Scalars['String']['output']>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -30921,6 +31751,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   security_platform_type?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -30935,6 +31766,8 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -31226,10 +32059,13 @@ export type SecurityCoverageExpectation = {
 export enum SecurityCoverageOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   CoverageLastResult = 'coverage_last_result',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -31245,6 +32081,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   coverage_information?: Maybe<Array<CoverageResult>>;
   coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
@@ -31263,13 +32100,18 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   external_uri?: Maybe<Scalars['String']['output']>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -31292,6 +32134,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   resultOf?: Maybe<SecurityCoverage>;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -31303,6 +32146,8 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -31516,9 +32361,12 @@ export type SecurityCoverageResultEdge = {
 export enum SecurityCoverageResultOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -31541,6 +32389,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -31554,13 +32403,18 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -31583,6 +32437,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   security_platform_type?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -31594,6 +32449,8 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -31803,8 +32660,11 @@ export type SecurityPlatformEdge = {
 export enum SecurityPlatformOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   SecurityPlatformType = 'security_platform_type',
@@ -31886,6 +32746,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
+  platform_procedures_description_policy: ProceduresDescriptionPolicy;
+  platform_procedures_preservation: Scalars['Boolean']['output'];
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
@@ -32042,6 +32904,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   cpe?: Maybe<Scalars['String']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -32052,13 +32915,18 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   languages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -32075,6 +32943,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -32086,6 +32955,8 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   vendor?: Maybe<Scalars['String']['output']>;
   version?: Maybe<Scalars['String']['output']>;
   vulnerabilities?: Maybe<VulnerabilityConnection>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -32273,6 +33144,25 @@ export type SoftwareEdge = {
   node: Software;
 };
 
+export type SourceConflict = {
+  __typename?: 'SourceConflict';
+  field: Scalars['String']['output'];
+  values: Array<SourceConflictValue>;
+};
+
+export type SourceConflictValue = {
+  __typename?: 'SourceConflictValue';
+  adoptable: Scalars['Boolean']['output'];
+  confidence?: Maybe<Scalars['Int']['output']>;
+  display: Scalars['String']['output'];
+  last_asserted_at: Scalars['DateTime']['output'];
+  source_id: Scalars['String']['output'];
+  source_kind?: Maybe<AssertionSourceKind>;
+  source_name?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+  value_hash: Scalars['String']['output'];
+};
+
 export enum SsvcAutomatable {
   No = 'no',
   Yes = 'yes'
@@ -32378,6 +33268,7 @@ export type StixCoreObject = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -32387,11 +33278,16 @@ export type StixCoreObject = {
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -32406,6 +33302,7 @@ export type StixCoreObject = {
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -32413,6 +33310,8 @@ export type StixCoreObject = {
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -32728,13 +33627,16 @@ export type StixCoreObjectsNumberParameters = {
 export enum StixCoreObjectsOrdering {
   Score = '_score',
   AuthorizedMembersActivationDate = 'authorized_members_activation_date',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
   IndicatorPattern = 'indicator_pattern',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
@@ -32768,6 +33670,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   coverage_information?: Maybe<Array<CoverageResult>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -32778,15 +33681,20 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   from?: Maybe<StixObjectOrStixRelationshipOrCreator>;
   fromId: Scalars['String']['output'];
   fromRole?: Maybe<Scalars['String']['output']>;
   fromType: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -32795,11 +33703,13 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   objectOrganization?: Maybe<Array<Organization>>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Scalars['String']['output']>;
+  procedures?: Maybe<Array<Procedure>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   start_time?: Maybe<Scalars['DateTime']['output']>;
@@ -32814,6 +33724,8 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -33024,12 +33936,15 @@ export type StixCoreRelationshipsExportAskInput = {
 export enum StixCoreRelationshipsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FreshnessDays = 'freshness_days',
   KillChainPhase = 'killChainPhase',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
@@ -33068,6 +33983,7 @@ export type StixCyberObservable = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -33077,12 +33993,17 @@ export type StixCyberObservable = {
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -33098,6 +34019,7 @@ export type StixCyberObservable = {
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -33105,6 +34027,8 @@ export type StixCyberObservable = {
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
@@ -33354,10 +34278,13 @@ export type StixCyberObservablesExportAskInput = {
 
 export enum StixCyberObservablesOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   ObjectMarking = 'objectMarking',
   ObservableValue = 'observable_value',
   UpdatedAt = 'updated_at'
@@ -33370,6 +34297,7 @@ export type StixDomainObject = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -33382,12 +34310,17 @@ export type StixDomainObject = {
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -33407,6 +34340,7 @@ export type StixDomainObject = {
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -33417,6 +34351,8 @@ export type StixDomainObject = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -33716,6 +34652,7 @@ export enum StixDomainObjectsOrdering {
   ChannelTypes = 'channel_types',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -33724,8 +34661,10 @@ export enum StixDomainObjectsOrdering {
   EventTypes = 'event_types',
   FirstObserved = 'first_observed',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
   IncidentType = 'incident_type',
   IndicatorPattern = 'indicator_pattern',
+  LastAssertedAt = 'last_asserted_at',
   LastObserved = 'last_observed',
   LastPirScoreDate = 'last_pir_score_date',
   LastSeen = 'last_seen',
@@ -33782,6 +34721,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -33793,13 +34733,18 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   exportFiles?: Maybe<FileConnection>;
   extensions?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   hashes?: Maybe<Array<Maybe<Hash>>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   magic_number_hex?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   mime_type?: Maybe<Scalars['String']['output']>;
@@ -33821,6 +34766,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   size?: Maybe<Scalars['Int']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -33830,6 +34776,8 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   x_opencti_additional_names?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -34109,11 +35057,14 @@ export type StixObjectOrStixRelationshipRefEdge = {
 
 export enum StixObjectOrStixRelationshipsOrdering {
   Score = '_score',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -34351,12 +35302,15 @@ export type StixRelationshipSchema = {
 export enum StixRelationshipsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FreshnessDays = 'freshness_days',
   KillChainPhase = 'killChainPhase',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
@@ -34397,6 +35351,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -34407,13 +35362,18 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   entity_type: Scalars['String']['output'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   from?: Maybe<StixObjectOrStixRelationshipOrCreator>;
   fromId: Scalars['String']['output'];
   fromRole?: Maybe<Scalars['String']['output']>;
   fromType: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -34427,6 +35387,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -34438,6 +35399,8 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_negative: Scalars['Boolean']['output'];
@@ -34584,9 +35547,12 @@ export enum StixSightingRelationshipsOrdering {
   Score = '_score',
   AttributeCount = 'attribute_count',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   LastSeen = 'last_seen',
   Modified = 'modified',
   ObjectLabel = 'objectLabel',
@@ -35032,6 +35998,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -35045,13 +36012,18 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -35074,6 +36046,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -35085,6 +36058,8 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -35337,8 +36312,11 @@ export type SystemEditMutationsRelationDeleteArgs = {
 export enum SystemsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   Firstname = 'firstname',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Lastname = 'lastname',
   Modified = 'modified',
   Name = 'name',
@@ -35356,6 +36334,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -35370,12 +36349,17 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -35398,6 +36382,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -35408,6 +36393,8 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -35681,12 +36668,15 @@ export enum TasksOrdering {
   Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   Description = 'description',
   DueDate = 'due_date',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
@@ -35773,6 +36763,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -35782,12 +36773,17 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -35803,6 +36799,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -35811,6 +36808,8 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36057,6 +37056,7 @@ export type ThreatActor = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -36072,13 +37072,18 @@ export type ThreatActor = {
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -36106,6 +37111,7 @@ export type ThreatActor = {
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   secondary_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   sophistication?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -36118,6 +37124,8 @@ export type ThreatActor = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36306,6 +37314,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -36321,13 +37330,18 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -36355,6 +37369,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   secondary_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   sophistication?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -36367,6 +37382,8 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36631,6 +37648,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   countries?: Maybe<CountryConnection>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -36649,10 +37667,14 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   gender?: Maybe<Scalars['String']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
   hair_color?: Maybe<Scalars['String']['output']>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   height?: Maybe<Array<Measure>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
@@ -36660,6 +37682,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   job_title?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
   marital_status?: Maybe<Scalars['String']['output']>;
@@ -36689,6 +37712,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   secondary_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   securityCoverage?: Maybe<SecurityCoverage>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   sophistication?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -36702,6 +37726,8 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   weight?: Maybe<Array<Measure>>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36934,8 +37960,11 @@ export type ThreatActorIndividualEdge = {
 export enum ThreatActorsIndividualOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -36949,8 +37978,11 @@ export enum ThreatActorsIndividualOrdering {
 export enum ThreatActorsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -36999,6 +38031,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -37012,13 +38045,18 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -37039,6 +38077,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   status?: Maybe<Status>;
@@ -37051,6 +38090,8 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37298,8 +38339,11 @@ export type ToolEditMutationsRelationDeleteArgs = {
 export enum ToolsOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -37312,6 +38356,7 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -37321,12 +38366,17 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -37342,6 +38392,7 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -37350,6 +38401,8 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37524,6 +38577,7 @@ export type TrackingNumberAddInput = {
 
 export type Trigger = BasicObject & InternalObject & {
   __typename?: 'Trigger';
+  corroboration_threshold?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
@@ -37600,12 +38654,15 @@ export type TriggerEdge = {
 };
 
 export enum TriggerEventType {
+  Conflict = 'conflict',
+  Corroboration = 'corroboration',
   Create = 'create',
   Delete = 'delete',
   Update = 'update'
 }
 
 export type TriggerLiveAddInput = {
+  corroboration_threshold?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   event_types: Array<TriggerEventType>;
   filters?: InputMaybe<Scalars['String']['input']>;
@@ -37664,6 +38721,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -37673,12 +38731,17 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -37694,6 +38757,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -37702,6 +38766,8 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37961,6 +39027,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -37974,7 +39041,11 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   exportFiles?: Maybe<FileConnection>;
   extensions?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
@@ -37983,6 +39054,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   is_privileged?: Maybe<Scalars['Boolean']['output']>;
   is_service_account?: Maybe<Scalars['Boolean']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -37998,6 +39070,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -38006,6 +39079,8 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   user_id?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -38217,6 +39292,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -38226,12 +39302,17 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -38247,6 +39328,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -38255,6 +39337,8 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -38808,9 +39892,12 @@ export enum VocabularyOrdering {
 export enum VulnerabilitiesOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  FreshnessDays = 'freshness_days',
+  LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -38828,6 +39915,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -38841,12 +39929,17 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -38867,6 +39960,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   softwares?: Maybe<StixCyberObservableConnection>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -38879,7 +39973,9 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
   x_opencti_cisa_kev?: Maybe<Scalars['Boolean']['output']>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_cvss_attack_complexity?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_attack_vector?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_availability_impact?: Maybe<Scalars['String']['output']>;
@@ -39319,6 +40415,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -39328,12 +40425,17 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified_time?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -39351,6 +40453,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -39358,6 +40461,8 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -39534,6 +40639,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -39545,12 +40651,17 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -39567,6 +40678,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -39574,6 +40686,8 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -40072,6 +41186,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  corroboration_count?: Maybe<Scalars['Int']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -40083,7 +41198,11 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   exportFiles?: Maybe<FileConnection>;
   extended_key_usage?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  freshness_days?: Maybe<Scalars['Int']['output']>;
+  freshness_stale?: Maybe<Scalars['Boolean']['output']>;
+  freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
+  has_conflicts?: Maybe<Scalars['Boolean']['output']>;
   hashes?: Maybe<Array<Maybe<Hash>>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
@@ -40095,6 +41214,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   issuer_alternative_name?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   key_usage?: Maybe<Scalars['String']['output']>;
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name_constraints?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -40117,6 +41237,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   representative: Representative;
   serial_number?: Maybe<Scalars['String']['output']>;
   signature_algorithm?: Maybe<Scalars['String']['output']>;
+  single_sourced?: Maybe<Scalars['Boolean']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -40134,6 +41255,8 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   validity_not_after?: Maybe<Scalars['DateTime']['output']>;
   validity_not_before?: Maybe<Scalars['DateTime']['output']>;
   version?: Maybe<Scalars['String']['output']>;
+  x_opencti_assertions?: Maybe<Array<Assertion>>;
+  x_opencti_conflicts?: Maybe<Array<SourceConflict>>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -41244,6 +42367,8 @@ export type ResolversTypes = ResolversObject<{
   Artifact: ResolverTypeWrapper<Omit<Artifact, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ArtifactAddInput: ArtifactAddInput;
   AskSendOtpInput: AskSendOtpInput;
+  Assertion: ResolverTypeWrapper<Assertion>;
+  AssertionSourceKind: AssertionSourceKind;
   Assignee: ResolverTypeWrapper<Assignee>;
   AssigneeConnection: ResolverTypeWrapper<AssigneeConnection>;
   AssigneeEdge: ResolverTypeWrapper<AssigneeEdge>;
@@ -41517,6 +42642,7 @@ export type ResolversTypes = ResolversObject<{
   DecayRuleConnection: ResolverTypeWrapper<Omit<DecayRuleConnection, 'edges'> & { edges: Array<ResolversTypes['DecayRuleEdge']> }>;
   DecayRuleEdge: ResolverTypeWrapper<Omit<DecayRuleEdge, 'node'> & { node: ResolversTypes['DecayRule'] }>;
   DecayRuleOrdering: DecayRuleOrdering;
+  DecayRuleTargetScope: DecayRuleTargetScope;
   DefaultMarking: ResolverTypeWrapper<Omit<DefaultMarking, 'values'> & { values?: Maybe<Array<ResolversTypes['MarkingDefinition']>> }>;
   DefaultMarkingDefinition: ResolverTypeWrapper<DefaultMarkingDefinition>;
   DefaultMarkingInput: DefaultMarkingInput;
@@ -41812,6 +42938,8 @@ export type ResolversTypes = ResolversObject<{
   KillChainPhaseEdge: ResolverTypeWrapper<Omit<KillChainPhaseEdge, 'node'> & { node: ResolversTypes['KillChainPhase'] }>;
   KillChainPhaseEditMutations: ResolverTypeWrapper<Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['KillChainPhase']> }>;
   KillChainPhasesOrdering: KillChainPhasesOrdering;
+  KnowledgeDecayRuleAddInput: KnowledgeDecayRuleAddInput;
+  KnowledgeFreshnessPolicy: KnowledgeFreshnessPolicy;
   KnowledgeHealthComponent: ResolverTypeWrapper<KnowledgeHealthComponent>;
   KnowledgeHealthSnapshot: ResolverTypeWrapper<BasicStoreEntityKnowledgeHealthSnapshot>;
   KnowledgeHealthSnapshotConnection: ResolverTypeWrapper<Omit<KnowledgeHealthSnapshotConnection, 'edges'> & { edges: Array<ResolversTypes['KnowledgeHealthSnapshotEdge']> }>;
@@ -42048,8 +43176,16 @@ export type ResolversTypes = ResolversObject<{
   PositionEditMutations: ResolverTypeWrapper<Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Position']>, contextPatch?: Maybe<ResolversTypes['Position']>, fieldPatch?: Maybe<ResolversTypes['Position']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Position']> }>;
   PositionInput: PositionInput;
   PositionsOrdering: PositionsOrdering;
+  Procedure: ResolverTypeWrapper<Procedure>;
+  ProceduresDescriptionPolicy: ProceduresDescriptionPolicy;
   Process: ResolverTypeWrapper<Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ProcessAddInput: ProcessAddInput;
+  ProvenanceBackfill: ResolverTypeWrapper<ProvenanceBackfill>;
+  ProvenanceBackfillStatus: ProvenanceBackfillStatus;
+  ProvenanceDistributionEntry: ResolverTypeWrapper<ProvenanceDistributionEntry>;
+  ProvenanceSingleSourcedEntry: ResolverTypeWrapper<ProvenanceSingleSourcedEntry>;
+  ProvenanceSourceKindCount: ResolverTypeWrapper<ProvenanceSourceKindCount>;
+  ProvenanceStatistics: ResolverTypeWrapper<ProvenanceStatistics>;
   Provider: ResolverTypeWrapper<Provider>;
   PublicDashboard: ResolverTypeWrapper<BasicStoreEntityPublicDashboard>;
   PublicDashboardAddInput: PublicDashboardAddInput;
@@ -42165,6 +43301,8 @@ export type ResolversTypes = ResolversObject<{
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
   SoftwareEdge: ResolverTypeWrapper<Omit<SoftwareEdge, 'node'> & { node: ResolversTypes['Software'] }>;
+  SourceConflict: ResolverTypeWrapper<SourceConflict>;
+  SourceConflictValue: ResolverTypeWrapper<SourceConflictValue>;
   SsvcAutomatable: SsvcAutomatable;
   SsvcExploitation: SsvcExploitation;
   SsvcTechnicalImpact: SsvcTechnicalImpact;
@@ -42482,6 +43620,7 @@ export type ResolversParentTypes = ResolversObject<{
   Artifact: Omit<Artifact, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ArtifactAddInput: ArtifactAddInput;
   AskSendOtpInput: AskSendOtpInput;
+  Assertion: Assertion;
   Assignee: Assignee;
   AssigneeConnection: AssigneeConnection;
   AssigneeEdge: AssigneeEdge;
@@ -42958,6 +44097,7 @@ export type ResolversParentTypes = ResolversObject<{
   KillChainPhaseConnection: Omit<KillChainPhaseConnection, 'edges'> & { edges: Array<ResolversParentTypes['KillChainPhaseEdge']> };
   KillChainPhaseEdge: Omit<KillChainPhaseEdge, 'node'> & { node: ResolversParentTypes['KillChainPhase'] };
   KillChainPhaseEditMutations: Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['KillChainPhase']> };
+  KnowledgeDecayRuleAddInput: KnowledgeDecayRuleAddInput;
   KnowledgeHealthComponent: KnowledgeHealthComponent;
   KnowledgeHealthSnapshot: BasicStoreEntityKnowledgeHealthSnapshot;
   KnowledgeHealthSnapshotConnection: Omit<KnowledgeHealthSnapshotConnection, 'edges'> & { edges: Array<ResolversParentTypes['KnowledgeHealthSnapshotEdge']> };
@@ -43164,8 +44304,14 @@ export type ResolversParentTypes = ResolversObject<{
   PositionEdge: Omit<PositionEdge, 'node'> & { node: ResolversParentTypes['Position'] };
   PositionEditMutations: Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Position']>, contextPatch?: Maybe<ResolversParentTypes['Position']>, fieldPatch?: Maybe<ResolversParentTypes['Position']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Position']> };
   PositionInput: PositionInput;
+  Procedure: Procedure;
   Process: Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ProcessAddInput: ProcessAddInput;
+  ProvenanceBackfill: ProvenanceBackfill;
+  ProvenanceDistributionEntry: ProvenanceDistributionEntry;
+  ProvenanceSingleSourcedEntry: ProvenanceSingleSourcedEntry;
+  ProvenanceSourceKindCount: ProvenanceSourceKindCount;
+  ProvenanceStatistics: ProvenanceStatistics;
   Provider: Provider;
   PublicDashboard: BasicStoreEntityPublicDashboard;
   PublicDashboardAddInput: PublicDashboardAddInput;
@@ -43266,6 +44412,8 @@ export type ResolversParentTypes = ResolversObject<{
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
   SoftwareEdge: Omit<SoftwareEdge, 'node'> & { node: ResolversParentTypes['Software'] };
+  SourceConflict: SourceConflict;
+  SourceConflictValue: SourceConflictValue;
   Status: Omit<Status, 'template'> & { template?: Maybe<ResolversParentTypes['StatusTemplate']> };
   StatusAddInput: StatusAddInput;
   StatusConnection: Omit<StatusConnection, 'edges'> & { edges: Array<ResolversParentTypes['StatusEdge']> };
@@ -43561,6 +44709,7 @@ export type AiPromptResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AiPromptConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<AiPromptContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -43570,12 +44719,17 @@ export type AiPromptResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AiPromptExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AiPromptExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<AiPromptGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AiPromptImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AiPromptIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AiPromptJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AiPromptNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -43591,6 +44745,7 @@ export type AiPromptResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AiPromptReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AiPromptStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -43599,6 +44754,8 @@ export type AiPromptResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<AiPromptToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43618,6 +44775,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AdministrativeAreaConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<AdministrativeAreaContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -43632,12 +44790,17 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AdministrativeAreaExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AdministrativeAreaFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<AdministrativeAreaGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AdministrativeAreaImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AdministrativeAreaJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -43661,6 +44824,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AdministrativeAreaReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -43672,6 +44836,8 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43772,6 +44938,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ArtifactConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ArtifactContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -43783,13 +44950,18 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ArtifactExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ArtifactGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ArtifactIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ArtifactJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ArtifactNotesArgs>>;
@@ -43807,6 +44979,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ArtifactReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -43816,12 +44989,25 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_additional_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AssertionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Assertion'] = ResolversParentTypes['Assertion']> = ResolversObject<{
+  assert_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  first_asserted_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  last_asserted_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_kind?: Resolver<ResolversTypes['AssertionSourceKind'], ParentType, ContextType>;
+  source_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type AssigneeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Assignee'] = ResolversParentTypes['Assignee']> = ResolversObject<{
@@ -43848,6 +45034,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AttackPatternConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<AttackPatternContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<AttackPatternCoursesOfActionArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -43863,7 +45050,11 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AttackPatternExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<AttackPatternGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternImportFilesArgs>>;
   isSubAttackPattern?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -43871,6 +45062,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AttackPatternJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43892,6 +45084,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AttackPatternReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -43907,6 +45100,8 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_permissions_required?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44088,6 +45283,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AutonomousSystemConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<AutonomousSystemContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -44097,12 +45293,17 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AutonomousSystemExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<AutonomousSystemGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AutonomousSystemIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AutonomousSystemNotesArgs>>;
@@ -44121,6 +45322,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AutonomousSystemReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   rir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -44128,6 +45330,8 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<AutonomousSystemToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44191,6 +45395,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<BankAccountConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<BankAccountContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -44200,13 +45405,18 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<BankAccountExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<BankAccountExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<BankAccountGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   iban?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<BankAccountImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<BankAccountIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<BankAccountJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<BankAccountNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -44222,6 +45432,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<BankAccountReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -44229,6 +45440,8 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<BankAccountToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44281,6 +45494,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CampaignConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CampaignContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44295,12 +45509,17 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CampaignGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CampaignJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44324,6 +45543,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44334,6 +45554,8 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44399,6 +45621,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44412,12 +45635,17 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44440,6 +45668,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44451,6 +45680,8 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44478,6 +45709,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44492,12 +45724,17 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseIncidentExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseIncidentGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseIncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44525,6 +45762,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44536,6 +45774,8 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44564,6 +45804,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44577,13 +45818,18 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseRfiExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRfiGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiImportFilesArgs>>;
   information_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRfiJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44609,6 +45855,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RfiRequestAccessConfiguration']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44620,6 +45867,8 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44650,6 +45899,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44663,12 +45913,17 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseRftExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRftGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRftJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44693,6 +45948,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44705,6 +45961,8 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44793,6 +46051,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ChannelConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ChannelContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44806,12 +46065,17 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ChannelExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ChannelFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ChannelGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ChannelImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ChannelJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44832,6 +46096,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ChannelReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44842,6 +46107,8 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44871,6 +46138,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CityConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CityContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -44885,12 +46153,17 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CityExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CityGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -44914,6 +46187,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -44925,6 +46199,8 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45203,6 +46479,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CountryConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CountryContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -45216,12 +46493,17 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CountryExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CountryGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CountryJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -45246,6 +46528,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CountryReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -45257,6 +46540,8 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45291,6 +46576,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CourseOfActionConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CourseOfActionContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -45304,12 +46590,17 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CourseOfActionExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CourseOfActionGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CourseOfActionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45330,6 +46621,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CourseOfActionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -45342,6 +46634,8 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_log_sources?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -45398,6 +46692,7 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CredentialConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CredentialContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -45407,12 +46702,17 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CredentialExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CredentialExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CredentialGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CredentialImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CredentialIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CredentialJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CredentialNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45428,6 +46728,7 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CredentialReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CredentialStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -45436,6 +46737,8 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CredentialToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45449,6 +46752,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -45458,12 +46762,17 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45479,6 +46788,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -45487,6 +46797,8 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CryptocurrencyWalletToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45500,6 +46812,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptographicKeyConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CryptographicKeyContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -45509,12 +46822,17 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptographicKeyExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CryptographicKeyGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptographicKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptographicKeyJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptographicKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45530,6 +46848,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptographicKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -45538,6 +46857,8 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CryptographicKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45929,6 +47250,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DataComponentConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<DataComponentContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -45943,12 +47265,17 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DataComponentExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataComponentFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DataComponentGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataComponentImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataComponentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45969,6 +47296,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DataComponentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -45979,6 +47307,8 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46040,6 +47370,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DataSourceConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<DataSourceContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -46054,12 +47385,17 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DataSourceExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataSourceFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DataSourceGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataSourceImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataSourceJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46080,6 +47416,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DataSourceReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -46091,6 +47428,8 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46169,6 +47508,8 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   decay_revoke_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  freshness_confidence_step?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_policy?: Resolver<Maybe<ResolversTypes['KnowledgeFreshnessPolicy']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46176,7 +47517,11 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  staleElementsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stale_after_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_scope?: Resolver<ResolversTypes['DecayRuleTargetScope'], ParentType, ContextType>;
+  target_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -46267,6 +47612,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DirectoryConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<DirectoryContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -46277,12 +47623,17 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DirectoryExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DirectoryGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DirectoryIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DirectoryJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DirectoryNotesArgs>>;
@@ -46301,6 +47652,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DirectoryReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -46308,6 +47660,8 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DirectoryToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46373,6 +47727,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DomainNameConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<DomainNameContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -46382,12 +47737,17 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DomainNameExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DomainNameGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DomainNameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DomainNameJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DomainNameNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -46403,6 +47763,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DomainNameReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -46411,6 +47772,8 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DomainNameToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46550,6 +47913,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<EmailAddrConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<EmailAddrContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -46560,12 +47924,17 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailAddrExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<EmailAddrGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailAddrJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailAddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -46581,6 +47950,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailAddrReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -46589,6 +47959,8 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailAddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46605,6 +47977,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<EmailMessageContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -46614,13 +47987,18 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMessageExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<EmailMessageGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMessageIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_multipart?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMessageJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   message_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMessageNotesArgs>>;
@@ -46638,6 +48016,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailMessageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -46646,6 +48025,8 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   subject?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailMessageToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46662,6 +48043,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content_disposition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -46671,12 +48053,17 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMimePartTypeJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -46692,6 +48079,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -46699,6 +48087,8 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailMimePartTypeToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46780,6 +48170,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<EventConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<EventContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -46794,12 +48185,17 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EventExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<EventGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EventJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46820,6 +48216,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EventReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46832,6 +48229,8 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47005,6 +48404,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -47018,12 +48418,17 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<FeedbackExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<FeedbackGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<FeedbackJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47047,6 +48452,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<FeedbackReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -47058,6 +48464,8 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47313,6 +48721,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   context?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -47326,12 +48735,17 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<GroupingExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<GroupingGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<GroupingJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47355,6 +48769,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -47366,6 +48781,8 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47470,6 +48887,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<HostnameContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -47479,12 +48897,17 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<HostnameExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<HostnameGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HostnameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HostnameJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HostnameNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47500,6 +48923,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HostnameReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47508,6 +48932,8 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HostnameToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47521,6 +48947,7 @@ export type IccidResolvers<ContextType = any, ParentType extends ResolversParent
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IccidConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IccidContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -47530,12 +48957,17 @@ export type IccidResolvers<ContextType = any, ParentType extends ResolversParent
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IccidExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IccidExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IccidGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IccidImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IccidIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IccidJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IccidNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47551,6 +48983,7 @@ export type IccidResolvers<ContextType = any, ParentType extends ResolversParent
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IccidReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IccidStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47559,6 +48992,8 @@ export type IccidResolvers<ContextType = any, ParentType extends ResolversParent
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IccidToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47572,6 +49007,7 @@ export type ImeiResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ImeiConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ImeiContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -47581,12 +49017,17 @@ export type ImeiResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ImeiExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ImeiExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ImeiGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ImeiImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ImeiIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ImeiJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ImeiNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47602,6 +49043,7 @@ export type ImeiResolvers<ContextType = any, ParentType extends ResolversParentT
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ImeiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ImeiStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47610,6 +49052,8 @@ export type ImeiResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ImeiToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47623,6 +49067,7 @@ export type ImsiResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ImsiConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ImsiContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -47632,12 +49077,17 @@ export type ImsiResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ImsiExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ImsiExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ImsiGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ImsiImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ImsiIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ImsiJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ImsiNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47653,6 +49103,7 @@ export type ImsiResolvers<ContextType = any, ParentType extends ResolversParentT
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ImsiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ImsiStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47661,6 +49112,8 @@ export type ImsiResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ImsiToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47674,6 +49127,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IPv4AddrConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IPv4AddrContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -47684,12 +49138,17 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv4AddrExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IPv4AddrGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv4AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv4AddrJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv4AddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47705,6 +49164,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv4AddrReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47713,6 +49173,8 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IPv4AddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47726,6 +49188,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IPv6AddrConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IPv6AddrContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -47736,12 +49199,17 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv6AddrExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IPv6AddrGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv6AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv6AddrJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv6AddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47757,6 +49225,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv6AddrReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -47765,6 +49234,8 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IPv6AddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47871,6 +49342,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IncidentConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IncidentContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -47885,13 +49357,18 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IncidentGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentImportFilesArgs>>;
   incident_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47916,6 +49393,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47927,6 +49405,8 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47985,6 +49465,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IndicatorConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IndicatorContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48005,7 +49486,11 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IndicatorExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndicatorFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IndicatorGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndicatorImportFilesArgs>>;
   indicator_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -48013,6 +49498,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndicatorJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48037,6 +49523,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IndicatorReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -48050,6 +49537,8 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -48095,6 +49584,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IndividualContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48108,7 +49598,11 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IndividualExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IndividualGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualImportFilesArgs>>;
@@ -48116,6 +49610,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48138,6 +49633,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -48149,6 +49645,8 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -48197,6 +49695,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<InfrastructureConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<InfrastructureContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48211,7 +49710,11 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructureFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<InfrastructureGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructureImportFilesArgs>>;
   infrastructure_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -48219,6 +49722,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<InfrastructureJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48240,6 +49744,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<InfrastructureReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -48250,6 +49755,8 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48577,6 +50084,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IntrusionSetConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<IntrusionSetContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48591,13 +50099,18 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IntrusionSetGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IntrusionSetJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -48624,6 +50137,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   secondary_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -48634,6 +50148,8 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48909,6 +50425,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<LanguageConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<LanguageContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48921,12 +50438,17 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<LanguageExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguageFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<LanguageGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguageImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<LanguageJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48947,6 +50469,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<LanguageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -48957,6 +50480,8 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49134,6 +50659,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MacAddrConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<MacAddrContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -49143,12 +50669,17 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MacAddrExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MacAddrGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MacAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MacAddrJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MacAddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -49164,6 +50695,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MacAddrReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -49172,6 +50704,8 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MacAddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49190,6 +50724,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MalwareConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<MalwareContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -49204,7 +50739,11 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MalwareGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   implementation_languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareImportFilesArgs>>;
@@ -49213,6 +50752,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   malware_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -49236,6 +50776,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   samples?: Resolver<Maybe<Array<ResolversTypes['StixCyberObservable']>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -49246,6 +50787,8 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49267,6 +50810,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MalwareAnalysisConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<MalwareAnalysisContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -49280,7 +50824,11 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MalwareAnalysisGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hostVm?: Resolver<Maybe<ResolversTypes['Software']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisImportFilesArgs>>;
@@ -49288,6 +50836,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareAnalysisJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49314,6 +50863,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   result_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   sample?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -49326,6 +50876,8 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49576,6 +51128,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<MediaContentContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -49586,12 +51139,17 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MediaContentExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MediaContentExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MediaContentGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MediaContentImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MediaContentIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MediaContentJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   media_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MediaContentNotesArgs>>;
@@ -49609,6 +51167,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MediaContentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -49618,6 +51177,8 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MediaContentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50026,6 +51587,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   jsonMapperTest?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationJsonMapperTestArgs, 'configuration' | 'file'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
+  knowledgeDecayRuleAdd?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationKnowledgeDecayRuleAddArgs, 'input'>>;
   knowledgeHealthRefresh?: Resolver<Maybe<ResolversTypes['KnowledgeHealthSnapshot']>, ParentType, ContextType>;
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
@@ -50118,6 +51680,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
+  provenanceAssert?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceAssertArgs, 'id'>>;
+  provenanceBackfillRestart?: Resolver<ResolversTypes['ProvenanceBackfill'], ParentType, ContextType>;
+  provenanceConflictAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictAdoptArgs, 'field' | 'id' | 'value_hash'>>;
+  provenanceConflictDismiss?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictDismissArgs, 'field' | 'id' | 'value_hash'>>;
+  provenanceProcedureAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceProcedureAdoptArgs, 'id' | 'text'>>;
   publicDashboardAdd?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardAddArgs, 'input'>>;
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
@@ -50307,6 +51874,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MutexConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<MutexContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -50316,12 +51884,17 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MutexExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MutexGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MutexIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MutexJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MutexNotesArgs>>;
@@ -50338,6 +51911,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MutexReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -50345,6 +51919,8 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutexToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50366,6 +51942,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<NarrativeConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NarrativeContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50379,13 +51956,18 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NarrativeExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativeFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<NarrativeGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativeImportFilesArgs>>;
   isSubNarrative?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NarrativeJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50408,6 +51990,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NarrativeReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -50419,6 +52002,8 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50441,6 +52026,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<NetworkTrafficConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NetworkTrafficContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -50456,13 +52042,18 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NetworkTrafficExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<NetworkTrafficGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<NetworkTrafficIndicatorsArgs>>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NetworkTrafficJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NetworkTrafficNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -50479,6 +52070,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NetworkTrafficReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   src_byte_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   src_packets?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -50491,6 +52083,8 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<NetworkTrafficToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50548,6 +52142,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NoteContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50560,12 +52155,17 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NoteExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<NoteGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NoteJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   likelihood?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50589,6 +52189,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NoteReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -50599,6 +52200,8 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50739,6 +52342,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ObservedDataConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ObservedDataContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50752,12 +52356,17 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ObservedDataGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ObservedDataJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   max_distinct_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -50784,6 +52393,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ObservedDataReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -50794,6 +52404,8 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50857,6 +52469,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<OpinionConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OpinionContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50870,12 +52483,17 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<OpinionExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<OpinionGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OpinionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OpinionNotesArgs>>;
@@ -50898,6 +52516,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OpinionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -50908,6 +52527,8 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50952,6 +52573,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OrganizationContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50967,14 +52589,19 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<OrganizationExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   grantable_groups?: Resolver<Maybe<Array<ResolversTypes['Group']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<OrganizationGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OrganizationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<OrganizationMembersArgs>>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51000,6 +52627,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -51012,6 +52640,8 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51091,6 +52721,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PaymentCardConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PaymentCardContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -51102,13 +52733,18 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   expiration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PaymentCardExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<PaymentCardExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<PaymentCardGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   holder_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PaymentCardImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PaymentCardIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PaymentCardJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PaymentCardNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -51124,6 +52760,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PaymentCardReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -51131,6 +52768,8 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PaymentCardToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51144,6 +52783,7 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PersonaConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PersonaContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -51153,12 +52793,17 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PersonaExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<PersonaExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<PersonaGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PersonaImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PersonaIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PersonaJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PersonaNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -51176,6 +52821,7 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PersonaReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PersonaStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -51183,6 +52829,8 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PersonaStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PersonaToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51196,6 +52844,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PhoneNumberConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PhoneNumberContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -51205,12 +52854,17 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PhoneNumberExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<PhoneNumberExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<PhoneNumberGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PhoneNumberImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PhoneNumberIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PhoneNumberJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PhoneNumberNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -51226,6 +52880,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PhoneNumberReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -51234,6 +52889,8 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PhoneNumberToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51472,6 +53129,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PositionConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PositionContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -51485,12 +53143,17 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<PositionExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<PositionGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PositionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -51515,6 +53178,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PositionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -51527,6 +53191,8 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51553,6 +53219,12 @@ export type PositionEditMutationsResolvers<ContextType = any, ParentType extends
   relationDelete?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<PositionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type ProcedureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Procedure'] = ResolversParentTypes['Procedure']> = ResolversObject<{
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  source_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type ProcessResolvers<ContextType = any, ParentType extends ResolversParentTypes['Process'] = ResolversParentTypes['Process']> = ResolversObject<{
   aslr_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ProcessCasesArgs>>;
@@ -51560,6 +53232,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ProcessConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ProcessContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   created_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51576,8 +53249,12 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ProcessExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   group_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ProcessGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
@@ -51585,6 +53262,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ProcessNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -51607,6 +53285,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   service_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   service_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   service_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51617,12 +53296,49 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ProcessToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   window_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProvenanceBackfillResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceBackfill'] = ResolversParentTypes['ProvenanceBackfill']> = ResolversObject<{
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  expected?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ProvenanceBackfillStatus'], ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceDistributionEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceDistributionEntry'] = ResolversParentTypes['ProvenanceDistributionEntry']> = ResolversObject<{
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceSingleSourcedEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceSingleSourcedEntry'] = ResolversParentTypes['ProvenanceSingleSourcedEntry']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  single_sourced?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceSourceKindCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceSourceKindCount'] = ResolversParentTypes['ProvenanceSourceKindCount']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source_kind?: Resolver<ResolversTypes['AssertionSourceKind'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceStatistics'] = ResolversParentTypes['ProvenanceStatistics']> = ResolversObject<{
+  corroborated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  single_sourced?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stale?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  with_conflicts?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  with_provenance?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type ProviderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Provider'] = ResolversParentTypes['Provider']> = ResolversObject<{
@@ -51985,6 +53701,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
+  provenanceBackfill?: Resolver<ResolversTypes['ProvenanceBackfill'], ParentType, ContextType>;
+  provenanceFreshnessDistribution?: Resolver<Array<ResolversTypes['ProvenanceDistributionEntry']>, ParentType, ContextType, Partial<QueryProvenanceFreshnessDistributionArgs>>;
+  provenanceSingleSourcedByType?: Resolver<Array<ResolversTypes['ProvenanceSingleSourcedEntry']>, ParentType, ContextType, Partial<QueryProvenanceSingleSourcedByTypeArgs>>;
+  provenanceSourceKindsDistribution?: Resolver<Array<ResolversTypes['ProvenanceSourceKindCount']>, ParentType, ContextType, Partial<QueryProvenanceSourceKindsDistributionArgs>>;
+  provenanceStatistics?: Resolver<ResolversTypes['ProvenanceStatistics'], ParentType, ContextType, Partial<QueryProvenanceStatisticsArgs>>;
   publicBookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicBookmarksArgs, 'uriKey' | 'widgetId'>>;
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
@@ -52229,6 +53950,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<RegionConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<RegionContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -52243,12 +53965,17 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<RegionExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<RegionGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<RegionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -52273,6 +54000,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<RegionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -52285,6 +54013,8 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52329,6 +54059,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -52343,12 +54074,17 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ReportExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ReportGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ReportJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52374,6 +54110,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -52384,6 +54121,8 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52581,6 +54320,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SshKeyConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SshKeyContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -52594,7 +54334,11 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SshKeyExternalReferencesArgs>>;
   fingerprint_md5?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fingerprint_sha256?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SshKeyGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SshKeyIndicatorsArgs>>;
@@ -52602,6 +54346,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SshKeyJobsArgs>>;
   key_length?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SshKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -52618,6 +54363,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SshKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -52625,6 +54371,8 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SshKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52711,6 +54459,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SectorContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -52724,7 +54473,11 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SectorExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SectorFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SectorGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SectorImportFilesArgs>>;
@@ -52732,6 +54485,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SectorJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52754,6 +54508,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -52767,6 +54522,8 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52804,6 +54561,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SecurityCoverageContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
   coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52826,13 +54584,18 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   external_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SecurityCoverageGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SecurityCoverageJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52859,6 +54622,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   security_platform_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -52873,6 +54637,8 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52899,6 +54665,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
   coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52917,13 +54684,18 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   external_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SecurityCoverageResultJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52946,6 +54718,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   resultOf?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -52957,6 +54730,8 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52983,6 +54758,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SecurityPlatformContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -52996,13 +54772,18 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SecurityPlatformExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityPlatformFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SecurityPlatformGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityPlatformImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SecurityPlatformJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -53025,6 +54806,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   security_platform_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -53036,6 +54818,8 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53120,6 +54904,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  platform_procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
+  platform_procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -53199,6 +54985,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SoftwareConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SoftwareContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   cpe?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -53209,13 +54996,18 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SoftwareExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SoftwareGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SoftwareIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SoftwareJobsArgs>>;
   languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SoftwareNotesArgs>>;
@@ -53232,6 +55024,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SoftwareReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -53243,6 +55036,8 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   vendor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53260,6 +55055,23 @@ export type SoftwareConnectionResolvers<ContextType = any, ParentType extends Re
 export type SoftwareEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SoftwareEdge'] = ResolversParentTypes['SoftwareEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Software'], ParentType, ContextType>;
+}>;
+
+export type SourceConflictResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceConflict'] = ResolversParentTypes['SourceConflict']> = ResolversObject<{
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['SourceConflictValue']>, ParentType, ContextType>;
+}>;
+
+export type SourceConflictValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceConflictValue'] = ResolversParentTypes['SourceConflictValue']> = ResolversObject<{
+  adoptable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  display?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_asserted_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_kind?: Resolver<Maybe<ResolversTypes['AssertionSourceKind']>, ParentType, ContextType>;
+  source_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type StatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['Status'] = ResolversParentTypes['Status']> = ResolversObject<{
@@ -53308,6 +55120,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCoreObjectConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreObjectContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -53317,11 +55130,16 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCoreObjectExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreObjectGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCoreObjectJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreObjectNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -53336,6 +55154,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreObjectReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -53343,6 +55162,8 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCoreObjectToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
@@ -53387,6 +55208,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -53397,15 +55219,20 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   fromId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipNotesArgs>>;
@@ -53414,11 +55241,13 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipOpinionsArgs>>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  procedures?: Resolver<Maybe<Array<ResolversTypes['Procedure']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53433,6 +55262,8 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -53468,6 +55299,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCyberObservableConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCyberObservableContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -53477,12 +55309,17 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCyberObservableExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCyberObservableGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixCyberObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCyberObservableJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -53498,6 +55335,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCyberObservableReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -53505,6 +55343,8 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCyberObservableToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -53544,6 +55384,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixDomainObjectConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixDomainObjectContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -53556,12 +55397,17 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixDomainObjectExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixDomainObjectGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixDomainObjectJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixDomainObjectNotesArgs>>;
@@ -53581,6 +55427,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixDomainObjectReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -53591,6 +55438,8 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -53633,6 +55482,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixFileConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixFileContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -53644,13 +55494,18 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFileExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixFileExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixFileGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFileImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixFileIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixFileJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   magic_number_hex?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -53672,6 +55527,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixFileReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -53681,6 +55537,8 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixFileToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_additional_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53906,6 +55764,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -53916,13 +55775,18 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipExternalReferencesArgs>>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   fromId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53936,6 +55800,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -53947,6 +55812,8 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_negative?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -54171,6 +56038,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SystemContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -54184,13 +56052,18 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SystemExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SystemFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SystemGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SystemImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SystemJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54213,6 +56086,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -54224,6 +56098,8 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -54263,6 +56139,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TaskContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -54277,12 +56154,17 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TaskExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<TaskGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TaskJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54305,6 +56187,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TaskReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -54315,6 +56198,8 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54401,6 +56286,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TextConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TextContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -54410,12 +56296,17 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TextExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<TextGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TextIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TextJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TextNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -54431,6 +56322,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TextReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -54439,6 +56331,8 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<TextToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54500,6 +56394,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ThreatActorContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -54515,13 +56410,18 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -54549,6 +56449,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   secondary_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sophistication?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54561,6 +56462,8 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54585,6 +56488,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorGroupConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ThreatActorGroupContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -54600,13 +56504,18 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorGroupGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorGroupJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -54634,6 +56543,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   secondary_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sophistication?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54646,6 +56556,8 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54682,6 +56594,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorIndividualConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -54700,10 +56613,14 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
   hair_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   height?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
@@ -54711,6 +56628,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorIndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
   marital_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54740,6 +56658,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   secondary_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sophistication?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54753,6 +56672,8 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54790,6 +56711,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ToolConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ToolContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -54803,13 +56725,18 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ToolExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ToolGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ToolJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -54830,6 +56757,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ToolReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -54842,6 +56770,8 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54873,6 +56803,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TrackingNumberConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TrackingNumberContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -54882,12 +56813,17 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TrackingNumberExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TrackingNumberExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<TrackingNumberGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TrackingNumberImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TrackingNumberIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TrackingNumberJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TrackingNumberNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -54903,6 +56839,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TrackingNumberReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TrackingNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -54911,6 +56848,8 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<TrackingNumberToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54920,6 +56859,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type TriggerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Trigger'] = ResolversParentTypes['Trigger']> = ResolversObject<{
+  corroboration_threshold?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54980,6 +56920,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UrlConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<UrlContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -54989,12 +56930,17 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UrlExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<UrlGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UrlIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UrlJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UrlNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -55010,6 +56956,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UrlReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55018,6 +56965,8 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UrlToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55090,6 +57039,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UserAccountConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<UserAccountContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -55103,7 +57053,11 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountExportFilesArgs>>;
   extensions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAccountExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<UserAccountGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAccountIndicatorsArgs>>;
@@ -55112,6 +57066,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   is_privileged?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAccountJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAccountNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -55127,6 +57082,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAccountReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55135,6 +57091,8 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UserAccountToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55148,6 +57106,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UserAgentConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<UserAgentContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -55157,12 +57116,17 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAgentExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<UserAgentGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAgentIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAgentJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAgentNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -55178,6 +57142,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAgentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55186,6 +57151,8 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UserAgentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55378,6 +57345,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<VulnerabilityConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<VulnerabilityContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -55391,12 +57359,17 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<VulnerabilityExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<VulnerabilityGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<VulnerabilityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -55417,6 +57390,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<VulnerabilityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   softwares?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<VulnerabilitySoftwaresArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -55429,7 +57403,9 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
   x_opencti_cisa_kev?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_cvss_attack_complexity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -55580,6 +57556,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -55589,12 +57566,17 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyNotesArgs>>;
@@ -55612,6 +57594,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55619,6 +57602,8 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<WindowsRegistryKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55632,6 +57617,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -55643,12 +57629,17 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeJobsArgs>>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeNotesArgs>>;
@@ -55665,6 +57656,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55672,6 +57664,8 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55898,6 +57892,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<X509CertificateConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<X509CertificateContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -55909,7 +57904,11 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificateExportFilesArgs>>;
   extended_key_usage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<X509CertificateExternalReferencesArgs>>;
+  freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<X509CertificateGroupingsArgs>>;
+  has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificateImportFilesArgs>>;
@@ -55921,6 +57920,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   issuer_alternative_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<X509CertificateJobsArgs>>;
   key_usage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name_constraints?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<X509CertificateNotesArgs>>;
@@ -55943,6 +57943,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   serial_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   signature_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  single_sourced?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<X509CertificateStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
@@ -55960,6 +57961,8 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   validity_not_after?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   validity_not_before?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;
+  x_opencti_conflicts?: Resolver<Maybe<Array<ResolversTypes['SourceConflict']>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55987,6 +57990,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AppInfo?: AppInfoResolvers<ContextType>;
   AppMemory?: AppMemoryResolvers<ContextType>;
   Artifact?: ArtifactResolvers<ContextType>;
+  Assertion?: AssertionResolvers<ContextType>;
   Assignee?: AssigneeResolvers<ContextType>;
   AssigneeConnection?: AssigneeConnectionResolvers<ContextType>;
   AssigneeEdge?: AssigneeEdgeResolvers<ContextType>;
@@ -56494,7 +58498,13 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PositionConnection?: PositionConnectionResolvers<ContextType>;
   PositionEdge?: PositionEdgeResolvers<ContextType>;
   PositionEditMutations?: PositionEditMutationsResolvers<ContextType>;
+  Procedure?: ProcedureResolvers<ContextType>;
   Process?: ProcessResolvers<ContextType>;
+  ProvenanceBackfill?: ProvenanceBackfillResolvers<ContextType>;
+  ProvenanceDistributionEntry?: ProvenanceDistributionEntryResolvers<ContextType>;
+  ProvenanceSingleSourcedEntry?: ProvenanceSingleSourcedEntryResolvers<ContextType>;
+  ProvenanceSourceKindCount?: ProvenanceSourceKindCountResolvers<ContextType>;
+  ProvenanceStatistics?: ProvenanceStatisticsResolvers<ContextType>;
   Provider?: ProviderResolvers<ContextType>;
   PublicDashboard?: PublicDashboardResolvers<ContextType>;
   PublicDashboardConnection?: PublicDashboardConnectionResolvers<ContextType>;
@@ -56569,6 +58579,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;
+  SourceConflict?: SourceConflictResolvers<ContextType>;
+  SourceConflictValue?: SourceConflictValueResolvers<ContextType>;
   Status?: StatusResolvers<ContextType>;
   StatusConnection?: StatusConnectionResolvers<ContextType>;
   StatusEdge?: StatusEdgeResolvers<ContextType>;

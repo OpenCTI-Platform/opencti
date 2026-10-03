@@ -3561,7 +3561,16 @@ const upsertElement = async (
     ? await fieldAuthorityResolver.resolve(context, user, resolvedElement, type, updatePatch)
     : undefined;
   // All inputs impacted by modifications (+inner)
-  const resolvedInputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition, authorityDecisions) as EditInput[];
+  const resolvedInputs = await generateInputsForUpsert(
+    context,
+    user,
+    resolvedElement,
+    type,
+    updatePatch,
+    confidenceForUpsert,
+    validEnterpriseEdition,
+    authorityDecisions,
+  ) as EditInput[];
   // Procedures preservation and conflicts tracking, computed from the resolution outcome
   const preparedProvenance = await prepareUpsertProvenance(context, user, resolvedElement, type, {
     basePatch,
