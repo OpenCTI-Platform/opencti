@@ -83,6 +83,12 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  wf-analytics-test:
+    name: Analytics process
+    uses: ./.github/workflows/ci-test-analytics.yml
+    with:
+      checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+
   wf-license-check:
     name: License check
     uses: ./.github/workflows/ci-license-check.yml
