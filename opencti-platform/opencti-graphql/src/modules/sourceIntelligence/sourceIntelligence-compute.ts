@@ -270,8 +270,8 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
   const negativelySighted = (page.negativeSightings.get(id) ?? 0) > 0;
   const labels = asArray(doc['rel_object-label.internal_id']);
   const falsePositive = labels.some((labelId) => run.falsePositiveLabelIds.has(labelId));
-  const negative = negativeRevocation || negativelySighted || falsePositive;
   const decayExcluded = !!doc.decay_exclusion_applied_rule?.decay_exclusion_id;
+  const negative = negativeRevocation || negativelySighted || falsePositive || decayExcluded;
   let pirMatched = false;
   if (run.pirFlaggedIds) {
     if (isEntity) {
