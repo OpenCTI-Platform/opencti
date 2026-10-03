@@ -5185,6 +5185,7 @@
   "Token generated successfully": "令牌生成成功",
   "Token revoked successfully": "令牌撤销成功",
   "Tone": "音调",
+  "Too many members to create a Grouping or a Campaign, maximum": "成员过多，无法创建分组或活动，最大值",
   "Too many objects": "对象过多",
   "Tool": "攻击工具",
   "Tool definitions": "工具定义",

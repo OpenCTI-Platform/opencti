@@ -83,6 +83,8 @@ The detail of a cluster shows its members (most connected first), its shared fea
 - **Create Campaign** creates a Campaign related to the members you can access.
 - **Add to investigation** opens the members and shared features in a new investigation.
 
+A Grouping or a Campaign always holds every member you can access: a cluster with more than 2,000 accessible members cannot be promoted, and the cluster page says so.
+
 A cluster keeps its identity from one computation to the next, so the Groupings and Campaigns it was promoted to remain listed on it.
 
 ## Graph metrics on entities

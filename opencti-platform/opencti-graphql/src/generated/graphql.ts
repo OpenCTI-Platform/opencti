@@ -10346,6 +10346,8 @@ export type GraphCluster = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   promotedTo: Array<StixDomainObject>;
+  /** Maximum number of accessible members of a cluster that can be promoted to a Grouping or a Campaign */
+  promotion_max_members: Scalars['Int']['output'];
   representative: Representative;
   representatives: Array<StixCoreObject>;
   standard_id: Scalars['String']['output'];
@@ -46966,6 +46968,7 @@ export type GraphClusterResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   promotedTo?: Resolver<Array<ResolversTypes['StixDomainObject']>, ParentType, ContextType>;
+  promotion_max_members?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   representatives?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

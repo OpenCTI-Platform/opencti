@@ -263,8 +263,8 @@ export const shouldStartFullPass = (state: Record<string, string>, config: Graph
   return elapsed >= 20 * 3600 * 1000 && now.getUTCHours() === config.fullPassHour;
 };
 
+/** A pass starts where the previous capped pass stopped (the cursor is only cleared when a pass reaches the end). */
 export const startFullPass = async () => {
-  await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR]);
   await redisGraphAnalyticsSetState({ [GRAPH_STATE_FULL_PASS_STARTED_AT]: new Date().toISOString(), [GRAPH_STATE_FULL_PASS_PROCESSED]: '0' });
 };
 
@@ -314,15 +314,26 @@ export const runFullPassStep = async (
       processed += carriers.length;
       processedTotal += carriers.length;
     }
-    if (!page.endCursor || carriers.length < config.fullPassBatchSize || processedTotal >= config.fullPassMaxEntities) {
+    if (!page.endCursor || carriers.length < config.fullPassBatchSize) {
+      cursor = undefined;
       completed = true;
       break;
     }
     cursor = page.endCursor;
+    if (processedTotal >= config.fullPassMaxEntities) {
+      // the next pass resumes from here, so entities beyond the cap are rotated in instead of never being swept
+      logApp.info('[OPENCTI-MODULE] Graph analytics full pass capped, the next pass resumes from its cursor', { max: config.fullPassMaxEntities });
+      completed = true;
+      break;
+    }
     await doYield();
   }
   if (completed) {
-    await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR]);
+    if (cursor) {
+      await redisGraphAnalyticsSetState({ [GRAPH_STATE_FULL_PASS_CURSOR]: cursor });
+    } else {
+      await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR]);
+    }
     await redisGraphAnalyticsSetState({
       [GRAPH_STATE_FULL_PASS_COMPLETED_AT]: new Date().toISOString(),
       [GRAPH_STATE_FULL_PASS_PROCESSED]: String(processedTotal),

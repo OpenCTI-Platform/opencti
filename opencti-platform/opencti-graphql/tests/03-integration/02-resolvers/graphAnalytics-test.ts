@@ -8,10 +8,22 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IN
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '../../../src/schema/stixCyberObservable';
 import { GRAPH_ANALYTICS_MANAGER_USER } from '../../../src/utils/access';
-import { getGraphAnalyticsComputeConfig, processDirtyEntities, runInfrastructureClustering } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
+import {
+  getGraphAnalyticsComputeConfig,
+  processDirtyEntities,
+  runFullPassStep,
+  runInfrastructureClustering,
+  startFullPass,
+} from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
 import { deleteSimilarityRowsForEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
-import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
-import { GRAPH_STATE_ANALYTICS_LAST_RUN_AT } from '../../../src/modules/graphAnalytics/graphAnalytics-state';
+import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
+import {
+  GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
+  GRAPH_STATE_FULL_PASS_COMPLETED_AT,
+  GRAPH_STATE_FULL_PASS_CURSOR,
+  GRAPH_STATE_FULL_PASS_PROCESSED,
+  GRAPH_STATE_FULL_PASS_STARTED_AT,
+} from '../../../src/modules/graphAnalytics/graphAnalytics-state';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import type { BasicStoreEntity } from '../../../src/types/store';
 
@@ -286,6 +298,9 @@ describe('Graph analytics resolvers', () => {
     expect(capped.skipped).toBe(true);
     const kept = await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.d2 } });
     expect(kept.data.stixCoreObject.x_opencti_graph_metrics.cluster_id).toBe(cluster.id);
+    const limitQuery = gql`query clusterLimit($id: String!) { graphCluster(id: $id) { members_count promotion_max_members } }`;
+    const limit = await queryAsAdminWithSuccess({ query: limitQuery, variables: { id: cluster.id } });
+    expect(limit.data.graphCluster).toEqual({ members_count: 3, promotion_max_members: 2000 });
     // filter on the cluster
     const query = gql`
       query members($filters: FilterGroup) { stixCoreObjects(filters: $filters, first: 10) { edges { node { id } } } }
@@ -429,6 +444,26 @@ describe('Graph analytics resolvers', () => {
     const pivot = gql`mutation pivot { graphAnalyticsRecordPivot(kind: similar_open) }`;
     const pivotResult = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pivot, variables: {} });
     expect(pivotResult.data.graphAnalyticsRecordPivot).toBe(true);
+  });
+
+  it('should resume a capped full pass where the previous one stopped', async () => {
+    const capped = { ...config, fullPassBatchSize: 2, fullPassMaxEntities: 2 };
+    try {
+      await startFullPass();
+      const first = await runFullPassStep(context, user, capped, 60000);
+      expect(first).toEqual({ processed: 2, completed: true });
+      const firstCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
+      expect(firstCursor).toBeTruthy();
+      await startFullPass();
+      const second = await runFullPassStep(context, user, capped, 60000);
+      expect(second).toEqual({ processed: 2, completed: true });
+      const secondCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
+      expect(secondCursor).toBeTruthy();
+      expect(secondCursor).not.toEqual(firstCursor);
+    } finally {
+      await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR, GRAPH_STATE_FULL_PASS_STARTED_AT, GRAPH_STATE_FULL_PASS_COMPLETED_AT, GRAPH_STATE_FULL_PASS_PROCESSED]);
+      await redisGraphAnalyticsPopReady(Date.now(), 100);
+    }
   });
 
   it('should drop similarity rows of deleted entities', async () => {
