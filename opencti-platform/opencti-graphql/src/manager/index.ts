@@ -4,6 +4,7 @@ import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
+import './indicatorDeploymentManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';

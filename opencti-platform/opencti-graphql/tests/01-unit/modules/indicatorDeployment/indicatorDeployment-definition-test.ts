@@ -55,7 +55,7 @@ describe('deployed-on relationship definition', () => {
   });
 
   it('should register the derived filterable counters on Indicator', () => {
-    ['deployment_platforms_count', 'deployment_failed_count', 'validated_platforms_count'].forEach((name) => {
+    ['deployment_platforms_count', 'deployment_failed_count', 'validated_platforms_count', 'hit_platforms_count'].forEach((name) => {
       const attribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INDICATOR, name);
       expect(attribute?.type).toEqual('numeric');
       expect(attribute?.isFilterable).toEqual(true);

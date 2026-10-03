@@ -63,8 +63,10 @@ export interface StoreRelationDeployedOn extends StoreRelation, DeployedOnAttrib
 export const INDICATOR_DEPLOYMENT_PLATFORMS_COUNT = 'deployment_platforms_count';
 export const INDICATOR_DEPLOYMENT_FAILED_COUNT = 'deployment_failed_count';
 export const INDICATOR_VALIDATED_PLATFORMS_COUNT = 'validated_platforms_count';
+export const INDICATOR_HIT_PLATFORMS_COUNT = 'hit_platforms_count';
 export interface IndicatorDeploymentCounters {
   [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT]: number;
   [INDICATOR_DEPLOYMENT_FAILED_COUNT]: number;
   [INDICATOR_VALIDATED_PLATFORMS_COUNT]: number;
+  [INDICATOR_HIT_PLATFORMS_COUNT]: number;
 }
