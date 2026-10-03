@@ -7,6 +7,7 @@ import Root from './Root';
 import type { CurationTab } from './curationTabs';
 
 const tab = (path: string, label: string): CurationTab => ({
+  order: 0,
   path,
   label,
   component: lazy(async () => ({ default: () => <div>{`${path} content`}</div> })),

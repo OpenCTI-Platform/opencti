@@ -60,7 +60,7 @@ export const PULSE_CONTRIBUTION_STATUS_LABELS: Record<string, string> = {
 export const PULSE_SECTOR_LABELS: Record<string, string> = {
   finance: 'Finance',
   government: 'Government',
-  defense: 'Defense',
+  defense: 'Defense industry',
   healthcare: 'Healthcare',
   energy_utilities: 'Energy and utilities',
   telecommunications: 'Telecommunications',
