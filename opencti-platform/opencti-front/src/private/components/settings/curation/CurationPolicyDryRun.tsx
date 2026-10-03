@@ -109,7 +109,7 @@ interface CurationPolicyDryRunProps {
 const CurationPolicyDryRun = ({ policyId, policyName, onClose }: CurationPolicyDryRunProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <Dialog open={!!policyId} onClose={onClose} size="large" title={`${t_i18n('Dry run')}${policyName ? ` - ${policyName}` : ''}`}>
+    <Dialog open={!!policyId} onClose={onClose} size="large" title={policyName ? t_i18n('Dry run of {name}', { values: { name: policyName } }) : t_i18n('Dry run')}>
       {policyId && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <DryRunContent policyId={policyId} />

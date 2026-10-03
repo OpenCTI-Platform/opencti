@@ -1,5 +1,6 @@
 import { ReactNode, Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
@@ -35,9 +36,9 @@ const StatCard = ({ label, value, to, compact = false }: StatCardProps) => {
       <Typography color={theme.palette.text.light} variant="body2" gutterBottom>
         {label}
       </Typography>
-      <div data-testid={`curation-stat-${label}`} style={{ fontSize: compact ? 16 : 32, lineHeight: compact ? 2 : 1, fontWeight: 600 }}>
+      <Text as="div" variant={compact ? 'title-sm' : 'title-2xl'} data-testid={`curation-stat-${label}`}>
         {value}
-      </div>
+      </Text>
     </Card>
   );
 };
@@ -53,7 +54,12 @@ const CurationStatisticsBarComponent = () => {
       <StatCard label={t_i18n('Open proposals')} value={n(curationStatistics.open_count)} />
       <StatCard label={t_i18n('In the ambiguous band')} value={n(curationStatistics.ambiguous_count)} />
       <StatCard label={t_i18n('Reversible merges')} value={n(curationStatistics.active_merge_records_count)} to={CURATION_MERGES_PATH} />
-      <StatCard label={t_i18n('Knowledge Health')} value={curationStatistics.latest_health_score ?? '-'} to={CURATION_HEALTH_PATH} />
+      <StatCard
+        label={t_i18n('Knowledge Health')}
+        value={curationStatistics.latest_health_score ?? t_i18n('Not computed yet')}
+        to={CURATION_HEALTH_PATH}
+        compact={curationStatistics.latest_health_score === null || curationStatistics.latest_health_score === undefined}
+      />
       <StatCard
         label={t_i18n('Last scan')}
         value={curationStatistics.last_scan_date ? fldt(curationStatistics.last_scan_date) : t_i18n('Never')}

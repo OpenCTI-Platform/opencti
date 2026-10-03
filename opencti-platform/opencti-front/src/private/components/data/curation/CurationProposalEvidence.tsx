@@ -82,7 +82,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
                   <TableCell sx={{ verticalAlign: 'top' }}>
                     <CurationConfidence value={item.score} />
                   </TableCell>
-                  <TableCell sx={{ verticalAlign: 'top' }} title={`${share}% ${t_i18n('of the total weight')}`}>
+                  <TableCell sx={{ verticalAlign: 'top' }} title={t_i18n('{share}% of the total weight', { values: { share } })}>
                     {item.weight.toFixed(2)}
                   </TableCell>
                   <TableCell sx={{ verticalAlign: 'top' }}>

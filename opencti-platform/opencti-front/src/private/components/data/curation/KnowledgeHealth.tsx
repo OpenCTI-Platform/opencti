@@ -122,7 +122,7 @@ const KnowledgeHealth = () => {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
       <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light}>
         {health
-          ? `${t_i18n('Snapshot of')} ${fldt(health.snapshot_date)}${health.digest_sent_at ? ` - ${t_i18n('Weekly digest sent on')} ${fldt(health.digest_sent_at)}` : ''}`
+          ? `${t_i18n('Snapshot of {date}', { values: { date: fldt(health.snapshot_date) } })}${health.digest_sent_at ? ` - ${t_i18n('Weekly digest sent on {date}', { values: { date: fldt(health.digest_sent_at) } })}` : ''}`
           : t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')}
       </Typography>
       {isGrantedToSettings && (
@@ -144,7 +144,7 @@ const KnowledgeHealth = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 1 }}>
                 {health.score_trend !== null && health.score_trend !== undefined ? (
                   <Tag
-                    label={`${health.score_trend >= 0 ? '+' : ''}${health.score_trend} ${t_i18n('since the previous snapshot')}`}
+                    label={t_i18n('{trend} since the previous snapshot', { values: { trend: `${health.score_trend >= 0 ? '+' : ''}${health.score_trend}` } })}
                     color={health.score_trend >= 0 ? theme.palette.success.main : theme.palette.error.main}
                   />
                 ) : (

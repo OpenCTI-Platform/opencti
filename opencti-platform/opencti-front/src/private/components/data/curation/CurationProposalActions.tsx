@@ -189,9 +189,9 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
         {({ submitForm }) => (
           <Dialog open={dialog !== null} onClose={close} title={dialog ? dialogTitles[dialog] : ''}>
             <Typography variant="body2" sx={{ marginBottom: 2 }}>
-              {dialog === 'accept' && `${t_i18n('Action')}: ${labels.action(proposal.recommended_action)}`}
-              {dialog === 'accept' && isTargeted && survivorName && ` - ${t_i18n('Survivor')}: ${survivorName}`}
-              {dialog === 'accept' && isAttribution && survivorName && ` - ${t_i18n('Attribution kept')}: ${survivorName}`}
+              {dialog === 'accept' && t_i18n('Accepting applies the recommended action: {action}.', { values: { action: labels.action(proposal.recommended_action) } })}
+              {dialog === 'accept' && isTargeted && survivorName && ` ${t_i18n('The surviving entity is {name}.', { values: { name: survivorName } })}`}
+              {dialog === 'accept' && isAttribution && survivorName && ` ${t_i18n('The attribution to {name} is kept.', { values: { name: survivorName } })}`}
               {dialog === 'revert' && t_i18n('The change applied by this proposal is undone; merged entities are restored from their snapshots.')}
               {dialog === 'reject' && t_i18n('The proposal is closed and the same subjects are not proposed again for the same reason.')}
             </Typography>

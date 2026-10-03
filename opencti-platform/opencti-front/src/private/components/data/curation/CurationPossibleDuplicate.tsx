@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
-import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { truncate } from '../../../../utils/String';
 import { CURATION_PROPOSALS_PATH } from './curationUtils';
 import { CurationPossibleDuplicateQuery$data } from './__generated__/CurationPossibleDuplicateQuery.graphql';
 
@@ -16,14 +15,25 @@ const possibleDuplicateQuery = graphql`
       id
       proposal_kind
       confidence_score
+      subject_ids
+      subject_names
+      created_at
     }
   }
 `;
 
 const DUPLICATE_KINDS = ['merge', 'alias'];
+const MAX_NAME_LENGTH = 40;
 
 interface CurationPossibleDuplicateProps {
   entityId: string;
+}
+
+interface PossibleDuplicate {
+  proposalId: string;
+  count: number;
+  otherName: string | null;
+  proposedAt: string;
 }
 
 /**
@@ -31,10 +41,9 @@ interface CurationPossibleDuplicateProps {
  * It never blocks the header: a failed lookup simply shows nothing.
  */
 const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const draftContext = useDraftContext();
-  const [proposal, setProposal] = useState<{ id: string; count: number } | null>(null);
+  const [duplicate, setDuplicate] = useState<PossibleDuplicate | null>(null);
 
   useEffect(() => {
     if (draftContext) return undefined;
@@ -45,27 +54,45 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
         if (!active) return;
         const duplicates = ((data as CurationPossibleDuplicateQuery$data | undefined)?.curationProposalsForEntity ?? [])
           .filter((candidate) => DUPLICATE_KINDS.includes(candidate.proposal_kind));
-        setProposal(duplicates.length > 0 ? { id: duplicates[0].id, count: duplicates.length } : null);
+        if (duplicates.length === 0) {
+          setDuplicate(null);
+          return;
+        }
+        const [first] = duplicates;
+        const otherName = first.subject_names.find((_, index) => first.subject_ids[index] !== entityId) ?? null;
+        setDuplicate({ proposalId: first.id, count: duplicates.length, otherName, proposedAt: first.created_at });
       })
       .catch(() => {
-        if (active) setProposal(null);
+        if (active) setDuplicate(null);
       });
     return () => {
       active = false;
     };
   }, [entityId, draftContext]);
 
-  if (!proposal) return null;
-  const label = proposal.count > 1 ? `${t_i18n('Possible duplicate')} (${proposal.count})` : t_i18n('Possible duplicate');
+  if (!duplicate) return null;
+  const describe = (name: string | null) => {
+    if (duplicate.count > 1) return t_i18n('{count} possible duplicates', { values: { count: duplicate.count } });
+    return name ? t_i18n('Possible duplicate of {name}', { values: { name } }) : t_i18n('Possible duplicate');
+  };
   return (
-    <Link
-      to={`${CURATION_PROPOSALS_PATH}/${proposal.id}`}
-      aria-label={t_i18n('Open the curation proposal of this possible duplicate')}
-      data-testid="curation-possible-duplicate"
-      style={{ textDecoration: 'none' }}
-    >
-      <Tag label={label} color={theme.palette.warn.main} />
-    </Link>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          to={`${CURATION_PROPOSALS_PATH}/${duplicate.proposalId}`}
+          aria-label={t_i18n('Open the curation proposal of this possible duplicate')}
+          data-testid="curation-possible-duplicate"
+          style={{ textDecoration: 'none' }}
+        >
+          <Chip severity="medium" size="sm" label={describe(duplicate.otherName ? truncate(duplicate.otherName, MAX_NAME_LENGTH) : null)} />
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent>
+        {describe(duplicate.otherName)}
+        <br />
+        {t_i18n('Proposed on {date}', { values: { date: fldt(duplicate.proposedAt) } })}
+      </TooltipContent>
+    </Tooltip>
   );
 };
 

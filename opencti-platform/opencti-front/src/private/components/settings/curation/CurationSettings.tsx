@@ -334,7 +334,7 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
                 style={fieldSpacingContainerStyle}
               />
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginTop: 2 }}>
-                <Tag label={`${t_i18n('Vendor taxonomy')} ${settings.taxonomy_version} - ${settings.taxonomy_clusters_count} ${t_i18n('clusters')}`} />
+                <Tag label={t_i18n('Vendor taxonomy {version} - {count} clusters', { values: { version: settings.taxonomy_version, count: settings.taxonomy_clusters_count } })} />
                 <Tag label={settings.graph_similarity_available ? t_i18n('Graph similarity available') : t_i18n('Graph similarity not available')} />
                 <Tag label={settings.provenance_available ? t_i18n('Source provenance available') : t_i18n('Source provenance not available')} />
               </Box>

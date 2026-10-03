@@ -85,14 +85,14 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
     }
     const { data } = state;
     if (variant === 'knowledge-health-score') {
-      if (!data?.knowledgeHealth) return <WidgetNoData />;
+      if (!data?.knowledgeHealth) return <WidgetNoData message={t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')} />;
       const { health_score: score, score_trend: trend } = data.knowledgeHealth;
       return (
         <Box sx={{ textAlign: 'center' }} data-testid="knowledge-health-widget-score">
           <KnowledgeHealthScore score={score} height={180} />
           {trend !== null && trend !== undefined && (
             <Box component="span" sx={{ color: labels.healthColor(score) }}>
-              {`${trend >= 0 ? '+' : ''}${trend} ${t_i18n('since the previous snapshot')}`}
+              {t_i18n('{trend} since the previous snapshot', { values: { trend: `${trend >= 0 ? '+' : ''}${trend}` } })}
             </Box>
           )}
         </Box>
@@ -104,13 +104,13 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
         .filter((node): node is NonNullable<typeof node> => !!node)
         .map((node) => ({ x: new Date(node.snapshot_date).getTime(), y: node.health_score }))
         .sort((left, right) => left.x - right.x);
-      if (points.length === 0) return <WidgetNoData />;
+      if (points.length === 0) return <WidgetNoData message={t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')} />;
       return <WidgetMultiLines series={[{ name: t_i18n('Knowledge Health score'), data: points }]} interval="day" hasLegend={false} />;
     }
     const entries = [...(data?.curationStatistics?.open_by_kind ?? [])]
       .filter((entry) => entry.count > 0)
       .sort((left, right) => right.count - left.count);
-    if (entries.length === 0) return <WidgetNoData />;
+    if (entries.length === 0) return <WidgetNoData message={t_i18n('No open curation proposal: the detectors found nothing to review.')} />;
     return (
       <WidgetHorizontalBars
         series={[{ name: t_i18n('Open curation proposals'), data: entries.map((entry) => entry.count) }]}

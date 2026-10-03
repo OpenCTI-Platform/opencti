@@ -14,7 +14,7 @@ const KnowledgeHealthScore = ({ score, height = 220 }: KnowledgeHealthScoreProps
   const { t_i18n } = useFormatter();
   const { healthColor } = useCurationLabels();
   return (
-    <div role="img" aria-label={`${t_i18n('Knowledge Health score')}: ${score}/100`} data-testid="knowledge-health-score">
+    <div role="img" aria-label={t_i18n('Knowledge Health score: {score} of 100', { values: { score } })} data-testid="knowledge-health-score">
       <Chart
         options={{
           chart: { type: 'radialBar', background: 'transparent', sparkline: { enabled: true } },

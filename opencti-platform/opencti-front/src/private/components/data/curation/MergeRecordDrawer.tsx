@@ -199,7 +199,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
                   <TableCell>
                     {!source.reverted_at && (
                       <Checkbox
-                        aria-label={`${t_i18n('Restore')} ${source.name}`}
+                        aria-label={t_i18n('Restore {name}', { values: { name: source.name } })}
                         checked={selected.includes(source.id)}
                         onCheckedChange={() => toggle(source.id)}
                       />
@@ -213,7 +213,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
                   </Box>
                 </TableCell>
                 <TableCell>{n(source.redirected_relationships_count + source.recreatable_relationships_count)}</TableCell>
-                <TableCell>{source.reverted_at ? `${t_i18n('Restored')} - ${fldt(source.reverted_at)}` : t_i18n('Merged')}</TableCell>
+                <TableCell>{source.reverted_at ? t_i18n('Restored on {date}', { values: { date: fldt(source.reverted_at) } }) : t_i18n('Merged')}</TableCell>
               </TableRow>
             ))}
           </TableBody>

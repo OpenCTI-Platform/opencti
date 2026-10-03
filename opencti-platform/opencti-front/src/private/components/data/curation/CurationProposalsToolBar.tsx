@@ -68,7 +68,7 @@ const CurationProposalsToolBar = ({ onDone }: CurationProposalsToolBarProps) => 
       variables: { ids: openIds, rationale: rationale.trim() || null },
       onCompleted: (response, errors) => {
         if (notifyPayloadErrors(errors)) return;
-        MESSAGING$.notifySuccess(`${response.curationProposalsBulkReject.length} ${t_i18n('proposal(s) rejected')}`);
+        MESSAGING$.notifySuccess(t_i18n('{count, plural, one {# proposal rejected} other {# proposals rejected}}', { values: { count: response.curationProposalsBulkReject.length } }));
         setRejectOpen(false);
         handleClearSelectedElements();
         onDone();
@@ -89,8 +89,8 @@ const CurationProposalsToolBar = ({ onDone }: CurationProposalsToolBarProps) => 
       }}
     >
       <Typography variant="body2" sx={{ flex: 1 }}>
-        {numberOfSelectedElements} {t_i18n('selected')}
-        {openIds.length !== numberOfSelectedElements && ` - ${openIds.length} ${t_i18n('still open')}`}
+        {t_i18n('{count} selected', { values: { count: numberOfSelectedElements } })}
+        {openIds.length !== numberOfSelectedElements && ` - ${t_i18n('{count} still open', { values: { count: openIds.length } })}`}
         {tooMany && ` - ${t_i18n('Select at most 500 proposals')}`}
       </Typography>
       <Button size="small" onClick={handleAccept} disabled={disabled}>
