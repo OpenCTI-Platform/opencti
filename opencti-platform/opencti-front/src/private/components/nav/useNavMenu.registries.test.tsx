@@ -71,6 +71,12 @@ describe('useNavMenu - Defense hub', () => {
     hidden.entities = ['Hunt'];
     expect(knowledgeIds(menu())).not.toContain('defense');
   });
+
+  it('gives a row a pending count only when its area counts pending work', () => {
+    DEFENSE_AREAS.push({ ...area('hunts', 'Hunts'), useBadgeCount: () => 3 }, area('matrix', 'Defense matrix'));
+    const defense = menu().find((g) => g.id === 'knowledge')?.items.find((i) => i.id === 'defense');
+    expect(defense?.subItems?.map((s) => !!s.badge)).toEqual([true, false]);
+  });
 });
 
 describe('useNavMenu - Curation hub', () => {
@@ -82,5 +88,14 @@ describe('useNavMenu - Curation hub', () => {
     CURATION_TABS.push(tab('inbox', 'Inbox'));
     const links = dataLinks(menu()) ?? [];
     expect(links.slice(0, 3)).toEqual(['/dashboard/data/entities', '/dashboard/data/relationships', '/dashboard/data/curation']);
+  });
+
+  it('sums the pending counts of the tabs on the Curation row, and shows none without counting tabs', () => {
+    const curationRow = () => menu().find((g) => g.id === 'data')?.items.find((i) => i.id === 'data')
+      ?.subItems?.find((s) => s.link === '/dashboard/data/curation');
+    CURATION_TABS.push(tab('conflicts', 'Conflicts'));
+    expect(curationRow()?.badge).toBeUndefined();
+    CURATION_TABS.push({ ...tab('inbox', 'Inbox'), useBadgeCount: () => 2 });
+    expect(curationRow()?.badge).toBeTruthy();
   });
 });
