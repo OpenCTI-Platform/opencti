@@ -18,6 +18,8 @@ interface GraphContextValue {
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>;
   graphRef3D: MutableRefObject<GraphRef3D | undefined>;
+  /** Element holding the canvas and the panels floating over it. */
+  viewportRef: MutableRefObject<HTMLDivElement | null>;
   // --- data of the graph pass as props
   graphData: LibGraphProps['graphData'];
   setGraphData: Setter<LibGraphProps['graphData']>;
@@ -71,6 +73,7 @@ export const GraphProvider = ({
 
   const graphRef2D = useRef<GraphRef2D | undefined>(undefined);
   const graphRef3D = useRef<GraphRef3D | undefined>(undefined);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
 
   const DEFAULT_STATE: GraphState = {
     mode3D: false,
@@ -206,6 +209,7 @@ export const GraphProvider = ({
   const value = useMemo<GraphContextValue>(() => ({
     graphRef2D,
     graphRef3D,
+    viewportRef,
     graphData,
     stixCoreObjectTypes,
     relationshipTypes,

@@ -27,6 +27,8 @@ interface UseGraphLayoutEngineArgs {
   enabled: boolean;
   /** Positions saved by the reader, given back to the nodes when the layout is switched off. */
   savedPositions: OctiGraphPositions;
+  /** Frames the arranged graph clear of the floating panels; false when it could not. */
+  frameView?: (padding: number, duration: number) => boolean;
 }
 
 /**
@@ -35,7 +37,7 @@ interface UseGraphLayoutEngineArgs {
  * nodes back their saved positions and lets the forces arrange the rest. While nodes glide the
  * canvas must repaint every frame, which `animating` tells the caller.
  */
-const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled, savedPositions }: UseGraphLayoutEngineArgs) => {
+const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled, savedPositions, frameView }: UseGraphLayoutEngineArgs) => {
   const [animating, setAnimating] = useState(false);
   const frame = useRef(0);
   const appliedKey = useRef<string | null>(null);
@@ -85,7 +87,7 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
         frame.current = requestAnimationFrame(step);
       } else {
         setAnimating(false);
-        if (isNewArrangement) graphRef.current?.zoomToFit(400, FIT_PADDING);
+        if (isNewArrangement && !frameView?.(FIT_PADDING, 400)) graphRef.current?.zoomToFit(400, FIT_PADDING);
       }
     };
     frame.current = requestAnimationFrame(step);

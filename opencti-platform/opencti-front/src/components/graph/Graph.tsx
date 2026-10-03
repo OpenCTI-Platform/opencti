@@ -57,7 +57,6 @@ const Graph = ({
   const { t_i18n } = useFormatter();
   const { width, height } = useResizeObserver(parentRef);
   const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const pointer = useRef({ x: 0, y: 0 });
   const startInvestigation = useGraphStartInvestigation();
 
@@ -90,6 +89,7 @@ const Graph = ({
     zoomIn,
     zoomOut,
     zoomToSelection,
+    frameNodes,
     locateNode,
     centreRadialLayoutOn,
     isNodeShown,
@@ -98,6 +98,7 @@ const Graph = ({
   const {
     graphRef2D,
     graphRef3D,
+    viewportRef: containerRef,
     graphData,
     context,
     title,
@@ -232,6 +233,7 @@ const Graph = ({
     layout,
     enabled: !mode3D && !isLoadingData && shownNodes.length > 0,
     savedPositions: rawPositions,
+    frameView: (padding, duration) => frameNodes(padding, duration),
   });
 
   useEffect(() => {

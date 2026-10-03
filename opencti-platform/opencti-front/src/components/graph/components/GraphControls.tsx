@@ -92,6 +92,7 @@ const GraphControls = ({
       role="toolbar"
       aria-orientation="vertical"
       aria-label={t_i18n('Graph view controls')}
+      data-graph-panel=""
       style={{ position: 'absolute', left: theme.spacing(1.5), top: theme.spacing(1.5), zIndex: 2 }}
       onMouseDown={(event) => event.stopPropagation()}
     >

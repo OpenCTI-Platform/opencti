@@ -7,6 +7,7 @@ import useGraphParser, { ObjectToParse } from './useGraphParser';
 import { collisionForce } from './collisionForce';
 import { neighbourhood, shortestPath } from './graphFocus';
 import { isCollapsedMember } from './graphCollapse';
+import { frameBox, measureGraphPanels } from './graphFraming';
 
 /** Graph units between two linked nodes at rest, room for a label between two rings. */
 const LINK_DISTANCE = 64;
@@ -16,6 +17,8 @@ const COLLISION_DISTANCE = 22;
 const ZOOM_STEP = 1.4;
 const ZOOM_MS = 300;
 const MIN_LOCATE_ZOOM = 2.5;
+/** Fitting a few nodes never zooms in further: a single node then reads at a comfortable size. */
+const MAX_FIT_ZOOM = 6;
 
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
@@ -31,6 +34,7 @@ const useGraphInteractions = () => {
   const {
     graphRef2D,
     graphRef3D,
+    viewportRef,
     graphData,
     graphState,
     rawPositions,
@@ -186,12 +190,32 @@ const useGraphInteractions = () => {
   const zoomIn = () => zoomBy(ZOOM_STEP);
   const zoomOut = () => zoomBy(1 / ZOOM_STEP);
 
+  /**
+   * Frames the 2D nodes kept by `filter`, all of them by default, clear of the panels floating
+   * over the canvas. False when there is nothing to frame yet.
+   */
+  const frameNodes = (padding: number, duration: number, filter?: (node: NodeObject<GraphNode>) => boolean) => {
+    const graph = graphRef2D.current;
+    const viewport = viewportRef.current;
+    const canvas = viewport?.querySelector('canvas');
+    if (!graph || !viewport || !canvas) return false;
+    const box = graph.getGraphBbox(filter);
+    if (!box || !Number.isFinite(box.x[0]) || !Number.isFinite(box.y[0])) return false;
+    const { width, height } = canvas.getBoundingClientRect();
+    const frame = frameBox(box, { width, height }, measureGraphPanels(viewport, canvas), { padding, maxZoom: MAX_FIT_ZOOM });
+    graph.centerAt(frame.x, frame.y, duration);
+    graph.zoom(frame.k, duration);
+    return true;
+  };
+
   /** Frames the selected nodes, or the given ones. */
   const zoomToSelection = (nodeIds?: string[]) => {
     const ids = new Set(nodeIds ?? selectedNodes.map((n) => n.id));
     if (ids.size === 0) return;
     const padding = ids.size === 1 ? 200 : 80;
-    graphRef2D.current?.zoomToFit(ZOOM_MS * 1.5, padding, (node) => ids.has(String(node.id)));
+    if (!frameNodes(padding, ZOOM_MS * 1.5, (node) => ids.has(String(node.id)))) {
+      graphRef2D.current?.zoomToFit(ZOOM_MS * 1.5, padding, (node) => ids.has(String(node.id)));
+    }
     graphRef3D.current?.zoomToFit(ZOOM_MS * 1.5, padding, (node) => ids.has(String(node.id)));
   };
 
@@ -229,7 +253,7 @@ const useGraphInteractions = () => {
     } else if (nbOfNodes < 4) padding = 200;
     else if (nbOfNodes < 8) padding = 100;
     // Different padding depending on the number of nodes in the graph.
-    graphRef2D.current?.zoomToFit(400, padding);
+    if (!frameNodes(padding, 400)) graphRef2D.current?.zoomToFit(400, padding);
     graphRef3D.current?.zoomToFit(400, padding);
   };
 
@@ -702,6 +726,7 @@ const useGraphInteractions = () => {
     zoomIn,
     zoomOut,
     zoomToSelection,
+    frameNodes,
     locateNode,
   };
 };

@@ -109,6 +109,7 @@ const GraphLegend = ({
       padding={0}
       aria-label={t_i18n('Legend')}
       role="region"
+      data-graph-panel=""
       style={{
         position: 'absolute',
         left: theme.spacing(1.5),
