@@ -64,6 +64,22 @@ Evidence can also be attached to a run later (an alert raised by the SIEM, a fol
 
 The **Evidence** tab of a hunt aggregates the evidence samples of its completed runs: one row per field and hashed value, with its total count, the runs and platforms that saw it and when it was first and last seen. It covers the 100 most recent completed runs; when the hunt has more, the run selector reads "Latest 100 of N runs" and the tab names the date its window starts. The evidence of an older run stays on the page of that run, in the **Runs** tab.
 
+Run statuses and verdicts read the same everywhere (run drawer, lists, widgets), with a colour that says how urgent they are. Red is kept for a true positive, the only state that calls for a response:
+
+| Label | Meaning | Colour |
+|---|---|---|
+| Queued | Waiting for its hunt connector | Neutral |
+| Running | The connector is executing the query | Blue |
+| Completed | The query ran; the hits are recorded | Green |
+| Failed | The connector reported an error | Orange |
+| Timed out | The run passed its deadline | Orange |
+| Pending | Hits found, no verdict yet | Neutral |
+| Benign | No threat behind the hits | Green |
+| Inconclusive | The run cannot decide | Yellow |
+| True positive | A threat was found | Red |
+
+The run drawer opens with a status header: the status and verdict, one sentence that says where the run stands (for example "12 hits on 3 entities in Splunk prod - verdict pending") and the next action ("Set the verdict", "Retry" or "Open the incident draft"). A failed run explains why instead of showing the raw error: the connector timed out, the platform refused the query, or the Sigma rule could not be translated, each with its own next action (retry, check the connector, edit the rule); the message reported by the connector stays available under "Show details".
+
 The verdict is set as follows:
 
 | Situation | Verdict |

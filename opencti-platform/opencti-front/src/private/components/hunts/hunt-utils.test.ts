@@ -7,7 +7,15 @@ import {
   emptyHuntFormValues,
   formatHuntRunDuration,
   hasHuntLogic,
+  huntIncidentSeverityLabel,
+  huntRunFailure,
+  huntRunStatusLabel,
+  huntRunStatusSeverity,
+  huntRunTriggerLabel,
   huntStatusTransitions,
+  huntTechniqueValidationSeverity,
+  huntVerdictSeverity,
+  huntVerdictSourceLabel,
   isAutonomousHunt,
   isFilterGroupJsonEmpty,
   isHuntableEntityPath,
@@ -198,5 +206,28 @@ describe('Hunt utils', () => {
     expect(isHuntableEntityPath('/dashboard/pirs/abc/analyses')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets')).toBe(false);
     expect(isHuntableEntityPath('/dashboard/defense/hunts/abc')).toBe(false);
+  });
+
+  it('should keep the critical tone for the true positive verdict and read triggers as states', () => {
+    expect(huntRunStatusLabel('timeout')).toEqual('Timed out');
+    expect(huntRunStatusSeverity('failed')).toEqual('high');
+    expect(huntRunStatusSeverity('timeout')).toEqual('high');
+    expect(huntTechniqueValidationSeverity('not_detected')).toEqual('high');
+    expect(huntVerdictSeverity('true_positive')).toEqual('critical');
+    expect(huntRunTriggerLabel('schedule')).toEqual('Scheduled');
+    expect(huntRunTriggerLabel('standing')).toEqual('Standing hunt');
+    expect(huntVerdictSourceLabel(null)).toEqual('Not recorded');
+    expect(huntIncidentSeverityLabel('high')).toEqual('High');
+  });
+
+  it('should classify the failure of a run from its status and the class the connector reported', () => {
+    expect(huntRunFailure('completed', 'HuntExecutionError: denied')).toBeNull();
+    expect(huntRunFailure('timeout', 'The run exceeded its deadline')).toEqual({ kind: 'timeout', timeoutSeconds: null });
+    expect(huntRunFailure('failed', 'HuntTimeoutError: The hunt query did not complete within 300 seconds.')).toEqual({ kind: 'timeout', timeoutSeconds: 300 });
+    expect(huntRunFailure('failed', 'HuntTranslationError: Invalid Sigma rule: bad field')?.kind).toEqual('translation');
+    expect(huntRunFailure('failed', 'HuntExecutionError: HTTP 400 search rejected')?.kind).toEqual('refused');
+    expect(huntRunFailure('failed', 'HuntRequestError: Invalid hunt run message')?.kind).toEqual('request');
+    expect(huntRunFailure('failed', 'The hunt of the run does not exist anymore')?.kind).toEqual('other');
+    expect(huntRunFailure('failed', null)?.kind).toEqual('other');
   });
 });

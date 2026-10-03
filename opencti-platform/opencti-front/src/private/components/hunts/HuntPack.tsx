@@ -260,8 +260,8 @@ export const HuntPackImportButton = ({ paginationOptions }: HuntPackImportButton
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
       {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-        <Button gradient href={importFromHubUrl} target="_blank" rel="noopener noreferrer" title={t_i18n('Import from Hub')}>
-          {t_i18n('Import from Hub')}
+        <Button gradient href={importFromHubUrl} target="_blank" rel="noopener noreferrer" title={t_i18n('Import from XTM Hub')}>
+          {t_i18n('Import from XTM Hub')}
         </Button>
       )}
     </>

@@ -2363,6 +2363,11 @@ option, so these banners are not on the design system.
 **Removal test.** `HuntDraftBanner` and the Logic tab notices render with the
 library component and `components/Alert` has no hunt call site left.
 
+**Retired by** `@filigran/design-system` 1.2.0, which ships `Alert` (severity,
+title, description, action slot). `HuntDraftBanner`, the translation preview
+notice of the Logic tab and the failure of a hunt run use it, and no hunt file
+imports `components/Alert` any more.
+
 
 ## 65. `SelectContent` does not take its name from its trigger
 

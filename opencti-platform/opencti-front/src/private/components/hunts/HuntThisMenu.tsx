@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { AutoAwesomeOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { Crosshairs } from 'mdi-material-ui';
-import { Button, Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
+import { Button, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
@@ -147,15 +147,22 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
             >
               {t_i18n('Create a hunt')}
             </MenuItem>
-            <MenuItem
-              startIcon={<AutoAwesomeOutlined fontSize="small" />}
-              onSelect={() => setPlanOpen(true)}
-              disabled={aiDisabledReason !== null}
-              title={aiDisabledReason ?? undefined}
-              data-testid="hunt-this-plan"
-            >
-              {aiDisabledReason ? `${t_i18n('Plan a hunt with AI')} (${aiDisabledReason})` : t_i18n('Plan a hunt with AI')}
-            </MenuItem>
+            {aiDisabledReason ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span data-testid="hunt-this-plan-disabled-reason">
+                    <MenuItem startIcon={<AutoAwesomeOutlined fontSize="small" />} disabled aria-description={aiDisabledReason} data-testid="hunt-this-plan">
+                      {t_i18n('Plan a hunt with AI')}
+                    </MenuItem>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{aiDisabledReason}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <MenuItem startIcon={<AutoAwesomeOutlined fontSize="small" />} onSelect={() => setPlanOpen(true)} data-testid="hunt-this-plan">
+                {t_i18n('Plan a hunt with AI')}
+              </MenuItem>
+            )}
           </MenuContent>
         </Menu>
         {prefill && (

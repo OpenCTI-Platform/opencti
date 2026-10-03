@@ -1,7 +1,10 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { Suspense, useLayoutEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '@common/button/Button';
 import { BarChartOutlined } from '@mui/icons-material';
+import { Text } from '@filigran/design-system';
+import HuntsFirstUse from './HuntsFirstUse';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import { Hunts_HuntFragment$data } from './__generated__/Hunts_HuntFragment.graphql';
 import { Hunts_HuntsFragment$data } from './__generated__/Hunts_HuntsFragment.graphql';
 import { HuntsListQuery, HuntsListQuery$variables } from './__generated__/HuntsListQuery.graphql';
@@ -17,7 +20,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -230,7 +233,7 @@ const Hunts = () => {
         if (mode === 'cron') {
           return defaultRender(scheduleText(hunt_schedule));
         }
-        return defaultRender(t_i18n(mode === 'standing' ? 'Standing' : 'Manual'));
+        return defaultRender(t_i18n(mode === 'standing' ? 'Standing hunt' : 'Manual'));
       },
     },
     last_run_at: {
@@ -265,51 +268,70 @@ const Hunts = () => {
     nodePath: ['hunts', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<HuntsListQuery>;
+  const isFiltered = isFilterGroupNotEmpty(viewStorage.filters) || !!viewStorage.searchTerm;
+  const matchesNothing = isFiltered && viewStorage.numberOfElements?.original === 0;
+  const clearFilters = () => {
+    helpers.handleClearAllFilters();
+    if (viewStorage.searchTerm) {
+      helpers.handleSearch('');
+    }
+  };
 
   return (
     <div data-testid="hunts-page">
       <Breadcrumbs elements={[{ label: t_i18n('Defense') }, { label: t_i18n('Hunts'), current: true }]} />
-      <div ref={setStatisticsElement} style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <Button
-            variant="tertiary"
-            size="small"
-            onClick={toggleCharts}
-            startIcon={<BarChartOutlined fontSize="small" />}
-            aria-pressed={showCharts}
-          >
-            {showCharts ? t_i18n('Hide charts') : t_i18n('Show charts')}
-          </Button>
-        </div>
-        <HuntStatistics showWidgets={showCharts} />
-      </div>
-      <div ref={setTableElement} style={{ height: tableHeight }}>
-        {queryRef && tableElement && (
-          <DataTable
-            rootRef={tableElement}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            preloadedPaginationProps={preloadedPaginationProps}
-            resolvePath={(data: Hunts_HuntsFragment$data) => data.hunts?.edges?.map((n) => n?.node)}
-            dataColumns={dataColumns}
-            lineFragment={huntsLineFragment}
-            contextFilters={contextFilters}
-            exportContext={{ entity_type: HUNT_ENTITY_TYPE }}
-            availableEntityTypes={[HUNT_ENTITY_TYPE]}
-            additionalHeaderButtons={[
-              <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
-              <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
-                <HuntPackImportButton paginationOptions={queryPaginationOptions} />
-              </Security>,
-            ]}
-            createButton={(
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <HuntCreation paginationOptions={queryPaginationOptions} />
-              </Security>
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <HuntsFirstUse paginationOptions={queryPaginationOptions}>
+          <div ref={setStatisticsElement} style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <Button
+                variant="tertiary"
+                size="small"
+                onClick={toggleCharts}
+                startIcon={<BarChartOutlined fontSize="small" />}
+                aria-pressed={showCharts}
+              >
+                {showCharts ? t_i18n('Hide charts') : t_i18n('Show charts')}
+              </Button>
+            </div>
+            <HuntStatistics showWidgets={showCharts} />
+          </div>
+          {matchesNothing && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }} data-testid="hunts-no-match">
+              <Text variant="content-compact">{t_i18n('No hunt matches these filters')}</Text>
+              <Button variant="secondary" size="small" onClick={clearFilters} data-testid="hunts-clear-filters">{t_i18n('Clear filters')}</Button>
+            </div>
+          )}
+          <div ref={setTableElement} style={{ height: tableHeight }}>
+            {queryRef && tableElement && (
+              <DataTable
+                rootRef={tableElement}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                preloadedPaginationProps={preloadedPaginationProps}
+                resolvePath={(data: Hunts_HuntsFragment$data) => data.hunts?.edges?.map((n) => n?.node)}
+                dataColumns={dataColumns}
+                lineFragment={huntsLineFragment}
+                contextFilters={contextFilters}
+                exportContext={{ entity_type: HUNT_ENTITY_TYPE }}
+                availableEntityTypes={[HUNT_ENTITY_TYPE]}
+                emptyStateMessage={t_i18n('No hunt matches these filters')}
+                additionalHeaderButtons={[
+                  <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
+                  <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
+                    <HuntPackImportButton paginationOptions={queryPaginationOptions} />
+                  </Security>,
+                ]}
+                createButton={(
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <HuntCreation paginationOptions={queryPaginationOptions} />
+                  </Security>
+                )}
+              />
             )}
-          />
-        )}
-      </div>
+          </div>
+        </HuntsFirstUse>
+      </Suspense>
     </div>
   );
 };

@@ -52,6 +52,13 @@ const huntFragment = graphql`
     name
     hunt_status
     hunt_source_kind
+    hunt_type
+    hunt_schedule
+    hunt_pir_activation
+    sigma_rule
+    native_queries {
+      platform
+    }
     status {
       id
       order

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
+import { Formik, useFormikContext } from 'formik';
 import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import {
@@ -24,8 +25,23 @@ import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
-import { HUNT_PLANNER_INTENT, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
+import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
+
+const PLAN_SUBJECT_TYPES = [...HUNT_TARGET_TYPES, ...HUNT_TECHNIQUE_TYPES, ...HUNT_SOURCE_TYPES];
+
+interface PlanSubjectsValues {
+  subjects: { value: string }[];
+}
+
+const PlanSubjectsSync = ({ onChange }: { onChange: (ids: string[]) => void }) => {
+  const { values } = useFormikContext<PlanSubjectsValues>();
+  useEffect(() => {
+    onChange((values.subjects ?? []).map((subject) => subject.value));
+  }, [values.subjects]);
+  return null;
+};
 
 const huntPlanDialogMutation = graphql`
   mutation HuntPlanDialogMutation($input: HuntPlanInput!) {
@@ -49,7 +65,7 @@ type HuntProposal = NonNullable<HuntPlanDialogMutation$data['huntPlan']>;
 interface HuntPlanDialogProps {
   open: boolean;
   onClose: () => void;
-  /** Entities the hunt is planned from; the backend expands Reports and PIRs to their threats and techniques */
+  /** Entities the hunt is planned from (the backend expands Reports and PIRs to their threats and techniques); when empty the analyst picks them */
   entityIds: string[];
 }
 
@@ -61,12 +77,16 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
   const [agents, setAgents] = useState<AgentOption[] | null>(null);
   const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT);
   const [proposal, setProposal] = useState<HuntProposal | null>(null);
+  const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [commit, inFlight] = useApiMutation<HuntPlanDialogMutation>(huntPlanDialogMutation);
+  const picksSubjects = entityIds.length === 0;
+  const subjectIds = picksSubjects ? pickedIds : entityIds;
 
   useEffect(() => {
     if (!open) return undefined;
     let active = true;
     setProposal(null);
+    setPickedIds([]);
     fetchAgentsForIntent(HUNT_PLANNER_INTENT).then((options) => {
       if (active) setAgents(options);
     });
@@ -79,7 +99,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
     commit({
       variables: {
         input: {
-          entity_ids: entityIds,
+          entity_ids: subjectIds,
           agent_slug: agentSlug === DEFAULT_AGENT ? null : agentSlug,
         },
       },
@@ -135,6 +155,20 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
     }
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+        {picksSubjects && (
+          <Formik<PlanSubjectsValues> initialValues={{ subjects: [] }} onSubmit={() => undefined}>
+            <div data-testid="hunt-plan-subjects">
+              <StixCoreObjectsField
+                name="subjects"
+                label={t_i18n('Plan from (threats, techniques, reports or indicators)')}
+                types={PLAN_SUBJECT_TYPES}
+                multiple
+                disableCreation
+              />
+              <PlanSubjectsSync onChange={setPickedIds} />
+            </div>
+          </Formik>
+        )}
         <Text variant="content-compact">{t_i18n('Agent')}</Text>
         <Select value={agentSlug} onValueChange={setAgentSlug}>
           <SelectTrigger aria-label={t_i18n('Agent')} data-testid="hunt-plan-agent">
@@ -171,7 +205,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
               {t_i18n('Review the draft')}
             </Button>
           ) : (
-            <Button intent="ai" onClick={plan} disabled={inFlight || agents === null} data-testid="hunt-plan-submit">
+            <Button intent="ai" onClick={plan} disabled={inFlight || agents === null || subjectIds.length === 0} data-testid="hunt-plan-submit">
               {t_i18n('Plan the hunt')}
             </Button>
           )}

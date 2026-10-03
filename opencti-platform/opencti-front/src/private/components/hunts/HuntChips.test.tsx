@@ -12,7 +12,7 @@ describe('HuntChips', () => {
 
   it('labels the run status', () => {
     testRender(<HuntRunStatusChip value="timeout" />);
-    expect(screen.getByTestId('hunt-run-status-chip')).toHaveTextContent('Timeout');
+    expect(screen.getByTestId('hunt-run-status-chip')).toHaveTextContent('Timed out');
   });
 
   it('labels the verdict', () => {

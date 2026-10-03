@@ -12,8 +12,9 @@ export default class HuntsPage {
     return this.page.getByTestId('hunts-page');
   }
 
+  // The list header button, or the first-use hero when the platform holds no hunt yet
   getCreateButton() {
-    return this.page.getByTestId('create-hunt-button');
+    return this.page.getByTestId('create-hunt-button').or(this.page.getByTestId('hunts-first-use-create'));
   }
 
   openCreateForm() {

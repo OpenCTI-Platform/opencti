@@ -77,6 +77,17 @@ const levelSeverity = (level?: string | null) => {
   }
 };
 
+export const sigmaLevelLabel = (level?: string | null) => {
+  switch ((level ?? '').toLowerCase()) {
+    case 'informational': return 'Informational';
+    case 'low': return 'Low';
+    case 'medium': return 'Medium';
+    case 'high': return 'High';
+    case 'critical': return 'Critical';
+    default: return 'Unknown';
+  }
+};
+
 interface HuntSigmaValidationPanelProps {
   status: HuntSigmaValidationStatus;
   result: HuntSigmaValidationResult | null;
@@ -125,7 +136,7 @@ export const HuntSigmaValidationPanel = ({ status, result }: HuntSigmaValidation
           {status === 'validating' && <Spinner size="md" />}
         </div>
         {row(t_i18n('Title'), <Text variant="content-compact">{result.title ?? '-'}</Text>)}
-        {row(t_i18n('Level'), result.level ? <Chip label={result.level} severity={levelSeverity(result.level)} /> : <Text variant="content-compact">-</Text>)}
+        {row(t_i18n('Level'), result.level ? <Chip label={t_i18n(sigmaLevelLabel(result.level))} severity={levelSeverity(result.level)} /> : <Text variant="content-compact">-</Text>)}
         {row(t_i18n('Log source'), <Text variant="content-compact">{logsource.length > 0 ? logsource : '-'}</Text>)}
         {row(
           t_i18n('Detection fields'),

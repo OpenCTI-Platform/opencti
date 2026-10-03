@@ -76,7 +76,7 @@ const huntDetailsFragment = graphql`
   }
 `;
 
-const huntDetailsStatusMutation = graphql`
+export const huntDetailsStatusMutation = graphql`
   mutation HuntDetailsStatusMutation($id: ID!, $input: [EditInput]!) {
     huntFieldPatch(id: $id, input: $input) {
       id

@@ -4,10 +4,11 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text } from '@filigran/design-system';
+import { Link } from 'react-router';
+import { Alert, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text } from '@filigran/design-system';
+import { PATH_HUNT } from '../common/routes/paths';
 import Button from '@common/button/Button';
 import CodeBlock from '@components/common/CodeBlock';
-import Alert from '../../../components/Alert';
 import Card from '../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
@@ -165,7 +166,19 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
   if (preview.status === 'waiting') {
     content = <Spinner size="md" label={t_i18n('Waiting for the connector to translate the query')} />;
   } else if (preview.status === 'timeout') {
-    content = <Alert severity="warning" content={t_i18n('The connector did not answer in time; the preview appears in the Runs tab once it completes')} />;
+    content = (
+      <Alert
+        severity="warning"
+        title={t_i18n('The connector did not answer in time')}
+        description={t_i18n('The preview appears in the Runs tab once it completes')}
+        action={(
+          <Button variant="secondary" size="small" component={Link} to={`${PATH_HUNT(huntId)}/runs`} data-testid="hunt-preview-open-runs">
+            {t_i18n('Open the runs')}
+          </Button>
+        )}
+        data-testid="hunt-preview-timeout"
+      />
+    );
   } else if (preview.status === 'done') {
     const { run } = preview;
     content = (

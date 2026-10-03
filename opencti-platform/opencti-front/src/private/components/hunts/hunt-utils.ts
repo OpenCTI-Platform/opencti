@@ -109,17 +109,18 @@ export const huntRunStatusLabel = (status?: string | null) => {
     case 'running': return 'Running';
     case 'completed': return 'Completed';
     case 'failed': return 'Failed';
-    case 'timeout': return 'Timeout';
+    case 'timeout': return 'Timed out';
     default: return 'Unknown';
   }
 };
 
+// `critical` is reserved for the true positive verdict, a finding that calls for a response
 export const huntRunStatusSeverity = (status?: string | null): ChipSeverity => {
   switch (status) {
     case 'running': return 'info';
     case 'completed': return 'low';
     case 'timeout': return 'high';
-    case 'failed': return 'critical';
+    case 'failed': return 'high';
     default: return 'neutral';
   }
 };
@@ -127,8 +128,8 @@ export const huntRunStatusSeverity = (status?: string | null): ChipSeverity => {
 export const huntRunTriggerLabel = (trigger?: string | null) => {
   switch (trigger) {
     case 'manual': return 'Manual';
-    case 'schedule': return 'Schedule';
-    case 'standing': return 'Standing';
+    case 'schedule': return 'Scheduled';
+    case 'standing': return 'Standing hunt';
     case 'playbook': return 'Playbook';
     case 'emulation': return 'Emulation';
     case 'preview': return 'Preview';
@@ -156,12 +157,55 @@ export const huntVerdictSeverity = (verdict?: string | null): ChipSeverity => {
   }
 };
 
+export const huntIncidentSeverityLabel = (severity?: string | null) => {
+  switch (severity) {
+    case 'low': return 'Low';
+    case 'medium': return 'Medium';
+    case 'high': return 'High';
+    case 'critical': return 'Critical';
+    default: return 'Unknown';
+  }
+};
+
+export type HuntRunFailureKind = 'timeout' | 'translation' | 'refused' | 'request' | 'other';
+
+export interface HuntRunFailure {
+  kind: HuntRunFailureKind;
+  /** Seconds the connector waited, when its report states them */
+  timeoutSeconds: number | null;
+}
+
+/**
+ * Class of failure of a failed or timed out run. Hunt connectors built on the connectors SDK report a failure as
+ * "<exception class>: <message>" (HuntTimeoutError, HuntTranslationError, HuntExecutionError, HuntRequestError).
+ */
+export const huntRunFailure = (status?: string | null, errorMessage?: string | null): HuntRunFailure | null => {
+  if (status !== 'failed' && status !== 'timeout') {
+    return null;
+  }
+  const message = (errorMessage ?? '').trim();
+  const seconds = /within (\d+) seconds/.exec(message);
+  if (status === 'timeout' || message.startsWith('HuntTimeoutError')) {
+    return { kind: 'timeout', timeoutSeconds: seconds ? Number(seconds[1]) : null };
+  }
+  if (message.startsWith('HuntTranslationError')) {
+    return { kind: 'translation', timeoutSeconds: null };
+  }
+  if (message.startsWith('HuntExecutionError')) {
+    return { kind: 'refused', timeoutSeconds: null };
+  }
+  if (message.startsWith('HuntRequestError')) {
+    return { kind: 'request', timeoutSeconds: null };
+  }
+  return { kind: 'other', timeoutSeconds: null };
+};
+
 export const huntVerdictSourceLabel = (source?: string | null) => {
   switch (source) {
     case 'auto': return 'Automatic';
     case 'agent': return 'AI agent';
     case 'analyst': return 'Analyst';
-    default: return '-';
+    default: return 'Not recorded';
   }
 };
 // endregion
@@ -550,7 +594,7 @@ export const huntTechniqueValidationLabel = (status: HuntTechniqueValidationStat
 export const huntTechniqueValidationSeverity = (status: HuntTechniqueValidationStatus): ChipSeverity => {
   switch (status) {
     case 'validated': return 'low';
-    case 'not_detected': return 'critical';
+    case 'not_detected': return 'high';
     case 'in_progress': return 'info';
     default: return 'neutral';
   }

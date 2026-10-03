@@ -1,12 +1,18 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { useTheme } from '@mui/styles';
-import { AutoAwesomeOutlined, ReplayOutlined } from '@mui/icons-material';
-import { Chip, Text } from '@filigran/design-system';
+import { AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined } from '@mui/icons-material';
+import { Alert, Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -39,6 +45,8 @@ import {
   formatHuntRunDuration,
   HUNT_ANALYST_VERDICTS,
   huntDraftWorkspacePath,
+  huntIncidentSeverityLabel,
+  huntRunFailure,
   huntRunTriggerLabel,
   huntVerdictLabel,
   huntVerdictSourceLabel,
@@ -201,48 +209,169 @@ const severityOf = (severity?: string | null) => {
 
 type Run = HuntRunDrawer_run$data;
 
-const Field2 = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <>
-    <Label sx={{ marginTop: 2 }}>{label}</Label>
-    {children}
-  </>
+const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+
+/** A date shown relative to now, the absolute date in its tooltip. */
+const RelativeDate = ({ date }: { date: string }) => {
+  const { fldt, rd } = useFormatter();
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0}>{rd(date)}</span>
+      </TooltipTrigger>
+      <TooltipContent>{fldt(date)}</TooltipContent>
+    </Tooltip>
+  );
+};
+
+interface DetailRow {
+  key: string;
+  label: string;
+  value: React.ReactNode;
+}
+
+/** Rows without a value are left out rather than shown as a dash. */
+const DetailGrid = ({ rows, testId }: { rows: DetailRow[]; testId: string }) => (
+  <Grid container spacing={2} data-testid={testId}>
+    {rows.filter((row) => row.value !== null && row.value !== undefined && row.value !== '').map((row) => (
+      <Grid item xs={6} key={row.key}>
+        <Label>{row.label}</Label>
+        <Text variant="content-compact">{row.value}</Text>
+      </Grid>
+    ))}
+  </Grid>
 );
+
+const Disclosure = ({ label, openLabel, testId, children }: { label: string; openLabel: string; testId: string; children: React.ReactNode }) => {
+  const theme = useTheme<Theme>();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <div style={{ marginTop: theme.spacing(1) }}>
+        <Button
+          variant="tertiary"
+          size="small"
+          aria-expanded={open}
+          startIcon={open ? <ExpandLessOutlined fontSize="small" /> : <ExpandMoreOutlined fontSize="small" />}
+          onClick={() => setOpen(!open)}
+          data-testid={testId}
+        >
+          {open ? openLabel : label}
+        </Button>
+      </div>
+      {open && children}
+    </>
+  );
+};
 
 const RunDetails = ({ run }: { run: Run }) => {
   const { t_i18n, fldt, n } = useFormatter();
-  const value = (content?: string | number | null) => <Text variant="content-compact">{content === null || content === undefined || content === '' ? '-' : content}</Text>;
+  const count = (value?: number | null) => (value === null || value === undefined ? null : n(value));
+  const date = (value?: string | null) => (value ? <RelativeDate date={value} /> : null);
+  const essentials: DetailRow[] = [
+    { key: 'platform', label: t_i18n('Platform'), value: runPlatformName(run, t_i18n) },
+    { key: 'connector', label: t_i18n('Connector'), value: run.connector_name },
+    { key: 'trigger', label: t_i18n('Trigger'), value: t_i18n(huntRunTriggerLabel(run.hunt_run_trigger)) },
+    { key: 'triggered_by', label: t_i18n('Triggered by'), value: run.triggeredBy?.name },
+    { key: 'started', label: t_i18n('Started'), value: date(run.started_at) },
+    { key: 'duration', label: t_i18n('Duration'), value: formatHuntRunDuration(run.cost_ms) },
+    { key: 'hits', label: t_i18n('Hits'), value: count(run.hits_count) },
+    { key: 'distinct_entities', label: t_i18n('Distinct entities'), value: count(run.distinct_entities) },
+  ];
+  const more: DetailRow[] = [
+    { key: 'mode', label: t_i18n('Mode'), value: run.hunt_run_mode === 'preview' ? t_i18n('Translation preview') : t_i18n('Execution') },
+    {
+      key: 'time_window',
+      label: t_i18n('Time window'),
+      value: run.time_window_start && run.time_window_end ? `${fldt(run.time_window_start)} - ${fldt(run.time_window_end)}` : null,
+    },
+    { key: 'dispatched', label: t_i18n('Dispatched'), value: date(run.dispatched_at) },
+    { key: 'completed', label: t_i18n('Completed'), value: date(run.completed_at) },
+    { key: 'attempt', label: t_i18n('Attempt'), value: count(run.attempt) },
+    { key: 'next_retry', label: t_i18n('Next retry'), value: date(run.next_retry_at) },
+  ];
   return (
     <Card title={t_i18n('Details')}>
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <Label>{t_i18n('Status')}</Label>
-          <HuntRunStatusChip value={run.hunt_run_status} />
-          <Field2 label={t_i18n('Trigger')}>{value(t_i18n(huntRunTriggerLabel(run.hunt_run_trigger)))}</Field2>
-          <Field2 label={t_i18n('Mode')}>{value(run.hunt_run_mode === 'preview' ? t_i18n('Translation preview') : t_i18n('Execution'))}</Field2>
-          <Field2 label={t_i18n('Platform')}>{value(run.securityPlatform?.name ?? t_i18n('Internet'))}</Field2>
-          <Field2 label={t_i18n('Connector')}>{value(run.connector_name)}</Field2>
-          <Field2 label={t_i18n('Triggered by')}>{value(run.triggeredBy?.name)}</Field2>
-          <Field2 label={t_i18n('Attempt')}>{value(run.attempt)}</Field2>
-        </Grid>
-        <Grid item xs={6}>
-          <Label>{t_i18n('Time window')}</Label>
-          {value(run.time_window_start && run.time_window_end ? `${fldt(run.time_window_start)} - ${fldt(run.time_window_end)}` : null)}
-          <Field2 label={t_i18n('Dispatch date')}>{value(run.dispatched_at ? fldt(run.dispatched_at) : null)}</Field2>
-          <Field2 label={t_i18n('Start date')}>{value(run.started_at ? fldt(run.started_at) : null)}</Field2>
-          <Field2 label={t_i18n('Completion date')}>{value(run.completed_at ? fldt(run.completed_at) : null)}</Field2>
-          <Field2 label={t_i18n('Duration')}>{value(formatHuntRunDuration(run.cost_ms))}</Field2>
-          <Field2 label={t_i18n('Hits')}>{value(run.hits_count === null || run.hits_count === undefined ? null : n(run.hits_count))}</Field2>
-          <Field2 label={t_i18n('Distinct entities')}>{value(run.distinct_entities === null || run.distinct_entities === undefined ? null : n(run.distinct_entities))}</Field2>
-          {run.next_retry_at && <Field2 label={t_i18n('Next retry')}>{value(fldt(run.next_retry_at))}</Field2>}
-        </Grid>
-        {run.error_message && (
-          <Grid item xs={12}>
-            <Label>{t_i18n('Error')}</Label>
-            <Text variant="content-compact" data-testid="hunt-run-error">{run.error_message}</Text>
-          </Grid>
-        )}
-      </Grid>
+      <DetailGrid rows={essentials} testId="hunt-run-details" />
+      <Disclosure label={t_i18n('Show more details')} openLabel={t_i18n('Hide the details')} testId="hunt-run-more-details-toggle">
+        <div style={{ marginTop: 8 }}>
+          <DetailGrid rows={more} testId="hunt-run-more-details" />
+        </div>
+      </Disclosure>
     </Card>
+  );
+};
+
+/** What failed, why, and the next action, instead of the raw error the connector reported. */
+const RunFailureAlert = ({ run, huntId, onRetry, retrying, canRetry }: { run: Run; huntId: string; onRetry: () => void; retrying: boolean; canRetry: boolean }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const [showDetails, setShowDetails] = useState(false);
+  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
+  if (!failure) {
+    return null;
+  }
+  const platform = runPlatformName(run, t_i18n);
+  const retryAction = canRetry ? (
+    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Button variant="secondary" size="small" startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
+        {t_i18n('Retry')}
+      </Button>
+    </Security>
+  ) : undefined;
+  let title: string;
+  let action: React.ReactNode;
+  switch (failure.kind) {
+    case 'timeout':
+      title = failure.timeoutSeconds
+        ? t_i18n('The connector did not answer within {timeout}', { values: { timeout: formatHuntRunDuration(failure.timeoutSeconds * 1000) } })
+        : t_i18n('The connector did not answer in time');
+      action = retryAction;
+      break;
+    case 'translation':
+      title = t_i18n('The Sigma rule could not be translated for {platform}', { values: { platform } });
+      action = (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Button variant="secondary" size="small" component={Link} to={`${PATH_HUNT(huntId)}/logic`} data-testid="hunt-run-edit-rule">
+            {t_i18n('Edit the rule')}
+          </Button>
+        </Security>
+      );
+      break;
+    case 'refused':
+    case 'request':
+      title = failure.kind === 'refused'
+        ? t_i18n('{platform} refused the query', { values: { platform } })
+        : t_i18n('The hunt connector could not read the run sent by the platform');
+      action = run.connector_id ? (
+        <Button variant="secondary" size="small" component={Link} to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-check-connector">
+          {t_i18n('Check the connector')}
+        </Button>
+      ) : undefined;
+      break;
+    default:
+      title = t_i18n('The run failed in {platform}', { values: { platform } });
+      action = retryAction;
+  }
+  return (
+    <Alert
+      severity="error"
+      title={title}
+      action={action}
+      data-testid="hunt-run-failure"
+      description={run.error_message ? (
+        <>
+          <Button variant="tertiary" size="small" aria-expanded={showDetails} onClick={() => setShowDetails(!showDetails)} data-testid="hunt-run-failure-details-toggle">
+            {showDetails ? t_i18n('Hide details') : t_i18n('Show details')}
+          </Button>
+          {showDetails && (
+            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), wordBreak: 'break-word' }} data-testid="hunt-run-error">
+              {run.error_message}
+            </Text>
+          )}
+        </>
+      ) : undefined}
+    />
   );
 };
 
@@ -251,35 +380,38 @@ const RunEvidence = ({ run }: { run: Run }) => {
   const { t_i18n, n } = useFormatter();
   const evidence = [...(run.evidence_sample ?? [])].sort((a, b) => b.count - a.count);
   const results = (run.results?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node?.id);
-  const cellStyle: React.CSSProperties = { padding: theme.spacing(0.75, 1), borderBottom: `1px solid ${theme.palette.divider}`, textAlign: 'left', verticalAlign: 'top' };
   return (
     <Card title={t_i18n('Evidence and results')}>
       {evidence.length === 0 ? (
         <Text variant="content-compact">{t_i18n('No evidence was reported for this run')}</Text>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }} data-testid="hunt-run-evidence">
-          <caption style={{ textAlign: 'left', marginBottom: theme.spacing(1) }}>
-            <Text variant="content-caption">{t_i18n('Evidence values are hashed by the connector; only a preview is kept')}</Text>
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col" style={cellStyle}>{t_i18n('Field')}</th>
-              <th scope="col" style={cellStyle}>{t_i18n('Value')}</th>
-              <th scope="col" style={cellStyle}>{t_i18n('Hash')}</th>
-              <th scope="col" style={{ ...cellStyle, textAlign: 'right' }}>{t_i18n('Count')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {evidence.map((item) => (
-              <tr key={`${item.field}::${item.value_hash}`}>
-                <td style={cellStyle}>{item.field}</td>
-                <td style={{ ...cellStyle, wordBreak: 'break-all' }}>{item.value_preview ?? '-'}</td>
-                <td style={cellStyle} title={item.value_hash}>{shortHash(item.value_hash)}</td>
-                <td style={{ ...cellStyle, textAlign: 'right' }}>{n(item.count)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1) }}>
+            {t_i18n('Evidence values are hashed by the connector; only a preview is kept')}
+          </Text>
+          <TableContainer style={{ maxHeight: 360 }}>
+            <Table size="small" stickyHeader aria-label={t_i18n('Evidence and results')} data-testid="hunt-run-evidence">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Field')}</TableCell>
+                  <TableCell>{t_i18n('Value')}</TableCell>
+                  <TableCell>{t_i18n('Hash')}</TableCell>
+                  <TableCell align="right">{t_i18n('Count')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {evidence.map((item) => (
+                  <TableRow key={`${item.field}::${item.value_hash}`}>
+                    <TableCell>{item.field}</TableCell>
+                    <TableCell style={{ wordBreak: 'break-all' }}>{item.value_preview ?? t_i18n('No preview')}</TableCell>
+                    <TableCell title={item.value_hash}>{shortHash(item.value_hash)}</TableCell>
+                    <TableCell align="right">{n(item.count)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
       {results.length > 0 && (
         <>
@@ -305,7 +437,7 @@ interface VerdictValues {
   analyst_feedback: string;
 }
 
-const RunVerdict = ({ run }: { run: Run }) => {
+const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLDivElement | null> }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation<HuntRunDrawerVerdictMutation>(huntRunDrawerVerdictMutation);
@@ -323,54 +455,57 @@ const RunVerdict = ({ run }: { run: Run }) => {
     });
   };
   return (
-    <Card title={t_i18n('Verdict')}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-        <HuntVerdictChip value={run.verdict} />
-        {run.verdict_source && <Text variant="content-caption">{t_i18n(huntVerdictSourceLabel(run.verdict_source))}</Text>}
-      </div>
-      {run.verdict_rationale && (
-        <>
-          <Label sx={{ marginTop: 2 }}>{t_i18n('Rationale')}</Label>
-          <ExpandableMarkdown source={run.verdict_rationale} limit={300} />
-        </>
-      )}
-      {run.analyst_feedback && (
-        <>
-          <Label sx={{ marginTop: 2 }}>{t_i18n('Analyst feedback')}</Label>
-          <ExpandableMarkdown source={run.analyst_feedback} limit={300} />
-        </>
-      )}
-      {editable && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Formik<VerdictValues>
-            initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, analyst_feedback: '' }}
-            validationSchema={Yup.object().shape({ verdict: Yup.string().oneOf([...HUNT_ANALYST_VERDICTS]).required(t_i18n('This field is required')) })}
-            onSubmit={onSubmit}
-          >
-            {({ submitForm, isSubmitting }) => (
-              <Form style={{ marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-form">
-                <Field component={SelectFieldFds} name="verdict" label={t_i18n('Your verdict')} required>
-                  {HUNT_ANALYST_VERDICTS.map((verdict) => (
-                    <SelectItem key={verdict} value={verdict}>{t_i18n(huntVerdictLabel(verdict))}</SelectItem>
-                  ))}
-                </Field>
-                <div style={{ marginTop: theme.spacing(2) }}>
-                  <Field component={TextareaField} name="analyst_feedback" label={t_i18n('Feedback')} rows={3} />
-                </div>
-                <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
-                  {t_i18n('A true positive verdict opens an incident in a draft for review')}
-                </Text>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
-                  <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-run-verdict-submit">
-                    {t_i18n('Save the verdict')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </Security>
-      )}
-    </Card>
+    <div ref={cardRef} data-testid="hunt-run-verdict">
+      <Card title={t_i18n('Verdict')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+          <HuntVerdictChip value={run.verdict} />
+          <Text variant="content-caption">{t_i18n(huntVerdictSourceLabel(run.verdict_source))}</Text>
+        </div>
+        {run.verdict_rationale && (
+          <>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Rationale')}</Label>
+            <ExpandableMarkdown source={run.verdict_rationale} limit={300} />
+          </>
+        )}
+        {run.analyst_feedback && (
+          <>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Analyst feedback')}</Label>
+            <ExpandableMarkdown source={run.analyst_feedback} limit={300} />
+          </>
+        )}
+        {editable && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Formik<VerdictValues>
+              initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, analyst_feedback: '' }}
+              validationSchema={Yup.object().shape({ verdict: Yup.string().oneOf([...HUNT_ANALYST_VERDICTS]).required(t_i18n('This field is required')) })}
+              onSubmit={onSubmit}
+            >
+              {({ submitForm, isSubmitting }) => (
+                <Form style={{ marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-form">
+                  <Field component={SelectFieldFds} name="verdict" label={t_i18n('Your verdict')} required>
+                    {HUNT_ANALYST_VERDICTS.map((verdict) => (
+                      <SelectItem key={verdict} value={verdict}>{t_i18n(huntVerdictLabel(verdict))}</SelectItem>
+                    ))}
+                  </Field>
+                  <div style={{ marginTop: theme.spacing(2) }}>
+                    <Field component={TextareaField} name="analyst_feedback" label={t_i18n('Feedback')} rows={3} />
+                  </div>
+                  <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
+                    {t_i18n('A true positive verdict opens an incident in a draft for review')}
+                  </Text>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
+                    <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-run-verdict-submit">
+                      {t_i18n('Save the verdict')}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </Security>
+        )}
+        <RunTriage run={run} />
+      </Card>
+    </div>
   );
 };
 
@@ -402,14 +537,11 @@ const RunTriage = ({ run }: { run: Run }) => {
     unavailableReason = t_i18n('AI triage needs XTM One to be configured on the platform');
   }
   return (
-    <Card
-      title={(
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          {t_i18n('AI triage')}
-          <EEChip />
-        </span>
-      )}
-    >
+    <section style={{ marginTop: theme.spacing(3), paddingTop: theme.spacing(2), borderTop: `1px solid ${theme.palette.divider}` }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
+        <Text variant="content-compact-bold">{t_i18n('AI triage')}</Text>
+        <EEChip />
+      </div>
       <div data-testid="hunt-run-triage">
         {unavailableReason && <Text variant="content-compact">{unavailableReason}</Text>}
         {!unavailableReason && !hasProposal && (
@@ -440,7 +572,7 @@ const RunTriage = ({ run }: { run: Run }) => {
                 <Label sx={{ marginTop: 2 }}>{t_i18n('Proposed incident')}</Label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
                   <Text variant="content-compact-bold">{incident.name ?? '-'}</Text>
-                  {incident.severity && <Chip label={incident.severity} severity={severityOf(incident.severity)} />}
+                  {incident.severity && <Chip label={t_i18n(huntIncidentSeverityLabel(incident.severity))} severity={severityOf(incident.severity)} />}
                 </div>
                 {incident.description && <ExpandableMarkdown source={incident.description} limit={300} />}
               </>
@@ -467,7 +599,7 @@ const RunTriage = ({ run }: { run: Run }) => {
           </div>
         </Security>
       </div>
-    </Card>
+    </section>
   );
 };
 
@@ -511,6 +643,96 @@ const RunLinks = ({ run }: { run: Run }) => {
   );
 };
 
+interface RunStatusHeaderProps {
+  run: Run;
+  huntId: string;
+  canRetry: boolean;
+  retrying: boolean;
+  onRetry: () => void;
+  onSetVerdict: () => void;
+}
+
+/** Where the run stands in one sentence, with the next action: the first thing the drawer answers. */
+const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdict }: RunStatusHeaderProps) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n, n, rd } = useFormatter();
+  const terminal = isTerminalHuntRun(run.hunt_run_status);
+  const [, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (terminal) return undefined;
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, [terminal]);
+  const platform = runPlatformName(run, t_i18n);
+  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
+  const isExecution = run.hunt_run_mode !== 'preview';
+  let sentence: string | null = null;
+  if (run.hunt_run_status === 'completed' && !isExecution) {
+    sentence = t_i18n('The translation for {platform} is ready', { values: { platform } });
+  } else if (run.hunt_run_status === 'completed') {
+    const hits = run.hits_count ?? 0;
+    const entities = run.distinct_entities ?? 0;
+    const values = {
+      hits: hits === 1 ? t_i18n('1 hit') : t_i18n('{count} hits', { values: { count: n(hits) } }),
+      entities: entities === 1 ? t_i18n('1 entity') : t_i18n('{count} entities', { values: { count: n(entities) } }),
+      platform,
+    };
+    sentence = run.verdict === 'pending'
+      ? t_i18n('{hits} on {entities} in {platform} - verdict pending', { values })
+      : t_i18n('{hits} on {entities} in {platform}', { values });
+  } else if (run.hunt_run_status === 'running') {
+    const since = run.started_at ?? run.dispatched_at ?? run.created_at;
+    const elapsed = formatHuntRunDuration(Math.max(0, Date.now() - new Date(since).getTime()));
+    sentence = t_i18n('Running in {platform} for {duration}', { values: { platform, duration: elapsed } });
+  } else if (run.hunt_run_status === 'queued') {
+    sentence = t_i18n('Queued {when}', { values: { when: rd(run.created_at) } });
+  }
+  let primary: React.ReactNode = null;
+  if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
+    primary = (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Button onClick={onSetVerdict} data-testid="hunt-run-set-verdict">{t_i18n('Set the verdict')}</Button>
+      </Security>
+    );
+  } else if (failure && canRetry && failure.kind !== 'timeout' && failure.kind !== 'other') {
+    // Timeouts and unclassified failures carry Retry in their alert; the other classes lead with their own fix
+    primary = (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Button variant="secondary" startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
+          {t_i18n('Retry')}
+        </Button>
+      </Security>
+    );
+  } else if (run.verdict === 'true_positive' && (run.draft_id || run.incident_id)) {
+    const incidentPath = run.draft_id ? huntDraftWorkspacePath(run.draft_id) : PATH_INCIDENT(run.incident_id as string);
+    primary = (
+      <Button component={Link} to={incidentPath} data-testid="hunt-run-open-incident">
+        {run.draft_id ? t_i18n('Open the incident draft') : t_i18n('Open the incident')}
+      </Button>
+    );
+  }
+  return (
+    <Card aria-label={t_i18n('Run status')}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid="hunt-run-status-header">
+        <HuntRunStatusChip value={run.hunt_run_status} />
+        {isExecution && <HuntVerdictChip value={run.verdict} />}
+        <div style={{ flex: 1 }} />
+        {primary}
+      </div>
+      {sentence && (
+        <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-run-status-sentence">
+          {sentence}
+        </Text>
+      )}
+      {failure && (
+        <div style={{ marginTop: theme.spacing(1.5) }}>
+          <RunFailureAlert run={run} huntId={huntId} canRetry={canRetry} retrying={retrying} onRetry={onRetry} />
+        </div>
+      )}
+    </Card>
+  );
+};
+
 const HuntRunDrawerContent = ({ data, huntId, paginationOptions }: { data: HuntRunDrawer_run$key; huntId: string; paginationOptions?: Record<string, unknown> }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -519,6 +741,11 @@ const HuntRunDrawerContent = ({ data, huntId, paginationOptions }: { data: HuntR
   const run = useFragment(huntRunDrawerFragment, data);
   const [commitRetry, retrying] = useApiMutation<HuntRunDrawerRetryMutation>(huntRunDrawerRetryMutation);
   const terminal = isTerminalHuntRun(run.hunt_run_status);
+  const verdictRef = useRef<HTMLDivElement>(null);
+  const focusVerdict = () => {
+    verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    verdictRef.current?.querySelector<HTMLElement>('[data-testid="hunt-run-verdict-form"] button, [data-testid="hunt-run-verdict-form"] textarea')?.focus();
+  };
 
   useEffect(() => {
     if (terminal) return undefined;
@@ -544,33 +771,23 @@ const HuntRunDrawerContent = ({ data, huntId, paginationOptions }: { data: HuntR
     });
   };
   const canRetry = canRetryHuntRun(run) && canStartHuntRun(run.hunt?.hunt_status, !!draftContext);
+  const isExecution = run.hunt_run_mode !== 'preview';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="hunt-run-drawer">
-      {canRetry && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="secondary" size="small" startIcon={<ReplayOutlined fontSize="small" />} onClick={retry} disabled={retrying} data-testid="hunt-run-retry">
-              {t_i18n('Retry')}
-            </Button>
-          </div>
-        </Security>
-      )}
+      <RunStatusHeader run={run} huntId={huntId} canRetry={canRetry} retrying={retrying} onRetry={retry} onSetVerdict={focusVerdict} />
+      {isExecution && <RunVerdict run={run} cardRef={verdictRef} />}
+      {isExecution && <RunEvidence run={run} />}
+      <RunLinks run={run} />
       <RunDetails run={run} />
       {run.translated_query && (
         <Card title={t_i18n('Translated query')}>
-          <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1) }}>{run.query_language ?? ''}</Text>
-          <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
+          <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
+            <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{run.query_language ?? ''}</Text>
+            <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
+          </Disclosure>
         </Card>
       )}
-      {run.hunt_run_mode !== 'preview' && (
-        <>
-          <RunEvidence run={run} />
-          <RunVerdict run={run} />
-          <RunTriage run={run} />
-        </>
-      )}
-      <RunLinks run={run} />
     </div>
   );
 };

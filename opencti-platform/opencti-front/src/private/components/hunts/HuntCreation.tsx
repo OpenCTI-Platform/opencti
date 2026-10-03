@@ -401,10 +401,15 @@ interface HuntCreationProps {
   paginationOptions: HuntsListQuery$variables;
 }
 
+/** Inserts a created hunt in the hunts list loaded with these pagination options. */
+export const insertCreatedHunt = (paginationOptions: HuntsListQuery$variables) => (store: RecordSourceSelectorProxy) => {
+  insertNode(store, 'Pagination_hunts', paginationOptions, 'huntAdd');
+};
+
 /** Creation drawer of the hunts list (manual hunts, Community Edition). */
 const HuntCreation = ({ paginationOptions }: HuntCreationProps) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_hunts', paginationOptions, 'huntAdd');
+  const updater = insertCreatedHunt(paginationOptions);
   return (
     <Drawer title={t_i18n('Create a hunt')} controlledDial={CreateHuntControlledDial} size="large">
       {({ onClose }) => (
@@ -418,20 +423,27 @@ interface HuntCreationDrawerProps {
   open: boolean;
   onClose: () => void;
   initialValues?: Partial<HuntFormValues>;
+  /** Store update of the created hunt (for example, its insertion in the hunts list) */
+  updater?: (store: RecordSourceSelectorProxy) => void;
+  /** Called with the created hunt instead of opening it */
+  onCreated?: () => void;
 }
 
-/** Controlled creation drawer, prefilled, opening the created hunt (used by "Hunt this"). */
-export const HuntCreationDrawer = ({ open, onClose, initialValues }: HuntCreationDrawerProps) => {
+/** Controlled creation drawer, prefilled, opening the created hunt (used by "Hunt this" and the first use of the Hunts area). */
+export const HuntCreationDrawer = ({ open, onClose, initialValues, updater, onCreated }: HuntCreationDrawerProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   return (
     <Drawer title={t_i18n('Create a hunt')} open={open} onClose={onClose} size="large">
       <HuntCreationForm
         initialValues={initialValues}
+        updater={updater}
         onReset={onClose}
         onCompleted={(hunt) => {
           onClose();
-          if (hunt) {
+          if (onCreated) {
+            onCreated();
+          } else if (hunt) {
             navigate(PATH_HUNT(hunt.id));
           }
         }}
