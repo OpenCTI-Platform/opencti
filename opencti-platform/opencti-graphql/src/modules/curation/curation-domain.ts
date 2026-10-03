@@ -7,7 +7,7 @@ import { patchAttribute } from '../../database/middleware';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elUpdate } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { isUserHasCapability, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
+import { SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { createListTask, ACTION_TYPE_CURATION_APPLY } from '../../domain/backgroundTask-common';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -22,7 +22,6 @@ import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
   ACTION_MERGE,
-  ACTION_UNMERGE,
   type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationAdjudication,
@@ -45,7 +44,8 @@ import {
 import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvailable, revertAppliedPatch } from './curation-apply';
 import { unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
-import { adjudicateProposal, isAdjudicationAvailable, isProposalAdjudicable } from './curation-adjudication';
+import { adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
+import { canUserApplyProposal } from './curation-access';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
 import { isGraphSimilarityAvailable } from './curation-scan';
@@ -79,14 +79,6 @@ export const resolveProposalSubjects = async (context: AuthContext, user: AuthUs
   const found = await internalFindByIds(context, user, proposal.subject_ids) as BasicStoreBase[];
   const byId = new Map(found.map((element) => [element.internal_id, element]));
   return proposal.subject_ids.map((id) => byId.get(id)).filter((element): element is BasicStoreBase => element !== undefined);
-};
-
-export const canUserApplyProposal = (user: AuthUser, proposal: BasicStoreEntityCurationProposal) => {
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) return false;
-  if (proposal.recommended_action === ACTION_MERGE || proposal.recommended_action === ACTION_UNMERGE) {
-    return isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMERGE);
-  }
-  return true;
 };
 
 export const curationStatistics = async (context: AuthContext, user: AuthUser) => {
@@ -351,13 +343,6 @@ export const adjudicateProposalNow = async (context: AuthContext, user: AuthUser
   const settings = await getCurationSettings(context);
   if (!settings.adjudication_enabled) {
     throw FunctionalError('Curation adjudication is disabled in the curation settings');
-  }
-  if (!isProposalAdjudicable(proposal)) {
-    throw FunctionalError('Only duplicate proposals (merge or alias) in the ambiguous confidence band can be adjudicated', {
-      id,
-      kind: proposal.proposal_kind,
-      confidence: proposal.confidence_score,
-    });
   }
   return adjudicateProposal(context, user, proposal, settings);
 };

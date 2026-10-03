@@ -149,13 +149,17 @@ export const adjudicateProposal = async (
   settings: CurationSettings,
 ): Promise<BasicStoreEntityCurationProposal> => {
   await checkEnterpriseEdition(context);
+  if (!isProposalAdjudicable(proposal)) {
+    throw FunctionalError('Only duplicate proposals (merge or alias) in the ambiguous confidence band can be adjudicated', {
+      id: proposal.internal_id,
+      kind: proposal.proposal_kind,
+      confidence: proposal.confidence_score,
+    });
+  }
   if (!isXtmOneConfigured()) {
     throw FunctionalError('XTM One is not configured on this platform');
   }
-  if (!(await reserveDailyBudget(settings))) {
-    throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
-  }
-  await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { adjudication_requested_at: now() });
+  // Every local prerequisite is resolved first: only a request about to be sent consumes the daily budget.
   const jwtUser = await resolveAgentJwtUser(settings.adjudication_run_as_id ?? undefined);
   if (!jwtUser) {
     throw FunctionalError('No identity can be resolved to call XTM One for adjudication');
@@ -166,6 +170,10 @@ export const adjudicateProposal = async (
   }
   const subjects = await storeLoadByIdsWithRefs(context, user, proposal.subject_ids);
   const content = buildAdjudicationContent(proposal, subjects as unknown as Array<BasicStoreEntity & Record<string, any>>);
+  if (!(await reserveDailyBudget(settings))) {
+    throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
+  }
+  await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { adjudication_requested_at: now() });
   addCurationAdjudicationCount();
   const answer = await callXtmAgent(agentSlug, content, jwtUser);
   const parsed = parseAdjudicationResponse(answer, proposal.subject_ids);

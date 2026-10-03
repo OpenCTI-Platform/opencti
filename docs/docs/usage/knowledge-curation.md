@@ -160,7 +160,7 @@ The **Ask the Curator** action of a proposal requests an adjudication on demand,
     - **Accept** executes the recommended action, with the surviving entity you selected for a merge.
     - **Reject** records your rationale. The finding is never proposed again.
     - **Revert** undoes an accepted or auto-applied proposal (see below).
-5. To process many proposals at once, select rows and use **bulk accept** or **bulk reject** (up to 500 proposals at a time). Bulk accept runs as a [background task](background-tasks.md) with your rights; bulk reject is immediate and can carry a rationale.
+5. To process many proposals at once, select rows and use **bulk accept** or **bulk reject** (up to 500 proposals at a time). Bulk accept runs as a [background task](background-tasks.md) with your rights, and is refused upfront when one of the selected proposals needs a capability you do not have (merge knowledge for a merge or a split, delete knowledge for an attribution conflict); bulk reject is immediate and can carry a rationale.
 
 On an entity, a **Possible duplicate** chip in the header signals an open `merge` or `alias` proposal and links to it.
 

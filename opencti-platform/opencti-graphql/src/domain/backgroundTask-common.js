@@ -30,6 +30,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CURATION_PROPOSAL } from '../modules/curation/curation-types';
+import { canUserApplyProposal } from '../modules/curation/curation-access';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
@@ -136,6 +137,10 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const areCurationProposals = objects.length > 0 && objects.every((o) => o?.entity_type === ENTITY_TYPE_CURATION_PROPOSAL);
       if (askForCurationApply !== areCurationProposals || (askForCurationApply && actions.length !== 1)) {
         throw ForbiddenAccess('The curation apply action only targets curation proposals.');
+      }
+      // The worker applies them as the task initiator: refuse upfront what the initiator could not apply directly.
+      if (askForCurationApply && objects.some((proposal) => !canUserApplyProposal(user, proposal))) {
+        throw ForbiddenAccess('You are not allowed to apply some of the selected curation proposals.');
       }
       const acceptedInternalTypes = areCurationProposals
         || objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);

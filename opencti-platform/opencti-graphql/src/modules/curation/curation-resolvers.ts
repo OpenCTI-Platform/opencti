@@ -13,7 +13,6 @@ import {
   applyProposalFromTask,
   bulkAcceptProposals,
   bulkRejectProposals,
-  canUserApplyProposal,
   isProposalRevertible,
   curationSettingsForApi,
   curationStatistics,
@@ -40,6 +39,7 @@ import {
 import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curation-health';
 import { curationResolve } from './curation-resolve';
 import { isProposalAdjudicable } from './curation-adjudication';
+import { canUserApplyProposal } from './curation-access';
 import type { BasicStoreEntityCurationPolicy, BasicStoreEntityCurationProposal, BasicStoreEntityMergeRecord, CurationPolicyDryRunResult } from './curation-types';
 
 const toJsonString = (value: unknown) => {
