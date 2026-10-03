@@ -231,22 +231,29 @@ const processBatch = async (
 ) => {
   const ids = batch.map((entity) => entity.internal_id);
   const idSet = new Set(ids);
-  // 1. Relationships created in the period
+  // 1. Relationships created in the period. The budget applies to distinct relationships: a relationship
+  // already counted from another batch can be read once more, so the read is sized to let it through.
   const budget = LANDSCAPE_MAX_RELATIONSHIPS - acc.relationshipsFetched;
-  const relations = budget > 0 ? await fullRelationsList<BasicStoreRelation>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
+  const maxSize = budget > 0 ? budget + acc.countedRelationships.size : 0;
+  const relations = maxSize > 0 ? await fullRelationsList<BasicStoreRelation>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     startDate: from,
     endDate: to,
     dateAttribute: 'created_at',
-    maxSize: budget,
+    maxSize,
     baseData: true,
     baseFields: ['created_at'],
   } as any) : [];
-  if (budget <= 0 || relations.length >= budget) acc.truncated = true;
-  acc.relationshipsFetched += relations.length;
+  if (maxSize <= 0 || relations.length >= maxSize) acc.truncated = true;
+  let newRelationships = 0;
   relations.forEach((relation) => {
     if (!acc.countedRelationships.has(relation.internal_id)) {
+      if (newRelationships >= budget) {
+        acc.truncated = true;
+        return;
+      }
+      newRelationships += 1;
       acc.countedRelationships.add(relation.internal_id);
       acc.newRelationships += 1;
       increment(acc.newRelationshipsByType, relation.entity_type);
@@ -261,6 +268,7 @@ const processBatch = async (
       registerTarget(acc, relation.fromId, relation.fromType, relation.entity_type, relation.toId);
     }
   });
+  acc.relationshipsFetched += newRelationships;
   // 2. Relationships removed or revoked in the period
   const relationshipEvents = await fetchRelationshipsHistoryEvents(context, user, ids, {
     from,
