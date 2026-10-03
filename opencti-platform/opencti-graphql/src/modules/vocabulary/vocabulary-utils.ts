@@ -178,6 +178,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
       description:
         'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
     },
+    {
+      key: 'defense-validation',
+      description:
+        'A set of techniques selected from the defense matrix to be validated by a breach and attack simulation.',
+    },
   ],
   // I
   implementation_language_ov: [
@@ -824,6 +829,12 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'eql' },
     { key: 'shodan' },
     { key: 'nova' },
+    { key: 'kql', description: 'Kusto Query Language (Microsoft Sentinel, Microsoft Defender)' },
+    { key: 'esql', description: 'Elasticsearch Query Language (ES|QL)' },
+    { key: 'kuery', description: 'Kibana Query Language' },
+    { key: 'lucene', description: 'Lucene query syntax' },
+    { key: 'yara-l', description: 'YARA-L 2.0 (Google SecOps)' },
+    { key: 'crowdstrike-ioa', description: 'CrowdStrike Falcon custom indicator of attack rule' },
   ],
   processor_architecture_ov: [
     {

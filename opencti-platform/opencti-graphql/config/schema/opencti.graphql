@@ -2936,6 +2936,7 @@ input StixDomainObjectAddInput {
 enum AttackPatternsOrdering {
   x_mitre_id
   name
+  defense_level
   created
   modified
   created_at
@@ -3085,6 +3086,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
+  # Aggregate defense level (0 none, 1 telemetry, 2 detection available, 3 detection deployed, 4 validated)
+  defense_level: Int
   killChainPhases: [KillChainPhase!]
   coursesOfAction(
     first: Int
@@ -14721,6 +14724,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
   coverage_information: [CoverageResult!]
+  coverage_platforms_information: [CoveragePlatformResult!]
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -14731,6 +14735,18 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type CoveragePlatformResult {
+  platform_ref: String!
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+input SecurityCoveragePlatformExpectation {
+  platform_ref: String!
   coverage_name: String!
   coverage_score: Int!
 }
@@ -14761,6 +14777,7 @@ input StixCoreRelationshipAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
+  coverage_platforms_information: [SecurityCoveragePlatformExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean

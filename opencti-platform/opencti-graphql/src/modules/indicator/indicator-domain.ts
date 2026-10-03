@@ -22,6 +22,7 @@ import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { computeValidPeriod, hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE, isDecayEnabled } from './indicator-utils';
+import { normalizeIndicatorRuleMetadata, withoutIndicatorRuleMetadata } from './indicator-rule-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
@@ -276,7 +277,8 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   checkScore(indicatorBaseScore);
 
   const baseIndicator = {
-    ...indicator,
+    ...withoutIndicatorRuleMetadata(indicator),
+    ...normalizeIndicatorRuleMetadata(indicator),
     pattern: formattedPattern,
     [X_SCORE]: indicatorBaseScore,
   };

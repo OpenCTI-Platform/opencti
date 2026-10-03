@@ -249,6 +249,9 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixCoreRelationship(relationshipType)) {
     data.description = input.description ? input.description : '';
     data.coverage_information = input.coverage_information ? input.coverage_information : [];
+    if (isNotEmptyField(input.coverage_platforms_information)) {
+      data.coverage_platforms_information = input.coverage_platforms_information;
+    }
     if (relationshipType === RELATION_DEPLOYED_ON) {
       Object.assign(data, buildDeployedOnCreationData(input));
     }
