@@ -177,7 +177,7 @@ export const stageRunMetrics = async (context: AuthContext, runId: string, updat
 };
 
 /** Make the staged metrics of a completed run the live ones, recording when an entity joined its cluster. */
-const promoteRunMetrics = async (runId: string) => {
+const promoteRunMetrics = async (runId: string, publishedAt: string) => {
   await elRawUpdateByQuery({
     index: GRAPH_METRICS_ENTITY_INDICES,
     refresh: true,
@@ -186,7 +186,7 @@ const promoteRunMetrics = async (runId: string) => {
       script: {
         source: GRAPH_METRICS_PROMOTE_SCRIPT,
         lang: 'painless',
-        params: { prefix: PENDING_PREFIX, fields: STAGED_RUN_FIELDS, now: new Date().toISOString() },
+        params: { prefix: PENDING_PREFIX, fields: STAGED_RUN_FIELDS, now: publishedAt },
       },
       query: { term: { [`${GRAPH_METRICS_ATTRIBUTE}.${PENDING_RUN_ID}.keyword`]: runId } },
     },
@@ -557,12 +557,13 @@ const publishRunClusters = async (runId: string) => {
 /**
  * Finalize a clustering run: its staged entity metrics become the live ones, clusters not refreshed by the run are
  * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
- * are detached.
+ * are detached. `publishedAt` is the joining date recorded on the entities that changed cluster.
  */
-export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser, runId: string): Promise<string[]> => {
+export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser, runId: string): Promise<{ removed: string[]; publishedAt: string }> => {
+  const publishedAt = new Date().toISOString();
   // clusters are published before their members point to them, so a cluster never shows another run's metadata
   await publishRunClusters(runId);
-  await promoteRunMetrics(runId);
+  await promoteRunMetrics(runId, publishedAt);
   await dropPendingMetricsNotFromRun(runId);
   const stale = await elList<BasicStoreEntityGraphCluster>(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_GRAPH_CLUSTER],
@@ -580,7 +581,7 @@ export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser
     await elBulk(context, { refresh: true, body });
   }
   await clearRunMetricsNotFromRun(runId);
-  return stale.map((s) => s.internal_id);
+  return { removed: stale.map((s) => s.internal_id), publishedAt };
 };
 
 export const addClusterPromotion = async (context: AuthContext, cluster: BasicStoreEntityGraphCluster, promotedId: string) => {

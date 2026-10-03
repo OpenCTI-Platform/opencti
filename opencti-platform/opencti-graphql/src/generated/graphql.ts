@@ -37457,6 +37457,7 @@ export type TriggerEdge = {
 export enum TriggerEventType {
   Create = 'create',
   Delete = 'delete',
+  GraphClusterJoined = 'graph_cluster_joined',
   Update = 'update'
 }
 

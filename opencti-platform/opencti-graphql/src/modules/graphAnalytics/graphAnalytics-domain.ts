@@ -42,6 +42,7 @@ import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
 import { getGraphAnalyticsComputeConfig, GRAPH_RUN_LEASE_MS, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
 import { isSameComparisonGroup, keepAccessibleEndpoints } from './graphAnalytics-features';
+import { notifyClusterMemberships } from './graphAnalytics-notification';
 import { computeSimilarityScore, type GraphSimilarityScore } from './graphAnalytics-scoring';
 import {
   addClusterPromotion,
@@ -795,8 +796,10 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   const state: Record<string, string> = { [GRAPH_STATE_ANALYTICS_LAST_RUN_ID]: input.run_id };
   if (input.process_version) state[GRAPH_STATE_ANALYTICS_VERSION] = input.process_version;
   if (input.complete) {
-    removed = await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id);
+    const finalized = await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id);
+    removed = finalized.removed;
     await redisGraphAnalyticsReleaseRunLease(input.run_id);
+    await notifyClusterMemberships(context, finalized.publishedAt);
     state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
   }
   await redisGraphAnalyticsSetState(state);

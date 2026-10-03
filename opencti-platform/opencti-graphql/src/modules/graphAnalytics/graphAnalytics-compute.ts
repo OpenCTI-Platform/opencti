@@ -40,6 +40,7 @@ import {
   writeGraphMetrics,
 } from './graphAnalytics-store';
 import { buildGraphClusterId, computeFeatureClusters, type ClusteringMember } from './graphAnalytics-clustering';
+import { notifyClusterMemberships } from './graphAnalytics-notification';
 import { GRAPH_METRICS_ATTRIBUTE, type GraphClusterKind, type GraphFeatureFamily, type GraphFeatureProfile, type GraphMetrics } from './graphAnalytics-types';
 import {
   GRAPH_STATE_CLUSTERING_LAST_RUN,
@@ -456,15 +457,17 @@ export const runInfrastructureClustering = async (
     cluster_kind: kind,
     cluster_size: write.members_count,
   })));
+  let publishedAt: string;
   try {
     for (let i = 0; i < assignments.length; i += 1000) {
       await writeRunMetrics(context, user, runId, assignments.slice(i, i + 1000));
     }
     await upsertGraphClusters(context, user, writes, 'platform', runId);
-    await finalizeClusteringRun(context, user, runId);
+    ({ publishedAt } = await finalizeClusteringRun(context, user, runId));
   } finally {
     await redisGraphAnalyticsReleaseRunLease(runId);
   }
+  await notifyClusterMemberships(context, publishedAt);
   await redisGraphAnalyticsSetState({ [GRAPH_STATE_CLUSTERING_LAST_RUN]: new Date().toISOString() });
   return { clusters: writes.length, members: assignments.length, skipped: false };
 };
