@@ -1,43 +1,47 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router';
-import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
-import { ENTITY_CHANGES_VIEWS, type EntityChangesView } from './entityChangesViews';
+import { CHANGES_SECTION_SEARCH_PARAM, ENTITY_CHANGES_SECTIONS, type EntityChangesSection, type EntityChangesSectionProps } from './entityChangesSections';
 
-interface EntityChangesTabProps {
-  entityId: string;
-  views?: EntityChangesView[];
+interface EntityChangesTabProps extends EntityChangesSectionProps {
+  sections?: EntityChangesSection[];
 }
 
-/** The Changes tab of an entity: one switch over the registered views, the current one kept in the `view` parameter. */
-const EntityChangesTab = ({ entityId, views = ENTITY_CHANGES_VIEWS }: EntityChangesTabProps) => {
+/**
+ * The Changes tab of an entity: one switch over the registered sections, the open one kept in the `section` search
+ * parameter (other parameters of the URL are kept). An absent or unknown section opens the first one.
+ */
+const EntityChangesTab = ({ entityId, basePath, sections = ENTITY_CHANGES_SECTIONS }: EntityChangesTabProps) => {
   const { t_i18n } = useFormatter();
   const [searchParams, setSearchParams] = useSearchParams();
-  const current = views.find((view) => view.key === searchParams.get('view')) ?? views[0];
+  const current = sections.find(({ key }) => key === searchParams.get(CHANGES_SECTION_SEARCH_PARAM)) ?? sections[0];
   if (!current) {
     return null;
   }
-  const changeView = (key: string) => {
-    const next = new URLSearchParams(searchParams);
-    next.set('view', key);
-    setSearchParams(next, { replace: true });
+  const changeSection = (key: string) => {
+    setSearchParams((params) => {
+      const next = new URLSearchParams(params);
+      next.set(CHANGES_SECTION_SEARCH_PARAM, key);
+      return next;
+    }, { replace: true });
   };
-  const CurrentView = current.component;
   return (
     <div data-testid="entity-changes-tab">
-      <Tabs value={current.key} onValueChange={changeView} panels="external">
+      <Tabs value={current.key} onValueChange={changeSection}>
         <TabsList className="mb-6" aria-label={t_i18n('Changes')}>
-          {views.map((view) => (
-            <TabsTrigger key={view.key} value={view.key} data-testid={`entity-changes-view-${view.key}`}>
-              {t_i18n(view.label)}
+          {sections.map(({ key, label }) => (
+            <TabsTrigger key={key} value={key} data-testid={`entity-changes-section-${key}`}>
+              {t_i18n(label)}
             </TabsTrigger>
           ))}
         </TabsList>
+        {sections.map(({ key, Component }) => (
+          <TabsContent key={key} value={key}>
+            <Component entityId={entityId} basePath={basePath} />
+          </TabsContent>
+        ))}
       </Tabs>
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <CurrentView entityId={entityId} />
-      </Suspense>
     </div>
   );
 };

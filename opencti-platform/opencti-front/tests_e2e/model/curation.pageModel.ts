@@ -12,7 +12,7 @@ export default class CurationPage {
   }
 
   async gotoEntityMerges(entityPath: string) {
-    await this.page.goto(`${entityPath}/changes?view=merges`);
+    await this.page.goto(`${entityPath}/changes?section=merges`);
   }
 
   getHubTab(path: 'inbox' | 'merges' | 'health') {

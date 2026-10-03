@@ -23,7 +23,7 @@ const StixDomainObjectMain = ({
 }: StixDomainObjectMainProps) => {
   // Every entity with a history has a Changes tab: how it changed, including the merges it took part in.
   const allPages = pages.history !== undefined && pages.changes === undefined
-    ? { ...pages, changes: <EntityChangesTab entityId={entity.id} /> }
+    ? { ...pages, changes: <EntityChangesTab entityId={entity.id} basePath={basePath} /> }
     : pages;
   const tabs = Object.keys(allPages) as StixDomainObjectTabsBoxTab[];
   return (
