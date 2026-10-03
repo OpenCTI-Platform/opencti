@@ -5,8 +5,8 @@
 | Tab | What you do there |
 | --- | --- |
 | Inbox | Review what the curation engine proposes: possible duplicates, conflicting values, objects to merge. |
-| Conflicts | See the attributes your sources disagree on, and which value each source asserts. |
-| Stale knowledge | Find knowledge whose sources stopped confirming it, according to the decay rules. |
+| Conflicts | See the attributes your sources disagree on, and which value each source asserts ([details](provenance.md#curation-tabs)). |
+| Stale knowledge | Find knowledge whose sources stopped confirming it, according to the knowledge decay rules ([details](provenance.md#curation-tabs)). |
 | Merges | Follow the merges that were applied, and undo one when it was wrong. |
 | Knowledge health | Measure the quality of the knowledge base over time. |
 
@@ -18,6 +18,7 @@
 
 ## Related pages
 
+- [Provenance](provenance.md): the sources, conflicts and freshness behind the Conflicts and Stale knowledge tabs.
 - [Deduplication](deduplication.md): how OpenCTI avoids creating the same object twice.
 - [Merge objects](merging.md): merging objects by hand.
 - [Data consistency](dataSanityManager.md): consistency checks run by the platform.

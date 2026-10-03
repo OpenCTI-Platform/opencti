@@ -12,7 +12,7 @@ const area = (path: string, entityType?: string): DefenseArea => ({
   component: lazy(async () => ({ default: () => null })),
 });
 
-const ROUTE_SEGMENT = /^[a-z][a-z0-9_]*$/;
+const ROUTE_SEGMENT = /^[a-z][a-z0-9_-]*$/;
 
 describe('visibleDefenseAreas', () => {
   it('keeps the areas in their registration order', () => {
