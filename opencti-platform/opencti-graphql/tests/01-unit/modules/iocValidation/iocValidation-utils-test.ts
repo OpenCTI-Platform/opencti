@@ -3,6 +3,7 @@ import '../../../../src/modules/index';
 import {
   analyzeValidationPattern,
   extractIocFromIndicator,
+  isDeploymentReporter,
   isIocValidationTestKind,
   isSummaryComplete,
   requesterIdOf,
@@ -155,5 +156,20 @@ describe('IOC validation requester', () => {
     expect(requesterIdOf({ creator_id: null })).toBeUndefined();
     expect(requesterIdOf({ creator_id: ['', 'user-4'] })).toEqual('user-4');
     expect(requesterIdOf({})).toBeUndefined();
+  });
+});
+
+describe('IOC validation result reporter', () => {
+  it('should be one of the accounts that recorded the deployment', () => {
+    expect(isDeploymentReporter({ creator_id: ['splunk-account', 'openaev-account'] }, 'splunk-account')).toEqual(true);
+    expect(isDeploymentReporter({ creator_id: ['splunk-account', 'openaev-account'] }, 'openaev-account')).toEqual(true);
+    expect(isDeploymentReporter({ creator_id: 'splunk-account' }, 'splunk-account')).toEqual(true);
+  });
+
+  it('should reject any other account', () => {
+    expect(isDeploymentReporter({ creator_id: ['splunk-account'] }, 'analyst-account')).toEqual(false);
+    expect(isDeploymentReporter({ creator_id: [] }, 'analyst-account')).toEqual(false);
+    expect(isDeploymentReporter({ creator_id: null }, 'analyst-account')).toEqual(false);
+    expect(isDeploymentReporter({}, 'analyst-account')).toEqual(false);
   });
 });

@@ -281,6 +281,11 @@ describe('IOC validation requests', () => {
       query: REPORT_RESULTS,
       variables: { id, platformId: liveIndicatorId, results: [{ indicatorId: liveIndicatorId, status: 'missed' }] },
     });
+    // Updating knowledge is not enough: only the account recording the deployments of the platform speaks for it
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+    });
     // A miss on the waiting pair; the skipped indicator is not a pair of the request and is ignored
     const observedAt = '2026-10-03T12:00:00.000Z';
     const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
