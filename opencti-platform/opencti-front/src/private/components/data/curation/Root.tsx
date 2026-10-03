@@ -62,7 +62,7 @@ const Root = ({ tabs: registered = CURATION_TABS }: CurationRootProps) => {
   const { me } = useAuth();
   const tabs = grantedCurationTabs(registered, (needs) => isGrantedTo(me, needs));
   if (tabs.length === 0) {
-    return <HubNoAccess trail={['Data', 'Curation']} back={{ link: '/dashboard/data', label: 'Back to Data' }} />;
+    return <HubNoAccess hub="Curation" parents={['Data']} back={{ link: '/dashboard/data', label: 'Back to Data' }} />;
   }
   return (
     <Routes>

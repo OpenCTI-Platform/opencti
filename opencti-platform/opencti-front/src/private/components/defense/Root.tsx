@@ -70,7 +70,7 @@ const Root = ({ areas = DEFENSE_AREAS }: DefenseRootProps) => {
   const { me } = useAuth();
   const visibleAreas = visibleDefenseAreas(areas, hiddenEntities, (needs) => isGrantedTo(me, needs));
   if (visibleAreas.length === 0) {
-    return <HubNoAccess trail={['Defense']} back={{ link: '/dashboard', label: 'Back to the dashboard' }} />;
+    return <HubNoAccess hub="Defense" back={{ link: '/dashboard', label: 'Back to the dashboard' }} />;
   }
   const landing = `${PATH_DEFENSE}/${visibleAreas[0].path}`;
   return (
