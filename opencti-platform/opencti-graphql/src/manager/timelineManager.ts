@@ -78,6 +78,9 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     if (extension.sighting_of_ref) collector.contained.add(extension.sighting_of_ref);
     return;
   }
+  // Soft-check sources: Case Autopilot runs point to their subject, hunt runs to their hunt
+  if (typeof stix.subject_id === 'string') collector.references.add(stix.subject_id);
+  if (typeof stix.hunt_id === 'string') collector.contained.add(stix.hunt_id);
   collector.contained.add(id);
   collector.related.add(id);
 };

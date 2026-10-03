@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { csvCell, escapeXml, formatExportDate, renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportInput } from '../../../../src/modules/timeline/timeline-export';
+import {
+  csvCell,
+  escapeXml,
+  formatExportDate,
+  renderTimelineCsv,
+  renderTimelineHtml,
+  renderTimelineSvg,
+  type TimelineExportInput,
+} from '../../../../src/modules/timeline/timeline-export';
 
 const input: TimelineExportInput = {
   containerName: 'Ransomware <case>',

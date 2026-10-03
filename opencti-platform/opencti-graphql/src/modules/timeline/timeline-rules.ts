@@ -819,29 +819,35 @@ export const huntRunRule: TimelineRule = {
   id: 'hunt-run',
   label: 'Hunt runs of the hunts in scope',
   kinds: ['hunt_run'],
-  derive: (input) => input.soft.huntRuns.flatMap((run) => {
-    const start = toTimelineTime(readExtraString(run, 'started_at')) ?? toTimelineTime(run.created_at);
-    if (start === null) return [];
-    const end = toTimelineTime(readExtraString(run, 'completed_at'));
-    const status = readExtraString(run, 'status');
-    const hits = readExtra(run, 'hits_count') as number | undefined;
-    const verdict = readExtraString(run, 'verdict');
-    const details = [status ? `Status: ${status}` : null, formatCount(hits, 'hit', 'hits') ?? null, verdict ? `Verdict: ${verdict}` : null].filter((d) => !!d);
-    return [{
-      rule_id: 'hunt-run',
-      kind: 'hunt_run' as const,
-      lane: 'detection' as const,
-      element_id: readExtraString(run, 'hunt_id') ?? run.id,
-      element_type: readExtraString(run, 'hunt_id') ? 'Hunt' : run.entity_type,
-      discriminator: run.id,
-      event_time: iso(start),
-      event_end_time: end !== null && end > start ? iso(end) : null,
-      time_precision: 'exact' as const,
-      name: `Hunt run ${run.name}`,
-      description: details.join(' - ') || undefined,
-      markings: mergeMarkings(run.markings),
-    }];
-  }),
+  derive: (input) => {
+    const huntNames = new Map(input.entities.filter((e) => e.entity_type === 'Hunt').map((e) => [e.id, e.name]));
+    return input.soft.huntRuns.flatMap((run) => {
+      const start = toTimelineTime(readExtraString(run, 'started_at')) ?? toTimelineTime(run.created_at);
+      if (start === null) return [];
+      const end = toTimelineTime(readExtraString(run, 'completed_at'));
+      const status = readExtraString(run, 'hunt_run_status') ?? readExtraString(run, 'status');
+      const hits = readExtra(run, 'hits_count') as number | undefined;
+      const verdict = readExtraString(run, 'verdict');
+      const huntId = readExtraString(run, 'hunt_id');
+      const huntName = huntId ? huntNames.get(huntId) : undefined;
+      const details = [status ? `Status: ${status}` : null, formatCount(hits, 'hit', 'hits') ?? null, verdict ? `Verdict: ${verdict}` : null].filter((d) => !!d);
+      return [{
+        rule_id: 'hunt-run',
+        kind: 'hunt_run' as const,
+        lane: 'detection' as const,
+        // A run points to its hunt when the hunt is in scope, to itself otherwise
+        element_id: huntName ? huntId as string : run.id,
+        element_type: huntName ? 'Hunt' : run.entity_type,
+        discriminator: run.id,
+        event_time: iso(start),
+        event_end_time: end !== null && end > start ? iso(end) : null,
+        time_precision: 'exact' as const,
+        name: `Hunt run ${huntName ?? run.name}`,
+        description: details.join(' - ') || undefined,
+        markings: mergeMarkings(run.markings),
+      }];
+    });
+  },
 };
 
 export const deploymentRule: TimelineRule = {
@@ -872,53 +878,81 @@ export const deploymentRule: TimelineRule = {
   }),
 };
 
-interface InvestigationTimelineEntry { ts?: string; entity_id?: string; event?: string }
+interface InvestigationStepEntry { id?: string; tool?: string; description?: string; status?: string; started_at?: string; duration_ms?: number }
+interface InvestigationTimelineEntry { ts?: string; entity_id?: string; entity_type?: string; name?: string | null; event?: string }
+
+const INVESTIGATION_FINDING_LABELS: Record<string, string> = { first_seen: 'first seen', last_seen: 'last seen', created: 'created' };
 
 export const autopilotRule: TimelineRule = {
   id: 'autopilot-run',
-  label: 'Case Autopilot investigation runs and their timeline entries',
+  label: 'Case Autopilot investigation runs, their steps and the findings outside the case',
   kinds: ['autopilot_step'],
-  derive: (input) => input.soft.investigationRuns.flatMap((run) => {
-    const events: DerivedTimelineEvent[] = [];
-    const start = toTimelineTime(readExtraString(run, 'started_at')) ?? toTimelineTime(run.created_at);
-    const end = toTimelineTime(readExtraString(run, 'completed_at'));
-    const status = readExtraString(run, 'status');
-    if (start !== null) {
-      events.push({
-        rule_id: 'autopilot-run',
-        kind: 'autopilot_step',
-        lane: 'response',
-        element_id: run.id,
-        element_type: run.entity_type,
-        event_time: iso(start),
-        event_end_time: end !== null && end > start ? iso(end) : null,
-        time_precision: 'exact',
-        name: `Investigation run ${run.name}`,
-        description: status ? `Status: ${status}` : undefined,
-        markings: mergeMarkings(run.markings),
+  derive: (input) => {
+    // Findings about elements already in scope are derived by the core rules, only the others are new
+    const inScope = new Set([input.container.id, ...input.entities.map((e) => e.id), ...input.relationships.map((r) => r.id)]);
+    return input.soft.investigationRuns.flatMap((run) => {
+      const events: DerivedTimelineEvent[] = [];
+      const markings = mergeMarkings(run.markings);
+      const start = toTimelineTime(readExtraString(run, 'started_at')) ?? toTimelineTime(run.created_at);
+      const end = toTimelineTime(readExtraString(run, 'completed_at'));
+      const status = readExtraString(run, 'run_status') ?? readExtraString(run, 'status');
+      if (start !== null) {
+        events.push({
+          rule_id: 'autopilot-run',
+          kind: 'autopilot_step',
+          lane: 'response',
+          element_id: run.id,
+          element_type: run.entity_type,
+          event_time: iso(start),
+          event_end_time: end !== null && end > start ? iso(end) : null,
+          time_precision: 'exact',
+          name: `Case Autopilot run ${run.name}`,
+          description: status ? `Status: ${status}` : undefined,
+          markings,
+        });
+      }
+      const steps = (readExtra(run, 'steps') as InvestigationStepEntry[] | undefined) ?? [];
+      steps.forEach((step, index) => {
+        const time = toTimelineTime(step.started_at);
+        if (time === null) return;
+        const stepEnd = step.duration_ms && step.duration_ms > 0 ? time + step.duration_ms : null;
+        events.push({
+          rule_id: 'autopilot-run',
+          kind: 'autopilot_step',
+          lane: 'response',
+          discriminator: `${run.id}-step-${step.id ?? index}`,
+          element_id: run.id,
+          element_type: run.entity_type,
+          event_time: iso(time),
+          event_end_time: stepEnd !== null ? iso(stepEnd) : null,
+          time_precision: 'exact',
+          name: step.description || step.tool || `Step ${index + 1}`,
+          description: [step.tool ? `Tool: ${step.tool}` : null, step.status ? `Status: ${step.status}` : null].filter((d) => !!d).join(' - ') || undefined,
+          markings,
+          ordering_hint: index,
+        });
       });
-    }
-    const entries = (readExtra(run, 'timeline') as InvestigationTimelineEntry[] | undefined) ?? [];
-    entries.forEach((entry, index) => {
-      const time = toTimelineTime(entry.ts);
-      if (time === null || !entry.event) return;
-      events.push({
-        rule_id: 'autopilot-run',
-        kind: 'autopilot_step',
-        lane: 'response',
-        discriminator: `${run.id}-${index}`,
-        element_id: entry.entity_id ?? run.id,
-        element_type: entry.entity_id ? null : run.entity_type,
-        event_time: iso(time),
-        time_precision: 'exact',
-        name: entry.event,
-        description: `Investigation run ${run.name}`,
-        markings: mergeMarkings(run.markings),
-        ordering_hint: index,
+      const findings = (readExtra(run, 'timeline') as InvestigationTimelineEntry[] | undefined) ?? [];
+      findings.forEach((entry) => {
+        const time = toTimelineTime(entry.ts);
+        if (time === null || !entry.event || !entry.entity_id || inScope.has(entry.entity_id)) return;
+        events.push({
+          rule_id: 'autopilot-run',
+          kind: 'autopilot_step',
+          lane: 'evidence',
+          discriminator: `${run.id}-finding-${entry.entity_id}-${entry.event}`,
+          element_id: entry.entity_id,
+          element_type: entry.entity_type ?? null,
+          event_time: iso(time),
+          time_precision: 'exact',
+          name: `${entry.name ?? entry.entity_type ?? 'Element'} ${INVESTIGATION_FINDING_LABELS[entry.event] ?? entry.event}`,
+          description: `Found by the Case Autopilot run ${run.name}`,
+          markings,
+        });
       });
+      return events;
     });
-    return events;
-  }),
+  },
 };
 // endregion
 

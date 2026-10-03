@@ -48,7 +48,7 @@ const TIMELINE_MAX_RELATED = conf.get('timeline_manager:max_related_elements') ?
 // Types owned by other modules, consumed only when they are registered on the platform (soft checks).
 export const SOFT_TYPE_HUNT = 'Hunt';
 export const SOFT_TYPE_HUNT_RUN = 'Hunt-Run';
-export const SOFT_TYPE_INVESTIGATION_RUN = 'Investigation-Run';
+export const SOFT_TYPE_INVESTIGATION_RUN = 'InvestigationRun';
 export const SOFT_RELATION_DEPLOYED_ON = 'deployed-on';
 
 export const isTimelineSoftTypeAvailable = (type: string): boolean => {
@@ -56,9 +56,16 @@ export const isTimelineSoftTypeAvailable = (type: string): boolean => {
 };
 
 const SOFT_EXTRA_KEYS = [
+  // security coverage results and has-covered relationships
   'coverage_last_result', 'coverage_valid_from', 'coverage_valid_to', 'coverage_information',
-  'status', 'started_at', 'completed_at', 'hits_count', 'verdict', 'hunt_id', 'timeline',
-  'deployment_status', 'deployed_at', 'removed_at', 'hit_count', 'validation_status', 'last_hit_at',
+  // hunt runs
+  'hunt_id', 'hunt_run_status', 'hunt_run_trigger', 'incident_id', 'hits_count', 'verdict', 'time_window_start', 'time_window_end',
+  // investigation runs
+  'run_status', 'run_trigger', 'timeline', 'steps',
+  // deployed-on relationships
+  'deployment_status', 'deployed_at', 'removed_at', 'hit_count', 'last_hit_at', 'validation_status', 'last_validation_at',
+  // shared
+  'status', 'started_at', 'completed_at',
 ];
 
 type AnyStoreElement = BasicStoreBase & Record<string, any>;
@@ -241,11 +248,13 @@ const loadSoftSources = async (
       soft.coverageRelationships = covered.map((r) => toTimelineElement(r as unknown as AnyStoreElement));
     }
   }
-  // Hunt runs (innovation 01) of the hunts in scope
+  // Hunt runs (innovation 01) of the hunts in scope, and the runs that opened the incident
   const huntIds = entities.filter((e) => e.entity_type === SOFT_TYPE_HUNT).map((e) => e.id);
-  if (huntIds.length > 0 && isTimelineSoftTypeAvailable(SOFT_TYPE_HUNT_RUN)) {
+  if (isTimelineSoftTypeAvailable(SOFT_TYPE_HUNT_RUN)) {
+    const huntRunFilters: any[] = [{ key: ['incident_id'], values: [containerId] }];
+    if (huntIds.length > 0) huntRunFilters.push({ key: ['hunt_id'], values: huntIds });
     const runs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [SOFT_TYPE_HUNT_RUN], {
-      filters: { mode: FilterMode.And, filters: [{ key: ['hunt_id'], values: huntIds }], filterGroups: [] },
+      filters: { mode: FilterMode.Or, filters: huntRunFilters, filterGroups: [] },
       noFiltersChecking: true,
       maxSize: TIMELINE_MAX_RELATED,
     } as any);
@@ -258,13 +267,14 @@ const loadSoftSources = async (
     const deployments = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, SOFT_RELATION_DEPLOYED_ON, deploymentArgs as any);
     soft.deployments = deployments.map((r) => toTimelineElement(r as unknown as AnyStoreElement));
   }
-  // Case Autopilot investigation runs (innovation 02) on the container
+  // Case Autopilot investigation runs (innovation 02) on the container, known by any of its ids
   if (isTimelineSoftTypeAvailable(SOFT_TYPE_INVESTIGATION_RUN)) {
+    const containerIds = asArray([containerId, container.standard_id]);
     const runs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [SOFT_TYPE_INVESTIGATION_RUN], {
       filters: {
         mode: FilterMode.Or,
         filters: [
-          { key: ['case_id'], values: [containerId] },
+          { key: ['case_ids'], values: containerIds },
           { key: ['subject_id'], values: [containerId] },
         ],
         filterGroups: [],

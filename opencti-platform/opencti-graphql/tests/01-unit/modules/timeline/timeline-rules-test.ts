@@ -280,29 +280,60 @@ describe('Timeline knowledge rules', () => {
 describe('Timeline soft-check rules', () => {
   it('should derive coverage results, hunt runs, deployments and autopilot steps from their sources', () => {
     const input = buildInput({
+      entities: [element({ id: 'hunt-1', entity_type: 'Hunt', name: 'Cobalt beacons' }), element({ id: 'malware-1', entity_type: 'Malware', name: 'Cobalt Strike' })],
       soft: {
         coverageResults: [element({ id: 'cov-res-1', entity_type: 'Security-Coverage-Result', name: 'Weekly', extra: { coverage_last_result: '2026-03-15T00:00:00.000Z', coverage_information: [{ coverage_name: 'detection', coverage_score: 80 }] } })],
         coverageRelationships: [element({ id: 'has-cov-1', entity_type: 'has-covered', to_name: 'Phishing', updated_at: '2026-03-15T01:00:00.000Z', extra: { coverage_information: [{ coverage_name: 'prevention', coverage_score: 40 }] } })],
-        huntRuns: [element({ id: 'run-1', entity_type: 'Hunt-Run', name: 'Hunt 1', created_at: '2026-03-14T00:00:00.000Z', extra: { hunt_id: 'hunt-1', status: 'completed', hits_count: 3, verdict: 'true_positive' } })],
+        huntRuns: [
+          element({ id: 'run-1', entity_type: 'Hunt-Run', name: 'schedule run (completed)', created_at: '2026-03-14T00:00:00.000Z', extra: { hunt_id: 'hunt-1', hunt_run_status: 'completed', hits_count: 3, verdict: 'true_positive' } }),
+          element({ id: 'run-2', entity_type: 'Hunt-Run', name: 'manual run (failed)', extra: { hunt_id: 'hunt-out-of-scope', incident_id: 'case-1', started_at: '2026-03-14T02:00:00.000Z', hunt_run_status: 'failed' } }),
+        ],
         deployments: [element({ id: 'dep-1', entity_type: 'deployed-on', from_name: 'evil.com', to_name: 'Sentinel', extra: { deployed_at: '2026-03-13T00:00:00.000Z', deployment_status: 'active', hit_count: 2 } })],
-        investigationRuns: [element({ id: 'inv-1', entity_type: 'Investigation-Run', name: 'Autopilot', extra: { started_at: '2026-03-16T00:00:00.000Z', completed_at: '2026-03-16T01:00:00.000Z', status: 'completed', timeline: [{ ts: '2026-03-16T00:10:00.000Z', event: 'Enrichment wave 1' }, { event: 'no time' }] } })],
+        investigationRuns: [element({
+          id: 'inv-1',
+          entity_type: 'InvestigationRun',
+          name: 'Autopilot',
+          extra: {
+            started_at: '2026-03-16T00:00:00.000Z',
+            completed_at: '2026-03-16T01:00:00.000Z',
+            run_status: 'completed',
+            steps: [
+              { id: 'step-a', tool: 'enrich', description: 'Enrichment wave 1', status: 'succeeded', started_at: '2026-03-16T00:10:00.000Z', duration_ms: 60000 },
+              { id: 'step-b', tool: 'search' },
+            ],
+            timeline: [
+              { ts: '2026-03-01T00:00:00.000Z', entity_id: 'malware-1', entity_type: 'Malware', name: 'Cobalt Strike', event: 'first_seen' },
+              { ts: '2026-02-20T00:00:00.000Z', entity_id: 'ip-9', entity_type: 'IPv4-Addr', name: '10.0.0.9', event: 'first_seen' },
+            ],
+          },
+        })],
       },
     });
     const events = deriveTimelineEvents(input, [coverageResultRule, huntRunRule, deploymentRule, autopilotRule], () => {});
     expect(events.find((e) => e.element_id === 'cov-res-1')).toMatchObject({ kind: 'coverage_result', lane: 'detection', description: 'detection: 80%' });
     expect(events.find((e) => e.element_id === 'has-cov-1')).toMatchObject({ name: 'Coverage of Phishing', description: 'prevention: 40%' });
-    expect(events.find((e) => e.kind === 'hunt_run')).toMatchObject({ element_id: 'hunt-1', discriminator: 'run-1', description: 'Status: completed - 3 hits - Verdict: true_positive' });
+    const huntRuns = events.filter((e) => e.kind === 'hunt_run');
+    expect(huntRuns[0]).toMatchObject({ element_id: 'hunt-1', element_type: 'Hunt', discriminator: 'run-1', name: 'Hunt run Cobalt beacons', description: 'Status: completed - 3 hits - Verdict: true_positive' });
+    // The hunt of the second run is not in scope: the event points to the run itself
+    expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', description: 'Status: failed' });
     expect(events.find((e) => e.kind === 'deployment')).toMatchObject({ name: 'evil.com deployed on Sentinel', lane: 'detection' });
     const autopilot = events.filter((e) => e.kind === 'autopilot_step');
-    expect(autopilot).toHaveLength(2);
-    expect(autopilot[1]).toMatchObject({ name: 'Enrichment wave 1', discriminator: 'inv-1-0' });
+    expect(autopilot).toHaveLength(3);
+    expect(autopilot[0]).toMatchObject({ name: 'Case Autopilot run Autopilot', description: 'Status: completed', event_end_time: '2026-03-16T01:00:00.000Z' });
+    expect(autopilot[1]).toMatchObject({ name: 'Enrichment wave 1', discriminator: 'inv-1-step-step-a', description: 'Tool: enrich - Status: succeeded', event_end_time: '2026-03-16T00:11:00.000Z' });
+    // Findings about elements in scope are already derived by the core rules
+    expect(autopilot[2]).toMatchObject({ lane: 'evidence', element_id: 'ip-9', name: '10.0.0.9 first seen', discriminator: 'inv-1-finding-ip-9-first_seen' });
   });
 
   it('should skip unavailable rules and isolate failing rules', () => {
     const failures: string[] = [];
     const events = deriveTimelineEvents(buildInput(), [
-      { id: 'unavailable', label: 'x', kinds: ['hunt_run'], isAvailable: () => false, derive: () => { throw new Error('should not run'); } },
-      { id: 'failing', label: 'x', kinds: ['milestone'], derive: () => { throw new Error('boom'); } },
+      { id: 'unavailable', label: 'x', kinds: ['hunt_run'], isAvailable: () => false, derive: () => {
+        throw new Error('should not run');
+      } },
+      { id: 'failing', label: 'x', kinds: ['milestone'], derive: () => {
+        throw new Error('boom');
+      } },
       ...TIMELINE_CORE_RULES,
     ], (ruleId) => failures.push(ruleId));
     expect(failures).toEqual(['failing']);
