@@ -35,7 +35,7 @@ import { findPirRelationPaginated } from '../pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { resolveAgentJwtUser } from '../playbook/components/ai-agent-shared';
-import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_SCHEDULE_MANUAL, HUNT_STATUS_ACTIVE, RELATION_HUNT_TECHNIQUES } from './hunt-types';
+import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_SCHEDULE_MANUAL, HUNT_STATUS_ACTIVE, INPUT_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt';
 import { validateSigmaRule } from './hunt-sigma';
 import { computeNextRunAt } from './hunt-schedule';
@@ -346,10 +346,12 @@ export const huntValidateFromEmulation = async (context: AuthContext, user: Auth
       mode: FilterMode.And,
       filters: [
         { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
-        { key: [RELATION_HUNT_TECHNIQUES], values: [technique.internal_id] },
+        { key: [INPUT_HUNT_TECHNIQUES], values: [technique.internal_id] },
       ],
       filterGroups: [],
     },
+    // The dispatched runs carry the techniques, targets and sources of the hunts
+    withoutRels: false,
   });
   const existingRuns = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
     filters: {

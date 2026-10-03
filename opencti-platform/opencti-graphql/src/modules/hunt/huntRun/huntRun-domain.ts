@@ -723,14 +723,15 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     filters: args.huntId ? [executeFilter, { key: ['hunt_id'], values: [args.huntId] }] : [executeFilter],
     filterGroups: [],
   };
-  const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, dateAttribute: 'created_at' };
+  const range = { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+  const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, dateAttribute: 'created_at' };
   const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'verdict', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
-    elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, field: 'created_at', interval, sumField: 'hits_count' }),
-    elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, field: 'created_at', interval }),
+    elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }),
+    elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }),
     topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }),
   ]);
   const countOf = (buckets: { label: string; count: number }[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;

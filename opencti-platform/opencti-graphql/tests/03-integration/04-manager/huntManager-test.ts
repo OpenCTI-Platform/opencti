@@ -7,9 +7,9 @@ import { deleteElementById, patchAttribute } from '../../../src/database/middlew
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import * as playbookManager from '../../../src/manager/playbookManager/playbookManager';
-import { FilterMode, OrderingMode } from '../../../src/generated/graphql';
+import { FilterMode, OrderingMode, PirType } from '../../../src/generated/graphql';
+import { deletePir, pirAdd, pirFlagElement, pirUnflagElement } from '../../../src/modules/pir/pir-domain';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
-import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT } from '../../../src/modules/hunt/hunt-types';
@@ -26,6 +26,8 @@ import {
   HUNT_RUN_TRIGGER_STANDING,
 } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { createHuntRuns, expireHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-domain';
+import { HUNT_CONFIG } from '../../../src/modules/hunt/hunt-utils';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import {
   dispatchQueuedHuntRuns,
   expireStaleHuntRuns,
@@ -66,6 +68,7 @@ describe('Hunt manager', () => {
   let huntId: string;
 
   beforeAll(async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue(undefined);
     const intrusionSet = await queryAsAdminWithSuccess({
       query: gql`mutation IntrusionSetAdd($input: IntrusionSetAddInput!) { intrusionSetAdd(input: $input) { id } }`,
       variables: { input: { name: 'Hunt manager test intrusion set' } },
@@ -159,28 +162,37 @@ describe('Hunt manager', () => {
 
   it('should arm a PIR activated hunt while a PIR flags one of its targets', async () => {
     await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_schedule: 'manual', next_run_at: null, hunt_pir_activation: true });
-    const { fullRelationsList } = middlewareLoader;
-    const spy = vi.spyOn(middlewareLoader, 'fullRelationsList').mockImplementation((async (context, user, type, args) => {
-      if (type === RELATION_IN_PIR) {
-        return [{ fromId: intrusionSetId, toId: uuidv4(), relationship_type: RELATION_IN_PIR }];
-      }
-      return fullRelationsList(context, user, type, args);
-    }) as typeof fullRelationsList);
-    expect(await reconcilePirActivatedHunts(testContext)).toBeGreaterThanOrEqual(1);
-    const armed = await loadHunt(huntId);
-    expect(armed.hunt_pir_armed).toBe(true);
-    expect(armed.hunt_pir_armed_at).toBeTruthy();
-    expect(armed.hunt_status).toEqual('active');
-    expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
-    // Still flagged: no new run
-    await reconcilePirActivatedHunts(testContext);
-    expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
-    spy.mockRestore();
-    await reconcilePirActivatedHunts(testContext);
-    const disarmed = await loadHunt(huntId);
-    expect(disarmed.hunt_pir_armed).toBe(false);
-    expect(disarmed.hunt_status).toEqual('active');
-    await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_pir_activation: false });
+    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
+    const pir = await pirAdd(testContext, ADMIN_USER, {
+      name: 'Hunt manager test PIR',
+      pir_type: PirType.ThreatLandscape,
+      pir_rescan_days: 0,
+      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
+      pir_criteria: [criterion],
+    });
+    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
+    try {
+      await reconcilePirActivatedHunts(testContext);
+      expect((await loadHunt(huntId)).hunt_pir_armed).not.toBe(true);
+      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
+      expect(await reconcilePirActivatedHunts(testContext)).toBeGreaterThanOrEqual(1);
+      const armed = await loadHunt(huntId);
+      expect(armed.hunt_pir_armed).toBe(true);
+      expect(armed.hunt_pir_armed_at).toBeTruthy();
+      expect(armed.hunt_status).toEqual('active');
+      expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
+      // Still flagged: no new run
+      await reconcilePirActivatedHunts(testContext);
+      expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
+      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
+      await reconcilePirActivatedHunts(testContext);
+      const disarmed = await loadHunt(huntId);
+      expect(disarmed.hunt_pir_armed).toBe(false);
+      expect(disarmed.hunt_status).toEqual('active');
+    } finally {
+      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_pir_activation: false });
+      await deletePir(testContext, ADMIN_USER, pir.id);
+    }
   });
 
   it('should resume a playbook waiting on a hunt step once its runs are settled, exactly once', async () => {
@@ -224,8 +236,13 @@ describe('Hunt manager', () => {
     await expireHuntRun(testContext, preview, 'Hunt manager test');
     await purgeExpiredHuntRuns(testContext);
     expect(await loadRun(preview.internal_id)).toBeTruthy();
-    await patchAttribute(testContext, ADMIN_USER, preview.internal_id, ENTITY_TYPE_HUNT_RUN, { created_at: hoursAgo(8 * 24) });
-    expect(await purgeExpiredHuntRuns(testContext)).toBeGreaterThanOrEqual(1);
+    const { previewRetentionDays } = HUNT_CONFIG;
+    HUNT_CONFIG.previewRetentionDays = 0;
+    try {
+      expect(await purgeExpiredHuntRuns(testContext)).toBeGreaterThanOrEqual(1);
+    } finally {
+      HUNT_CONFIG.previewRetentionDays = previewRetentionDays;
+    }
     expect(await loadRun(preview.internal_id)).toBeFalsy();
   });
 });

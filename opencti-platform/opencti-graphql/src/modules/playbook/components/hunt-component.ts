@@ -29,7 +29,7 @@ import { now } from '../../../utils/format';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { findByIds } from '../../hunt/hunt-loaders';
-import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_STATUS_ACTIVE, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from '../../hunt/hunt-types';
+import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_STATUS_ACTIVE, INPUT_HUNT_SOURCES, INPUT_HUNT_TARGETS, INPUT_HUNT_TECHNIQUES } from '../../hunt/hunt-types';
 import { HUNT_CONFIG } from '../../hunt/hunt-utils';
 import { createHuntRuns } from '../../hunt/huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
@@ -103,6 +103,7 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
     return topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
       first: maxHunts,
       filters: { mode: FilterMode.And, filters: [activeFilter, { key: ['id'], values: configuration.hunt_ids }], filterGroups: [] },
+      withoutRels: false,
     });
   }
   const stixIds = Array.from(new Set(elements.flatMap(elementRefs)));
@@ -124,13 +125,15 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
       filterGroups: [{
         mode: FilterMode.Or,
         filters: [
-          { key: [RELATION_HUNT_TECHNIQUES], values: ids },
-          { key: [RELATION_HUNT_TARGETS], values: ids },
-          { key: [RELATION_HUNT_SOURCES], values: ids },
+          { key: [INPUT_HUNT_TECHNIQUES], values: ids },
+          { key: [INPUT_HUNT_TARGETS], values: ids },
+          { key: [INPUT_HUNT_SOURCES], values: ids },
         ],
         filterGroups: [],
       }],
     },
+    // The dispatched runs carry the techniques, targets and sources of the hunts
+    withoutRels: false,
   });
 };
 

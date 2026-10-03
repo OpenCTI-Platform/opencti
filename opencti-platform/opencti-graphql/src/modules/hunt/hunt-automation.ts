@@ -1,10 +1,10 @@
 import type { Operation } from 'fast-json-patch';
 import type { AuthContext } from '../../types/user';
-import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../types/event';
 import { logApp } from '../../config/conf';
 import { deleteElementById, patchAttribute } from '../../database/middleware';
-import { fullRelationsList, internalLoadById, topEntitiesList } from '../../database/middleware-loader';
+import { internalLoadById, topEntitiesList } from '../../database/middleware-loader';
 import { elCount } from '../../database/engine';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
@@ -81,6 +81,8 @@ const listHunts = (context: AuthContext, filters: FilterGroup['filters'], filter
     orderMode: OrderingMode.Asc,
     filters: andFilters(filters, filterGroups),
     noFiltersChecking: true,
+    // Runs and standing triggers read the targets, techniques and sources of the hunts
+    withoutRels: false,
   });
 };
 
@@ -326,10 +328,8 @@ export const reconcilePirActivatedHunts = async (context: AuthContext): Promise<
     return 0;
   }
   const targetIds = Array.from(new Set(hunts.flatMap((hunt) => hunt[RELATION_HUNT_TARGETS] ?? [])));
-  const inPirRelations = targetIds.length > 0
-    ? await fullRelationsList<BasicStoreRelation>(context, HUNT_MANAGER_USER, RELATION_IN_PIR, { fromId: targetIds })
-    : [];
-  const flagged = new Set(inPirRelations.map((relation) => relation.fromId));
+  const targets = targetIds.length > 0 ? await findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, targetIds) : [];
+  const flagged = new Set(targets.filter((target) => (target[RELATION_IN_PIR] ?? []).length > 0).map((target) => target.internal_id));
   let started = 0;
   for (let index = 0; index < hunts.length; index += 1) {
     const hunt = hunts[index];
