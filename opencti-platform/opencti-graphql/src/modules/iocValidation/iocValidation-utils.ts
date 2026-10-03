@@ -103,14 +103,47 @@ const mergeObservables = (observables: ExtractedObservable[]): ExtractedObservab
   return [merged, ...others];
 };
 
+const PATTERN_STRING_LITERAL = /'(?:\\.|[^'\\])*'/g;
+const PATTERN_OBJECT_TYPE = /([a-z][a-z0-9-]*):/g;
+const UNSUPPORTED_PATTERN_OPERATORS = /!=|<|>|\b(?:FOLLOWEDBY|NOT|IN|LIKE|MATCHES|ISSUBSET|ISSUPERSET|EXISTS|WITHIN|REPEATS|START|STOP)\b/;
+
+export interface ValidationPatternAnalysis {
+  supported: boolean;
+  // Every comparison of an AND must hold: only a test carrying all the file values can satisfy it.
+  conjunctiveFile: boolean;
+}
+
+/**
+ * A tested value satisfies the indicator only when every comparison is an equality and the comparisons are
+ * alternatives (OR), or all constrain the same file (AND). Negations, ranges, set or regex operators,
+ * FOLLOWEDBY and qualifiers would let the test use a value the indicator does not match.
+ */
+export const analyzeValidationPattern = (pattern: string): ValidationPatternAnalysis => {
+  const structure = pattern.replace(PATTERN_STRING_LITERAL, "''");
+  if (!structure.includes('=') || UNSUPPORTED_PATTERN_OPERATORS.test(structure)) {
+    return { supported: false, conjunctiveFile: false };
+  }
+  if (!/\bAND\b/.test(structure)) {
+    return { supported: true, conjunctiveFile: false };
+  }
+  const objectTypes = new Set([...structure.matchAll(PATTERN_OBJECT_TYPE)].map((match) => match[1]));
+  const singleFile = !/\bOR\b/.test(structure) && (structure.match(/\[/g) ?? []).length === 1 && objectTypes.size === 1 && objectTypes.has('file');
+  return { supported: singleFile, conjunctiveFile: singleFile };
+};
+
 /**
  * Build the IOC tested for an indicator, or the reason why it cannot be validated.
- * Only simple STIX patterns are supported; the first testable observable of the pattern is used.
+ * Only equality comparisons joined by OR are supported; the first testable observable of the pattern is used.
  */
 export const extractIocFromIndicator = (indicator: IndicatorForValidation, allowed: IocValidationTestKind[]): IocExtraction => {
   if (indicator.pattern_type !== STIX_PATTERN_TYPE || !indicator.pattern) {
     return { reason: 'Only STIX patterns can be validated' };
   }
+  const analysis = analyzeValidationPattern(indicator.pattern);
+  if (!analysis.supported) {
+    return { reason: 'Only patterns made of equality comparisons joined by OR, or on a single file, can be validated' };
+  }
+  const testKinds = analysis.conjunctiveFile ? allowed.filter((kind) => kind === TEST_KIND_LOG_INJECTION) : allowed;
   let observables: ExtractedObservable[];
   try {
     observables = mergeObservables(extractValidObservablesFromIndicatorPattern(indicator.pattern) as ExtractedObservable[]);
@@ -122,7 +155,7 @@ export const extractIocFromIndicator = (indicator: IndicatorForValidation, allow
   }
   for (let index = 0; index < observables.length; index += 1) {
     const observable = observables[index];
-    const resolved = resolveTestKind(observable, allowed);
+    const resolved = resolveTestKind(observable, testKinds);
     if (resolved) {
       const hashes = observable.type === 'StixFile' && Object.keys(observable.hashes ?? {}).length > 0 ? observable.hashes : null;
       return {
