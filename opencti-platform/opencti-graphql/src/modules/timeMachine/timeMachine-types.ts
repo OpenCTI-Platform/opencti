@@ -16,6 +16,8 @@ export interface CompactDocument {
   relationships: Record<string, string[]>;
   // Exact relationship counts by relationship type
   relationships_count: Record<string, number>;
+  // Number of objects of a container at the snapshot date (containers only)
+  container_objects_count?: number | null;
 }
 
 // region Knowledge snapshot

@@ -7,11 +7,12 @@ const relationshipEvent = (
   timestamp: string,
   scope: string,
   changes: Array<{ key: string; added?: string[]; removed?: string[] }> = [],
+  userId = 'user-1',
 ): TimeMachineHistoryEvent => ({
   id: `${id}-${timestamp}`,
   timestamp,
   event_scope: scope,
-  user_id: 'user-1',
+  user_id: userId,
   context_id: id,
   context_entity_type: 'uses',
   context_entity_name: 'APT uses Mimikatz',
@@ -55,5 +56,20 @@ describe('Time machine relationship states', () => {
     expect(states.get('rel')?.confidence_before).toEqual(40);
     expect(states.get('rel')?.confidence_after).toEqual(90);
     expect(states.get('rel')?.confidence_at).toEqual('2026-02-06T00:00:00.000Z');
+  });
+
+  it('should attribute each kind of change to its own author', () => {
+    const states = buildRelationshipStates([
+      relationshipEvent('rel', '2026-02-01T00:00:00.000Z', 'update', [{ key: 'revoked', added: ['true'], removed: ['false'] }], 'revoker'),
+      relationshipEvent('rel', '2026-02-02T00:00:00.000Z', 'update', [{ key: 'confidence', added: ['80'], removed: ['50'] }], 'analyst'),
+      relationshipEvent('rel', '2026-02-03T00:00:00.000Z', 'update', [{ key: 'description', added: ['new'], removed: ['old'] }], 'editor'),
+      relationshipEvent('rel-deleted', '2026-02-01T00:00:00.000Z', 'create', [], 'creator'),
+      relationshipEvent('rel-deleted', '2026-02-04T00:00:00.000Z', 'delete', [], 'deleter'),
+    ]);
+    expect(states.get('rel')?.revoked_by).toEqual('revoker');
+    expect(states.get('rel')?.confidence_by).toEqual('analyst');
+    expect(states.get('rel')?.deleted_by).toBeUndefined();
+    expect(states.get('rel-deleted')?.created_by).toEqual('creator');
+    expect(states.get('rel-deleted')?.deleted_by).toEqual('deleter');
   });
 });

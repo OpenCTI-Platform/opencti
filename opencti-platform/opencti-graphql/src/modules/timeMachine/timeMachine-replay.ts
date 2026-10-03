@@ -39,7 +39,7 @@ const TECHNICAL_ATTRIBUTES = new Set<string>([
 ]);
 
 // Container objects are reconstructed from the history changes of the `objects` reference
-// and from the `object` ref relationships, never stored in the compact documents.
+// and from the `object` ref relationships: compact documents only keep their count.
 export const CONTAINER_OBJECTS_KEY = 'objects';
 
 export const isTimeMachineAttribute = (attribute: AttributeDefinition | RefAttribute): boolean => {
@@ -125,6 +125,51 @@ export const extractAttributeValues = (entity: Record<string, unknown> & { entit
 export const changeFieldKey = (field: string): string => {
   const separatorIndex = field.indexOf('--');
   return separatorIndex >= 0 ? field.substring(separatorIndex + 2) : field;
+};
+
+// Net additions and removals of container objects from the `objects` changes of the events
+export const containerObjectsNetChanges = (events: TimeMachineHistoryEvent[]) => {
+  const added = new Map<string, string>();
+  const removed = new Map<string, string>();
+  const ascending = [...events].sort((a, b) => utcDate(a.timestamp).diff(utcDate(b.timestamp)));
+  for (let index = 0; index < ascending.length; index += 1) {
+    const event = ascending[index];
+    if (event.event_scope === 'update') {
+      const changes = (event.changes ?? []).filter((change) => changeFieldKey(change.field) === CONTAINER_OBJECTS_KEY);
+      changes.forEach((change) => {
+        (change.changes_added ?? []).forEach(({ raw }) => {
+          if (removed.has(raw)) {
+            removed.delete(raw);
+          } else {
+            added.set(raw, event.timestamp);
+          }
+        });
+        (change.changes_removed ?? []).forEach(({ raw }) => {
+          if (added.has(raw)) {
+            added.delete(raw);
+          } else {
+            removed.set(raw, event.timestamp);
+          }
+        });
+      });
+    }
+  }
+  return { added, removed };
+};
+
+export const currentContainerObjectsCount = (element: Record<string, unknown>) => {
+  const objects = element[RELATION_OBJECT];
+  return Array.isArray(objects) ? objects.length : 0;
+};
+
+/**
+ * Number of objects of a container at another date than a known count, from the `objects` changes
+ * of the events between both dates: rewound for an earlier date, moved forward for a later one.
+ */
+export const containerObjectsCountAt = (knownCount: number, events: TimeMachineHistoryEvent[], direction: 'backward' | 'forward') => {
+  const { added, removed } = containerObjectsNetChanges(events);
+  const count = direction === 'backward' ? knownCount - added.size + removed.size : knownCount + added.size - removed.size;
+  return Math.max(0, count);
 };
 
 const rawsOf = (values?: { raw: string }[]) => (values ?? []).map((v) => v.raw).filter((raw) => raw !== null && raw !== undefined);

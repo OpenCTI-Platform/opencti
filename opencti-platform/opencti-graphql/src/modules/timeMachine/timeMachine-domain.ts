@@ -8,7 +8,7 @@ import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/util
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
@@ -20,7 +20,17 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, BasicStoreRelation } from '../../types/store';
 import { OrderingMode } from '../../generated/graphql';
 import { addTimeMachineAsOfCount, addTimeMachineDiffCount, addTimeMachineVisitCount } from '../../manager/telemetryManager';
-import { CONTAINER_OBJECTS_KEY, changeFieldKey, diffDocuments, extractAttributeValues, firstNumber, replayBackward, replayForward } from './timeMachine-replay';
+import {
+  changeFieldKey,
+  containerObjectsCountAt,
+  containerObjectsNetChanges,
+  currentContainerObjectsCount,
+  diffDocuments,
+  extractAttributeValues,
+  firstNumber,
+  replayBackward,
+  replayForward,
+} from './timeMachine-replay';
 import { fetchElementHistoryEvents, fetchOldestHistoryDate, fetchRelationshipsHistoryEvents } from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
@@ -157,6 +167,8 @@ export interface TimeMachineTimeline {
   created_at: string | null;
   history_start: string | null;
   events: Array<{ date: string; event_scope: string }>;
+  // More changes than the events returned: only the most recent ones are listed
+  events_truncated: boolean;
   snapshots: string[];
   max_replay_days: number;
 }
@@ -343,6 +355,10 @@ interface Reconstruction {
   anchorDate: string;
   // Events of the element between the requested date and the anchor (system view, used for replay)
   events: TimeMachineHistoryEvent[];
+  // The anchor is after the requested date (rewound) or before it (moved forward)
+  direction: 'backward' | 'forward';
+  // Number of objects of a container in the anchor, null when the anchor does not know it
+  anchorContainerObjectsCount: number | null;
 }
 
 /**
@@ -366,9 +382,17 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       order: 'asc',
     });
     const replay = replayForward(before.snapshot_document.attributes, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
-    return { replay, anchor: 'snapshot', anchorDate: before.history_cursor, events };
+    return {
+      replay,
+      anchor: 'snapshot',
+      anchorDate: before.history_cursor,
+      events,
+      direction: 'forward',
+      anchorContainerObjectsCount: before.snapshot_document.container_objects_count ?? null,
+    };
   }
   const anchorDocument = after ? after.snapshot_document.attributes : extractAttributeValues(element as any);
+  const anchorContainerObjectsCount = after ? (after.snapshot_document.container_objects_count ?? null) : currentContainerObjectsCount(element as any);
   const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {
     from: date,
     to: backwardAnchorDate,
@@ -378,16 +402,22 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
   if (utcDate(backwardAnchorDate).diff(utcDate(date), 'days') > MAX_REPLAY_DAYS && !replay.warnings.includes('REPLAY_BEYOND_WINDOW')) {
     replay.warnings.push('REPLAY_BEYOND_WINDOW');
   }
-  return { replay, anchor: after ? 'snapshot' : 'current', anchorDate: backwardAnchorDate, events };
+  return { replay, anchor: after ? 'snapshot' : 'current', anchorDate: backwardAnchorDate, events, direction: 'backward', anchorContainerObjectsCount };
 };
 
-const countRelationshipsByType = async (context: AuthContext, user: AuthUser, elementId: string, startDate?: string) => {
+// Relationships of an element by type, optionally restricted to the ones created after `startDate` or up to `endDate`
+export const countRelationshipsByType = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  range: { startDate?: string; endDate?: string } = {},
+) => {
   const args = buildRelationsFilter([ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], { fromOrToId: elementId });
   const buckets = await elAggregationCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
     ...args,
     field: 'entity_type',
     convertEntityTypeLabel: true,
-    ...(startDate ? { startDate, dateAttribute: 'created_at' } : {}),
+    ...(range.startDate || range.endDate ? { startDate: range.startDate, endDate: range.endDate, dateAttribute: 'created_at' } : {}),
   } as any);
   const counts = new Map<string, number>();
   buckets.forEach((bucket) => counts.set(bucket.label, bucket.count));
@@ -397,7 +427,7 @@ const countRelationshipsByType = async (context: AuthContext, user: AuthUser, el
 const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elementId: string, date: string) => {
   const [current, createdAfter, fetchedEvents] = await Promise.all([
     countRelationshipsByType(context, user, elementId),
-    countRelationshipsByType(context, user, elementId, date),
+    countRelationshipsByType(context, user, elementId, { startDate: date }),
     fetchRelationshipsHistoryEvents(context, user, [elementId], {
       from: date,
       scopes: ['create', 'delete'],
@@ -422,40 +452,6 @@ const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elemen
   return { counts: counts.sort((a, b) => b.count - a.count), complete };
 };
 
-// Net additions and removals of container objects from the `objects` changes of the events
-const containerObjectsNetChanges = (events: TimeMachineHistoryEvent[]) => {
-  const added = new Map<string, string>();
-  const removed = new Map<string, string>();
-  const ascending = [...events].sort((a, b) => utcDate(a.timestamp).diff(utcDate(b.timestamp)));
-  for (let index = 0; index < ascending.length; index += 1) {
-    const event = ascending[index];
-    if (event.event_scope === 'update') {
-      const changes = (event.changes ?? []).filter((change) => changeFieldKey(change.field) === CONTAINER_OBJECTS_KEY);
-      changes.forEach((change) => {
-        (change.changes_added ?? []).forEach(({ raw }) => {
-          if (removed.has(raw)) {
-            removed.delete(raw);
-          } else {
-            added.set(raw, event.timestamp);
-          }
-        });
-        (change.changes_removed ?? []).forEach(({ raw }) => {
-          if (added.has(raw)) {
-            added.delete(raw);
-          } else {
-            removed.set(raw, event.timestamp);
-          }
-        });
-      });
-    }
-  }
-  return { added, removed };
-};
-
-const currentContainerObjectsCount = (element: BasicStoreEntity) => {
-  const objects = (element as any)[RELATION_OBJECT];
-  return Array.isArray(objects) ? objects.length : 0;
-};
 // endregion
 
 // region As of
@@ -489,7 +485,7 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       container_objects_count: null,
     };
   }
-  const { replay, anchor, anchorDate, events } = await reconstructAt(context, element, date);
+  const { replay, anchor, anchorDate, events, direction, anchorContainerObjectsCount } = await reconstructAt(context, element, date);
   const historyStart = await fetchOldestHistoryDate(context, user, element.internal_id);
   const base = {
     entity_id: element.internal_id,
@@ -541,10 +537,12 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
   const { counts: relationships, complete: relationshipsComplete } = await relationshipCountsAt(context, user, element.internal_id, date);
   const warnings = relationshipsComplete ? base.warnings : [...base.warnings, RELATIONSHIP_HISTORY_TRUNCATED];
   let containerObjectsCount: number | null = null;
-  if (isStixDomainObjectContainer(element.entity_type)) {
-    const afterDate = events.filter((event) => utcDate(event.timestamp).isAfter(utcDate(date)));
-    const { added, removed } = containerObjectsNetChanges(afterDate);
-    containerObjectsCount = anchor === 'current' ? Math.max(0, currentContainerObjectsCount(element) - added.size + removed.size) : null;
+  if (isStixDomainObjectContainer(element.entity_type) && anchorContainerObjectsCount !== null) {
+    // Only the changes between the requested date and the anchor apply
+    const between = events.filter((event) => (direction === 'backward'
+      ? utcDate(event.timestamp).isAfter(utcDate(date))
+      : !utcDate(event.timestamp).isAfter(utcDate(date))));
+    containerObjectsCount = containerObjectsCountAt(anchorContainerObjectsCount, between, direction);
   }
   const nameKey = Object.prototype.hasOwnProperty.call(document, 'name') ? 'name' : null;
   const representative = nameKey ? document[nameKey][0] : extractEntityRepresentativeName(element);
@@ -637,6 +635,7 @@ export const computeRelationshipChanges = async (
       return;
     }
     const isSource = state.from_id === elementId;
+    const userName = (userId?: string) => (userId ? (userNames.get(userId) ?? null) : null);
     const base = {
       relationship_id: relationshipId,
       relationship_type: state.relationship_type,
@@ -646,10 +645,9 @@ export const computeRelationshipChanges = async (
       target_name: state.name,
       target_deleted: false,
       target_restricted: false,
-      changed_by: state.user_id ? (userNames.get(state.user_id) ?? null) : null,
     };
     if (state.deleted) {
-      changes.push({ ...base, action: 'removed', at: state.deleted, confidence_before: null, confidence_after: null });
+      changes.push({ ...base, action: 'removed', at: state.deleted, confidence_before: null, confidence_after: null, changed_by: userName(state.deleted_by) });
       return;
     }
     if (state.created) {
@@ -663,6 +661,7 @@ export const computeRelationshipChanges = async (
         at: state.revoked_at ?? to,
         confidence_before: null,
         confidence_after: null,
+        changed_by: userName(state.revoked_by),
       });
     }
     if (state.confidence_after !== undefined && state.confidence_before !== state.confidence_after) {
@@ -672,6 +671,7 @@ export const computeRelationshipChanges = async (
         at: state.confidence_at ?? to,
         confidence_before: state.confidence_before ?? null,
         confidence_after: state.confidence_after ?? null,
+        changed_by: userName(state.confidence_by),
       });
     }
   });
@@ -878,16 +878,19 @@ export const entityTimeMachineTimeline = async (context: AuthContext, user: Auth
   if (!element) {
     throw FunctionalError('Element not found', { id });
   }
-  const [events, historyStart, snapshots] = await Promise.all([
-    fetchElementHistoryEvents(context, user, element.internal_id, { max: MAX_TIMELINE_EVENTS, scopes: ['create', 'update', 'merge'] }),
+  // One extra event is read to tell the slider that only the most recent changes are marked
+  const [fetchedEvents, historyStart, snapshots] = await Promise.all([
+    fetchElementHistoryEvents(context, user, element.internal_id, { max: MAX_TIMELINE_EVENTS + 1, scopes: ['create', 'update', 'merge'] }),
     fetchOldestHistoryDate(context, user, element.internal_id),
     listSnapshotDates(context, element.internal_id, MAX_TIMELINE_SNAPSHOTS),
   ]);
+  const events = fetchedEvents.slice(0, MAX_TIMELINE_EVENTS);
   return {
     entity_id: element.internal_id,
     created_at: element.created_at ? utcDate(element.created_at).toISOString() : null,
     history_start: historyStart,
     events: events.map((event) => ({ date: event.timestamp, event_scope: event.event_scope })),
+    events_truncated: fetchedEvents.length > MAX_TIMELINE_EVENTS,
     snapshots,
     max_replay_days: MAX_REPLAY_DAYS,
   };

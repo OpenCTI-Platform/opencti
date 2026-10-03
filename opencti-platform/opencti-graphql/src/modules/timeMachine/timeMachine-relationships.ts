@@ -19,12 +19,17 @@ export interface RelationshipEventState {
   confidence_before?: number | null;
   confidence_after?: number | null;
   confidence_at?: string;
-  user_id?: string;
+  // Author of each kind of change: a relationship revoked by one user and updated by another later keeps both
+  created_by?: string;
+  deleted_by?: string;
+  revoked_by?: string;
+  confidence_by?: string;
 }
 
 /**
  * Fold the history events of relationships into one state per relationship:
- * creation and deletion dates, first and last revocation flag and confidence of the period.
+ * creation and deletion dates, first and last revocation flag and confidence of the period,
+ * with the author of the last change of each kind.
  */
 export const buildRelationshipStates = (events: TimeMachineHistoryEvent[]) => {
   const states = new Map<string, RelationshipEventState>();
@@ -37,9 +42,14 @@ export const buildRelationshipStates = (events: TimeMachineHistoryEvent[]) => {
       to_id: event.to_id,
       name: event.context_entity_name,
     };
-    state.user_id = event.user_id;
-    if (event.event_scope === 'create') state.created = event.timestamp;
-    if (event.event_scope === 'delete') state.deleted = event.timestamp;
+    if (event.event_scope === 'create') {
+      state.created = event.timestamp;
+      state.created_by = event.user_id;
+    }
+    if (event.event_scope === 'delete') {
+      state.deleted = event.timestamp;
+      state.deleted_by = event.user_id;
+    }
     if (event.event_scope === 'update') {
       (event.changes ?? []).forEach((change) => {
         const key = changeFieldKey(change.field);
@@ -49,11 +59,13 @@ export const buildRelationshipStates = (events: TimeMachineHistoryEvent[]) => {
           if (state.revoked_before === undefined) state.revoked_before = removed[0] ?? 'false';
           state.revoked_after = added[0] ?? 'false';
           state.revoked_at = event.timestamp;
+          state.revoked_by = event.user_id;
         }
         if (key === 'confidence') {
           if (state.confidence_before === undefined) state.confidence_before = firstNumber(removed);
           state.confidence_after = firstNumber(added);
           state.confidence_at = event.timestamp;
+          state.confidence_by = event.user_id;
         }
       });
     }

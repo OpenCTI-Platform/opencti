@@ -36619,6 +36619,7 @@ export type TimeMachineTimeline = {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_id: Scalars['ID']['output'];
   events: Array<TimeMachineTimelineEvent>;
+  events_truncated: Scalars['Boolean']['output'];
   history_start?: Maybe<Scalars['DateTime']['output']>;
   max_replay_days: Scalars['Int']['output'];
   snapshots: Array<Scalars['DateTime']['output']>;
@@ -37262,6 +37263,7 @@ export type TriggerChangeDigestAddInput = {
   notifiers: Array<Scalars['StixRef']['input']>;
   period: DigestPeriod;
   recipients?: InputMaybe<Array<Scalars['String']['input']>>;
+  saved_filter_id?: InputMaybe<Scalars['String']['input']>;
   scope_entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
   trigger_time?: InputMaybe<Scalars['String']['input']>;
 };
@@ -54295,6 +54297,7 @@ export type TimeMachineTimelineResolvers<ContextType = any, ParentType extends R
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   events?: Resolver<Array<ResolversTypes['TimeMachineTimelineEvent']>, ParentType, ContextType>;
+  events_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   history_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   max_replay_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   snapshots?: Resolver<Array<ResolversTypes['DateTime']>, ParentType, ContextType>;

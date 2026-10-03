@@ -41,6 +41,7 @@ import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics
 import { InterruptibleTimer } from './interruptible-timer';
 import { memoize } from '../utils/memoize';
 import { buildChangeDigestData, type ChangeDigestTrigger, TRIGGER_TYPE_CHANGE_DIGEST } from '../modules/timeMachine/timeMachine-changeDigest';
+import { addChangeDigestSentCount } from './telemetryManager';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -760,6 +761,7 @@ export const handleChangeDigestNotifications = async (context: AuthContext) => {
           const target = convertToNotificationUser(user, trigger.notifiers);
           const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
           await storeNotificationEvent(context, digestEvent);
+          addChangeDigestSentCount();
         }
       } catch (err) {
         logApp.error('[OPENCTI-MODULE] Change digest generation error', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: trigger.internal_id });
