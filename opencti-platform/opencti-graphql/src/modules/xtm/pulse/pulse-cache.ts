@@ -87,6 +87,13 @@ export interface PulseOperationalState {
   last_push_at?: string;
   last_refresh_at?: string;
   last_error?: string;
+  // 'true' once XTM Hub answered contribution_required to a contributing platform, until its next accepted push.
+  contribution_lapsed?: string;
+  preview_refresh_at?: string;
+  preview_digest_day?: string;
+  preview_digest_items?: string;
+  preview_matched?: string;
+  preview_since?: string;
 }
 
 export const redisGetPulseState = async (): Promise<PulseOperationalState> => {

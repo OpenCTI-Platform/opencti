@@ -17,10 +17,10 @@ import {
   type ResolvedLive,
 } from '../../../manager/notificationManager';
 import { ENTITY_TYPE_TRIGGER } from '../../notification/notification-types';
-import { PulsePeriod, PulseSectorBucket, PulseTrend, TriggerEventType } from '../../../generated/graphql';
+import { PulseAccess, PulsePeriod, PulseSectorBucket, PulseTrend, TriggerEventType } from '../../../generated/graphql';
 import { getHubTrending, resolveTrendingEntries } from './pulse-domain';
-import { buildPulseMarkingPolicy, getPulseHubPlatform, isPulseContributable, isPulseReading, readPulseSettings } from './pulse-settings';
-import { redisFilterNewlyTrending, redisMarkTrendingNotified } from './pulse-cache';
+import { buildPulseMarkingPolicy, getPulseAccess, getPulseHubPlatform, isPulseContributable, readPulseSettings } from './pulse-settings';
+import { redisFilterNewlyTrending, redisGetPulseState, redisMarkTrendingNotified } from './pulse-cache';
 import { PULSE_OBJECT_TYPE_BY_ENTITY_TYPE } from './pulse-types';
 
 export const PULSE_TRENDING_EVENT_TYPE = TriggerEventType.PulseTrending;
@@ -38,7 +38,10 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const values = readPulseSettings(settings);
   const platform = getPulseHubPlatform(settings);
-  if (!isPulseReading(values) || !platform || !values.sectorBucket || values.sectorBucket === PulseSectorBucket.Undisclosed) {
+  const state = await redisGetPulseState();
+  // The trending triggers are part of the full experience: a platform in preview lists them but they never fire.
+  const access = getPulseAccess(values, platform !== null, state.contribution_lapsed === 'true');
+  if (access !== PulseAccess.Full || !platform || !values.sectorBucket || values.sectorBucket === PulseSectorBucket.Undisclosed) {
     return 0;
   }
   const triggers = (await getLiveNotifications(context)).filter(isPulseTrendingTrigger);

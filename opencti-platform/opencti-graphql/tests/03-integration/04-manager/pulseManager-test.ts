@@ -12,7 +12,7 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { runPulseContribution, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
@@ -44,22 +44,34 @@ const CONFIGURE = gql`
 const PULSE_ENTITY = gql`
   query PulseEntity($id: ID!) {
     pulseEntity(id: $id) {
+      access
       readable
       unavailable_reason
-      information { published prevalence platforms_bucket first_seen_network trend trend_series sector_trend community_uniqueness }
+      information { published preview prevalence platforms_bucket first_seen_network trend trend_series sector_trend community_uniqueness }
     }
   }
 `;
 const PULSE_TRENDING = gql`
-  query PulseTrending($period: PulsePeriod!) {
-    pulseTrending(period: $period) {
+  query PulseTrending($period: PulsePeriod!, $includePreview: Boolean) {
+    pulseTrending(period: $period, include_preview: $includePreview) {
       readable
+      preview
       unavailable_reason
       network_items_count
-      entries { object_type platforms_bucket trend entity { id entity_type } }
+      locked_count
+      entries { object_type rank platforms_bucket trend entity { id entity_type } }
     }
   }
 `;
+const PULSE_STATUS = gql`
+  query PulseStatus {
+    pulseStatus { mode access readable preview_entities preview_since }
+  }
+`;
+const PREVIEW_IP = '198.51.100.211';
+const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
+const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
+const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
 const PULSE_BENCHMARK = gql`
   query PulseBenchmark($period: PulsePeriod!) {
     pulseBenchmark(period: $period) {
@@ -145,6 +157,91 @@ describe('Threat Pulse manager and API', () => {
   it('should refuse a Threat Pulse change through the generic settings edition', async () => {
     await expect(settingsEditField(testContext, ADMIN_USER, settingsId, [{ key: 'pulse_mode', value: ['contribute_and_read'] }]))
       .rejects.toThrow(/Threat Pulse/);
+  });
+
+  describe('preview (the default mode)', () => {
+    let previewIndicatorId: string;
+    let previewRedIndicatorId: string;
+
+    afterAll(async () => {
+      if (previewIndicatorId) await deleteElementById(testContext, ADMIN_USER, previewIndicatorId, ENTITY_TYPE_INDICATOR);
+      if (previewRedIndicatorId) await deleteElementById(testContext, ADMIN_USER, previewRedIndicatorId, ENTITY_TYPE_INDICATOR);
+    });
+
+    it('should match the digest locally and send nothing about the platform', async () => {
+      const preview = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: PREVIEW_IP, pattern: `[ipv4-addr:value = '${PREVIEW_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+      previewIndicatorId = preview.data?.indicatorAdd.id;
+      const red = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: PREVIEW_RED_DOMAIN, pattern: `[domain-name:value = '${PREVIEW_RED_DOMAIN}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name', objectMarking: [MARKING_TLP_RED] } } });
+      previewRedIndicatorId = red.data?.indicatorAdd.id;
+      for (const entityId of [previewIndicatorId, previewRedIndicatorId]) {
+        const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, entityId, ENTITY_TYPE_INDICATOR);
+        const [key] = computeStableKeys(entity);
+        hub.seed(PREVIEW_PEERS.map((platformId) => ({ platformId, key, objectType: 'indicator', eventKind: 'sighted', day: utcDay(), sector: 'finance', region: 'europe' })));
+      }
+
+      const before = hub.requests.length;
+      const matched = await runPulsePreview(testContext, true);
+
+      expect(matched).toBe(2);
+      const requests = hub.requests.slice(before);
+      expect(requests.map((request) => request.operation)).toContain('pulseDigest');
+      expect(requests.filter((request) => PREVIEW_FORBIDDEN_OPERATIONS.includes(request.operation))).toEqual([]);
+      requests.filter((request) => request.operation === 'pulseDigest').forEach((request) => {
+        expect(Object.keys(request.variables.input).sort()).toEqual(['day', 'region_bucket', 'sector_bucket']);
+        [PREVIEW_IP, PREVIEW_RED_DOMAIN, previewIndicatorId, previewRedIndicatorId].forEach((value) => expect(request.rawBody).not.toContain(value));
+      });
+    });
+
+    it('should show the coarse signal only, as a preview, and keep the filters working', async () => {
+      const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: previewIndicatorId } });
+      expect(result.data?.pulseEntity).toMatchObject({ access: 'preview', readable: false, unavailable_reason: 'contribution_required' });
+      expect(result.data?.pulseEntity.information).toMatchObject({
+        published: true,
+        preview: true,
+        prevalence: 'widespread',
+        trend: 'rising',
+        platforms_bucket: null,
+        first_seen_network: null,
+        trend_series: [],
+        sector_trend: null,
+        community_uniqueness: null,
+      });
+      const red = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: previewRedIndicatorId } });
+      expect(red.data?.pulseEntity.information).toMatchObject({ preview: true, prevalence: 'widespread' });
+      const filtered = await queryAsAdminWithSuccess({
+        query: INDICATORS_BY_PREVALENCE,
+        variables: { filters: { mode: 'and', filters: [{ key: 'pulse_prevalence', values: ['widespread'] }], filterGroups: [] } },
+      });
+      expect(filtered.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id)).toContain(previewIndicatorId);
+      const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+      expect(status.data?.pulseStatus).toMatchObject({ mode: 'preview', access: 'preview', readable: false, preview_entities: 2 });
+      expect(status.data?.pulseStatus.preview_since).toBeTruthy();
+    });
+
+    it('should name the first trending ranks only when the caller asks for the preview', async () => {
+      const refused = await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_7_days' } });
+      expect(refused.data?.pulseTrending).toMatchObject({ readable: false, preview: false, unavailable_reason: 'contribution_required', entries: [] });
+      const preview = await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_7_days', includePreview: true } });
+      const trending = preview.data?.pulseTrending;
+      expect(trending).toMatchObject({ readable: true, preview: true, unavailable_reason: null, locked_count: 0 });
+      expect(trending.network_items_count).toBe(2);
+      expect(trending.entries.map((entry: { rank: number }) => entry.rank).sort()).toEqual([1, 2]);
+      trending.entries.forEach((entry: { platforms_bucket: string | null }) => expect(entry.platforms_bucket).toBeNull());
+      const benchmark = await queryAsAdminWithSuccess({ query: PULSE_BENCHMARK, variables: { period: 'last_30_days' } });
+      expect(benchmark.data?.pulseBenchmark.readable).toBe(false);
+      expect(['contribution_required', 'enterprise_edition_required']).toContain(benchmark.data?.pulseBenchmark.unavailable_reason);
+    });
+
+    it('should never contribute, look up, read trending or benchmarks in preview, whatever runs', async () => {
+      const before = hub.requests.length;
+      await runPulseContribution(testContext);
+      await runPulseRefresh(testContext, true);
+      await runPulseTrendingNotifications(testContext);
+      await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: previewIndicatorId } });
+      await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_30_days', includePreview: true } });
+      await queryAsAdminWithSuccess({ query: PULSE_BENCHMARK, variables: { period: 'last_30_days' } });
+      expect(hub.requests.slice(before).filter((request) => PREVIEW_FORBIDDEN_OPERATIONS.includes(request.operation))).toEqual([]);
+    });
   });
 
   it('should enable Threat Pulse with the consent', async () => {
@@ -262,6 +359,28 @@ describe('Threat Pulse manager and API', () => {
     expect(await runPulseTrendingNotifications(testContext)).toBe(0);
   });
 
+  it('should fall back to the preview when XTM Hub requires a contribution, and recover with the next accepted one', async () => {
+    hub.failNext('pulseLookup', 'PULSE_CONTRIBUTION_REQUIRED');
+    await expect(runPulseRefresh(testContext, true)).rejects.toThrow();
+    const lapsed = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+    expect(lapsed.data?.pulseStatus).toMatchObject({ mode: 'contribute_and_read', access: 'preview', readable: false });
+    const lapsedEntity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
+    expect(lapsedEntity.pulse_information).toBeUndefined();
+    expect(await runPulsePreview(testContext, true)).toBeGreaterThanOrEqual(1);
+    const preview = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
+    expect(preview.data?.pulseEntity).toMatchObject({ access: 'preview', information: { preview: true } });
+
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: '198.51.100.212', pattern: "[ipv4-addr:value = '198.51.100.212']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const { pushedRecords } = await runPulseContribution(testContext);
+    expect(pushedRecords).toBeGreaterThan(0);
+    await deleteElementById(testContext, ADMIN_USER, created.data?.indicatorAdd.id, ENTITY_TYPE_INDICATOR);
+    const recovered = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+    expect(recovered.data?.pulseStatus).toMatchObject({ access: 'full', readable: true });
+    expect(await runPulseRefresh(testContext, true)).toBeGreaterThanOrEqual(2);
+    const full = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
+    expect(full.data?.pulseEntity).toMatchObject({ access: 'full', readable: true, information: { preview: false, platforms_bucket: '5-9' } });
+  });
+
   it('should purge every contribution of the platform on XTM Hub', async () => {
     const result = await queryAsAdminWithSuccess({ query: PURGE });
     expect(result.data?.pulsePurge.success).toBe(true);
@@ -269,24 +388,27 @@ describe('Threat Pulse manager and API', () => {
     expect(hub.ledger.filter((row) => row.platformId === settingsId)).toHaveLength(0);
   });
 
-  it('should remove the network information when reading is turned off', async () => {
-    await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute' } } });
+  it('should remove the full statistics when the contribution stops, back to the preview', async () => {
+    await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview' } } });
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
     expect(entity.pulse_prevalence).toBeUndefined();
     expect(entity.pulse_information).toBeUndefined();
     expect(entity.pulse_keys).toEqual(computeStableKeys(entity));
     const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
-    expect(result.data?.pulseEntity).toMatchObject({ readable: false, unavailable_reason: 'not_enabled' });
+    expect(result.data?.pulseEntity).toMatchObject({ access: 'preview', readable: false, unavailable_reason: 'contribution_required', information: null });
   });
 
-  it('should send nothing once disabled', async () => {
+  it('should send nothing and download nothing once turned off', async () => {
     await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'off' } } });
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     const before = hub.requests.length;
     await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: '198.51.100.202', pattern: "[ipv4-addr:value = '198.51.100.202']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } })
       .then((created) => deleteElementById(testContext, ADMIN_USER, created.data?.indicatorAdd.id, ENTITY_TYPE_INDICATOR));
     await runPulseContribution(testContext);
+    await runPulsePreview(testContext, true);
     expect(hub.requests.length).toBe(before);
+    const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
+    expect(result.data?.pulseEntity).toMatchObject({ access: 'off', readable: false, unavailable_reason: 'not_enabled' });
   });
 });

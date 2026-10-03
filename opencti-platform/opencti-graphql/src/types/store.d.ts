@@ -140,6 +140,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   pulse_sector_trend?: string;
   pulse_first_seen_network?: string;
   pulse_community_uniqueness?: number;
+  pulse_information?: { preview?: boolean };
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {

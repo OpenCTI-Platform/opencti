@@ -14,6 +14,8 @@ const SECTORS = ['finance', 'government', 'defense', 'healthcare', 'energy_utili
 const REGIONS = ['africa', 'asia_pacific', 'europe', 'latin_america', 'middle_east', 'north_america', 'global', 'undisclosed'];
 const HASH_REGEX = /^[0-9a-f]{32}$/;
 const DAY_MS = 24 * 3600 * 1000;
+const WINDOW_DAYS = 7;
+const GRACE_DAYS = 14;
 const RECORD_FIELDS = ['count', 'event_kind', 'hash', 'object_type'];
 const BATCH_FIELDS = ['day', 'records', 'region_bucket', 'sector_bucket'];
 
@@ -176,7 +178,7 @@ export class PulseHubMock {
   }
 
   private execute(query: string, variables: Record<string, any>, platformId: string | undefined, token: string | undefined, rawBody: string) {
-    const operation = ['pushPulse', 'pulseLookup', 'pulseSalt', 'pulseTrending', 'pulseBenchmark', 'pulsePurge', 'pulseStatus']
+    const operation = ['pushPulse', 'pulseLookup', 'pulseSalt', 'pulseTrending', 'pulseBenchmark', 'pulsePurge', 'pulseStatus', 'pulseDigest']
       .find((name) => new RegExp(`\\b${name}\\s*[({]`).test(query));
     if (!operation) {
       throw new GraphqlError('BAD_USER_INPUT', 'Unknown operation');
@@ -196,6 +198,8 @@ export class PulseHubMock {
         return { pulseSalt: { day: variables.day, salt: this.saltOf(variables.day) } };
       case 'pulseStatus':
         return { pulseStatus: this.status(platformId) };
+      case 'pulseDigest':
+        return { pulseDigest: this.digest(variables.input) };
       case 'pushPulse':
         return { pushPulse: this.push(platformId, variables.input) };
       case 'pulseLookup':
@@ -228,12 +232,61 @@ export class PulseHubMock {
     }
   }
 
+  // Reciprocity of the Hub: read access lasts GRACE_DAYS after the last contribution.
+  private lastContributionDay(platformId: string) {
+    const own = this.ledger.filter((row) => row.platformId === platformId).map((row) => row.day).sort();
+    return own.length > 0 ? own[own.length - 1] : null;
+  }
+
+  private hasReadAccess(platformId: string) {
+    const last = this.lastContributionDay(platformId);
+    return last !== null && dayToTime(last) > dayToTime(this.today()) - GRACE_DAYS * DAY_MS;
+  }
+
   private assertReadAccess(platformId: string) {
-    const since = dayToTime(this.today()) - 30 * DAY_MS;
-    const contributed = this.ledger.some((row) => row.platformId === platformId && dayToTime(row.day) >= since);
-    if (!contributed) {
+    if (!this.hasReadAccess(platformId)) {
       throw new GraphqlError('PULSE_CONTRIBUTION_REQUIRED', 'Reading Threat Pulse requires contributing');
     }
+  }
+
+  // The preview download: every published key with its prevalence and trend, and the sector trending of the week
+  // with its first ranks named and the next ones counted. It reads nothing from the caller.
+  private digest(input: any) {
+    this.assertDay(input?.day);
+    if (input.sector_bucket && !SECTORS.includes(input.sector_bucket)) {
+      throw new GraphqlError('BAD_USER_INPUT', 'Invalid sector');
+    }
+    const salt = this.saltOf(input.day);
+    const groups = new Map<string, PulseLedgerRow[]>();
+    this.rowsSince(30).forEach((row) => {
+      const id = `${row.objectType}|${row.key}`;
+      groups.set(id, [...(groups.get(id) ?? []), row]);
+    });
+    const items = Array.from(groups.values())
+      .filter((rows) => this.distinctPlatforms(rows) >= this.k)
+      .sort((a, b) => this.distinctPlatforms(b) - this.distinctPlatforms(a))
+      .map((rows) => {
+        const allRows = this.ledger.filter((row) => row.key === rows[0].key && row.objectType === rows[0].objectType);
+        return { hash: aes(salt, rows[0].key, false), object_type: rows[0].objectType, prevalence_bucket: this.prevalenceOf(allRows), trend: this.trendOf(allRows) };
+      });
+    const trending = this.trending({ day: input.day, period: 'last_7_days', sector_bucket: input.sector_bucket ?? null, region_bucket: null, first: 10 }).items;
+    return {
+      day: input.day,
+      sector_bucket: input.sector_bucket ?? null,
+      region_bucket: null,
+      items,
+      trending: {
+        period: 'last_7_days',
+        locked_count: Math.max(0, trending.length - 3),
+        items: trending.slice(0, 3).map((item, index) => ({
+          rank: index + 1,
+          hash: item.hash,
+          object_type: item.object_type,
+          prevalence_bucket: item.prevalence_bucket,
+          trend: item.trend,
+        })),
+      },
+    };
   }
 
   private addLedger(row: PulseLedgerRow) {
@@ -469,14 +522,25 @@ export class PulseHubMock {
 
   private status(platformId: string) {
     const active = this.distinctPlatforms(this.rowsSince(30));
-    const own = this.ledger.filter((row) => row.platformId === platformId).map((row) => row.day).sort();
+    const last = this.lastContributionDay(platformId);
+    const readAccess = this.hasReadAccess(platformId);
+    let contributionStatus = 'none';
+    if (last !== null) {
+      const age = (dayToTime(this.today()) - dayToTime(last)) / DAY_MS;
+      if (age < WINDOW_DAYS) contributionStatus = 'active';
+      else contributionStatus = readAccess ? 'grace' : 'lapsed';
+    }
     return {
       day: this.today(),
       k_threshold: this.k,
       retention_months: 13,
       contributors_bucket: active < this.k ? '<5' : platformsBucket(active),
-      read_access: this.rowsSince(30, (row) => row.platformId === platformId).length > 0,
-      last_contribution_day: own.length > 0 ? own[own.length - 1] : null,
+      read_access: readAccess,
+      last_contribution_day: last,
+      contribution_status: contributionStatus,
+      read_access_until: last !== null ? utcDay(new Date(dayToTime(last) + (GRACE_DAYS - 1) * DAY_MS)) : null,
+      contribution_window_days: WINDOW_DAYS,
+      contribution_grace_days: GRACE_DAYS,
     };
   }
 

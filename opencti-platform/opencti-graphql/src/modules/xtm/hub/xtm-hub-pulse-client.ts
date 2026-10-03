@@ -3,6 +3,7 @@ import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import type {
   PulseBatch,
   PulseHubBenchmarkResult,
+  PulseHubDigest,
   PulseHubLookupResult,
   PulseHubStatus,
   PulseHubTrendingResult,
@@ -104,9 +105,27 @@ export const xtmHubPulseClient = {
   },
   status: async (platform: PulseHubPlatform): Promise<PulseHubStatus> => {
     const query = `query PulseStatus {
-      pulseStatus { day k_threshold retention_months contributors_bucket read_access last_contribution_day }
+      pulseStatus {
+        day k_threshold retention_months contributors_bucket read_access last_contribution_day
+        contribution_status read_access_until contribution_window_days contribution_grace_days
+      }
     }`;
     return pulseRequest(platform, 'pulseStatus', query, {});
+  },
+  // The preview download: the request carries the coarse buckets of the platform and nothing about its objects.
+  digest: async (platform: PulseHubPlatform, input: {
+    day: string;
+    sector_bucket: PulseSectorBucketValue | null;
+    region_bucket: PulseRegionBucketValue | null;
+  }): Promise<PulseHubDigest> => {
+    const query = `query PulseDigest($input: PulseDigestInput!) {
+      pulseDigest(input: $input) {
+        day sector_bucket region_bucket
+        items { hash object_type prevalence_bucket trend }
+        trending { period locked_count items { rank hash object_type prevalence_bucket trend } }
+      }
+    }`;
+    return pulseRequest(platform, 'pulseDigest', query, { input });
   },
   push: async (platform: PulseHubPlatform, batch: PulseBatch): Promise<{ accepted: number; day: string }> => {
     const query = 'mutation PushPulse($input: PushPulseInput!) { pushPulse(input: $input) { accepted day } }';

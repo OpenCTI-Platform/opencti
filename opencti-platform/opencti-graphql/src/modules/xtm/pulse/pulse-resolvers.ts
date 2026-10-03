@@ -1,5 +1,14 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { configurePulse, getPulseBenchmark, getPulseEntityInformation, getPulseSettings, getPulseStatus, getPulseTrending, purgePulseContributions } from './pulse-domain';
+import {
+  configurePulse,
+  getPulseBenchmark,
+  getPulseEntityInformation,
+  getPulseSettings,
+  getPulseStatus,
+  getPulseTrending,
+  purgePulseContributions,
+  recordPulseTelemetry,
+} from './pulse-domain';
 import { toPulseInformationOutput } from './pulse-information';
 import type { BasicStorePulseEntity, PulsePeriodValue, PulseRegionBucketValue, PulseSectorBucketValue } from './pulse-types';
 
@@ -16,12 +25,14 @@ const pulseResolvers: Resolvers = {
       region_bucket: args.region_bucket as PulseRegionBucketValue | null | undefined,
       entity_types: args.entity_types,
       first: args.first,
+      include_preview: args.include_preview,
     }),
     pulseBenchmark: (_, args, context) => getPulseBenchmark(context, context.user, { period: args.period as PulsePeriodValue }),
   },
   Mutation: {
     pulseConfigure: (_, { input }, context) => configurePulse(context, context.user, input),
     pulsePurge: (_, __, context) => purgePulseContributions(context, context.user),
+    pulseTelemetry: (_, { event, surface }) => recordPulseTelemetry(event, surface),
   },
   Indicator: pulseField,
   AttackPattern: pulseField,

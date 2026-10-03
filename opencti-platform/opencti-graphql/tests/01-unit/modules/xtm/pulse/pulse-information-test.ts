@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { buildPulseDocument, combinePulseLookups, toPulseInformationOutput } from '../../../../../src/modules/xtm/pulse/pulse-information';
-import { matchRegionBucket, matchSectorBucket, readPulseSettings, isPulseContributing, isPulseReading } from '../../../../../src/modules/xtm/pulse/pulse-settings';
+import {
+  buildPulseDocument,
+  buildPulsePreviewDocument,
+  combinePulseLookups,
+  combinePulsePreviewSignals,
+  PULSE_PREVIEW_CLEARED_DOCUMENT,
+  toPulseInformationOutput,
+} from '../../../../../src/modules/xtm/pulse/pulse-information';
+import { getPulseAccess, matchRegionBucket, matchSectorBucket, readPulseSettings, isPulseContributing } from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import { PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseHubLookupResult } from '../../../../../src/modules/xtm/pulse/pulse-types';
-import { PulseMode, PulsePrevalence, PulseRegionBucket, PulseSectorBucket, PulseTrend } from '../../../../../src/generated/graphql';
+import { PulseAccess, PulseMode, PulsePrevalence, PulseRegionBucket, PulseSectorBucket, PulseTrend } from '../../../../../src/generated/graphql';
 import type { BasicStoreSettings } from '../../../../../src/types/settings';
 
 const unpublished = (hash: string): PulseHubLookupResult => ({
@@ -90,21 +97,71 @@ describe('Threat Pulse network information', () => {
   });
 });
 
-describe('Threat Pulse settings', () => {
-  it('should be off by default with every type in scope', () => {
-    const values = readPulseSettings({ id: 'settings' } as BasicStoreSettings);
-    expect(values.mode).toBe(PulseMode.Off);
-    expect(values.scopes).toEqual(PULSE_SCOPE_ENTITY_TYPES);
-    expect(isPulseContributing(values)).toBe(false);
-    expect(isPulseReading(values)).toBe(false);
+describe('Threat Pulse preview information', () => {
+  it('should keep the most prevalent signal of an object with several keys in the digest', () => {
+    expect(combinePulsePreviewSignals([
+      { prevalence: PulsePrevalence.Uncommon, trend: PulseTrend.Falling },
+      { prevalence: PulsePrevalence.Widespread, trend: PulseTrend.Rising },
+    ])).toEqual({ prevalence: PulsePrevalence.Widespread, trend: PulseTrend.Rising });
+    expect(combinePulsePreviewSignals([])).toBeNull();
   });
 
-  it('should require contributing to read', () => {
-    const contribute = readPulseSettings({ id: 'settings', pulse_mode: 'contribute' } as unknown as BasicStoreSettings);
-    expect(isPulseContributing(contribute)).toBe(true);
-    expect(isPulseReading(contribute)).toBe(false);
-    const read = readPulseSettings({ id: 'settings', pulse_mode: 'contribute_and_read' } as unknown as BasicStoreSettings);
-    expect(isPulseReading(read)).toBe(true);
+  it('should write the coarse signal only, marked as preview', () => {
+    const updatedAt = new Date('2026-10-03T10:00:00.000Z');
+    const doc = buildPulsePreviewDocument(['k1'], { prevalence: PulsePrevalence.Common, trend: PulseTrend.Rising }, updatedAt);
+    expect(doc).toEqual({
+      pulse_keys: ['k1'],
+      pulse_prevalence: PulsePrevalence.Common,
+      pulse_trend: PulseTrend.Rising,
+      pulse_sector_trend: null,
+      pulse_first_seen_network: null,
+      pulse_community_uniqueness: null,
+      pulse_information: { published: true, preview: true, updated_at: updatedAt.toISOString() },
+    });
+    const output = toPulseInformationOutput({ entity_type: 'Indicator', ...doc } as unknown as BasicStorePulseEntity);
+    expect(output).toMatchObject({
+      published: true,
+      preview: true,
+      prevalence: PulsePrevalence.Common,
+      trend: PulseTrend.Rising,
+      platforms_bucket: null,
+      first_seen_network: null,
+      trend_series: [],
+      sector_trend: null,
+      community_uniqueness: null,
+    });
+  });
+
+  it('should clear the signal of an object that left the digest but keep its keys', () => {
+    expect(Object.keys(PULSE_PREVIEW_CLEARED_DOCUMENT)).not.toContain('pulse_keys');
+    expect(Object.values(PULSE_PREVIEW_CLEARED_DOCUMENT).every((value) => value === null)).toBe(true);
+  });
+});
+
+describe('Threat Pulse settings', () => {
+  it('should run the preview by default, contributing nothing, with every type in scope', () => {
+    const values = readPulseSettings({ id: 'settings' } as BasicStoreSettings);
+    expect(values.mode).toBe(PulseMode.Preview);
+    expect(values.scopes).toEqual(PULSE_SCOPE_ENTITY_TYPES);
+    expect(isPulseContributing(values)).toBe(false);
+  });
+
+  it('should read the contribute-only mode of the first builds as the contribution', () => {
+    const legacy = readPulseSettings({ id: 'settings', pulse_mode: 'contribute' } as unknown as BasicStoreSettings);
+    expect(legacy.mode).toBe(PulseMode.ContributeAndRead);
+    expect(isPulseContributing(legacy)).toBe(true);
+  });
+
+  it.each([
+    { mode: 'preview', registered: true, lapsed: false, access: PulseAccess.Preview },
+    { mode: 'contribute_and_read', registered: true, lapsed: false, access: PulseAccess.Full },
+    { mode: 'contribute_and_read', registered: true, lapsed: true, access: PulseAccess.Preview },
+    { mode: 'off', registered: true, lapsed: false, access: PulseAccess.Off },
+    { mode: 'contribute_and_read', registered: false, lapsed: false, access: PulseAccess.NotConnected },
+    { mode: 'preview', registered: false, lapsed: false, access: PulseAccess.NotConnected },
+  ])('should give $access to $mode (registered $registered, lapsed $lapsed)', ({ mode, registered, lapsed, access }) => {
+    const values = readPulseSettings({ id: 'settings', pulse_mode: mode } as unknown as BasicStoreSettings);
+    expect(getPulseAccess(values, registered, lapsed)).toBe(access);
   });
 
   it('should ignore unknown values', () => {
@@ -115,7 +172,7 @@ describe('Threat Pulse settings', () => {
       pulse_sector_bucket: 'acme-bank',
       pulse_region_bucket: 'paris',
     } as unknown as BasicStoreSettings);
-    expect(values.mode).toBe(PulseMode.Off);
+    expect(values.mode).toBe(PulseMode.Preview);
     expect(values.scopes).toEqual(['Indicator']);
     expect(values.sectorBucket).toBeUndefined();
     expect(values.regionBucket).toBeUndefined();

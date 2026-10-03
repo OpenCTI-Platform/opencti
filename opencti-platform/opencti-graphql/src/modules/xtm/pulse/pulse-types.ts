@@ -3,6 +3,7 @@ import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../../vulnerability/vulnerability-types';
 import type { BasicStoreEntity, StoreMarkingDefinition } from '../../../types/store';
 import {
+  type PulseAccess,
   PulseMode,
   PulsePeriod,
   PulsePrevalence,
@@ -11,6 +12,7 @@ import {
   PulseTrend,
   type PulseContributionStats,
   type PulseNetworkStatus,
+  type PulsePreviewStats,
 } from '../../../generated/graphql';
 
 // Wire values of the Threat Pulse contract shared with the XTM Hub platform API: changing one breaks the Hub API.
@@ -28,7 +30,7 @@ export const PULSE_REGION_BUCKETS: PulseRegionBucketValue[] = Object.values(Puls
 export const PULSE_EVENT_KINDS: PulseEventKind[] = ['created', 'sighted', 'detected', 'hunted', 'referenced'];
 export const PULSE_PREVALENCE_VALUES: PulsePrevalenceValue[] = [PulsePrevalence.Rare, PulsePrevalence.Uncommon, PulsePrevalence.Common, PulsePrevalence.Widespread];
 export const PULSE_TREND_VALUES: PulseTrendValue[] = [PulseTrend.Rising, PulseTrend.Stable, PulseTrend.Falling];
-export const PULSE_MODE_VALUES: PulseModeValue[] = [PulseMode.Off, PulseMode.Contribute, PulseMode.ContributeAndRead];
+export const PULSE_MODE_VALUES: PulseModeValue[] = [PulseMode.Off, PulseMode.Preview, PulseMode.ContributeAndRead];
 
 // Entity types that can contribute to and read from Threat Pulse, with their wire object type.
 export const PULSE_OBJECT_TYPE_BY_ENTITY_TYPE: Record<string, PulseObjectType> = {
@@ -181,6 +183,8 @@ export interface PulseHubBenchmarkResult {
   top_items: PulseHubBenchmarkItem[];
 }
 
+export type PulseHubContributionStatus = 'active' | 'grace' | 'lapsed' | 'none';
+
 export interface PulseHubStatus {
   day: string;
   k_threshold: number;
@@ -188,11 +192,35 @@ export interface PulseHubStatus {
   contributors_bucket: string;
   read_access: boolean;
   last_contribution_day: string | null;
+  contribution_status: PulseHubContributionStatus;
+  read_access_until: string | null;
+  contribution_window_days: number;
+  contribution_grace_days: number;
 }
 
-// pulse_information stored on scoped entities.
+export interface PulseHubDigestItem {
+  hash: string;
+  object_type: PulseObjectType;
+  prevalence_bucket: PulsePrevalenceValue;
+  trend: PulseTrendValue;
+}
+
+export interface PulseHubDigest {
+  day: string;
+  sector_bucket: PulseSectorBucketValue | null;
+  region_bucket: PulseRegionBucketValue | null;
+  items: PulseHubDigestItem[];
+  trending: {
+    period: PulsePeriodValue;
+    locked_count: number;
+    items: Array<PulseHubDigestItem & { rank: number }>;
+  };
+}
+
+// pulse_information stored on scoped entities. `preview` marks the coarse data of the digest (prevalence and trend only).
 export interface PulseStoredInformation {
   published: boolean;
+  preview?: boolean;
   platforms_bucket?: string | null;
   last_seen_network?: string | null;
   trend_series?: number[];
@@ -203,6 +231,7 @@ export interface PulseStoredInformation {
 export interface PulseSettingsOutput {
   id: string;
   mode: PulseModeValue;
+  access: PulseAccess;
   enabled: boolean;
   readable: boolean;
   hub_registered: boolean;
@@ -219,6 +248,7 @@ export interface PulseSettingsOutput {
   suggested_sector_bucket: PulseSectorBucketValue;
   suggested_region_bucket: PulseRegionBucketValue;
   contribution: PulseContributionStats;
+  preview: PulsePreviewStats;
   network: PulseNetworkStatus;
 }
 

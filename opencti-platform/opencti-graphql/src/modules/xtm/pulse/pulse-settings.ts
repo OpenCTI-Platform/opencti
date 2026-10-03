@@ -10,7 +10,7 @@ import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_
 import { SYSTEM_USER } from '../../../utils/access';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import type { PulseHubPlatform } from '../hub/xtm-hub-pulse-client';
-import { PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../generated/graphql';
+import { PulseAccess, PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../generated/graphql';
 import {
   PULSE_FORCED_EXCLUDED_MARKING_DEFINITIONS,
   PULSE_MODE_VALUES,
@@ -37,9 +37,16 @@ interface PulseSettingsStore extends BasicStoreSettings {
 const isSectorBucket = (value: unknown): value is PulseSectorBucketValue => PULSE_SECTOR_BUCKETS.includes(value as PulseSectorBucketValue);
 const isRegionBucket = (value: unknown): value is PulseRegionBucketValue => PULSE_REGION_BUCKETS.includes(value as PulseRegionBucketValue);
 
+// The preview sends nothing, so it is the mode of every platform until an administrator chooses another one. The
+// contribute-only mode of the first builds was consented to like the contribution: it now reads as well.
+const readPulseMode = (stored: string | undefined): PulseModeValue => {
+  if (stored === 'contribute') return PulseMode.ContributeAndRead;
+  return PULSE_MODE_VALUES.includes(stored as PulseModeValue) ? stored as PulseModeValue : PulseMode.Preview;
+};
+
 export const readPulseSettings = (settings: BasicStoreSettings): PulseSettingsValues => {
   const store = settings as PulseSettingsStore;
-  const mode = PULSE_MODE_VALUES.includes(store.pulse_mode as PulseModeValue) ? store.pulse_mode as PulseModeValue : PulseMode.Off;
+  const mode = readPulseMode(store.pulse_mode);
   const scopes = (store.pulse_scopes ?? PULSE_SCOPE_ENTITY_TYPES).filter((scope) => PULSE_SCOPE_ENTITY_TYPES.includes(scope));
   return {
     mode,
@@ -53,10 +60,16 @@ export const readPulseSettings = (settings: BasicStoreSettings): PulseSettingsVa
   };
 };
 
-export const isPulseContributing = (values: PulseSettingsValues) => values.mode !== PulseMode.Off;
+export const isPulseContributing = (values: PulseSettingsValues) => values.mode === PulseMode.ContributeAndRead;
 
-// Reading requires contributing: there is no mode that reads without contributing.
-export const isPulseReading = (values: PulseSettingsValues) => values.mode === PulseMode.ContributeAndRead;
+// Reciprocity: the full reads need the contribution, and XTM Hub enforces it. A contributing platform whose
+// contribution lapsed (XTM Hub answered contribution_required) falls back to the preview until it contributes again.
+export const getPulseAccess = (values: PulseSettingsValues, registered: boolean, contributionLapsed: boolean): PulseAccess => {
+  if (!registered) return PulseAccess.NotConnected;
+  if (values.mode === PulseMode.Off) return PulseAccess.Off;
+  if (values.mode === PulseMode.ContributeAndRead && !contributionLapsed) return PulseAccess.Full;
+  return PulseAccess.Preview;
+};
 
 export const getPulseHubPlatform = (settings: BasicStoreSettings): PulseHubPlatform | null => {
   if (!settings.xtm_hub_token) {

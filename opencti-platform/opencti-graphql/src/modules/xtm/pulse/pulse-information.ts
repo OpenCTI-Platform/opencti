@@ -108,6 +108,40 @@ export const buildPulseDocument = (keys: string[], information: PulseCombinedInf
   };
 };
 
+export interface PulsePreviewSignal {
+  prevalence: PulsePrevalenceValue;
+  trend: PulseTrendValue;
+}
+
+// An object with several keys found in the digest takes the signal of its most prevalent key.
+export const combinePulsePreviewSignals = (signals: PulsePreviewSignal[]): PulsePreviewSignal | null => {
+  return [...signals].sort((a, b) => prevalenceRank(b.prevalence) - prevalenceRank(a.prevalence))[0] ?? null;
+};
+
+// The preview carries the coarse signal of the digest only: no platforms range, no dates, no series, no sector trend.
+export const buildPulsePreviewDocument = (keys: string[], signal: PulsePreviewSignal, updatedAt: Date): Record<string, unknown> => {
+  const stored: PulseStoredInformation = { published: true, preview: true, updated_at: updatedAt.toISOString() };
+  return {
+    [PULSE_ATTRIBUTE_KEYS]: keys,
+    [PULSE_ATTRIBUTE_PREVALENCE]: signal.prevalence,
+    [PULSE_ATTRIBUTE_TREND]: signal.trend,
+    [PULSE_ATTRIBUTE_SECTOR_TREND]: null,
+    [PULSE_ATTRIBUTE_FIRST_SEEN]: null,
+    [PULSE_ATTRIBUTE_UNIQUENESS]: null,
+    [PULSE_ATTRIBUTE_INFORMATION]: stored,
+  };
+};
+
+// An object that left the digest loses its preview signal; its local keys stay.
+export const PULSE_PREVIEW_CLEARED_DOCUMENT: Record<string, unknown> = {
+  [PULSE_ATTRIBUTE_PREVALENCE]: null,
+  [PULSE_ATTRIBUTE_TREND]: null,
+  [PULSE_ATTRIBUTE_SECTOR_TREND]: null,
+  [PULSE_ATTRIBUTE_FIRST_SEEN]: null,
+  [PULSE_ATTRIBUTE_UNIQUENESS]: null,
+  [PULSE_ATTRIBUTE_INFORMATION]: null,
+};
+
 export interface PulseDocumentUpdate {
   entity: Pick<BasicStorePulseEntity, '_index' | 'internal_id'>;
   doc: Record<string, unknown>;
@@ -158,6 +192,7 @@ export const toPulseInformationOutput = (entity: BasicStorePulseEntity) => {
   }
   return {
     published: information.published,
+    preview: information.preview === true,
     prevalence: entity.pulse_prevalence ?? null,
     platforms_bucket: information.platforms_bucket ?? null,
     first_seen_network: entity.pulse_first_seen_network ?? null,

@@ -17575,6 +17575,7 @@ export type Mutation = {
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
   pulseConfigure: PulseSettings;
   pulsePurge: PulsePurgeResult;
+  pulseTelemetry?: Maybe<Scalars['Boolean']['output']>;
   queryTaskAdd: BackgroundTask;
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
@@ -19538,6 +19539,12 @@ export type MutationPublicDashboardFieldPatchArgs = {
 
 export type MutationPulseConfigureArgs = {
   input: PulseConfigurationInput;
+};
+
+
+export type MutationPulseTelemetryArgs = {
+  event: PulseTelemetryEvent;
+  surface: PulseSurface;
 };
 
 
@@ -24751,6 +24758,18 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   playground_enabled: Scalars['Boolean']['output'];
 };
 
+/** What the platform reads from Threat Pulse right now */
+export enum PulseAccess {
+  /** Contributing: every Threat Pulse read */
+  Full = 'full',
+  /** Not registered on XTM Hub */
+  NotConnected = 'not_connected',
+  /** Threat Pulse turned off by an administrator */
+  Off = 'off',
+  /** The coarse digest only: nothing leaves the platform */
+  Preview = 'preview'
+}
+
 export type PulseBenchmark = {
   __typename?: 'PulseBenchmark';
   entries: Array<PulseBenchmarkEntry>;
@@ -24808,6 +24827,13 @@ export type PulseContributionStats = {
   total_records: Scalars['Int']['output'];
 };
 
+export enum PulseContributionStatus {
+  Active = 'active',
+  Grace = 'grace',
+  Lapsed = 'lapsed',
+  None = 'none'
+}
+
 export type PulseContributionType = {
   __typename?: 'PulseContributionType';
   entity_type: Scalars['String']['output'];
@@ -24816,6 +24842,7 @@ export type PulseContributionType = {
 
 export type PulseEntityInformation = {
   __typename?: 'PulseEntityInformation';
+  access: PulseAccess;
   id: Scalars['ID']['output'];
   information?: Maybe<PulseInformation>;
   readable: Scalars['Boolean']['output'];
@@ -24830,6 +24857,8 @@ export type PulseInformation = {
   last_seen_network?: Maybe<Scalars['DateTime']['output']>;
   platforms_bucket?: Maybe<Scalars['String']['output']>;
   prevalence?: Maybe<PulsePrevalence>;
+  /** Coarse data of the preview digest: prevalence and trend only */
+  preview: Scalars['Boolean']['output'];
   published: Scalars['Boolean']['output'];
   sector_platforms_bucket?: Maybe<Scalars['String']['output']>;
   sector_trend?: Maybe<PulseTrend>;
@@ -24839,18 +24868,22 @@ export type PulseInformation = {
 };
 
 export enum PulseMode {
-  Contribute = 'contribute',
   ContributeAndRead = 'contribute_and_read',
-  Off = 'off'
+  Off = 'off',
+  Preview = 'preview'
 }
 
 export type PulseNetworkStatus = {
   __typename?: 'PulseNetworkStatus';
+  contribution_grace_days?: Maybe<Scalars['Int']['output']>;
+  contribution_status?: Maybe<PulseContributionStatus>;
+  contribution_window_days?: Maybe<Scalars['Int']['output']>;
   contributors_bucket?: Maybe<Scalars['String']['output']>;
   k_threshold?: Maybe<Scalars['Int']['output']>;
   last_contribution_day?: Maybe<Scalars['String']['output']>;
   reachable: Scalars['Boolean']['output'];
   read_access?: Maybe<Scalars['Boolean']['output']>;
+  read_access_until?: Maybe<Scalars['String']['output']>;
   retention_months?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -24866,6 +24899,14 @@ export enum PulsePrevalence {
   Uncommon = 'uncommon',
   Widespread = 'widespread'
 }
+
+export type PulsePreviewStats = {
+  __typename?: 'PulsePreviewStats';
+  digest_day?: Maybe<Scalars['String']['output']>;
+  digest_items: Scalars['Int']['output'];
+  last_refresh_at?: Maybe<Scalars['DateTime']['output']>;
+  matched_entities: Scalars['Int']['output'];
+};
 
 export type PulsePurgeResult = {
   __typename?: 'PulsePurgeResult';
@@ -24903,6 +24944,7 @@ export enum PulseSectorBucket {
 
 export type PulseSettings = {
   __typename?: 'PulseSettings';
+  access: PulseAccess;
   available_scopes: Array<Scalars['String']['output']>;
   consent_accepted_version?: Maybe<Scalars['String']['output']>;
   consent_date?: Maybe<Scalars['DateTime']['output']>;
@@ -24916,6 +24958,7 @@ export type PulseSettings = {
   id: Scalars['ID']['output'];
   mode: PulseMode;
   network: PulseNetworkStatus;
+  preview: PulsePreviewStats;
   readable: Scalars['Boolean']['output'];
   region_bucket?: Maybe<PulseRegionBucket>;
   scopes: Array<Scalars['String']['output']>;
@@ -24926,14 +24969,32 @@ export type PulseSettings = {
 
 export type PulseStatus = {
   __typename?: 'PulseStatus';
+  access: PulseAccess;
   enabled: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   mode: PulseMode;
+  /** Objects of the platform found in the last preview digest */
+  preview_entities: Scalars['Int']['output'];
+  /** When the preview first matched objects of the platform */
+  preview_since?: Maybe<Scalars['DateTime']['output']>;
   readable: Scalars['Boolean']['output'];
   region_bucket?: Maybe<PulseRegionBucket>;
   scopes: Array<Scalars['String']['output']>;
   sector_bucket?: Maybe<PulseSectorBucket>;
 };
+
+export enum PulseSurface {
+  Banner = 'banner',
+  BenchmarkTemplate = 'benchmark_template',
+  EntityCard = 'entity_card',
+  Notifications = 'notifications',
+  TrendingWidget = 'trending_widget'
+}
+
+export enum PulseTelemetryEvent {
+  CtaClick = 'cta_click',
+  Impression = 'impression'
+}
 
 export enum PulseTrend {
   Falling = 'falling',
@@ -24945,8 +25006,11 @@ export type PulseTrending = {
   __typename?: 'PulseTrending';
   day?: Maybe<Scalars['String']['output']>;
   entries: Array<PulseTrendingEntry>;
+  locked_count: Scalars['Int']['output'];
   network_items_count: Scalars['Int']['output'];
   period: PulsePeriod;
+  /** Preview: the first ranks only, the next ones are counted in locked_count */
+  preview: Scalars['Boolean']['output'];
   readable: Scalars['Boolean']['output'];
   region_bucket?: Maybe<PulseRegionBucket>;
   sector_bucket?: Maybe<PulseSectorBucket>;
@@ -24956,11 +25020,16 @@ export type PulseTrending = {
 export type PulseTrendingEntry = {
   __typename?: 'PulseTrendingEntry';
   entity: StixCoreObject;
-  first_seen_network: Scalars['DateTime']['output'];
-  growth: Scalars['Float']['output'];
+  /** Null in preview */
+  first_seen_network?: Maybe<Scalars['DateTime']['output']>;
+  /** Null in preview */
+  growth?: Maybe<Scalars['Float']['output']>;
   object_type: Scalars['String']['output'];
-  platforms_bucket: Scalars['String']['output'];
+  /** Null in preview */
+  platforms_bucket?: Maybe<Scalars['String']['output']>;
   prevalence: PulsePrevalence;
+  /** Preview only: the rank of the object in the sector trending */
+  rank?: Maybe<Scalars['Int']['output']>;
   trend: PulseTrend;
 };
 
@@ -27335,6 +27404,7 @@ export type QueryPulseEntityArgs = {
 export type QueryPulseTrendingArgs = {
   entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  include_preview?: InputMaybe<Scalars['Boolean']['input']>;
   period: PulsePeriod;
   region_bucket?: InputMaybe<PulseRegionBucket>;
   sector_bucket?: InputMaybe<PulseSectorBucket>;
@@ -41601,12 +41671,14 @@ export type ResolversTypes = ResolversObject<{
   PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   PublicProvider: ResolverTypeWrapper<PublicProvider>;
   PublicSettings: ResolverTypeWrapper<Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversTypes['Theme']> }>;
+  PulseAccess: PulseAccess;
   PulseBenchmark: ResolverTypeWrapper<Omit<PulseBenchmark, 'entries'> & { entries: Array<ResolversTypes['PulseBenchmarkEntry']> }>;
   PulseBenchmarkEntry: ResolverTypeWrapper<Omit<PulseBenchmarkEntry, 'entity'> & { entity: ResolversTypes['StixCoreObject'] }>;
   PulseBenchmarkMetric: ResolverTypeWrapper<PulseBenchmarkMetric>;
   PulseConfigurationInput: PulseConfigurationInput;
   PulseContributionDay: ResolverTypeWrapper<PulseContributionDay>;
   PulseContributionStats: ResolverTypeWrapper<PulseContributionStats>;
+  PulseContributionStatus: PulseContributionStatus;
   PulseContributionType: ResolverTypeWrapper<PulseContributionType>;
   PulseEntityInformation: ResolverTypeWrapper<PulseEntityInformation>;
   PulseInformation: ResolverTypeWrapper<PulseInformation>;
@@ -41614,11 +41686,14 @@ export type ResolversTypes = ResolversObject<{
   PulseNetworkStatus: ResolverTypeWrapper<PulseNetworkStatus>;
   PulsePeriod: PulsePeriod;
   PulsePrevalence: PulsePrevalence;
+  PulsePreviewStats: ResolverTypeWrapper<PulsePreviewStats>;
   PulsePurgeResult: ResolverTypeWrapper<PulsePurgeResult>;
   PulseRegionBucket: PulseRegionBucket;
   PulseSectorBucket: PulseSectorBucket;
   PulseSettings: ResolverTypeWrapper<PulseSettingsOutput>;
   PulseStatus: ResolverTypeWrapper<PulseStatus>;
+  PulseSurface: PulseSurface;
+  PulseTelemetryEvent: PulseTelemetryEvent;
   PulseTrend: PulseTrend;
   PulseTrending: ResolverTypeWrapper<Omit<PulseTrending, 'entries'> & { entries: Array<ResolversTypes['PulseTrendingEntry']> }>;
   PulseTrendingEntry: ResolverTypeWrapper<Omit<PulseTrendingEntry, 'entity'> & { entity: ResolversTypes['StixCoreObject'] }>;
@@ -42715,6 +42790,7 @@ export type ResolversParentTypes = ResolversObject<{
   PulseEntityInformation: PulseEntityInformation;
   PulseInformation: PulseInformation;
   PulseNetworkStatus: PulseNetworkStatus;
+  PulsePreviewStats: PulsePreviewStats;
   PulsePurgeResult: PulsePurgeResult;
   PulseSettings: PulseSettingsOutput;
   PulseStatus: PulseStatus;
@@ -49344,6 +49420,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
   pulseConfigure?: Resolver<ResolversTypes['PulseSettings'], ParentType, ContextType, RequireFields<MutationPulseConfigureArgs, 'input'>>;
   pulsePurge?: Resolver<ResolversTypes['PulsePurgeResult'], ParentType, ContextType>;
+  pulseTelemetry?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPulseTelemetryArgs, 'event' | 'surface'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
@@ -50982,6 +51059,7 @@ export type PulseContributionTypeResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PulseEntityInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseEntityInformation'] = ResolversParentTypes['PulseEntityInformation']> = ResolversObject<{
+  access?: Resolver<ResolversTypes['PulseAccess'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   information?: Resolver<Maybe<ResolversTypes['PulseInformation']>, ParentType, ContextType>;
   readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -50995,6 +51073,7 @@ export type PulseInformationResolvers<ContextType = any, ParentType extends Reso
   last_seen_network?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   prevalence?: Resolver<Maybe<ResolversTypes['PulsePrevalence']>, ParentType, ContextType>;
+  preview?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   sector_platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sector_trend?: Resolver<Maybe<ResolversTypes['PulseTrend']>, ParentType, ContextType>;
@@ -51004,12 +51083,23 @@ export type PulseInformationResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type PulseNetworkStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseNetworkStatus'] = ResolversParentTypes['PulseNetworkStatus']> = ResolversObject<{
+  contribution_grace_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  contribution_status?: Resolver<Maybe<ResolversTypes['PulseContributionStatus']>, ParentType, ContextType>;
+  contribution_window_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   contributors_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   k_threshold?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   last_contribution_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reachable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   read_access?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  read_access_until?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   retention_months?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+}>;
+
+export type PulsePreviewStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulsePreviewStats'] = ResolversParentTypes['PulsePreviewStats']> = ResolversObject<{
+  digest_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  digest_items?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  last_refresh_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  matched_entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type PulsePurgeResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulsePurgeResult'] = ResolversParentTypes['PulsePurgeResult']> = ResolversObject<{
@@ -51018,6 +51108,7 @@ export type PulsePurgeResultResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type PulseSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseSettings'] = ResolversParentTypes['PulseSettings']> = ResolversObject<{
+  access?: Resolver<ResolversTypes['PulseAccess'], ParentType, ContextType>;
   available_scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   consent_accepted_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   consent_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51031,6 +51122,7 @@ export type PulseSettingsResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mode?: Resolver<ResolversTypes['PulseMode'], ParentType, ContextType>;
   network?: Resolver<ResolversTypes['PulseNetworkStatus'], ParentType, ContextType>;
+  preview?: Resolver<ResolversTypes['PulsePreviewStats'], ParentType, ContextType>;
   readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
   scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51040,9 +51132,12 @@ export type PulseSettingsResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type PulseStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseStatus'] = ResolversParentTypes['PulseStatus']> = ResolversObject<{
+  access?: Resolver<ResolversTypes['PulseAccess'], ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mode?: Resolver<ResolversTypes['PulseMode'], ParentType, ContextType>;
+  preview_entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  preview_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
   scopes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51052,8 +51147,10 @@ export type PulseStatusResolvers<ContextType = any, ParentType extends Resolvers
 export type PulseTrendingResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseTrending'] = ResolversParentTypes['PulseTrending']> = ResolversObject<{
   day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entries?: Resolver<Array<ResolversTypes['PulseTrendingEntry']>, ParentType, ContextType>;
+  locked_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   network_items_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   period?: Resolver<ResolversTypes['PulsePeriod'], ParentType, ContextType>;
+  preview?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   readable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   region_bucket?: Resolver<Maybe<ResolversTypes['PulseRegionBucket']>, ParentType, ContextType>;
   sector_bucket?: Resolver<Maybe<ResolversTypes['PulseSectorBucket']>, ParentType, ContextType>;
@@ -51062,11 +51159,12 @@ export type PulseTrendingResolvers<ContextType = any, ParentType extends Resolve
 
 export type PulseTrendingEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PulseTrendingEntry'] = ResolversParentTypes['PulseTrendingEntry']> = ResolversObject<{
   entity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
-  first_seen_network?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  growth?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  first_seen_network?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  growth?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  platforms_bucket?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platforms_bucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   prevalence?: Resolver<ResolversTypes['PulsePrevalence'], ParentType, ContextType>;
+  rank?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   trend?: Resolver<ResolversTypes['PulseTrend'], ParentType, ContextType>;
 }>;
 
@@ -55838,6 +55936,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PulseEntityInformation?: PulseEntityInformationResolvers<ContextType>;
   PulseInformation?: PulseInformationResolvers<ContextType>;
   PulseNetworkStatus?: PulseNetworkStatusResolvers<ContextType>;
+  PulsePreviewStats?: PulsePreviewStatsResolvers<ContextType>;
   PulsePurgeResult?: PulsePurgeResultResolvers<ContextType>;
   PulseSettings?: PulseSettingsResolvers<ContextType>;
   PulseStatus?: PulseStatusResolvers<ContextType>;

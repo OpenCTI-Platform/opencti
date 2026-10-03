@@ -1,7 +1,39 @@
 enum PulseMode {
   off
-  contribute
+  preview
   contribute_and_read
+}
+
+"What the platform reads from Threat Pulse right now"
+enum PulseAccess {
+  "Not registered on XTM Hub"
+  not_connected
+  "Threat Pulse turned off by an administrator"
+  off
+  "The coarse digest only: nothing leaves the platform"
+  preview
+  "Contributing: every Threat Pulse read"
+  full
+}
+
+enum PulseContributionStatus {
+  active
+  grace
+  lapsed
+  none
+}
+
+enum PulseTelemetryEvent {
+  impression
+  cta_click
+}
+
+enum PulseSurface {
+  entity_card
+  trending_widget
+  benchmark_template
+  notifications
+  banner
 }
 
 enum PulseSectorBucket {
@@ -64,6 +96,8 @@ enum PulseUnavailableReason {
 
 type PulseInformation {
   published: Boolean!
+  "Coarse data of the preview digest: prevalence and trend only"
+  preview: Boolean!
   prevalence: PulsePrevalence
   platforms_bucket: String
   first_seen_network: DateTime
@@ -78,6 +112,7 @@ type PulseInformation {
 
 type PulseEntityInformation {
   id: ID!
+  access: PulseAccess!
   readable: Boolean!
   unavailable_reason: PulseUnavailableReason
   sector_bucket: PulseSectorBucket
@@ -88,7 +123,12 @@ type PulseStatus {
   id: ID!
   enabled: Boolean!
   mode: PulseMode!
+  access: PulseAccess!
   readable: Boolean!
+  "Objects of the platform found in the last preview digest"
+  preview_entities: Int!
+  "When the preview first matched objects of the platform"
+  preview_since: DateTime
   sector_bucket: PulseSectorBucket
   region_bucket: PulseRegionBucket
   scopes: [String!]!
@@ -121,11 +161,23 @@ type PulseNetworkStatus {
   contributors_bucket: String
   read_access: Boolean
   last_contribution_day: String
+  contribution_status: PulseContributionStatus
+  read_access_until: String
+  contribution_window_days: Int
+  contribution_grace_days: Int
+}
+
+type PulsePreviewStats {
+  last_refresh_at: DateTime
+  digest_day: String
+  digest_items: Int!
+  matched_entities: Int!
 }
 
 type PulseSettings {
   id: ID!
   mode: PulseMode!
+  access: PulseAccess!
   enabled: Boolean!
   readable: Boolean!
   hub_registered: Boolean!
@@ -142,17 +194,23 @@ type PulseSettings {
   suggested_sector_bucket: PulseSectorBucket!
   suggested_region_bucket: PulseRegionBucket!
   contribution: PulseContributionStats!
+  preview: PulsePreviewStats!
   network: PulseNetworkStatus!
 }
 
 type PulseTrendingEntry {
   entity: StixCoreObject!
   object_type: String!
-  platforms_bucket: String!
+  "Preview only: the rank of the object in the sector trending"
+  rank: Int
+  "Null in preview"
+  platforms_bucket: String
   prevalence: PulsePrevalence!
   trend: PulseTrend!
-  growth: Float!
-  first_seen_network: DateTime!
+  "Null in preview"
+  growth: Float
+  "Null in preview"
+  first_seen_network: DateTime
 }
 
 type PulseTrending {
@@ -164,6 +222,9 @@ type PulseTrending {
   region_bucket: PulseRegionBucket
   network_items_count: Int!
   entries: [PulseTrendingEntry!]!
+  "Preview: the first ranks only, the next ones are counted in locked_count"
+  preview: Boolean!
+  locked_count: Int!
 }
 
 type PulseBenchmarkMetric {
@@ -237,6 +298,8 @@ type Query {
     region_bucket: PulseRegionBucket
     entity_types: [String!]
     first: Int
+    "Answer with the preview trending when the platform runs in preview; otherwise contribution_required"
+    include_preview: Boolean
   ): PulseTrending! @auth(for: [KNOWLEDGE])
   pulseBenchmark(period: PulsePeriod!): PulseBenchmark! @auth(for: [KNOWLEDGE])
 }
@@ -244,4 +307,5 @@ type Query {
 type Mutation {
   pulseConfigure(input: PulseConfigurationInput!): PulseSettings! @auth(for: [SETTINGS_SETMANAGEXTMHUB])
   pulsePurge: PulsePurgeResult! @auth(for: [SETTINGS_SETMANAGEXTMHUB])
+  pulseTelemetry(event: PulseTelemetryEvent!, surface: PulseSurface!): Boolean @auth
 }

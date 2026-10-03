@@ -210,6 +210,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     pulse_sector_trend: instance.pulse_sector_trend,
     pulse_first_seen_network: convertToStixDate(instance.pulse_first_seen_network),
     pulse_community_uniqueness: instance.pulse_community_uniqueness,
+    pulse_preview: instance.pulse_prevalence && instance.pulse_information?.preview ? true : undefined,
     metrics: instance.metrics ?? [],
   };
   return cleanObject(octiExtensions);

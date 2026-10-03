@@ -15,27 +15,44 @@ import { PULSE_MANAGER_USER, SYSTEM_USER } from '../../../utils/access';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { getSettings } from '../../../domain/settings';
-import { addThreatPulseLookupsCount, addThreatPulseRecordsCount } from '../../../manager/telemetryManager';
-import { FilterMode, FilterOperator, type FilterGroup, type PulseConfigurationInput, PulseMode, PulseUnavailableReason } from '../../../generated/graphql';
+import { addThreatPulseLookupsCount, addThreatPulseModeChangeCount, addThreatPulsePreviewEventCount, addThreatPulseRecordsCount } from '../../../manager/telemetryManager';
+import {
+  FilterMode,
+  FilterOperator,
+  type FilterGroup,
+  PulseAccess,
+  type PulseConfigurationInput,
+  PulseContributionStatus,
+  PulseMode,
+  PulsePeriod,
+  PulseSectorBucket,
+  type PulseSurface,
+  type PulseTelemetryEvent,
+  PulseUnavailableReason,
+} from '../../../generated/graphql';
 import { PulseHubError, type PulseHubPlatform, xtmHubPulseClient } from '../hub/xtm-hub-pulse-client';
 import { aggregatePulseActivity, buildPulseBatches, collectPulseActivity, countPulseActivity, loadPulseEntities, mergePulseActivity } from './pulse-collector';
 import { computeStableKeys, computeTransportHash, decodeTransportHash, isValidPulseHash } from './pulse-hashing';
 import {
   buildPulseDocument,
+  buildPulsePreviewDocument,
   clearPulseNetworkInformation,
   combinePulseLookups,
+  combinePulsePreviewSignals,
+  PULSE_PREVIEW_CLEARED_DOCUMENT,
   type PulseDocumentUpdate,
+  type PulsePreviewSignal,
   toPulseInformationOutput,
   writePulseDocuments,
 } from './pulse-information';
 import {
   buildPulseMarkingPolicy,
   getForcedExcludedMarkings,
+  getPulseAccess,
   getPulseBuckets,
   getPulseHubPlatform,
   isPulseContributable,
   isPulseContributing,
-  isPulseReading,
   readPulseSettings,
   suggestPulseBuckets,
 } from './pulse-settings';
@@ -79,6 +96,7 @@ import {
   PULSE_STATUS_ID,
   type PulseBatch,
   type PulseEventKind,
+  type PulseHubDigest,
   type PulseHubLookupResult,
   type PulseHubStatus,
   type PulseHubTrendingItem,
@@ -88,6 +106,7 @@ import {
   type PulseRegionBucketValue,
   type PulseSectorBucketValue,
   type PulseSettingsOutput,
+  type PulseSettingsValues,
 } from './pulse-types';
 
 const ONE_DAY_MS = 24 * 3600 * 1000;
@@ -98,6 +117,7 @@ const MAX_WINDOW_HOURS = conf.get('pulse_manager:max_window_hours') ?? 24;
 const MAX_EVENTS_PER_RUN = conf.get('pulse_manager:max_events_per_run') ?? 100000;
 const REFRESH_INTERVAL_MS = conf.get('pulse_manager:refresh_interval') ?? ONE_DAY_MS;
 const REFRESH_MAX_ENTITIES = conf.get('pulse_manager:refresh_max_entities') ?? 200000;
+const PREVIEW_MAX_ENTITIES = conf.get('pulse_manager:preview_max_entities') ?? 1000000;
 const STATS_DAYS = 30;
 const DEFAULT_TRENDING_SIZE = 50;
 const MAX_TRENDING_SIZE = 200;
@@ -115,7 +135,26 @@ export const lastUtcDays = (count: number, from = new Date()) => {
 const loadPulseContext = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const values = readPulseSettings(settings);
-  return { settings, values, platform: getPulseHubPlatform(settings) };
+  const platform = getPulseHubPlatform(settings);
+  const state = await redisGetPulseState();
+  const access = getPulseAccess(values, platform !== null, state.contribution_lapsed === 'true');
+  return { settings, values, platform, state, access };
+};
+
+// XTM Hub enforces the reciprocity: a contributing platform it answers contribution_required to (no accepted
+// contribution within the grace period) falls back to the preview until its next accepted contribution. The full
+// statistics it held are removed, so nothing stale passes for current.
+const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
+  if (!(error instanceof PulseHubError) || error.code !== 'contribution_required' || !isPulseContributing(values)) {
+    return;
+  }
+  const state = await redisGetPulseState();
+  if (state.contribution_lapsed === 'true') {
+    return;
+  }
+  await redisSetPulseState({ contribution_lapsed: 'true', preview_refresh_at: undefined });
+  await clearPulseNetworkInformation();
+  logApp.info('[THREAT PULSE] XTM Hub requires a contribution, falling back to the preview until the next accepted contribution');
 };
 
 export const toPulseUnavailableReason = (error: unknown): PulseUnavailableReason => {
@@ -150,12 +189,16 @@ export const getPulseSalt = async (platform: PulseHubPlatform, day: string): Pro
 
 // region status and settings
 export const getPulseStatus = async (context: AuthContext) => {
-  const { values, platform } = await loadPulseContext(context);
+  const { values, state, access } = await loadPulseContext(context);
+  const previewEntities = access === PulseAccess.Preview ? Number(state.preview_matched ?? 0) : 0;
   return {
     id: PULSE_STATUS_ID,
     enabled: isPulseContributing(values),
     mode: values.mode,
-    readable: isPulseReading(values) && platform !== null,
+    access,
+    readable: access === PulseAccess.Full,
+    preview_entities: previewEntities,
+    preview_since: previewEntities > 0 ? state.preview_since ?? null : null,
     sector_bucket: values.sectorBucket ?? null,
     region_bucket: values.regionBucket ?? null,
     scopes: values.scopes,
@@ -163,7 +206,18 @@ export const getPulseStatus = async (context: AuthContext) => {
 };
 
 const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
-  const unreachable = { reachable: false, k_threshold: null, retention_months: null, contributors_bucket: null, read_access: null, last_contribution_day: null };
+  const unreachable = {
+    reachable: false,
+    k_threshold: null,
+    retention_months: null,
+    contributors_bucket: null,
+    read_access: null,
+    last_contribution_day: null,
+    contribution_status: null,
+    read_access_until: null,
+    contribution_window_days: null,
+    contribution_grace_days: null,
+  };
   if (!platform) {
     return unreachable;
   }
@@ -174,7 +228,15 @@ const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
       status = await xtmHubPulseClient.status(platform);
       await redisSetPulseResponse(cacheKey, status, STATUS_CACHE_TTL_SECONDS);
     }
-    return { reachable: true, ...status };
+    const contributionStatus = Object.values(PulseContributionStatus).find((value) => value === status.contribution_status) ?? null;
+    return {
+      reachable: true,
+      ...status,
+      contribution_status: contributionStatus,
+      read_access_until: status.read_access_until ?? null,
+      contribution_window_days: status.contribution_window_days ?? null,
+      contribution_grace_days: status.contribution_grace_days ?? null,
+    };
   } catch (error) {
     logApp.debug('[THREAT PULSE] Network status unavailable', { cause: error });
     return unreachable;
@@ -182,18 +244,18 @@ const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
 };
 
 export const getPulseSettings = async (context: AuthContext): Promise<PulseSettingsOutput> => {
-  const { settings, values, platform } = await loadPulseContext(context);
+  const { settings, values, platform, state, access } = await loadPulseContext(context);
   const markings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const forcedMarkings = await getForcedExcludedMarkings(context);
   const suggested = await suggestPulseBuckets(context, settings);
-  const state = await redisGetPulseState();
   const stats = await redisGetPulseContributionStats(lastUtcDays(STATS_DAYS));
   const consentUser = values.consentUserId ? await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, values.consentUserId) : null;
   return {
     id: PULSE_SETTINGS_ID,
     mode: values.mode,
+    access,
     enabled: isPulseContributing(values),
-    readable: isPulseReading(values) && platform !== null,
+    readable: access === PulseAccess.Full,
     hub_registered: platform !== null,
     consent_version: PULSE_CONSENT_VERSION,
     consent_accepted_version: values.consentVersion ?? null,
@@ -215,18 +277,24 @@ export const getPulseSettings = async (context: AuthContext): Promise<PulseSetti
       days: stats.days,
       by_type: stats.byType,
     },
+    preview: {
+      last_refresh_at: state.preview_refresh_at ?? null,
+      digest_day: state.preview_digest_day ?? null,
+      digest_items: Number(state.preview_digest_items ?? 0),
+      matched_entities: Number(state.preview_matched ?? 0),
+    },
     network: await getPulseNetworkStatus(platform),
   };
 };
 
 const describePulseMode = (mode: string) => {
-  if (mode === PulseMode.ContributeAndRead) return 'contribution and reading';
-  if (mode === PulseMode.Contribute) return 'contribution only';
+  if (mode === PulseMode.ContributeAndRead) return 'contribution and full experience';
+  if (mode === PulseMode.Preview) return 'preview, nothing sent';
   return 'off';
 };
 
 export const configurePulse = async (context: AuthContext, user: AuthUser, input: PulseConfigurationInput) => {
-  const { settings, values: current, platform } = await loadPulseContext(context);
+  const { settings, values: current, platform, access: currentAccess } = await loadPulseContext(context);
   const mode = input.mode as string;
   if (!PULSE_MODE_VALUES.includes(mode as typeof PULSE_MODE_VALUES[number])) {
     throw FunctionalError('Invalid Threat Pulse mode', { mode });
@@ -236,12 +304,13 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   if (invalidScopes.length > 0) {
     throw FunctionalError('Threat Pulse scopes contain unsupported entity types', { invalidScopes });
   }
-  const enabling = mode !== PulseMode.Off;
-  if (enabling && scopes.length === 0) {
-    throw FunctionalError('Select at least one entity type to contribute to Threat Pulse');
+  const enabling = mode === PulseMode.ContributeAndRead;
+  const wasContributing = isPulseContributing(current);
+  if (mode !== PulseMode.Off && scopes.length === 0) {
+    throw FunctionalError('Select at least one entity type for Threat Pulse');
   }
   if (enabling && !platform) {
-    throw FunctionalError('Register the platform on XTM Hub before enabling Threat Pulse');
+    throw FunctionalError('Register the platform on XTM Hub before enabling the Threat Pulse contribution');
   }
   const markings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const requestedMarkings = input.excluded_markings ?? current.excludedMarkingIds;
@@ -249,7 +318,7 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   if (excludedMarkingIds.some((markingId) => !markingId)) {
     throw FunctionalError('Threat Pulse excluded markings contain unknown marking definitions');
   }
-  const consentRequired = enabling && (current.mode === PulseMode.Off || current.consentVersion !== PULSE_CONSENT_VERSION);
+  const consentRequired = enabling && (!wasContributing || current.consentVersion !== PULSE_CONSENT_VERSION);
   if (consentRequired && input.consent_version !== PULSE_CONSENT_VERSION) {
     throw FunctionalError('The Threat Pulse consent must be accepted to enable the contribution', { required_version: PULSE_CONSENT_VERSION });
   }
@@ -270,7 +339,7 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     );
   }
   await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
-  if (enabling && current.mode === PulseMode.Off) {
+  if (enabling && !wasContributing) {
     await redisSetPulseCursor(new Date().toISOString());
   }
   if (!enabling) {
@@ -278,14 +347,22 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     await redisPopPulseOutbox();
     await redisTakePulseActivity();
   }
-  if (isPulseReading(current) && mode !== PulseMode.ContributeAndRead) {
+  const modeChanged = mode !== current.mode;
+  if (modeChanged && (currentAccess === PulseAccess.Full || currentAccess === PulseAccess.Preview)) {
+    // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them.
     await clearPulseNetworkInformation();
   }
+  if (modeChanged) {
+    await redisSetPulseState({ contribution_lapsed: undefined, last_refresh_at: undefined, preview_refresh_at: undefined, preview_matched: undefined });
+    addThreatPulseModeChangeCount(mode as PulseMode);
+  }
   let message = `updates the Threat Pulse configuration (${describePulseMode(mode)})`;
-  if (current.mode === PulseMode.Off && enabling) {
-    message = `enables Threat Pulse (${describePulseMode(mode)}) and accepts the consent version \`${PULSE_CONSENT_VERSION}\``;
-  } else if (current.mode !== PulseMode.Off && !enabling) {
-    message = 'disables Threat Pulse';
+  if (enabling && !wasContributing) {
+    message = `enables the Threat Pulse contribution (${describePulseMode(mode)}) and accepts the consent version \`${PULSE_CONSENT_VERSION}\``;
+  } else if (wasContributing && !enabling) {
+    message = `stops the Threat Pulse contribution (${describePulseMode(mode)})`;
+  } else if (modeChanged && mode === PulseMode.Off) {
+    message = 'turns Threat Pulse off';
   }
   await publishUserAction({
     user,
@@ -349,11 +426,22 @@ const storePulseKeys = async (context: AuthContext, entities: BasicStorePulseEnt
 };
 
 // One hourly contribution: pending batches first, then the activity of the window since the last run.
+// An accepted contribution restores the reads XTM Hub refused: the preview signal leaves room for the full refresh.
+const recoverFromContributionLapse = async (lapsed: boolean, pushedRecords: number) => {
+  if (!lapsed || pushedRecords <= 0) {
+    return;
+  }
+  await redisSetPulseState({ contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined });
+  await clearPulseNetworkInformation();
+  logApp.info('[THREAT PULSE] Contribution accepted again, the full experience is restored');
+};
+
 export const runPulseContribution = async (context: AuthContext) => {
-  const { values, platform } = await loadPulseContext(context);
+  const { values, platform, state } = await loadPulseContext(context);
   if (!isPulseContributing(values) || !platform) {
     return { pushedRecords: 0 };
   }
+  const lapsed = state.contribution_lapsed === 'true';
   const now = new Date();
   const today = utcDay(now);
   const yesterday = previousUtcDay(today);
@@ -367,6 +455,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   pushedRecords += outboxOutcome.pushedRecords;
   if (outboxOutcome.error) {
     await redisSetPulseState({ last_error: outboxOutcome.error.code });
+    await recoverFromContributionLapse(lapsed, pushedRecords);
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
   }
@@ -398,6 +487,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   }
   await redisSetPulseCursor(until.toISOString());
   await redisSetPulseState({ last_push_at: now.toISOString(), last_error: lastError });
+  await recoverFromContributionLapse(lapsed, pushedRecords);
   addThreatPulseRecordsCount(pushedRecords);
   logApp.info('[THREAT PULSE] Contribution done', {
     since: since.toISOString(),
@@ -472,11 +562,10 @@ const keysExistFilter: FilterGroup = {
 
 // Nightly refresh of the network information of every object that already has Threat Pulse keys.
 export const runPulseRefresh = async (context: AuthContext, force = false) => {
-  const { values, platform } = await loadPulseContext(context);
-  if (!isPulseReading(values) || !platform) {
+  const { values, platform, state, access } = await loadPulseContext(context);
+  if (access !== PulseAccess.Full || !platform) {
     return 0;
   }
-  const state = await redisGetPulseState();
   if (!force && state.last_refresh_at && Date.now() - Date.parse(state.last_refresh_at) < REFRESH_INTERVAL_MS) {
     return 0;
   }
@@ -484,18 +573,114 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
   const salt = await getPulseSalt(platform, day);
   const policy = await buildPulseMarkingPolicy(context, values);
   let processed = 0;
-  await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
-    filters: keysExistFilter,
-    noFiltersChecking: true,
-    callback: async (entities) => {
-      const eligible = entities.filter((entity) => isPulseContributable(entity, policy, values.scopes));
-      processed += await refreshPulseEntities(context, platform, day, salt, eligible);
-      return processed < REFRESH_MAX_ENTITIES;
-    },
-  });
+  try {
+    await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
+      filters: keysExistFilter,
+      noFiltersChecking: true,
+      callback: async (entities) => {
+        const eligible = entities.filter((entity) => isPulseContributable(entity, policy, values.scopes));
+        processed += await refreshPulseEntities(context, platform, day, salt, eligible);
+        return processed < REFRESH_MAX_ENTITIES;
+      },
+    });
+  } catch (error) {
+    await handlePulseReadError(values, error);
+    throw error;
+  }
   await redisSetPulseState({ last_refresh_at: new Date().toISOString() });
   logApp.info('[THREAT PULSE] Network information refreshed', { processed });
   return processed;
+};
+
+// The sector trending of the digest is the network trending when the platform discloses no sector.
+const digestSectorBucket = (sectorBucket: PulseSectorBucketValue | null | undefined) => {
+  return sectorBucket && sectorBucket !== PulseSectorBucket.Undisclosed ? sectorBucket : null;
+};
+
+const getHubDigest = async (platform: PulseHubPlatform, day: string, sectorBucket: PulseSectorBucketValue | null): Promise<PulseHubDigest> => {
+  const cacheKey = `digest:${platform.platformId}:${day}:${sectorBucket ?? '*'}`;
+  const cached = await redisGetPulseResponse<PulseHubDigest>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const digest = await xtmHubPulseClient.digest(platform, { day, sector_bucket: sectorBucket, region_bucket: null });
+  await redisSetPulseResponse(cacheKey, digest, RESPONSE_CACHE_TTL_SECONDS);
+  return digest;
+};
+
+interface KeyedHubItem<T extends { hash: string; object_type: PulseObjectType }> {
+  item: T;
+  key: string;
+}
+
+const decodeHubItems = <T extends { hash: string; object_type: PulseObjectType }>(salt: string, items: T[]): Array<KeyedHubItem<T>> => {
+  return items.filter((item) => isValidPulseHash(item.hash)).map((item) => ({ item, key: decodeTransportHash(salt, item.hash) }));
+};
+
+const sameKeys = (stored: string[] | undefined, keys: string[]) => {
+  const current = stored ?? [];
+  return current.length === keys.length && keys.every((key) => current.includes(key));
+};
+
+/**
+ * The preview: zero outbound. The digest (the most prevalent published keys of the community, with their prevalence
+ * and trend) is downloaded, the keys of the platform's own objects are computed locally and matched, and the coarse
+ * signal is written on the matching objects without stream events. No contribution, lookup, trending or benchmark
+ * request ever leaves the platform here; nothing leaves, so every object in scope is matched, whatever its markings.
+ */
+export const runPulsePreview = async (context: AuthContext, force = false) => {
+  const { values, platform, state, access } = await loadPulseContext(context);
+  if (access !== PulseAccess.Preview || !platform) {
+    return 0;
+  }
+  if (!force && state.preview_refresh_at && Date.now() - Date.parse(state.preview_refresh_at) < REFRESH_INTERVAL_MS) {
+    return 0;
+  }
+  const day = utcDay();
+  const salt = await getPulseSalt(platform, day);
+  const digest = await getHubDigest(platform, day, digestSectorBucket(values.sectorBucket));
+  const signals = new Map<string, PulsePreviewSignal>();
+  decodeHubItems(salt, digest.items).forEach(({ item, key }) => {
+    signals.set(`${item.object_type}|${key}`, { prevalence: item.prevalence_bucket, trend: item.trend });
+  });
+  const trendingRefs = new Set(decodeHubItems(salt, digest.trending.items).map(({ item, key }) => `${item.object_type}|${key}`));
+  const updatedAt = new Date();
+  let scanned = 0;
+  let matched = 0;
+  await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
+    noFiltersChecking: true,
+    callback: async (entities) => {
+      const updates: PulseDocumentUpdate[] = entities.flatMap((entity) => {
+        const objectType = PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type];
+        const keys = computeStableKeys(entity);
+        const refs = keys.map((key) => `${objectType}|${key}`);
+        const signal = combinePulsePreviewSignals(refs.map((ref) => signals.get(ref)).filter((found): found is PulsePreviewSignal => !!found));
+        if (signal) {
+          matched += 1;
+          return [{ entity, doc: buildPulsePreviewDocument(keys, signal, updatedAt) }];
+        }
+        // The keys of the trending objects held here let the trending widget name them.
+        const trending = refs.some((ref) => trendingRefs.has(ref));
+        const keysDoc = trending && !sameKeys(entity.pulse_keys, keys) ? { pulse_keys: keys } : {};
+        if (entity.pulse_information?.preview) {
+          return [{ entity, doc: { ...PULSE_PREVIEW_CLEARED_DOCUMENT, ...keysDoc } }];
+        }
+        return Object.keys(keysDoc).length > 0 ? [{ entity, doc: keysDoc }] : [];
+      });
+      await writePulseDocuments(context, updates);
+      scanned += entities.length;
+      return scanned < PREVIEW_MAX_ENTITIES;
+    },
+  });
+  await redisSetPulseState({
+    preview_refresh_at: updatedAt.toISOString(),
+    preview_digest_day: digest.day,
+    preview_digest_items: String(digest.items.length),
+    preview_matched: String(matched),
+    preview_since: matched > 0 ? state.preview_since ?? updatedAt.toISOString() : state.preview_since,
+  });
+  logApp.info('[THREAT PULSE] Preview refreshed from the digest', { digestItems: digest.items.length, scanned, matched });
+  return matched;
 };
 
 // Lookups of entities opened at the same time are sent to XTM Hub in one batch per object type.
@@ -516,17 +701,21 @@ const getLookupLoader = (platform: PulseHubPlatform, day: string, salt: string, 
 };
 
 export const getPulseEntityInformation = async (context: AuthContext, user: AuthUser, id: string) => {
-  const { values, platform } = await loadPulseContext(context);
+  const { values, platform, access } = await loadPulseContext(context);
   const entity = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const base = { id, sector_bucket: values.sectorBucket ?? null, information: null };
+  const base = { id, access, sector_bucket: values.sectorBucket ?? null, information: null };
   if (!entity || !PULSE_SCOPE_ENTITY_TYPES.includes(entity.entity_type) || !values.scopes.includes(entity.entity_type)) {
     return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope };
   }
-  if (!isPulseReading(values)) {
+  if (access === PulseAccess.NotConnected || !platform) {
+    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.NotRegistered };
+  }
+  if (access === PulseAccess.Off) {
     return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.NotEnabled };
   }
-  if (!platform) {
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.NotRegistered };
+  if (access === PulseAccess.Preview) {
+    // The preview signal written by the last digest pass, if the object is among the most prevalent of the community.
+    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.ContributionRequired, information: toPulseInformationOutput(entity) };
   }
   const policy = await buildPulseMarkingPolicy(context, values);
   if (!isPulseContributable(entity, policy, values.scopes)) {
@@ -551,7 +740,12 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
     return { ...base, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...entity, ...doc } as BasicStorePulseEntity) };
   } catch (error) {
     logApp.warn('[THREAT PULSE] Entity lookup failed', { cause: error, entityId: entity.internal_id });
-    return { ...base, readable: true, unavailable_reason: toPulseUnavailableReason(error), information: toPulseInformationOutput(entity) };
+    await handlePulseReadError(values, error);
+    const reason = toPulseUnavailableReason(error);
+    if (reason === PulseUnavailableReason.ContributionRequired) {
+      return { ...base, access: PulseAccess.Preview, readable: false, unavailable_reason: reason };
+    }
+    return { ...base, readable: true, unavailable_reason: reason, information: toPulseInformationOutput(entity) };
   }
 };
 
@@ -565,15 +759,6 @@ const resolveLocalEntitiesByKeys = async (context: AuthContext, user: AuthUser, 
     filterGroups: [],
   };
   return fullEntitiesList<BasicStorePulseEntity>(context, user, entityTypes, { filters, noFiltersChecking: true });
-};
-
-interface KeyedHubItem<T extends { hash: string; object_type: PulseObjectType }> {
-  item: T;
-  key: string;
-}
-
-const decodeHubItems = <T extends { hash: string; object_type: PulseObjectType }>(salt: string, items: T[]): Array<KeyedHubItem<T>> => {
-  return items.filter((item) => isValidPulseHash(item.hash)).map((item) => ({ item, key: decodeTransportHash(salt, item.hash) }));
 };
 
 // Trending hashes are matched against the keys of the local entities the user can read: only what the platform holds
@@ -632,18 +817,35 @@ export const getPulseTrending = async (context: AuthContext, user: AuthUser, arg
   region_bucket?: PulseRegionBucketValue | null;
   entity_types?: string[] | null;
   first?: number | null;
+  include_preview?: boolean | null;
 }) => {
-  const { values, platform } = await loadPulseContext(context);
+  const { values, platform, access } = await loadPulseContext(context);
   const sectorBucket = args.sector_bucket ?? values.sectorBucket ?? null;
   const regionBucket = args.region_bucket ?? null;
-  const base = { readable: false, day: null, period: args.period, sector_bucket: sectorBucket, region_bucket: regionBucket, network_items_count: 0, entries: [] };
-  if (!isPulseReading(values)) {
-    return { ...base, unavailable_reason: PulseUnavailableReason.NotEnabled };
-  }
-  if (!platform) {
+  const base = {
+    readable: false,
+    preview: false,
+    day: null,
+    period: args.period,
+    sector_bucket: sectorBucket,
+    region_bucket: regionBucket,
+    network_items_count: 0,
+    locked_count: 0,
+    entries: [],
+  };
+  if (access === PulseAccess.NotConnected || !platform) {
     return { ...base, unavailable_reason: PulseUnavailableReason.NotRegistered };
   }
+  if (access === PulseAccess.Off) {
+    return { ...base, unavailable_reason: PulseUnavailableReason.NotEnabled };
+  }
   const entityTypes = (args.entity_types ?? values.scopes).filter((type) => values.scopes.includes(type));
+  if (access === PulseAccess.Preview) {
+    if (!args.include_preview) {
+      return { ...base, unavailable_reason: PulseUnavailableReason.ContributionRequired };
+    }
+    return getPulsePreviewTrending(context, user, platform, digestSectorBucket(sectorBucket), entityTypes);
+  }
   const first = Math.min(MAX_TRENDING_SIZE, Math.max(1, args.first ?? DEFAULT_TRENDING_SIZE));
   try {
     const result = await getHubTrending(platform, {
@@ -656,22 +858,80 @@ export const getPulseTrending = async (context: AuthContext, user: AuthUser, arg
     const entries = await resolveTrendingEntries(context, user, platform, result, entityTypes);
     return {
       readable: true,
+      preview: false,
       unavailable_reason: null,
       day: result.day,
       period: result.period,
       sector_bucket: result.sector_bucket,
       region_bucket: result.region_bucket,
       network_items_count: result.items.length,
+      locked_count: 0,
       entries,
     };
   } catch (error) {
     logApp.warn('[THREAT PULSE] Trending unavailable', { cause: error });
+    await handlePulseReadError(values, error);
+    return { ...base, unavailable_reason: toPulseUnavailableReason(error) };
+  }
+};
+
+// The preview trending of the digest: its first ranks, named when the platform holds them, the next ones counted.
+const getPulsePreviewTrending = async (
+  context: AuthContext,
+  user: AuthUser,
+  platform: PulseHubPlatform,
+  sectorBucket: PulseSectorBucketValue | null,
+  entityTypes: string[],
+) => {
+  const day = utcDay();
+  const base = {
+    readable: false,
+    preview: true,
+    day: null,
+    period: PulsePeriod.Last_7Days,
+    sector_bucket: sectorBucket,
+    region_bucket: null,
+    network_items_count: 0,
+    locked_count: 0,
+    entries: [],
+  };
+  try {
+    const salt = await getPulseSalt(platform, day);
+    const digest = await getHubDigest(platform, day, sectorBucket);
+    const keyedItems = decodeHubItems(salt, digest.trending.items);
+    const entities = await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key));
+    const entries = matchHubItemsToEntities(keyedItems, entities, (item) => -item.rank)
+      .sort((a, b) => a.item.rank - b.item.rank)
+      .map(({ entity, item }) => ({
+        entity,
+        object_type: entity.entity_type,
+        rank: item.rank,
+        platforms_bucket: null,
+        prevalence: item.prevalence_bucket,
+        trend: item.trend,
+        growth: null,
+        first_seen_network: null,
+      }));
+    return {
+      ...base,
+      readable: true,
+      unavailable_reason: null,
+      day: digest.day,
+      period: digest.trending.period,
+      sector_bucket: digest.sector_bucket ?? null,
+      region_bucket: digest.region_bucket ?? null,
+      network_items_count: digest.trending.items.length,
+      locked_count: digest.trending.locked_count,
+      entries,
+    };
+  } catch (error) {
+    logApp.warn('[THREAT PULSE] Preview trending unavailable', { cause: error });
     return { ...base, unavailable_reason: toPulseUnavailableReason(error) };
   }
 };
 
 export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, args: { period: PulsePeriodValue }) => {
-  const { values, platform } = await loadPulseContext(context);
+  const { values, platform, access } = await loadPulseContext(context);
   const base = {
     readable: false,
     period: args.period,
@@ -684,11 +944,14 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
   if (!await isEnterpriseEdition(context)) {
     return { ...base, unavailable_reason: PulseUnavailableReason.EnterpriseEditionRequired };
   }
-  if (!isPulseReading(values)) {
+  if (access === PulseAccess.NotConnected || !platform) {
+    return { ...base, unavailable_reason: PulseUnavailableReason.NotRegistered };
+  }
+  if (access === PulseAccess.Off) {
     return { ...base, unavailable_reason: PulseUnavailableReason.NotEnabled };
   }
-  if (!platform) {
-    return { ...base, unavailable_reason: PulseUnavailableReason.NotRegistered };
+  if (access === PulseAccess.Preview) {
+    return { ...base, unavailable_reason: PulseUnavailableReason.ContributionRequired };
   }
   try {
     const day = utcDay();
@@ -730,8 +993,16 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
     };
   } catch (error) {
     logApp.warn('[THREAT PULSE] Benchmark unavailable', { cause: error });
+    await handlePulseReadError(values, error);
     return { ...base, unavailable_reason: toPulseUnavailableReason(error) };
   }
+};
+// endregion
+
+// region usage telemetry of the preview surfaces
+export const recordPulseTelemetry = (event: PulseTelemetryEvent, surface: PulseSurface) => {
+  addThreatPulsePreviewEventCount(event, surface);
+  return true;
 };
 // endregion
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildOCTIExtensions } from '../../../../../src/database/stix-2-1-converter';
-import { buildPulseDocument, combinePulseLookups } from '../../../../../src/modules/xtm/pulse/pulse-information';
+import { buildPulseDocument, buildPulsePreviewDocument, combinePulseLookups } from '../../../../../src/modules/xtm/pulse/pulse-information';
 import { PULSE_ENTITY_ATTRIBUTES, PULSE_SCOPE_ENTITY_TYPES } from '../../../../../src/modules/xtm/pulse/pulse-types';
 import { INTERNAL_ATTRIBUTES } from '../../../../../src/domain/attribute-utils';
 import { schemaAttributesDefinition } from '../../../../../src/schema/schema-attributes';
@@ -41,6 +41,15 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
     expect(extension.pulse_sector_trend).toBe('rising');
     expect(extension.pulse_first_seen_network).toBe('2026-08-14T00:00:00.000Z');
     expect(extension.pulse_community_uniqueness).toBe(information.communityUniqueness);
+    expect(extension).not.toHaveProperty('pulse_preview');
+  });
+
+  it('should mark the coarse preview signal for stream consumers', () => {
+    const document = buildPulsePreviewDocument(['00112233445566778899aabbccddeeff'], { prevalence: PulsePrevalence.Widespread, trend: PulseTrend.Rising }, new Date());
+    const extension = buildOCTIExtensions(indicator(document)) as unknown as Record<string, unknown>;
+    expect(extension).toMatchObject({ pulse_prevalence: 'widespread', pulse_trend: 'rising', pulse_preview: true });
+    ['pulse_sector_trend', 'pulse_first_seen_network', 'pulse_community_uniqueness', 'pulse_keys', 'pulse_information']
+      .forEach((name) => expect(extension).not.toHaveProperty(name));
   });
 
   it('should never expose the local keys or the stored network details', () => {

@@ -62,6 +62,7 @@ interface StixOpenctiExtension {
   pulse_sector_trend?: string;
   pulse_first_seen_network?: StixDate;
   pulse_community_uniqueness?: number;
+  pulse_preview?: boolean;
   stix_ids: Array<StixId>;
   type: string;
   created_at: StixDate;
