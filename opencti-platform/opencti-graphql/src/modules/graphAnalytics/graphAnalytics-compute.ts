@@ -221,8 +221,8 @@ export const processDirtyEntities = async (
   user: AuthUser,
   ids: string[],
   config: GraphAnalyticsComputeConfig,
-): Promise<{ processed: number; removed: number }> => {
-  if (ids.length === 0) return { processed: 0, removed: 0 };
+): Promise<{ processed: number; removed: number; failed: string[] }> => {
+  if (ids.length === 0) return { processed: 0, removed: 0, failed: [] };
   const uniqueIds = Array.from(new Set(ids));
   const carriers = await loadMetricsCarriers(context, user, uniqueIds);
   const foundIds = new Set(carriers.map((c) => c.internal_id));
@@ -233,6 +233,7 @@ export const processDirtyEntities = async (
   const degrees = await computeDegreeMetrics(context, user, carriers.map((c) => c.internal_id));
   const { updates } = buildDegreeUpdates(carriers, degrees, new Date().toISOString(), true);
   await writeGraphMetrics(context, updates);
+  const failed: string[] = [];
   for (let i = 0; i < carriers.length; i += 1) {
     const carrier = carriers[i];
     if (GRAPH_PROFILED_ENTITY_TYPES.includes(carrier.entity_type)) {
@@ -240,11 +241,12 @@ export const processDirtyEntities = async (
         await computeEntitySimilarity(context, user, { id: carrier.internal_id, entity_type: carrier.entity_type }, config);
       } catch (err) {
         logApp.error('[OPENCTI-MODULE] Graph analytics similarity computation fail', { cause: err, id: carrier.internal_id });
+        failed.push(carrier.internal_id);
       }
     }
     await doYield();
   }
-  return { processed: carriers.length, removed: removedIds.length };
+  return { processed: carriers.length, removed: removedIds.length, failed };
 };
 
 // region full pass
