@@ -9,6 +9,7 @@
   "- Unsupported": "- 지원되지 않음",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
+  "This list is ranked by graph metrics, which require access to every relationship of the platform.": "이 목록은 그래프 지표로 정렬되며, 플랫폼의 모든 관계에 대한 접근 권한이 필요합니다.",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“예, 항상”을 선택하면 해당 설정이 저장됩니다. 그러면 사용자가 권한을 철회할 때까지, 아무도 지켜보지 않는 예약된 실행 시에도 해당 도구는 별도의 확인 요청 없이 실행됩니다.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 허브의 모든 새 리소스를 보려면 클릭하세요",
   "(no output)": "(출력 없음)",

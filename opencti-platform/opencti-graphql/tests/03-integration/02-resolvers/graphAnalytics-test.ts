@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { createEntity, createRelation, deleteElementById } from '../../../src/database/middleware';
 import { MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL } from '../../../src/schema/stixDomainObject';
@@ -141,7 +141,8 @@ describe('Graph analytics resolvers', () => {
     await relate('isA', 'uses', 't1');
     await relate('isA', 'uses', 't2');
     await relate('isA', 'uses', 'tool');
-    await relate('isA', 'uses', 'malware');
+    // relationship restricted to TLP:AMBER, not counted in the graph metrics of a TLP:GREEN user
+    await relate('isA', 'uses', 'malware', { objectMarking: [MARKING_TLP_AMBER] });
     await relate('isA', 'targets', 'sector');
     await relate('isB', 'uses', 't1');
     await relate('isB', 'uses', 't2');
@@ -188,6 +189,47 @@ describe('Graph analytics resolvers', () => {
     expect(resultIds[0]).toBe(ids.isA);
     expect(resultIds).toContain(ids.isB);
     expect(resultIds).not.toContain(ids.isC);
+  });
+
+  it('should count only the relationships a restricted caller can read in graph metrics', async () => {
+    const { data } = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: METRICS_QUERY, variables: { id: ids.isA } });
+    const metrics = data.stixCoreObject.x_opencti_graph_metrics;
+    expect(metrics.degree).toBe(4);
+    expect(metrics.degree_by_type).toEqual([{ relationship_type: 'uses', count: 3 }, { relationship_type: 'targets', count: 1 }]);
+    expect(metrics.betweenness_approx).toBeNull();
+    expect(metrics.computed_at).toBeDefined();
+  });
+
+  it('should reserve graph metrics filtering and sorting to callers reading every relationship', async () => {
+    const sorted = gql`
+      query restrictedHubs {
+        stixCoreObjects(types: ["Intrusion-Set"], orderBy: graph_degree, orderMode: desc, first: 10) { edges { node { id } } }
+      }
+    `;
+    const filtered = gql`
+      query restrictedDegree($filters: FilterGroup) {
+        stixCoreObjects(types: ["Intrusion-Set"], filters: $filters, first: 10) { edges { node { id } } }
+      }
+    `;
+    const message = 'Graph metrics filtering and sorting require access to every relationship of the platform';
+    await queryAsUserIsExpectedError(USER_PARTICIPATE, { query: sorted, variables: {} }, message);
+    const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['graph_degree'], values: ['3'], operator: 'gte' }] };
+    await queryAsUserIsExpectedError(USER_PARTICIPATE, { query: filtered, variables: { filters } }, message);
+  });
+
+  it('should only offer the graph degree filter to callers reading every relationship', async () => {
+    const query = gql`
+      query graphFilterKeys {
+        filterKeysSchema { entity_type filters_schema { filterKey } }
+      }
+    `;
+    const hasGraphDegree = (data: any) => data.filterKeysSchema
+      .find((schema: any) => schema.entity_type === 'Intrusion-Set')
+      .filters_schema.some((definition: any) => definition.filterKey === 'graph_degree');
+    const admin = await queryAsAdminWithSuccess({ query });
+    expect(hasGraphDegree(admin.data)).toBe(true);
+    const restricted = await queryAsUserWithSuccess(USER_PARTICIPATE, { query });
+    expect(hasGraphDegree(restricted.data)).toBe(false);
   });
 
   it('should list similar entities with shared evidence', async () => {
