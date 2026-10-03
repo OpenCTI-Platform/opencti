@@ -1,7 +1,29 @@
 import useVocabularyCategory from './useVocabularyCategory';
 import useAuth from './useAuth';
 
+// Provenance is computed by the platform, never written by users
+const provenanceInternalAttributes = [
+  'x_opencti_assertions',
+  'x_opencti_conflicts',
+  'assertion_source_ids',
+  'freshness_rule_id',
+  'procedures',
+];
+
+const provenanceAttributes = [
+  ...provenanceInternalAttributes,
+  'assertion_source_kinds',
+  'conflict_fields',
+  'corroboration_count',
+  'last_asserted_at',
+  'single_sourced',
+  'has_conflicts',
+  'freshness_stale',
+  'freshness_stale_at',
+];
+
 const ignoredAttributes = [
+  ...provenanceAttributes,
   'id',
   'draft_ids',
   'draft_change',
@@ -48,6 +70,7 @@ const workbenchAttributes = [
 ];
 
 const ignoredAttributesInFeeds = [
+  ...provenanceInternalAttributes,
   'draft_ids',
   'draft_change',
   'parent_types',
@@ -65,6 +88,7 @@ const ignoredAttributesInFeeds = [
 ];
 
 const ignoredAttributesInDashboards = [
+  ...provenanceInternalAttributes,
   'spec_version',
   'extensions',
   'importFiles',
