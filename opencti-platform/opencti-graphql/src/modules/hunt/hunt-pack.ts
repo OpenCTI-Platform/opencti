@@ -144,7 +144,8 @@ const attackExternalId = (stixObject: Record<string, any> | undefined): string |
   return reference?.external_id ?? null;
 };
 
-const resolveLabels = async (context: AuthContext, user: AuthUser, labels: string[]) => {
+/** Creates the missing labels of a pack hunt: only called once the hunt is known to be imported. */
+export const resolveHuntPackLabels = async (context: AuthContext, user: AuthUser, labels: string[]) => {
   const values = Array.from(new Set(labels.filter((label) => typeof label === 'string' && label.trim().length > 0)));
   const resolved = await Promise.all(values.map((value) => addLabel(context, user, { value })));
   return resolved.map((label: BasicStoreEntity) => label.internal_id);
@@ -152,6 +153,8 @@ const resolveLabels = async (context: AuthContext, user: AuthUser, labels: strin
 
 export interface HuntPackImportPlan {
   input: Record<string, unknown>;
+  // Label values, created by resolveHuntPackLabels once the hunt passed every check
+  labels: string[];
   unresolved: string[];
   blocked: boolean;
 }
@@ -225,12 +228,11 @@ export const planHuntPackImport = async (
     [INPUT_HUNT_TARGETS]: await resolveIds(stixHunt[ATTRIBUTE_HUNT_TARGETS]),
     [INPUT_HUNT_SOURCES]: await resolveIds(stixHunt[ATTRIBUTE_HUNT_SOURCES]),
     objectMarking: markings.map((marking) => marking.internal_id),
-    objectLabel: await resolveLabels(context, user, stixHunt.labels ?? []),
   };
   if (author.length > 0) {
     input.createdBy = author[0].internal_id;
   }
-  return { input, unresolved, blocked };
+  return { input, labels: stixHunt.labels ?? [], unresolved, blocked };
 };
 
 export const parseHuntPack = async (file: Promise<FileHandle>) => {

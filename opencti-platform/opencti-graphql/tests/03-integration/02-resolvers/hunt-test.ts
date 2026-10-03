@@ -64,6 +64,7 @@ const RUN_FIELDS = `
   attempt
   next_retry_at
   error_message
+  last_evidence_at
 `;
 
 const REGISTER_CONNECTOR = gql`
@@ -339,6 +340,11 @@ describe('Hunt resolvers', () => {
     expect(run.verdict).toEqual('benign');
     expect(run.result_ids).toEqual([intrusionSetStandardId]);
     expect(run.evidence_sources).toEqual(['splunk-alert-action']);
+    const older = await queryAsAdminWithSuccess({
+      query: HUNT_RUN_EVIDENCE,
+      variables: { id: firstRunId, input: { result_ids: [intrusionSetId], observed_at: '2020-01-01T00:00:00.000Z' } },
+    });
+    expect(older.data?.huntRunEvidenceAdd.last_evidence_at).toEqual(run.last_evidence_at);
     const unknown = await queryAsAdmin({ query: HUNT_RUN_EVIDENCE, variables: { id: firstRunId, input: { result_ids: ['sighting--00000000-0000-4000-8000-000000000000'] } } });
     expect(unknown.errors?.[0].message).toContain('cannot be found or are not accessible');
   });
@@ -418,6 +424,26 @@ describe('Hunt resolvers', () => {
     expect(newHunt.hunt_source_kind).toEqual('hub');
     const draftRun = await queryAsAdmin({ query: HUNT_RUN_START, variables: { id: newHunt.internal_id } });
     expect(draftRun.errors?.[0].message).toContain('does not run');
+    // A hunt whose markings are unknown here is skipped without creating its labels
+    const blockedLabel = 'hunt-test-blocked-pack-label';
+    const blocked = {
+      ...bundle,
+      objects: bundle.objects.map((object: { type: string }) => (object.type === 'hunt' ? {
+        ...object,
+        id: 'hunt--7a2e4c1b-3d5f-5e6a-8b9c-0d1e2f3a4b5c',
+        name: 'Hunt test blocked pack hunt',
+        labels: [blockedLabel],
+        object_marking_refs: ['marking-definition--0b7c4a2e-5d1f-4e3a-9c8b-7a6f5e4d3c2b'],
+      } : object)),
+    };
+    const skipped = await importHuntPack(testContext, ADMIN_USER, toUpload(blocked));
+    expect(skipped.hunts).toHaveLength(0);
+    expect(skipped.unresolved_refs).toContain('marking-definition--0b7c4a2e-5d1f-4e3a-9c8b-7a6f5e4d3c2b');
+    const labels = await queryAsAdminWithSuccess({
+      query: gql`query HuntPackLabels($search: String) { labels(search: $search) { edges { node { value } } } }`,
+      variables: { search: blockedLabel },
+    });
+    expect(labels.data?.labels.edges.map((edge: { node: { value: string } }) => edge.node.value)).not.toContain(blockedLabel);
   });
 
   it('should validate hunts from an OpenAEV emulation, idempotently per inject', async () => {

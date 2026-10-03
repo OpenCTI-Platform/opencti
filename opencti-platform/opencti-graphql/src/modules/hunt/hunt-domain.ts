@@ -43,7 +43,8 @@ import { updateHuntRunInformation } from './hunt-stats';
 import { HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, normalizeNativeQueries } from './hunt-utils';
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
 import { callHuntAgent, HUNT_PLANNER_INTENT, validateHuntPlanSpec } from './hunt-agents';
-import { parseHuntPack, planHuntPackImport } from './hunt-pack';
+import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
+import { type HuntValidationState, validateHuntState } from './hunt-validators';
 import { createHuntRuns, findHuntConnectors } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
@@ -412,6 +413,9 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
           input[field] = existing[field];
         });
       }
+      // Every check runs before the first write: a refused hunt never leaves labels behind
+      await validateHuntState(context, input as HuntValidationState);
+      input.objectLabel = await resolveHuntPackLabels(context, user, plan.labels);
       imported.push(await addHunt(context, user, input as unknown as HuntAddInput));
     }
   }

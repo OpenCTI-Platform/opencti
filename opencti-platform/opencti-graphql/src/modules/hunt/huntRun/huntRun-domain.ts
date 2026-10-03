@@ -672,12 +672,15 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
   const addedHits = Math.max(0, Math.round(input.hits_count ?? 0));
   // Merged on the run read again under the transition lock, concurrent evidence never overwrites each other
   const element = await withHuntRunTransition(context, run.internal_id, async (current) => {
+    // Late evidence can arrive out of order: the most recent observation is kept
+    const previousEvidenceAt = current.last_evidence_at ? new Date(current.last_evidence_at).getTime() : Number.NEGATIVE_INFINITY;
+    const lastEvidenceAt = new Date(Math.max(previousEvidenceAt, observedAt.getTime()));
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
       result_ids: Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)])).slice(0, RESULT_IDS_MAX),
       hits_count: (current.hits_count ?? 0) + addedHits,
       evidence_sample: sanitizeEvidence([...(current.evidence_sample ?? []), ...(input.evidence_sample ?? [])]),
       evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
-      last_evidence_at: observedAt.toISOString(),
+      last_evidence_at: lastEvidenceAt.toISOString(),
     });
     return patched;
   });
