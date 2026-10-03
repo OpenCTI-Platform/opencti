@@ -79,6 +79,7 @@ export interface DefenseValidationEvidence extends DefenseEvidence {
   status: DefenseValidationStatus;
   last_result_at?: string;
   scores: DefenseScore[];
+  attributed?: boolean; // technique-wide list only: the result is attributed to a security platform (absent from older stored coverages)
 }
 
 export interface DefensePlatformVector {

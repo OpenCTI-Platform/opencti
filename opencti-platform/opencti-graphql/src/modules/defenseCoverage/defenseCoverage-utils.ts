@@ -159,22 +159,30 @@ export const computeRecommendedAction = (input: {
 
 // region evidences
 /**
- * Bounds an evidence list. Levels are evaluated per reader after access filtering, so when an access key is given the
- * cap first keeps one evidence of every access key (round robin): a reader who can see any evidence still sees one.
+ * Bounds an evidence list. Levels are evaluated per reader after access filtering, so when an access key is given
+ * every access partition keeps its first evidence whatever the bound (the bound only applies to the others, taken
+ * round robin): a reader who can see any evidence of a partition still sees one. The level class splits a partition
+ * where the evidence kind matters to the level (the deployment status), so that each class stays represented too.
+ * Pass the evidences in preference order: the first one of a partition is the one kept.
  */
-export const capEvidences = <T>(evidences: T[], max: number, accessKeyOf?: (evidence: T) => string): T[] => {
+export const capEvidences = <T>(
+  evidences: T[],
+  max: number,
+  accessKeyOf?: (evidence: T) => string,
+  levelClassOf?: (evidence: T) => string,
+): T[] => {
   if (evidences.length <= max) return evidences;
   if (!accessKeyOf) return evidences.slice(0, max);
   const groups = new Map<string, T[]>();
   evidences.forEach((evidence) => {
-    const key = accessKeyOf(evidence);
+    const key = levelClassOf ? `${accessKeyOf(evidence)}|${levelClassOf(evidence)}` : accessKeyOf(evidence);
     const group = groups.get(key);
     if (group) group.push(evidence);
     else groups.set(key, [evidence]);
   });
-  const capped: T[] = [];
   const groupLists = Array.from(groups.values());
-  for (let round = 0; capped.length < max; round += 1) {
+  const capped: T[] = groupLists.map((group) => group[0]);
+  for (let round = 1; capped.length < max; round += 1) {
     const picks = groupLists.filter((group) => round < group.length).map((group) => group[round]);
     if (picks.length === 0) break;
     capped.push(...picks.slice(0, max - capped.length));
@@ -278,9 +286,10 @@ export const evaluateCoverage = (
     .filter((p) => !platformIds || platformIds.includes(p.platform_id));
   const platforms = selectedVectors.map((vector) => evaluatePlatform(vector, can, ruleIds, hasDetectingDataComponent));
   // Results not attributed to a platform only count when no platform is selected
+  // The stored flag survives the cap of the platform lists, the vectors only tell for coverages stored without it
   const attributedIds = new Set((coverage?.platforms ?? []).flatMap((p) => p.validations.map((v) => v.rel)));
   const unattributed = !platformIds
-    ? (coverage?.validations ?? []).filter((v) => !attributedIds.has(v.rel) && isEvidenceAccessible(v, can))
+    ? (coverage?.validations ?? []).filter((v) => !(v.attributed ?? attributedIds.has(v.rel)) && isEvidenceAccessible(v, can))
     : [];
   const unattributedLatest = latestValidation(unattributed);
   const platformValidations = platforms.filter((p) => p.validated !== 'none').map((p) => ({
