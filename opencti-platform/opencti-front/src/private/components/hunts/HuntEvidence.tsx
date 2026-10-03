@@ -86,10 +86,10 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
     <>
       <div style={{ display: 'flex', gap: theme.spacing(1.5), flexWrap: 'wrap', alignItems: 'center', marginBottom: theme.spacing(2) }} data-testid="hunt-evidence-filters">
         <Select value={runId} onValueChange={setRunId}>
-          <SelectTrigger aria-label={t_i18n('Run')} style={{ minWidth: 260 }}>
+          <SelectTrigger aria-label={t_i18n('Hunt run')} style={{ minWidth: 260 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Run')}>
+          <SelectContent aria-label={t_i18n('Hunt run')}>
             <SelectItem value={ALL}>{t_i18n('All runs ({count})', { values: { count: runs.length } })}</SelectItem>
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
