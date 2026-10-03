@@ -61,7 +61,8 @@ const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
     label: point.label,
     x: toWidgetValue(point.x, xMetric.type) ?? 0,
     y: toWidgetValue(point.y, yMetric.type) ?? 0,
-    size: point.size ?? 0,
+    // Signed metrics (lead time) can be negative: a radius needs a non-negative size
+    size: Math.max(0, point.size ?? 0),
   })), [sourceScorecardsScatter, xMetric, yMetric]);
   // Bubble radius proportional to the square root of the size metric, bounded so small sources stay visible
   const maxSize = Math.max(1, ...points.map((point) => point.size));
