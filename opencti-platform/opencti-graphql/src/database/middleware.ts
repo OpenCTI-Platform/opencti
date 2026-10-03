@@ -102,7 +102,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions } from './redis';
+import { notify, redisAddDeletions, redisRemoveDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
 import {
@@ -2115,6 +2115,7 @@ export const restoreEntityFromMergeSnapshot = async (
   const participantIds = [input.internal_id, input.standard_id];
   let lock;
   try {
+    await redisRemoveDeletions([input.internal_id], getDraftContext(context, user));
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     const collisions = await internalFindByIds(context, SYSTEM_USER, participantIds) as BasicStoreBase[];
     if (collisions.length > 0) {

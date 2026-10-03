@@ -406,6 +406,14 @@ export const redisAddDeletions = async (internalIds: Array<string>, draftId: str
     await tx.zadd('platform-deletions', time, ...ids);
   });
 };
+// For an element deliberately recreated with the identifier it had before its deletion (a merge being reverted):
+// while the deletion is recent, every lock on that identifier is refused.
+export const redisRemoveDeletions = async (internalIds: Array<string>, draftId: string | undefined = undefined) => {
+  const ids = draftId ? internalIds.map((id) => `${id}${draftId}`) : internalIds;
+  if (ids.length > 0) {
+    await getClientLock().zrem('platform-deletions', ...ids);
+  }
+};
 export const redisFetchLatestDeletions = async () => {
   const time = new Date().getTime();
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
