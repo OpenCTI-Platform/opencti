@@ -301,6 +301,36 @@ export interface ScoredTarget extends GraphSimilarityScore {
 }
 
 /**
+ * Rows of `source` that the replacement does not rewrite: every outgoing row, and the incoming rows
+ * Y -> source whose Y is no longer a scored candidate. Rows of scored candidates are overwritten in place.
+ */
+const deleteReplacedSimilarityRows = async (sourceId: string, scoredIds: string[]) => {
+  await elRawDeleteByQuery({
+    index: READ_INDEX_GRAPH_SIMILARITY,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      query: {
+        bool: {
+          should: [
+            { term: { 'similarity_entity_id.keyword': sourceId } },
+            {
+              bool: {
+                must: [{ term: { 'similarity_target_id.keyword': sourceId } }],
+                must_not: [{ terms: { 'similarity_entity_id.keyword': scoredIds } }],
+              },
+            },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Graph analytics similarity cleanup fail', { cause: err });
+  });
+};
+
+/**
  * Replace every row touching `source`. Rows are directional (A -> B lists B among the top-N of A),
  * the score being symmetric, B -> A is refreshed at the same time so B does not wait for its own recompute.
  * Rows Y -> A kept by Y for its own top-N are refreshed with the new score, or removed when A no longer qualifies.
@@ -316,22 +346,29 @@ export const replaceSimilarityRows = async (
   const keep = scored.slice(0, topN);
   const keepIds = new Set(keep.map((k) => k.target_id));
   const scoredById = new Map(scored.map((s) => [s.target_id, s]));
-  const incoming = await searchSimilarityRows(context, user, { term: { 'similarity_target_id.keyword': source.id } }, 2000);
-  await deleteSimilarityRowsForEntities([source.id]);
+  // only the incoming rows of scored candidates are refreshed, their number is bounded by the candidates limit
+  const refreshableIds = scored.map((s) => s.target_id).filter((id) => !keepIds.has(id));
+  const incoming = refreshableIds.length === 0 ? [] : await searchSimilarityRows(context, user, {
+    bool: {
+      must: [
+        { term: { 'similarity_target_id.keyword': source.id } },
+        { terms: { 'similarity_entity_id.keyword': refreshableIds } },
+      ],
+    },
+  }, refreshableIds.length);
+  await deleteReplacedSimilarityRows(source.id, Array.from(scoredById.keys()));
   const rows: Array<Record<string, unknown>> = [];
   keep.forEach((target) => {
     const targetRef = { id: target.target_id, entity_type: target.target_type };
     rows.push(buildSimilarityRow(source, targetRef, target, computedAt));
     rows.push(buildSimilarityRow(targetRef, source, target, computedAt));
   });
-  incoming
-    .filter((row) => !keepIds.has(row.similarity_entity_id))
-    .forEach((row) => {
-      const fresh = scoredById.get(row.similarity_entity_id);
-      if (fresh) {
-        rows.push(buildSimilarityRow({ id: row.similarity_entity_id, entity_type: row.similarity_entity_type }, source, fresh, computedAt));
-      }
-    });
+  incoming.forEach((row) => {
+    const fresh = scoredById.get(row.similarity_entity_id);
+    if (fresh) {
+      rows.push(buildSimilarityRow({ id: row.similarity_entity_id, entity_type: row.similarity_entity_type }, source, fresh, computedAt));
+    }
+  });
   const chunks = chunk(rows, BULK_CHUNK);
   for (let i = 0; i < chunks.length; i += 1) {
     const body = chunks[i].flatMap((row) => [{ index: { _index: INDEX_GRAPH_SIMILARITY, _id: row.internal_id } }, row]);

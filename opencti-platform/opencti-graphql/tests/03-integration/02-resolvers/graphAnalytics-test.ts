@@ -16,7 +16,13 @@ import {
   runInfrastructureClustering,
   startFullPass,
 } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
-import { addClusterPromotion, deleteSimilarityRowsForEntities, loadGraphClusters } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
+import {
+  addClusterPromotion,
+  deleteSimilarityRowsForEntities,
+  listSimilarityRowsBetween,
+  loadGraphClusters,
+  replaceSimilarityRows,
+} from '../../../src/modules/graphAnalytics/graphAnalytics-store';
 import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
 import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
@@ -471,6 +477,29 @@ describe('Graph analytics resolvers', () => {
     } finally {
       await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR, GRAPH_STATE_FULL_PASS_STARTED_AT, GRAPH_STATE_FULL_PASS_COMPLETED_AT, GRAPH_STATE_FULL_PASS_PROCESSED]);
       await redisGraphAnalyticsPopReady(Date.now(), 100);
+    }
+  });
+
+  it('should only drop the incoming similarity rows of entities that are no longer candidates', async () => {
+    const [source, kept, refreshed, stale] = [uuidv4(), uuidv4(), uuidv4(), uuidv4()].map((id) => ({ id, entity_type: ENTITY_TYPE_INTRUSION_SET }));
+    const scoreOf = (target: { id: string; entity_type: string }, score: number) => ({
+      target_id: target.id, target_type: target.entity_type, score, jaccard: score, structural: score, shared: {}, shared_count: 1,
+    });
+    const allIds = [source.id, kept.id, refreshed.id, stale.id];
+    try {
+      // refreshed and stale both keep the source in their own top-N
+      await replaceSimilarityRows(context, ADMIN_USER, refreshed, [scoreOf(source, 0.2)], 1);
+      await replaceSimilarityRows(context, ADMIN_USER, stale, [scoreOf(source, 0.2)], 1);
+      await replaceSimilarityRows(context, ADMIN_USER, source, [scoreOf(kept, 0.9), scoreOf(refreshed, 0.5)], 1);
+      const rows = await listSimilarityRowsBetween(context, ADMIN_USER, allIds);
+      const described = rows.map((row) => `${row.similarity_entity_id}>${row.similarity_target_id}:${row.similarity_score}`).sort();
+      expect(described).toEqual([
+        `${source.id}>${kept.id}:0.9`,
+        `${kept.id}>${source.id}:0.9`,
+        `${refreshed.id}>${source.id}:0.5`,
+      ].sort());
+    } finally {
+      await deleteSimilarityRowsForEntities(allIds);
     }
   });
 
