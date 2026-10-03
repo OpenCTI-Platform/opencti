@@ -78,17 +78,99 @@ export const AuditCSVQuery = graphql`
             id
             name
           }
+          user_metadata
           context_data {
             entity_id
             entity_type
             entity_name
             message
+            from_id
+            to_id
+            changes {
+              field
+              changes_added
+              changes_removed
+            }
           }
         }
       }
     }
   }
 `;
+
+type AuditCsvNode = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user?: { id: string; name: string } | null;
+  user_metadata?: unknown;
+  context_data?: {
+    entity_id?: string | null;
+    entity_type?: string | null;
+    entity_name?: string | null;
+    message: string;
+    from_id?: string | null;
+    to_id?: string | null;
+    changes?: ReadonlyArray<{
+      field: string;
+      changes_added?: ReadonlyArray<string> | null;
+      changes_removed?: ReadonlyArray<string> | null;
+    } | null> | null;
+  } | null;
+};
+
+type AuditCsvRow = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  user_metadata: string;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user_id: string;
+  user_name: string;
+  context_data_id: string;
+  context_data_entity_type: string;
+  context_data_entity_name: string;
+  context_data_message: string;
+  context_data_from_id: string;
+  context_data_to_id: string;
+  context_data_changes: string;
+};
+
+// react-csv wraps values in quotes but never escapes quotes within them (no RFC4180 support),
+// so any JSON-serialized field must go through this before being handed to CSVLink.
+export const toCsvSafeJson = (value: unknown): string => {
+  if (value === null || value === undefined) return 'undefined';
+  // JSON.stringify returns undefined for non-serializable inputs such as functions or symbols.
+  const serialized = JSON.stringify(value);
+  return serialized === undefined ? 'undefined' : serialized.replace(/"/g, '""');
+};
+
+export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
+  id: node.id,
+  entity_type: node.entity_type,
+  event_type: node.event_type,
+  event_scope: node.event_scope,
+  event_status: node.event_status,
+  user_metadata: toCsvSafeJson(node.user_metadata),
+  timestamp: node.timestamp,
+  context_uri: node.context_uri,
+  user_id: node.user?.id ?? 'undefined',
+  user_name: node.user?.name ?? 'undefined',
+  context_data_id: node.context_data?.entity_id ?? 'undefined',
+  context_data_entity_type: node.context_data?.entity_type ?? 'undefined',
+  context_data_entity_name: node.context_data?.entity_name ?? 'undefined',
+  context_data_message: node.context_data?.message ?? 'undefined',
+  context_data_from_id: node.context_data?.from_id ?? 'undefined',
+  context_data_to_id: node.context_data?.to_id ?? 'undefined',
+  context_data_changes: toCsvSafeJson(node.context_data?.changes),
+}));
 
 const Audit = () => {
   const classes = useStyles();
@@ -97,7 +179,7 @@ const Audit = () => {
   >(null);
   const hasPageRendered = useRef(false);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<AuditCsvRow[]>([]);
   const { settings } = useAuth();
   const hasBothCapabilities = useGranted(
     [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
@@ -173,26 +255,7 @@ const Audit = () => {
         const { audits } = result;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const csvData = audits.edges.map((n) => {
-          const { node } = n;
-          return {
-            id: node.id,
-            entity_type: node.entity_type,
-            event_type: node.event_type,
-            event_scope: node.event_scope,
-            event_status: node.event_status,
-            timestamp: node.timestamp,
-            context_uri: node.context_uri,
-            user_id: node.user?.id ?? 'undefined',
-            user_name: node.user?.name ?? 'undefined',
-            context_data_id: node.context_data?.entity_id ?? 'undefined',
-            context_data_entity_type:
-              node.context_data?.entity_type ?? 'undefined',
-            context_data_entity_name:
-              node.context_data?.entity_name ?? 'undefined',
-            context_data_message: node.context_data?.message ?? 'undefined',
-          };
-        });
+        const csvData = buildAuditCsvData(audits.edges);
         setData(csvData);
         setLoading(false);
       });
