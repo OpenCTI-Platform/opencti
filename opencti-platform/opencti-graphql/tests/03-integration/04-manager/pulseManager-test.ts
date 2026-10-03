@@ -17,7 +17,6 @@ import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pu
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
 import { PulseHubMock } from '../../utils/pulseHubMock';
-import type { BasicStoreSettings } from '../../../src/types/settings';
 
 const HUB_TOKEN = 'threat-pulse-integration-token';
 const SHARED_IP = '198.51.100.201';
@@ -118,8 +117,9 @@ describe('Threat Pulse manager and API', () => {
   beforeAll(async () => {
     previousOverride = conf.get('xtm:xtmhub_api_override_url');
     conf.set('xtm:xtmhub_api_override_url', await hub.start());
-    const settings = await getSettings(testContext) as BasicStoreSettings;
-    settingsId = settings.id;
+    const { id } = await getSettings(testContext);
+    if (!id) throw new Error('The platform settings must exist before the Threat Pulse manager test');
+    settingsId = id;
     hub.registerPlatform(settingsId, HUB_TOKEN);
     await updateAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, [{ key: 'xtm_hub_token', value: [HUB_TOKEN] }]);
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
