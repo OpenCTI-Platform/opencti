@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -41,6 +42,7 @@ class SystemDetailsComponent extends Component {
                 commonmark={true}
               />
             </Grid>
+            <CustomFieldValuesDisplay entityType={system.entity_type} values={system.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -58,6 +60,10 @@ const SystemDetails = createFragmentContainer(SystemDetailsComponent, {
   system: graphql`
     fragment SystemDetails_system on System {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       contact_information
       description
       x_opencti_reliability

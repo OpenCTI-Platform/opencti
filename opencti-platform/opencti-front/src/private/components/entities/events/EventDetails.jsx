@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -55,6 +56,7 @@ class EventDetailsComponent extends Component {
               </Label>
               <ItemScore score={event.x_opencti_score} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={event.entity_type} values={event.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -72,6 +74,10 @@ const EventDetails = createFragmentContainer(EventDetailsComponent, {
   event: graphql`
     fragment EventDetails_event on Event {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       event_types
       start_time

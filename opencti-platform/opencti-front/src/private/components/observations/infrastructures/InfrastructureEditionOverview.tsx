@@ -21,6 +21,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -90,6 +91,7 @@ const infrastructureMutationRelationDelete = graphql`
 export const infrastructureEditionOverviewFragment = graphql`
   fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -406,6 +408,13 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={infrastructure.entity_type}
+            entityId={infrastructure.id}
+            values={infrastructure.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

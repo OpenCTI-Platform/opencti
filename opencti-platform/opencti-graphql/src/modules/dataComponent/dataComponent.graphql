@@ -139,6 +139,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
     # DataComponents
     name: String!
     description: String
@@ -212,6 +213,7 @@ input DataComponentAddInput {
     x_opencti_workflow_id: String
     x_opencti_modified_at: DateTime
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

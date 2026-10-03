@@ -16,9 +16,9 @@ import {
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
-  stixFilters,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
+  useStixFilters,
   GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
@@ -1550,10 +1550,14 @@ describe('isDraftWorkspaceFilterGroup', () => {
   });
 });
 
-describe('stixFilters', () => {
+describe('useStixFilters', () => {
   it('should include the SSVC filter keys', () => {
-    expect(stixFilters).toContain('x_opencti_ssvc_exploitation');
-    expect(stixFilters).toContain('x_opencti_ssvc_automatable');
-    expect(stixFilters).toContain('x_opencti_ssvc_technical_impact');
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('x_opencti_ssvc_exploitation');
+    expect(hook.result.current).toContain('x_opencti_ssvc_automatable');
+    expect(hook.result.current).toContain('x_opencti_ssvc_technical_impact');
   });
 });

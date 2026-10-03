@@ -23,7 +23,7 @@ import type { EditContext, EditInput, QueryStreamCollectionsArgs, StreamCollecti
 export const createStreamCollection = async (context: AuthContext, user: AuthUser, input: StreamCollectionAddInput) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filters));
+    await validateFilterGroupForStixMatch(context, user, JSON.parse(input.filters));
   }
   // origin filters can only target the stream event envelope (members_user/group/organization)
   if (input.origin_filters) {
@@ -76,7 +76,7 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   const filtersItem = input.find((item) => item.key === 'filters');
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
+    await validateFilterGroupForStixMatch(context, user, JSON.parse(filtersItem.value[0]));
   }
   const originFiltersItem = input.find((item) => item.key === 'origin_filters');
   if (originFiltersItem?.value?.[0]) {

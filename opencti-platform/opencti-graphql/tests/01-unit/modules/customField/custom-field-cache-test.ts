@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as cacheModule from '../../../../src/database/cache';
 import {
   getCustomFieldDefinitionByLabel,
-  getCustomFieldDefinitionByName,
+  getCustomFieldDefinitionByNameOrAlias,
   getCustomFieldDefinitions,
   getCustomFieldDefinitionsForEntityType,
   getCustomFieldSettingForEntityType,
@@ -102,12 +102,12 @@ describe('custom-field-cache', () => {
     it('finds a definition by its technical name', async () => {
       const def = makeDefinition({ name: 'x_opencti_cf_score' });
       seed(def);
-      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_score')).toEqual(def);
+      expect(await getCustomFieldDefinitionByNameOrAlias(CONTEXT, USER, 'x_opencti_cf_score')).toEqual(def);
     });
 
     it('returns undefined when no definition matches the name', async () => {
       seed(makeDefinition({ name: 'x_opencti_cf_score' }));
-      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_unknown')).toBeUndefined();
+      expect(await getCustomFieldDefinitionByNameOrAlias(CONTEXT, USER, 'x_opencti_cf_unknown')).toBeUndefined();
     });
   });
 

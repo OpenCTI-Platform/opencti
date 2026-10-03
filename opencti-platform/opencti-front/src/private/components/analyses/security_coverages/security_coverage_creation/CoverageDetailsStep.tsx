@@ -1,6 +1,7 @@
 import Button from 'src/components/common/button/Button';
 import { Box } from '@mui/material';
 import { Field } from 'formik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import TextField from 'src/components/TextField';
 import MarkdownField, { MarkdownImagesController } from 'src/components/fields/markdownField/MarkdownField';
 import PeriodicityField from 'src/components/fields/PeriodicityField';
@@ -134,6 +135,7 @@ const CoverageDetailsStep = ({
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
       />
+      <CustomFieldValuesCreation />
       <FormButtonContainer>
         <Button
           variant="secondary"

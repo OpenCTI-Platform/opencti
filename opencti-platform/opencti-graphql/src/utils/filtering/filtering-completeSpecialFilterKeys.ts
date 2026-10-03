@@ -55,7 +55,7 @@ import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
 import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
 import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
@@ -624,7 +624,7 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
   const op: string = operator ?? FilterOperator.Eq;
   const filterKey = Array.isArray(key) ? key[0] : key;
 
-  const definition = await getCustomFieldDefinitionByName(context, user, filterKey);
+  const definition = await getCustomFieldDefinitionByNameOrAlias(context, user, filterKey);
   if (!definition) {
     throw FunctionalError('Custom field definition not found for filter key', { filterKey });
   }

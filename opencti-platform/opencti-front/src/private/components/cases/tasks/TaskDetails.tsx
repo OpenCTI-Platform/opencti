@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { TaskDetails_task$data, TaskDetails_task$key } from './__generated__/TaskDetails_task.graphql';
@@ -11,6 +12,10 @@ import Label from '../../../../components/common/label/Label';
 const TaskDetailsFragment = graphql`
   fragment TaskDetails_task on Task {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     due_date
     description
@@ -76,6 +81,7 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
             </Label>
             <ItemDueDate due_date={data.due_date} variant="inElement" />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>

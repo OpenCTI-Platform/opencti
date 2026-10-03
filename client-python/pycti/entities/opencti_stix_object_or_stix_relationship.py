@@ -28,6 +28,16 @@ class StixObjectOrStixRelationship:
                 updated_at
             }
             ... on StixDomainObject {
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             creators {
                 id
                 name
@@ -459,6 +469,16 @@ class StixObjectOrStixRelationship:
                         }
                     }
                 }
+                customFieldValues {
+                    field_id
+                    field_name
+                    int_value
+                    string_value
+                    boolean_value
+                    date_value
+                    select_value
+                    select_values
+                }
                 from {
                     ... on BasicObject {
                         id
@@ -753,6 +773,16 @@ class StixObjectOrStixRelationship:
                 x_opencti_negative
                 first_seen
                 last_seen
+                customFieldValues {
+                    field_id
+                    field_name
+                    int_value
+                    string_value
+                    boolean_value
+                    date_value
+                    select_value
+                    select_values
+                }
             }
         """
 

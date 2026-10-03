@@ -18,6 +18,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -82,6 +83,7 @@ const dataComponentMutationRelationDelete = graphql`
 const DataComponentEditionOverviewFragment = graphql`
   fragment DataComponentEditionOverview_dataComponent on DataComponent {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     confidence
     entity_type
@@ -322,6 +324,13 @@ const DataComponentEditionOverview: FunctionComponent<
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={dataComponent.entity_type}
+            entityId={dataComponent.id}
+            values={dataComponent.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

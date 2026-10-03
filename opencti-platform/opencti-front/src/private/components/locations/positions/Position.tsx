@@ -100,6 +100,9 @@ const Position = createFragmentContainer(PositionComponent, {
   position: graphql`
     fragment Position_position on Position {
       id
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       standard_id
       entity_type
       x_opencti_stix_ids
