@@ -51,7 +51,7 @@ export const containerTimelineWidgetQuery = graphql`
         default_grouping
       }
     }
-    containerTimeline(id: $id, lanes: $lanes, first: $count) {
+    containerTimeline(id: $id, lanes: $lanes, first: $count, orderMode: desc) {
       edges {
         node {
           id
@@ -84,7 +84,8 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow }: Contain
     containerTimelineWidgetQuery,
     queryRef,
   );
-  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node), [containerTimeline]);
+  // The latest events of the timeline (the window of the widget ends at the last one), in chronological order
+  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
   if (!container || !summary) {
     return <WidgetNoData message={t_i18n('The selected incident or case is not available')} />;
   }

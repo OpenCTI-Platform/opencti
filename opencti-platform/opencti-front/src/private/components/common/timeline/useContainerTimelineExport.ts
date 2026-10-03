@@ -8,6 +8,7 @@ import type {
   ContainerTimelineMutationsExportQuery,
   ContainerTimelineMutationsExportQuery$variables,
   TimelineEventKind,
+  TimelineEventSource,
   TimelineLane as GqlTimelineLane,
 } from './__generated__/ContainerTimelineMutationsExportQuery.graphql';
 import {
@@ -70,12 +71,22 @@ const svgToPngBlob = (svg: string, width: number, height: number): Promise<Blob>
   image.src = url;
 });
 
-export interface TimelineFileOptions {
-  containerId: string;
-  format: TimelineExportFormat;
+/** Filters of the exported events, the whole timeline when none is given. */
+export interface TimelineExportFilters {
   lanes?: readonly string[] | null;
   kinds?: readonly string[] | null;
+  sources?: readonly string[] | null;
+  search?: string | null;
   includeHidden?: boolean;
+  pinnedOnly?: boolean;
+  // Time window (ISO dates) of the events
+  from?: string | null;
+  to?: string | null;
+}
+
+export interface TimelineFileOptions extends TimelineExportFilters {
+  containerId: string;
+  format: TimelineExportFormat;
   // The rendered lanes chart, exported as is for SVG and PNG; the server rendering is used otherwise
   svgElement?: SVGSVGElement | null;
 }
@@ -109,9 +120,14 @@ export const useTimelineFileRenderer = () => {
     const variables: ContainerTimelineMutationsExportQuery$variables = {
       id: options.containerId,
       format,
+      from: options.from ?? null,
+      to: options.to ?? null,
       lanes: (options.lanes ?? null) as GqlTimelineLane[] | null,
       kinds: (options.kinds ?? null) as TimelineEventKind[] | null,
+      sources: options.sources && options.sources.length > 0 ? options.sources as TimelineEventSource[] : null,
+      search: options.search || null,
       includeHidden: options.includeHidden ?? false,
+      pinnedOnly: options.pinnedOnly ?? false,
       labels: format === 'csv' ? null : labels(),
     };
     const result = await fetchQuery<ContainerTimelineMutationsExportQuery>(containerTimelineExportQuery, variables, { fetchPolicy: 'network-only' }).toPromise();
@@ -156,14 +172,12 @@ export const TIMELINE_EXPORT_MIME_TYPE_LIST = Object.values(TIMELINE_EXPORT_MIME
 interface TimelineExportOptions {
   containerId: string;
   containerName: string;
-  lanes: readonly string[] | null;
-  kinds: readonly string[] | null;
-  includeHidden: boolean;
+  filters: TimelineExportFilters;
   svgRef: RefObject<SVGSVGElement | null>;
 }
 
-/** Download of the timeline from the tab toolbar, with the filters of the current view. */
-const useContainerTimelineExport = ({ containerId, containerName, lanes, kinds, includeHidden, svgRef }: TimelineExportOptions) => {
+/** Download of the timeline from the tab toolbar, with the filters and the time window of the current view. */
+const useContainerTimelineExport = ({ containerId, containerName, filters, svgRef }: TimelineExportOptions) => {
   const { t_i18n } = useFormatter();
   const { renderTimelineFile } = useTimelineFileRenderer();
   const [exporting, setExporting] = useState(false);
@@ -171,7 +185,7 @@ const useContainerTimelineExport = ({ containerId, containerName, lanes, kinds, 
   const exportTimeline = async (format: TimelineExportFormat) => {
     setExporting(true);
     try {
-      const blob = await renderTimelineFile({ containerId, format, lanes, kinds, includeHidden, svgElement: svgRef.current });
+      const blob = await renderTimelineFile({ containerId, format, ...filters, svgElement: svgRef.current });
       downloadBlob(blob, buildTimelineFileName(containerName, format));
     } catch {
       MESSAGING$.notifyError(t_i18n('The timeline export failed'));

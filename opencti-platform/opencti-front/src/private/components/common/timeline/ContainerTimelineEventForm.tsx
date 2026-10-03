@@ -1,4 +1,5 @@
 import React from 'react';
+import type { PayloadError } from 'relay-runtime';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import Button from '@common/button/Button';
@@ -15,7 +16,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import { fieldSpacingContainerStyle, type FieldOption } from '../../../../utils/field';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { timelineEventAddMutation, timelineEventEditMutation } from './ContainerTimelineMutations';
+import { notifyTimelineMutationErrors, timelineEventAddMutation, timelineEventEditMutation } from './ContainerTimelineMutations';
 import type {
   ContainerTimelineMutationsAddMutation,
   TimelineEventKind,
@@ -108,8 +109,9 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
       annotation: values.annotation || null,
       objectMarking: values.objectMarking.map((marking) => marking.value),
     };
-    const onCompleted = () => {
+    const onCompleted = (_: unknown, errors: readonly PayloadError[] | null) => {
       setSubmitting(false);
+      if (notifyTimelineMutationErrors(errors)) return;
       resetForm();
       MESSAGING$.notifySuccess(isEdition ? t_i18n('The milestone has been updated') : t_i18n('The milestone has been added to the timeline'));
       onSaved();

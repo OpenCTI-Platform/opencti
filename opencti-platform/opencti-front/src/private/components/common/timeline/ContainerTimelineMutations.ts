@@ -1,7 +1,16 @@
 import { graphql } from 'react-relay';
+import type { PayloadError } from 'relay-runtime';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 // Mutations return the fields they change so that Relay updates the events in place;
 // adding, deleting, hiding and regenerating refetch the timeline.
+
+/** Notify the payload errors of a completed mutation; true when the mutation was rejected. */
+export const notifyTimelineMutationErrors = (errors: readonly PayloadError[] | null | undefined): boolean => {
+  if (!errors || errors.length === 0) return false;
+  MESSAGING$.notifyError(errors.map((error) => error.message).join('\n'));
+  return true;
+};
 
 export const timelineEventAddMutation = graphql`
   mutation ContainerTimelineMutationsAddMutation($input: TimelineEventAddInput!) {
@@ -105,11 +114,28 @@ export const containerTimelineExportQuery = graphql`
   query ContainerTimelineMutationsExportQuery(
     $id: String!
     $format: TimelineExportFormat!
+    $from: DateTime
+    $to: DateTime
     $lanes: [TimelineLane!]
     $kinds: [TimelineEventKind!]
+    $sources: [TimelineEventSource!]
+    $search: String
     $includeHidden: Boolean
+    $pinnedOnly: Boolean
     $labels: [TimelineExportLabelInput!]
   ) {
-    containerTimelineExport(id: $id, format: $format, lanes: $lanes, kinds: $kinds, includeHidden: $includeHidden, labels: $labels)
+    containerTimelineExport(
+      id: $id
+      format: $format
+      from: $from
+      to: $to
+      lanes: $lanes
+      kinds: $kinds
+      sources: $sources
+      search: $search
+      includeHidden: $includeHidden
+      pinnedOnly: $pinnedOnly
+      labels: $labels
+    )
   }
 `;

@@ -20,6 +20,7 @@ import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
 import {
   containerTimelineUpdatedSubscription,
+  notifyTimelineMutationErrors,
   timelineEventDeleteMutation,
   timelineEventEditMutation,
   timelineEventHideMutation,
@@ -436,21 +437,32 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const [commitRegenerate] = useApiMutation<ContainerTimelineMutationsRegenerateMutation>(timelineRegenerateMutation);
 
   const actions: TimelineActions = {
-    togglePin: (event) => commitPin({ variables: { id: event.id, pinned: !event.pinned }, onCompleted: () => reloadSummary() }),
+    togglePin: (event) => commitPin({
+      variables: { id: event.id, pinned: !event.pinned },
+      onCompleted: (_, errors) => {
+        if (notifyTimelineMutationErrors(errors)) return;
+        reloadSummary();
+      },
+    }),
     toggleHide: (event) => commitHide({
       variables: { id: event.id, hidden: !event.hidden },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyTimelineMutationErrors(errors)) return;
         if (!state.includeHidden && !event.hidden) updateState({ event: null });
         refresh();
       },
     }),
     saveAnnotation: (event, annotation) => commitEdit({
       variables: { id: event.id, input: { annotation: annotation.trim() || null } },
-      onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The annotation has been saved')),
+      onCompleted: (_, errors) => {
+        if (notifyTimelineMutationErrors(errors)) return;
+        MESSAGING$.notifySuccess(t_i18n('The annotation has been saved'));
+      },
     }),
     deleteEvent: (event) => commitDelete({
       variables: { id: event.id },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        if (notifyTimelineMutationErrors(errors)) return;
         updateState({ event: null });
         refresh();
       },
@@ -461,8 +473,9 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
     setRegenerating(true);
     commitRegenerate({
       variables: { containerId },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         setRegenerating(false);
+        if (notifyTimelineMutationErrors(errors)) return;
         const result = response.timelineRegenerate;
         MESSAGING$.notifySuccess(t_i18n('Timeline regenerated: {created} new, {updated} updated, {deleted} removed events', {
           values: { created: result?.created_count ?? 0, updated: result?.updated_count ?? 0, deleted: result?.deleted_count ?? 0 },
@@ -473,12 +486,31 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
     });
   };
 
+  // The lanes view exports its visible window: the panned or zoomed domain, else the zoom window of the
+  // timeline bounds; the list view lists every event matching the filters
+  const exportWindow = useMemo((): TimelineDomain | null => {
+    if (state.view !== 'lanes') return null;
+    if (domain) return domain;
+    if (state.zoom === 'fit' || !summary) return null;
+    const times = [summary.first_event_time, summary.last_event_time, ...TIMELINE_ANCHOR_KEYS.map((key) => summary.anchors?.[key])]
+      .map((time) => (time ? new Date(time).getTime() : Number.NaN))
+      .filter((time) => Number.isFinite(time));
+    const extent: TimelineDomain | null = times.length > 0 ? [Math.min(...times), Math.max(...times)] : null;
+    return computeVisibleDomain(extent, state.zoom);
+  }, [state.view, state.zoom, domain, summary]);
   const { exportTimeline } = useContainerTimelineExport({
     containerId,
     containerName,
-    lanes: apiLanes,
-    kinds: apiKinds,
-    includeHidden: state.includeHidden,
+    filters: {
+      lanes: apiLanes,
+      kinds: apiKinds,
+      sources: state.sources,
+      search: state.search,
+      includeHidden: state.includeHidden,
+      pinnedOnly: state.pinnedOnly,
+      from: exportWindow ? new Date(exportWindow[0]).toISOString() : null,
+      to: exportWindow ? new Date(exportWindow[1]).toISOString() : null,
+    },
     svgRef,
   });
 

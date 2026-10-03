@@ -507,8 +507,12 @@ const StixCoreObjectFileExportComponent = ({
       const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
       commitUploadFile({
         variables: { id: scoId, file, fileMarkings: values.fileMarkings.map(({ value }) => value), noTriggerImport: true },
-        onCompleted: (result) => {
+        onCompleted: (result, errors) => {
           setSubmitting(false);
+          if (errors?.length) {
+            MESSAGING$.notifyError(t_i18n('The timeline export failed'));
+            return;
+          }
           if (result.stixCoreObjectEdit?.importPush) {
             onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
           }

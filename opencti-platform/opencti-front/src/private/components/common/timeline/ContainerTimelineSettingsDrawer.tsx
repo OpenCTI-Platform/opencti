@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { timelineSettingsUpdateMutation } from './ContainerTimelineMutations';
+import { notifyTimelineMutationErrors, timelineSettingsUpdateMutation } from './ContainerTimelineMutations';
 import type {
   ContainerTimelineMutationsSettingsMutation,
   TimelineEventKind,
@@ -75,8 +75,9 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
           hidden_kinds: values.hidden_kinds as TimelineEventKind[],
         },
       },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSaving(false);
+        if (notifyTimelineMutationErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The timeline settings have been saved'));
         onSaved();
         onClose();
