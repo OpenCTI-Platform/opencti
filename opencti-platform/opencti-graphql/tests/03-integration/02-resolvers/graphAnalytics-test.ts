@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { createEntity, createRelation, deleteElementById } from '../../../src/database/middleware';
 import { MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL } from '../../../src/schema/stixDomainObject';
@@ -185,13 +185,16 @@ describe('Graph analytics resolvers', () => {
     expect(reverse.data.similarEntities.edges.map((e: any) => e.node.entity.id)).toEqual([ids.isA]);
   });
 
-  it('should hide evidence the caller cannot access', async () => {
+  it('should hide evidence the caller cannot access and score without it', async () => {
+    const admin = await queryAsAdminWithSuccess({ query: SIMILAR_QUERY, variables: { id: ids.isA } });
+    const [adminSimilar] = admin.data.similarEntities.edges.map((e: any) => e.node);
     const { data } = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: SIMILAR_QUERY, variables: { id: ids.isA } });
     const [similar] = data.similarEntities.edges.map((e: any) => e.node);
     const families = similar.evidence.map((e: any) => e.family);
     expect(families).toContain('techniques');
     expect(families).not.toContain('malware');
     expect(JSON.stringify(similar)).not.toContain(ids.malware);
+    expect(similar.jaccard).toBeLessThan(adminSimilar.jaccard);
   });
 
   it('should compute a live similarity matrix', async () => {
@@ -329,6 +332,16 @@ describe('Graph analytics resolvers', () => {
     created.push({ id: investigation.data.graphClusterAddToInvestigation.id, type: ENTITY_TYPE_WORKSPACE });
     expect(investigation.data.graphClusterAddToInvestigation.type).toBe('investigation');
     expect(investigation.data.graphClusterAddToInvestigation.investigated_entities_ids).toEqual(expect.arrayContaining([ids.d1, ids.d2, ids.d3]));
+  });
+
+  it('should refuse to complete an analytics run from an account restricted by markings', async () => {
+    const upsert = gql`
+      mutation upsert($input: GraphAnalyticsUpsertMetricsInput!) {
+        graphAnalyticsUpsertMetrics(input: $input) { run_id }
+      }
+    `;
+    const input = { run_id: 'graph-analytics-restricted-run', complete: true, metrics: [] };
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: upsert, variables: { input } });
   });
 
   it('should export edges and accept analytics write-back, the latest run owning clusters', async () => {

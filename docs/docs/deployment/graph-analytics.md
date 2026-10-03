@@ -61,7 +61,7 @@ The process keeps the analyzed graph in memory (identifiers only): size its memo
 
 ### Service account
 
-Create a dedicated user for the process, with a role granting **Access connectors** and **Create / Update knowledge**, and the markings of the knowledge to analyze. The process only reads identifiers and types, and only writes graph metrics and clusters.
+Create a dedicated user for the process, with a role granting **Bypass all capabilities**. Completing a run replaces the clusters and run metrics of the whole platform, so the platform refuses it from an account restricted by markings, organizations or authorized members: such an account would detach entities it never analyzed. The process only reads identifiers and types, and only writes graph metrics and clusters. A run whose edges export stops early fails without completing, and the previous results stay in place.
 
 ### Docker deployment
 

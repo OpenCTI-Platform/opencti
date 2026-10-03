@@ -106,6 +106,10 @@ class RunCancelled(Exception):
     """A shutdown was requested while the run was in progress."""
 
 
+class EdgesPaginationError(Exception):
+    """The edges export announced more pages but its cursor did not move."""
+
+
 @dataclass(frozen=True)
 class RetryPolicy:
     attempts: int = 5
@@ -229,11 +233,12 @@ class AnalyticsClient:
             if not page_info.get("hasNextPage"):
                 return
             if not edges or not next_cursor or next_cursor == after:
-                self.logger.warning(
-                    "Graph analytics edges pagination stopped: no progress",
-                    {"relationship_type": relationship_type, "cursor": after},
+                # A partial export must never complete a run: it would
+                # detach every omitted entity
+                raise EdgesPaginationError(
+                    f"Edges pagination made no progress for {relationship_type}"
+                    f" after cursor {after}"
                 )
-                return
             after = next_cursor
 
     def upsert_metrics(self, payload: Dict[str, Any]) -> Dict[str, Any]:

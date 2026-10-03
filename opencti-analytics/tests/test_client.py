@@ -7,6 +7,7 @@ from factories import FakeApi
 
 from opencti_analytics.client import (
     AnalyticsClient,
+    EdgesPaginationError,
     RetryPolicy,
     RunCancelled,
     error_name,
@@ -80,11 +81,15 @@ class TestPagination:
         assert all(call[1]["includeInferred"] is True for call in api.calls)
         assert all(call[1]["relationshipTypes"] == ["uses"] for call in api.calls)
 
-    def test_stops_when_the_cursor_does_not_move(self) -> None:
-        api = FakeApi([page(["e1"], "c1", True), page([], "c1", True)])
-        client = make_client(api)
-        assert [e.id for e in client.iter_edges("uses", False)] == ["e1"]
-        client.logger.warning.assert_called_once()
+    def test_fails_when_the_cursor_does_not_move(self) -> None:
+        api = FakeApi([page(["e1"], "c1", True), page(["e2"], "c1", True)])
+        with pytest.raises(EdgesPaginationError):
+            list(make_client(api).iter_edges("uses", False))
+
+    def test_fails_when_more_pages_are_announced_without_cursor(self) -> None:
+        api = FakeApi([page(["e1"], None, True)])
+        with pytest.raises(EdgesPaginationError):
+            list(make_client(api).iter_edges("uses", False))
 
     def test_empty_connection(self) -> None:
         api = FakeApi([{"data": {"graphAnalyticsEdges": None}}])
