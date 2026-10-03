@@ -109,7 +109,7 @@ A recommendation that no longer matches the situation is withdrawn automatically
 
 ### Autonomy policy
 
-In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. Automatically applied recommendations are flagged as such and can be reverted like the others.
+In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, dismissed and reverted recommendations are never applied automatically. Automatically applied recommendations are flagged as such and can be reverted like the others.
 
 ## Dashboards
 

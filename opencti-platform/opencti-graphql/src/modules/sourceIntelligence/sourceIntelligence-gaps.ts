@@ -47,7 +47,6 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../pir/pir-utils';
 import { getPirWithAccessCheck } from '../pir/pir-checkPirAccess';
-import { findPirPaginated } from '../pir/pir-domain';
 import { type FilterGroup, PirType } from '../../generated/graphql';
 import { type BasicStoreEntityCatalogContract, ENTITY_TYPE_CATALOG_CONTRACT } from '../catalog/catalog-types';
 import { compareContractVersions, isSupportVersionCompatible } from '../catalog/catalog-version-utils';
@@ -66,13 +65,7 @@ import { buildResolverFromSources } from './sourceIntelligence-domain';
 import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, PROVENANCE_ATTRIBUTE, sourceRefKey } from './sourceIntelligence-provenance';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
-import {
-  applyAutonomousRecommendations,
-  applySourceRecommendation,
-  findOrCreateProposal,
-  findRecommendationsByFingerprint,
-  upsertProposals,
-} from './sourceIntelligence-recommendations';
+import { applySourceRecommendation, findOrCreateProposal, findRecommendationsByFingerprint, listAccessiblePirIds, upsertProposals } from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
 // Sources are bounded by the discovery settings: one bucket per source id is far below this bound
@@ -495,8 +488,7 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
   for (let i = 0; i < removed.length; i += 1) {
     await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, removed[i].internal_id, ENTITY_TYPE_COLLECTION_GAP);
   }
-  const { created } = await upsertProposals(context, proposals, settings, { kinds: [RECOMMENDATION_ADD_CONNECTOR] });
-  await applyAutonomousRecommendations(context, created, settings);
+  await upsertProposals(context, proposals, settings, { kinds: [RECOMMENDATION_ADD_CONNECTOR] });
   logApp.info('[OPENCTI-MODULE] Source intelligence collection gaps computed', { pirs: pirs.length, gaps: gapsCount, removed: removed.length, proposals: proposals.length });
   return { gaps: gapsCount, proposals: proposals.length };
 };
@@ -519,8 +511,7 @@ export const findCollectionGaps = async (context: AuthContext, user: AuthUser, a
     const pir = await getPirWithAccessCheck(context, user, args.pirId);
     pirIds = [pir.internal_id];
   } else {
-    const pirs = await findPirPaginated(context, user, { first: 500 });
-    pirIds = pirs.edges.map((edge) => edge.node.internal_id);
+    pirIds = await listAccessiblePirIds(context, user);
   }
   if (pirIds.length === 0) {
     return { edges: [], pageInfo: { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 } };

@@ -48,7 +48,7 @@ import { applyLiveIncrements, type LiveIncrement, purgeScorecardSnapshots, write
 import { resolveDocumentAssertions, resolveEventSources, type SourceResolver } from '../modules/sourceIntelligence/sourceIntelligence-provenance';
 import { toSnapshotDate } from '../modules/sourceIntelligence/sourceIntelligence-scoring';
 import type { SourceIntelligenceSettings } from '../modules/sourceIntelligence/sourceIntelligence-settings';
-import { generateSourceRecommendations } from '../modules/sourceIntelligence/sourceIntelligence-recommendations';
+import { applyAutonomousRecommendations, generateSourceRecommendations } from '../modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { computeCollectionGaps } from '../modules/sourceIntelligence/sourceIntelligence-gaps';
 import { enforceQuarantines } from '../modules/sourceIntelligence/sourceIntelligence-quarantine';
 
@@ -300,6 +300,10 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     if (enterprise) {
       await generateSourceRecommendations(context, tracked, settings);
       await computeCollectionGaps(context, sources, settings);
+      const autonomous = await applyAutonomousRecommendations(context, settings);
+      if (autonomous > 0) {
+        logApp.info('[OPENCTI-MODULE] Source intelligence autonomy applied recommendations', { autonomous });
+      }
     }
     const current = await getSourceIntelligenceState();
     const backfillPatch: Partial<SourceIntelligenceState> = {};
