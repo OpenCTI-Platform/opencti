@@ -19,7 +19,8 @@ information architecture rules of OpenCTI-Platform/opencti#18685 (R1-R10). The s
 The Defense hub (`/dashboard/defense`) and its menu entry exist only while an area is registered.
 An area is one file in `src/private/components/defense/areas/`, whose default export is its
 `DefenseArea`; `defenseAreas.tsx` collects the files and orders them. One file gives both the menu
-row and the route, and adding an area touches no other file:
+row and the route, so adding an area edits no shared navigation or routing file (its label still
+goes into every `lang/front/*.json` file, see below):
 
 ```tsx
 // src/private/components/defense/areas/hunts.tsx
