@@ -54,7 +54,7 @@ test('Time machine: compute the landscape changes of intrusion sets and drill do
   await createIntrusionSet(page, `Landscape e2e ${Date.now()}`);
   await page.goto('/dashboard/analyses/landscape_changes');
   await expect(timeMachine.getLandscapeChangesPage()).toBeVisible();
-  await timeMachine.selectLandscapeEntityType('Intrusion set');
+  await timeMachine.selectLandscapeEntityType('Intrusion Set');
   await timeMachine.computeLandscapeChanges();
   await expect(page).toHaveURL(/[?&]diff=/);
   await expect(timeMachine.getLandscapeChangesResults()).toBeVisible({ timeout: 60000 });

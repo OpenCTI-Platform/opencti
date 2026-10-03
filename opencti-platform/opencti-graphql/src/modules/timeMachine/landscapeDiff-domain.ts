@@ -26,6 +26,7 @@ import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from '../cus
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { executionContext } from '../../utils/access';
+import { getDraftContext } from '../../utils/draftContext';
 import { now, utcDate } from '../../utils/format';
 import { doYield } from '../../utils/eventloop-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -552,7 +553,7 @@ export const userAccessFingerprint = (context: AuthContext, user: AuthUser) => {
     organizations: ids(user.organizations),
     groups: ids(user.groups),
     inside_platform_organization: context.user_inside_platform_organization ?? null,
-    draft: context.draft_context ?? null,
+    draft: getDraftContext(context, user) ?? null,
   });
   return createHash('sha256').update(payload).digest('hex');
 };
@@ -581,10 +582,12 @@ const normalizeLandscapeDates = (input: LandscapeDiffInputData) => {
 };
 
 const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser, state: LandscapeDiffState, scope: LandscapeScope) => {
-  // The computation outlives the request: it gets its own context, with the same organization evaluation as the request
+  // The computation outlives the request: it gets its own context, with the same organization evaluation
+  // and the same draft as the request so it reads the same knowledge
   const context: AuthContext = {
     ...executionContext('landscape_diff', user),
     user_inside_platform_organization: requestContext.user_inside_platform_organization,
+    draft_context: getDraftContext(requestContext, user),
   };
   let current: LandscapeDiffState = { ...state, status: 'running', updated_at: now() };
   await writeState(current);
