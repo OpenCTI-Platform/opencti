@@ -24,7 +24,7 @@ import { elRawSearch } from '../../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { notify, publishCacheResetEvent } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { DatabaseError, FORBIDDEN_ACCESS, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -524,7 +524,8 @@ const applyLockedRecommendation = async (
       autonomous,
     };
   } catch (err: any) {
-    if (err?.name === 'FORBIDDEN_ACCESS') {
+    // A missing capability refuses the request, it is not an execution failure of the recommendation
+    if (err?.extensions?.code === FORBIDDEN_ACCESS) {
       throw err;
     }
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });
