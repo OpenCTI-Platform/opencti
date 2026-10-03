@@ -14,7 +14,7 @@ import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { DEFENSE_THREAT_TYPES, type DefenseCoverage, type DefenseThreatOverlay, type DefenseThreatUsage } from './defenseCoverage-types';
 import { type AccessPredicate, collectCoverageIds } from './defenseCoverage-utils';
-import { getDefenseCoverageVersion } from './defenseCoverage-state';
+import { getDefenseCoverageVersion, getDefenseOverlayVersion } from './defenseCoverage-state';
 
 const READER_CACHE_TTL = conf.get('defense_coverage_manager:reader_cache_ttl') ?? 300000; // 5 minutes
 const MAX_SELECTED_THREATS = 500;
@@ -236,11 +236,13 @@ const computeOverlay = async (context: AuthContext, user: AuthUser, scope: Defen
 
 /**
  * Techniques used by the threats of the scope, restricted to the threats and relationships the reader can access.
- * Computed on demand and cached per reader and scope.
+ * Computed on demand and cached per reader, scope and version of the threat usages (a uses relationship or the access
+ * to a threat changed), so that a reader never keeps a usage they can no longer see.
  */
 export const getThreatOverlay = async (context: AuthContext, user: AuthUser, scope?: DefenseThreatScope | null): Promise<DefenseThreatOverlay> => {
   const normalized = normalizeScope(scope);
-  const key = `${user.id}|${JSON.stringify(normalized)}`;
+  const version = await getDefenseOverlayVersion();
+  const key = `${version}|${user.id}|${JSON.stringify(normalized)}`;
   let promise = overlayCache.get(key);
   if (!promise) {
     promise = computeOverlay(context, user, normalized);

@@ -3,6 +3,7 @@ import { now } from '../../utils/format';
 
 // Cluster-wide state of the defense coverage computation, shared through Redis between the API nodes.
 const STATE_VERSION = 'DEFENSE_COVERAGE_VERSION';
+const STATE_OVERLAY_VERSION = 'DEFENSE_OVERLAY_VERSION';
 const STATE_FULL_RUN = 'DEFENSE_COVERAGE_FULL_RUN';
 const STATE_FULL_REQUESTED = 'DEFENSE_COVERAGE_FULL_REQUESTED';
 const STATE_FULL_RUNNING_SINCE = 'DEFENSE_COVERAGE_FULL_RUNNING_SINCE';
@@ -18,6 +19,20 @@ export const getDefenseCoverageVersion = async (): Promise<string> => {
 export const bumpDefenseCoverageVersion = async () => {
   const version = now();
   await redisSetManagerEventState(STATE_VERSION, version);
+  return version;
+};
+
+/**
+ * Version of the threat usages behind the overlays. Bumped when a `uses` relationship or the access to a threat
+ * changes, so readers drop the overlays they computed with the previous usages.
+ */
+export const getDefenseOverlayVersion = async (): Promise<string> => {
+  return (await redisGetManagerEventState(STATE_OVERLAY_VERSION)) ?? 'none';
+};
+
+export const bumpDefenseOverlayVersion = async () => {
+  const version = now();
+  await redisSetManagerEventState(STATE_OVERLAY_VERSION, version);
   return version;
 };
 
