@@ -41,10 +41,13 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
   const data = useLazyLoadQuery<TimeMachineSliderTimelineQuery>(timeMachineSliderTimelineQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
   const timeline = data.entityTimeMachineTimeline;
   const max = Date.now();
+  const valueTime = new Date(value).getTime();
   const candidates = [timeline?.created_at, timeline?.history_start]
     .filter((date): date is string => !!date)
     .map((date) => new Date(date).getTime());
-  const min = candidates.length > 0 ? Math.min(...candidates) : max - 365 * 24 * HOUR_MS;
+  const knownStart = candidates.length > 0 ? Math.min(...candidates) : max - 365 * 24 * HOUR_MS;
+  // The selected date may precede the creation of the entity ("did not exist" state)
+  const min = Number.isNaN(valueTime) ? knownStart : Math.min(knownStart, valueTime);
   const [position, setPosition] = useState(new Date(value).getTime());
   useEffect(() => setPosition(new Date(value).getTime()), [value]);
 

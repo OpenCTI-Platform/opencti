@@ -5206,6 +5206,7 @@
   "Tone": "Tone",
   "Too many changes happened after this date, the view stops at the oldest change that could be replayed.": "Too many changes happened after this date, the view stops at the oldest change that could be replayed.",
   "Too many objects": "Too many objects",
+  "Too many relationship changes to replay, the relationships only reflect the most recent part of the history.": "Too many relationship changes to replay, the relationships only reflect the most recent part of the history.",
   "Tool": "Tool",
   "Tool definitions": "Tool definitions",
   "Tool results": "Tool results",

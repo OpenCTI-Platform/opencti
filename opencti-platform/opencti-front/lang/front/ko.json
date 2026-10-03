@@ -5206,6 +5206,7 @@
   "Tone": "톤",
   "Too many changes happened after this date, the view stops at the oldest change that could be replayed.": "이 날짜 이후 변경이 너무 많아 보기는 재생할 수 있었던 가장 오래된 변경에서 멈춥니다.",
   "Too many objects": "너무 많은 객체",
+  "Too many relationship changes to replay, the relationships only reflect the most recent part of the history.": "재생할 관계 변경이 너무 많아 관계는 기록의 가장 최근 부분만 반영합니다.",
   "Tool": "도구",
   "Tool definitions": "도구 정의",
   "Tool results": "도구 결과",

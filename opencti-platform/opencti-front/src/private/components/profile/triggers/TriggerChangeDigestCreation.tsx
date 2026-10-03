@@ -24,6 +24,7 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import Drawer from '../../common/drawer/Drawer';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
+import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerChangeDigestCreationSavedFiltersQuery } from './__generated__/TriggerChangeDigestCreationSavedFiltersQuery.graphql';
 
@@ -167,8 +168,9 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (hasPayloadErrors(errors)) return;
         resetForm();
         helpers.handleClearAllFilters();
         handleClose?.();
