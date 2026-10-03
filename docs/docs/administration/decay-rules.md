@@ -125,14 +125,14 @@ Knowledge decay rules age the rest of the knowledge: relationships and entities 
 Knowledge decay rules are configured in the "Knowledge decay rules" tab of the "Settings > Customization > Decay rules" menu. A rule defines:
 
 - **Target scope**: relationships or entities. Indicators are always handled by the indicator decay rules above.
-- **Target types**: the relationship types (all relationships if empty) or the entity types (mandatory) the rule applies to.
+- **Target types**: the relationship types (all relationships and sightings if empty) or the entity types (mandatory) the rule applies to.
 - **Filters**: optional filters narrowing the knowledge the rule applies to.
 - **Stale after**: the number of days without any assertion after which the knowledge is considered stale.
 - **Policy for stale knowledge**:
     - *Flag*: the knowledge is flagged as stale.
     - *Lower confidence*: the knowledge is flagged and its confidence is lowered by the configured step.
     - *Revoke*: the knowledge is flagged and revoked. This policy is only available for types supporting revocation.
-- **Order**: when several rules match the same knowledge, the rule with the highest order applies.
+- **Order**: when several rules match the same knowledge, the rule with the highest order applies. A rule that is created, activated, reordered or retargeted above other rules takes over the knowledge they already flagged: it is evaluated again under the new rule.
 
 Stale knowledge is listed in "Data > Provenance > Stale knowledge", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating, deleting or changing the targets of a rule clears the flags it set.
 

@@ -18,6 +18,7 @@ import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
+import { batchStaleElementsCounts } from '../modules/decayRule/decayRule-knowledge';
 import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns } from '../domain/attackPattern';
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
@@ -43,6 +44,7 @@ export const computeLoaders = (executeContext, user) => {
     globalStatusBatchLoader: batchLoader(batchGlobalStatusesByType, executeContext, user),
     requestAccessStatusBatchLoader: batchLoader(batchRequestAccessStatusesByType, executeContext, user),
     entitySettingsBatchLoader: batchLoader(batchEntitySettingsByType, executeContext, user),
+    staleElementsCountBatchLoader: batchLoader(batchStaleElementsCounts, executeContext, user),
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),

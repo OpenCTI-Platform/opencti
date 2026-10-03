@@ -135,11 +135,15 @@ describe('Provenance: every fact knows who said it', () => {
   let attackPatternId = '';
   let usesId = '';
   let ruleId = '';
+  let takeoverRuleId = '';
   let triggerId = '';
 
   afterAll(async () => {
     if (ruleId) {
       await queryAsAdminWithSuccess({ query: DECAY_RULE_DELETE, variables: { id: ruleId } });
+    }
+    if (takeoverRuleId) {
+      await queryAsAdminWithSuccess({ query: DECAY_RULE_DELETE, variables: { id: takeoverRuleId } });
     }
     if (triggerId) {
       await queryAsAdminWithSuccess({ query: gql`mutation TriggerDelete($id: ID!) { triggerKnowledgeDelete(id: $id) }`, variables: { id: triggerId } });
@@ -307,6 +311,29 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
     await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
     expect((await loadRelation(usesId)).freshness_stale).toEqual(false);
+  });
+
+  it('should let a higher priority knowledge decay rule take over flagged knowledge', async () => {
+    const staleCount = async (id: string) => (await queryAsAdminWithSuccess({ query: DECAY_RULE, variables: { id } })).data?.decayRule.staleElementsCount;
+    await ageElement(usesId, 60);
+    resetCacheForEntity(ENTITY_TYPE_DECAY_RULE);
+    await applyKnowledgeDecayRules(testContext, DECAY_MANAGER_USER, { batchSize: 100 });
+    expect(await staleCount(ruleId)).toEqual(1);
+    const created = await queryAsAdminWithSuccess({
+      query: KNOWLEDGE_RULE_ADD,
+      variables: {
+        input: { name: 'Higher priority stale uses for tests', order: 200, active: true, target_scope: 'relationship', target_types: ['uses'], freshness_policy: 'flag', stale_after_days: 30 },
+      },
+    });
+    takeoverRuleId = created.data?.knowledgeDecayRuleAdd.id;
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(false);
+    expect(await staleCount(ruleId)).toEqual(0);
+    resetCacheForEntity(ENTITY_TYPE_DECAY_RULE);
+    await applyKnowledgeDecayRules(testContext, DECAY_MANAGER_USER, { batchSize: 100 });
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
+    expect(await staleCount(takeoverRuleId)).toEqual(1);
+    expect(await staleCount(ruleId)).toEqual(0);
+    await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
   });
 
   it('should ship built-in knowledge decay rules disabled and only allow their activation', async () => {

@@ -1,6 +1,15 @@
 import type { DecayRuleTargetScope, KnowledgeFreshnessPolicy, Resolvers } from '../../generated/graphql';
-import { addDecayRule, countAppliedIndicators, deleteDecayRule, fieldPatchDecayRule, findDecayRulePaginated, findById, getDecaySettingsChartData } from './decayRule-domain';
-import { addKnowledgeDecayRule, countStaleElements, getDecayRuleScope } from './decayRule-knowledge';
+import {
+  addDecayRule,
+  countAppliedIndicators,
+  createKnowledgeDecayRule,
+  deleteDecayRule,
+  fieldPatchDecayRule,
+  findDecayRulePaginated,
+  findById,
+  getDecaySettingsChartData,
+} from './decayRule-domain';
+import { getDecayRuleScope } from './decayRule-knowledge';
 
 const decayRuleResolvers: Resolvers = {
   Query: {
@@ -16,14 +25,14 @@ const decayRuleResolvers: Resolvers = {
     decay_revoke_score: (decayRule) => decayRule.decay_revoke_score ?? 0,
     target_scope: (decayRule) => getDecayRuleScope(decayRule) as DecayRuleTargetScope,
     freshness_policy: (decayRule) => (decayRule.freshness_policy ?? null) as KnowledgeFreshnessPolicy | null,
-    staleElementsCount: (decayRule, _, context) => countStaleElements(context, context.user, decayRule),
+    staleElementsCount: (decayRule, _, context) => context.batch.staleElementsCountBatchLoader.load(decayRule),
   },
   Mutation: {
     decayRuleAdd: (_, { input }, context) => {
       return addDecayRule(context, context.user, input);
     },
     knowledgeDecayRuleAdd: (_, { input }, context) => {
-      return addKnowledgeDecayRule(context, context.user, input);
+      return createKnowledgeDecayRule(context, context.user, input);
     },
     decayRuleDelete: (_, { id }, context) => {
       return deleteDecayRule(context, context.user, id);

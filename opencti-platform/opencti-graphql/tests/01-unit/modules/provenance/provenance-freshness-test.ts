@@ -12,6 +12,7 @@ import {
 } from '../../../../src/modules/decayRule/decayRule-knowledge';
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_CORE_RELATIONSHIPS } from '../../../../src/schema/stixCoreRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff } from '../../../../src/modules/provenance/provenance-freshness';
 
 const relationshipRule = (overrides: Partial<KnowledgeDecayRuleDefinition> = {}): KnowledgeDecayRuleDefinition => ({
@@ -48,7 +49,7 @@ describe('Knowledge decay rules', () => {
   });
 
   it('should resolve concrete target types', () => {
-    expect(resolveKnowledgeDecayRuleTypes({ target_scope: 'relationship', target_types: [] })).toEqual(STIX_CORE_RELATIONSHIPS);
+    expect(resolveKnowledgeDecayRuleTypes({ target_scope: 'relationship', target_types: [] })).toEqual([...STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP]);
     expect(resolveKnowledgeDecayRuleTypes({ target_scope: 'relationship', target_types: ['uses'] })).toEqual(['uses']);
     expect(resolveKnowledgeDecayRuleTypes({ target_scope: 'entity', target_types: ['Infrastructure'] })).toEqual(['Infrastructure']);
     expect(resolveKnowledgeDecayRuleTypes({ target_scope: 'indicator' })).toEqual([]);

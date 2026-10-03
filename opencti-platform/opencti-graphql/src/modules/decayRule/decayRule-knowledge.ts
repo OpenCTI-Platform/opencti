@@ -3,7 +3,7 @@ import type { EditInput, FilterGroup, KnowledgeDecayRuleAddInput } from '../../g
 import { FilterMode } from '../../generated/graphql';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
-import { elCount, elRawUpdateByQuery } from '../../database/engine';
+import { elAggregationCount, elRawUpdateByQuery } from '../../database/engine';
 import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -16,7 +16,7 @@ import { now } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isStixCoreRelationship, STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
-import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixDomainObject } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
@@ -55,6 +55,8 @@ export const KNOWLEDGE_DECAY_FIELDS = ['target_types', 'freshness_policy', 'stal
 const NUMERIC_KNOWLEDGE_DECAY_FIELDS = ['order', 'stale_after_days', 'freshness_confidence_step'];
 // Changing one of these fields can make flagged knowledge fresh again under the new configuration.
 const FRESHNESS_RESET_FIELDS = ['active', 'target_types', 'decay_filters', 'stale_after_days'];
+// Edits that can make a rule take over elements targeted by lower priority rules
+export const KNOWLEDGE_PRIORITY_FIELDS = ['active', 'order', 'target_types', 'decay_filters'];
 
 export interface KnowledgeDecayRuleDefinition {
   name: string;
@@ -82,13 +84,13 @@ const isEntityScopeType = (type: string) => (isStixDomainObject(type) || isStixC
 
 /**
  * Concrete types targeted by a knowledge rule (abstract types are never used so that rules of the same scope can be subtracted).
- * An empty relationship type list targets every Stix core relationship.
+ * An empty relationship type list targets every Stix core relationship and sightings.
  */
 export const resolveKnowledgeDecayRuleTypes = (rule: { target_scope?: DecayRuleScope | null; target_types?: string[] | null }): string[] => {
   const scope = getDecayRuleScope(rule);
   const types = rule.target_types ?? [];
   if (scope === DECAY_RULE_SCOPE_RELATIONSHIP) {
-    return types.length > 0 ? [...types] : [...STIX_CORE_RELATIONSHIPS];
+    return types.length > 0 ? [...types] : [...STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP];
   }
   if (scope === DECAY_RULE_SCOPE_ENTITY) {
     return [...types];
@@ -215,7 +217,7 @@ export const checkDecayRulePatch = (decayRule: BasicStoreEntityDecayRule, input:
  * Knowledge flagged as stale by a rule becomes fresh again (side-channel update, no stream event),
  * the freshness manager flags it again if it is still stale under the current rules.
  */
-export const clearFreshnessFlagsOfRule = async (ruleId: string) => {
+const clearFreshnessFlags = async (query: Record<string, unknown>) => {
   return elRawUpdateByQuery({
     index: KNOWLEDGE_FRESHNESS_INDICES,
     refresh: true,
@@ -225,27 +227,43 @@ export const clearFreshnessFlagsOfRule = async (ruleId: string) => {
         source: `ctx._source.${ATTRIBUTE_FRESHNESS_STALE} = false; ctx._source.remove('freshness_stale_at'); ctx._source.remove('${ATTRIBUTE_FRESHNESS_RULE_ID}');`,
         lang: 'painless',
       },
-      query: { term: { [`${ATTRIBUTE_FRESHNESS_RULE_ID}.keyword`]: ruleId } },
+      query,
     },
   }).catch((err: unknown) => {
-    throw DatabaseError('Error clearing knowledge freshness flags', { cause: err, ruleId });
+    throw DatabaseError('Error clearing knowledge freshness flags', { cause: err, query });
   });
 };
 
-export const countStaleElements = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
-  if (!isKnowledgeDecayRule(decayRule)) {
-    return 0;
+export const clearFreshnessFlagsOfRule = async (ruleId: string) => {
+  return clearFreshnessFlags({ term: { [`${ATTRIBUTE_FRESHNESS_RULE_ID}.keyword`]: ruleId } });
+};
+
+export const clearFreshnessFlagsOfElements = async (ids: string[]) => {
+  return clearFreshnessFlags({ terms: { 'internal_id.keyword': ids } });
+};
+
+/**
+ * Number of elements flagged as stale by each rule, counted in a single aggregation for a page of rules.
+ */
+export const batchStaleElementsCounts = async (context: AuthContext, user: AuthUser, decayRules: BasicStoreEntityDecayRule[]) => {
+  const knowledgeRuleIds = decayRules.filter((rule) => isKnowledgeDecayRule(rule)).map((rule) => rule.id);
+  if (knowledgeRuleIds.length === 0) {
+    return decayRules.map(() => 0);
   }
-  return elCount(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+  const buckets = await elAggregationCount(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+    field: ATTRIBUTE_FRESHNESS_RULE_ID,
+    normalizeLabel: false,
     filters: {
       mode: FilterMode.And,
       filters: [
         { key: [ATTRIBUTE_FRESHNESS_STALE], values: ['true'] },
-        { key: [ATTRIBUTE_FRESHNESS_RULE_ID], values: [decayRule.id] },
+        { key: [ATTRIBUTE_FRESHNESS_RULE_ID], values: knowledgeRuleIds },
       ],
       filterGroups: [],
     },
   });
+  const countsByRule = new Map(buckets.map((bucket) => [bucket.label, bucket.count]));
+  return decayRules.map((rule) => (isKnowledgeDecayRule(rule) ? countsByRule.get(rule.id) ?? 0 : 0));
 };
 
 /**

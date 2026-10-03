@@ -1,4 +1,15 @@
+import type { PayloadError } from 'relay-runtime';
 import type { Theme } from '../../../../components/Theme';
+import { MESSAGING$ } from '../../../../relay/environment';
+
+// useApiMutation hands GraphQL payload errors to onCompleted, never to onError.
+export const notifyPayloadErrors = (errors: readonly PayloadError[] | null | undefined): boolean => {
+  if (errors && errors.length > 0) {
+    MESSAGING$.notifyError(errors[0].message);
+    return true;
+  }
+  return false;
+};
 
 export type AssertionSourceKind = 'connector' | 'feed' | 'author' | 'user' | 'inference' | 'emulation';
 

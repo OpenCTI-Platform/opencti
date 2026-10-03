@@ -6,6 +6,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase } from '../../types/store';
 import { now } from '../../utils/format';
 import {
+  clearFreshnessFlagsOfElements,
   getActiveKnowledgeDecayRules,
   getDecayRuleScope,
   KNOWLEDGE_FRESHNESS_INDICES,
@@ -19,7 +20,7 @@ import {
   FRESHNESS_POLICY_LOWER_CONFIDENCE,
   FRESHNESS_POLICY_REVOKE,
 } from '../decayRule/decayRule-types';
-import { ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
+import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
 import { applyProvenanceUpdate } from './provenance-write';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -188,6 +189,49 @@ const prepareRules = (rules: BasicStoreEntityDecayRule[]): PreparedRule[] => {
     }
   }
   return prepared;
+};
+
+const hasLowerPriority = (rule: BasicStoreEntityDecayRule, reference: BasicStoreEntityDecayRule) => {
+  return rule.order < reference.order || (rule.order === reference.order && String(rule.created_at).localeCompare(String(reference.created_at)) > 0);
+};
+
+/**
+ * A rule that gains priority (activated, reordered or retargeted) takes over the elements already flagged by
+ * lower priority rules of the same scope: their flags are released so that the next run applies its policy.
+ */
+export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: AuthUser, rule: BasicStoreEntityDecayRule) => {
+  const [current] = rule.active ? prepareRules([rule]) : [];
+  if (!current || current.types.length === 0) {
+    return 0;
+  }
+  const scope = getDecayRuleScope(rule);
+  const activeRules = await getActiveKnowledgeDecayRules(context);
+  const lowerRuleIds = activeRules
+    .filter((other) => other.id !== rule.id && getDecayRuleScope(other) === scope && hasLowerPriority(other, rule))
+    .map((other) => other.id);
+  if (lowerRuleIds.length === 0) {
+    return 0;
+  }
+  let released = 0;
+  await elList<BasicStoreBase>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+    types: current.types,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: [ATTRIBUTE_FRESHNESS_STALE], values: ['true'] },
+        { key: [ATTRIBUTE_FRESHNESS_RULE_ID], values: lowerRuleIds },
+      ],
+      filterGroups: current.filters ? [current.filters] : [],
+    },
+    baseData: true,
+    first: FRESHNESS_SCAN_PAGE_SIZE,
+    callback: async (elements) => {
+      await clearFreshnessFlagsOfElements(elements.map((element) => element.internal_id));
+      released += elements.length;
+      return true;
+    },
+  });
+  return released;
 };
 
 /**

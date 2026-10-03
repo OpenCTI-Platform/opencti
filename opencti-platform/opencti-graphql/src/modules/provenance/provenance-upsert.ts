@@ -176,8 +176,8 @@ export const mergeProvenanceOnEntitiesMerge = async (
     if (assertions.length === 0 && proceduresAdd.length === 0 && conflictsAdd.length === 0) {
       return;
     }
-    const before = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
-    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd });
+    const { before, writeOpts } = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
+    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd }, writeOpts);
     const change = computeProvenanceChange(before, assertions.map((assertion) => assertion.source_id), conflictsAdd);
     await publishProvenanceChange(context, target, change);
   } catch (err) {

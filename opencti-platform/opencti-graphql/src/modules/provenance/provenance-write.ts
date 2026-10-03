@@ -383,16 +383,18 @@ export const loadProvenanceSnapshot = async (element: ProvenanceTarget): Promise
 
 /**
  * State used to compute the provenance change of a write: exact when provenance triggers are listening.
+ * When they are, the write must be refreshed so that the notification reads the updated provenance.
  */
 export const resolveProvenanceBeforeWrite = async (context: AuthContext, element: ProvenanceTarget & Partial<StoreProvenanceFields>) => {
   if (!(await hasProvenanceTriggers(context))) {
-    return element;
+    return { before: element as Partial<StoreProvenanceFields>, writeOpts: {} };
   }
+  const writeOpts = { refresh: true };
   try {
-    return await loadProvenanceSnapshot(element);
+    return { before: await loadProvenanceSnapshot(element), writeOpts };
   } catch (err) {
     logApp.warn('[PROVENANCE] Unable to load the provenance snapshot, using the loaded element', { cause: err, id: element.internal_id });
-    return element;
+    return { before: element as Partial<StoreProvenanceFields>, writeOpts };
   }
 };
 
@@ -413,7 +415,7 @@ export const recordUpsertProvenance = async (
   try {
     const source = record.source ?? await resolveAssertionSource(context, user, record.input, { fromRule: record.fromRule });
     const assertion = buildStoreAssertion(source, record.confidence, record.at ?? now());
-    const before = await resolveProvenanceBeforeWrite(context, element);
+    const { before, writeOpts } = await resolveProvenanceBeforeWrite(context, element);
     await applyProvenanceUpdate(context, element, {
       assertions: [assertion],
       countMode: 'sum',
@@ -421,7 +423,7 @@ export const recordUpsertProvenance = async (
       conflictsRemove: record.conflictsRemove,
       proceduresAdd: record.proceduresAdd,
       resetFreshness: true,
-    }, opts);
+    }, { ...opts, ...writeOpts });
     await publishProvenanceChange(context, element, computeProvenanceChange(before, [source.source_id], record.conflictsAdd));
     return { source, assertion };
   } catch (err) {

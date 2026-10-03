@@ -41,6 +41,7 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../database/utils';
 import type { BasicStoreEntity } from '../types/store';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
@@ -556,7 +557,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       filters: [{ key: [key], values, operator }],
       filterGroups: [],
     });
-    const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS];
+    const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
     const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
       elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
       elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),

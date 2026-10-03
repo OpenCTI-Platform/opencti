@@ -49,8 +49,8 @@ export const adaptFilterToFreshnessDaysFilterKey = (filter: Filter, reference: D
   if (operator === FilterOperator.Nil || operator === FilterOperator.NotNil) {
     return { newFilterGroup: { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_LAST_ASSERTED_AT], values: [], operator }], filterGroups: [] } };
   }
-  const days = filter.values.map((value) => Number.parseInt(String(value), 10));
-  if (days.length === 0 || days.some((day) => Number.isNaN(day) || day < 0)) {
+  const days = filter.values.map((value) => (/^\d+$/.test(String(value).trim()) ? Number(String(value).trim()) : Number.NaN));
+  if (days.length === 0 || days.some((day) => !Number.isSafeInteger(day))) {
     throw FunctionalError('The freshness filter expects a number of days', { values: filter.values });
   }
   return {

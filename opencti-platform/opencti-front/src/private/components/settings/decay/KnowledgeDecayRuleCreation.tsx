@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { notifyPayloadErrors } from '../../common/provenance/provenanceUtils';
 import KnowledgeDecayRuleForm from './KnowledgeDecayRuleForm';
 import { KnowledgeDecayRulesLinesPaginationQuery$variables } from './__generated__/KnowledgeDecayRulesLinesPaginationQuery.graphql';
 import { KnowledgeDecayRuleCreationAddMutation } from './__generated__/KnowledgeDecayRuleCreationAddMutation.graphql';
@@ -42,8 +43,9 @@ const KnowledgeDecayRuleCreation = ({ paginationOptions }: KnowledgeDecayRuleCre
             commit({
               variables: { input },
               updater,
-              onCompleted: () => {
+              onCompleted: (_, errors) => {
                 setSubmitting(false);
+                if (notifyPayloadErrors(errors)) return;
                 resetForm();
                 onClose();
               },

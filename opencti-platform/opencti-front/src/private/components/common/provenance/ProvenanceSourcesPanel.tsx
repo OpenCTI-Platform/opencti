@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import type { PayloadError } from 'relay-runtime';
 import { useTheme } from '@mui/styles';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -20,7 +21,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
-import { freshnessColor, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { freshnessColor, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -116,10 +118,10 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
   const { t_i18n, fldt, nsdt } = useFormatter();
   const data = usePreloadedQuery(provenanceSourcesPanelQuery, queryRef);
   const element = data.stixObjectOrStixRelationship as ProvenanceData | null;
-  const [commitAdopt, adoptInFlight] = useApiMutation(provenanceAdoptMutation, undefined, { successMessage: t_i18n('The value has been adopted') });
-  const [commitDismiss, dismissInFlight] = useApiMutation(provenanceDismissMutation, undefined, { successMessage: t_i18n('The value has been dismissed') });
-  const [commitProcedure, procedureInFlight] = useApiMutation(provenanceProcedureAdoptMutation, undefined, { successMessage: t_i18n('The procedure is now the description') });
-  const [commitAssert, assertInFlight] = useApiMutation(provenanceAssertMutation, undefined, { successMessage: t_i18n('You confirmed this knowledge') });
+  const [commitAdopt, adoptInFlight] = useApiMutation(provenanceAdoptMutation);
+  const [commitDismiss, dismissInFlight] = useApiMutation(provenanceDismissMutation);
+  const [commitProcedure, procedureInFlight] = useApiMutation(provenanceProcedureAdoptMutation);
+  const [commitAssert, assertInFlight] = useApiMutation(provenanceAssertMutation);
   if (!element || !element.id) {
     return <Typography variant="body2">{t_i18n('No provenance is available for this element.')}</Typography>;
   }
@@ -127,10 +129,15 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
   const conflicts = (element.x_opencti_conflicts ?? []).filter((conflict) => conflict.values.length > 0);
   const procedures = element.procedures ?? [];
   const inFlight = adoptInFlight || dismissInFlight || procedureInFlight || assertInFlight;
-  const onAdopt = (field: string, valueHash: string) => commitAdopt({ variables: { id: element.id, field, valueHash }, onCompleted: onChange });
-  const onDismiss = (field: string, valueHash: string) => commitDismiss({ variables: { id: element.id, field, valueHash }, onCompleted: onChange });
-  const onAdoptProcedure = (text: string) => commitProcedure({ variables: { id: element.id, text }, onCompleted: onChange });
-  const onAssert = () => commitAssert({ variables: { id: element.id }, onCompleted: onChange });
+  const completeWith = (successMessage: string) => (_: unknown, errors: readonly PayloadError[] | null) => {
+    if (notifyPayloadErrors(errors)) return;
+    onChange();
+    MESSAGING$.notifySuccess(successMessage);
+  };
+  const onAdopt = (field: string, valueHash: string) => commitAdopt({ variables: { id: element.id, field, valueHash }, onCompleted: completeWith(t_i18n('The value has been adopted')) });
+  const onDismiss = (field: string, valueHash: string) => commitDismiss({ variables: { id: element.id, field, valueHash }, onCompleted: completeWith(t_i18n('The value has been dismissed')) });
+  const onAdoptProcedure = (text: string) => commitProcedure({ variables: { id: element.id, text }, onCompleted: completeWith(t_i18n('The procedure is now the description')) });
+  const onAssert = () => commitAssert({ variables: { id: element.id }, onCompleted: completeWith(t_i18n('You confirmed this knowledge')) });
   return (
     <Stack gap={3} data-testid="provenance-sources-panel">
       <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} flexWrap="wrap">

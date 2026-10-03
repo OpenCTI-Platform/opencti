@@ -83,6 +83,8 @@ describe('Provenance freshness', () => {
   it('should reject invalid freshness values', () => {
     expect(() => adaptFilterToFreshnessDaysFilterKey({ key: ['freshness_days'], values: ['abc'], operator: FilterOperator.Gt }, reference)).toThrow();
     expect(() => adaptFilterToFreshnessDaysFilterKey({ key: ['freshness_days'], values: ['-1'], operator: FilterOperator.Gt }, reference)).toThrow();
+    expect(() => adaptFilterToFreshnessDaysFilterKey({ key: ['freshness_days'], values: ['7days'], operator: FilterOperator.Gt }, reference)).toThrow();
+    expect(() => adaptFilterToFreshnessDaysFilterKey({ key: ['freshness_days'], values: ['1.9'], operator: FilterOperator.Gt }, reference)).toThrow();
   });
 
   it('should sort fresh first when ascending', () => {

@@ -376,7 +376,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               ))}
             />
           )}
-          {trigger.trigger_type === 'live' && (trigger.event_types ?? []).includes('corroboration') && (
+          {trigger.trigger_type === 'live' && ((values.event_types ?? []) as FieldOption[]).some((option) => option.value === 'corroboration') && (
             <Field
               component={TextField}
               variant="outlined"

@@ -15,6 +15,7 @@ import Label from '../../../../components/common/label/Label';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FormikHelpers } from 'formik';
+import { notifyPayloadErrors } from '../../common/provenance/provenanceUtils';
 import KnowledgeDecayRuleForm, {
   KNOWLEDGE_FRESHNESS_POLICY_LABELS,
   type KnowledgeDecayRuleFormValues,
@@ -86,8 +87,9 @@ const KnowledgeDecayRuleView = ({ decayRule: decayRuleKey }: KnowledgeDecayRuleV
     }
     commitEdit({
       variables: { id: decayRule.id, input: changes },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors)) return;
         setEditOpen(false);
       },
       onError: (error) => {

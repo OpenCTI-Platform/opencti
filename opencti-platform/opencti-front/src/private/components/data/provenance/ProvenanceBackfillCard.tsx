@@ -11,6 +11,8 @@ import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { notifyPayloadErrors } from '../../common/provenance/provenanceUtils';
 import { ProvenanceBackfillCardQuery } from './__generated__/ProvenanceBackfillCardQuery.graphql';
 import { ProvenanceBackfillCardRestartMutation } from './__generated__/ProvenanceBackfillCardRestartMutation.graphql';
 
@@ -50,22 +52,30 @@ const STATUS_LABELS: Record<string, string> = {
   completed: 'Completed',
 };
 
-const ProvenanceBackfillContent = ({ fetchKey, onRestart }: { fetchKey: number; onRestart: () => void }) => {
+const ProvenanceBackfillContent = ({ fetchKey, onRefresh }: { fetchKey: number; onRefresh: () => void }) => {
   const { t_i18n, n, fldt } = useFormatter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   // store-and-network keeps the current progress displayed while it refreshes
   const data = useLazyLoadQuery<ProvenanceBackfillCardQuery>(provenanceBackfillCardQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
-  const [commitRestart, restartInFlight] = useApiMutation<ProvenanceBackfillCardRestartMutation>(
-    provenanceBackfillRestartMutation,
-    undefined,
-    { successMessage: t_i18n('The provenance backfill will restart shortly') },
-  );
+  const [commitRestart, restartInFlight] = useApiMutation<ProvenanceBackfillCardRestartMutation>(provenanceBackfillRestartMutation);
   const backfill = data.provenanceBackfill;
   const progress = backfill.expected > 0 ? Math.min(100, Math.round((backfill.processed / backfill.expected) * 100)) : 0;
   const isCompleted = backfill.status === 'completed';
+  useEffect(() => {
+    if (isCompleted) return undefined;
+    const interval = setInterval(onRefresh, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isCompleted]);
   const restart = () => {
     setConfirmOpen(false);
-    commitRestart({ variables: {}, onCompleted: onRestart });
+    commitRestart({
+      variables: {},
+      onCompleted: (_, errors) => {
+        if (notifyPayloadErrors(errors)) return;
+        onRefresh();
+        MESSAGING$.notifySuccess(t_i18n('The provenance backfill will restart shortly'));
+      },
+    });
   };
   return (
     <Stack gap={1.5} data-testid="provenance-backfill">
@@ -118,14 +128,10 @@ const ProvenanceBackfillContent = ({ fetchKey, onRestart }: { fetchKey: number; 
 const ProvenanceBackfillCard = () => {
   const { t_i18n } = useFormatter();
   const [fetchKey, setFetchKey] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => setFetchKey((key) => key + 1), REFRESH_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, []);
   return (
     <Card title={t_i18n('Provenance backfill')}>
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <ProvenanceBackfillContent fetchKey={fetchKey} onRestart={() => setFetchKey((key) => key + 1)} />
+        <ProvenanceBackfillContent fetchKey={fetchKey} onRefresh={() => setFetchKey((key) => key + 1)} />
       </Suspense>
     </Card>
   );

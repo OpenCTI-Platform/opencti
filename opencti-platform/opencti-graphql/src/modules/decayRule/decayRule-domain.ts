@@ -1,10 +1,18 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
+import type { DecayRuleAddInput, EditInput, KnowledgeDecayRuleAddInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { type BasicStoreEntityDecayRule, DECAY_RULE_SCOPE_INDICATOR, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
-import { checkDecayRulePatch, clearFreshnessFlagsOfRule, initKnowledgeDecayRules, isKnowledgeDecayRule } from './decayRule-knowledge';
+import {
+  addKnowledgeDecayRule,
+  checkDecayRulePatch,
+  clearFreshnessFlagsOfRule,
+  initKnowledgeDecayRules,
+  isKnowledgeDecayRule,
+  KNOWLEDGE_PRIORITY_FIELDS,
+} from './decayRule-knowledge';
+import { releaseFlagsTakenOverByRule } from '../provenance/provenance-freshness';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -117,6 +125,12 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   return created;
 };
 
+export const createKnowledgeDecayRule = async (context: AuthContext, user: AuthUser, input: KnowledgeDecayRuleAddInput) => {
+  const created = await addKnowledgeDecayRule(context, user, input);
+  await releaseFlagsTakenOverByRule(context, user, created);
+  return created;
+};
+
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const finalInput = [...input];
   const decayRule = await findById(context, user, id);
@@ -141,6 +155,9 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
   if (mustClearFreshnessFlags) {
     // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
     await clearFreshnessFlagsOfRule(id);
+  }
+  if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
+    await releaseFlagsTakenOverByRule(context, user, element);
   }
   await publishUserAction({
     user,
