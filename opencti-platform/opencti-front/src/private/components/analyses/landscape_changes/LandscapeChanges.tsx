@@ -200,6 +200,7 @@ const toExportData = (diff: LandscapeDiffResult): LandscapeDiffData => ({
   from: diff.from,
   to: diff.to,
   scope_entity_types: diff.scope_entity_types,
+  group_by: diff.group_by,
   aggregates: diff.aggregates ?? null,
   entities: diff.entities,
 });

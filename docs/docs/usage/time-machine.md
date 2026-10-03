@@ -32,7 +32,7 @@ The section, the period and the date are kept in the URL of the page, so you can
 1. Open the **Changes** tab of the entity and select **View as of**, or choose **View as of** in the more actions menu of the entity header (the button with three dots). The view opens 30 days back, in read-only mode, and a banner reminds you of the date being displayed.
 2. Pick the date:
     - type it in the **View as of** date field,
-    - drag the slider, which shows a mark for every recorded change of the entity,
+    - drag the slider, which shows a mark for every recorded change of the entity (the 200 most recent ones for entities with a longer history, as a caption below the slider says; older dates can still be selected),
     - or jump between changes with **Previous change** and **Next change**.
 3. Click **Back to the current knowledge** to return to the overview of the entity.
 
@@ -102,6 +102,7 @@ The result contains:
 | Section | Content |
 |---------|---------|
 | Key figures | Entities in scope, entities changed, new entities, new relationships, removed relationships, revocations, confidence changes, score changes, new infrastructure and new indicators. |
+| Group by breakdown | Displayed first: the changed entities by entity type, the new relationships by type or the new techniques by tactic, depending on the **Group by** choice. The PDF export starts with the same breakdown, and the JSON export carries it with the `group_by` value. |
 | New techniques by tactic | Attack patterns newly linked with a `uses` relationship, grouped by tactic (kill chain phase). |
 | New malware and new tools | Malware and tools newly linked with a `uses` relationship. |
 | New victims | Sectors, countries and regions newly linked with a `targets` relationship. |
@@ -123,7 +124,7 @@ Three widget visualizations bring the landscape changes to your [custom dashboar
 - **New techniques by tactic**,
 - **Top changed entities**.
 
-Create them with the **Entities** perspective: the filters of the widget define the set of entities, and the period of the dashboard defines the dates (the last 30 days when the dashboard has no period). Widgets cover at most 200 entities and their result is cached for one hour. See [Widget creation](widgets.md) for details.
+Create them with the **Entities** perspective: the filters of the widget define the set of entities, and the period of the dashboard defines the dates (the last 30 days when the dashboard has no period). Widgets cover at most 200 entities and their result is cached for one hour; when the set of entities exceeds this limit, the widget says that its result is partial. See [Widget creation](widgets.md) for details.
 
 !!! note "Public dashboards"
 

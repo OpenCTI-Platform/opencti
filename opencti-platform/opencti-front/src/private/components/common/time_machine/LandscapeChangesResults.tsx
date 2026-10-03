@@ -8,7 +8,16 @@ import WidgetDistributionList from '../../../../components/dashboard/WidgetDistr
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import TimeMachineSummaryCard from './TimeMachineSummaryCard';
-import { comparePeriodSearch, type LandscapeBucketData, type LandscapeDiffData, type LandscapeItemData } from './timeMachineUtils';
+import {
+  comparePeriodSearch,
+  LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE,
+  LANDSCAPE_GROUP_BY_TACTIC,
+  type LandscapeBucketData,
+  type LandscapeDiffData,
+  landscapeGroupBuckets,
+  landscapeGroupTitle,
+  type LandscapeItemData,
+} from './timeMachineUtils';
 
 const bucketsToEntries = (buckets: ReadonlyArray<LandscapeBucketData>, type?: string) => buckets.map((bucket) => ({
   label: bucket.label,
@@ -79,15 +88,23 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
         <Grid size={{ xs: 6, md: 3, xl: 2 }}><TimeMachineSummaryCard label={t_i18n('New indicators')} value={n(aggregates.new_indicators_count)} /></Grid>
       </Grid>
       <Grid container spacing={3} sx={{ marginBottom: 3 }}>
+        {/* The breakdown chosen with "Group by" comes first, the others follow without repeating it */}
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New techniques by tactic')} entries={bucketsToEntries(aggregates.new_techniques_by_tactic)} testId="landscape-techniques-by-tactic" />
+          <DistributionCard title={t_i18n(landscapeGroupTitle(diff.group_by))} entries={bucketsToEntries(landscapeGroupBuckets(diff, t_i18n))} testId="landscape-groups" />
         </Grid>
+        {diff.group_by !== LANDSCAPE_GROUP_BY_TACTIC && (
+          <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+            <DistributionCard title={t_i18n('New techniques by tactic')} entries={bucketsToEntries(aggregates.new_techniques_by_tactic)} testId="landscape-techniques-by-tactic" />
+          </Grid>
+        )}
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           <DistributionCard title={t_i18n('New techniques')} entries={itemsToEntries(aggregates.new_techniques)} testId="landscape-techniques" />
         </Grid>
-        <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-          <DistributionCard title={t_i18n('New relationships by type')} entries={bucketsToEntries(aggregates.new_relationships_by_type).map((entry) => ({ ...entry, label: t_i18n(`relationship_${entry.label}`) }))} testId="landscape-relationships-by-type" />
-        </Grid>
+        {diff.group_by !== LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE && (
+          <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+            <DistributionCard title={t_i18n('New relationships by type')} entries={bucketsToEntries(aggregates.new_relationships_by_type).map((entry) => ({ ...entry, label: t_i18n(`relationship_${entry.label}`) }))} testId="landscape-relationships-by-type" />
+          </Grid>
+        )}
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           <DistributionCard title={t_i18n('New malware')} entries={itemsToEntries(aggregates.new_malware)} testId="landscape-malware" />
         </Grid>

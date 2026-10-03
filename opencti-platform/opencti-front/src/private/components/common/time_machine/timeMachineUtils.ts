@@ -159,7 +159,9 @@ export interface LandscapeDiffData {
   readonly from: string;
   readonly to: string;
   readonly scope_entity_types: ReadonlyArray<string>;
+  readonly group_by?: string | null;
   readonly aggregates: {
+    readonly groups?: ReadonlyArray<LandscapeBucketData>;
     readonly entities_in_scope: number;
     readonly entities_changed: number;
     readonly new_entities: number;
@@ -331,6 +333,24 @@ export const landscapeDiffToCsv = (diff: LandscapeDiffData, t: Translate): strin
   return toCsv(rows);
 };
 
+// The "Group by" breakdown: changed entities by entity type, new relationships by type or new techniques by tactic
+export const LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE = 'relationship_type';
+export const LANDSCAPE_GROUP_BY_TACTIC = 'tactic';
+
+export const landscapeGroupTitle = (groupBy: string | null | undefined): string => {
+  if (groupBy === LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE) return 'New relationships by type';
+  if (groupBy === LANDSCAPE_GROUP_BY_TACTIC) return 'New techniques by tactic';
+  return 'Changed entities by entity type';
+};
+
+export const landscapeGroupBuckets = (diff: LandscapeDiffData, t: Translate): LandscapeBucketData[] => {
+  return (diff.aggregates?.groups ?? []).map((bucket) => {
+    if (diff.group_by === LANDSCAPE_GROUP_BY_TACTIC) return bucket;
+    const prefix = diff.group_by === LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE ? 'relationship_' : 'entity_';
+    return { ...bucket, label: t(`${prefix}${bucket.label}`) };
+  });
+};
+
 const bucketsTable = (title: string, buckets: ReadonlyArray<LandscapeBucketData>, t: Translate) => {
   if (buckets.length === 0) return '';
   const rows = buckets.map((bucket) => `<tr><td>${escapeHtml(bucket.label)}</td><td>${escapeHtml(bucket.count)}</td></tr>`).join('');
@@ -365,7 +385,9 @@ export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, forma
     ];
     parts.push(`<h2>${escapeHtml(t('Summary'))}</h2>`);
     parts.push(`<table><tbody>${kpis.map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`).join('')}</tbody></table>`);
-    parts.push(bucketsTable(t('New techniques by tactic'), aggregates.new_techniques_by_tactic, t));
+    // The breakdown chosen with "Group by" comes first, the others follow without repeating it
+    parts.push(bucketsTable(t(landscapeGroupTitle(diff.group_by)), landscapeGroupBuckets(diff, t), t));
+    if (diff.group_by !== LANDSCAPE_GROUP_BY_TACTIC) parts.push(bucketsTable(t('New techniques by tactic'), aggregates.new_techniques_by_tactic, t));
     parts.push(itemsTable(t('New techniques'), aggregates.new_techniques, t));
     parts.push(itemsTable(t('New malware'), aggregates.new_malware, t));
     parts.push(itemsTable(t('New tools'), aggregates.new_tools, t));
@@ -373,7 +395,7 @@ export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, forma
     parts.push(bucketsTable(t('New victims by country'), aggregates.new_victims_by_country, t));
     parts.push(bucketsTable(t('New victims by region'), aggregates.new_victims_by_region, t));
     parts.push(itemsTable(t('New infrastructure'), aggregates.new_infrastructure, t));
-    parts.push(bucketsTable(t('New relationships by type'), aggregates.new_relationships_by_type, t));
+    if (diff.group_by !== LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE) parts.push(bucketsTable(t('New relationships by type'), aggregates.new_relationships_by_type, t));
   }
   if (diff.entities.length > 0) {
     const rows = diff.entities.map((entity) => `<tr><td>${escapeHtml(entity.name)}</td><td>${escapeHtml(entity.entity_type)}</td>`
