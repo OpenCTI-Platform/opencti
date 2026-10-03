@@ -2293,7 +2293,37 @@ paper on a custom theme: a drawer, the fields inside it and its header are all
 purple, and a field still stands out from the drawer.
 
 
-## 62. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
+## 62. `Chip` cannot be a link, so a chip that navigates loses the new tab clicks
+
+**Needed.** A chip that opens a page is a link to the user: Ctrl/Cmd-click,
+middle-click and "open in new tab" must work, exactly as on navigation rows
+(entry 2). OpenCTI's creator chips open the user page (`ItemCreators`).
+
+**Today.** `Chip` renders a `<button>` when it has an `onClick` and a `<span>`
+otherwise; it has no `href` / `to` prop and no `asChild`. Wrapping a static chip
+in a router `Link` gives the right element but drops the interactive chip's
+hover layer and focus ring, which only the `<button>` branch carries.
+
+**Workaround.** FDS-WORKAROUND #62 in `ItemCreators.tsx`: the chip stays a
+button and `navigationClickHandlers` (`utils/domEvent.ts`) reproduces the link
+clicks: Ctrl/Cmd-click and middle-click (`onAuxClick`, passed through `Tag`)
+open the page in a new tab, under the platform base path. "Open in new tab"
+from the context menu stays unavailable.
+
+Not a workaround: the deployed-count chip of the integrations cards and lines
+(`DeployedCountChip`) uses the same handlers, but it sits inside a card or row
+that is itself a link, and nested anchors are invalid HTML. It stays a button
+whatever the library offers.
+
+**Ask.** An `href` (or `asChild` that keeps the interactive body) on `Chip`, so a
+navigating chip renders a real anchor with the interactive chip's states.
+
+**Removal test.** At a pin where `Chip` can render an anchor: give the creator
+chip the link, delete its `navigationClickHandlers` spread and the marker, and
+confirm the chip is a `link` role whose `href` carries the base path.
+
+
+## 63. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
 
 **Raised** by the Hunts screens (#18671): a hunt carries a Sigma rule (YAML) and
 native queries (KQL, SPL, EQL, ...) that analysts write and read back.
@@ -2317,7 +2347,7 @@ creation drawer and the Logic tab: the Sigma rule is highlighted, `Tab` indents,
 `Escape` then `Tab` reaches the next field.
 
 
-## 63. No inline alert or callout, so status banners stay on the MUI wrapper
+## 64. No inline alert or callout, so status banners stay on the MUI wrapper
 
 **Raised** by the Hunts screens (#18671): the hunt detail shows a banner when an
 agent or XTM Hub proposed the hunt, when the user works in a draft workspace, and
@@ -2334,7 +2364,7 @@ option, so these banners are not on the design system.
 library component and `components/Alert` has no hunt call site left.
 
 
-## 64. `SelectContent` does not take its name from its trigger
+## 65. `SelectContent` does not take its name from its trigger
 
 **Raised** by `check-accessible-names.mjs` on the Hunts screens (#18671): four
 selects with a named `SelectTrigger` were flagged `listbox-unnamed`.
