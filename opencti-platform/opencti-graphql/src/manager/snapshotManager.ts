@@ -17,8 +17,9 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
-import { ENTITY_TYPE_USER_VISIT, type CompactDocument } from '../modules/timeMachine/timeMachine-types';
-import { extractAttributeValues } from '../modules/timeMachine/timeMachine-replay';
+import { ENTITY_TYPE_USER_VISIT, type AttributeValues, type CompactDocument, type TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
+import { extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
+import { fetchElementsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
 import { deleteSnapshotsBefore, deleteUserVisits, deleteVisitsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -35,6 +36,9 @@ const BATCH_SIZE: number = conf.get('snapshot_manager:batch_size') || 100;
 const MAX_RELATIONSHIP_IDS_PER_TYPE: number = conf.get('snapshot_manager:max_relationship_ids_per_type') || 500;
 const RETENTION_DAYS: number = conf.get('snapshot_manager:retention_days') || 0;
 const VISIT_RETENTION_DAYS: number = conf.get('time_machine:visit_retention_days') || 365;
+const MAX_REWIND_EVENTS: number = conf.get('time_machine:max_replay_events') || 5000;
+// Maximum number of history events read per batch to rewind the documents to the snapshot date
+const MAX_REWIND_EVENTS_PER_BATCH = 20000;
 // Maximum number of relationships read per batch of entities to build relationship id lists
 const MAX_RELATIONSHIPS_PER_BATCH = 20000;
 const COMPOSITE_PAGE_SIZE = 1000;
@@ -106,16 +110,58 @@ export const findChangedElementIds = async (
   return { ids, afterKey: hasMore ? currentAfter : null };
 };
 
-// Compact documents: raw attribute values and relationship ids by type (capped), exact counts by type
-export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[]): Promise<Map<string, CompactDocument>> => {
-  const documents = new Map<string, CompactDocument>();
-  entities.forEach((entity) => {
-    documents.set(entity.internal_id, { attributes: extractAttributeValues(entity as any), relationships: {}, relationships_count: {} });
-  });
+/**
+ * Attributes of the entities at `snapshotDate`. The documents are read after that date (a resumed
+ * window can be read hours later), so the changes made since are reverted with their reverse patches.
+ * Entities that cannot be rewound exactly are left out and snapshotted at the next window.
+ */
+export const rewindAttributes = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, AttributeValues>> => {
+  const rewound = new Map<string, AttributeValues>();
+  if (entities.length === 0) return rewound;
   const ids = entities.map((entity) => entity.internal_id);
+  const events = await fetchElementsHistoryEvents(context, SYSTEM_USER, ids, { from: snapshotDate, max: MAX_REWIND_EVENTS_PER_BATCH + 1 });
+  if (events.length > MAX_REWIND_EVENTS_PER_BATCH) {
+    logApp.warn('[TIME MACHINE] Too many changes since the snapshot date, the batch is snapshotted at the next window', { entities: ids.length });
+    return rewound;
+  }
+  const eventsByElement = new Map<string, TimeMachineHistoryEvent[]>();
+  events.forEach((event) => {
+    const elementEvents = eventsByElement.get(event.context_id);
+    if (elementEvents) {
+      elementEvents.push(event);
+    } else {
+      eventsByElement.set(event.context_id, [event]);
+    }
+  });
+  entities.forEach((entity) => {
+    const attributes = extractAttributeValues(entity as any);
+    const elementEvents = eventsByElement.get(entity.internal_id);
+    if (!elementEvents) {
+      rewound.set(entity.internal_id, attributes);
+      return;
+    }
+    const replay = replayBackward(attributes, entity.entity_type, elementEvents, snapshotDate, MAX_REWIND_EVENTS);
+    if (replay.complete && replay.exists) {
+      rewound.set(entity.internal_id, replay.document);
+    }
+  });
+  return rewound;
+};
+
+// Compact documents at `snapshotDate`: raw attribute values and relationship ids by type (capped), exact counts by type
+export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, CompactDocument>> => {
+  const documents = new Map<string, CompactDocument>();
+  const attributes = await rewindAttributes(context, entities, snapshotDate);
+  attributes.forEach((values, id) => {
+    documents.set(id, { attributes: values, relationships: {}, relationships_count: {} });
+  });
+  if (documents.size === 0) return documents;
+  const ids = [...documents.keys()];
   const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+    endDate: snapshotDate,
+    dateAttribute: 'created_at',
     baseData: true,
     maxSize: MAX_RELATIONSHIPS_PER_BATCH,
   } as any);
@@ -210,8 +256,8 @@ export const snapshotHandler = async () => {
     // References are read from the denormalized fields (ids only)
     const entities = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, batchIds, { type: ABSTRACT_STIX_CORE_OBJECT, withoutRels: false }) as BasicStoreEntity[];
     if (entities.length > 0) {
-      const documents = await buildCompactDocuments(context, entities);
-      const inputs: SnapshotInput[] = entities.map((entity) => ({
+      const documents = await buildCompactDocuments(context, entities, windowEnd);
+      const inputs: SnapshotInput[] = entities.filter((entity) => documents.has(entity.internal_id)).map((entity) => ({
         entityId: entity.internal_id,
         entityType: entity.entity_type,
         snapshotDate: windowEnd,
@@ -222,8 +268,8 @@ export const snapshotHandler = async () => {
     }
   }
   if (afterKey) {
-    // Per run limit reached, the same window is resumed at the next run
-    await writeState({ cursor: state.cursor, window_end: windowEnd, after_key: afterKey });
+    // Per run limit reached, the same window (same lower bound) is resumed at the next run
+    await writeState({ cursor, window_end: windowEnd, after_key: afterKey });
   } else {
     await writeState({ cursor: windowEnd, window_end: undefined, after_key: null });
   }

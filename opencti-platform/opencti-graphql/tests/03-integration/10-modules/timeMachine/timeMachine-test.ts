@@ -231,9 +231,14 @@ describe('Knowledge time machine', () => {
 
   it('should rebuild from a knowledge snapshot when one is available', async () => {
     const entity = await internalLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, intrusionSetId, { type: 'Intrusion-Set' });
-    const documents = await buildCompactDocuments(testContext, [entity]);
-    expect(documents.get(intrusionSetId)?.relationships_count.uses).toEqual(1);
     const snapshotDate = new Date().toISOString();
+    const documents = await buildCompactDocuments(testContext, [entity], snapshotDate);
+    expect(documents.get(intrusionSetId)?.relationships_count.uses).toEqual(1);
+    expect(documents.get(intrusionSetId)?.attributes.description).toEqual(['second description']);
+    // A snapshot dated before the update is rewound: it never embeds a later value
+    const earlierDocuments = await buildCompactDocuments(testContext, [entity], middle(createdAt, updatedAt));
+    expect(earlierDocuments.get(intrusionSetId)?.attributes.description).toEqual(['first description']);
+    expect(earlierDocuments.get(intrusionSetId)?.attributes.confidence).toEqual(['50']);
     await indexSnapshots([{ entityId: intrusionSetId, entityType: 'Intrusion-Set', snapshotDate, historyCursor: snapshotDate, document: documents.get(intrusionSetId)! }]);
     const snapshot = await findSnapshotAtOrAfter(testContext, intrusionSetId, middle(createdAt, updatedAt));
     expect(snapshot?.snapshot_entity_id).toEqual(intrusionSetId);
