@@ -165,6 +165,8 @@ type InvestigationStep {
 # A cited passage, document, tool result or OpenCTI object (shared shape).
 type InvestigationEvidence {
   id: String!
+  # The engine run whose citations number it (`n`); null for the case context.
+  investigation_id: String
   n: Int
   kind: InvestigationEvidenceKind!
   label: String!

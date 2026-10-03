@@ -55,4 +55,13 @@ describe('Case Autopilot member restrictions', () => {
     expect(isMemberRestricted(restricted)).toBe(true);
     expect(withoutMemberRestricted([open, restricted]).map((element) => element.internal_id)).toEqual(['open']);
   });
+  it('reads an element every user may read, such as a PIR with its default members', () => {
+    const everyone = { internal_id: 'pir', restricted_members: [{ id: 'user-1', access_right: 'admin' }, { id: 'ALL', access_right: 'view' }] };
+    const everyoneInGroups = { internal_id: 'grouped', restricted_members: [{ id: 'ALL', access_right: 'view', groups_restriction_ids: ['group-1'] }] };
+    const unknownRight = { internal_id: 'unknown', restricted_members: [{ id: 'ALL', access_right: 'none' }] };
+    expect(isMemberRestricted(everyone)).toBe(false);
+    expect(isMemberRestricted(everyoneInGroups)).toBe(true);
+    expect(isMemberRestricted(unknownRight)).toBe(true);
+    expect(withoutMemberRestricted([everyone, everyoneInGroups, unknownRight]).map((element) => element.internal_id)).toEqual(['pir']);
+  });
 });

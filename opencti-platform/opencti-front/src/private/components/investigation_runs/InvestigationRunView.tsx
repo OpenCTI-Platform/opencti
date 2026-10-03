@@ -112,6 +112,7 @@ export const investigationRunViewFragment = graphql`
     }
     evidence {
       id
+      investigation_id
       n
       kind
       label

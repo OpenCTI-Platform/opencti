@@ -15326,6 +15326,7 @@ export type InvestigationEvidence = {
   href?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   in_draft: Scalars['Boolean']['output'];
+  investigation_id?: Maybe<Scalars['String']['output']>;
   kind: InvestigationEvidenceKind;
   label: Scalars['String']['output'];
   n?: Maybe<Scalars['Int']['output']>;
@@ -50115,6 +50116,7 @@ export type InvestigationEvidenceResolvers<ContextType = any, ParentType extends
   href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   in_draft?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  investigation_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['InvestigationEvidenceKind'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   n?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

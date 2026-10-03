@@ -90,7 +90,7 @@ import {
 } from './investigationRun-state';
 import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
 import { notifyInvestigationRunStatus } from './investigationRun-notification';
-import { isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import { intersectOrganizationIds, isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
 const subjectLockKey = (subjectId: string) => `investigation_run_subject_lock_${subjectId}`;
@@ -350,8 +350,10 @@ export const addInvestigationRun = async (
     report_sources: [],
     outputs: EMPTY_OUTPUTS,
     budget: buildBudget(policy),
-    objectMarking: markingIdsOf(subject),
-    objectOrganization: organizationIdsOf(subject),
+    // The engine context reads the case too, so the run starts with the
+    // restrictions of both, as restrictive as every later revision.
+    objectMarking: Array.from(new Set([...markingIdsOf(subject), ...(targetCase ? markingIdsOf(targetCase) : [])])),
+    objectOrganization: intersectOrganizationIds(organizationIdsOf(subject), targetCase ? [targetCase] : []),
   };
   // Dedupe on the subject: one active investigation at a time, checked and
   // created under a per-subject lock so concurrent launches never race. The

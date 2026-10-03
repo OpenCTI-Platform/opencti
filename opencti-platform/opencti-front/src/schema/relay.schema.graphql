@@ -16845,6 +16845,7 @@ type InvestigationStep {
 
 type InvestigationEvidence {
   id: String!
+  investigation_id: String
   n: Int
   kind: InvestigationEvidenceKind!
   label: String!

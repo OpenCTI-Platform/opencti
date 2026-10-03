@@ -14,6 +14,7 @@ import {
   feedbackDecisionFor,
   formatProbability,
   goalObjective,
+  isEarlierEvidence,
   isEngineRunOver,
   isRunActive,
   rememberGraphAutoOpen,
@@ -62,6 +63,23 @@ describe('Case Autopilot run helpers', () => {
     expect(numbers.get('a')).toBe(3);
     expect(numbers.get('c')).toBe(4);
     expect(numbers.size).toBe(3);
+  });
+
+  it('numbers only the latest engine run evidence after a continuation, since each run cites from 1', () => {
+    const evidence = [
+      { id: 'old-1', kind: 'url', n: 1, investigation_id: 'inv-1' },
+      { id: 'context', kind: 'opencti_object', investigation_id: null },
+      { id: 'new-1', kind: 'url', n: 1, investigation_id: 'inv-2' },
+      { id: 'new-2', kind: 'document', n: 2, investigation_id: 'inv-2' },
+    ];
+    const numbers = citationNumbers(evidence, 'inv-2');
+    expect(numbers.get('new-1')).toBe(1);
+    expect(numbers.get('new-2')).toBe(2);
+    expect(numbers.get('context')).toBe(3);
+    expect(numbers.has('old-1')).toBe(false);
+    expect(isEarlierEvidence(evidence[0], 'inv-2')).toBe(true);
+    expect(isEarlierEvidence(evidence[1], 'inv-2')).toBe(false);
+    expect(isEarlierEvidence(evidence[0], null)).toBe(false);
   });
 
   it('links evidence: web pages by their address, OpenCTI objects by their type', () => {

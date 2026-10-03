@@ -377,7 +377,9 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
     ...knownElements.filter((element) => element.entity_type === ENTITY_TYPE_COURSE_OF_ACTION).map((element) => element.internal_id),
     ...mitigations.map((relationship) => relationship.fromId),
   ]).slice(0, INVESTIGATION_LIMITS.coursesOfAction);
-  const coursesOfAction = await findElements<BasicStoreEntity & { x_mitre_id?: string }>(draftContext, runUser, coaIds, { type: ENTITY_TYPE_COURSE_OF_ACTION });
+  // Recommendations, the note and the report may quote these, so member-restricted ones are left out.
+  const coaElements = await findElements<BasicStoreEntity & { x_mitre_id?: string }>(draftContext, runUser, coaIds, { type: ENTITY_TYPE_COURSE_OF_ACTION });
+  const coursesOfAction = withoutMemberRestricted(coaElements);
   // PIRs the candidates matter to, among the PIRs the identity can see.
   const pirScores = new Map<string, number>();
   candidates.forEach((candidate) => {
@@ -386,7 +388,8 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
     });
   });
   const pirIds = Array.from(pirScores.keys());
-  const pirs = pirIds.length === 0 ? [] : await internalFindByIds<BasicStoreEntity>(exec.liveContext, runUser, pirIds, { type: ENTITY_TYPE_PIR }) as BasicStoreEntity[];
+  const pirElements = pirIds.length === 0 ? [] : await internalFindByIds<BasicStoreEntity>(exec.liveContext, runUser, pirIds, { type: ENTITY_TYPE_PIR }) as BasicStoreEntity[];
+  const pirs = withoutMemberRestricted(pirElements);
   const reliabilities = await loadAuthorReliabilities(draftContext, runUser, [subject, ...knownElements, ...candidates]);
   const contextEvidence = elementEvidence(knownElements, reliabilities, run.draft_id).slice(0, INVESTIGATION_LIMITS.contextEntities);
   const connectors = await listPolicyEnrichmentConnectors(exec.liveContext, runUser, exec.policy);

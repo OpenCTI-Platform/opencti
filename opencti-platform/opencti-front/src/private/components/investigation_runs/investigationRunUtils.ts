@@ -429,6 +429,7 @@ export const caseAutopilotPath = (caseItem: { id: string; entity_type: string },
 
 interface EvidenceLike {
   readonly id: string;
+  readonly investigation_id?: string | null;
   readonly n?: number | null;
   readonly kind: string;
   readonly opencti_id?: string | null;
@@ -437,11 +438,23 @@ interface EvidenceLike {
 }
 
 /**
- * Citation number of each piece of evidence: the report's own number when the
- * engine cited it, else the order the run collected it in, after the cited ones.
+ * Whether a piece of evidence was found by an engine run before the latest
+ * one. Every engine run numbers its citations from 1, so only the latest run's
+ * evidence (and the case context, found by no engine run) shares the numbers
+ * of the report.
  */
-export const citationNumbers = (evidence: readonly EvidenceLike[]) => {
+export const isEarlierEvidence = (item: EvidenceLike, latestInvestigationId?: string | null) => {
+  return !!latestInvestigationId && !!item.investigation_id && item.investigation_id !== latestInvestigationId;
+};
+
+/**
+ * Citation number of each piece of evidence of the latest engine run: the
+ * report's own number when the engine cited it, else the order the run
+ * collected it in, after the cited ones. Earlier runs' evidence gets none.
+ */
+export const citationNumbers = (allEvidence: readonly EvidenceLike[], latestInvestigationId?: string | null) => {
   const numbers = new Map<string, number>();
+  const evidence = allEvidence.filter((item) => !isEarlierEvidence(item, latestInvestigationId));
   let next = Math.max(0, ...evidence.map((item) => item.n ?? 0));
   evidence.forEach((item) => {
     if (numbers.has(item.id)) return;

@@ -70,7 +70,14 @@ const InvestigationRunRecommendations = ({ run }: InvestigationRunRecommendation
   };
   const { recommendations } = run;
   return (
-    <Card title={`${t_i18n('Recommendations')} (${recommendations.length})`}>
+    <Card
+      title={t_i18n('Recommendations')}
+      action={recommendations.length > 0 ? (
+        <Typography variant="body2" color="text.secondary" data-testid="investigation-recommendations-count">
+          {t_i18n('{count, plural, one {# recommendation} other {# recommendations}}', { values: { count: recommendations.length } })}
+        </Typography>
+      ) : undefined}
+    >
       {recommendations.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           {isRunActive(run.run_status) ? t_i18n('Recommendations are proposed as the investigation concludes.') : t_i18n('No recommendation was proposed.')}

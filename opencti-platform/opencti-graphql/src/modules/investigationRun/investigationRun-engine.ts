@@ -408,13 +408,16 @@ export const mirrorEvidence = (current: InvestigationEvidence[], engine: EngineI
     if (!item) return;
     const known = byId.get(item.id);
     if (known) {
-      // Keep the metadata OpenCTI attached; take the citation number the report gave.
+      // Keep the metadata OpenCTI attached. Every engine run numbers its
+      // citations from 1: evidence a continuation cites again takes that
+      // run's number and step, never the number an earlier run gave it.
+      const sameRun = known.investigation_id === engine.id;
       byId.set(item.id, {
         ...known,
-        n: item.n ?? known.n,
+        n: item.n ?? (sameRun ? known.n : null),
         quote: known.quote ?? item.quote,
-        investigation_id: known.investigation_id ?? engine.id,
-        step_id: known.step_id ?? item.step_id,
+        investigation_id: engine.id,
+        step_id: sameRun ? (known.step_id ?? item.step_id) : (item.step_id ?? known.step_id),
       });
       return;
     }

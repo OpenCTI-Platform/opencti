@@ -112,7 +112,7 @@ const ConsistencyCell = ({ cell }: { cell: EvidenceCell }) => {
 const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) => {
   const { t_i18n } = useFormatter();
   const { hypotheses } = run;
-  const numbers = citationNumbers(run.evidence);
+  const numbers = citationNumbers(run.evidence, run.xtm_investigation_id);
   const evidenceById = new Map(run.evidence.map((item) => [item.id, item]));
   const rows: { id: string; name: string; path: string | null }[] = [];
   hypotheses.forEach((hypothesis) => hypothesis.evidence.forEach((cell) => {
@@ -128,7 +128,14 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
   rows.sort((a, b) => (numbers.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (numbers.get(b.id) ?? Number.MAX_SAFE_INTEGER));
   const threshold = run.policy?.attribution_min_confidence;
   return (
-    <Card title={`${t_i18n('Hypotheses')} (${hypotheses.length})`}>
+    <Card
+      title={t_i18n('Hypotheses')}
+      action={hypotheses.length > 0 ? (
+        <Typography variant="body2" color="text.secondary" data-testid="investigation-hypotheses-count">
+          {t_i18n('{count, plural, one {# hypothesis} other {# hypotheses}}', { values: { count: hypotheses.length } })}
+        </Typography>
+      ) : undefined}
+    >
       {hypotheses.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           {isRunActive(run.run_status) ? t_i18n('Hypotheses appear once the evidence is linked to candidate threats.') : t_i18n('No attribution hypothesis was proposed.')}

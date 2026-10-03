@@ -22,7 +22,17 @@ import type { InvestigationEvidence } from './investigationRun-types';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthUser } from '../../types/user';
 import type { BasicStoreSettings } from '../../types/settings';
-import { isOrganizationUnrestricted, isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../utils/access';
+import {
+  isOrganizationUnrestricted,
+  isServiceAccountUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  MEMBER_ACCESS_ALL,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  MEMBER_ACCESS_RIGHT_EDIT,
+  MEMBER_ACCESS_RIGHT_USE,
+  MEMBER_ACCESS_RIGHT_VIEW,
+} from '../../utils/access';
 
 // Entity types an incident can be attributed to.
 export const ATTRIBUTION_CANDIDATE_TYPES = [
@@ -60,14 +70,23 @@ export const organizationIdsOf = (element: object): string[] => {
   return idsOf(record.objectOrganization, record[RELATION_GRANTED_TO]);
 };
 
+type RestrictedMember = { id?: string; access_right?: string; groups_restriction_ids?: string[] | null };
+const MEMBER_ACCESS_RIGHTS_READ = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+
 /**
  * Whether an element is restricted to authorized members. A run and its
  * outputs carry markings and organization sharing but no member restriction,
  * so such an element is never investigated, read into a context or cited.
+ * Authorized members that let everyone read the element (the default of a
+ * PIR) restrict nothing a run could leak.
  */
 export const isMemberRestricted = (element: object | null | undefined): boolean => {
-  const members = (element as { restricted_members?: unknown[] | null } | null | undefined)?.restricted_members;
-  return Array.isArray(members) && members.length > 0;
+  const members = (element as { restricted_members?: RestrictedMember[] | null } | null | undefined)?.restricted_members;
+  if (!Array.isArray(members) || members.length === 0) return false;
+  const everyoneReads = members.some((member) => member?.id === MEMBER_ACCESS_ALL
+    && !!member.access_right && MEMBER_ACCESS_RIGHTS_READ.includes(member.access_right)
+    && (member.groups_restriction_ids ?? []).length === 0);
+  return !everyoneReads;
 };
 
 /** The elements a run may read or cite: those without a member restriction. */

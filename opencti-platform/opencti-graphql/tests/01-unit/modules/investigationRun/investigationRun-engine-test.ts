@@ -180,6 +180,19 @@ describe('Case Autopilot engine state', () => {
     expect(known[0].step_id).toBe('s2');
   });
 
+  it('numbers the evidence a continuation cites again with the continuation, never with the earlier run', () => {
+    const engine = engineAnswer() as NonNullable<ReturnType<typeof engineAnswer>>;
+    const earlier = mirrorEvidence([], { ...engine, id: 'inv-0' });
+    const continued = mirrorEvidence(earlier, {
+      ...engine,
+      evidence: [{ kind: 'opencti_object', opencti_id: 'ip-1', label: 'IP', step_id: 's9' }],
+    });
+    const cited = continued.find((item) => item.id === 'ip-1');
+    expect(cited).toMatchObject({ investigation_id: engine.id, n: null, step_id: 's9' });
+    // What the continuation does not cite stays with the run that found it.
+    expect(continued.filter((item) => item.id !== 'ip-1').every((item) => item.investigation_id === 'inv-0')).toBe(true);
+  });
+
   it('keeps the engine goal plan as a bounded JSON object', () => {
     const goalPlan = { actions: [{ slug: 'enrich' }] };
     expect(boundGoalPlan(goalPlan)).toEqual(goalPlan);
