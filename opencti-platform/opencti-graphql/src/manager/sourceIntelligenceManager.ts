@@ -41,7 +41,10 @@ import {
 import {
   buildScorecardDocuments,
   createComputeState,
-  findHuntRunSightedObjects,
+  findHuntRunSightings,
+  findTrueHuntRunIds,
+  HUNT_RUN_SIGHTING_ATTRIBUTE,
+  type HuntRunSighting,
   periodCounting,
   prepareRunLookups,
   resolveSoftJoinAvailability,
@@ -111,74 +114,121 @@ const latestDate = (...dates: Array<string | null | undefined>): string | undefi
   return times.length > 0 ? new Date(Math.max(...times)).toISOString() : undefined;
 };
 
+type PeriodIncrements = Map<ScorecardPeriodValue, Map<string, LiveIncrement>>;
+
+const mergePeriodIncrements = (target: PeriodIncrements, addition: PeriodIncrements) => {
+  addition.forEach((patches, period) => {
+    const periodIncrements = target.get(period) ?? new Map<string, LiveIncrement>();
+    patches.forEach((patch, sourceId) => addIncrement(periodIncrements, [sourceId], patch));
+    target.set(period, periodIncrements);
+  });
+};
+
 /**
- * Removal of a deleted object from the live scorecards: for each of its sources and each period, what the full
- * computation counts for it, under the same rules (`toAssertionActivity`, `periodCounting`). An object outside a
- * period was never counted in it and is not removed from it.
+ * Patches of one object for each of its sources, in each period where the full computation counts the object for that
+ * source, under the same rules (`toAssertionActivity`, `periodCounting`). Nothing is credited to or removed from a
+ * period that does not count the object.
  */
-export const deletionDecrements = (resolver: SourceResolver, entityType: string, doc: ProvenanceDocument, deletedAt: number) => {
-  const decrements = new Map<ScorecardPeriodValue, Map<string, LiveIncrement>>();
-  const docCreated = doc.created_at ? new Date(doc.created_at).getTime() : deletedAt;
+const countedPeriodPatches = (
+  resolver: SourceResolver,
+  doc: ProvenanceDocument,
+  at: number,
+  patchOf: (counting: ReturnType<typeof periodCounting>) => LiveIncrement,
+): PeriodIncrements => {
+  const result: PeriodIncrements = new Map();
+  const docCreated = doc.created_at ? new Date(doc.created_at).getTime() : at;
   const docUpdated = doc.updated_at ? new Date(doc.updated_at).getTime() : docCreated;
   resolveDocumentAssertions(doc, resolver)
-    .map((assertion) => toAssertionActivity(assertion, docCreated, docUpdated, deletedAt))
-    .filter((activity) => activity.start <= deletedAt)
+    .map((assertion) => toAssertionActivity(assertion, docCreated, docUpdated, at))
+    .filter((activity) => activity.start <= at)
     .forEach((activity) => {
       SCORECARD_PERIODS.forEach((period) => {
-        const counting = periodCounting(activity, deletedAt - SCORECARD_PERIOD_DAYS[period] * DAY_MS, deletedAt);
+        const counting = periodCounting(activity, at - SCORECARD_PERIOD_DAYS[period] * DAY_MS, at);
         if (!counting.inVolume) return;
-        const periodDecrements = decrements.get(period) ?? new Map<string, LiveIncrement>();
-        addIncrement(periodDecrements, [activity.sourceId], {
-          volume_total: -1,
-          ...typeVolumePatch(entityType, -1),
-          ...(counting.isNew ? { new_objects: -1 } : {}),
-          ...(counting.lastDay ? { volume_last_day: -1 } : {}),
-        });
-        decrements.set(period, periodDecrements);
+        const periodIncrements = result.get(period) ?? new Map<string, LiveIncrement>();
+        addIncrement(periodIncrements, [activity.sourceId], patchOf(counting));
+        result.set(period, periodIncrements);
       });
     });
-  return decrements;
+  return result;
+};
+
+/**
+ * Removal of a deleted object from the live scorecards: what the full computation counts for it in the volume.
+ */
+export const deletionDecrements = (resolver: SourceResolver, entityType: string, doc: ProvenanceDocument, deletedAt: number) => {
+  return countedPeriodPatches(resolver, doc, deletedAt, (counting) => ({
+    volume_total: -1,
+    ...typeVolumePatch(entityType, -1),
+    ...(counting.isNew ? { new_objects: -1 } : {}),
+    ...(counting.lastDay ? { volume_last_day: -1 } : {}),
+  }));
+};
+
+/**
+ * A signal on an object (sighting, revocation, PIR link, hunt detection) credited to its sources, or removed from
+ * them when it is withdrawn, in the periods where the full computation counts the object for each source.
+ */
+export const signalIncrements = (resolver: SourceResolver, doc: ProvenanceDocument, patch: LiveIncrement, at: number) => {
+  return countedPeriodPatches(resolver, doc, at, () => patch);
+};
+
+const sightingPatch = (extension: { negative?: boolean; where_sighted_types?: string[] }, sign: number): LiveIncrement => {
+  if (extension.negative === true) {
+    return { negative_sightings_count: sign };
+  }
+  const platform = (extension.where_sighted_types ?? []).includes(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+  return { sightings_count: sign, ...(platform ? { security_platform_sightings_count: sign } : {}) };
+};
+
+const reversePatchSetsValue = (event: UpdateEvent, path: string, value: unknown) => {
+  return (event.context?.reverse_patch ?? []).some((operation: any) => operation.path === path && operation.op !== 'remove' && operation.value === value);
 };
 
 type StoredObject = BasicStoreBase & Record<string, any>;
 
-const toProvenanceDocument = (object: StoredObject): ProvenanceDocument => ({
+export interface StoredDocument extends ProvenanceDocument {
+  hunt_run_id?: string | null;
+}
+
+const toStoredDocument = (object: StoredObject): StoredDocument => ({
   internal_id: object.internal_id,
   created_at: object.created_at ? new Date(object.created_at).toISOString() : undefined,
   updated_at: object.updated_at ? new Date(object.updated_at).toISOString() : undefined,
   creator_id: object.creator_id,
   'rel_created-by.internal_id': object['created-by'] ? [object['created-by']] : [],
   x_opencti_assertions: object.x_opencti_assertions,
+  hunt_run_id: object[HUNT_RUN_SIGHTING_ATTRIBUTE] ?? null,
 });
 
-const resolveStoredSources = async (context: AuthContext, resolver: SourceResolver, ids: string[]) => {
-  const result = new Map<string, string[]>();
+const loadStoredDocuments = async (context: AuthContext, ids: string[], indices?: string[]) => {
+  const result = new Map<string, StoredDocument>();
   const uniqueIds = [...new Set(ids)].slice(0, MAX_OBJECTS_LOOKUP);
   if (uniqueIds.length === 0) {
     return result;
   }
-  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds) as unknown as StoredObject[];
-  objects.forEach((object) => {
-    const assertions = resolveDocumentAssertions(toProvenanceDocument(object), resolver);
-    result.set(object.internal_id, assertions.map((assertion) => assertion.sourceId));
-  });
+  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds, indices ? { indices } : {}) as unknown as StoredObject[];
+  objects.forEach((object) => result.set(object.internal_id, toStoredDocument(object)));
   return result;
 };
 
 /**
- * Deleted objects as the trash keeps them, with their stored provenance. Objects deleted permanently (trash disabled,
- * forced or bulk deletion) are not in the trash.
+ * Lookups of the live accounting. Deleted objects are read from the trash, which keeps their stored provenance;
+ * objects deleted permanently (trash disabled, forced or bulk deletion) are not in it.
  */
-const loadTrashedDocuments = async (context: AuthContext, ids: string[]) => {
-  const result = new Map<string, ProvenanceDocument>();
-  const uniqueIds = [...new Set(ids)].slice(0, MAX_OBJECTS_LOOKUP);
-  if (uniqueIds.length === 0) {
-    return result;
-  }
-  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds, { indices: [READ_INDEX_DELETED_OBJECTS] }) as unknown as StoredObject[];
-  objects.forEach((object) => result.set(object.internal_id, toProvenanceDocument(object)));
-  return result;
-};
+export interface EventLookups {
+  documents: (ids: string[]) => Promise<Map<string, StoredDocument>>;
+  deletedDocuments: (ids: string[]) => Promise<Map<string, StoredDocument>>;
+  huntRunSightings: (runIds: string[]) => Promise<HuntRunSighting[]>;
+  trueHuntRunIds: (runIds: string[]) => Promise<string[]>;
+}
+
+const defaultEventLookups = (context: AuthContext, huntRunType: string | null): EventLookups => ({
+  documents: (ids) => loadStoredDocuments(context, ids),
+  deletedDocuments: (ids) => loadStoredDocuments(context, ids, [READ_INDEX_DELETED_OBJECTS]),
+  huntRunSightings: (runIds) => findHuntRunSightings(context, runIds),
+  trueHuntRunIds: (runIds) => findTrueHuntRunIds(context, huntRunType, runIds),
+});
 
 export const computeEventIncrements = async (
   context: AuthContext,
@@ -187,18 +237,18 @@ export const computeEventIncrements = async (
   options: {
     enterprise: boolean;
     huntRunType: string | null;
-    loadDeletedDocuments?: (ids: string[]) => Promise<Map<string, ProvenanceDocument>>;
+    lookups?: Partial<EventLookups>;
   },
 ) => {
-  // Applied to the live scorecards of every period
+  const lookups: EventLookups = { ...defaultEventLookups(context, options.huntRunType), ...options.lookups };
+  // New assertions, applied to the live scorecards of every period
   const increments = new Map<string, LiveIncrement>();
-  // Deleted objects, removed only from the periods in which they were counted
-  const deletions = new Map<ScorecardPeriodValue, Map<string, LiveIncrement>>();
+  // Deleted objects and signals, applied only to the periods that count the object for each source
+  const periodIncrements: PeriodIncrements = new Map();
   const deleted: Array<{ entityType: string; time: number; eventDocument: ProvenanceDocument }> = [];
-  const sightings: Array<{ objectId: string; platform: boolean; negative: boolean }> = [];
-  const revoked: string[] = [];
-  const pirFlagged: string[] = [];
-  const huntRuns: string[] = [];
+  const signals: Array<{ objectId: string; patch: LiveIncrement; time: number }> = [];
+  const deletedSightings: Array<{ sightingId: string; objectId: string; time: number }> = [];
+  const huntRuns: Array<{ runId: string; sign: number; time: number }> = [];
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
     const data = event.data as any;
@@ -219,14 +269,10 @@ export const computeEventIncrements = async (
         addIncrement(increments, sourceIds, knowledgeVolumePatch(entityType, time));
       }
       if (entityType === STIX_SIGHTING_RELATIONSHIP && extension.sighting_of_ref) {
-        sightings.push({
-          objectId: extension.sighting_of_ref,
-          platform: (extension.where_sighted_types ?? []).includes(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM),
-          negative: extension.negative === true,
-        });
+        signals.push({ objectId: extension.sighting_of_ref, patch: sightingPatch(extension, 1), time });
       }
       if (options.enterprise && entityType === RELATION_IN_PIR && extension.source_ref) {
-        pirFlagged.push(extension.source_ref);
+        signals.push({ objectId: extension.source_ref, patch: { pir_matched_count: 1 }, time });
       }
     } else if (data.type === EVENT_TYPE_UPDATE) {
       const updateEvent = data as UpdateEvent;
@@ -235,61 +281,87 @@ export const computeEventIncrements = async (
         const sourceIds = resolveEventSources(resolver, { originUserId: data.origin?.user_id });
         addIncrement(increments, sourceIds, { source_last_asserted_at: time });
         if (patchSetsValue(updateEvent, '/revoked', true)) {
-          revoked.push(extension.id);
+          signals.push({ objectId: extension.id, patch: { revoked_count: 1 }, time });
         }
       }
-      if (options.huntRunType && entityType === options.huntRunType && patchSetsValue(updateEvent, '/verdict', HUNT_VERDICT_TRUE_POSITIVE)) {
-        huntRuns.push(extension.id);
+      if (options.huntRunType && entityType === options.huntRunType) {
+        // A verdict confirmed or withdrawn adds or removes the detections of the run
+        const confirmed = patchSetsValue(updateEvent, '/verdict', HUNT_VERDICT_TRUE_POSITIVE);
+        const wasConfirmed = reversePatchSetsValue(updateEvent, '/verdict', HUNT_VERDICT_TRUE_POSITIVE);
+        if (confirmed !== wasConfirmed) {
+          huntRuns.push({ runId: extension.id, sign: confirmed ? 1 : -1, time });
+        }
       }
-    } else if (data.type === EVENT_TYPE_DELETE && isKnowledge && extension.is_inferred !== true) {
-      // Streams carry no source identifiers, only provenance dates: without the trash copy, the sources are the
-      // creators and the author, active until the last update or assertion
-      const provenance = stix.extensions?.[STIX_EXT_OCTI_PROVENANCE];
-      deleted.push({
-        entityType,
-        time,
-        eventDocument: {
-          internal_id: extension.id,
-          created_at: extension.created_at,
-          updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
-          creator_id: extension.creator_ids ?? [],
-          'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
-        },
-      });
+    } else if (data.type === EVENT_TYPE_DELETE) {
+      if (isKnowledge && extension.is_inferred !== true) {
+        // Streams carry no source identifiers, only provenance dates: without the trash copy, the sources are the
+        // creators and the author, active until the last update or assertion
+        const provenance = stix.extensions?.[STIX_EXT_OCTI_PROVENANCE];
+        deleted.push({
+          entityType,
+          time,
+          eventDocument: {
+            internal_id: extension.id,
+            created_at: extension.created_at,
+            updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
+            creator_id: extension.creator_ids ?? [],
+            'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
+          },
+        });
+      }
+      // A deleted sighting or PIR link withdraws the signal it gave to the object
+      if (entityType === STIX_SIGHTING_RELATIONSHIP && extension.sighting_of_ref) {
+        signals.push({ objectId: extension.sighting_of_ref, patch: sightingPatch(extension, -1), time });
+        if (options.huntRunType) {
+          deletedSightings.push({ sightingId: extension.id, objectId: extension.sighting_of_ref, time });
+        }
+      }
+      if (options.enterprise && entityType === RELATION_IN_PIR && extension.source_ref) {
+        signals.push({ objectId: extension.source_ref, patch: { pir_matched_count: -1 }, time });
+      }
+      if (options.huntRunType && entityType === options.huntRunType && stix.verdict === HUNT_VERDICT_TRUE_POSITIVE) {
+        huntRuns.push({ runId: extension.id, sign: -1, time });
+      }
     }
   }
   // The trash keeps the stored provenance of a deleted object: the same attribution as the full computation. The user
   // deleting the object is never one of its sources.
-  const loadDeleted = options.loadDeletedDocuments ?? ((ids: string[]) => loadTrashedDocuments(context, ids));
-  const trashed = deleted.length > 0 ? await loadDeleted(deleted.map(({ eventDocument }) => eventDocument.internal_id)) : new Map();
+  const deletedIds = [...deleted.map(({ eventDocument }) => eventDocument.internal_id), ...deletedSightings.map(({ sightingId }) => sightingId)];
+  const trashed = deletedIds.length > 0 ? await lookups.deletedDocuments(deletedIds) : new Map<string, StoredDocument>();
   deleted.forEach(({ entityType, time, eventDocument }) => {
     const document = trashed.get(eventDocument.internal_id) ?? eventDocument;
-    deletionDecrements(resolver, entityType, document, time).forEach((periodDecrements, period) => {
-      const periodIncrements = deletions.get(period) ?? new Map<string, LiveIncrement>();
-      periodDecrements.forEach((patch, sourceId) => addIncrement(periodIncrements, [sourceId], patch));
-      deletions.set(period, periodIncrements);
-    });
+    mergePeriodIncrements(periodIncrements, deletionDecrements(resolver, entityType, document, time));
   });
-  // Hunt runs (innovation 01) write sightings carrying their run id: each sighted object is a confirmed detection
-  const huntSightedObjects = huntRuns.length > 0 ? await findHuntRunSightedObjects(context, huntRuns) : [];
-  const sourcesByObject = await resolveStoredSources(context, resolver, [
-    ...sightings.map((sighting) => sighting.objectId),
-    ...revoked,
-    ...pirFlagged,
-    ...huntSightedObjects,
-  ]);
-  sightings.forEach((sighting) => {
-    const sourceIds = sourcesByObject.get(sighting.objectId) ?? [];
-    if (sighting.negative) {
-      addIncrement(increments, sourceIds, { negative_sightings_count: 1 });
-    } else {
-      addIncrement(increments, sourceIds, { sightings_count: 1, ...(sighting.platform ? { security_platform_sightings_count: 1 } : {}) });
+  // Hunt runs (innovation 01) write sightings carrying their run id: each sighting of a confirmed run is a detection
+  const deletedHuntSightings = deletedSightings
+    .map((sighting) => ({ ...sighting, runId: trashed.get(sighting.sightingId)?.hunt_run_id }))
+    .filter((sighting): sighting is typeof sighting & { runId: string } => !!sighting.runId);
+  if (deletedHuntSightings.length > 0) {
+    const trueRunIds = new Set(await lookups.trueHuntRunIds([...new Set(deletedHuntSightings.map(({ runId }) => runId))]));
+    deletedHuntSightings
+      .filter(({ runId }) => trueRunIds.has(runId))
+      .forEach(({ objectId, time }) => signals.push({ objectId, patch: { hunt_true_positives_count: -1 }, time }));
+  }
+  if (huntRuns.length > 0) {
+    const runSightings = await lookups.huntRunSightings([...new Set(huntRuns.map(({ runId }) => runId))]);
+    huntRuns.forEach(({ runId, sign, time }) => {
+      runSightings
+        .filter((sighting) => sighting.runId === runId)
+        .forEach(({ objectId }) => signals.push({ objectId, patch: { hunt_true_positives_count: sign }, time }));
+    });
+  }
+  // The object carrying a signal, or its trash copy when it was deleted in the meantime
+  const signalObjectIds = [...new Set(signals.map(({ objectId }) => objectId))];
+  const documents = signalObjectIds.length > 0 ? await lookups.documents(signalObjectIds) : new Map<string, StoredDocument>();
+  const missingIds = signalObjectIds.filter((objectId) => !documents.has(objectId) && !trashed.has(objectId));
+  const trashedSignalObjects = missingIds.length > 0 ? await lookups.deletedDocuments(missingIds) : new Map<string, StoredDocument>();
+  signals.forEach(({ objectId, patch, time }) => {
+    const document = documents.get(objectId) ?? trashed.get(objectId) ?? trashedSignalObjects.get(objectId);
+    if (document) {
+      mergePeriodIncrements(periodIncrements, signalIncrements(resolver, document, patch, time));
     }
   });
-  revoked.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { revoked_count: 1 }));
-  pirFlagged.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { pir_matched_count: 1 }));
-  huntSightedObjects.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { hunt_true_positives_count: 1 }));
-  return { increments, deletions };
+  return { increments, periodIncrements };
 };
 
 const processStreamIncrements = async (context: AuthContext) => {
@@ -318,14 +390,14 @@ const processStreamIncrements = async (context: AuthContext) => {
       { streamBatchSize: STREAM_BATCH_SIZE, withInternal: true },
     );
     if (events.length > 0) {
-      const { increments, deletions } = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
+      const { increments, periodIncrements } = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
       disabledSourceIds.forEach((sourceId) => increments.delete(sourceId));
       await applyLiveIncrements(context, increments, SCORECARD_PERIODS);
-      const deletionsByPeriod = Array.from(deletions.entries());
-      for (let i = 0; i < deletionsByPeriod.length; i += 1) {
-        const [period, periodIncrements] = deletionsByPeriod[i];
-        disabledSourceIds.forEach((sourceId) => periodIncrements.delete(sourceId));
-        await applyLiveIncrements(context, periodIncrements, [period]);
+      const byPeriod = Array.from(periodIncrements.entries());
+      for (let i = 0; i < byPeriod.length; i += 1) {
+        const [period, patches] = byPeriod[i];
+        disabledSourceIds.forEach((sourceId) => patches.delete(sourceId));
+        await applyLiveIncrements(context, patches, [period]);
       }
     }
     if (nextEventId === lastEventId) {
@@ -405,14 +477,7 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
         logApp.info('[OPENCTI-MODULE] Source intelligence autonomy applied recommendations', { autonomous });
       }
     }
-    const current = await getSourceIntelligenceState();
-    const backfillPatch: Partial<SourceIntelligenceState> = {};
-    if (!current.backfill_done && !current.backfill_next_day) {
-      backfillPatch.backfill_next_day = settings.backfill_days > 0 ? toSnapshotDate(now - settings.backfill_days * DAY_MS) : null;
-      backfillPatch.backfill_done = settings.backfill_days === 0;
-    }
     await updateSourceIntelligenceState({
-      ...backfillPatch,
       last_full_run_day: toSnapshotDate(now),
       last_full_run_end: new Date().toISOString(),
       last_run_success: true,
@@ -428,15 +493,42 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
 };
 
 /**
- * One historical day per run, from the oldest to yesterday, so the trend charts have data from the first day.
- * Quality signals (revocations, sightings, labels) are evaluated with their current state.
+ * The historical days to compute so that the trend charts cover `backfill_days`. A longer range set later computes the
+ * missing older days only, so the snapshots of the days already covered are kept; a pass in progress is extended.
+ */
+export const planBackfill = (
+  state: SourceIntelligenceState,
+  settings: Pick<SourceIntelligenceSettings, 'backfill_days'>,
+  now: number,
+): Partial<SourceIntelligenceState> | null => {
+  if (settings.backfill_days <= 0) {
+    return !state.backfill_done && !state.backfill_next_day ? { backfill_done: true } : null;
+  }
+  const requestedFrom = toSnapshotDate(now - settings.backfill_days * DAY_MS);
+  const coveredFrom = state.backfill_from_day ?? null;
+  if (coveredFrom && requestedFrom >= coveredFrom) {
+    return null;
+  }
+  const inProgress = !state.backfill_done && !!state.backfill_next_day;
+  return {
+    backfill_from_day: requestedFrom,
+    backfill_next_day: requestedFrom,
+    backfill_until_day: coveredFrom && !inProgress ? coveredFrom : (state.backfill_until_day ?? toSnapshotDate(now)),
+    backfill_done: false,
+  };
+};
+
+/**
+ * One historical day per run, from the oldest to the end of the planned range (yesterday at most), so the trend charts
+ * have data from the first day. Quality signals (revocations, sightings, labels) are evaluated with their current state.
  */
 const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenceSettings, state: SourceIntelligenceState, now: number) => {
   if (state.backfill_done || !state.backfill_next_day) {
     return false;
   }
   const today = toSnapshotDate(now);
-  if (state.backfill_next_day >= today) {
+  const until = state.backfill_until_day && state.backfill_until_day < today ? state.backfill_until_day : today;
+  if (state.backfill_next_day >= until) {
     await updateSourceIntelligenceState({ backfill_done: true, backfill_next_day: null });
     return false;
   }
@@ -445,7 +537,7 @@ const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenc
   const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
   await computeAndStore(context, settings, sources, dayEnd, { live: false, snapshot: true, enterprise });
   const nextDay = toSnapshotDate(dayEnd + 1);
-  await updateSourceIntelligenceState({ backfill_next_day: nextDay, backfill_done: nextDay >= today });
+  await updateSourceIntelligenceState({ backfill_next_day: nextDay, backfill_done: nextDay >= until });
   logApp.info('[OPENCTI-MODULE] Source intelligence backfill day computed', { day: state.backfill_next_day });
   return true;
 };
@@ -484,7 +576,10 @@ export const sourceIntelligenceHandler = async () => {
     await runFullComputation(context, settings, now);
     return;
   }
-  await runBackfillStep(context, settings, state, now);
+  // Planned after the first computation, when the sources are known, and again whenever the range setting grows
+  const backfillPlan = planBackfill(state, settings, now);
+  const current = backfillPlan ? await updateSourceIntelligenceState(backfillPlan) : state;
+  await runBackfillStep(context, settings, current, now);
 };
 
 const SOURCE_INTELLIGENCE_MANAGER_DEFINITION: ManagerDefinition = {

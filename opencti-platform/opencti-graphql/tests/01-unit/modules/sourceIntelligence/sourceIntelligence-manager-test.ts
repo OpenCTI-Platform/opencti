@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { computeEventIncrements, deletionDecrements, isFullComputationDue } from '../../../../src/manager/sourceIntelligenceManager';
-import { buildResolverFromSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { computeEventIncrements, deletionDecrements, isFullComputationDue, planBackfill } from '../../../../src/manager/sourceIntelligenceManager';
+import { backfillProgress, buildResolverFromSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
+import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { createComputeState, processDocument } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
 import { type BasicStoreEntitySource, SCORECARD_PERIODS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
@@ -155,10 +158,10 @@ describe('Source intelligence live deletion accounting', () => {
       requested.push(ids);
       return new Map([['indicator-1', trashCopy]]);
     };
-    const { increments, deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
+    const { increments, periodIncrements: deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
       enterprise: false,
       huntRunType: null,
-      loadDeletedDocuments,
+      lookups: { deletedDocuments: loadDeletedDocuments },
     });
     expect(requested).toEqual([['indicator-1']]);
     expect(increments.size).toBe(0);
@@ -171,16 +174,156 @@ describe('Source intelligence live deletion accounting', () => {
   });
 
   it('should debit the creators and the author of a deleted object without trash copy, not the deleting user', async () => {
-    const { increments, deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
+    const { increments, periodIncrements: deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
       enterprise: false,
       huntRunType: null,
-      loadDeletedDocuments: async () => new Map(),
+      lookups: { deletedDocuments: async () => new Map() },
     });
     expect(increments.size).toBe(0);
     expect(Array.from(deletions.keys())).toEqual(['LAST_7_DAYS', 'LAST_30_DAYS', 'LAST_90_DAYS']);
     SCORECARD_PERIODS.forEach((period) => expect(Array.from(deletions.get(period)?.keys() ?? [])).toEqual(['source-connector']));
     expect(deletions.get('LAST_7_DAYS')?.get('source-connector')).toEqual({ volume_total: -1, volume_last_day: -1, volume_entities: -1, volume_indicators: -1 });
     expect(deletions.get('LAST_30_DAYS')?.get('source-connector')?.new_objects).toBe(-1);
+  });
+});
+
+describe('Source intelligence live signal accounting', () => {
+  const HOUR = 3600 * 1000;
+  const DAY = 24 * HOUR;
+  const AT = Date.UTC(2026, 9, 3, 12, 0);
+  const HUNT_RUN_TYPE = 'Hunt-Run';
+  const iso = (time: number) => new Date(time).toISOString();
+  const source = (internal_id: string, source_kind: string, ref_id: string, users: string[]) => ({
+    internal_id, source_kind, ref_id, source_user_ids: users, enabled: true,
+  }) as unknown as BasicStoreEntitySource;
+  const resolver = buildResolverFromSources([
+    source('source-connector', 'connector', 'connector-1', ['user-connector']),
+    source('source-feed', 'ingestion_feed', 'feed-1', ['user-feed']),
+  ]);
+  // Asserted by the connector 60 days ago only, and by the feed in the last hours
+  const indicator = {
+    internal_id: 'indicator-1',
+    created_at: iso(AT - 60 * DAY),
+    updated_at: iso(AT - 3 * HOUR),
+    creator_id: ['user-connector'],
+    x_opencti_assertions: [
+      { source_kind: 'connector', source_id: 'connector-1', first_asserted_at: iso(AT - 60 * DAY), last_asserted_at: iso(AT - 60 * DAY) },
+      { source_kind: 'feed', source_id: 'feed-1', first_asserted_at: iso(AT - 3 * DAY), last_asserted_at: iso(AT - 3 * HOUR) },
+    ],
+  };
+  const event = (type: string, extension: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
+    id: `${AT}-0`,
+    event: type,
+    data: { type, origin: { user_id: 'user-analyst' }, ...extra, data: { extensions: { [STIX_EXT_OCTI]: extension } } },
+  });
+  const sighting = { id: 'sighting-1', type: STIX_SIGHTING_RELATIONSHIP, sighting_of_ref: 'indicator-1', where_sighted_types: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM] };
+  const documents = async () => new Map([['indicator-1', indicator]]);
+  const byPeriod = (periodIncrements: Map<string, Map<string, Record<string, number>>>) => Object.fromEntries(
+    Array.from(periodIncrements.entries()).map(([period, patches]) => [period, Object.fromEntries(patches.entries())]),
+  );
+
+  it('should credit a sighting only to the periods where each source asserted the object', async () => {
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [event('create', sighting)] as any, resolver, {
+      enterprise: false,
+      huntRunType: null,
+      lookups: { documents },
+    });
+    const sighted = { sightings_count: 1, security_platform_sightings_count: 1 };
+    expect(byPeriod(periodIncrements as any)).toEqual({
+      LAST_7_DAYS: { 'source-feed': sighted },
+      LAST_30_DAYS: { 'source-feed': sighted },
+      LAST_90_DAYS: { 'source-connector': sighted, 'source-feed': sighted },
+    });
+  });
+
+  it('should withdraw the signals of deleted sightings and PIR links from the same periods', async () => {
+    const events = [
+      event('delete', { ...sighting, negative: true }),
+      event('delete', { id: 'in-pir-1', type: RELATION_IN_PIR, source_ref: 'indicator-1' }),
+    ];
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, events as any, resolver, {
+      enterprise: true,
+      huntRunType: null,
+      lookups: { documents, deletedDocuments: async () => new Map() },
+    });
+    const withdrawn = { negative_sightings_count: -1, pir_matched_count: -1 };
+    expect(byPeriod(periodIncrements as any)).toEqual({
+      LAST_7_DAYS: { 'source-feed': withdrawn },
+      LAST_30_DAYS: { 'source-feed': withdrawn },
+      LAST_90_DAYS: { 'source-connector': withdrawn, 'source-feed': withdrawn },
+    });
+  });
+
+  it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
+    const verdictChange = event('update', { id: 'run-1', type: HUNT_RUN_TYPE }, {
+      context: {
+        patch: [{ op: 'replace', path: '/verdict', value: 'false_positive' }],
+        reverse_patch: [{ op: 'replace', path: '/verdict', value: 'true_positive' }],
+      },
+    });
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [verdictChange] as any, resolver, {
+      enterprise: false,
+      huntRunType: HUNT_RUN_TYPE,
+      lookups: {
+        documents,
+        huntRunSightings: async () => [{ runId: 'run-1', objectId: 'indicator-1' }, { runId: 'run-2', objectId: 'indicator-1' }],
+      },
+    });
+    expect(periodIncrements.get('LAST_7_DAYS')?.get('source-feed')).toEqual({ hunt_true_positives_count: -1 });
+    expect(periodIncrements.get('LAST_90_DAYS')?.get('source-connector')).toEqual({ hunt_true_positives_count: -1 });
+  });
+
+  it('should withdraw the detection of a deleted sighting of a confirmed hunt run', async () => {
+    const requestedRuns: string[][] = [];
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [event('delete', sighting)] as any, resolver, {
+      enterprise: false,
+      huntRunType: HUNT_RUN_TYPE,
+      lookups: {
+        documents,
+        deletedDocuments: async () => new Map([['sighting-1', { internal_id: 'sighting-1', creator_id: [], hunt_run_id: 'run-1' }]]),
+        trueHuntRunIds: async (runIds) => {
+          requestedRuns.push(runIds);
+          return ['run-1'];
+        },
+      },
+    });
+    expect(requestedRuns).toEqual([['run-1']]);
+    expect(periodIncrements.get('LAST_7_DAYS')?.get('source-feed')).toEqual({
+      sightings_count: -1, security_platform_sightings_count: -1, hunt_true_positives_count: -1,
+    });
+  });
+});
+
+describe('Source intelligence history backfill', () => {
+  const NOW = Date.UTC(2026, 9, 3, 12, 0);
+
+  it('should plan the configured range after the first computation', () => {
+    expect(planBackfill({}, { backfill_days: 14 }, NOW)).toEqual({
+      backfill_from_day: '2026-09-19', backfill_next_day: '2026-09-19', backfill_until_day: '2026-10-03', backfill_done: false,
+    });
+    expect(planBackfill({}, { backfill_days: 0 }, NOW)).toEqual({ backfill_done: true });
+    expect(planBackfill({ backfill_done: true }, { backfill_days: 0 }, NOW)).toBeNull();
+  });
+
+  it('should compute only the missing older days when the range grows', () => {
+    const completed = { backfill_from_day: '2026-09-19', backfill_until_day: '2026-10-03', backfill_next_day: null, backfill_done: true };
+    expect(planBackfill(completed, { backfill_days: 14 }, NOW + 24 * 3600 * 1000)).toBeNull();
+    expect(planBackfill(completed, { backfill_days: 7 }, NOW)).toBeNull();
+    expect(planBackfill(completed, { backfill_days: 90 }, NOW)).toEqual({
+      backfill_from_day: '2026-07-05', backfill_next_day: '2026-07-05', backfill_until_day: '2026-09-19', backfill_done: false,
+    });
+    // A pass in progress is extended to the older days, its remaining days included
+    const inProgress = { ...completed, backfill_next_day: '2026-09-25', backfill_done: false };
+    expect(planBackfill(inProgress, { backfill_days: 90 }, NOW)).toEqual({
+      backfill_from_day: '2026-07-05', backfill_next_day: '2026-07-05', backfill_until_day: '2026-10-03', backfill_done: false,
+    });
+  });
+
+  it('should report the backfill progress in days', () => {
+    const state = { backfill_from_day: '2026-09-19', backfill_until_day: '2026-10-03', backfill_next_day: '2026-09-25', backfill_done: false };
+    expect(backfillProgress(state)).toEqual({ done: 6, total: 14 });
+    expect(backfillProgress({ ...state, backfill_next_day: null, backfill_done: true })).toEqual({ done: 14, total: 14 });
+    expect(backfillProgress({})).toBeNull();
   });
 });
 

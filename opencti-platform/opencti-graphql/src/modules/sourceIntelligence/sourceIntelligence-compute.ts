@@ -597,17 +597,14 @@ const resolvePirFlaggedIds = async (context: AuthContext): Promise<Set<string>> 
   return flagged;
 };
 
-const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string | null, since: number): Promise<string[]> => {
-  if (!huntRunType) {
-    return [];
-  }
+const searchHuntTrueRunIds = async (context: AuthContext, huntRunType: string, filters: Record<string, unknown>[]): Promise<string[]> => {
   const data = await rawSearch(context, [READ_INDEX_INTERNAL_OBJECTS], {
     query: {
       bool: {
         filter: [
           { term: { 'entity_type.keyword': huntRunType } },
           { term: { 'verdict.keyword': HUNT_VERDICT_TRUE_POSITIVE } },
-          { range: { updated_at: { gte: new Date(since).toISOString() } } },
+          ...filters,
         ],
       },
     },
@@ -616,20 +613,42 @@ const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string |
   return (data.hits?.hits ?? []).map((hit: any) => hit._source.internal_id as string);
 };
 
+const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string | null, since: number): Promise<string[]> => {
+  if (!huntRunType) {
+    return [];
+  }
+  return searchHuntTrueRunIds(context, huntRunType, [{ range: { updated_at: { gte: new Date(since).toISOString() } } }]);
+};
+
 /**
- * Objects sighted by the sightings that hunt runs (innovation 01) attached to their run id.
+ * The hunt runs (innovation 01), among the given ones, whose verdict is a true positive.
  */
-export const findHuntRunSightedObjects = async (context: AuthContext, runIds: string[]): Promise<string[]> => {
+export const findTrueHuntRunIds = async (context: AuthContext, huntRunType: string | null, runIds: string[]): Promise<string[]> => {
+  if (!huntRunType || runIds.length === 0) {
+    return [];
+  }
+  return searchHuntTrueRunIds(context, huntRunType, [{ terms: { 'internal_id.keyword': runIds } }]);
+};
+
+export interface HuntRunSighting {
+  runId: string;
+  objectId: string;
+}
+
+/**
+ * The sightings that hunt runs (innovation 01) attached to their run id, with the object each one sighted.
+ */
+export const findHuntRunSightings = async (context: AuthContext, runIds: string[]): Promise<HuntRunSighting[]> => {
   if (runIds.length === 0) {
     return [];
   }
   const data = await rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
     query: { terms: { [`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`]: runIds } },
-    _source: ['connections.internal_id', 'connections.role'],
+    _source: [HUNT_RUN_SIGHTING_ATTRIBUTE, 'connections.internal_id', 'connections.role'],
   }, MAX_HUNT_RUNS);
   return (data.hits?.hits ?? []).flatMap((hit: any) => (hit._source.connections ?? [])
     .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
-    .map((connection: { internal_id: string }) => connection.internal_id));
+    .map((connection: { internal_id: string }) => ({ runId: hit._source[HUNT_RUN_SIGHTING_ATTRIBUTE] as string, objectId: connection.internal_id })));
 };
 
 export const prepareRunLookups = async (context: AuthContext, settings: SourceIntelligenceSettings, enterprise: boolean, asOf: number): Promise<RunLookups> => {
