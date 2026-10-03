@@ -3,6 +3,7 @@ import { Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
 import { createGraphFixture, deleteGraphFixture, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
+import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
 
 /**
  * Visual regression of the graph surfaces, on constant data and deterministic layouts so that
@@ -79,5 +80,25 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await arrangeByTier(graph, 3);
     await expectGraphScreenshot(page, graph.getCanvas(), 'correlation-graph-tiers.png');
     await graph.getToolbarButton('Disable the layout by entity tier').click();
+  });
+
+  test('knowledge graph in the light theme', async ({ page, playwright }) => {
+    // The platform theme is shared by every test: captured first and restored whatever happens.
+    const { settingsId, initialThemeId } = await withApiRequest(playwright, async (request) => {
+      const settings = await getSettings(request);
+      const initial = settings.platform_theme?.id ?? await getThemeIdByName(request, 'Filigran Dark');
+      await patchSettings(request, settings.id, 'platform_theme', await getThemeIdByName(request, 'Filigran Light'));
+      return { settingsId: settings.id as string, initialThemeId: initial as string };
+    });
+    try {
+      const graph = new GraphPage(page);
+      await page.goto(`/dashboard/analyses/reports/${fixture.report.id}/knowledge/graph`);
+      await graph.waitForGraph(5);
+      await arrangeByTier(graph, 5);
+      await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-tiers-light.png');
+      await graph.getToolbarButton('Disable the layout by entity tier').click();
+    } finally {
+      await withApiRequest(playwright, (request) => patchSettings(request, settingsId, 'platform_theme', initialThemeId));
+    }
   });
 });
