@@ -403,8 +403,10 @@ describe('Threat-informed defense matrix', () => {
       { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], external_reference_url: 'javascript:alert(1)' } } },
       'The external reference of a validation request must be an http or https URL',
     );
-    // A blank name is rejected by the input constraint, like for any grouping
-    await queryAsAdminWithError({ query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], name: '   ' } } });
+    await queryAsAdminWithError(
+      { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], name: '   ' } } },
+      'The name of a validation request must contain at least 2 characters other than spaces',
+    );
   });
 
   it('should manage custom telemetry mappings and protect the built-in ones', async () => {
