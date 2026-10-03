@@ -200,6 +200,9 @@ enum ThreatActorsIndividualOrdering {
   _score
   objectMarking
   threat_actor_types
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ThreatActorIndividualConnection {
   pageInfo: PageInfo!

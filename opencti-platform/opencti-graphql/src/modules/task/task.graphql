@@ -193,6 +193,9 @@ enum TasksOrdering {
   due_date
   objectAssignee
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type TaskEdge {

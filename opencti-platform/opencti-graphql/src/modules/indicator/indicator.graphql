@@ -19,6 +19,9 @@ enum IndicatorsOrdering {
   creator
   createdBy
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type IndicatorConnection {
   pageInfo: PageInfo!

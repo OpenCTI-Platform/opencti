@@ -170,6 +170,9 @@ enum SecurityPlatformOrdering {
   updated_at
   security_platform_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 # Relay connections

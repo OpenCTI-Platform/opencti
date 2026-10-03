@@ -242,6 +242,9 @@ enum SecurityCoverageOrdering {
   objectMarking
   coverage_last_result
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 # Concrete covered-entity projections (avoid StixCoreRelationship.to union expansion).

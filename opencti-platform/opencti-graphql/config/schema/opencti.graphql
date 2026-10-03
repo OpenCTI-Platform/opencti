@@ -2557,6 +2557,9 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_total
   _score
   authorized_members_activation_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixCoreObjectConnection {
   pageInfo: PageInfo!
@@ -2743,6 +2746,9 @@ enum StixDomainObjectsOrdering {
   x_opencti_cvss_base_severity
   pir_score
   last_pir_score_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
@@ -2937,6 +2943,9 @@ enum AttackPatternsOrdering {
   objectMarking
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
@@ -3203,6 +3212,9 @@ enum CampaignsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -3418,6 +3430,9 @@ enum ContainersOrdering {
   creator
   entity_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ContainerConnection {
   pageInfo: PageInfo!
@@ -3579,6 +3594,9 @@ enum NotesOrdering {
   note_types
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type NoteConnection {
   pageInfo: PageInfo!
@@ -3836,6 +3854,9 @@ enum ObservedDatasOrdering {
   objectMarking
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ObservedDataConnection {
   pageInfo: PageInfo!
@@ -4071,6 +4092,9 @@ enum OpinionsOrdering {
   confidence
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type OpinionConnection {
   pageInfo: PageInfo!
@@ -4321,6 +4345,9 @@ enum ReportsOrdering {
   report_types
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -4562,6 +4589,9 @@ enum CoursesOfActionOrdering {
   objectMarking
   x_mitre_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type CourseOfActionConnection {
   pageInfo: PageInfo!
@@ -4769,6 +4799,9 @@ enum IdentitiesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type IdentityConnection {
   pageInfo: PageInfo!
@@ -4970,6 +5003,9 @@ enum IndividualsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type IndividualConnection {
   pageInfo: PageInfo!
@@ -5187,6 +5223,9 @@ enum SectorsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -5401,6 +5440,9 @@ enum SystemsOrdering {
   modified
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type SystemConnection {
   pageInfo: PageInfo!
@@ -5623,6 +5665,9 @@ enum InfrastructuresOrdering {
   objectMarking
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type InfrastructureConnection {
   pageInfo: PageInfo!
@@ -5838,6 +5883,9 @@ enum IntrusionSetsOrdering {
   confidence
   _score
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -6059,6 +6107,9 @@ enum LocationsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type LocationConnection {
   pageInfo: PageInfo!
@@ -6256,6 +6307,9 @@ enum PositionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type PositionConnection {
   pageInfo: PageInfo!
@@ -6472,6 +6526,9 @@ enum CitiesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -6682,6 +6739,9 @@ enum CountriesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -6891,6 +6951,9 @@ enum RegionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -7110,6 +7173,9 @@ enum MalwaresOrdering {
   x_opencti_score
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -7343,6 +7409,9 @@ enum ThreatActorsOrdering {
   _score
   threat_actor_types
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ThreatActorGroupConnection {
   pageInfo: PageInfo!
@@ -7752,6 +7821,9 @@ enum ToolsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ToolConnection {
   pageInfo: PageInfo!
@@ -7970,6 +8042,9 @@ enum IncidentsOrdering {
   objectAssignee
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type IncidentConnection {
   pageInfo: PageInfo!
@@ -8191,6 +8266,9 @@ enum StixCyberObservablesOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixCyberObservableConnection {
   pageInfo: PageInfo!
@@ -14142,6 +14220,9 @@ enum StixObjectOrStixRelationshipsOrdering {
   relationship_type
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixObjectOrStixRelationshipConnection {
   pageInfo: PageInfo!
@@ -14465,6 +14546,9 @@ enum StixRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixRelationshipConnection {
   pageInfo: PageInfo!
@@ -14542,6 +14626,9 @@ enum StixCoreRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixCoreRelationshipConnection {
   pageInfo: PageInfo!
@@ -14700,6 +14787,9 @@ enum StixSightingRelationshipsOrdering {
   attribute_count
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type StixSightingRelationshipConnection {
   pageInfo: PageInfo!

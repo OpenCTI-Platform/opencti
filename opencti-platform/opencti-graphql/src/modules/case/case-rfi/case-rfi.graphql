@@ -207,6 +207,9 @@ enum CaseRfisOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 # Relay connections

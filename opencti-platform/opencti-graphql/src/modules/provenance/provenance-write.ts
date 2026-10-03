@@ -11,7 +11,10 @@ import { resolveAssertionSource } from './provenance-source';
 import type { ConflictAddition, ConflictRemoval } from './provenance-conflicts';
 import {
   type AssertionSource,
+  ATTRIBUTE_ASSERTION_SOURCE_IDS,
+  ATTRIBUTE_ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTIONS,
+  ATTRIBUTE_CONFLICT_FIELDS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_HAS_CONFLICTS,
   ATTRIBUTE_LAST_ASSERTED_AT,
@@ -98,10 +101,16 @@ export const PROVENANCE_UPDATE_SCRIPT = `
       assertions.remove(oldest);
     }
     String last = null;
+    List sourceIds = new ArrayList();
+    List sourceKinds = new ArrayList();
     for (def item : assertions) {
       def date = item.last_asserted_at;
       if (date != null && (last == null || date.compareTo(last) > 0)) { last = date; }
+      if (!sourceIds.contains(item.source_id)) { sourceIds.add(item.source_id); }
+      if (item.source_kind != null && !sourceKinds.contains(item.source_kind)) { sourceKinds.add(item.source_kind); }
     }
+    ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_IDS} = sourceIds;
+    ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_KINDS} = sourceKinds;
     ctx._source.${ATTRIBUTE_CORROBORATION_COUNT} = assertions.size();
     ctx._source.${ATTRIBUTE_SINGLE_SOURCED} = assertions.size() == 1;
     if (last != null) { ctx._source.${ATTRIBUTE_LAST_ASSERTED_AT} = last; }
@@ -190,11 +199,18 @@ export const PROVENANCE_UPDATE_SCRIPT = `
       }
     }
     Iterator conflictsIterator = conflicts.iterator();
+    List conflictFields = new ArrayList();
     while (conflictsIterator.hasNext()) {
       def entry = conflictsIterator.next();
-      if (entry.values == null || entry.values.size() == 0) { conflictsIterator.remove(); }
+      if (entry.values == null || entry.values.size() == 0) { conflictsIterator.remove(); } else { conflictFields.add(entry.field); }
     }
-    if (conflicts.size() > 0) { ctx._source.x_opencti_conflicts = conflicts; } else { ctx._source.remove('x_opencti_conflicts'); }
+    if (conflicts.size() > 0) {
+      ctx._source.x_opencti_conflicts = conflicts;
+      ctx._source.${ATTRIBUTE_CONFLICT_FIELDS} = conflictFields;
+    } else {
+      ctx._source.remove('x_opencti_conflicts');
+      ctx._source.remove('${ATTRIBUTE_CONFLICT_FIELDS}');
+    }
   }
   ctx._source.${ATTRIBUTE_HAS_CONFLICTS} = conflicts != null && conflicts.size() > 0;
 `;
@@ -230,6 +246,8 @@ export const buildStoreAssertion = (source: AssertionSource, confidence: number 
 
 export const buildCreationProvenance = (source: AssertionSource, confidence: number | null | undefined, at: string): StoreProvenanceFields => ({
   [ATTRIBUTE_ASSERTIONS]: [buildStoreAssertion(source, confidence, at)],
+  [ATTRIBUTE_ASSERTION_SOURCE_IDS]: [source.source_id],
+  [ATTRIBUTE_ASSERTION_SOURCE_KINDS]: [source.source_kind],
   [ATTRIBUTE_CORROBORATION_COUNT]: 1,
   [ATTRIBUTE_LAST_ASSERTED_AT]: at,
   [ATTRIBUTE_SINGLE_SOURCED]: true,

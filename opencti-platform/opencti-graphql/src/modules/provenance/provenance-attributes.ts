@@ -2,6 +2,7 @@ import type {
   AttributeDefinition,
   BooleanAttribute,
   DateAttribute,
+  EnumAttribute,
   NestedObjectAttribute,
   NumericAttribute,
   ObjectAttribute,
@@ -9,7 +10,10 @@ import type {
 } from '../../schema/attribute-definition';
 import {
   ASSERTION_SOURCE_KINDS,
+  ATTRIBUTE_ASSERTION_SOURCE_IDS,
+  ATTRIBUTE_ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTIONS,
+  ATTRIBUTE_CONFLICT_FIELDS,
   ATTRIBUTE_CONFLICTS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_FRESHNESS_RULE_ID,
@@ -31,7 +35,7 @@ export const xOpenctiAssertions: NestedObjectAttribute = {
   multiple: true,
   upsert: false,
   update: false,
-  isFilterable: false, // filtered through the special keys assertion_source_id and assertion_source_kind
+  isFilterable: false, // filtered through the flat assertion_source_ids and assertion_source_kinds
   mappings: [
     { name: 'source_id', label: 'Source id', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'source_kind', label: 'Source kind', type: 'string', format: 'enum', values: [...ASSERTION_SOURCE_KINDS], mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -42,6 +46,46 @@ export const xOpenctiAssertions: NestedObjectAttribute = {
     { name: 'confidence', label: 'Asserted confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'work_id', label: 'Work id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
+};
+
+export const assertionSourceIds: TextAttribute = {
+  name: ATTRIBUTE_ASSERTION_SOURCE_IDS,
+  label: 'Asserted by',
+  type: 'string',
+  format: 'short',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  update: false,
+  isFilterable: true,
+};
+
+export const assertionSourceKinds: EnumAttribute = {
+  name: ATTRIBUTE_ASSERTION_SOURCE_KINDS,
+  label: 'Assertion source kinds',
+  type: 'string',
+  format: 'enum',
+  values: [...ASSERTION_SOURCE_KINDS],
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  update: false,
+  isFilterable: true,
+};
+
+export const conflictFields: TextAttribute = {
+  name: ATTRIBUTE_CONFLICT_FIELDS,
+  label: 'Conflicting fields',
+  type: 'string',
+  format: 'short',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  update: false,
+  isFilterable: true,
 };
 
 export const corroborationCount: NumericAttribute = {
@@ -103,7 +147,7 @@ export const xOpenctiConflicts: NestedObjectAttribute = {
   multiple: true,
   upsert: false,
   update: false,
-  isFilterable: false, // filtered through the special key conflict_field
+  isFilterable: false, // filtered through the flat conflict_fields
   mappings: [
     { name: 'field', label: 'Conflicting field', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
@@ -188,6 +232,9 @@ export const procedures: ObjectAttribute = {
 // Registered on Stix Core Objects, Stix Core Relationships and sightings.
 export const provenanceAttributes: Array<AttributeDefinition> = [
   xOpenctiAssertions,
+  assertionSourceIds,
+  assertionSourceKinds,
+  conflictFields,
   corroborationCount,
   lastAssertedAt,
   singleSourced,

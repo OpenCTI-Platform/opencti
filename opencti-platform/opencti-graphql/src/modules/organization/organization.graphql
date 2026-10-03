@@ -191,6 +191,9 @@ enum OrganizationsOrdering {
   x_opencti_workflow_id
   x_opencti_score
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 # Relay connections

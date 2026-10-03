@@ -173,6 +173,9 @@ enum EventsOrdering {
     start_time
     stop_time
     _score
+    corroboration_count
+    last_asserted_at
+    freshness_days
 }
 
 # Relay connections

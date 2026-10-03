@@ -131,6 +131,8 @@ describe('Provenance write helpers', () => {
         confidence: 75,
         work_id: null,
       }],
+      assertion_source_ids: [CONNECTOR_ID],
+      assertion_source_kinds: ['connector'],
       corroboration_count: 1,
       last_asserted_at: at,
       single_sourced: true,

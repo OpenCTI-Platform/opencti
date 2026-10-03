@@ -13,6 +13,10 @@ export const ATTRIBUTE_PROCEDURES = 'procedures';
 export const ATTRIBUTE_FRESHNESS_STALE = 'freshness_stale';
 export const ATTRIBUTE_FRESHNESS_STALE_AT = 'freshness_stale_at';
 export const ATTRIBUTE_FRESHNESS_RULE_ID = 'freshness_rule_id';
+// Flat denormalizations of the nested lists, for keyword filtering (including negations)
+export const ATTRIBUTE_ASSERTION_SOURCE_IDS = 'assertion_source_ids';
+export const ATTRIBUTE_ASSERTION_SOURCE_KINDS = 'assertion_source_kinds';
+export const ATTRIBUTE_CONFLICT_FIELDS = 'conflict_fields';
 
 // Virtual key: computed from last_asserted_at at query time (filters, sorts and resolvers),
 // so that it never needs a daily rewrite of every document.
@@ -22,6 +26,9 @@ export const VIRTUAL_FRESHNESS_DAYS = 'freshness_days';
 // and clients can never set them through creation, upsert or update inputs.
 export const PROVENANCE_SIDE_CHANNEL_FIELDS = [
   ATTRIBUTE_ASSERTIONS,
+  ATTRIBUTE_ASSERTION_SOURCE_IDS,
+  ATTRIBUTE_ASSERTION_SOURCE_KINDS,
+  ATTRIBUTE_CONFLICT_FIELDS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_LAST_ASSERTED_AT,
   ATTRIBUTE_SINGLE_SOURCED,
@@ -112,6 +119,9 @@ export interface StoreProcedure {
 
 export interface StoreProvenanceFields {
   [ATTRIBUTE_ASSERTIONS]?: StoreAssertion[];
+  [ATTRIBUTE_ASSERTION_SOURCE_IDS]?: string[];
+  [ATTRIBUTE_ASSERTION_SOURCE_KINDS]?: AssertionSourceKind[];
+  [ATTRIBUTE_CONFLICT_FIELDS]?: string[];
   [ATTRIBUTE_CORROBORATION_COUNT]?: number;
   [ATTRIBUTE_LAST_ASSERTED_AT]?: string;
   [ATTRIBUTE_SINGLE_SOURCED]?: boolean;
