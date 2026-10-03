@@ -92,6 +92,7 @@ const SOURCE_DEFINITION: ModuleDefinition<StoreEntitySource, StixSource> = {
       // One source per kind and referenced element (connector, feed, author identity, analyst user)
       [ENTITY_TYPE_SOURCE]: [{ src: 'source_kind' }, { src: 'ref_id' }],
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -235,6 +236,7 @@ const COLLECTION_GAP_DEFINITION: ModuleDefinition<StoreEntityCollectionGap, Stix
       // One gap per PIR criterion: the key is a stable hash of the criterion filters
       [ENTITY_TYPE_COLLECTION_GAP]: [{ src: 'pir_id' }, { src: 'criterion_key' }],
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
