@@ -173,4 +173,7 @@ negative for a miss.
 A validation result is proof attributed to the platform, so it is accepted only from the account that recorded the
 deployments of the pairs on that platform (the integration reporting its deployment statuses), from the OpenAEV
 connector the request was sent to, or from an administrator. Any other account, even with the "Update knowledge"
-capability, is refused.
+capability, is refused. The same rule protects every other way to write the validation fields of a deployment
+(validation status, last validation, validation run): editing the relationship requires one of these accounts, and
+creating or importing a deployment that already carries a validation outcome is reserved to an OpenAEV IOC
+validation connector or an administrator.
