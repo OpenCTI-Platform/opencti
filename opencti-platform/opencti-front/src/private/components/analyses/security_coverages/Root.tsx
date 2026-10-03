@@ -21,7 +21,7 @@ import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
-import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
+import SecurityCoverageResult from '@components/analyses/security_coverages/sec_cov_results/SecurityCoverageResult';
 import { PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '@components/common/routes/paths';
 import GoToOpenAEVDrawer from './GoToOpenAEVDrawer';
 

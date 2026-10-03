@@ -1,5 +1,5 @@
 import Button from '@common/button/Button';
-import { CoverageInformationFieldEdit } from '@components/common/form/CoverageInformationField';
+import CoverageInformationField from '../form/CoverageInformationField';
 import { Stack } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -368,12 +368,12 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               )}
             />
             {displayCoverage && (
-              <CoverageInformationFieldEdit
-                id={stixCoreRelationship.id}
+              <Field
+                component={CoverageInformationField}
                 name="coverage_information"
+                id={stixCoreRelationship.id}
                 mode="relation"
-                values={values.coverage_information ?? []}
-                containerStyle={fieldSpacingContainerStyle}
+                editContext={editContext}
               />
             )}
             <KillChainPhasesField
