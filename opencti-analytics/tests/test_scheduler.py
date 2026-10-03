@@ -113,6 +113,12 @@ class TestScheduler:
         failed = RunReport(run_id="r", status="failed")
         assert scheduler.next_delay(failed, 10) == 3600.0
 
+    def test_backoff_survives_any_number_of_failures(self) -> None:
+        scheduler = make_scheduler(MagicMock(), FakeEvent())
+        failed = RunReport(run_id="r", status="failed")
+        assert scheduler.next_delay(failed, 5000) == 3600.0
+        assert scheduler.next_delay(failed, 10**9) == 3600.0
+
 
 class FakeApi:
     def __init__(self, responses: List[Dict[str, Any]]) -> None:

@@ -535,11 +535,18 @@ export const graphClusterTimeline = async (
   const endDate = args.endDate ? new Date(args.endDate) : new Date();
   const startDate = args.startDate ? new Date(args.startDate) : new Date(endDate.getTime() - 365 * 24 * 3600 * 1000);
   const filters = clusterMembersFilter(clusterId, memberFilters);
-  const baseline = await elCount(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, endDate: startDate.toISOString(), dateAttribute: 'created_at' });
+  // members are counted from the date they joined the cluster, not from their own creation date
+  const joinedAt = `${GRAPH_METRICS_ATTRIBUTE}.cluster_joined_at`;
+  const baseline = await elCount(context, user, GRAPH_METRICS_ENTITY_INDICES, {
+    types: [ABSTRACT_STIX_CORE_OBJECT],
+    filters,
+    endDate: startDate.toISOString(),
+    dateAttribute: joinedAt,
+  });
   const histogram = await elHistogramCount(context, user, GRAPH_METRICS_ENTITY_INDICES, {
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
-    field: 'created_at',
+    field: joinedAt,
     interval: args.interval,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),

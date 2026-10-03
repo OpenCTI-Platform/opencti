@@ -29,6 +29,7 @@ import {
   loadMetricsCarriers,
   replaceSimilarityRows,
   upsertGraphClusters,
+  stageRunMetrics,
   writeGraphMetrics,
 } from './graphAnalytics-store';
 import { buildGraphClusterId, computeFeatureClusters, type ClusteringMember } from './graphAnalytics-clustering';
@@ -358,7 +359,7 @@ export interface ClusterAssignment {
   cluster_size: number;
 }
 
-/** Write cluster assignments (and optional centrality) of a run on the member entities. */
+/** Stage cluster assignments (and optional centrality) of a run on the member entities, applied when the run completes. */
 export const writeRunMetrics = async (
   context: AuthContext,
   user: AuthUser,
@@ -371,7 +372,7 @@ export const writeRunMetrics = async (
   entries.forEach((entry) => {
     const carrier = byId.get(entry.entity_id);
     if (!carrier) return;
-    const metrics: GraphMetricsUpdate['metrics'] = { run_id: runId };
+    const metrics: GraphMetricsUpdate['metrics'] = {};
     if (entry.cluster_id !== undefined) {
       metrics.cluster_id = entry.cluster_id;
       metrics.cluster_kind = entry.cluster_id ? entry.cluster_kind ?? null : null;
@@ -382,7 +383,7 @@ export const writeRunMetrics = async (
     }
     updates.push({ id: carrier.internal_id, index: carrier._index, metrics });
   });
-  await writeGraphMetrics(context, updates);
+  await stageRunMetrics(context, runId, updates);
   return { updated: updates.length, skipped: entries.length - updates.length };
 };
 

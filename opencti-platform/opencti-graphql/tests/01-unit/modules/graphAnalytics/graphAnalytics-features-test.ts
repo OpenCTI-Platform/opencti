@@ -6,6 +6,7 @@ import {
   classifyThreatNeighbor,
   getGraphProfileSpec,
   GRAPH_PROFILED_ENTITY_TYPES,
+  isSameComparisonGroup,
 } from '../../../../src/modules/graphAnalytics/graphAnalytics-features';
 import { isAcceptedPathEntityType, resolvePathRelationshipTypes } from '../../../../src/modules/graphAnalytics/graphAnalytics-paths';
 import { isAnalyticsProcessActive, GRAPH_STATE_ANALYTICS_LAST_RUN_AT } from '../../../../src/modules/graphAnalytics/graphAnalytics-state';
@@ -23,6 +24,15 @@ describe('graph analytics feature extraction rules', () => {
     expect(getGraphProfileSpec('Report')?.kind).toBe('report');
     expect(getGraphProfileSpec('Note')).toBeUndefined();
     expect(GRAPH_PROFILED_ENTITY_TYPES).toContain('Infrastructure');
+  });
+
+  it('should only compare entities of the same comparison group', () => {
+    expect(isSameComparisonGroup('Intrusion-Set', 'Campaign')).toBe(true);
+    expect(isSameComparisonGroup('Domain-Name', 'Hostname')).toBe(true);
+    // same kind, different groups
+    expect(isSameComparisonGroup('Intrusion-Set', 'Malware')).toBe(false);
+    expect(isSameComparisonGroup('Domain-Name', 'IPv4-Addr')).toBe(false);
+    expect(isSameComparisonGroup('Note', 'Note')).toBe(false);
   });
 
   it('should classify the neighbors of a threat', () => {

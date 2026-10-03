@@ -56,6 +56,7 @@ export interface GraphMetrics {
   cluster_id?: string | null;
   cluster_size?: number | null;
   cluster_kind?: GraphClusterKind | null;
+  cluster_joined_at?: Date | string | null;
   computed_at?: Date | string | null;
   run_id?: string | null;
 }

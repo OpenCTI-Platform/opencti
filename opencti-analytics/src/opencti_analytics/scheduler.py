@@ -9,6 +9,7 @@ from opencti_analytics.runner import STATUS_CANCELLED, STATUS_FAILED, RunReport
 # A failed run is retried sooner than the next regular run: 15 minutes, doubled
 # on every consecutive failure, never more than the run interval.
 FAILURE_RETRY_SECONDS = 900.0
+MAX_BACKOFF_EXPONENT = 30
 
 
 class Scheduler:
@@ -47,7 +48,8 @@ class Scheduler:
     def next_delay(self, report: RunReport, consecutive_failures: int) -> float:
         if report.status != STATUS_FAILED:
             return self.interval_seconds
-        exponent = max(consecutive_failures - 1, 0)
+        # 2**30 retries exceed any interval: a bounded exponent never overflows float()
+        exponent = min(max(consecutive_failures - 1, 0), MAX_BACKOFF_EXPONENT)
         retry = self.failure_retry_seconds * float(2**exponent)
         return min(self.interval_seconds, retry)
 
