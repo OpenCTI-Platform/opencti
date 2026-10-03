@@ -353,6 +353,11 @@ describe('Graph analytics resolvers', () => {
     const edges = await queryAsAdminWithSuccess({ query: edgesQuery, variables: { types: ['uses'] } });
     expect(edges.data.graphAnalyticsEdges.edges.map((e: any) => e.node))
       .toContainEqual(expect.objectContaining({ relationship_type: 'uses', from_id: ids.isA, from_type: 'Intrusion-Set', to_id: ids.t1, to_type: 'Attack-Pattern' }));
+    // the relationship to the TLP:AMBER malware is visible to a TLP:GREEN account, its endpoint is not
+    const restricted = await queryAsUserWithSuccess(USER_CONNECTOR, { query: edgesQuery, variables: { types: ['uses'] } });
+    const restrictedEdges = restricted.data.graphAnalyticsEdges.edges.map((e: any) => e.node);
+    expect(restrictedEdges).toContainEqual(expect.objectContaining({ from_id: ids.isA, to_id: ids.t1 }));
+    expect(restrictedEdges.some((edge: any) => edge.from_id === ids.malware || edge.to_id === ids.malware)).toBe(false);
     const upsert = gql`
       mutation upsert($input: GraphAnalyticsUpsertMetricsInput!) {
         graphAnalyticsUpsertMetrics(input: $input) { run_id updated_entities skipped_entities upserted_clusters removed_clusters }
