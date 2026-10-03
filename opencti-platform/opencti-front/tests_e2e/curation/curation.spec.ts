@@ -156,8 +156,12 @@ test('Curation proposal from detection to decision', { tag: ['@ce'] }, async ({ 
 
     await curationPage.getHubTab('health').click();
     await expect(curationPage.getKnowledgeHealth()).toBeVisible();
+    const healthStatus = page.getByTestId('knowledge-health-status');
+    const statusBeforeRefresh = (await healthStatus.textContent()) ?? '';
     await page.getByTestId('knowledge-health-refresh').click();
-    await expect(page.getByText('Snapshot of').first()).toBeVisible({ timeout: 120000 });
+    await expect(page.getByText('The Knowledge Health snapshot has been refreshed')).toBeVisible({ timeout: 120000 });
+    await expect(healthStatus).not.toHaveText(statusBeforeRefresh, { timeout: 60000 });
+    await expect(page.getByTestId('knowledge-health-score')).toBeVisible();
     await capture(page, testInfo, 'knowledge-health');
 
     await curationPage.gotoCustomization();

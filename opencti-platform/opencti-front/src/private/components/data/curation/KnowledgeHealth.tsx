@@ -120,7 +120,7 @@ const KnowledgeHealth = () => {
 
   const header = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
-      <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light}>
+      <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light} data-testid="knowledge-health-status">
         {health
           ? `${t_i18n('Snapshot of {date}', { values: { date: fldt(health.snapshot_date) } })}${health.digest_sent_at ? ` - ${t_i18n('Weekly digest sent on {date}', { values: { date: fldt(health.digest_sent_at) } })}` : ''}`
           : t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')}
