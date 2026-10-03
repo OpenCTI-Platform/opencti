@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  buildGraphTopHubsChart,
   collectPathElementIds,
   formatSimilarityScore,
   GRAPH_FEATURE_FAMILY_LABELS,
@@ -60,5 +61,18 @@ describe('graphAnalyticsUtils', () => {
     ]);
     expect(ids).toEqual(['a', 'b', 'c', 'r1', 'r2', 'd', 'r3', 'r4']);
     expect(collectPathElementIds([])).toEqual([]);
+  });
+
+  it('draws the top hubs in ranking order, without entities that have no relationship', () => {
+    const node = (id: string, degree: number | null) => ({
+      id,
+      entity_type: 'Intrusion-Set',
+      representative: { main: `name ${id}` },
+      x_opencti_graph_metrics: degree === null ? null : { degree },
+    });
+    const { series, redirectionUtils } = buildGraphTopHubsChart([node('a', 12), node('b', 3), node('c', 0), node('d', null)], 'Graph degree');
+    expect(series).toEqual([{ name: 'Graph degree', data: [{ x: 'name a', y: 12 }, { x: 'name b', y: 3 }] }]);
+    expect(redirectionUtils).toEqual([{ id: 'a', entity_type: 'Intrusion-Set' }, { id: 'b', entity_type: 'Intrusion-Set' }]);
+    expect(buildGraphTopHubsChart([], 'Graph degree').redirectionUtils).toEqual([]);
   });
 });

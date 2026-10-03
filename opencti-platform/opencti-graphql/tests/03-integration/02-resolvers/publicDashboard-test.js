@@ -8,6 +8,9 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboa
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
+import { getGraphAnalyticsComputeConfig, processDirtyEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
+import { deleteSimilarityRowsForEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
+import { GRAPH_ANALYTICS_MANAGER_USER } from '../../../src/utils/access';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -540,6 +543,7 @@ describe('PublicDashboard resolver', () => {
             query: DELETE_MALWARE,
             variables: { id: octopusId },
           });
+          await deleteSimilarityRowsForEntities([vadorId, magnetoId, octopusId]);
           // endregion
         });
 
@@ -632,6 +636,8 @@ describe('PublicDashboard resolver', () => {
             },
           });
           // endregion
+          // graph metrics of the malwares, as computed in the background by the graph analytics manager
+          await processDirtyEntities(testContext, GRAPH_ANALYTICS_MANAGER_USER, [vadorId, magnetoId, octopusId], getGraphAnalyticsComputeConfig());
         });
 
         it('should not return data if disabled publicDashboard', async () => {
@@ -1035,6 +1041,31 @@ describe('PublicDashboard resolver', () => {
             variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103' },
           });
           expect(data.publicStixCoreObjects.edges.map((e) => e.node.name)).toEqual(['magneto', 'octopus', 'vador']);
+        });
+
+        it('should return the data for API: graph top hubs', async () => {
+          const API_TOP_HUBS_QUERY = gql`
+            query PublicGraphTopHubs($uriKey: String!, $widgetId : String!) {
+              publicStixCoreObjects(uriKey: $uriKey, widgetId : $widgetId) {
+                edges {
+                  node {
+                    id
+                    x_opencti_graph_metrics { degree }
+                  }
+                }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_TOP_HUBS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104' },
+          });
+          // ranked by graph degree whatever the configured sort, bounded by the number of results
+          const hubs = data.publicStixCoreObjects.edges.map((e) => e.node);
+          expect(hubs.length).toEqual(2);
+          expect(hubs[0].id).toEqual(magnetoId);
+          expect(hubs[0].x_opencti_graph_metrics.degree).toEqual(2);
+          expect(hubs[1].x_opencti_graph_metrics.degree).toEqual(1);
         });
 
         it('should return the data for API: SCR List', async () => {

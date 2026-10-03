@@ -31,6 +31,7 @@ import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
 import GraphSimilarityMatrixWidget from '../../private/components/common/graph_analytics/GraphSimilarityMatrixWidget';
 import GraphClustersSizeWidget from '../../private/components/common/graph_analytics/GraphClustersSizeWidget';
+import GraphTopHubsWidget from '../../private/components/common/graph_analytics/GraphTopHubsWidget';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -421,6 +422,17 @@ const DashboardEntitiesViz = ({
     case 'graph-clusters-size':
       return (
         <GraphClustersSizeWidget
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'graph-top-hubs':
+      return (
+        <GraphTopHubsWidget
           dataSelection={widget.dataSelection}
           parameters={widget.parameters ?? undefined}
           popover={popover}

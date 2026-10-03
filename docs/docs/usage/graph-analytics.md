@@ -113,14 +113,15 @@ For every other user, nothing derived from relationships they cannot read is dis
 
 ## Dashboards
 
-Two widgets are dedicated to graph analytics (see [widget creation](widgets.md)):
+Three widgets are dedicated to graph analytics (see [widget creation](widgets.md)):
 
 - **Similarity matrix**: pairwise similarity of the most connected entities of the selection, up to 25 entities.
 - **Cluster size over time**: growth of the largest clusters whose members match the selection, up to 20 clusters.
+- **Top hubs**: the most connected entities of the selection ranked by graph degree, up to 50 entities; click a bar to open the entity.
 
-Both are available in public dashboards.
+All three are available in public dashboards. Like any ranking on graph metrics, the top hubs are only shown to users who can read every relationship of the platform; in a public dashboard, this depends on the access of its author and on the markings the dashboard shares.
 
-To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the cluster size over time, the similarity of the most connected threats, and two lists ranked by graph degree: the threat and malware hubs and the infrastructure hubs. Like any dashboard, it can then be edited, shared or made public.
+To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the cluster size over time, the similarity of the most connected threats, two lists ranked by graph degree (the threat and malware hubs and the infrastructure hubs) and the top hubs of the whole knowledge graph. Like any dashboard, it can then be edited, shared or made public.
 
 ## What's next?
 

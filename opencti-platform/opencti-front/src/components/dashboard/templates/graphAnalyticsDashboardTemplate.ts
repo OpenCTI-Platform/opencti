@@ -65,5 +65,13 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       dataSelection: [hubs('Infrastructure and observables', INFRASTRUCTURE_TYPES)],
       layout: { x: 6, y: 4, w: 6, h: 4 },
     },
+    {
+      id: '0a07d150-0001-4d1a-9a07-000000000005',
+      type: 'graph-top-hubs',
+      perspective: 'entities',
+      parameters: { title: 'Top hubs' },
+      dataSelection: [{ label: 'All entities', perspective: 'entities', filters: ofTypes([]), number: 15 }],
+      layout: { x: 0, y: 8, w: 12, h: 4 },
+    },
   ],
 };
