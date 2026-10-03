@@ -101,7 +101,7 @@ const RootCustomization = () => {
             )}
           />
           <Route
-            path="/curation"
+            path="/curation/*"
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <CurationCustomization />

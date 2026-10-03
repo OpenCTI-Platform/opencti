@@ -155,6 +155,8 @@ export interface DataTableProps {
   /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
   actionsColumnWidth?: number;
   enableInfiniteScroll?: boolean;
+  /** Keeps the list state in local storage only, never in the URL: for a list inside a view that a URL parameter selects. */
+  ignoreUri?: boolean;
   hideHeaders?: boolean;
   hideSavedFilters?: boolean;
   message?: string;

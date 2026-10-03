@@ -230,6 +230,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'entityTypes'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
+  | 'ignoreUri'
   | 'container'> & {
     lineFragment: GraphQLTaggedNode;
     preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;

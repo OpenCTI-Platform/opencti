@@ -220,6 +220,7 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
           resolvePath={(data: MergeRecords_records$data) => data.mergeRecords?.edges?.map((edge) => edge?.node)}
           storageKey={storageKey}
           initialValues={initialValues}
+          ignoreUri={Boolean(entityId)}
           contextFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: mergeRecordsListQuery,

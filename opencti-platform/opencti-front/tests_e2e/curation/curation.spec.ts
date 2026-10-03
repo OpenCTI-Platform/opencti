@@ -24,11 +24,12 @@ test('Curation hub and customization page', { tag: ['@ce'] }, async ({ page }) =
   await expect(curationPage.getKnowledgeHealth()).toBeVisible();
 
   await curationPage.gotoCustomization();
+  await expect(page).toHaveURL(/\/dashboard\/settings\/customization\/curation\/settings(\?.*)?$/);
   await expect(curationPage.getCustomization()).toBeVisible();
   await expect(curationPage.getSettings()).toBeVisible();
   await curationPage.getCustomizationTab('policies').click();
   await expect(curationPage.getPolicies()).toBeVisible();
-  await expect(page).toHaveURL(/tab=policies/);
+  await expect(page).toHaveURL(/\/dashboard\/settings\/customization\/curation\/policies(\?.*)?$/);
 });
 
 /**
