@@ -24,7 +24,7 @@ import {
 import { GRAPH_CLUSTER_ID_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { GRAPH_ANALYTICS_MANAGER_USER } from '../../utils/access';
-import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkDirty, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
+import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkPriority, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
 import { addGraphAnalyticsPivotCount, addGraphClusterPromotionCount, addGraphSimilarityQueryCount } from '../../manager/telemetryManager';
 import { addGrouping } from '../grouping/grouping-domain';
 import { addCampaign } from '../../domain/campaign';
@@ -605,12 +605,12 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
   };
 };
 
-/** Queue entities for an immediate recompute (only the ones the caller can access). */
+/** Queue entities for a recompute at the next manager tick, ahead of the backlog (only the ones the caller can access). */
 export const requestGraphAnalyticsRecompute = async (context: AuthContext, user: AuthUser, ids: string[]) => {
   const accessible = await accessibleMap<StoreEntity>(context, user, ids.slice(0, 1000));
   const accessibleIds = Object.values(accessible).map((e) => e.internal_id);
   const uniqueIds = Array.from(new Set(accessibleIds));
-  await redisGraphAnalyticsMarkDirty(uniqueIds, Date.now() - getGraphAnalyticsComputeConfig().debounceMs - 1);
+  await redisGraphAnalyticsMarkPriority(uniqueIds);
   return uniqueIds.length;
 };
 

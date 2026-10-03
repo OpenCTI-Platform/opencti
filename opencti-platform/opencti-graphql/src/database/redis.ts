@@ -841,21 +841,40 @@ export const redisGetManagerEventState = async (managerName: string) => {
 // Sorted set of entity ids waiting for a recompute, scored by the time of their last change.
 // Re-marking an id moves its score forward, which is what debounces bursts of events on the same entity.
 const GRAPH_ANALYTICS_DIRTY_KEY = 'graph_analytics_dirty';
+// Explicit recompute requests, served before the debounced backlog and never pushed back by new events
+const GRAPH_ANALYTICS_PRIORITY_KEY = 'graph_analytics_priority';
 const GRAPH_ANALYTICS_STATE_KEY = 'graph_analytics_state';
 export const redisGraphAnalyticsMarkDirty = async (ids: string[], timestamp = Date.now()) => {
   if (ids.length === 0) return;
   const members = ids.flatMap((id) => [timestamp, id]);
   await getClientBase().zadd(GRAPH_ANALYTICS_DIRTY_KEY, ...members);
 };
-export const redisGraphAnalyticsPopReady = async (readyBefore: number, limit: number): Promise<string[]> => {
-  const ids = await getClientBase().zrangebyscore(GRAPH_ANALYTICS_DIRTY_KEY, '-inf', readyBefore, 'LIMIT', 0, limit);
+export const redisGraphAnalyticsMarkPriority = async (ids: string[]) => {
+  if (ids.length === 0) return;
+  const now = Date.now();
+  const members = ids.flatMap((id) => [now, id]);
+  // NX keeps the original request time, so repeated requests do not delay each other
+  await getClientBase().zadd(GRAPH_ANALYTICS_PRIORITY_KEY, 'NX', ...members);
+};
+const popRange = async (key: string, max: number, limit: number): Promise<string[]> => {
+  if (limit <= 0) return [];
+  const ids = await getClientBase().zrangebyscore(key, '-inf', max, 'LIMIT', 0, limit);
   if (ids.length > 0) {
-    await getClientBase().zrem(GRAPH_ANALYTICS_DIRTY_KEY, ...ids);
+    await getClientBase().zrem(key, ...ids);
   }
   return ids;
 };
+export const redisGraphAnalyticsPopReady = async (readyBefore: number, limit: number): Promise<string[]> => {
+  const priority = await popRange(GRAPH_ANALYTICS_PRIORITY_KEY, Date.now(), limit);
+  const debounced = await popRange(GRAPH_ANALYTICS_DIRTY_KEY, readyBefore, limit - priority.length);
+  return Array.from(new Set([...priority, ...debounced]));
+};
 export const redisGraphAnalyticsPendingCount = async (): Promise<number> => {
-  return getClientBase().zcard(GRAPH_ANALYTICS_DIRTY_KEY);
+  const [dirty, priority] = await Promise.all([
+    getClientBase().zcard(GRAPH_ANALYTICS_DIRTY_KEY),
+    getClientBase().zcard(GRAPH_ANALYTICS_PRIORITY_KEY),
+  ]);
+  return dirty + priority;
 };
 export const redisGraphAnalyticsGetState = async (): Promise<Record<string, string>> => {
   return getClientBase().hgetall(GRAPH_ANALYTICS_STATE_KEY);

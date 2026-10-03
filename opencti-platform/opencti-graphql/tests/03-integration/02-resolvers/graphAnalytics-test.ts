@@ -10,7 +10,7 @@ import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '.
 import { GRAPH_ANALYTICS_MANAGER_USER } from '../../../src/utils/access';
 import { getGraphAnalyticsComputeConfig, processDirtyEntities, runInfrastructureClustering } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
 import { deleteSimilarityRowsForEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
-import { redisGraphAnalyticsDeleteState } from '../../../src/database/redis';
+import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
 import { GRAPH_STATE_ANALYTICS_LAST_RUN_AT } from '../../../src/modules/graphAnalytics/graphAnalytics-state';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import type { BasicStoreEntity } from '../../../src/types/store';
@@ -392,6 +392,9 @@ describe('Graph analytics resolvers', () => {
     const mutation = gql`mutation recompute($ids: [String!]!) { graphAnalyticsRequestRecompute(ids: $ids) }`;
     const { data } = await queryAsAdminWithSuccess({ query: mutation, variables: { ids: [ids.isA, 'unknown-entity-id'] } });
     expect(data.graphAnalyticsRequestRecompute).toBe(1);
+    // explicit requests are served at the next tick, whatever the debounce of the backlog
+    const ready = await redisGraphAnalyticsPopReady(0, 10);
+    expect(ready).toContain(ids.isA);
     const pivot = gql`mutation pivot { graphAnalyticsRecordPivot(kind: similar_open) }`;
     const pivotResult = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pivot, variables: {} });
     expect(pivotResult.data.graphAnalyticsRecordPivot).toBe(true);
