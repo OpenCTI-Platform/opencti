@@ -1364,6 +1364,7 @@
   "Default zoom window": "Finestra di zoom predefinita",
   "Default: Reuse {entityType} author (leave empty to inherit)": "Predefinito: Riutilizza l'autore {entityType} (lasciare vuoto per ereditare)",
   "Default: Reuse main entity author (leave empty to inherit)": "Predefinito: Riutilizza l'autore dell'entità principale (lasciare vuoto per ereditare)",
+  "Defense": "Difesa",
   "Define a group that will be assigned to each user created on the fly for ingestion": "Definire un gruppo che verrà assegnato ad ogni utente creato al volo per ogni tipo di ingestione",
   "Define at which score thresholds the indicator is updated.": "Definire a quali soglie di punteggio l'indicatore viene aggiornato.",
   "Define Relationships Between Entities": "Definire le relazioni tra le entità",
