@@ -61,6 +61,8 @@ import type { BasicStoreSettings } from '../../types/settings';
 const STIX_CORE_OBJECTS_ORDERINGS: string[] = Object.values(StixCoreObjectsOrdering);
 const STIX_CORE_OBJECTS_ORDERING_FIELDS: Record<string, string> = stixCoreObjectOptions.StixCoreObjectsOrdering;
 const GRAPH_TOP_HUBS_WIDGET = 'graph-top-hubs';
+const GRAPH_SIMILARITY_MATRIX_WIDGET = 'graph-similarity-matrix';
+const GRAPH_CLUSTERS_SIZE_WIDGET = 'graph-clusters-size';
 const GRAPH_TOP_HUBS_DEFAULT = 10;
 const GRAPH_TOP_HUBS_MAX = 50;
 
@@ -348,6 +350,15 @@ const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetI
   return { user, type, dataSelection, parameters };
 };
 
+// Graph endpoints return entities and clusters: they only serve the widgets the owner published with that visualization
+const ensurePublicGraphWidget = async (context: AuthContext, uriKey: string, widgetId: string, expectedType: string) => {
+  const widget = await ensurePublicContext(context, uriKey, widgetId);
+  if (widget.type !== expectedType) {
+    throw ForbiddenAccess('This widget does not publish this visualization', { widgetId, type: widget.type, expected: expectedType });
+  }
+  return widget;
+};
+
 // heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
   const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
@@ -367,7 +378,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
 
 // graph-similarity-matrix: the most connected entities of the selection, created in the dashboard period if any
 export const publicGraphSimilarityMatrix = async (context: AuthContext, args: QueryPublicGraphSimilarityMatrixArgs) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection } = await ensurePublicGraphWidget(context, args.uriKey, args.widgetId, GRAPH_SIMILARITY_MATRIX_WIDGET);
   const [selection] = dataSelection;
   const dateAttribute = selection.date_attribute || 'created_at';
   let filters = selection.filters ?? undefined;
@@ -378,7 +389,7 @@ export const publicGraphSimilarityMatrix = async (context: AuthContext, args: Qu
 
 // graph-clusters-size: member creation dates draw the curves, so the period is not a member filter
 export const publicGraphClustersSizeTimeSeries = async (context: AuthContext, args: QueryPublicGraphClustersSizeTimeSeriesArgs) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, parameters } = await ensurePublicGraphWidget(context, args.uriKey, args.widgetId, GRAPH_CLUSTERS_SIZE_WIDGET);
   const [selection] = dataSelection;
   return graphClustersSizeTimeSeries(context, user, {
     startDate: args.startDate,

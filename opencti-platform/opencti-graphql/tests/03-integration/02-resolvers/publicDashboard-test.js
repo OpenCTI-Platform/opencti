@@ -814,6 +814,32 @@ describe('PublicDashboard resolver', () => {
           expect(data.publicGraphClustersSizeTimeSeries).toEqual([]);
         });
 
+        it('should refuse graph data for a widget published with another visualization', async () => {
+          const API_MATRIX_QUERY = gql`
+            query PublicGraphSimilarityMatrixOfOtherWidget($uriKey: String!, $widgetId: String!) {
+              publicGraphSimilarityMatrix(uriKey: $uriKey, widgetId: $widgetId) { entities { id } }
+            }
+          `;
+          const API_CLUSTERS_QUERY = gql`
+            query PublicGraphClustersSizeOfOtherWidget($uriKey: String!, $widgetId: String!) {
+              publicGraphClustersSizeTimeSeries(uriKey: $uriKey, widgetId: $widgetId) { cluster { id } }
+            }
+          `;
+          // the clusters size widget id on the matrix endpoint, a list widget id on the clusters size endpoint
+          const matrix = await queryAsAdmin({
+            query: API_MATRIX_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102' },
+          });
+          expect(matrix.data.publicGraphSimilarityMatrix).toBeNull();
+          expect(matrix.errors?.[0]?.message).toEqual('This widget does not publish this visualization');
+          const clusters = await queryAsAdmin({
+            query: API_CLUSTERS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103' },
+          });
+          expect(clusters.data.publicGraphClustersSizeTimeSeries).toBeNull();
+          expect(clusters.errors?.[0]?.message).toEqual('This widget does not publish this visualization');
+        });
+
         it('should return the data for API: SCR Time series', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationshipsMultiTimeSeries(
