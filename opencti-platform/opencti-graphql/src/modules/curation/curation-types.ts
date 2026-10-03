@@ -373,10 +373,30 @@ export interface KnowledgeHealthMetrics {
   unmerges_count: number;
 }
 
-export interface BasicStoreEntityKnowledgeHealthSnapshot extends BasicStoreEntity, KnowledgeHealthMetrics {
+export const KNOWLEDGE_HEALTH_METRIC_KEYS: Array<keyof KnowledgeHealthMetrics> = [
+  'curated_entities_count',
+  'duplicate_estimate',
+  'duplicate_rate',
+  'contradiction_count',
+  'stale_count',
+  'stale_share',
+  'alias_coverage',
+  'source_conflict_rate',
+  'open_proposals_count',
+  'auto_applied_count',
+  'accepted_count',
+  'rejected_count',
+  'reverted_count',
+  'merges_count',
+  'unmerges_count',
+];
+
+export interface BasicStoreEntityKnowledgeHealthSnapshot extends BasicStoreEntity {
   snapshot_date: string;
   health_score: number;
   score_trend?: number | null;
+  // Read and shown, never filtered, sorted or aggregated on: stored as one non-indexed object.
+  health_metrics: KnowledgeHealthMetrics;
   score_breakdown: KnowledgeHealthComponent[];
   digest_sent_at?: string | null;
 }

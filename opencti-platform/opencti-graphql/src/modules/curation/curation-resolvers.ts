@@ -6,7 +6,7 @@ import { internalFindByIds } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
-import { AUTHORITY_SOURCE_CONNECTOR } from './curation-types';
+import { AUTHORITY_SOURCE_CONNECTOR, KNOWLEDGE_HEALTH_METRIC_KEYS } from './curation-types';
 import {
   acceptProposal,
   adjudicateProposalNow,
@@ -40,7 +40,13 @@ import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curati
 import { curationResolve } from './curation-resolve';
 import { isProposalAdjudicable } from './curation-adjudication';
 import { canUserApplyProposal } from './curation-access';
-import type { BasicStoreEntityCurationPolicy, BasicStoreEntityCurationProposal, BasicStoreEntityMergeRecord, CurationPolicyDryRunResult } from './curation-types';
+import type {
+  BasicStoreEntityCurationPolicy,
+  BasicStoreEntityCurationProposal,
+  BasicStoreEntityKnowledgeHealthSnapshot,
+  BasicStoreEntityMergeRecord,
+  CurationPolicyDryRunResult,
+} from './curation-types';
 
 const toJsonString = (value: unknown) => {
   if (value === null || value === undefined) return null;
@@ -65,6 +71,11 @@ const loadSubjects = async (context: AuthContext, proposal: BasicStoreEntityCura
   const loaded = await Promise.all(proposal.subject_ids.map((id, index) => context.batch?.idsBatchLoader.load({ id, type: proposal.subject_types?.[index] })));
   return loaded.filter((element): element is BasicStoreBase => !!element);
 };
+
+const knowledgeHealthMetricResolvers = Object.fromEntries(KNOWLEDGE_HEALTH_METRIC_KEYS.map((key) => [
+  key,
+  (snapshot: unknown) => (snapshot as BasicStoreEntityKnowledgeHealthSnapshot).health_metrics[key],
+])) as Resolvers['KnowledgeHealthSnapshot'];
 
 const curationResolvers: Resolvers = {
   Query: {
@@ -175,6 +186,7 @@ const curationResolvers: Resolvers = {
   CurationPolicyDryRun: {
     sample_proposals: (dryRun, _, context) => resolveSampleProposals(context, dryRun as unknown as CurationPolicyDryRunResult) as any,
   },
+  KnowledgeHealthSnapshot: knowledgeHealthMetricResolvers,
   Mutation: {
     curationProposalAccept: (_, { id, input }, context) => acceptProposal(context, context.user, id, input),
     curationProposalReject: (_, { id, rationale }, context) => rejectProposal(context, context.user, id, rationale),

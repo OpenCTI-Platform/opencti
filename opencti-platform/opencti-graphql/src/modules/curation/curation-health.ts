@@ -215,10 +215,10 @@ export const createHealthSnapshot = async (context: AuthContext, settings: Curat
   const metrics = await computeHealthMetrics(context, settings, since);
   const { score, breakdown } = computeHealthScore(metrics);
   const snapshot = {
-    ...metrics,
     snapshot_date: now(),
     health_score: score,
     score_trend: previous ? score - previous.health_score : null,
+    health_metrics: metrics,
     score_breakdown: breakdown,
   };
   return await createEntity(context, SYSTEM_USER, snapshot, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT) as unknown as BasicStoreEntityKnowledgeHealthSnapshot;
@@ -240,14 +240,17 @@ const trendLabel = (trend: number | null | undefined) => {
   return trend >= 0 ? ` (+${trend})` : ` (${trend})`;
 };
 
-export const buildDigestLines = (snapshot: BasicStoreEntityKnowledgeHealthSnapshot): string[] => [
-  `Knowledge Health score: ${snapshot.health_score}/100${trendLabel(snapshot.score_trend)}`,
-  `Estimated duplicates: ${snapshot.duplicate_estimate} (${(snapshot.duplicate_rate * 100).toFixed(1)}% of ${snapshot.curated_entities_count} curated entities)`,
-  `Open contradictions: ${snapshot.contradiction_count}, stale entities: ${snapshot.stale_count} (${(snapshot.stale_share * 100).toFixed(1)}%)`,
-  `Alias coverage: ${(snapshot.alias_coverage * 100).toFixed(1)}%, source conflict rate: ${(snapshot.source_conflict_rate * 100).toFixed(1)}%`,
-  `Open proposals: ${snapshot.open_proposals_count} - accepted ${snapshot.accepted_count}, auto-applied ${snapshot.auto_applied_count}, rejected ${snapshot.rejected_count}, reverted ${snapshot.reverted_count}`,
-  `Merges: ${snapshot.merges_count}, unmerges: ${snapshot.unmerges_count}`,
-];
+export const buildDigestLines = (snapshot: BasicStoreEntityKnowledgeHealthSnapshot): string[] => {
+  const metrics = snapshot.health_metrics;
+  return [
+    `Knowledge Health score: ${snapshot.health_score}/100${trendLabel(snapshot.score_trend)}`,
+    `Estimated duplicates: ${metrics.duplicate_estimate} (${(metrics.duplicate_rate * 100).toFixed(1)}% of ${metrics.curated_entities_count} curated entities)`,
+    `Open contradictions: ${metrics.contradiction_count}, stale entities: ${metrics.stale_count} (${(metrics.stale_share * 100).toFixed(1)}%)`,
+    `Alias coverage: ${(metrics.alias_coverage * 100).toFixed(1)}%, source conflict rate: ${(metrics.source_conflict_rate * 100).toFixed(1)}%`,
+    `Open proposals: ${metrics.open_proposals_count} - accepted ${metrics.accepted_count}, auto-applied ${metrics.auto_applied_count}, rejected ${metrics.rejected_count}, reverted ${metrics.reverted_count}`,
+    `Merges: ${metrics.merges_count}, unmerges: ${metrics.unmerges_count}`,
+  ];
+};
 
 const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

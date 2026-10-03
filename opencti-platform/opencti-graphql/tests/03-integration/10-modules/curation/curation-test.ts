@@ -181,6 +181,12 @@ const HEALTH_QUERY = gql`
     knowledgeHealth {
       id
       health_score
+      curated_entities_count
+      duplicate_rate
+      stale_share
+      open_proposals_count
+      merges_count
+      unmerges_count
     }
     curationStatistics {
       open_count
@@ -469,6 +475,16 @@ describe('Knowledge curation', () => {
     expect(totalWeight).toBeCloseTo(1, 5);
     const health = await queryAsAdminWithSuccess({ query: HEALTH_QUERY, variables: {} });
     expect(health.data?.knowledgeHealth.id).toBe(snapshot.id);
+    const { curated_entities_count, duplicate_rate, stale_share, open_proposals_count, merges_count, unmerges_count } = health.data?.knowledgeHealth ?? {};
+    expect(curated_entities_count).toBeGreaterThan(0);
+    expect(duplicate_rate).toBeGreaterThanOrEqual(0);
+    expect(stale_share).toBeGreaterThanOrEqual(0);
+    expect(stale_share).toBeLessThanOrEqual(1);
+    expect(open_proposals_count).toBeGreaterThanOrEqual(0);
+    expect(merges_count).toBeGreaterThanOrEqual(unmerges_count);
+    const stored = await storeLoadById(testContext, ADMIN_USER, snapshot.id, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT) as unknown as Record<string, unknown>;
+    expect(stored.health_metrics).toEqual(expect.objectContaining({ curated_entities_count, open_proposals_count }));
+    expect(stored.curated_entities_count).toBeUndefined();
     expect(health.data?.curationStatistics.open_count).toBeGreaterThanOrEqual(0);
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: HEALTH_REFRESH_MUTATION, variables: {} });
   });
