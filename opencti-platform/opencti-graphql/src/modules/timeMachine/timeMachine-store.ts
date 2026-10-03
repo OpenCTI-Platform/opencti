@@ -53,8 +53,8 @@ export const buildSnapshotElement = (input: SnapshotInput) => {
     base_type: BASE_TYPE_ENTITY,
     created_at: date,
     updated_at: date,
-    snapshot_entity_id: input.entityId,
-    snapshot_entity_type: input.entityType,
+    entity_id: input.entityId,
+    target_entity_type: input.entityType,
     snapshot_date: input.snapshotDate,
     history_cursor: input.historyCursor,
     snapshot_document: input.document,
@@ -72,7 +72,7 @@ const snapshotQuery = (entityId: string, range: Record<string, string>, order: '
   query: {
     bool: {
       must: [
-        { term: { 'snapshot_entity_id.keyword': entityId } },
+        { term: { 'entity_id.keyword': entityId } },
         ...(Object.keys(range).length > 0 ? [{ range: { snapshot_date: range } }] : []),
       ],
     },
@@ -126,7 +126,7 @@ export const loadUserVisits = async (context: AuthContext, userId: string, entit
     },
   };
   const hits: BasicStoreEntityUserVisit[] = await search(context, READ_INDEX_INTERNAL_OBJECTS, ENTITY_TYPE_USER_VISIT, body);
-  hits.forEach((visit) => visits.set(visit.visit_entity_id, visit));
+  hits.forEach((visit) => visits.set(visit.entity_id, visit));
   return visits;
 };
 
@@ -149,8 +149,8 @@ export const buildVisitElement = (
     created_at: utcDate(createdAt).toDate(),
     updated_at: utcDate(lastSeenAt).toDate(),
     user_id: userId,
-    visit_entity_id: entityId,
-    visit_entity_type: entityType,
+    entity_id: entityId,
+    target_entity_type: entityType,
     last_seen_at: lastSeenAt,
     ...(previousSeenAt ? { previous_seen_at: previousSeenAt } : {}),
   };

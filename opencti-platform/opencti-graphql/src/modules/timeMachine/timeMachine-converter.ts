@@ -7,8 +7,8 @@ export const convertKnowledgeSnapshotToStix = (instance: StoreEntityKnowledgeSna
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
-    snapshot_entity_id: instance.snapshot_entity_id,
-    snapshot_entity_type: instance.snapshot_entity_type,
+    entity_id: instance.entity_id,
+    target_entity_type: instance.target_entity_type,
     snapshot_date: instance.snapshot_date,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -24,7 +24,7 @@ export const convertUserVisitToStix = (instance: StoreEntityUserVisit): StixUser
   return {
     ...stixObject,
     user_id: instance.user_id,
-    visit_entity_id: instance.visit_entity_id,
+    entity_id: instance.entity_id,
     last_seen_at: instance.last_seen_at,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

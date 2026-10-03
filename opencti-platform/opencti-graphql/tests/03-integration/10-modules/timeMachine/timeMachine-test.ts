@@ -315,7 +315,7 @@ describe('Knowledge time machine', () => {
     expect(earlierDocuments.get(intrusionSetId)?.attributes.confidence).toEqual(['50']);
     await indexSnapshots([{ entityId: intrusionSetId, entityType: 'Intrusion-Set', snapshotDate, historyCursor: snapshotDate, document: documents.get(intrusionSetId)! }]);
     const snapshot = await findSnapshotAtOrAfter(testContext, intrusionSetId, middle(createdAt, updatedAt));
-    expect(snapshot?.snapshot_entity_id).toEqual(intrusionSetId);
+    expect(snapshot?.entity_id).toEqual(intrusionSetId);
     const { data } = await queryAsAdminWithSuccess({ query: AS_OF, variables: { id: intrusionSetId, date: middle(createdAt, updatedAt) } });
     expect(data.entityAsOf.anchor).toEqual('snapshot');
     expect(attributeValues(data.entityAsOf, 'description')).toEqual(['first description']);

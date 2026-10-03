@@ -22,24 +22,24 @@ export interface CompactDocument {
 
 // region Knowledge snapshot
 export interface BasicStoreEntityKnowledgeSnapshot extends BasicStoreEntity {
-  snapshot_entity_id: string;
-  snapshot_entity_type: string;
+  entity_id: string;
+  target_entity_type: string;
   snapshot_date: string;
   history_cursor: string;
   snapshot_document: CompactDocument;
 }
 
 export interface StoreEntityKnowledgeSnapshot extends StoreEntity {
-  snapshot_entity_id: string;
-  snapshot_entity_type: string;
+  entity_id: string;
+  target_entity_type: string;
   snapshot_date: string;
   history_cursor: string;
   snapshot_document: CompactDocument;
 }
 
 export interface StixKnowledgeSnapshot extends StixObject {
-  snapshot_entity_id: string;
-  snapshot_entity_type: string;
+  entity_id: string;
+  target_entity_type: string;
   snapshot_date: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
@@ -50,23 +50,23 @@ export interface StixKnowledgeSnapshot extends StixObject {
 // region User visit
 export interface BasicStoreEntityUserVisit extends BasicStoreEntity {
   user_id: string;
-  visit_entity_id: string;
-  visit_entity_type: string;
+  entity_id: string;
+  target_entity_type: string;
   last_seen_at: string;
   previous_seen_at?: string;
 }
 
 export interface StoreEntityUserVisit extends StoreEntity {
   user_id: string;
-  visit_entity_id: string;
-  visit_entity_type: string;
+  entity_id: string;
+  target_entity_type: string;
   last_seen_at: string;
   previous_seen_at?: string;
 }
 
 export interface StixUserVisit extends StixObject {
   user_id: string;
-  visit_entity_id: string;
+  entity_id: string;
   last_seen_at: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
