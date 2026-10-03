@@ -887,6 +887,10 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (attackPatternIds.length === 0) {
     throw FunctionalError('Select at least one technique to validate');
   }
+  const requestedName = input.name?.trim();
+  if (typeof input.name === 'string' && (requestedName ?? '').length < 2) {
+    throw FunctionalError('The name of a validation request must contain at least 2 characters other than spaces');
+  }
   const referenceUrl = parseValidationReferenceUrl(input.external_reference_url);
   if (attackPatternIds.length > MAX_VALIDATION_TECHNIQUES) {
     throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatternIds.length });
@@ -909,7 +913,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
   const requestedAt = now();
-  const name = input.name ?? `Defense validation - ${threat?.name ?? `${attackPatterns.length} techniques`} - ${requestedAt.substring(0, 10)}`;
+  const name = requestedName || `Defense validation - ${threat?.name ?? `${attackPatterns.length} techniques`} - ${requestedAt.substring(0, 10)}`;
   const grouping = await addGrouping(context, user, {
     name,
     description: input.description ?? 'Techniques selected from the defense gap backlog for validation with OpenAEV.',
