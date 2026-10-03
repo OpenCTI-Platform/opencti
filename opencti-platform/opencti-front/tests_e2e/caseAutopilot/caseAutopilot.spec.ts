@@ -44,7 +44,8 @@ test('Case Autopilot surfaces', { tag: ['@caseAutopilot', '@ee', '@mutation'] },
     // region Investigation policies
     await autopilot.gotoPolicies();
     await expect(autopilot.getPoliciesPage()).toBeVisible();
-    expect(await autopilot.getPolicyCards().count()).toBeGreaterThan(0);
+    // The default policy is created when the platform starts.
+    await expect(autopilot.getPolicyCards().filter({ hasText: 'Default investigation policy' })).toBeVisible();
     await autopilot.getCreatePolicyButton().click();
     await page.locator('input[name="name"]').fill(policyName);
     await expect(page.getByText('The packs of XTM One cannot be listed')).toBeVisible();
@@ -53,7 +54,7 @@ test('Case Autopilot surfaces', { tag: ['@caseAutopilot', '@ee', '@mutation'] },
     const card = autopilot.getPolicyCards().filter({ hasText: policyName });
     await expect(card).toBeVisible();
     await expect(card).toContainText('6 iterations');
-    await page.getByRole('button', { name: `Delete - ${policyName}` }).click();
+    await page.getByRole('button', { name: `Delete the policy ${policyName}` }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await expect(autopilot.getPolicyCards().filter({ hasText: policyName })).toHaveCount(0);
     // endregion
