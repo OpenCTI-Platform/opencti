@@ -37,14 +37,23 @@ export interface ClusterLineageOverlap {
   members: number; // members of `next` that belonged to `previous`
 }
 
+// Id of a computed cluster whose provisional id belongs to the cluster continuing that lineage (deterministic per run)
+export const buildDisplacedGraphClusterId = (computedId: string, runId: string): string => {
+  return uuidv5(`graph-cluster-displaced:${computedId}:${runId}`, OPENCTI_NAMESPACE);
+};
+
 /**
  * Identity of the clusters of a run: a computed cluster continues the previous cluster most of whose members it holds,
  * and takes its id, so promotions, creation date and membership dates survive anchors moving as communities evolve.
- * Matches are made by decreasing overlap, one previous cluster per computed cluster and conversely; an id still
- * computed by the run is never given to another cluster. Returns the renames, computed id to previous id.
+ * Matches are made by decreasing overlap, one previous cluster per computed cluster and conversely. When the id taken
+ * is also the provisional id of another computed cluster (a split whose old anchor stayed in the minority), that
+ * cluster moves to `displacedId`. Returns the renames, computed id to final id.
  */
-export const matchClusterLineage = (overlaps: ClusterLineageOverlap[], previousSizes: Map<string, number>): Map<string, string> => {
-  const computedIds = new Set(overlaps.map((overlap) => overlap.next));
+export const matchClusterLineage = (
+  overlaps: ClusterLineageOverlap[],
+  previousSizes: Map<string, number>,
+  displacedId: (computedId: string) => string,
+): Map<string, string> => {
   const matchedNext = new Set<string>();
   const matchedPrevious = new Set<string>();
   const renames = new Map<string, string>();
@@ -55,7 +64,11 @@ export const matchClusterLineage = (overlaps: ClusterLineageOverlap[], previousS
     if (members * 2 <= (previousSizes.get(previous) ?? 0)) return;
     matchedNext.add(next);
     matchedPrevious.add(previous);
-    if (next !== previous && !computedIds.has(previous)) renames.set(next, previous);
+    if (next !== previous) renames.set(next, previous);
+  });
+  const taken = new Set(renames.values());
+  new Set(overlaps.map((overlap) => overlap.next)).forEach((computedId) => {
+    if (taken.has(computedId) && !renames.has(computedId)) renames.set(computedId, displacedId(computedId));
   });
   return renames;
 };

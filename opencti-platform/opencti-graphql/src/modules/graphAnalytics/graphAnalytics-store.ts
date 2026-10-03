@@ -32,7 +32,7 @@ import {
   type GraphSimilarityDocument,
 } from './graphAnalytics-types';
 import type { GraphSimilarityScore } from './graphAnalytics-scoring';
-import { buildGraphClusterName, type ClusterLineageOverlap, matchClusterLineage } from './graphAnalytics-clustering';
+import { buildDisplacedGraphClusterId, buildGraphClusterName, type ClusterLineageOverlap, matchClusterLineage } from './graphAnalytics-clustering';
 import { SYSTEM_USER } from '../../utils/access';
 
 export const DEGREE_RELATIONSHIP_TYPES = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
@@ -472,6 +472,19 @@ export const loadGraphClusters = async (context: AuthContext, user: AuthUser, id
   }) as Promise<BasicStoreEntityGraphCluster[]>;
 };
 
+// A cluster document never published yet: only its staged fields, published when its run completes
+const buildGraphClusterSkeleton = (clusterId: string, now: string, pending: Record<string, unknown>) => ({
+  pending_cluster: pending,
+  internal_id: clusterId,
+  standard_id: generateStandardId(ENTITY_TYPE_GRAPH_CLUSTER, { cluster_id: clusterId }),
+  entity_type: ENTITY_TYPE_GRAPH_CLUSTER,
+  base_type: 'ENTITY',
+  parent_types: getParentTypes(ENTITY_TYPE_GRAPH_CLUSTER),
+  cluster_id: clusterId,
+  promoted_to_ids: [],
+  created_at: now,
+});
+
 /**
  * Stage cluster documents of a run in `pending_cluster`, published when the run completes. A cluster created by the
  * run is a skeleton without published fields until then. Promotion links are preserved, the creation date too.
@@ -504,18 +517,7 @@ export const upsertGraphClusters = async (
       if (current) {
         return [{ update: { _index: current._index, _id: current.internal_id, retry_on_conflict: 5 } }, { doc: { pending_cluster: pending } }];
       }
-      const doc = {
-        pending_cluster: pending,
-        internal_id: cluster.cluster_id,
-        standard_id: generateStandardId(ENTITY_TYPE_GRAPH_CLUSTER, { cluster_id: cluster.cluster_id }),
-        entity_type: ENTITY_TYPE_GRAPH_CLUSTER,
-        base_type: 'ENTITY',
-        parent_types: getParentTypes(ENTITY_TYPE_GRAPH_CLUSTER),
-        cluster_id: cluster.cluster_id,
-        promoted_to_ids: [],
-        created_at: now,
-      };
-      return [{ index: { _index: INDEX_INTERNAL_OBJECTS, _id: cluster.cluster_id } }, doc];
+      return [{ index: { _index: INDEX_INTERNAL_OBJECTS, _id: cluster.cluster_id } }, buildGraphClusterSkeleton(cluster.cluster_id, now, pending)];
     });
     await elBulk(context, { refresh: true, timeout: '5m', body });
     upserted += chunks[i].length;
@@ -549,6 +551,7 @@ const LINEAGE_PAGE_SIZE = 5000;
 const PENDING_CLUSTER_FIELD = `${GRAPH_METRICS_ATTRIBUTE}.${PENDING_PREFIX}cluster_id`;
 const RENAME_PENDING_CLUSTER_SCRIPT = 'def m = ctx._source.x_opencti_graph_metrics; def next = params.renames.get(m[params.field]);'
   + ' if (next == null) { ctx.op = \'noop\'; } else { m[params.field] = next; }';
+const SET_PENDING_CLUSTER_SCRIPT = 'ctx._source.pending_cluster = params.pending';
 
 /** Members of the run per (computed cluster, previous cluster) pair, and size of every computed cluster. */
 const loadRunLineageOverlaps = async (context: AuthContext, runId: string): Promise<ClusterLineageOverlap[]> => {
@@ -600,13 +603,14 @@ const countPublishedMembers = async (context: AuthContext, clusterIds: string[])
 
 /**
  * Before publication, computed clusters continuing a previous cluster take its id (see matchClusterLineage): the
- * staged assignments of their members are renamed and the staged cluster fields move to the previous document.
+ * staged assignments of their members are renamed and the staged cluster fields move to the previous document; a
+ * computed cluster displaced from its provisional id moves to a new document.
  */
 const reconcileRunClusterIdentities = async (context: AuthContext, runId: string): Promise<number> => {
   const overlaps = await loadRunLineageOverlaps(context, runId);
   if (overlaps.length === 0) return 0;
   const previousSizes = await countPublishedMembers(context, Array.from(new Set(overlaps.map((overlap) => overlap.previous))));
-  const renames = matchClusterLineage(overlaps, previousSizes);
+  const renames = matchClusterLineage(overlaps, previousSizes, (computedId) => buildDisplacedGraphClusterId(computedId, runId));
   if (renames.size === 0) return 0;
   await elRawUpdateByQuery({
     index: GRAPH_METRICS_ENTITY_INDICES,
@@ -626,18 +630,27 @@ const reconcileRunClusterIdentities = async (context: AuthContext, runId: string
   }).catch((err: unknown) => {
     throw DatabaseError('Graph analytics cluster lineage fail', { cause: err });
   });
+  // documents are read before any write: a computed cluster's staged fields are taken before another one replaces them
   const computed = await loadGraphClusters(context, SYSTEM_USER, Array.from(renames.keys()));
-  const previous = await loadGraphClusters(context, SYSTEM_USER, Array.from(renames.values()));
-  const previousById = new Map(previous.map((cluster) => [cluster.internal_id, cluster]));
+  const targets = await loadGraphClusters(context, SYSTEM_USER, Array.from(renames.values()));
+  const targetsById = new Map(targets.map((cluster) => [cluster.internal_id, cluster]));
+  const receivingIds = new Set(renames.values());
+  const now = new Date().toISOString();
   const body = computed.flatMap((cluster): Array<Record<string, unknown>> => {
-    const target = previousById.get(renames.get(cluster.internal_id) ?? '');
+    const targetId = renames.get(cluster.internal_id);
     const pending = (cluster as unknown as { pending_cluster?: Record<string, unknown> }).pending_cluster;
-    if (!target || !pending) return [];
-    const moved = { ...pending, name: buildGraphClusterName(pending.cluster_kind as GraphClusterKind, target.internal_id) };
+    if (!targetId || !pending) return [];
+    const moved = { ...pending, name: buildGraphClusterName(pending.cluster_kind as GraphClusterKind, targetId) };
+    const target = targetsById.get(targetId);
+    const write = target
+      ? [{ update: { _index: target._index, _id: target.internal_id, retry_on_conflict: 5 } }, { script: { source: SET_PENDING_CLUSTER_SCRIPT, lang: 'painless', params: { pending: moved } } }]
+      : [{ index: { _index: INDEX_INTERNAL_OBJECTS, _id: targetId } }, buildGraphClusterSkeleton(targetId, now, moved)];
+    // its document receives the staged fields of the cluster taking its id
+    if (receivingIds.has(cluster.internal_id)) return write;
     const release = cluster.last_run_id
       ? [{ update: { _index: cluster._index, _id: cluster.internal_id, retry_on_conflict: 5 } }, { script: { source: 'ctx._source.remove(\'pending_cluster\')', lang: 'painless' } }]
       : [{ delete: { _index: cluster._index, _id: cluster.internal_id } }];
-    return [{ update: { _index: target._index, _id: target.internal_id, retry_on_conflict: 5 } }, { doc: { pending_cluster: moved } }, ...release];
+    return [...write, ...release];
   });
   if (body.length > 0) await elBulk(context, { refresh: true, timeout: '5m', body });
   return renames.size;

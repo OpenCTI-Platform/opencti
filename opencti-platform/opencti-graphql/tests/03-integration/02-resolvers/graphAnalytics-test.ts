@@ -555,6 +555,39 @@ describe('Graph analytics resolvers', () => {
     expect(listed.find((node: any) => node.id === original)?.members_count).toBe(4);
   });
 
+  it('should give a split cluster its id when the fragment holding the old anchor is the minority', async () => {
+    const upsert = gql`
+      mutation upsertSplit($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }
+    `;
+    // the previous test left isA, isB, isC and tool in one cluster
+    const previousId = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isA } })).data.stixCoreObject.x_opencti_graph_metrics.cluster_id;
+    expect(previousId).toBeTruthy();
+    const majority = uuidv4();
+    const metric = (key: string, clusterId: string, size: number) => ({ entity_id: ids[key], betweenness_approx: 0.1, cluster_id: clusterId, cluster_size: size, cluster_kind: 'campaign' });
+    const input = {
+      run_id: `graph-analytics-split-${uuidv4()}`,
+      process_version: 'test',
+      complete: true,
+      metrics: [metric('isB', majority, 3), metric('isC', majority, 3), metric('tool', majority, 3), metric('isA', previousId, 1)],
+      clusters: [
+        { cluster_id: majority, cluster_kind: 'campaign', members_count: 3, representative_ids: [ids.isB], features: [] },
+        // the fragment holding the old anchor computes the previous id
+        { cluster_id: previousId, cluster_kind: 'campaign', members_count: 1, representative_ids: [ids.isA], features: [] },
+      ],
+    };
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input } });
+    const kept = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.tool } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(kept.cluster_id).toBe(previousId);
+    const moved = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isA } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(moved.cluster_id).toBeTruthy();
+    expect([previousId, majority]).not.toContain(moved.cluster_id);
+    const { data } = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
+    const listed = data.graphClusters.edges.map((e: any) => e.node);
+    expect(listed.map((node: any) => node.id)).not.toContain(majority);
+    expect(listed.find((node: any) => node.id === previousId)?.members_count).toBe(3);
+    expect(listed.find((node: any) => node.id === moved.cluster_id)?.members_count).toBe(1);
+  });
+
   it('should reject analytics write-back with invalid cluster identifiers', async () => {
     const upsert = gql`
       mutation upsert($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }
