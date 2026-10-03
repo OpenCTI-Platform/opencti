@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildSourceIndicatorFilters,
+  connectorMatchesCatalogEntry,
   evaluateSourceRules,
   parseIsoDurationMs,
   type RuleInput,
@@ -118,6 +119,16 @@ describe('Source intelligence rules', () => {
     const author = { ...connectorSource, source_kind: 'author', ref_id: 'identity-1' } as BasicStoreEntitySource;
     expect(JSON.parse(buildSourceIndicatorFilters(author) as string).filters[0].key).toEqual(['createdBy']);
     expect(buildSourceIndicatorFilters({ ...connectorSource, source_user_ids: [] } as BasicStoreEntitySource)).toBeNull();
+  });
+
+  it('should only accept the recommended catalog connector for a deployment', () => {
+    const entry = { catalog_id: 'catalog-misp', contract_image: 'opencti/connector-misp' };
+    expect(connectorMatchesCatalogEntry({ catalog_id: 'catalog-misp', manager_contract_image: null }, entry)).toBe(true);
+    expect(connectorMatchesCatalogEntry({ catalog_id: null, manager_contract_image: 'opencti/connector-misp' }, entry)).toBe(true);
+    expect(connectorMatchesCatalogEntry({ catalog_id: 'catalog-mitre', manager_contract_image: 'opencti/connector-mitre' }, entry)).toBe(false);
+    // An externally deployed connector carries neither identifier and cannot fulfil the recommendation
+    expect(connectorMatchesCatalogEntry({}, entry)).toBe(false);
+    expect(connectorMatchesCatalogEntry({ catalog_id: null }, { catalog_id: null, contract_image: null })).toBe(false);
   });
 
   it('should propose nothing for a healthy source', () => {

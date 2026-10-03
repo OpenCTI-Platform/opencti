@@ -84,6 +84,20 @@ export interface RecommendationProposal {
 
 export const recommendationFingerprint = (kind: string, ...parts: string[]) => [kind, ...parts].join(':');
 
+/**
+ * A connector fulfils an add_connector recommendation only when it is the recommended catalog entry: same catalog
+ * identifier, or same contract image (how the collection gaps detect a deployed catalog connector). Reverting the
+ * recommendation stops the recorded connector, so an unrelated connector must never be recorded.
+ */
+export const connectorMatchesCatalogEntry = (
+  connector: { catalog_id?: string | null; manager_contract_image?: string | null },
+  entry: { catalog_id?: string | null; contract_image?: string | null },
+): boolean => {
+  const sameCatalogId = !!entry.catalog_id && connector.catalog_id === entry.catalog_id;
+  const sameContractImage = !!entry.contract_image && connector.manager_contract_image === entry.contract_image;
+  return sameCatalogId || sameContractImage;
+};
+
 const percent = (value: number | null | undefined) => `${Math.round((value ?? 0) * 100)}%`;
 
 export const parseIsoDurationMs = (value: string | null | undefined): number | null => {
