@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useRef } from 'react';
+import { BaseSyntheticEvent, useCallback, useRef } from 'react';
 import { MESSAGING$ } from '../../../relay/environment';
 
 const useDashboardImport = ({ onImport }: {
@@ -21,7 +21,7 @@ const useDashboardImport = ({ onImport }: {
       });
   };
 
-  const handleImport = () => inputRef.current?.click();
+  const handleImport = useCallback(() => inputRef.current?.click(), []);
   return { onChange, handleImport, inputRef };
 };
 
