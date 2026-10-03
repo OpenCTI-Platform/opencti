@@ -376,6 +376,28 @@ export const cellForPlatform = (cell: DefenseCell, platformId: string) => {
 };
 // endregion
 
+/**
+ * Techniques as counted by the matrix totals, by id: a parent technique carries the best level and the threat usage
+ * of its sub-techniques, and a sub-technique whose parent is not among the cells (revoked, or not accessible to the
+ * reader) counts on its own.
+ */
+export const countEffectiveTechniques = (
+  cells: ReadonlyArray<{ attack_pattern_id: string; parent_attack_pattern_id?: string; level: number; threats_count: number }>,
+): Map<string, { level: number; used: boolean }> => {
+  const ids = new Set(cells.map((c) => c.attack_pattern_id));
+  const isCountedAlone = (cell: { parent_attack_pattern_id?: string }) => !cell.parent_attack_pattern_id || !ids.has(cell.parent_attack_pattern_id);
+  const effective = new Map<string, { level: number; used: boolean }>();
+  cells.filter(isCountedAlone).forEach((c) => effective.set(c.attack_pattern_id, { level: c.level, used: c.threats_count > 0 }));
+  cells.filter((c) => !isCountedAlone(c)).forEach((sub) => {
+    const parent = effective.get(sub.parent_attack_pattern_id as string);
+    if (parent) {
+      parent.level = Math.max(parent.level, sub.level);
+      parent.used = parent.used || sub.threats_count > 0;
+    }
+  });
+  return effective;
+};
+
 // region threats and priority
 const MIN_THREAT_CONFIDENCE_WEIGHT = 0.1;
 

@@ -172,6 +172,8 @@ export const initDefenseLogsourceMappings = async (context: AuthContext, user: A
   }
   if (created > 0) {
     logApp.info('[DEFENSE-COVERAGE] Built-in log source mappings created', { created });
+    // New mappings can infer telemetry from the log sources of deployed rules: recompute without waiting for the nightly run
+    await requestFullDefenseCoverageComputation();
   }
   return created;
 };
