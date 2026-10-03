@@ -62,6 +62,8 @@ const RUN_FIELDS = `
   evidence_sample { kind label quote field value_hash value_preview count }
   evidence_sources
   attempt
+  next_retry_at
+  error_message
 `;
 
 const REGISTER_CONNECTOR = gql`
@@ -265,7 +267,7 @@ describe('Hunt resolvers', () => {
   it('should only accept reports from the hunt connector', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'running' } } });
     const queued = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'queued' } } });
-    expect(queued.errors?.[0].message).toContain('can only report a running, completed or failed status');
+    expect(queued.errors?.[0].message).toContain('can only report a running, completed, failed or timeout status');
   });
 
   it('should complete a run without hits as benign', async () => {
@@ -363,6 +365,21 @@ describe('Hunt resolvers', () => {
     const statistics = await queryAsAdminWithSuccess({ query: HUNT_STATISTICS, variables: { huntId } });
     expect(statistics.data?.huntStatistics).toMatchObject({ runs_count: 2, completed_runs_count: 2, hits_total: 8, benign_count: 1, true_positive_count: 1 });
     expect(statistics.data?.huntStatistics.runs_per_platform).toEqual([{ label: SECURITY_PLATFORM_NAME, value: 2 }]);
+  });
+
+  it('should record a run its connector stopped at the deadline as a timeout and plan its retry', async () => {
+    const runs = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId } });
+    const runId = runs.data?.huntRunStart[0].id;
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: runId, input: { status: 'running' } } });
+    const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: HUNT_RUN_REPORT,
+      variables: { id: runId, input: { status: 'timeout', error: 'The hunt run exceeded its deadline of 300 seconds', cost_ms: 300000 } },
+    });
+    const run = reported.data?.huntRunReport;
+    expect(run.hunt_run_status).toEqual('timeout');
+    expect(run.error_message).toEqual('The hunt run exceeded its deadline of 300 seconds');
+    expect(run.next_retry_at).toBeTruthy();
+    expect(run.hits_count ?? 0).toEqual(0);
   });
 
   it('should export a self-describing hunt pack and import it back as a hub draft', async () => {

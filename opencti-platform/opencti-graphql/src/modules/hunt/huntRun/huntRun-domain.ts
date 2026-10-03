@@ -468,8 +468,8 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
     throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
   }
   const status = input.status as string;
-  if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED].includes(status)) {
-    throw FunctionalError('A hunt connector can only report a running, completed or failed status', { runId, status });
+  if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED, HUNT_RUN_STATUS_TIMEOUT].includes(status)) {
+    throw FunctionalError('A hunt connector can only report a running, completed, failed or timeout status', { runId, status });
   }
   const updated = await withHuntRunTransition(context, reported.internal_id, (run) => applyHuntRunReport(context, run, status, input));
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
@@ -502,9 +502,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));
     }
   }
-  if (status === HUNT_RUN_STATUS_FAILED) {
+  // A timeout is a run the connector stopped at its deadline: same completion path as a failure
+  if (status === HUNT_RUN_STATUS_FAILED || status === HUNT_RUN_STATUS_TIMEOUT) {
     patch.completed_at = reportedAt;
-    patch.error_message = truncate(input.error ?? 'Unknown error', ERROR_MESSAGE_MAX_LENGTH);
+    patch.error_message = truncate(input.error ?? (status === HUNT_RUN_STATUS_TIMEOUT ? 'The run exceeded its deadline' : 'Unknown error'), ERROR_MESSAGE_MAX_LENGTH);
     // Automatic retries with exponential backoff, translation previews are never retried
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
       patch.next_retry_at = computeRetryAt(run.attempt);

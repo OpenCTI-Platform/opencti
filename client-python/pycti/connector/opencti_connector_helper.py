@@ -3310,7 +3310,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         :param run_id: the id of the hunt run
         :type run_id: str
-        :param status: running, completed or failed
+        :param status: running, completed, failed or timeout (the run exceeded its deadline)
         :type status: str
         :param hits_count: number of hits
         :param distinct_entities: number of distinct entities in the hits

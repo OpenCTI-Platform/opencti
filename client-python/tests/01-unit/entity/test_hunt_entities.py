@@ -128,8 +128,19 @@ class TestHunt(TestCase):
 class TestHuntRun(TestCase):
     def test_report_refuses_statuses_a_connector_cannot_report(self):
         opencti = _opencti({})
-        self.assertIsNone(HuntRun(opencti).report(id="run-1", status="timeout"))
+        self.assertIsNone(HuntRun(opencti).report(id="run-1", status="queued"))
         opencti.query.assert_not_called()
+
+    def test_report_sends_a_deadline_timeout(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "timeout"}}
+        )
+        HuntRun(opencti).report(
+            id="run-1", status="timeout", error="The run exceeded its deadline"
+        )
+        variables = opencti.query.call_args[0][1]
+        self.assertEqual(variables["input"]["status"], "timeout")
+        self.assertEqual(variables["input"]["error"], "The run exceeded its deadline")
 
     def test_report_sends_the_outcome(self):
         opencti = _opencti(

@@ -25,7 +25,7 @@ Registered hunt connectors, their platform and their health are displayed in **D
 1. OpenCTI pushes a run to the queue of the connector serving the security platform. The message carries the hunt (hypothesis, Sigma rule, native query for the platform, techniques, targets, indicators, markings), the time window and the limits (maximum results, timeout, evidence caps). A work tracks the run in the connector works.
 2. The connector reports the run as `running`, translates the Sigma rule into the platform language (or takes the native query as is), and executes it over the time window.
 3. When results are found, the connector sends a STIX bundle: sightings of the techniques and indicators of the hunt, where sighted on the security platform, and observed data referencing the observables extracted from the results, limited to the expected observable types of the hunt. The identifiers are deterministic, so that re-runs update the knowledge instead of duplicating it.
-4. The connector reports the run as `completed` with the hits count, the translated query and the evidence sample, or as `failed` with the error. Failures never create knowledge.
+4. The connector reports the run as `completed` with the hits count, the translated query and the evidence sample, as `timeout` when the execution exceeded the run deadline, or as `failed` with the error. Failed and timed out runs are retried with the same backoff and never create knowledge.
 
 For a query test, the connector translates the logic and reports the translated query without executing it.
 

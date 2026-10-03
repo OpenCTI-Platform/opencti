@@ -3,7 +3,7 @@
 import json
 
 HUNT_RUN_STATUSES = ["queued", "running", "completed", "failed", "timeout"]
-HUNT_RUN_REPORTABLE_STATUSES = ["running", "completed", "failed"]
+HUNT_RUN_REPORTABLE_STATUSES = ["running", "completed", "failed", "timeout"]
 HUNT_VERDICTS = ["pending", "true_positive", "benign", "inconclusive"]
 
 
@@ -181,7 +181,7 @@ class HuntRun:
 
         :param id: the id of the hunt run
         :type id: str
-        :param status: running, completed or failed
+        :param status: running, completed, failed or timeout (the run exceeded its deadline)
         :type status: str
         :param hits_count: (optional) number of hits
         :param distinct_entities: (optional) number of distinct entities in the hits
