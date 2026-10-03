@@ -75,6 +75,15 @@ test('Time machine: compute the landscape changes of intrusion sets and drill do
   await expect(timeMachine.getDiff()).toBeVisible();
 });
 
+test('Time machine: create the threat landscape changes dashboard from its template', { tag: ['@ce'] }, async ({ page }) => {
+  await page.goto('/dashboard/workspaces/dashboards');
+  await page.getByTestId('CreateDashboardFromTemplate').click();
+  await page.getByTestId('dashboard-template-landscape-changes').click();
+  await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]{36}/);
+  await expect(page.getByText('Top changed threats')).toBeVisible();
+  await expect(page.getByText('New techniques of the threats by tactic')).toBeVisible();
+});
+
 test('Time machine: create a change digest', { tag: ['@ce'] }, async ({ page }) => {
   const name = `Change digest e2e ${Date.now()}`;
   await page.goto('/dashboard/profile/notifications/triggers');
