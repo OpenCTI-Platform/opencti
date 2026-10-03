@@ -22,8 +22,8 @@ const StixDomainObjectMain = ({
   pages,
   extraRoutes,
 }: StixDomainObjectMainProps) => {
-  // Every entity with a history gets its time machine: the Changes tab (compare dates, view as of)
-  // and what is new since the last visit on the overview
+  // Every overview shows what is new since the last visit of the user (containers included, whose history
+  // can live in another tab); every entity with a History tab also gets the Changes tab (compare dates, view as of)
   const withTimeMachine = pages.history !== undefined;
   const allPages = withTimeMachine && pages.changes === undefined
     ? { ...pages, changes: <EntityChangesTab entityId={entity.id} basePath={basePath} /> }
@@ -38,10 +38,7 @@ const StixDomainObjectMain = ({
         extraActions={extraActions}
       />
       <Routes>
-        <Route
-          path="/overview"
-          element={withTimeMachine ? <TimeMachineOverview entityId={entity.id}>{allPages.overview}</TimeMachineOverview> : allPages.overview}
-        />
+        <Route path="/overview" element={<TimeMachineOverview entityId={entity.id}>{allPages.overview}</TimeMachineOverview>} />
         {tabs.includes('result') && (
           <Route path="/result" element={allPages.result} />
         )}

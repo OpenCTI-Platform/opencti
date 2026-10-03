@@ -77,6 +77,15 @@ export const comparePeriodSearch = (range: DateRange) => {
   return changesSearch(CHANGES_SECTION_COMPARE, { [FROM_SEARCH_PARAM]: range.from, [TO_SEARCH_PARAM]: range.to });
 };
 
+// Containers whose page has no Changes tab (their history lives in the Data tab, their time tab is the timeline)
+const ENTITY_TYPES_WITHOUT_CHANGES_TAB = ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft', 'Opinion'];
+
+// Drill-down from the landscape changes: the comparison of the entity on the same period, or its overview
+export const entityChangesPath = (base: string, entityId: string, entityType: string, range: DateRange) => {
+  if (ENTITY_TYPES_WITHOUT_CHANGES_TAB.includes(entityType)) return `${base}/${entityId}`;
+  return `${base}/${entityId}/changes?${comparePeriodSearch(range)}`;
+};
+
 // Section to display: the requested one when it exists, else the as-of view for a link carrying a date, else the comparison
 export const resolveChangesSection = (sections: string[], requested: string | null, asOf: string | null): string => {
   if (requested && sections.includes(requested)) return requested;

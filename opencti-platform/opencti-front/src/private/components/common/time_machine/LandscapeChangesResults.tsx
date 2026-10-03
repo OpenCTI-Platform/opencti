@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import TimeMachineSummaryCard from './TimeMachineSummaryCard';
 import {
-  comparePeriodSearch,
+  entityChangesPath,
   LANDSCAPE_GROUP_BY_RELATIONSHIP_TYPE,
   LANDSCAPE_GROUP_BY_TACTIC,
   type LandscapeBucketData,
@@ -67,7 +67,7 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
   const { t_i18n, n } = useFormatter();
   const { aggregates } = diff;
   if (!aggregates) return null;
-  const changesParams = comparePeriodSearch({ from: diff.from, to: diff.to });
+  const period = { from: diff.from, to: diff.to };
   return (
     <Box data-testid="landscape-changes-results">
       {truncated && (
@@ -149,7 +149,7 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
                   <TableRow key={entity.entity_id}>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        {base ? <Link to={`${base}/${entity.entity_id}/changes?${changesParams}`}>{entity.name}</Link> : entity.name}
+                        {base ? <Link to={entityChangesPath(base, entity.entity_id, entity.entity_type, period)}>{entity.name}</Link> : entity.name}
                         {entity.created_in_period && <Chip label={t_i18n('New')} severity="info" />}
                         {entity.revoked_in_period && <Chip label={t_i18n('Revoked')} severity="medium" />}
                       </Box>
