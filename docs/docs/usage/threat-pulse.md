@@ -27,6 +27,8 @@ The preview is on by default on every platform registered on XTM Hub because it 
 
 The request carries the day and the coarse sector and region buckets of the platform, nothing else. The platform computes the hashes of its own objects locally, matches them against the digest and stores the result on the matching objects. Matching runs on every object in scope, whatever its markings, because nothing leaves the platform.
 
+Local matching works because every platform derives the same hash for the same object. The digest is therefore readable by every connected platform for the values it can name: a platform can test whether a CVE identifier, an ATT&CK technique or a threat name it knows is among the most prevalent objects of the community. This is what the digest publishes, and only for objects that at least `k` platforms reported; it never says which platform reported them.
+
 In preview, every Threat Pulse surface shows the real coarse signal and lists, as locked rows, what contributing would add. It never shows fake or blurred numbers. Administrators get one "Unlock the full Threat Pulse by contributing" button that leads to "Settings > Filigran Experience"; other users are told to ask their administrator.
 
 The first day the preview matches objects of the platform, each user sees one banner with the number of local objects seen across the community. The banner can be dismissed.
