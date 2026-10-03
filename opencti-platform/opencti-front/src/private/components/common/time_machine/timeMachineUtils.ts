@@ -38,6 +38,14 @@ export const presetRange = (preset: TimeMachinePreset, now: Date = new Date()): 
   }
 };
 
+/**
+ * Default period of the landscape widgets (last 30 days), ending on the next minute boundary: both ends stay the same
+ * for a whole minute, so the widgets of a dashboard share the summary the platform caches per minute.
+ */
+export const widgetDefaultRange = (now: Date = new Date()): DateRange => {
+  return presetRange('30d', new Date(Math.ceil(now.getTime() / 60000) * 60000));
+};
+
 export const presetLabel = (preset: TimeMachinePreset): string => {
   switch (preset) {
     case '7d':
@@ -423,6 +431,23 @@ export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, forma
       + `<th>${escapeHtml(t('Relationships removed'))}</th><th>${escapeHtml(t('Attributes changed'))}</th><th>${escapeHtml(t('Change score'))}</th></tr></thead><tbody>${rows}</tbody></table>`);
   }
   return parts.filter((part) => part.length > 0).join('\n');
+};
+
+const COUNT_LABELS = {
+  new_relationships: ['1 new relationship', '{count} new relationships'],
+  updates: ['1 update', '{count} updates'],
+  new_container_objects: ['1 new object', '{count} new objects'],
+  attributes_changed: ['1 attribute changed', '{count} attributes changed'],
+} as const;
+
+type TranslateWithValues = (message: string, opts?: { values?: Record<string, string | number> }) => string;
+
+/**
+ * A count with its unit, singular or plural ("1 update", "3 updates").
+ */
+export const countLabel = (kind: keyof typeof COUNT_LABELS, count: number, t: TranslateWithValues) => {
+  const [one, other] = COUNT_LABELS[kind];
+  return count === 1 ? t(one) : t(other, { values: { count } });
 };
 
 // Failure messages stored by the platform for the cases an analyst can act upon
