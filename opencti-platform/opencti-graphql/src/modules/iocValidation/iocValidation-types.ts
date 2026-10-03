@@ -116,7 +116,6 @@ interface IocValidationRequestAttributes {
   external_uri?: string | null;
   connector_id?: string | null;
   work_id?: string | null;
-  requested_by: string;
   results_summary: IocValidationResultsSummary;
   iocs: IocValidationIoc[];
   pairs: IocValidationPair[];

@@ -55,7 +55,7 @@ import {
   REQUEST_STATUS_SENT,
   type StoreEntityIocValidationRequest,
 } from './iocValidation-types';
-import { emptyResultsSummary, extractIocFromIndicator, isIocValidationTestKind, isSummaryComplete, summarizeValidationResults } from './iocValidation-utils';
+import { emptyResultsSummary, extractIocFromIndicator, isIocValidationTestKind, isSummaryComplete, requesterIdOf, summarizeValidationResults } from './iocValidation-utils';
 
 const toPositiveInteger = (value: unknown, fallback: number) => {
   const parsed = Number(value);
@@ -244,7 +244,6 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
     test_kinds: testKinds,
     status: REQUEST_STATUS_PENDING,
     connector_id: connector.internal_id,
-    requested_by: user.id,
     results_summary: emptyResultsSummary(pairs.length, skipped.length),
     iocs: validatedIocs,
     pairs,
@@ -280,7 +279,8 @@ export const dispatchIocValidationRequest = async (context: AuthContext, request
     return request;
   }
   const connectorUser = await resolveConnectorUser(context, connector);
-  const requester = await resolveUserByIdFromCache(context, request.requested_by) as AuthUser | undefined;
+  const requesterId = requesterIdOf(request);
+  const requester = requesterId ? await resolveUserByIdFromCache(context, requesterId) as AuthUser | undefined : undefined;
   const indicators = await storeLoadByIds<BasicStoreEntityIndicator>(context, connectorUser, request.indicator_ids, ENTITY_TYPE_INDICATOR);
   const platforms = await storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, connectorUser, request.platform_ids, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
   const indicatorRefs = new Map(indicators.filter((i) => i).map((i) => [i.internal_id, i.standard_id as StixId]));
@@ -325,7 +325,7 @@ export const dispatchIocValidationRequest = async (context: AuthContext, request
   const message = {
     internal: {
       work_id: work.id,
-      applicant_id: request.requested_by,
+      applicant_id: requesterId ?? null,
       draft_id: null,
       mode: 'manual',
       trigger: 'create',
