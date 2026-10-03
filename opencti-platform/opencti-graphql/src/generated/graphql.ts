@@ -32884,6 +32884,8 @@ export type SourceIntelligenceSettingsInput = {
 
 export type SourceIntelligenceStatus = {
   __typename?: 'SourceIntelligenceStatus';
+  backfill_days_done?: Maybe<Scalars['Int']['output']>;
+  backfill_days_total?: Maybe<Scalars['Int']['output']>;
   backfill_done: Scalars['Boolean']['output'];
   backfill_next_day?: Maybe<Scalars['String']['output']>;
   enterprise_edition: Scalars['Boolean']['output'];
@@ -54959,6 +54961,8 @@ export type SourceIntelligenceSettingsResolvers<ContextType = any, ParentType ex
 }>;
 
 export type SourceIntelligenceStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceStatus'] = ResolversParentTypes['SourceIntelligenceStatus']> = ResolversObject<{
+  backfill_days_done?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  backfill_days_total?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   backfill_done?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   backfill_next_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enterprise_edition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
