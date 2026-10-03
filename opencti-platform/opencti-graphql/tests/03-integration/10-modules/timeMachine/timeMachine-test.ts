@@ -39,6 +39,11 @@ const DELETE_RELATION = gql`
     stixCoreRelationshipEdit(id: $id) { delete }
   }
 `;
+const ADD_RELATION_REF = gql`
+  mutation TimeMachineRelationRefAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
+    stixCoreRelationshipEdit(id: $id) { relationAdd(input: $input) { id } }
+  }
+`;
 const DELETE_INTRUSION_SET = gql`
   mutation TimeMachineIntrusionSetDelete($id: ID!) {
     intrusionSetEdit(id: $id) { delete }
@@ -383,6 +388,49 @@ describe('Knowledge time machine', () => {
     // The same request returns the cached result
     const cached = await queryAsAdminWithSuccess({ query: LANDSCAPE_RUN, variables: { input } });
     expect(cached.data.landscapeDiffRun.id).toEqual(id);
+  }, 2 * HISTORY_BUDGET_MS);
+
+  it('should never serve a cached landscape result after one of its counted relationships is reclassified', async () => {
+    const name = `${testName} reclassified`;
+    const from = new Date(Date.now() - 60000).toISOString();
+    const scoped = await queryAsAdminWithSuccess({ query: CREATE_INTRUSION_SET, variables: { input: { name } } });
+    const scopedId = scoped.data.intrusionSetAdd.id;
+    const relation = await queryAsAdminWithSuccess({
+      query: ADD_RELATION,
+      variables: { input: { fromId: scopedId, toId: malwareId, relationship_type: 'uses' } },
+    });
+    const scopedRelationId = relation.data.stixCoreRelationshipAdd.id;
+    // An end date in the past keeps one cache key for every request of the test
+    const to = new Date().toISOString();
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: [name], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const input = { filters, entity_types: ['Intrusion-Set'], from, to };
+    const summaryAsUser = async () => {
+      const result = await queryAsUser(USER_PARTICIPATE, { query: LANDSCAPE_SUMMARY, variables: { input } });
+      expect(result.errors).toBeUndefined();
+      return result.data?.landscapeDiffSummary as any;
+    };
+    const landscapeAsUser = async (id: string) => {
+      const result = await queryAsUser(USER_PARTICIPATE, { query: LANDSCAPE_GET, variables: { id } });
+      return result.data?.landscapeDiff as any;
+    };
+    const before = await summaryAsUser();
+    expect(before.aggregates.new_relationships).toEqual(1);
+    const run = await queryAsUser(USER_PARTICIPATE, { query: LANDSCAPE_RUN, variables: { input } });
+    const runId = (run.data?.landscapeDiffRun as any).id;
+    await awaitUntilCondition(async () => (await landscapeAsUser(runId))?.status === 'complete', HISTORY_BUDGET_MS);
+    expect((await landscapeAsUser(runId)).aggregates.new_relationships).toEqual(1);
+    // The relationship is counted by both results but named in neither
+    await queryAsAdminWithSuccess({
+      query: ADD_RELATION_REF,
+      variables: { id: scopedRelationId, input: { toId: MARKING_TLP_AMBER, relationship_type: 'object-marking' } },
+    });
+    const after = await summaryAsUser();
+    expect(after.aggregates.new_relationships).toEqual(0);
+    expect(after.aggregates.new_malware).toEqual([]);
+    const outdated = await landscapeAsUser(runId);
+    expect(outdated.status).toEqual('failed');
+    expect(outdated.aggregates).toBeNull();
+    await queryAsAdminWithSuccess({ query: DELETE_INTRUSION_SET, variables: { id: scopedId } });
   }, 2 * HISTORY_BUDGET_MS);
 
   it('should create change digests and build their content', async () => {
