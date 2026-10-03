@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
@@ -10,6 +10,7 @@ import { addTrigger, triggerDelete } from '../../../../src/modules/notification/
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { TriggerEventType, TriggerType } from '../../../../src/generated/graphql';
+import type { DefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 
 const SIGMA_RULE = `title: Defense matrix test rule
 id: 5f3c3f5a-1d2b-4c6e-9f0a-1234567890ab
@@ -194,6 +195,7 @@ const STATUS = gql`
   }
 `;
 
+const LEVEL_DETECTION_AVAILABLE = 2;
 const LEVEL_DETECTION_DEPLOYED = 3;
 const MITRE_ID = 'T9901';
 
@@ -249,10 +251,10 @@ describe('Threat-informed defense matrix', () => {
 
     await relate(created.dataComponent, created.attackPattern, 'detects');
     await relate(created.platform, created.dataComponent, 'provides');
-    await relate(created.indicator, created.attackPattern, 'indicates');
+    created.indicates = await relate(created.indicator, created.attackPattern, 'indicates');
     await relate(created.courseOfAction, created.attackPattern, 'mitigates');
     await relate(created.threat, created.attackPattern, 'uses');
-    await relate(created.restrictedThreat, created.attackPattern, 'uses');
+    created.restrictedUses = await relate(created.restrictedThreat, created.attackPattern, 'uses');
     await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: REPORT_DEPLOYMENT,
       variables: { indicatorId: created.indicator, platformId: created.platform, status: 'active', externalId: 'defense-test-rule' },
@@ -305,10 +307,12 @@ describe('Threat-informed defense matrix', () => {
     })]);
   });
 
-  it('should store the aggregated level as a filterable attack pattern attribute', async () => {
+  it('should keep the stored aggregate out of the attack pattern attributes', async () => {
     const filters = { mode: 'and', filters: [{ key: ['defense_level'], values: [String(LEVEL_DETECTION_DEPLOYED)], operator: 'gte' }], filterGroups: [] };
-    const result = await queryAsAdminWithSuccess({ query: ATTACK_PATTERNS_BY_LEVEL, variables: { filters, search: 'Defense matrix test technique' } });
-    expect(result.data?.attackPatterns.edges.map((e: { node: { id: string } }) => e.node.id)).toContain(created.attackPattern);
+    await queryAsAdminWithError(
+      { query: ATTACK_PATTERNS_BY_LEVEL, variables: { filters, search: 'Defense matrix test technique' } },
+      'Incorrect filter keys not existing in any schema definition',
+    );
   });
 
   it('should explain the level with every evidence', async () => {
@@ -425,22 +429,32 @@ describe('Threat-informed defense matrix', () => {
     expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
   });
 
+  const triggerFilters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  const coverageWithRules = (rules: { id: string; rel: string }[]) => ({
+    computed_at: '2026-10-01T00:00:00.000Z',
+    level: rules.length > 0 ? LEVEL_DETECTION_AVAILABLE : 0,
+    data_components: [],
+    rules,
+    mitigations: [],
+    validations: [],
+    platforms: [],
+  }) as DefenseCoverage;
+  const coverageChange = (previous: DefenseCoverage, coverage: DefenseCoverage) => ({ attack_pattern_id: created.attackPattern, previous, coverage });
+
   it('should notify the live triggers listening to a defense level change', async () => {
-    const filters = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] };
     const trigger = await addTrigger(testContext, ADMIN_USER, {
       name: 'Defense matrix test - level decreased',
       event_types: [TriggerEventType.DefenseLevelDecreased],
       instance_trigger: false,
       recipients: [],
-      filters: JSON.stringify(filters),
+      filters: triggerFilters,
     }, TriggerType.Live);
     resetCacheForEntity(ENTITY_TYPE_TRIGGER);
     try {
-      const decrease = { attack_pattern_id: created.attackPattern, previous_level: LEVEL_DETECTION_DEPLOYED, level: 1 };
-      expect(await notifyDefenseLevelChanges(testContext, [decrease])).toEqual(1);
+      const rule = [{ id: created.indicator, rel: created.indicates }];
+      expect(await notifyDefenseLevelChanges(testContext, [coverageChange(coverageWithRules(rule), coverageWithRules([]))])).toEqual(1);
       // The trigger listens to decreases only
-      const increase = { attack_pattern_id: created.attackPattern, previous_level: 1, level: LEVEL_DETECTION_DEPLOYED };
-      expect(await notifyDefenseLevelChanges(testContext, [increase])).toEqual(0);
+      expect(await notifyDefenseLevelChanges(testContext, [coverageChange(coverageWithRules([]), coverageWithRules(rule))])).toEqual(0);
       // A recomputation without any change notifies nobody
       await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
       const unchanged = await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
@@ -448,6 +462,30 @@ describe('Threat-informed defense matrix', () => {
       expect(unchanged.notified).toEqual(0);
     } finally {
       await triggerDelete(testContext, ADMIN_USER, trigger.id);
+      resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+    }
+  });
+
+  it('should only tell a recipient the level change they can see', async () => {
+    const participant = await getAuthUser(USER_PARTICIPATE.id);
+    const trigger = await addTrigger(testContext, participant, {
+      name: 'Defense matrix test - level increased',
+      event_types: [TriggerEventType.DefenseLevelIncreased],
+      instance_trigger: false,
+      recipients: [],
+      filters: triggerFilters,
+    }, TriggerType.Live);
+    resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+    try {
+      const restrictedRule = [{ id: created.restrictedThreat, rel: created.restrictedUses }];
+      const visibleRule = [{ id: created.indicator, rel: created.indicates }];
+      // The aggregate level rises only because of an evidence the recipient cannot access
+      expect(await notifyDefenseLevelChanges(testContext, [coverageChange(coverageWithRules([]), coverageWithRules(restrictedRule))])).toEqual(0);
+      // The aggregate level does not move, while the level the recipient sees rises
+      const change = coverageChange(coverageWithRules(restrictedRule), coverageWithRules([...restrictedRule, ...visibleRule]));
+      expect(await notifyDefenseLevelChanges(testContext, [change])).toEqual(1);
+    } finally {
+      await triggerDelete(testContext, participant, trigger.id);
       resetCacheForEntity(ENTITY_TYPE_TRIGGER);
     }
   });

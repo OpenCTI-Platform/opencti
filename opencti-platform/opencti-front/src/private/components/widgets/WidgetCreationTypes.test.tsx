@@ -25,9 +25,10 @@ const ALL_VISUALIZATION_TYPES = [
   'wordcloud',
   'defense-tactic-coverage',
   'defense-top-gaps',
+  'defense-levels',
 ];
 
-const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps'];
+const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps', 'defense-levels'];
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
