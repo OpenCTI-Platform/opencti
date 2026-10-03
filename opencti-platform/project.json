@@ -7,16 +7,28 @@
     "build-ubi9": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "opencti-platform",
-        "command": "podman build -f Dockerfile_ubi9 -t opencti/platform:{args.ver}-ubi9 ."
+        "cwd": ".",
+        "command": "podman build -f opencti-platform/Dockerfile_ubi9 -t opencti/platform:{args.ver}-ubi9 ."
       },
       "metadata": {
         "description": "Build the OpenCTI platform UBI9 Docker image"
       }
     },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "command": "yarn install"
+      },
+      "metadata": {
+        "description": "Install the JavaScript workspace (front, GraphQL API, custom ESLint rules)"
+      }
+    },
     "push-ubi9": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build-ubi9"],
+      "dependsOn": [
+        "build-ubi9"
+      ],
       "options": {
         "cwd": "opencti-platform",
         "command": "podman push opencti/platform:{args.ver}-ubi9"
@@ -27,5 +39,3 @@
     }
   }
 }
-
-

@@ -78,7 +78,7 @@ jobs:
       - name: Build (builder)
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: opencti-platform
+          context: .
           file: opencti-platform/Dockerfile
           target: builder
           outputs: type=docker,dest=/tmp/opencti-builder.tar
@@ -102,7 +102,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: opencti-platform
+          context: .
           file: opencti-platform/Dockerfile
           push: ${{ inputs.publish_to_registry == 'true' }}
           outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
@@ -158,7 +158,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: opencti-worker
+          context: .
           file: opencti-worker/Dockerfile
           push: ${{ inputs.publish_to_registry == 'true' }}
           outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}

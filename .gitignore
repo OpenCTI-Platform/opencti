@@ -13,6 +13,9 @@
 # NodeJS
 node_modules/
 
+# ESLint
+.eslintcache
+
 # Yarn
 .yarn/
 opencti-platform/opencti-front/.yarnrc.yml
@@ -36,7 +39,19 @@ thoughts/
 # Root-level fds-migration/*.md docs and migration-state.json stay tracked.
 fds-migration/reports/
 
+# Build and test artefacts, shared by every workspace
+build
+dist
+coverage
+test-results
+__generated__
+logs
+.cache
+__pycache__
 
-# Env local files
+# Local environment files
+.env
 .env.local
 .env.development.local
+.env.test.local
+.env.production.local

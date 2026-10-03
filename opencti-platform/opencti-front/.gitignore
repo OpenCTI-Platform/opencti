@@ -1,28 +1,9 @@
-.eslintcache
 config/development.json
-dist/
-
-# testing
-/coverage
-
-# production
-/builder/dev/build
-/builder/prod/build
 
 # yalc
 .yalc/
 yalc.lock
 
-# misc
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# relay
-__generated__
-
-/test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
