@@ -30,6 +30,8 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
+const RootCuration = lazy(() => import('./curation/Root'));
+
 // Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations
 // section, preserving any query params of the deep link.
 const LegacyConnectorRedirect = () => {
@@ -226,6 +228,14 @@ const Root = () => {
         <Route
           path="/restriction/*"
           element={boundaryWrapper(Management)}
+        />
+        <Route
+          path="/curation/*"
+          element={(
+            <Security needs={[KNOWLEDGE]} placeholder={<Navigate to="/dashboard" />}>
+              {boundaryWrapper(RootCuration)}
+            </Security>
+          )}
         />
         <Route
           path="/health/*"

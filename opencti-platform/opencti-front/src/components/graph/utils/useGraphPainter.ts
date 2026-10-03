@@ -8,6 +8,15 @@ interface PaintOptions {
   showNbConnectedElements?: boolean;
 }
 
+// Corroboration ring: invisible for single-sourced knowledge, thicker with every additional source
+const MAX_RING_SOURCES = 8;
+export const corroborationRingWidth = (corroborationCount: number | undefined) => {
+  if (!corroborationCount || corroborationCount < 2) {
+    return 0;
+  }
+  return 0.25 + 0.15 * (Math.min(corroborationCount, MAX_RING_SOURCES) - 1);
+};
+
 interface UseGraphPainterArgs {
   selectedLinks: GraphLink[];
   selectedNodes: GraphNode[];
@@ -31,6 +40,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     // @ts-ignore
     inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
     numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
+    corroborated: theme.palette.success?.main ?? DEFAULT_COLOR,
     text: theme.palette.text?.secondary ?? DEFAULT_COLOR,
     disabled: theme.palette.background.paper ?? DEFAULT_COLOR,
   };
@@ -47,7 +57,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     ctx: CanvasRenderingContext2D,
     opts: PaintOptions = {},
   ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } = data;
+    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id, corroborationCount } = data;
     const { showNbConnectedElements } = opts;
 
     const hasSelection = selectedNodes.length > 0;
@@ -55,6 +65,15 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     const selected = !!selectedNodes.find((n) => n.id === data.id);
 
     ctx.globalAlpha = hasSelection && !selected ? 0.3 : 1;
+
+    const ringWidth = corroborationRingWidth(corroborationCount);
+    if (ringWidth > 0 && !disabled) {
+      ctx.beginPath();
+      ctx.arc(x, y, 6 + ringWidth / 2, 0, 2 * Math.PI, false);
+      ctx.lineWidth = ringWidth;
+      ctx.strokeStyle = colors.corroborated;
+      ctx.stroke();
+    }
 
     ctx.beginPath();
     ctx.fillStyle = disabled ? colors.disabled : color;
@@ -191,7 +210,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = colors.text;
-    ctx.fillText(link.label, 0, 0);
+    const corroboration = link.corroborationCount ?? 0;
+    ctx.fillText(corroboration >= 2 ? `${link.label} (${corroboration})` : link.label, 0, 0);
     ctx.restore();
   };
 
