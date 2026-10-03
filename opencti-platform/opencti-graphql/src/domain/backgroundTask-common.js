@@ -72,7 +72,7 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
-  const { actions, filters: baseFilterString, ids } = input;
+  const { actions, filters: baseFilterString, search, ids } = input;
   // check actions validity
   const replaceActionsFields = actions
     .filter((a) => !a.type || a.type === ACTION_TYPE_REPLACE)
@@ -84,6 +84,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   }
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject) && !search) {
+    throw FunctionalError('A background task of type query should have at least one filter or a search term.');
+  }
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
