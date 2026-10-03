@@ -151,6 +151,15 @@ const connectorScheduleOf = (connector: BasicStoreEntityConnector): RuleConnecto
 // endregion
 
 // region queries
+/**
+ * Every PIR the user can access, never a first page: listings scoped to accessible PIRs (gap recommendations,
+ * collection gaps) must not hide the PIRs beyond an arbitrary cap. PIRs are few.
+ */
+export const listAccessiblePirIds = async (context: AuthContext, user: AuthUser): Promise<string[]> => {
+  const accessiblePirs = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_PIR], { baseData: true } as any);
+  return accessiblePirs.map((pir) => pir.internal_id);
+};
+
 export const findRecommendationsPaginated = async (context: AuthContext, user: AuthUser, args: Record<string, any>) => {
   await checkEnterpriseEdition(context);
   const { status, sourceId, kind, ...opts } = args;
@@ -158,9 +167,8 @@ export const findRecommendationsPaginated = async (context: AuthContext, user: A
   if (status && status.length > 0) filters.push({ key: ['recommendation_status'], values: status, operator: 'eq', mode: 'or' });
   if (kind && kind.length > 0) filters.push({ key: ['recommendation_kind'], values: kind, operator: 'eq', mode: 'or' });
   if (sourceId) filters.push({ key: ['source_id'], values: [sourceId], operator: 'eq', mode: 'or' });
-  // Only the collection gap recommendations of the PIRs the user can access (all of them, PIRs are few)
-  const accessiblePirs = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_PIR], { baseData: true } as any);
-  const accessiblePirIds = accessiblePirs.map((pir) => pir.internal_id);
+  // Only the collection gap recommendations of the PIRs the user can access
+  const accessiblePirIds = await listAccessiblePirIds(context, user);
   const pirAccessGroup = {
     mode: 'or',
     filters: [
@@ -772,9 +780,28 @@ export const upsertProposals = async (
   return { created, withdrawn: withdrawn.length };
 };
 
-export const applyAutonomousRecommendations = async (context: AuthContext, created: BasicStoreEntitySourceRecommendation[], settings: SourceIntelligenceSettings) => {
+/**
+ * Recommendations the autonomy policy applies in one run: every proposed recommendation of an allowed kind, oldest
+ * first, within the per-run cap. Proposals left over by the cap are taken first by the next runs; failed, dismissed
+ * and applied ones are never retried automatically.
+ */
+export const selectAutonomousCandidates = (recommendations: BasicStoreEntitySourceRecommendation[], settings: SourceIntelligenceSettings) => {
   const allowed = new Set(settings.autonomy.auto_apply_kinds);
-  const eligible = created.filter((recommendation) => allowed.has(recommendation.recommendation_kind)).slice(0, settings.autonomy.max_auto_actions_per_run);
+  return recommendations
+    .filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED && allowed.has(recommendation.recommendation_kind))
+    .sort((a, b) => (a.proposed_at ?? '').localeCompare(b.proposed_at ?? '') || a.internal_id.localeCompare(b.internal_id))
+    .slice(0, Math.max(0, settings.autonomy.max_auto_actions_per_run));
+};
+
+/**
+ * Autonomy policy (Enterprise Edition), run once per computation after the tuning rules and the collection gaps, so
+ * the per-run cap applies once across every kind.
+ */
+export const applyAutonomousRecommendations = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
+  if (settings.autonomy.auto_apply_kinds.length === 0 || settings.autonomy.max_auto_actions_per_run <= 0) {
+    return 0;
+  }
+  const eligible = selectAutonomousCandidates(await loadAllRecommendations(context), settings);
   for (let i = 0; i < eligible.length; i += 1) {
     try {
       await applySourceRecommendation(context, SOURCE_INTELLIGENCE_MANAGER_USER, eligible[i].internal_id, settings, {}, true);
@@ -864,8 +891,7 @@ export const generateSourceRecommendations = async (context: AuthContext, source
     RECOMMENDATION_RETIRE,
   ];
   const { created, withdrawn } = await upsertProposals(context, proposals, settings, { kinds: tuningKinds });
-  const autonomous = await applyAutonomousRecommendations(context, created, settings);
-  logApp.info('[OPENCTI-MODULE] Source intelligence recommendations generated', { proposals: proposals.length, created: created.length, withdrawn, autonomous });
-  return { proposals: proposals.length, created: created.length, withdrawn, autonomous };
+  logApp.info('[OPENCTI-MODULE] Source intelligence recommendations generated', { proposals: proposals.length, created: created.length, withdrawn });
+  return { proposals: proposals.length, created: created.length, withdrawn };
 };
 // endregion
