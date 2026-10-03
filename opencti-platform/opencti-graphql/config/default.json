@@ -332,7 +332,8 @@
     "batch_size": 1000,
     "backfill_batch_size": 10000,
     "interval": 60000,
-    "removal_grace_period": 86400000
+    "removal_grace_period": 86400000,
+    "reconciliation_max_pages": 1000
   },
   "indicator_deployment": {
     "report_rate_limit": 200,

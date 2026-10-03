@@ -2,8 +2,16 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { flagExpiredDeployments, refreshIndicatorDeploymentCounters } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import {
+  backfillIndicatorDeploymentCounters,
+  flagExpiredDeployments,
+  reconcileAllIndicatorDeploymentCounters,
+  reconcileIndicatorDeploymentCounters,
+  refreshIndicatorDeploymentCounters,
+} from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { deleteElementById, stixLoadById } from '../../../../src/database/middleware';
+import { internalLoadById } from '../../../../src/database/middleware-loader';
+import { elUpdate } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 
 const INDICATOR_ADD = gql`
@@ -15,8 +23,10 @@ const INDICATOR_READ = gql`
   query IndicatorRead($id: String!) {
     indicator(id: $id) {
       id
+      deployments_count
       deployment_platforms_count
       deployment_failed_count
+      deployment_expired_count
       validated_platforms_count
       hit_platforms_count
     }
@@ -326,5 +336,40 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(statuses.deployed).toEqual(1);
     expect(platformMetrics.deployments_by_platform[0].platform.id).toEqual(platformId);
     expect(platformMetrics.proven_share).toEqual(0);
+  });
+
+  it('should keep a deployment flagged expired in the expired still deployed views', async () => {
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployment_platforms_count).toEqual(0);
+    expect(indicator.data?.indicator.deployment_expired_count).toEqual(1);
+    expect(indicator.data?.indicator.deployments_count).toEqual(1);
+    const global = await queryAsAdminWithSuccess({ query: METRICS, variables: {} });
+    expect(global.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toBeGreaterThanOrEqual(1);
+    expect(global.data?.disseminationAssuranceMetrics.funnel.disseminated).toBeGreaterThanOrEqual(2);
+  });
+
+  // Side-channel writes below: no stream event, so the raw stream counts of the suite are unchanged.
+  const setCounterScript = (source: string) => ({ script: { source, lang: 'painless' } });
+
+  it('should backfill a counter added after the indicator got its counters, by recomputation', async () => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+    await elUpdate(testContext, stored._index, indicatorId, setCounterScript("ctx._source.remove('deployments_count')"));
+    const backfilled = await backfillIndicatorDeploymentCounters(testContext, 100);
+    expect(backfilled).toBeGreaterThanOrEqual(1);
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployments_count).toEqual(1);
+  });
+
+  it('should reconcile stale counters, as after a security platform deletion cascading to its deployments', async () => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+    await elUpdate(testContext, stored._index, indicatorId, setCounterScript('ctx._source.deployment_failed_count = 7'));
+    const updated = await reconcileAllIndicatorDeploymentCounters(testContext, 1, 1000);
+    expect(updated).toBeGreaterThanOrEqual(1);
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployment_failed_count).toEqual(0);
+    // The rolling scan restarts from the beginning once the end is reached
+    const page = await reconcileIndicatorDeploymentCounters(testContext, 1000);
+    expect(page.done).toEqual(true);
+    expect(page.checked).toBeGreaterThanOrEqual(1);
   });
 });

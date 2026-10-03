@@ -13357,8 +13357,10 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   decay_base_score_date?: Maybe<Scalars['DateTime']['output']>;
   decay_exclusion_applied_rule?: Maybe<IndicatorDecayExclusionRule>;
   decay_history?: Maybe<Array<DecayHistory>>;
+  deployment_expired_count?: Maybe<Scalars['Int']['output']>;
   deployment_failed_count?: Maybe<Scalars['Int']['output']>;
   deployment_platforms_count?: Maybe<Scalars['Int']['output']>;
+  deployments_count?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -13731,8 +13733,10 @@ export enum IndicatorsOrdering {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  DeploymentExpiredCount = 'deployment_expired_count',
   DeploymentFailedCount = 'deployment_failed_count',
   DeploymentPlatformsCount = 'deployment_platforms_count',
+  DeploymentsCount = 'deployments_count',
   FreshnessDays = 'freshness_days',
   HitPlatformsCount = 'hit_platforms_count',
   IndicatorTypes = 'indicator_types',
@@ -48908,8 +48912,10 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   decay_base_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   decay_exclusion_applied_rule?: Resolver<Maybe<ResolversTypes['IndicatorDecayExclusionRule']>, ParentType, ContextType>;
   decay_history?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
+  deployment_expired_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   deployment_failed_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   deployment_platforms_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  deployments_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;

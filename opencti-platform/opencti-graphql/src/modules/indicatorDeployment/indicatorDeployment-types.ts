@@ -60,13 +60,19 @@ export interface BasicStoreRelationDeployedOn extends BasicStoreRelation, Deploy
 export interface StoreRelationDeployedOn extends StoreRelation, DeployedOnAttributes {}
 
 // Derived, filterable counters maintained on the Indicator.
+// deployments_count: platforms that recorded the indicator, whatever the status (dissemination evidence).
+// deployment_platforms_count: live deployments only; deployment_expired_count: removals never confirmed.
+export const INDICATOR_DEPLOYMENTS_COUNT = 'deployments_count';
 export const INDICATOR_DEPLOYMENT_PLATFORMS_COUNT = 'deployment_platforms_count';
 export const INDICATOR_DEPLOYMENT_FAILED_COUNT = 'deployment_failed_count';
+export const INDICATOR_DEPLOYMENT_EXPIRED_COUNT = 'deployment_expired_count';
 export const INDICATOR_VALIDATED_PLATFORMS_COUNT = 'validated_platforms_count';
 export const INDICATOR_HIT_PLATFORMS_COUNT = 'hit_platforms_count';
 export interface IndicatorDeploymentCounters {
+  [INDICATOR_DEPLOYMENTS_COUNT]: number;
   [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT]: number;
   [INDICATOR_DEPLOYMENT_FAILED_COUNT]: number;
+  [INDICATOR_DEPLOYMENT_EXPIRED_COUNT]: number;
   [INDICATOR_VALIDATED_PLATFORMS_COUNT]: number;
   [INDICATOR_HIT_PLATFORMS_COUNT]: number;
 }

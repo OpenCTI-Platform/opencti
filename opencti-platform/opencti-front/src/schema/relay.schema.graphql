@@ -14851,8 +14851,10 @@ input IngestionJsonAddInput {
 }
 
 enum IndicatorsOrdering {
+  deployments_count
   deployment_platforms_count
   deployment_failed_count
+  deployment_expired_count
   validated_platforms_count
   hit_platforms_count
   pattern_type
@@ -15015,8 +15017,10 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  deployments_count: Int
   deployment_platforms_count: Int
   deployment_failed_count: Int
+  deployment_expired_count: Int
   validated_platforms_count: Int
   hit_platforms_count: Int
 }
