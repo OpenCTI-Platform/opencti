@@ -3,12 +3,12 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { elRawSearch } from '../database/engine';
 import { fullRelationsList, internalFindByIds } from '../database/middleware-loader';
-import { getEntitiesMapFromCache } from '../database/cache';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
-import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
-import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now, utcDate } from '../utils/format';
@@ -17,11 +17,12 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
-import { ENTITY_TYPE_USER_VISIT, type AttributeValues, type CompactDocument, type TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
-import { extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
+import type { AttributeValues, CompactDocument, TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
+import { containerObjectsCountAt, currentContainerObjectsCount, extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
 import { fetchElementsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
-import { deleteSnapshotsBefore, deleteUserVisits, deleteVisitsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
+import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
+import { countRelationshipsByType } from '../modules/timeMachine/timeMachine-domain';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 const SNAPSHOT_MANAGER_ID = 'SNAPSHOT_MANAGER';
@@ -35,7 +36,6 @@ const MAX_ENTITIES_PER_RUN: number = conf.get('snapshot_manager:max_entities_per
 const BATCH_SIZE: number = conf.get('snapshot_manager:batch_size') || 100;
 const MAX_RELATIONSHIP_IDS_PER_TYPE: number = conf.get('snapshot_manager:max_relationship_ids_per_type') || 500;
 const RETENTION_DAYS: number = conf.get('snapshot_manager:retention_days') || 0;
-const VISIT_RETENTION_DAYS: number = conf.get('time_machine:visit_retention_days') || 365;
 const MAX_REWIND_EVENTS: number = conf.get('time_machine:max_replay_events') || 5000;
 // Maximum number of history events read per batch to rewind the documents to the snapshot date
 const MAX_REWIND_EVENTS_PER_BATCH = 20000;
@@ -114,13 +114,19 @@ export const findChangedElementIds = async (
   return { ids, afterKey: hasMore ? currentAfter : null };
 };
 
+export interface RewoundElement {
+  attributes: AttributeValues;
+  // Number of objects of a container at the snapshot date, null for other entities
+  containerObjectsCount: number | null;
+}
+
 /**
- * Attributes of the entities at `snapshotDate`. The documents are read after that date (a resumed
- * window can be read hours later), so the changes made since are reverted with their reverse patches.
- * Entities that cannot be rewound exactly are left out and snapshotted at the next window.
+ * Attributes (and number of objects of containers) of the entities at `snapshotDate`. The documents are read
+ * after that date (a resumed window can be read hours later), so the changes made since are reverted with
+ * their reverse patches. Entities that cannot be rewound exactly are left out and snapshotted at the next window.
  */
-export const rewindAttributes = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, AttributeValues>> => {
-  const rewound = new Map<string, AttributeValues>();
+export const rewindAttributes = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, RewoundElement>> => {
+  const rewound = new Map<string, RewoundElement>();
   if (entities.length === 0) return rewound;
   const ids = entities.map((entity) => entity.internal_id);
   const events = await fetchElementsHistoryEvents(context, SYSTEM_USER, ids, { from: snapshotDate, max: MAX_REWIND_EVENTS_PER_BATCH + 1 });
@@ -139,51 +145,74 @@ export const rewindAttributes = async (context: AuthContext, entities: BasicStor
   });
   entities.forEach((entity) => {
     const attributes = extractAttributeValues(entity as any);
+    const isContainer = isStixDomainObjectContainer(entity.entity_type);
+    const currentCount = isContainer ? currentContainerObjectsCount(entity as any) : null;
     const elementEvents = eventsByElement.get(entity.internal_id);
     if (!elementEvents) {
-      rewound.set(entity.internal_id, attributes);
+      rewound.set(entity.internal_id, { attributes, containerObjectsCount: currentCount });
       return;
     }
     const replay = replayBackward(attributes, entity.entity_type, elementEvents, snapshotDate, MAX_REWIND_EVENTS);
     if (replay.complete && replay.exists) {
-      rewound.set(entity.internal_id, replay.document);
+      const containerObjectsCount = currentCount !== null ? containerObjectsCountAt(currentCount, elementEvents, 'backward') : null;
+      rewound.set(entity.internal_id, { attributes: replay.document, containerObjectsCount });
     }
   });
   return rewound;
 };
 
-// Compact documents at `snapshotDate`: raw attribute values and relationship ids by type (capped), exact counts by type
+/**
+ * Compact documents at `snapshotDate`: raw attribute values, number of objects of containers,
+ * relationship ids by type (capped) and exact relationship counts by type.
+ */
 export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, CompactDocument>> => {
   const documents = new Map<string, CompactDocument>();
-  const attributes = await rewindAttributes(context, entities, snapshotDate);
-  attributes.forEach((values, id) => {
-    documents.set(id, { attributes: values, relationships: {}, relationships_count: {} });
+  const rewound = await rewindAttributes(context, entities, snapshotDate);
+  rewound.forEach(({ attributes, containerObjectsCount }, id) => {
+    documents.set(id, {
+      attributes,
+      relationships: {},
+      relationships_count: {},
+      ...(containerObjectsCount !== null ? { container_objects_count: containerObjectsCount } : {}),
+    });
   });
   if (documents.size === 0) return documents;
   const ids = [...documents.keys()];
+  // One extra relationship is read to know whether the relationships of the batch were all read
   const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     endDate: snapshotDate,
     dateAttribute: 'created_at',
     baseData: true,
-    maxSize: MAX_RELATIONSHIPS_PER_BATCH,
+    maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
+  const allRead = relations.length <= MAX_RELATIONSHIPS_PER_BATCH;
   const register = (entityId: string, relation: BasicStoreRelation) => {
     const document = documents.get(entityId);
     if (!document) return;
     const type = relation.entity_type;
-    document.relationships_count[type] = (document.relationships_count[type] ?? 0) + 1;
+    if (allRead) document.relationships_count[type] = (document.relationships_count[type] ?? 0) + 1;
     const typeIds = document.relationships[type] ?? [];
     if (typeIds.length < MAX_RELATIONSHIP_IDS_PER_TYPE) {
       typeIds.push(relation.internal_id);
       document.relationships[type] = typeIds;
     }
   };
-  relations.forEach((relation) => {
+  relations.slice(0, MAX_RELATIONSHIPS_PER_BATCH).forEach((relation) => {
     register(relation.fromId, relation);
     if (relation.toId !== relation.fromId) register(relation.toId, relation);
   });
+  if (!allRead) {
+    // Too many relationships to read them all: the exact counts come from an aggregation per entity
+    for (let index = 0; index < ids.length; index += 1) {
+      const counts = await countRelationshipsByType(context, SYSTEM_USER, ids[index], { endDate: snapshotDate });
+      const document = documents.get(ids[index]) as CompactDocument;
+      counts.forEach((count, type) => {
+        document.relationships_count[type] = count;
+      });
+    }
+  }
   return documents;
 };
 
@@ -210,34 +239,12 @@ export const computeSnapshotRetentionDate = (rules: BasicStoreEntityRetentionRul
   return moment.max(horizons).toISOString();
 };
 
-const purgeVisitsOfDeletedUsers = async (context: AuthContext) => {
-  const users = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const body = {
-    size: 0,
-    query: { bool: { must: [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_USER_VISIT] } }] } },
-    aggs: { users: { terms: { field: 'user_id.keyword', size: 10000 } } },
-  };
-  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_USER_VISIT, { index: READ_INDEX_INTERNAL_OBJECTS, body }).catch((err: unknown) => {
-    throw DatabaseError('Snapshot manager visits aggregation fail', { cause: err });
-  });
-  const buckets: Array<{ key: string }> = data.aggregations?.users?.buckets ?? [];
-  let deleted = 0;
-  for (let index = 0; index < buckets.length; index += 1) {
-    const userId = buckets[index].key;
-    if (!users.has(userId)) {
-      deleted += await deleteUserVisits(userId);
-    }
-  }
-  return deleted;
-};
-
-export const applyTimeMachineRetention = async (context: AuthContext, currentDate: string) => {
+// Last visit markers are purged by the retention manager, they do not depend on snapshots being enabled
+export const applySnapshotRetention = async (context: AuthContext, currentDate: string) => {
   const rules = await listRules(context, SYSTEM_USER) as BasicStoreEntityRetentionRule[];
   const retentionDate = computeSnapshotRetentionDate(rules, currentDate, RETENTION_DAYS);
   const deletedSnapshots = retentionDate ? await deleteSnapshotsBefore(retentionDate) : 0;
-  const deletedVisits = await deleteVisitsBefore(utcDate(currentDate).subtract(VISIT_RETENTION_DAYS, 'days').toISOString());
-  const deletedOrphanVisits = await purgeVisitsOfDeletedUsers(context);
-  return { deletedSnapshots, deletedVisits: deletedVisits + deletedOrphanVisits };
+  return { deletedSnapshots };
 };
 
 export const snapshotHandler = async () => {
@@ -284,7 +291,7 @@ export const snapshotHandler = async () => {
   } else {
     await writeState({ cursor: windowEnd, window_end: undefined, after_key: null, retry_ids: retryIds });
   }
-  const retention = await applyTimeMachineRetention(context, currentDate);
+  const retention = await applySnapshotRetention(context, currentDate);
   logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, retry: retryIds.length, ...retention, complete: !afterKey });
 };
 

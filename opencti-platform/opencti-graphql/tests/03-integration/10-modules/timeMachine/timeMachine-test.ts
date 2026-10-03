@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { awaitUntilCondition, queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
+import { awaitUntilCondition, queryAsAdmin, queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
 import { fetchElementHistoryEvents } from '../../../../src/modules/timeMachine/timeMachine-history';
 import { buildCompactDocuments } from '../../../../src/manager/snapshotManager';
 import { indexSnapshots, findSnapshotAtOrAfter, loadUserVisits } from '../../../../src/modules/timeMachine/timeMachine-store';
@@ -76,8 +76,31 @@ const DIFF = gql`
 `;
 const TIMELINE = gql`
   query TimeMachineTimeline($id: String!) {
-    entityTimeMachineTimeline(id: $id) { entity_id created_at history_start events { date event_scope } snapshots max_replay_days }
+    entityTimeMachineTimeline(id: $id) { entity_id created_at history_start events { date event_scope } events_truncated snapshots max_replay_days }
   }
+`;
+const CREATE_REPORT = gql`
+  mutation TimeMachineReportAdd($input: ReportAddInput!) {
+    reportAdd(input: $input) { id }
+  }
+`;
+const DELETE_REPORT = gql`
+  mutation TimeMachineReportDelete($id: ID!) {
+    reportEdit(id: $id) { delete }
+  }
+`;
+const AS_OF_CONTAINER = gql`
+  query TimeMachineAsOfContainer($id: String!, $date: DateTime!) {
+    entityAsOf(id: $id, date: $date) { entity_id exists anchor container_objects_count }
+  }
+`;
+const SAVED_FILTER_ADD = gql`
+  mutation TimeMachineSavedFilterAdd($input: SavedFilterAddInput!) {
+    savedFilterAdd(input: $input) { id }
+  }
+`;
+const SAVED_FILTER_DELETE = gql`
+  mutation TimeMachineSavedFilterDelete($id: ID!) { savedFilterDelete(id: $id) }
 `;
 const VISIT = gql`
   mutation TimeMachineVisit($id: String!) {
@@ -240,7 +263,28 @@ describe('Knowledge time machine', () => {
     expect(timeline.entity_id).toEqual(intrusionSetId);
     expect(timeline.history_start).toBeDefined();
     expect(timeline.events.length).toBeGreaterThanOrEqual(2);
+    expect(timeline.events_truncated).toBe(false);
     expect(timeline.max_replay_days).toBeGreaterThan(0);
+  });
+
+  it('should keep the number of objects of a container in its snapshots', async () => {
+    const report = await queryAsAdminWithSuccess({
+      query: CREATE_REPORT,
+      variables: { input: { name: `${testName} report`, published: new Date().toISOString(), objects: [intrusionSetId, malwareId] } },
+    });
+    const reportId = report.data.reportAdd.id;
+    const [reportCreatedAt] = await waitForHistory(reportId, 'create');
+    const entity = await internalLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, reportId, { type: 'Report' });
+    const snapshotDate = new Date().toISOString();
+    const documents = await buildCompactDocuments(testContext, [entity], snapshotDate);
+    expect(documents.get(reportId)?.container_objects_count).toEqual(2);
+    await indexSnapshots([{ entityId: reportId, entityType: 'Report', snapshotDate, historyCursor: snapshotDate, document: documents.get(reportId)! }]);
+    // Rebuilt from the snapshot, the as-of view still knows how many objects the report contained
+    const { data } = await queryAsAdminWithSuccess({ query: AS_OF_CONTAINER, variables: { id: reportId, date: middle(reportCreatedAt, snapshotDate) } });
+    expect(data.entityAsOf.exists).toBe(true);
+    expect(data.entityAsOf.anchor).toEqual('snapshot');
+    expect(data.entityAsOf.container_objects_count).toEqual(2);
+    await queryAsAdminWithSuccess({ query: DELETE_REPORT, variables: { id: reportId } });
   });
 
   it('should rebuild from a knowledge snapshot when one is available', async () => {
@@ -341,5 +385,37 @@ describe('Knowledge time machine', () => {
     expect(content[0].notification_id).toEqual(trigger.id);
     expect(content[0].message).toContain('new relationship');
     await queryAsAdminWithSuccess({ query: TRIGGER_DELETE, variables: { id: trigger.id } });
+  });
+
+  it('should copy the filters and the entity types of a saved filter in a change digest', async () => {
+    const savedFilterFilters = { mode: 'and', filters: [{ key: ['name'], values: [`${testName} malware`], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    const savedFilter = await queryAsAdminWithSuccess({
+      query: SAVED_FILTER_ADD,
+      variables: { input: { name: `${testName} saved filter`, filters: JSON.stringify(savedFilterFilters), scope: 'malwares' } },
+    });
+    const savedFilterId = savedFilter.data.savedFilterAdd.id;
+    const { data } = await queryAsAdminWithSuccess({
+      query: CHANGE_DIGEST_ADD,
+      variables: { input: { name: 'Time machine saved filter digest', saved_filter_id: savedFilterId, period: 'day', trigger_time: '09:00:00.000Z', notifiers: [STATIC_NOTIFIER_UI] } },
+    });
+    const trigger = data.triggerKnowledgeChangeDigestAdd;
+    expect(trigger.scope_entity_types).toEqual(['Malware']);
+    expect(JSON.parse(trigger.filters)).toEqual(savedFilterFilters);
+    await queryAsAdminWithSuccess({ query: TRIGGER_DELETE, variables: { id: trigger.id } });
+    await queryAsAdminWithSuccess({ query: SAVED_FILTER_DELETE, variables: { id: savedFilterId } });
+  });
+
+  it('should reject ambiguous scopes and change digests for several recipients', async () => {
+    const now = new Date().toISOString();
+    const ambiguous = await queryAsUser(USER_PARTICIPATE, {
+      query: LANDSCAPE_SUMMARY,
+      variables: { input: { saved_filter_id: 'saved-filter', custom_view_id: 'custom-view', from: createdAt, to: now } },
+    });
+    expect(ambiguous.errors?.[0]?.message).toContain('either a saved filter or a custom view');
+    const severalRecipients = await queryAsAdmin({
+      query: CHANGE_DIGEST_ADD,
+      variables: { input: { name: 'Several recipients', period: 'day', trigger_time: '09:00:00.000Z', notifiers: [STATIC_NOTIFIER_UI], recipients: [ADMIN_USER.id, USER_PARTICIPATE.id] } },
+    });
+    expect(severalRecipients.errors?.[0]?.message).toContain('single recipient');
   });
 });

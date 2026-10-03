@@ -17237,6 +17237,7 @@ type TimeMachineTimeline {
   created_at: DateTime
   history_start: DateTime
   events: [TimeMachineTimelineEvent!]!
+  events_truncated: Boolean!
   snapshots: [DateTime!]!
   max_replay_days: Int!
 }
@@ -17363,6 +17364,7 @@ input TriggerChangeDigestAddInput {
   name: String!
   description: String
   filters: String
+  saved_filter_id: String
   scope_entity_types: [String!]
   period: DigestPeriod!
   trigger_time: String

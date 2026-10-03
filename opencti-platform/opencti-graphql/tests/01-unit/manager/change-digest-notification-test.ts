@@ -22,6 +22,13 @@ vi.mock('../../../src/modules/timeMachine/timeMachine-changeDigest', () => ({
   buildChangeDigestData: (...args: unknown[]) => buildChangeDigestDataMock(...args),
 }));
 
+// Capture the "change digests sent" telemetry counter (no Redis needed).
+const addChangeDigestSentCountMock = vi.fn();
+vi.mock('../../../src/manager/telemetryManager', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/manager/telemetryManager')>()),
+  addChangeDigestSentCount: () => addChangeDigestSentCountMock(),
+}));
+
 import { handleChangeDigestNotifications } from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
@@ -106,6 +113,19 @@ describe('handleChangeDigestNotifications', () => {
     expect(events[0].target.user_id).toBe(analyst.id);
     expect(events[0].target.notifiers).toEqual(['notifier-ui']);
     expect(events[0].data).toEqual([digestLine]);
+    // Only the stored digest is counted as sent
+    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not count a digest as sent when it cannot be stored', async () => {
+    primeCache([changeDigest]);
+    buildChangeDigestDataMock.mockResolvedValue([digestLine]);
+    vi.mocked(storeNotificationEvent)
+      .mockRejectedValueOnce(new Error('stream unavailable'))
+      .mockResolvedValueOnce(undefined as unknown as Awaited<ReturnType<typeof storeNotificationEvent>>);
+    await handleChangeDigestNotifications({} as AuthContext);
+    expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(2);
+    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
 
   it('ignores the change digests that are not due and the regular digests', async () => {
@@ -125,5 +145,6 @@ describe('handleChangeDigestNotifications', () => {
     const events = storedEvents();
     expect(events).toHaveLength(1);
     expect(events[0].target.user_id).toBe(manager.id);
+    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
 });

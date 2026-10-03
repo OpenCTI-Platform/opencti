@@ -136,6 +136,9 @@ const validateEntityTypes = (types: string[]) => {
 };
 
 export const resolveLandscapeScope = async (context: AuthContext, user: AuthUser, input: LandscapeDiffInputData): Promise<LandscapeScope> => {
+  if (input.saved_filter_id && input.custom_view_id) {
+    throw ValidationError('A landscape scope is either a saved filter or a custom view, not both', 'saved_filter_id');
+  }
   const filterGroups: FilterGroup[] = [];
   let entityTypes = input.entity_types && input.entity_types.length > 0 ? input.entity_types : null;
   if (input.saved_filter_id) {
@@ -148,8 +151,14 @@ export const resolveLandscapeScope = async (context: AuthContext, user: AuthUser
   if (input.custom_view_id) {
     const customView = await internalLoadById<BasicStoreEntityCustomView>(context, user, input.custom_view_id, { type: ENTITY_TYPE_CUSTOM_VIEW });
     if (!customView) throw FunctionalError('Custom view not found', { id: input.custom_view_id });
-    // A custom view applies to every entity of its target type
-    entityTypes = entityTypes ?? [customView.target_entity_type];
+    // A custom view applies to every entity of its target type, other entity types are not part of it
+    if (entityTypes && entityTypes.some((type) => type !== customView.target_entity_type)) {
+      throw ValidationError('The entity types of a custom view scope are the target type of the custom view', 'entity_types', {
+        entity_types: entityTypes,
+        target_entity_type: customView.target_entity_type,
+      });
+    }
+    entityTypes = [customView.target_entity_type];
   }
   const customFilters = parseFilters(input.filters);
   if (customFilters) filterGroups.push(customFilters);
@@ -394,10 +403,12 @@ const buildAggregates = async (
     return toBuckets(buckets, labels);
   };
   const infrastructure = buildNamedItems(acc, resolved, (target) => INFRASTRUCTURE_TYPES.includes(target.type));
-  let indicatorsCount = 0;
-  acc.targets.forEach((target) => {
-    if (target.type === ENTITY_TYPE_INDICATOR && target.relationshipTypes.has(RELATION_INDICATES)) indicatorsCount += 1;
-  });
+  // Indicators are only counted, but a visible relationship can point to an indicator the user cannot access
+  const indicatorIds = [...acc.targets.entries()]
+    .filter(([, target]) => target.type === ENTITY_TYPE_INDICATOR && target.relationshipTypes.has(RELATION_INDICATES))
+    .map(([id]) => id);
+  const accessibleIndicators = indicatorIds.length > 0 ? await internalFindByIdsMapped<BasicStoreObject>(context, user, indicatorIds, { baseData: true }) : {};
+  const indicatorsCount = indicatorIds.filter((id) => !!accessibleIndicators[id]).length;
   const entities = [...acc.entities.values()];
   const newEntitiesByType = new Map<string, number>();
   entities.filter((e) => e.created_in_period).forEach((e) => increment(newEntitiesByType, e.entity.entity_type));

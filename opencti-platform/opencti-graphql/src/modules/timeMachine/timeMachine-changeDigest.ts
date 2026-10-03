@@ -7,7 +7,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixObject } from '../../types/stix-2-1-common';
 import type { FilterGroup } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { addChangeDigestSentCount } from '../../manager/telemetryManager';
 import { computeLandscapeDiff } from './landscapeDiff-domain';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from './timeMachine-types';
 
@@ -59,7 +58,14 @@ export const buildChangeMessage = (summary: LandscapeDiffEntitySummary): string 
   return parts.join(', ');
 };
 
-export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates): string => {
+export interface AggregatesMessageOptions {
+  // The filter set exceeded the limits of the computation: the figures only cover part of it
+  partial?: boolean;
+  // Number of changed entities listed in the digest, the others are only counted
+  listed?: number;
+}
+
+export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates, opts: AggregatesMessageOptions = {}): string => {
   const parts = [
     `\`${aggregates.entities_changed}\` of \`${aggregates.entities_in_scope}\` entities changed`,
     `\`${aggregates.new_relationships}\` new relationship(s)`,
@@ -70,13 +76,20 @@ export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates): str
   if (aggregates.new_malware.length > 0) parts.push(`\`${aggregates.new_malware.length}\` new malware`);
   if (aggregates.new_tools.length > 0) parts.push(`\`${aggregates.new_tools.length}\` new tool(s)`);
   if (aggregates.new_infrastructure_count > 0) parts.push(`\`${aggregates.new_infrastructure_count}\` new infrastructure`);
+  if (opts.listed !== undefined && aggregates.entities_changed > opts.listed) {
+    parts.push(`\`${aggregates.entities_changed - opts.listed}\` other changed entities not listed`);
+  }
+  if (opts.partial) {
+    parts.push('partial result: the filter set exceeds the limits of a change digest, only its most recent entities and relationships are compared');
+  }
   return parts.join(', ');
 };
 
 /**
  * Build the content of a change digest for one recipient: the landscape diff of the trigger
  * filter set over the digest period, computed with the rights of the recipient.
- * Each changed entity becomes one notification line, the first line carries the overall summary.
+ * Each changed entity becomes one notification line, the first emitted line carries the overall summary.
+ * The digest is counted as sent by the notification manager, once it is stored.
  */
 export const buildChangeDigestData = async (
   context: AuthContext,
@@ -99,19 +112,19 @@ export const buildChangeDigestData = async (
     if (internalId) instancesById.set(internalId, instance);
   });
   const data: ChangeDigestData[] = [];
-  changed.forEach((summary, index) => {
+  changed.forEach((summary) => {
     const instance = instancesById.get(summary.entity_id);
     if (!instance) return;
-    const message = buildChangeMessage(summary);
     data.push({
       notification_id: trigger.internal_id,
       instance,
       type: summary.created_in_period ? 'create' : 'update',
-      message: index === 0 ? `${message} | ${buildAggregatesMessage(computation.aggregates)}` : message,
+      message: buildChangeMessage(summary),
     });
   });
   if (data.length > 0) {
-    addChangeDigestSentCount();
+    const overall = buildAggregatesMessage(computation.aggregates, { partial: computation.truncated, listed: data.length });
+    data[0] = { ...data[0], message: `${data[0].message} | ${overall}` };
   }
   logApp.debug('[TIME MACHINE] Change digest built', { trigger: trigger.internal_id, user: user.id, lines: data.length });
   return data;

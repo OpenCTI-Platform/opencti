@@ -77,6 +77,10 @@ describe('Change digest messages', () => {
     } as unknown as LandscapeDiffAggregates;
     expect(buildAggregatesMessage(aggregates))
       .toEqual('`4` of `10` entities changed, `12` new relationship(s), `2` removed, `1` revocation(s), `1` new technique(s), `3` new infrastructure');
+    expect(buildAggregatesMessage(aggregates, { listed: 4 })).not.toContain('not listed');
+    expect(buildAggregatesMessage(aggregates, { listed: 1 })).toContain('`3` other changed entities not listed');
+    expect(buildAggregatesMessage(aggregates, { partial: false })).not.toContain('partial result');
+    expect(buildAggregatesMessage(aggregates, { partial: true })).toContain('partial result: the filter set exceeds the limits of a change digest');
   });
 
   it('should never broaden the scope of a digest with malformed filters', () => {
