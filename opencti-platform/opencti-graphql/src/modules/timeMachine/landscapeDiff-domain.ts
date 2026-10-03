@@ -690,6 +690,32 @@ export interface LandscapeDiffSummaryResult {
   entities: LandscapeDiffEntitySummary[];
 }
 
+export const landscapeResultReferencedIds = (aggregates: LandscapeDiffAggregates | null, entities: LandscapeDiffEntitySummary[]): string[] => {
+  const ids = new Set(entities.map((entity) => entity.entity_id));
+  if (aggregates) {
+    [...aggregates.new_techniques, ...aggregates.new_malware, ...aggregates.new_tools, ...aggregates.new_infrastructure].forEach((item) => ids.add(item.id));
+    // Victim buckets are keyed by the victim entity
+    [...aggregates.new_victims_by_sector, ...aggregates.new_victims_by_country, ...aggregates.new_victims_by_region].forEach((bucket) => ids.add(bucket.key));
+  }
+  return [...ids];
+};
+
+/**
+ * Stored results embed the names of the entities they reference: they are only served while the user can still
+ * access every one of them, so a reclassification after the computation (new marking, restricted sharing) is never leaked.
+ */
+const isLandscapeResultAccessible = async (
+  context: AuthContext,
+  user: AuthUser,
+  aggregates: LandscapeDiffAggregates | null,
+  entities: LandscapeDiffEntitySummary[],
+) => {
+  const ids = landscapeResultReferencedIds(aggregates, entities);
+  if (ids.length === 0) return true;
+  const accessible = await internalFindByIdsMapped<BasicStoreObject>(context, user, ids, { baseData: true });
+  return ids.every((id) => !!accessible[id]);
+};
+
 /**
  * Widgets use relative dates: the end of the period is aligned on the next minute so the cache is effective
  * without excluding the changes made during the requested period.
@@ -716,10 +742,14 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
   const cacheKey = `${LANDSCAPE_SUMMARY_PREFIX}${landscapeDiffCacheKey(user.id, userAccessFingerprint(context, user), input, scope)}`;
   const cached = await getClientBase().get(cacheKey);
   if (cached) {
+    let cachedResult: LandscapeDiffSummaryResult | null = null;
     try {
-      return JSON.parse(cached) as LandscapeDiffSummaryResult;
+      cachedResult = JSON.parse(cached) as LandscapeDiffSummaryResult;
     } catch {
       logApp.warn('[TIME MACHINE] Landscape diff summary cache could not be parsed');
+    }
+    if (cachedResult && await isLandscapeResultAccessible(context, user, cachedResult.aggregates, cachedResult.entities)) {
+      return cachedResult;
     }
   }
   const computation = await computeLandscapeDiff(context, user, scope, input.from, input.to, groupBy, { maxEntities: LANDSCAPE_WIDGET_MAX_ENTITIES });
@@ -746,6 +776,18 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
     const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: 'Landscape diff computation was interrupted', updated_at: now() };
     await writeState(interrupted);
     return interrupted;
+  }
+  if (state.status === 'complete' && !await isLandscapeResultAccessible(context, user, state.aggregates, state.entities)) {
+    const outdated: LandscapeDiffState = {
+      ...state,
+      status: 'failed',
+      error: 'Access to the knowledge of this landscape diff changed, it must be computed again',
+      aggregates: null,
+      entities: [],
+      updated_at: now(),
+    };
+    await writeState(outdated);
+    return outdated;
   }
   return state;
 };
