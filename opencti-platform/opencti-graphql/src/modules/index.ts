@@ -60,6 +60,7 @@ import './dataSharing/streamCollection';
 import './indicator/indicator';
 import './indicatorDeployment/indicatorDeployment';
 import './iocValidation/iocValidation';
+import './iocValidation/iocValidation-validator';
 import './decayRule/decayRule';
 import './decayRule/exclusions/decayExclusionRule';
 import './organization/organization';

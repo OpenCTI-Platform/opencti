@@ -103,6 +103,16 @@ const REPORT_RESULTS = gql`
     iocValidationReportResults(id: $id, platformId: $platformId, results: $results) { id results_summary { total requested error skipped } }
   }
 `;
+const DEPLOYMENT_FIELD_PATCH = gql`
+  mutation DeploymentFieldPatch($id: ID!, $input: [EditInput]!) {
+    stixCoreRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
+  }
+`;
+const RELATION_ADD = gql`
+  mutation RelationAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) { id }
+  }
+`;
 const REQUEST_DELETE = gql`
   mutation RequestDelete($id: ID!) {
     iocValidationRequestDelete(id: $id)
@@ -335,6 +345,21 @@ describe('IOC validation requests', () => {
     const repaired = await storeLoadById<BasicStoreRelation & { x_opencti_negative?: boolean }>(testContext, ADMIN_USER, sightingId, STIX_SIGHTING_RELATIONSHIP);
     expect(repaired?.x_opencti_negative).toEqual(true);
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+  });
+
+  it('should refuse validation results written outside the validation paths', async () => {
+    // Generic edition: only the account that recorded the deployment, an IOC validation connector or an administrator
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: DEPLOYMENT_FIELD_PATCH,
+      variables: { id: liveDeploymentId, input: [{ key: 'validation_status', value: ['detected'] }] },
+    });
+    // Creation or upsert carrying a verdict: only an IOC validation connector or an administrator
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { relationship_type: 'deployed-on', fromId: liveIndicatorId, toId: platformId, validation_status: 'prevented' } },
+    });
+    const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('missed');
   });
 
   it('should only filter requests on plain attributes and accessible references', async () => {
