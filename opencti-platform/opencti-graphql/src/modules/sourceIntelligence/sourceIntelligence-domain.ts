@@ -177,6 +177,34 @@ export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(co
   });
 };
 
+/**
+ * Scorecards persist the source name at computation time: author sources the user cannot access get the same
+ * masked name as their Source, whatever query returns them. A source missing from the cache (removed since the
+ * computation) cannot be checked, so its author name is masked as well.
+ */
+export const maskRestrictedScorecards = async <T extends Pick<StoreSourceScorecard, 'source_id' | 'source_kind' | 'source_name'>>(
+  context: AuthContext,
+  user: AuthUser,
+  scorecards: T[],
+): Promise<T[]> => {
+  const authorSourceIds = [...new Set(scorecards.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.source_id))];
+  if (authorSourceIds.length === 0) {
+    return scorecards;
+  }
+  const sourcesById = await getEntitiesMapFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
+  const authorSources = authorSourceIds
+    .map((id) => sourcesById.get(id))
+    .filter((source): source is BasicStoreEntitySource => source !== undefined);
+  const accessibleAuthors = await sourceVisibleIds(context, user, authorSources);
+  const visibleSourceIds = new Set(authorSources.filter((source) => accessibleAuthors.has(source.ref_id)).map((source) => source.internal_id));
+  return scorecards.map((scorecard) => {
+    if (scorecard.source_kind === SOURCE_KIND_AUTHOR && !visibleSourceIds.has(scorecard.source_id)) {
+      return { ...scorecard, source_name: RESTRICTED_AUTHOR_NAME };
+    }
+    return scorecard;
+  });
+};
+
 export const findSourceById = async (context: AuthContext, user: AuthUser, id: string) => {
   const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
   if (!source) {
@@ -215,7 +243,7 @@ export const findSourceScorecards = async (
   if (!source) {
     return [];
   }
-  return searchScorecards(context, {
+  const scorecards = await searchScorecards(context, {
     sourceIds: [args.sourceId],
     period: args.period ?? REFERENCE_SCORECARD_PERIOD,
     live: false,
@@ -224,11 +252,16 @@ export const findSourceScorecards = async (
     first: args.first ?? 365,
     orderMode: 'asc',
   });
+  return maskRestrictedScorecards(context, user, scorecards);
 };
 
-export const findLatestScorecard = async (context: AuthContext, sourceId: string, period?: ScorecardPeriodValue | null) => {
+export const findLatestScorecard = async (context: AuthContext, user: AuthUser, sourceId: string, period?: ScorecardPeriodValue | null) => {
   const [scorecard] = await findLiveScorecards(context, period ?? REFERENCE_SCORECARD_PERIOD, [sourceId]);
-  return scorecard ?? null;
+  if (!scorecard) {
+    return null;
+  }
+  const [masked] = await maskRestrictedScorecards(context, user, [scorecard]);
+  return masked;
 };
 
 export const findSourceOverlap = async (
@@ -300,9 +333,9 @@ export const validateSourceCost = (input: { amount: number; currency: string; pe
 };
 
 const refreshCostOnLiveScorecards = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
-  const scorecards = await Promise.all(SCORECARD_PERIODS.map((period) => findLatestScorecard(context, source.internal_id, period)));
+  const scorecards = await Promise.all(SCORECARD_PERIODS.map((period) => findLiveScorecards(context, period, [source.internal_id])));
   const updated = scorecards
-    .filter((scorecard): scorecard is StoreSourceScorecard => scorecard !== null)
+    .flat()
     .map((scorecard) => ({
       ...scorecard,
       cost_currency: cost?.currency ?? null,

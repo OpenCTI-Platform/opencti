@@ -24,7 +24,8 @@ import { elRawSearch } from '../../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { notify, publishCacheResetEvent } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
@@ -36,7 +37,7 @@ import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStat
 import { addDecayRule, deleteDecayRule } from '../decayRule/decayRule-domain';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { addExclusionListFile, deleteExclusionList } from '../exclusionList/exclusionList-domain';
-import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import {
@@ -253,19 +254,36 @@ const executeApply = async (
     }
     case RECOMMENDATION_QUARANTINE: {
       if (!source) throw FunctionalError('Source not found for the quarantine');
+      // Every authorization and target check runs before the draft exists, so a refused quarantine leaves nothing behind
+      let connectorUser: (BasicStoreEntity & { draft_context?: string | null }) | undefined;
+      if (payload.target === 'connector_user') {
+        requireCapability(user, autonomous, SETTINGS_SET_ACCESSES);
+        connectorUser = await storeLoadById<BasicStoreEntity & { draft_context?: string | null }>(context, SYSTEM_USER, payload.user_id, ENTITY_TYPE_USER);
+        if (!connectorUser) throw FunctionalError('Source user not found', { user_id: payload.user_id });
+      } else if (payload.target === 'ingestion_feed') {
+        requireCapability(user, autonomous, INGESTION_SETINGESTIONS);
+      } else {
+        throw FunctionalError('Unsupported quarantine target', { target: payload.target });
+      }
       const draft = await addDraftWorkspace(context, user, {
         name: `Quarantine - ${source.name}`,
         description: `Data routed by Source Intelligence while the source ${source.name} is quarantined (recommendation ${recommendation.internal_id}).`,
       });
-      let previousDraftContext: string | null = null;
-      if (payload.target === 'connector_user') {
-        requireCapability(user, autonomous, SETTINGS_SET_ACCESSES);
-        const target = await storeLoadById<BasicStoreEntity & { draft_context?: string | null }>(context, SYSTEM_USER, payload.user_id, ENTITY_TYPE_USER);
-        if (!target) throw FunctionalError('Source user not found', { user_id: payload.user_id });
-        previousDraftContext = target.draft_context ?? null;
-        await userEditField(context, user, payload.user_id, [{ key: 'draft_context', value: [draft.id] }]);
+      const previousDraftContext = connectorUser?.draft_context ?? null;
+      try {
+        if (connectorUser) {
+          await userEditField(context, user, connectorUser.internal_id, [{ key: 'draft_context', value: [draft.id] }]);
+        }
+        await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { quarantined: true, quarantine_draft_id: draft.id });
+      } catch (err) {
+        if (connectorUser) {
+          await userEditField(context, user, connectorUser.internal_id, [{ key: 'draft_context', value: [previousDraftContext ?? ''] }])
+            .catch((cause: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence quarantine rollback failed', { cause, user_id: connectorUser?.internal_id }));
+        }
+        await deleteDraftWorkspace(context, user, draft.id)
+          .catch((cause: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence quarantine draft cleanup failed', { cause, draft_id: draft.id }));
+        throw err;
       }
-      await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { quarantined: true, quarantine_draft_id: draft.id });
       await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
       return {
         apply_result: `New data of ${source.name} is routed into the draft ${draft.name}`,
@@ -380,8 +398,12 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
       await userEditField(context, user, revert.user_id, [{ key: 'user_confidence_level', value: [revert.previous_user_confidence_level ?? null] }]);
       return 'Previous confidence level restored';
     case RECOMMENDATION_QUARANTINE:
-      if (revert.target === 'connector_user' && revert.user_id) {
+      if (revert.target === 'connector_user') {
         requireCapability(user, false, SETTINGS_SET_ACCESSES);
+      } else {
+        requireCapability(user, false, INGESTION_SETINGESTIONS);
+      }
+      if (revert.target === 'connector_user' && revert.user_id) {
         await userEditField(context, user, revert.user_id, [{ key: 'draft_context', value: [revert.previous_draft_context ?? ''] }]);
       }
       if (source) {
@@ -446,16 +468,44 @@ const loadSourceOf = async (context: AuthContext, recommendation: BasicStoreEnti
   return recommendation.source_id ? storeLoadById<BasicStoreEntitySource>(context, SYSTEM_USER, recommendation.source_id, ENTITY_TYPE_SOURCE) : null;
 };
 
-export const applySourceRecommendation = async (
+/**
+ * Status transitions of one recommendation run one at a time, and the recommendation is loaded again once the lock
+ * is held: two concurrent applies (or an apply racing a dismiss) can never both see `proposed` and run side effects.
+ * The lock key is distinct from the element ids, which the middleware locks itself when patching the status.
+ */
+const withRecommendationTransition = async <T>(
   context: AuthContext,
   user: AuthUser,
   id: string,
+  transition: (recommendation: BasicStoreEntitySourceRecommendation) => Promise<T>,
+): Promise<T> => {
+  const resolved = await loadRecommendation(context, user, id);
+  let lock;
+  try {
+    lock = await lockResources([`source-recommendation-transition:${resolved.internal_id}`]);
+    const recommendation = await loadRecommendation(context, user, resolved.internal_id);
+    return await transition(recommendation);
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [resolved.internal_id] });
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
+const applyLockedRecommendation = async (
+  context: AuthContext,
+  user: AuthUser,
+  recommendation: BasicStoreEntitySourceRecommendation,
   settings: SourceIntelligenceSettings,
-  input: { connector_id?: string | null } = {},
-  autonomous = false,
+  input: { connector_id?: string | null },
+  autonomous: boolean,
 ) => {
-  await checkEnterpriseEdition(context);
-  const recommendation = await loadRecommendation(context, user, id);
+  const id = recommendation.internal_id;
   if (recommendation.recommendation_status !== RECOMMENDATION_STATUS_PROPOSED && recommendation.recommendation_status !== RECOMMENDATION_STATUS_FAILED) {
     throw FunctionalError('Only proposed recommendations can be applied', { id, status: recommendation.recommendation_status });
   }
@@ -497,9 +547,20 @@ export const applySourceRecommendation = async (
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
-export const revertSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string) => {
+export const applySourceRecommendation = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  settings: SourceIntelligenceSettings,
+  input: { connector_id?: string | null } = {},
+  autonomous = false,
+) => {
   await checkEnterpriseEdition(context);
-  const recommendation = await loadRecommendation(context, user, id);
+  return withRecommendationTransition(context, user, id, (recommendation) => applyLockedRecommendation(context, user, recommendation, settings, input, autonomous));
+};
+
+const revertLockedRecommendation = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation) => {
+  const id = recommendation.internal_id;
   if (recommendation.recommendation_status !== RECOMMENDATION_STATUS_APPLIED) {
     throw FunctionalError('Only applied recommendations can be reverted', { id, status: recommendation.recommendation_status });
   }
@@ -524,14 +585,15 @@ export const revertSourceRecommendation = async (context: AuthContext, user: Aut
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
-export const dismissSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string, reason?: string | null) => {
+export const revertSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  const recommendation = await loadRecommendation(context, user, id);
+  return withRecommendationTransition(context, user, id, (recommendation) => revertLockedRecommendation(context, user, recommendation));
+};
+
+const dismissLockedRecommendation = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation, reason?: string | null) => {
+  const id = recommendation.internal_id;
   if (recommendation.recommendation_status !== RECOMMENDATION_STATUS_PROPOSED && recommendation.recommendation_status !== RECOMMENDATION_STATUS_FAILED) {
     throw FunctionalError('Only proposed recommendations can be dismissed', { id, status: recommendation.recommendation_status });
-  }
-  if (reason && reason.length > 2000) {
-    throw FunctionalError('Dismiss reason too long');
   }
   const patch = {
     recommendation_status: RECOMMENDATION_STATUS_DISMISSED,
@@ -550,6 +612,14 @@ export const dismissSourceRecommendation = async (context: AuthContext, user: Au
   });
   await addSourceRecommendationOutcome('dismissed');
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+export const dismissSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string, reason?: string | null) => {
+  await checkEnterpriseEdition(context);
+  if (reason && reason.length > 2000) {
+    throw FunctionalError('Dismiss reason too long');
+  }
+  return withRecommendationTransition(context, user, id, (recommendation) => dismissLockedRecommendation(context, user, recommendation, reason));
 };
 // endregion
 

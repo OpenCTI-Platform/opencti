@@ -69,7 +69,7 @@ const sourceIntelligenceResolvers: Resolvers = {
       if (source.source_kind === SOURCE_KIND_INGESTION_FEED) return loadConnector(context, context.user, connectorIdFromIngestId(source.ref_id));
       return null;
     },
-    scorecard: (source: any, { period }, context) => findLatestScorecard(context, source.internal_id, period) as any,
+    scorecard: (source: any, { period }, context) => findLatestScorecard(context, context.user, source.internal_id, period) as any,
     recommendationsCount: async (source: any, { status }, context) => {
       if (!(await isEnterpriseEdition(context))) return 0;
       return countRecommendations(context, context.user, source.internal_id, status && status.length > 0 ? status : ['proposed']);

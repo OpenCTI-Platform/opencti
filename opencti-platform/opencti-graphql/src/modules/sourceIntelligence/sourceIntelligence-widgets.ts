@@ -11,7 +11,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 import type { FilterGroup } from '../../generated/graphql';
 import { addSourceIntelligenceDashboardCount } from '../../manager/telemetryManager';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, REFERENCE_SCORECARD_PERIOD, type ScorecardPeriodValue, type StoreSourceScorecard } from './sourceIntelligence-types';
-import { findLiveScorecards, searchScorecards } from './sourceIntelligence-store';
+import { aggregateScorecardSnapshotsByDay, findLiveScorecards, type ScorecardAggregation } from './sourceIntelligence-store';
 import { maskRestrictedSources } from './sourceIntelligence-domain';
 
 export type ScorecardMetricType = 'count' | 'ratio' | 'hours' | 'cost' | 'score';
@@ -63,6 +63,36 @@ const metricValue = (scorecard: StoreSourceScorecard, metric: string): number | 
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 };
 
+const AGGREGATIONS: readonly ScorecardAggregation[] = ['sum', 'avg', 'min', 'max'];
+
+const assertAggregation = (aggregation: string | null | undefined, fallback: ScorecardAggregation): ScorecardAggregation => {
+  if (!aggregation) {
+    return fallback;
+  }
+  if (!(AGGREGATIONS as readonly string[]).includes(aggregation)) {
+    throw FunctionalError('Unknown source scorecard aggregation', { aggregation });
+  }
+  return aggregation as ScorecardAggregation;
+};
+
+export const aggregateValues = (values: number[], aggregation: ScorecardAggregation): number | null => {
+  if (values.length === 0) {
+    return null;
+  }
+  switch (aggregation) {
+    case 'avg':
+      return values.reduce((acc, value) => acc + value, 0) / values.length;
+    case 'min':
+      return Math.min(...values);
+    case 'max':
+      return Math.max(...values);
+    case 'sum':
+      return values.reduce((acc, value) => acc + value, 0);
+    default:
+      throw FunctionalError('Unknown source scorecard aggregation', { aggregation });
+  }
+};
+
 /**
  * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...) with their live scorecard.
  * The number of sources is bounded by the source discovery settings (connectors, feeds, top authors and analysts).
@@ -100,15 +130,7 @@ export const sourceScorecardsNumber = async (
   const metric = assertMetric(args.metric);
   const data = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
   const values = data.map(({ scorecard }) => metricValue(scorecard, metric)).filter((value): value is number => value !== null);
-  const total = values.reduce((acc, value) => acc + value, 0);
-  const aggregation = args.aggregation ?? 'sum';
-  let value: number | null = null;
-  if (values.length > 0) {
-    if (aggregation === 'avg') value = total / values.length;
-    else if (aggregation === 'max') value = Math.max(...values);
-    else if (aggregation === 'min') value = Math.min(...values);
-    else value = total;
-  }
+  const value = aggregateValues(values, assertAggregation(args.aggregation, 'sum'));
   return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: data.length };
 };
 
@@ -118,35 +140,17 @@ export const sourceScorecardsTimeSeries = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; startDate?: string | null; endDate?: string | null; aggregation?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
-  const data = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
-  const sourceIds = data.map(({ source }) => source.internal_id);
-  if (sourceIds.length === 0) {
-    return [];
-  }
-  const snapshots = await searchScorecards(context, {
-    sourceIds,
-    period: args.period ?? REFERENCE_SCORECARD_PERIOD,
-    live: false,
+  const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
+  const data = await loadWidgetData(context, user, period, args.filters);
+  const points = await aggregateScorecardSnapshotsByDay(context, {
+    sourceIds: data.map(({ source }) => source.internal_id),
+    period,
+    metric,
+    aggregation: assertAggregation(args.aggregation, 'avg'),
     startDate: args.startDate ?? null,
     endDate: args.endDate ?? null,
-    first: 1000,
-    orderMode: 'asc',
   });
-  const byDate = new Map<string, number[]>();
-  snapshots.forEach((snapshot) => {
-    const value = metricValue(snapshot, metric);
-    if (value === null) return;
-    const values = byDate.get(snapshot.snapshot_date) ?? [];
-    values.push(value);
-    byDate.set(snapshot.snapshot_date, values);
-  });
-  const aggregation = args.aggregation ?? 'avg';
-  return Array.from(byDate.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, values]) => {
-      const total = values.reduce((acc, value) => acc + value, 0);
-      return { date: `${day}T00:00:00.000Z`, value: Math.round((aggregation === 'sum' ? total : total / values.length) * 100) / 100 };
-    });
+  return points.map(({ day, value }) => ({ date: `${day}T00:00:00.000Z`, value: Math.round(value * 100) / 100 }));
 };
 
 export const sourceScorecardsScatter = async (
