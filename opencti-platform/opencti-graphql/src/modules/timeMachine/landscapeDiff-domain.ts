@@ -63,6 +63,7 @@ const LANDSCAPE_STALE_SECONDS = 120;
 const LANDSCAPE_WIDGET_MAX_ENTITIES: number = conf.get('time_machine:widget_max_entities') || 200;
 
 const LANDSCAPE_STATE_PREFIX = 'landscape_diff:';
+const LANDSCAPE_CONTRIBUTORS_PREFIX = 'landscape_diff_contributors:';
 const LANDSCAPE_KEY_PREFIX = 'landscape_diff_key:';
 const LANDSCAPE_SUMMARY_PREFIX = 'landscape_diff_summary:';
 
@@ -212,6 +213,9 @@ interface GlobalAccumulator {
   // A relationship between entities of two batches is read by both: global counters count it once
   countedRelationships: Set<string>;
   countedRelationshipStates: Set<string>;
+  // Deleted relationships cannot be reclassified: only the revoked ones, which still exist, are revalidated
+  revokedRelationships: Set<string>;
+  resolvedTargets: Set<string>;
   relationshipsFetched: number;
   truncated: boolean;
 }
@@ -221,6 +225,8 @@ export interface LandscapeDiffComputation {
   entities: LandscapeDiffEntitySummary[];
   total: number;
   truncated: boolean;
+  // Every element whose access shaped the result, counted or named
+  contributors: string[];
 }
 
 const increment = (map: Map<string, number>, key: string, by = 1) => map.set(key, (map.get(key) ?? 0) + by);
@@ -310,6 +316,7 @@ const processBatch = async (
       });
     } else if (state.revoked_after === 'true' && state.revoked_before !== 'true') {
       acc.countedRelationshipStates.add(relationshipId);
+      acc.revokedRelationships.add(relationshipId);
       if (countGlobally) acc.revocations += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_revoked += 1;
@@ -426,6 +433,7 @@ const buildAggregates = async (
     .map(([id]) => id);
   const accessibleIndicators = indicatorIds.length > 0 ? await internalFindByIdsMapped<BasicStoreObject>(context, user, indicatorIds, { baseData: true }) : {};
   const indicatorsCount = indicatorIds.filter((id) => !!accessibleIndicators[id]).length;
+  [resolved, phases, accessibleIndicators].forEach((found) => Object.keys(found).forEach((id) => acc.resolvedTargets.add(id)));
   const entities = [...acc.entities.values()];
   const newEntitiesByType = new Map<string, number>();
   entities.filter((e) => e.created_in_period).forEach((e) => increment(newEntitiesByType, e.entity.entity_type));
@@ -533,6 +541,8 @@ export const computeLandscapeDiff = async (
     targets: new Map(),
     countedRelationships: new Set(),
     countedRelationshipStates: new Set(),
+    revokedRelationships: new Set(),
+    resolvedTargets: new Set(),
     relationshipsFetched: 0,
     truncated: truncatedScope,
   };
@@ -546,7 +556,8 @@ export const computeLandscapeDiff = async (
   }
   opts.signal?.throwIfAborted();
   const aggregates = await buildAggregates(context, user, acc, entities.length, groupBy);
-  return { aggregates, entities: buildEntitySummaries(acc), total: entities.length, truncated: acc.truncated };
+  const contributors = new Set([...acc.entities.keys(), ...acc.countedRelationships, ...acc.revokedRelationships, ...acc.resolvedTargets]);
+  return { aggregates, entities: buildEntitySummaries(acc), total: entities.length, truncated: acc.truncated, contributors: [...contributors] };
 };
 // endregion
 
@@ -612,9 +623,27 @@ const readState = async (id: string): Promise<LandscapeDiffState | null> => {
   }
 };
 
+const stateTtl = (state: LandscapeDiffState) => Math.max(1, utcDate(state.expires_at).diff(utcDate(), 'seconds'));
+
 const writeState = async (state: LandscapeDiffState) => {
-  const ttl = Math.max(1, utcDate(state.expires_at).diff(utcDate(), 'seconds'));
-  await getClientBase().set(stateKey(state.id), JSON.stringify(state), 'EX', ttl);
+  await getClientBase().set(stateKey(state.id), JSON.stringify(state), 'EX', stateTtl(state));
+};
+
+// Kept apart from the state, which is read at every progress poll
+const writeContributors = async (state: LandscapeDiffState, contributors: string[]) => {
+  await getClientBase().set(`${LANDSCAPE_CONTRIBUTORS_PREFIX}${state.id}`, JSON.stringify(contributors), 'EX', stateTtl(state));
+};
+
+const readContributors = async (id: string): Promise<string[] | null> => {
+  const raw = await getClientBase().get(`${LANDSCAPE_CONTRIBUTORS_PREFIX}${id}`);
+  if (!raw) return null;
+  try {
+    const contributors = JSON.parse(raw);
+    return Array.isArray(contributors) ? contributors : null;
+  } catch {
+    logApp.warn('[TIME MACHINE] Landscape diff contributors could not be parsed', { id });
+    return null;
+  }
 };
 
 /**
@@ -679,6 +708,8 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
     });
     // An interrupted run keeps its failed state, even if its last read completes afterwards
     signal.throwIfAborted();
+    // Written before the complete state so a complete result can always be revalidated
+    await writeContributors(current, computation.contributors);
     current = {
       ...current,
       status: 'complete',
@@ -767,6 +798,11 @@ export interface LandscapeDiffSummaryResult {
   entities: LandscapeDiffEntitySummary[];
 }
 
+interface CachedLandscapeSummary {
+  result: LandscapeDiffSummaryResult;
+  contributors: string[];
+}
+
 export const landscapeResultReferencedIds = (aggregates: LandscapeDiffAggregates | null, entities: LandscapeDiffEntitySummary[]): string[] => {
   const ids = new Set(entities.map((entity) => entity.entity_id));
   if (aggregates) {
@@ -778,16 +814,19 @@ export const landscapeResultReferencedIds = (aggregates: LandscapeDiffAggregates
 };
 
 /**
- * Stored results embed the names of the entities they reference: they are only served while the user can still
- * access every one of them, so a reclassification after the computation (new marking, restricted sharing) is never leaked.
+ * Stored results are only served while the user can still access every element that shaped them, counted or named:
+ * a reclassification after the computation (new marking, restricted sharing) is never leaked, not even as a count.
+ * A result whose contributors are unknown is never served.
  */
 const isLandscapeResultAccessible = async (
   context: AuthContext,
   user: AuthUser,
+  contributors: string[] | null,
   aggregates: LandscapeDiffAggregates | null,
   entities: LandscapeDiffEntitySummary[],
 ) => {
-  const ids = landscapeResultReferencedIds(aggregates, entities);
+  if (!contributors) return false;
+  const ids = [...new Set([...contributors, ...landscapeResultReferencedIds(aggregates, entities)])];
   if (ids.length === 0) return true;
   const accessible = await internalFindByIdsMapped<BasicStoreObject>(context, user, ids, { baseData: true });
   return ids.every((id) => !!accessible[id]);
@@ -819,13 +858,14 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
   const cacheKey = `${LANDSCAPE_SUMMARY_PREFIX}${landscapeDiffCacheKey(user.id, userAccessFingerprint(context, user), input, scope)}`;
   const cached = await getClientBase().get(cacheKey);
   if (cached) {
-    let cachedResult: LandscapeDiffSummaryResult | null = null;
+    let cachedEntry: Partial<CachedLandscapeSummary> | null = null;
     try {
-      cachedResult = JSON.parse(cached) as LandscapeDiffSummaryResult;
+      cachedEntry = JSON.parse(cached) as Partial<CachedLandscapeSummary>;
     } catch {
       logApp.warn('[TIME MACHINE] Landscape diff summary cache could not be parsed');
     }
-    if (cachedResult && await isLandscapeResultAccessible(context, user, cachedResult.aggregates, cachedResult.entities)) {
+    const cachedResult = cachedEntry?.result;
+    if (cachedResult && await isLandscapeResultAccessible(context, user, cachedEntry?.contributors ?? null, cachedResult.aggregates, cachedResult.entities)) {
       return cachedResult;
     }
   }
@@ -839,7 +879,8 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
     aggregates: computation.aggregates,
     entities: computation.entities,
   };
-  await getClientBase().set(cacheKey, JSON.stringify(result), 'EX', LANDSCAPE_CACHE_TTL);
+  const entry: CachedLandscapeSummary = { result, contributors: computation.contributors };
+  await getClientBase().set(cacheKey, JSON.stringify(entry), 'EX', LANDSCAPE_CACHE_TTL);
   addLandscapeDiffCount();
   return result;
 };
@@ -856,7 +897,7 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
     await writeState(interrupted);
     return interrupted;
   }
-  if (state.status === 'complete' && !await isLandscapeResultAccessible(context, user, state.aggregates, state.entities)) {
+  if (state.status === 'complete' && !await isLandscapeResultAccessible(context, user, await readContributors(state.id), state.aggregates, state.entities)) {
     const outdated: LandscapeDiffState = {
       ...state,
       status: 'failed',
