@@ -15,12 +15,10 @@ import {
   type StoreEntityTimelineSettings,
   TIMELINE_ANALYST_FIELDS,
   TIMELINE_CONTAINER_TYPES,
-  TIMELINE_GROUPINGS,
   TIMELINE_KINDS,
   TIMELINE_LANES,
   TIMELINE_PRECISIONS,
   TIMELINE_SOURCES,
-  TIMELINE_ZOOM_WINDOWS,
 } from './timeline-types';
 import { convertTimelineEventToStix, convertTimelineSettingsToStix } from './timeline-converter';
 
@@ -94,13 +92,8 @@ const TIMELINE_SETTINGS_DEFINITION: ModuleDefinition<StoreEntityTimelineSettings
   },
   attributes: [
     containerIdAttribute,
-    { name: 'enabled_lanes', label: 'Timeline enabled lanes', type: 'string', format: 'enum', values: [...TIMELINE_LANES], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'default_grouping', label: 'Timeline default grouping', type: 'string', format: 'enum', values: [...TIMELINE_GROUPINGS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'default_zoom_window', label: 'Timeline default zoom window', type: 'string', format: 'enum', values: [...TIMELINE_ZOOM_WINDOWS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'hidden_kinds', label: 'Timeline hidden kinds', type: 'string', format: 'enum', values: [...TIMELINE_KINDS], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'pending_annotations', label: 'Timeline pending annotations', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, update: false, isFilterable: false },
-    { name: 'derivation_truncated', label: 'Timeline derivation truncated', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
-    { name: 'generated_at', label: 'Timeline generated at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
+    // Settings, pending annotations and generation state are only read with their container: one non-indexed object
+    { name: 'timeline_state', label: 'Timeline settings and state', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
     authorizedMembers,
   ],
   relations: [],

@@ -33,6 +33,7 @@ import {
   type TimelineAnchorKey,
   type TimelineAnchors,
   type TimelinePendingAnnotation,
+  type TimelineSettingsState,
 } from './timeline-types';
 import { enqueueTimelineRegeneration } from './timeline-queue';
 import {
@@ -118,13 +119,31 @@ export const loadStoredTimelineEvents = async (context: AuthContext, containerId
   } as any);
 };
 
+const TIMELINE_INITIAL_STATE: TimelineSettingsState = {
+  ...TIMELINE_DEFAULT_SETTINGS,
+  pending_annotations: [],
+  derivation_truncated: false,
+  generated_at: null,
+};
+
+const stateOf = (settings: Partial<TimelineSettingsState> | null | undefined): TimelineSettingsState => ({
+  enabled_lanes: settings?.enabled_lanes ?? TIMELINE_INITIAL_STATE.enabled_lanes,
+  default_grouping: settings?.default_grouping ?? TIMELINE_INITIAL_STATE.default_grouping,
+  default_zoom_window: settings?.default_zoom_window ?? TIMELINE_INITIAL_STATE.default_zoom_window,
+  hidden_kinds: settings?.hidden_kinds ?? TIMELINE_INITIAL_STATE.hidden_kinds,
+  pending_annotations: settings?.pending_annotations ?? [],
+  derivation_truncated: settings?.derivation_truncated ?? false,
+  generated_at: settings?.generated_at ?? null,
+});
+
 export const loadTimelineSettings = async (context: AuthContext, containerId: string): Promise<BasicStoreEntityTimelineSettings & { _index: string } | undefined> => {
   const settings = await fullEntitiesList<BasicStoreEntityTimelineSettings & { _index: string }>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_SETTINGS], {
     filters: { mode: FilterMode.And, filters: [{ key: ['container_id'], values: [containerId] }], filterGroups: [] },
     noFiltersChecking: true,
     maxSize: 1,
   } as any);
-  return settings[0];
+  const [document] = settings;
+  return document ? { ...document, ...stateOf(document.timeline_state) } : undefined;
 };
 
 const CONTENT_FIELDS = [
@@ -218,15 +237,17 @@ export type StoredTimelineSettings = BasicStoreEntityTimelineSettings & { _index
 export const upsertTimelineSettings = async (
   context: AuthContext,
   container: AnyStoreElement,
-  patch: Partial<Pick<BasicStoreEntityTimelineSettings, 'enabled_lanes' | 'default_grouping' | 'default_zoom_window' | 'hidden_kinds' | 'pending_annotations' | 'derivation_truncated' | 'generated_at'>>,
+  patch: Partial<TimelineSettingsState>,
   existingSettings?: StoredTimelineSettings | null,
 ): Promise<StoredTimelineSettings> => {
   const existing = existingSettings !== undefined ? existingSettings : await loadTimelineSettings(context, container.internal_id);
   const restricted_members = (container.restricted_members ?? []) as AuthorizedMember[];
+  // The whole state is written: a partial update merges objects key by key and would keep stale keys otherwise
+  const state: TimelineSettingsState = { ...stateOf(existing), ...patch };
   if (existing) {
-    const doc = { ...patch, restricted_members, updated_at: now() };
+    const doc = { timeline_state: state, restricted_members, updated_at: now() };
     await elUpdate(context, existing._index, existing.internal_id, { doc });
-    return { ...existing, ...doc } as unknown as StoredTimelineSettings;
+    return { ...existing, ...doc, ...state } as unknown as StoredTimelineSettings;
   }
   const internalId = uuidv5(JSON.stringify([container.internal_id, 'settings']), OPENCTI_NAMESPACE);
   const timestamp = now();
@@ -240,15 +261,11 @@ export const upsertTimelineSettings = async (
     created_at: timestamp,
     updated_at: timestamp,
     container_id: container.internal_id,
-    ...TIMELINE_DEFAULT_SETTINGS,
-    pending_annotations: [],
-    derivation_truncated: false,
-    generated_at: null,
+    timeline_state: state,
     restricted_members,
-    ...patch,
   };
   await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_SETTINGS, [doc]);
-  return doc as unknown as StoredTimelineSettings;
+  return { ...doc, ...state } as unknown as StoredTimelineSettings;
 };
 
 export const deleteTimelineDocuments = async (ids: string[]) => {

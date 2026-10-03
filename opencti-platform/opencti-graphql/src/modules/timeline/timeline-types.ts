@@ -129,8 +129,8 @@ export interface TimelinePendingAnnotation {
   ordering_hint?: number | null;
 }
 
-export interface BasicStoreEntityTimelineSettings extends BasicStoreEntity {
-  container_id: string;
+/** Settings and generation state of a container timeline, stored as the non-indexed `timeline_state` object. */
+export interface TimelineSettingsState {
   enabled_lanes: TimelineLaneValue[];
   default_grouping: TimelineGroupingValue;
   default_zoom_window: TimelineZoomWindowValue;
@@ -138,6 +138,12 @@ export interface BasicStoreEntityTimelineSettings extends BasicStoreEntity {
   pending_annotations?: TimelinePendingAnnotation[];
   derivation_truncated?: boolean;
   generated_at?: string | null;
+}
+
+/** A settings document as loaded: its stored state is exposed flat, like the other attributes. */
+export interface BasicStoreEntityTimelineSettings extends BasicStoreEntity, TimelineSettingsState {
+  container_id: string;
+  timeline_state?: Partial<TimelineSettingsState>;
 }
 
 export const TIMELINE_DEFAULT_SETTINGS = {
