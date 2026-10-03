@@ -13,7 +13,7 @@ import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { AttributeDefinition, RefAttribute } from '../../schema/attribute-definition';
-import { isUserCanAccessStoreElement, SYSTEM_USER } from '../../utils/access';
+import { isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER } from '../../utils/access';
 import { now, utcDate } from '../../utils/format';
 import { DefaultFormating } from '../../utils/humanize';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -38,6 +38,7 @@ const MAX_TIMELINE_SNAPSHOTS = 100;
 
 const RESTRICTED_VALUE = 'Restricted';
 const DELETED_VALUE = 'Deleted';
+const RELATIONSHIP_HISTORY_TRUNCATED = 'RELATIONSHIP_HISTORY_TRUNCATED';
 
 // Display order of the most meaningful attributes, other attributes follow alphabetically
 const ATTRIBUTES_ORDER = [
@@ -194,6 +195,11 @@ const isIdDefinition = (definition: AttributeDefinition | RefAttribute | null) =
   return definition.type === 'ref' || (definition.type === 'string' && definition.format === 'id');
 };
 
+/**
+ * The time machine only opens elements the user can access today: restricting an element (markings,
+ * organization sharing) must also restrict its past states. The state at the requested date is then
+ * checked as well (isAsOfDocumentAccessible), so access requires both.
+ */
 export const loadAccessibleElement = async (context: AuthContext, user: AuthUser, id: string) => {
   return internalLoadById<BasicStoreEntity>(context, user, id, { type: ABSTRACT_STIX_CORE_OBJECT });
 };
@@ -290,6 +296,20 @@ const orderAttributeKeys = (keys: string[], entityType: string) => {
   });
 };
 
+/**
+ * Documents are rebuilt from the history read as the system: attributes protected by capabilities
+ * (removed from the history of users without them) are removed the same way before being returned.
+ */
+const visibleDocument = (user: AuthUser, entityType: string, document: AttributeValues): AttributeValues => {
+  const visible: AttributeValues = {};
+  Object.entries(document).forEach(([key, values]) => {
+    if (isUserHasCapabilities(user, resolveDefinition(entityType, key)?.requiredCapabilities)) {
+      visible[key] = values;
+    }
+  });
+  return visible;
+};
+
 const definitionInfo = (entityType: string, key: string) => {
   const definition = resolveDefinition(entityType, key);
   return {
@@ -309,7 +329,7 @@ const isAsOfDocumentAccessible = async (context: AuthContext, user: AuthUser, el
   const asOfElement = {
     ...element,
     [RELATION_OBJECT_MARKING]: markingKey ? (document[markingKey] ?? []) : (element as any)[RELATION_OBJECT_MARKING],
-    [RELATION_GRANTED_TO]: grantedKey && document[grantedKey] ? document[grantedKey] : (element as any)[RELATION_GRANTED_TO],
+    [RELATION_GRANTED_TO]: grantedKey ? (document[grantedKey] ?? []) : (element as any)[RELATION_GRANTED_TO],
   } as unknown as BasicStoreCommon;
   return isUserCanAccessStoreElement(context, user, asOfElement);
 };
@@ -374,16 +394,19 @@ const countRelationshipsByType = async (context: AuthContext, user: AuthUser, el
 };
 
 const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elementId: string, date: string) => {
-  const [current, createdAfter, events] = await Promise.all([
+  const [current, createdAfter, fetchedEvents] = await Promise.all([
     countRelationshipsByType(context, user, elementId),
     countRelationshipsByType(context, user, elementId, date),
     fetchRelationshipsHistoryEvents(context, user, [elementId], {
       from: date,
       scopes: ['create', 'delete'],
       entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
-      max: MAX_REPLAY_EVENTS,
+      max: MAX_REPLAY_EVENTS + 1,
     }),
   ]);
+  // One extra event is read to detect that the relationship history of the period is incomplete
+  const complete = fetchedEvents.length <= MAX_REPLAY_EVENTS;
+  const events = fetchedEvents.slice(0, MAX_REPLAY_EVENTS);
   const createdAfterIds = new Set(events.filter((e) => e.event_scope === 'create').map((e) => e.context_id));
   const deletedExistingAtDate = new Map<string, number>();
   events.filter((e) => e.event_scope === 'delete' && !createdAfterIds.has(e.context_id)).forEach((e) => {
@@ -395,7 +418,7 @@ const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elemen
     const count = (current.get(type) ?? 0) - (createdAfter.get(type) ?? 0) + (deletedExistingAtDate.get(type) ?? 0);
     if (count > 0) counts.push({ relationship_type: type, count });
   });
-  return counts.sort((a, b) => b.count - a.count);
+  return { counts: counts.sort((a, b) => b.count - a.count), complete };
 };
 
 // Net additions and removals of container objects from the `objects` changes of the events
@@ -507,24 +530,28 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       container_objects_count: null,
     };
   }
-  const humanize = await humanizeAttributeValues(context, user, element.entity_type, [replay.document]);
-  const attributes = orderAttributeKeys(Object.keys(replay.document), element.entity_type).map((key) => ({
+  const document = visibleDocument(user, element.entity_type, replay.document);
+  const humanize = await humanizeAttributeValues(context, user, element.entity_type, [document]);
+  const attributes = orderAttributeKeys(Object.keys(document), element.entity_type).map((key) => ({
     key,
     ...definitionInfo(element.entity_type, key),
-    values: humanize(key, replay.document[key]),
+    values: humanize(key, document[key]),
   }));
-  const relationships = await relationshipCountsAt(context, user, element.internal_id, date);
+  const { counts: relationships, complete: relationshipsComplete } = await relationshipCountsAt(context, user, element.internal_id, date);
+  const warnings = relationshipsComplete ? base.warnings : [...base.warnings, RELATIONSHIP_HISTORY_TRUNCATED];
   let containerObjectsCount: number | null = null;
   if (isStixDomainObjectContainer(element.entity_type)) {
     const afterDate = events.filter((event) => utcDate(event.timestamp).isAfter(utcDate(date)));
     const { added, removed } = containerObjectsNetChanges(afterDate);
     containerObjectsCount = anchor === 'current' ? Math.max(0, currentContainerObjectsCount(element) - added.size + removed.size) : null;
   }
-  const nameKey = Object.prototype.hasOwnProperty.call(replay.document, 'name') ? 'name' : null;
-  const representative = nameKey ? replay.document[nameKey][0] : extractEntityRepresentativeName(element);
+  const nameKey = Object.prototype.hasOwnProperty.call(document, 'name') ? 'name' : null;
+  const representative = nameKey ? document[nameKey][0] : extractEntityRepresentativeName(element);
   addTimeMachineAsOfCount();
   return {
     ...base,
+    complete: base.complete && relationshipsComplete,
+    warnings,
     representative,
     exists: true,
     restricted: false,
@@ -559,7 +586,7 @@ export const computeRelationshipChanges = async (
     endDate: to,
     dateAttribute: 'created_at',
   };
-  const [createdTotal, createdRelations, events] = await Promise.all([
+  const [createdTotal, createdRelations, fetchedEvents] = await Promise.all([
     elCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, createdArgs as any),
     topRelationsList<any>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
       fromOrToId: elementId,
@@ -576,10 +603,12 @@ export const computeRelationshipChanges = async (
       to,
       scopes: ['create', 'delete', 'update'],
       entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
-      max: MAX_REPLAY_EVENTS,
+      max: MAX_REPLAY_EVENTS + 1,
     }),
   ]);
-  const states = buildRelationshipStates(events);
+  // One extra event is read to detect that the relationship history of the period is incomplete
+  const eventsTruncated = fetchedEvents.length > MAX_REPLAY_EVENTS;
+  const states = buildRelationshipStates(fetchedEvents.slice(0, MAX_REPLAY_EVENTS));
   const changes: RelationshipChange[] = [];
   const createdIds = new Set<string>();
   (createdRelations as BasicStoreRelation[]).forEach((relation) => {
@@ -659,8 +688,8 @@ export const computeRelationshipChanges = async (
     }
   });
   changes.sort((a, b) => utcDate(b.at).diff(utcDate(a.at)));
-  const truncated = createdTotal > createdRelations.length || changes.length > MAX_DIFF_RELATIONSHIPS;
-  return { changes: changes.slice(0, MAX_DIFF_RELATIONSHIPS), allChanges: changes, createdTotal, truncated };
+  const truncated = eventsTruncated || createdTotal > createdRelations.length || changes.length > MAX_DIFF_RELATIONSHIPS;
+  return { changes: changes.slice(0, MAX_DIFF_RELATIONSHIPS), allChanges: changes, createdTotal, truncated, eventsTruncated };
 };
 
 export const entityDiff = async (context: AuthContext, user: AuthUser, id: string, fromInput: Date | string, toInput: Date | string): Promise<EntityDiffResult> => {
@@ -719,9 +748,10 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
   }
   const userNames = await loadUserNames(context);
   // Attributes
-  const fromDocument = atFrom.exists ? atFrom.document : {};
-  const deltas = diffDocuments(fromDocument, atTo.replay.document);
-  const humanize = await humanizeAttributeValues(context, user, element.entity_type, [fromDocument, atTo.replay.document]);
+  const fromDocument = atFrom.exists ? visibleDocument(user, element.entity_type, atFrom.document) : {};
+  const toDocument = visibleDocument(user, element.entity_type, atTo.replay.document);
+  const deltas = diffDocuments(fromDocument, toDocument);
+  const humanize = await humanizeAttributeValues(context, user, element.entity_type, [fromDocument, toDocument]);
   const lastChangeByKey = new Map<string, { at: string; user_id?: string; count: number }>();
   [...periodEvents].sort((a, b) => utcDate(a.timestamp).diff(utcDate(b.timestamp))).forEach((event) => {
     (event.changes ?? []).forEach((change) => {
@@ -748,7 +778,8 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     };
   });
   // Relationships
-  const { changes, allChanges, createdTotal, truncated } = await computeRelationshipChanges(context, user, element.internal_id, from, to, userNames);
+  const { changes, allChanges, createdTotal, truncated, eventsTruncated } = await computeRelationshipChanges(context, user, element.internal_id, from, to, userNames);
+  const diffWarnings = eventsTruncated ? [...warnings, RELATIONSHIP_HISTORY_TRUNCATED] : warnings;
   // Container objects
   let containerObjects: ContainerObjectChange[] = [];
   let containerAdded = 0;
@@ -776,9 +807,9 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     });
   }
   const confidenceBefore = firstNumber(fromDocument.confidence);
-  const confidenceAfter = firstNumber(atTo.replay.document.confidence);
+  const confidenceAfter = firstNumber(toDocument.confidence);
   const scoreBefore = firstNumber(fromDocument.x_opencti_score);
-  const scoreAfter = firstNumber(atTo.replay.document.x_opencti_score);
+  const scoreAfter = firstNumber(toDocument.x_opencti_score);
   const summary: EntityDiffSummary = {
     attributes_changed: attributes.length,
     relationships_added: createdTotal,
@@ -803,8 +834,8 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     to,
     existed_at_from: atFrom.exists,
     restricted: false,
-    complete,
-    warnings,
+    complete: complete && !eventsTruncated,
+    warnings: diffWarnings,
     summary,
     attributes,
     relationships: changes,

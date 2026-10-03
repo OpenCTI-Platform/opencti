@@ -192,6 +192,9 @@ interface GlobalAccumulator {
   removedRelationships: number;
   revocations: number;
   targets: Map<string, TargetAccumulator>;
+  // A relationship between entities of two batches is read by both: global counters count it once
+  countedRelationships: Set<string>;
+  countedRelationshipStates: Set<string>;
   relationshipsFetched: number;
   truncated: boolean;
 }
@@ -243,8 +246,12 @@ const processBatch = async (
   if (budget <= 0 || relations.length >= budget) acc.truncated = true;
   acc.relationshipsFetched += relations.length;
   relations.forEach((relation) => {
-    acc.newRelationships += 1;
-    increment(acc.newRelationshipsByType, relation.entity_type);
+    if (!acc.countedRelationships.has(relation.internal_id)) {
+      acc.countedRelationships.add(relation.internal_id);
+      acc.newRelationships += 1;
+      increment(acc.newRelationshipsByType, relation.entity_type);
+    }
+    // Each scoped side is in exactly one batch, so per-entity counters are updated once
     if (idSet.has(relation.fromId)) {
       acc.entities.get(relation.fromId)!.relationships_added += 1;
       registerTarget(acc, relation.toId, relation.toType, relation.entity_type, relation.fromId);
@@ -263,16 +270,19 @@ const processBatch = async (
     max: LANDSCAPE_MAX_EVENTS_PER_BATCH,
   });
   if (relationshipEvents.length >= LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
-  buildRelationshipStates(relationshipEvents).forEach((state) => {
+  buildRelationshipStates(relationshipEvents).forEach((state, relationshipId) => {
     if (state.created) return; // Created in the period: counted with the new relationships (or no net change)
     const sides = [state.from_id, state.to_id].filter((id): id is string => !!id && idSet.has(id));
+    const countGlobally = !acc.countedRelationshipStates.has(relationshipId);
     if (state.deleted) {
-      acc.removedRelationships += 1;
+      acc.countedRelationshipStates.add(relationshipId);
+      if (countGlobally) acc.removedRelationships += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_removed += 1;
       });
     } else if (state.revoked_after === 'true' && state.revoked_before !== 'true') {
-      acc.revocations += 1;
+      acc.countedRelationshipStates.add(relationshipId);
+      if (countGlobally) acc.revocations += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_revoked += 1;
       });
@@ -443,7 +453,9 @@ const buildEntitySummaries = (acc: GlobalAccumulator): LandscapeDiffEntitySummar
 };
 
 /**
- * Compute the landscape diff of the entities of the scope (as they exist at `to`) between two dates.
+ * Compute the landscape diff between two dates of the entities that match the scope today and
+ * were created before `to`: the set an analyst tracks now. Filters are evaluated on the current
+ * knowledge and entities deleted since are not part of the scope.
  * Every read uses the rights of the user. Entities are processed in bounded batches.
  */
 export const computeLandscapeDiff = async (
@@ -481,6 +493,8 @@ export const computeLandscapeDiff = async (
     removedRelationships: 0,
     revocations: 0,
     targets: new Map(),
+    countedRelationships: new Set(),
+    countedRelationshipStates: new Set(),
     relationshipsFetched: 0,
     truncated: truncatedScope,
   };
