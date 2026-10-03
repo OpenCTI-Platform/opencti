@@ -1,0 +1,65 @@
+import React from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router';
+import { InsertChartOutlinedOutlined } from '@mui/icons-material';
+import Button from '@common/button/Button';
+import { useFormatter } from '../../../../components/i18n';
+import { serializeDashboardManifestForBackend } from '../../../../components/dashboard/dashboard-utils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import { resolveLink } from '../../../../utils/Entity';
+import { DefenseCoverageDashboardButtonMutation } from './__generated__/DefenseCoverageDashboardButtonMutation.graphql';
+import { buildDefenseCoverageDashboard } from './defenseCoverageDashboardTemplate';
+
+const defenseCoverageDashboardButtonMutation = graphql`
+  mutation DefenseCoverageDashboardButtonMutation($input: WorkspaceDuplicateInput!) {
+    workspaceDuplicate(input: $input) {
+      id
+    }
+  }
+`;
+
+/**
+ * Creates a custom dashboard from the built-in "Defense coverage" template and opens it.
+ */
+const DefenseCoverageDashboardButton = () => {
+  const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
+  const [commit, creating] = useApiMutation<DefenseCoverageDashboardButtonMutation>(defenseCoverageDashboardButtonMutation, undefined, {
+    successMessage: t_i18n('Defense coverage dashboard created'),
+  });
+  const create = () => {
+    commit({
+      variables: {
+        input: {
+          type: 'dashboard',
+          name: t_i18n('Defense coverage'),
+          description: t_i18n('Threat-informed defense: coverage by tactic, uncovered techniques used by threats and detection rules.'),
+          manifest: serializeDashboardManifestForBackend(buildDefenseCoverageDashboard(t_i18n)),
+        },
+      },
+      onCompleted: (response) => {
+        if (response.workspaceDuplicate?.id) {
+          navigate(`${resolveLink('Dashboard')}/${response.workspaceDuplicate.id}`);
+        }
+      },
+    });
+  };
+  return (
+    <Security needs={[EXPLORE_EXUPDATE]}>
+      <Button
+        variant="secondary"
+        size="small"
+        startIcon={<InsertChartOutlinedOutlined fontSize="small" />}
+        onClick={create}
+        disabled={creating}
+        data-testid="defense-coverage-dashboard-create"
+      >
+        {t_i18n('Create the defense coverage dashboard')}
+      </Button>
+    </Security>
+  );
+};
+
+export default DefenseCoverageDashboardButton;

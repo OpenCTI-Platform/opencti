@@ -125,7 +125,7 @@ const RootCustomization = () => {
             )}
           />
           <Route
-            path="/log_source_mappings"
+            path="/telemetry_mappings"
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <DefenseLogsourceMappings />

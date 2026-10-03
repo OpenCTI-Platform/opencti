@@ -175,9 +175,10 @@ const Empty = ({ text }: { text: string }) => (
 interface DefenseTechniqueContentProps {
   queryRef: PreloadedQuery<DefenseTechniqueDrawerQuery>;
   scope: DefenseScopeState;
+  allowValidation: boolean;
 }
 
-const DefenseTechniqueContent = ({ queryRef, scope }: DefenseTechniqueContentProps) => {
+const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTechniqueContentProps) => {
   const { t_i18n, fldt, nsdt } = useFormatter();
   const { defenseTechnique, defensePlatforms } = usePreloadedQuery(defenseTechniqueDrawerQuery, queryRef);
   const [validating, setValidating] = useState(false);
@@ -214,11 +215,13 @@ const DefenseTechniqueContent = ({ queryRef, scope }: DefenseTechniqueContentPro
         >
           {t_i18n('Open the attack pattern')}
         </Button>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Button onClick={() => setValidating(true)} data-testid="defense-technique-validate">
-            {t_i18n('Validate with OpenAEV')}
-          </Button>
-        </Security>
+        {allowValidation && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Button onClick={() => setValidating(true)} data-testid="defense-technique-validate">
+              {t_i18n('Validate in OpenAEV')}
+            </Button>
+          </Security>
+        )}
       </Stack>
 
       <Section title={t_i18n('Security platforms')} count={cell.platforms.length}>
@@ -361,13 +364,15 @@ const DefenseTechniqueContent = ({ queryRef, scope }: DefenseTechniqueContentPro
         )}
       </Section>
 
-      <DefenseValidationDialog
-        open={validating}
-        onClose={() => setValidating(false)}
-        techniques={[{ id: attackPattern.id, name: attackPattern.name, x_mitre_id: attackPattern.x_mitre_id }]}
-        platformIds={validationPlatformIds}
-        threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
-      />
+      {allowValidation && (
+        <DefenseValidationDialog
+          open={validating}
+          onClose={() => setValidating(false)}
+          techniques={[{ id: attackPattern.id, name: attackPattern.name, x_mitre_id: attackPattern.x_mitre_id }]}
+          platformIds={validationPlatformIds}
+          threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
+        />
+      )}
     </Box>
   );
 };
@@ -377,9 +382,11 @@ interface DefenseTechniqueDrawerProps {
   title: string;
   scope: DefenseScopeState;
   onClose: () => void;
+  // The validation action belongs to the gap context (Gaps tab), not to the matrix
+  allowValidation?: boolean;
 }
 
-const DefenseTechniqueLoader = ({ attackPatternId, scope }: { attackPatternId: string; scope: DefenseScopeState }) => {
+const DefenseTechniqueLoader = ({ attackPatternId, scope, allowValidation }: { attackPatternId: string; scope: DefenseScopeState; allowValidation: boolean }) => {
   const queryRef = useQueryLoading<DefenseTechniqueDrawerQuery>(defenseTechniqueDrawerQuery, {
     id: attackPatternId,
     platformIds: scope.platformIds,
@@ -387,14 +394,14 @@ const DefenseTechniqueLoader = ({ attackPatternId, scope }: { attackPatternId: s
   });
   return queryRef ? (
     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <DefenseTechniqueContent queryRef={queryRef} scope={scope} />
+      <DefenseTechniqueContent queryRef={queryRef} scope={scope} allowValidation={allowValidation} />
     </Suspense>
   ) : <Loader variant={LoaderVariant.inElement} />;
 };
 
-const DefenseTechniqueDrawer = ({ attackPatternId, title, scope, onClose }: DefenseTechniqueDrawerProps) => (
+const DefenseTechniqueDrawer = ({ attackPatternId, title, scope, onClose, allowValidation = false }: DefenseTechniqueDrawerProps) => (
   <Drawer open={!!attackPatternId} title={title} onClose={onClose} size="large">
-    {attackPatternId ? <DefenseTechniqueLoader attackPatternId={attackPatternId} scope={scope} /> : <div />}
+    {attackPatternId ? <DefenseTechniqueLoader attackPatternId={attackPatternId} scope={scope} allowValidation={allowValidation} /> : <div />}
   </Drawer>
 );
 

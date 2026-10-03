@@ -15,7 +15,7 @@ import {
   type DefenseLayersState,
   defenseLevelColor,
   isValidationFailed,
-} from '../../defense_matrix/defenseMatrix-utils';
+} from '../../../defense/matrix/defenseMatrix-utils';
 
 export interface DefenseMatrixCellData extends DefenseCellLike {
   readonly attack_pattern_id: string;

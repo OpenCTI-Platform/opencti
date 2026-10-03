@@ -106,7 +106,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={t_i18n('Validate with OpenAEV')} size="medium">
+    <Dialog open={open} onClose={onClose} title={t_i18n('Validate in OpenAEV')} size="medium">
       <Formik<DefenseValidationFormValues> initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit} enableReinitialize>
         {({ isSubmitting, setFieldValue, submitForm }) => (
           <Form data-testid="defense-validation-form">

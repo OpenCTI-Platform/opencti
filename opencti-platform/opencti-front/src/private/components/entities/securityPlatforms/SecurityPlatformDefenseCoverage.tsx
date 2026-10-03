@@ -2,12 +2,13 @@ import React, { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
-import DefenseProvidedDataComponents from '@components/techniques/defense_matrix/DefenseProvidedDataComponents';
-import DefenseScopeToolbar from '@components/techniques/defense_matrix/DefenseScopeToolbar';
-import { DefenseMatrixContent, defenseMatrixQuery } from '@components/techniques/defense_matrix/DefenseMatrix';
-import useDefenseScope from '@components/techniques/defense_matrix/useDefenseScope';
-import { ALL_DEFENSE_LAYERS, type DefenseLayersState, type DefenseScopeState, toThreatScopeInput } from '@components/techniques/defense_matrix/defenseMatrix-utils';
-import { DefenseMatrixQuery } from '@components/techniques/defense_matrix/__generated__/DefenseMatrixQuery.graphql';
+import { PATH_DEFENSE_GAPS } from '@components/common/routes/paths';
+import DefenseProvidedDataComponents from '@components/defense/matrix/DefenseProvidedDataComponents';
+import DefenseScopeToolbar from '@components/defense/matrix/DefenseScopeToolbar';
+import { DefenseMatrixContent, defenseMatrixQuery } from '@components/defense/matrix/DefenseMatrix';
+import useDefenseScope from '@components/defense/matrix/useDefenseScope';
+import { ALL_DEFENSE_LAYERS, type DefenseLayersState, type DefenseScopeState, toThreatScopeInput } from '@components/defense/matrix/defenseMatrix-utils';
+import { DefenseMatrixQuery } from '@components/defense/matrix/__generated__/DefenseMatrixQuery.graphql';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,7 +35,7 @@ const SecurityPlatformDefenseCoverage = ({ securityPlatformId }: SecurityPlatfor
   const updateThreatScope = (next: DefenseScopeState) => setSharedScope({ ...next, platformIds: sharedScope.platformIds });
   const openGaps = () => {
     setSharedScope({ ...sharedScope, platformIds: [securityPlatformId] });
-    navigate('/dashboard/techniques/defense_gaps');
+    navigate(PATH_DEFENSE_GAPS);
   };
 
   return (
