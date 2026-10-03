@@ -27,7 +27,7 @@ export interface ProvenanceAssertion {
 }
 
 // Assertion kinds of innovation 06 mapped to source kinds; inference and emulation are not intelligence sources
-const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, SourceKindValue> = {
+export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, SourceKindValue> = {
   connector: SOURCE_KIND_CONNECTOR,
   feed: SOURCE_KIND_INGESTION_FEED,
   author: SOURCE_KIND_AUTHOR,

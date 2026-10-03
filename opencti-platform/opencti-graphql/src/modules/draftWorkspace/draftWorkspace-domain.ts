@@ -69,6 +69,7 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types'
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
+import { runDraftClosureHandlers } from './draftWorkspace-closure';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -651,6 +652,7 @@ const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser
 
 // When deleting a draft, we need to move all users that are still in the draft context back to the live context
 const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  await runDraftClosureHandlers(context, draftId);
   const usersWithDraftContext = await findAllUsersWithDraftContext(context, user, draftId);
   if (usersWithDraftContext.length > 0) {
     await elDeleteDraftContextFromUsers(context, user, draftId);

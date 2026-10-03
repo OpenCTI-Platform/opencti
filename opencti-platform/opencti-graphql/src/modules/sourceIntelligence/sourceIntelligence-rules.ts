@@ -105,7 +105,9 @@ export const toIsoDuration = (ms: number): string => {
 };
 
 /**
- * Filter targeting the indicators written by a source, used by the decay rule recommendation.
+ * Filter targeting the indicators written by a source, used by the decay rule recommendation. Decay rules are matched
+ * once, against the indicator being created and its creator: the creator (or author) is the only attribution a rule
+ * can act on, the later assertions of other sources never select a decay rule.
  */
 export const buildSourceIndicatorFilters = (source: BasicStoreEntitySource): string | null => {
   if (source.source_kind === SOURCE_KIND_AUTHOR) {
@@ -223,7 +225,8 @@ const decayRuleRule = (input: RuleInput, proposals: RecommendationProposal[]) =>
     fingerprint: recommendationFingerprint(RECOMMENDATION_ADD_DECAY_RULE, source.internal_id),
     name: `Add a ${lifetime} days decay rule for ${source.name}`,
     rationale: `${percent(scorecard.noise)} of its objects are noise (never referenced, never sighted or expired). `
-      + `A dedicated decay rule makes its new indicators expire after ${lifetime} days instead of the default lifetime.`,
+      + `A dedicated decay rule makes the indicators it creates from now on expire after ${lifetime} days instead of the default lifetime `
+      + '(a decay rule is chosen when an indicator is created).',
     payload: {
       name: `Source Intelligence - ${source.name}`,
       description: `Created by Source Intelligence for the noisy source ${source.name}`,

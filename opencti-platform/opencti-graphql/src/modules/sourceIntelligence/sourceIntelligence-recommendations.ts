@@ -29,7 +29,6 @@ import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
-import { findPirPaginated } from '../pir/pir-domain';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -83,7 +82,9 @@ import {
 } from './sourceIntelligence-types';
 import { findLiveScorecards } from './sourceIntelligence-store';
 import { evaluateSourceRules, type RecommendationProposal, type RuleConnector, type RuleFeed, type RuleSourceUser, SCHEDULE_CONFIGURATION_KEY } from './sourceIntelligence-rules';
-import { buildResolverFromSources } from './sourceIntelligence-domain';
+import { buildResolverFromSources, clearDisabledSourcesLiveData } from './sourceIntelligence-domain';
+import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
+import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 
 const DAY_MS = 24 * 3600 * 1000;
 const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
@@ -157,9 +158,9 @@ export const findRecommendationsPaginated = async (context: AuthContext, user: A
   if (status && status.length > 0) filters.push({ key: ['recommendation_status'], values: status, operator: 'eq', mode: 'or' });
   if (kind && kind.length > 0) filters.push({ key: ['recommendation_kind'], values: kind, operator: 'eq', mode: 'or' });
   if (sourceId) filters.push({ key: ['source_id'], values: [sourceId], operator: 'eq', mode: 'or' });
-  // Only the collection gap recommendations of the PIRs the user can access
-  const accessiblePirs = await findPirPaginated(context, user, { first: 500 });
-  const accessiblePirIds = accessiblePirs.edges.map((edge) => edge.node.internal_id);
+  // Only the collection gap recommendations of the PIRs the user can access (all of them, PIRs are few)
+  const accessiblePirs = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_PIR], { baseData: true } as any);
+  const accessiblePirIds = accessiblePirs.map((pir) => pir.internal_id);
   const pirAccessGroup = {
     mode: 'or',
     filters: [
@@ -216,9 +217,13 @@ const collectFalsePositiveValues = async (context: AuthContext, source: BasicSto
   if (fpLabelIds.length === 0) {
     return new Map<string, Set<string>>();
   }
-  const sourceFilter = source.source_kind === 'author'
+  const createdBySource = source.source_kind === 'author'
     ? { terms: { 'rel_created-by.internal_id.keyword': [source.ref_id] } }
     : { terms: { 'creator_id.keyword': source.source_user_ids ?? [] } };
+  // Same attribution as the scorecard: the false positives the source asserted count even when another source created them
+  const sourceFilter = isProvenanceAttributeAvailable() && source.ref_id
+    ? { bool: { should: [createdBySource, { term: { [`${ATTRIBUTE_ASSERTION_SOURCE_IDS}.keyword`]: source.ref_id } }], minimum_should_match: 1 } }
+    : createdBySource;
   const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
     index: [READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS],
     size: Math.min(maxValues, 10000),
@@ -362,7 +367,10 @@ const executeApply = async (
         return { apply_result: 'Managed connector stopped through XTM Composer', revert_payload: { target: 'connector', connector_id: connector.id, previous_status: previousStatus } };
       }
       // Externally deployed connectors cannot be stopped by the platform: stop tracking the source and say so
-      if (source) await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { enabled: false });
+      if (source) {
+        const { element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { enabled: false });
+        await clearDisabledSourcesLiveData(context, [element as unknown as BasicStoreEntitySource]);
+      }
       return {
         apply_result: 'The connector is not managed by XTM Composer: the source is disabled, stop the connector where it is deployed',
         revert_payload: { target: 'source', source_id: source?.internal_id ?? null },
@@ -555,7 +563,17 @@ const applyLockedRecommendation = async (
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });
     patch = { recommendation_status: RECOMMENDATION_STATUS_FAILED, error_message: err?.message ?? String(err), autonomous };
   }
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
+  let element;
+  try {
+    ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch));
+  } catch (persistError) {
+    // The action ran but could not be recorded: it is undone so that retrying the recommendation never repeats it
+    if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
+      await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
+        .catch((revertError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply', { cause: revertError, id }));
+    }
+    throw persistError;
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
