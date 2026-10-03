@@ -30,11 +30,19 @@ export interface Option {
   value: string;
 }
 
+// Choices of the pack options, by option key (the `pack_options` of the engine start body).
+export type PackOptions = Record<string, string>;
+
+// The pack picker value of "no pack named": the engine runs its default pack.
+// A select item cannot carry an empty value, hence a reserved one.
+export const DEFAULT_PACK_VALUE = '__default_pack__';
+
 export interface InvestigationPolicyFormValues {
   name: string;
   description: string;
   is_default: boolean;
   pack_id: string;
+  pack_options: PackOptions;
   agent_slug: string;
   allowed_actions: Option[];
   enrichment_connector_ids: Option[];
@@ -42,7 +50,7 @@ export interface InvestigationPolicyFormValues {
   auto_approve_low_risk: boolean;
   auto_approve_min_confidence: number;
   attribution_min_confidence: number;
-  max_tool_calls: number;
+  max_iterations: number;
   max_enrichment_jobs: number;
   max_minutes: number;
   trigger_on_case_rfi_creation: boolean;
@@ -55,6 +63,7 @@ export interface InvestigationPolicyFormPolicy {
   readonly description?: string | null;
   readonly is_default: boolean;
   readonly pack_id?: string | null;
+  readonly pack_options?: unknown;
   readonly agent_slug?: string | null;
   readonly allowed_actions: readonly string[];
   readonly enrichment_connector_ids: readonly string[];
@@ -62,7 +71,7 @@ export interface InvestigationPolicyFormPolicy {
   readonly auto_approve_low_risk: boolean;
   readonly auto_approve_min_confidence: number;
   readonly attribution_min_confidence: number;
-  readonly max_tool_calls: number;
+  readonly max_iterations: number;
   readonly max_enrichment_jobs: number;
   readonly max_minutes: number;
   readonly trigger_on_case_rfi_creation: boolean;
@@ -75,6 +84,7 @@ export const NEW_POLICY: InvestigationPolicyFormPolicy = {
   description: '',
   is_default: false,
   pack_id: null,
+  pack_options: null,
   agent_slug: null,
   allowed_actions: [...AUTONOMOUS_ACTIONS],
   enrichment_connector_ids: [],
@@ -82,7 +92,7 @@ export const NEW_POLICY: InvestigationPolicyFormPolicy = {
   auto_approve_low_risk: false,
   auto_approve_min_confidence: 80,
   attribution_min_confidence: 55,
-  max_tool_calls: 40,
+  max_iterations: 10,
   max_enrichment_jobs: 20,
   max_minutes: 60,
   trigger_on_case_rfi_creation: false,
@@ -94,6 +104,7 @@ export interface InvestigationPolicyInput {
   description: string | null;
   is_default: boolean;
   pack_id: string | null;
+  pack_options: PackOptions | null;
   agent_slug: string | null;
   allowed_actions: InvestigationAutonomousAction[];
   enrichment_connector_ids: string[];
@@ -101,7 +112,7 @@ export interface InvestigationPolicyInput {
   auto_approve_low_risk: boolean;
   auto_approve_min_confidence: number;
   attribution_min_confidence: number;
-  max_tool_calls: number;
+  max_iterations: number;
   max_enrichment_jobs: number;
   max_minutes: number;
   trigger_on_case_rfi_creation: boolean;
@@ -111,11 +122,27 @@ export interface InvestigationPolicyInput {
 const toInteger = (value: unknown) => Number.parseInt(String(value), 10);
 const orNull = (value: string | null | undefined) => (value && value.trim().length > 0 ? value.trim() : null);
 
+/** The string choices of a stored `pack_options` object; anything else is dropped. */
+export const toPackOptions = (value: unknown): PackOptions => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>)
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].length > 0));
+};
+
+// Options only mean something for a named pack; no choice is stored as null.
+const packOptionsInput = (packId: string | null, options: unknown): PackOptions | null => {
+  const choices = toPackOptions(options);
+  return packId && Object.keys(choices).length > 0 ? choices : null;
+};
+
+const packIdInput = (value: string) => (value === DEFAULT_PACK_VALUE ? null : orNull(value));
+
 export const toPolicyInput = (values: InvestigationPolicyFormValues): InvestigationPolicyInput => ({
   name: values.name.trim(),
   description: orNull(values.description),
   is_default: values.is_default,
-  pack_id: orNull(values.pack_id),
+  pack_id: packIdInput(values.pack_id),
+  pack_options: packOptionsInput(packIdInput(values.pack_id), values.pack_options),
   agent_slug: orNull(values.agent_slug),
   allowed_actions: values.allowed_actions.map((option) => option.value as InvestigationAutonomousAction),
   enrichment_connector_ids: values.enrichment_connector_ids.map((option) => option.value),
@@ -123,7 +150,7 @@ export const toPolicyInput = (values: InvestigationPolicyFormValues): Investigat
   auto_approve_low_risk: values.auto_approve_low_risk,
   auto_approve_min_confidence: toInteger(values.auto_approve_min_confidence),
   attribution_min_confidence: toInteger(values.attribution_min_confidence),
-  max_tool_calls: toInteger(values.max_tool_calls),
+  max_iterations: toInteger(values.max_iterations),
   max_enrichment_jobs: toInteger(values.max_enrichment_jobs),
   max_minutes: toInteger(values.max_minutes),
   trigger_on_case_rfi_creation: values.trigger_on_case_rfi_creation,
@@ -135,6 +162,7 @@ const storedInput = (policy: InvestigationPolicyFormPolicy): InvestigationPolicy
   description: orNull(policy.description),
   is_default: policy.is_default,
   pack_id: orNull(policy.pack_id),
+  pack_options: packOptionsInput(orNull(policy.pack_id), policy.pack_options),
   agent_slug: orNull(policy.agent_slug),
   allowed_actions: policy.allowed_actions.map((action) => action as InvestigationAutonomousAction),
   enrichment_connector_ids: [...policy.enrichment_connector_ids],
@@ -142,17 +170,20 @@ const storedInput = (policy: InvestigationPolicyFormPolicy): InvestigationPolicy
   auto_approve_low_risk: policy.auto_approve_low_risk,
   auto_approve_min_confidence: policy.auto_approve_min_confidence,
   attribution_min_confidence: policy.attribution_min_confidence,
-  max_tool_calls: policy.max_tool_calls,
+  max_iterations: policy.max_iterations,
   max_enrichment_jobs: policy.max_enrichment_jobs,
   max_minutes: policy.max_minutes,
   trigger_on_case_rfi_creation: policy.trigger_on_case_rfi_creation,
   run_as_id: policy.runAs?.id ?? null,
 });
 
+const sortedEntries = (value: object) => JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
+
 const sameValue = (a: unknown, b: unknown) => {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.length === b.length && [...a].sort().join('\u0000') === [...b].sort().join('\u0000');
   }
+  if (a && b && typeof a === 'object' && typeof b === 'object') return sortedEntries(a) === sortedEntries(b);
   return a === b;
 };
 

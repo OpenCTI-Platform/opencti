@@ -17,10 +17,8 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { graphql, useFragment, useLazyLoadQuery, useSubscription } from 'react-relay';
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useNavigate } from 'react-router';
-import Grid from '@mui/material/Grid2';
-import Card from '@common/card/Card';
+import Stack from '@mui/material/Stack';
 import { useFormatter } from '../../../components/i18n';
-import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { fetchQuery } from '../../../relay/environment';
 import InvestigationRunHeader from './InvestigationRunHeader';
 import InvestigationRunApprovals from './InvestigationRunApprovals';
@@ -28,8 +26,7 @@ import InvestigationRunGoalPlan from './InvestigationRunGoalPlan';
 import InvestigationRunEvidence from './InvestigationRunEvidence';
 import InvestigationRunHypotheses from './InvestigationRunHypotheses';
 import InvestigationRunRecommendations from './InvestigationRunRecommendations';
-import InvestigationRunTimeline from './InvestigationRunTimeline';
-import InvestigationRunLedger from './InvestigationRunLedger';
+import InvestigationRunReport from './InvestigationRunReport';
 import { consumeGraphAutoOpen, investigationGraphPath, isRunActive } from './investigationRunUtils';
 import { InvestigationRunView_run$key } from './__generated__/InvestigationRunView_run.graphql';
 import { InvestigationRunViewQuery } from './__generated__/InvestigationRunViewQuery.graphql';
@@ -69,11 +66,13 @@ export const investigationRunViewFragment = graphql`
     pack_id
     goal_plan
     agent_slug
+    xtm_investigation_id
+    xtm_investigation_ids
     run_trigger
     run_status
     run_phase
     status_reason
-    iteration
+    end_reason_code
     created_at
     started_at
     completed_at
@@ -81,33 +80,29 @@ export const investigationRunViewFragment = graphql`
       id
       name
     }
-    plan {
-      id
-      kind
-      description
-      status
-      approval_required
-    }
     steps {
       id
-      step_id
-      iteration
-      tool
-      description
-      input_ref
-      output_ref
+      investigation_id
+      position
+      action
+      source_name
       status
+      detail_code
+      detail_params
+      findings_count
+      evidence_count
       started_at
-      duration_ms
-      cost_units
-      work_id
-      error
+      completed_at
     }
     evidence {
       id
+      n
+      kind
+      label
+      href
+      quote
+      opencti_id
       entity_type
-      name
-      origin
       in_draft
     }
     hypotheses {
@@ -132,13 +127,6 @@ export const investigationRunViewFragment = graphql`
         diagnosticity
         rationale
       }
-    }
-    timeline {
-      ts
-      entity_id
-      entity_type
-      name
-      event
     }
     recommendations {
       id
@@ -182,25 +170,33 @@ export const investigationRunViewFragment = graphql`
     }
     enrichment_requests {
       id
+      wave_id
       entity_id
       connector_id
       connector_name
       reason
       status
-      iteration
       work_id
       created_at
       completed_at
     }
     budget {
-      max_tool_calls
+      max_iterations
       max_enrichment_jobs
       max_minutes
-      used_tool_calls
+      used_iterations
       used_enrichment_jobs
       used_minutes
     }
     summary
+    report
+    report_sources {
+      n
+      label
+      href
+    }
+    report_id
+    can_continue
     acceptance {
       hypotheses_accepted
       hypotheses_rejected
@@ -236,7 +232,6 @@ interface InvestigationRunContentProps {
 }
 
 const InvestigationRunContent = ({ data, currentEntityId, onDeleted }: InvestigationRunContentProps) => {
-  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const run = useFragment(investigationRunViewFragment, data);
   const previousStatus = useRef(run.run_status);
@@ -252,41 +247,15 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted }: Investiga
   }, [run.run_status, run.workspace_id, run.id]);
   const pendingApprovals = run.approvals.filter((approval) => approval.status === 'pending');
   return (
-    <Grid container spacing={3} data-testid="investigation-run-view">
-      <Grid size={12}>
-        <InvestigationRunHeader run={run} currentEntityId={currentEntityId} onDecided={refresh} onDeleted={onDeleted} />
-      </Grid>
-      {pendingApprovals.length > 0 && (
-        <Grid size={12}>
-          <InvestigationRunApprovals runId={run.id} approvals={run.approvals} onDecided={refresh} />
-        </Grid>
-      )}
-      <Grid size={{ xs: 12, lg: 5 }}>
-        <InvestigationRunGoalPlan plan={run.plan} goalPlan={run.goal_plan} runStatus={run.run_status} />
-      </Grid>
-      <Grid size={{ xs: 12, lg: 7 }}>
-        <Card title={t_i18n('Summary')}>
-          {run.summary
-            ? <MarkdownDisplay content={run.summary} remarkGfmPlugin commonmark />
-            : <span>{isRunActive(run.run_status) ? t_i18n('The summary is written as the investigation progresses.') : t_i18n('No summary was produced.')}</span>}
-        </Card>
-      </Grid>
-      <Grid size={12}>
-        <InvestigationRunHypotheses run={run} />
-      </Grid>
-      <Grid size={12}>
-        <InvestigationRunRecommendations run={run} />
-      </Grid>
-      <Grid size={{ xs: 12, lg: 6 }}>
-        <InvestigationRunEvidence evidence={run.evidence} />
-      </Grid>
-      <Grid size={{ xs: 12, lg: 6 }}>
-        <InvestigationRunTimeline timeline={run.timeline} />
-      </Grid>
-      <Grid size={12}>
-        <InvestigationRunLedger steps={run.steps} enrichmentRequests={run.enrichment_requests} />
-      </Grid>
-    </Grid>
+    <Stack spacing={3} data-testid="investigation-run-view">
+      <InvestigationRunHeader run={run} currentEntityId={currentEntityId} onDecided={refresh} onDeleted={onDeleted} />
+      {pendingApprovals.length > 0 && <InvestigationRunApprovals runId={run.id} approvals={run.approvals} onDecided={refresh} />}
+      <InvestigationRunGoalPlan run={run} />
+      <InvestigationRunEvidence run={run} />
+      <InvestigationRunHypotheses run={run} />
+      <InvestigationRunRecommendations run={run} />
+      <InvestigationRunReport run={run} />
+    </Stack>
   );
 };
 

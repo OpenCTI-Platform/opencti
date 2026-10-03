@@ -55,6 +55,10 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'content',
   label: 'Content',
 }, {
+  tab: 'autopilot',
+  path: 'autopilot',
+  label: 'Autopilot',
+}, {
   tab: 'analyses',
   path: 'analyses',
   label: 'Analyses',
@@ -70,10 +74,6 @@ const TABS_INFO: readonly TabInfo[] = [{
   tab: 'observables',
   path: 'observables',
   label: 'Observables',
-}, {
-  tab: 'autopilot',
-  path: 'autopilot',
-  label: 'Autopilot',
 }, {
   tab: 'files',
   path: 'files',

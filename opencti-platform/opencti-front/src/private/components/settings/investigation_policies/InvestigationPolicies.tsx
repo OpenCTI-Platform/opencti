@@ -61,6 +61,7 @@ const investigationPoliciesQuery = graphql`
           description
           is_default
           pack_id
+          pack_options
           agent_slug
           allowed_actions
           enrichment_connector_ids
@@ -68,7 +69,7 @@ const investigationPoliciesQuery = graphql`
           auto_approve_low_risk
           auto_approve_min_confidence
           attribution_min_confidence
-          max_tool_calls
+          max_iterations
           max_enrichment_jobs
           max_minutes
           trigger_on_case_rfi_creation
@@ -106,6 +107,7 @@ const investigationPoliciesEditMutation = graphql`
       description
       is_default
       pack_id
+      pack_options
       agent_slug
       allowed_actions
       enrichment_connector_ids
@@ -113,7 +115,7 @@ const investigationPoliciesEditMutation = graphql`
       auto_approve_low_risk
       auto_approve_min_confidence
       attribution_min_confidence
-      max_tool_calls
+      max_iterations
       max_enrichment_jobs
       max_minutes
       trigger_on_case_rfi_creation
@@ -140,7 +142,7 @@ const PolicyCard = ({ policy, onEdit, onDelete }: { policy: Policy; onEdit: () =
   const facts: [string, string][] = [
     [t_i18n('Investigations'), n(policy.runs_count)],
     [t_i18n('Analyst acceptance'), decisions > 0 && policy.acceptance.rate !== null && policy.acceptance.rate !== undefined ? formatProbability(policy.acceptance.rate) : '-'],
-    [t_i18n('Budget'), `${policy.max_tool_calls} ${t_i18n('tool calls')} - ${policy.max_enrichment_jobs} ${t_i18n('enrichment jobs')} - ${policy.max_minutes} min`],
+    [t_i18n('Budget'), `${policy.max_iterations} ${t_i18n('iterations')} - ${policy.max_enrichment_jobs} ${t_i18n('enrichment jobs')} - ${policy.max_minutes} min`],
     [t_i18n('Minimum confidence to write an attribution (%)'), `${policy.attribution_min_confidence}%`],
     [t_i18n('Enrichment connectors'), policy.enrichment_connector_ids.length > 0 ? n(policy.enrichment_connector_ids.length) : t_i18n('All')],
     [t_i18n('Connectors that need an approval'), n(policy.approval_connector_ids.length)],

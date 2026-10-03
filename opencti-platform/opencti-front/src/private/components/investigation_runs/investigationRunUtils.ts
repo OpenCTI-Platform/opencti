@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { ChipSeverity } from '@filigran/design-system';
 import { APP_BASE_PATH } from '../../../relay/environment';
+import { resolveLink } from '../../../utils/Entity';
 
 export type InvestigationRunStatusValue = 'planned' | 'running' | 'awaiting_approval' | 'completed' | 'failed' | 'cancelled';
 
@@ -46,12 +47,9 @@ export const runStatusSeverity = (status: string): ChipSeverity => RUN_STATUS_SE
 
 export const RUN_PHASE_LABELS: Record<string, string> = {
   initializing: 'Collecting the context',
-  planning: 'Planning',
-  enriching: 'Requesting enrichments',
-  waiting_enrichment: 'Waiting for enrichments',
-  iterating: 'Analyzing new evidence',
-  concluding: 'Concluding',
-  finalizing: 'Writing the results',
+  starting: 'Starting the investigation',
+  investigating: 'Investigating',
+  ingesting: 'Writing the results to the draft',
   awaiting_validation: 'Waiting for the draft approval',
   validating: 'Validating the draft',
   done: 'Done',
@@ -59,10 +57,91 @@ export const RUN_PHASE_LABELS: Record<string, string> = {
 
 export const runPhaseLabel = (phase: string) => RUN_PHASE_LABELS[phase] ?? phase;
 
+// The built-in pack of the investigation engine for OpenCTI cases.
+export const DEFAULT_PACK = 'opencti-case-investigation';
+
 export const RUN_TRIGGER_LABELS: Record<string, string> = {
   manual: 'Manual',
   playbook: 'Playbook',
   case_rfi_creation: 'Request for information creation',
+};
+
+// The seven step states of the investigation engine, with the labels every
+// product renders. Only a step that found something is a success.
+export type InvestigationStepStatusValue = 'pending' | 'active' | 'completed' | 'empty' | 'degraded' | 'error' | 'skipped';
+
+export const STEP_STATUS_LABELS: Record<InvestigationStepStatusValue, string> = {
+  pending: 'Planned step',
+  active: 'Querying',
+  completed: 'Found',
+  empty: 'Nothing found',
+  degraded: 'Partial',
+  error: 'Failed',
+  skipped: 'Not reached',
+};
+
+const STEP_STATUS_SEVERITIES: Record<InvestigationStepStatusValue, ChipSeverity> = {
+  pending: 'neutral',
+  active: 'info',
+  completed: 'low',
+  empty: 'neutral',
+  degraded: 'medium',
+  error: 'high',
+  skipped: 'neutral',
+};
+
+export const stepStatusLabel = (status: string) => STEP_STATUS_LABELS[status as InvestigationStepStatusValue] ?? STEP_STATUS_LABELS.pending;
+
+export const stepStatusSeverity = (status: string): ChipSeverity => STEP_STATUS_SEVERITIES[status as InvestigationStepStatusValue] ?? 'neutral';
+
+// Why a run ended without the engine, by end_reason_code.
+export const ENGINE_REASON_LABELS: Record<string, string> = {
+  engine_not_configured: 'XTM One is not connected to this platform: Case Autopilot runs on the XTM One investigation engine.',
+  engine_disabled: 'The connected XTM One does not run investigations. Ask your XTM One administrator to turn on Deep Investigation.',
+  engine_unavailable: 'The connected XTM One does not provide the investigation engine. Upgrade XTM One to run Case Autopilot.',
+  engine_no_agent: 'No agent of the connected XTM One answers the autonomous investigation intent.',
+  engine_unreachable: 'The XTM One investigation engine cannot be reached.',
+};
+
+export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);
+
+// Machine-readable step details of the engine, rendered in the reader's
+// language; a code without a label here falls back to its parameters.
+export const STEP_DETAIL_LABELS: Record<string, string> = {
+  'run.all_sources_queried': 'Every source was queried',
+  'run.budget_spent': 'The budget of the investigation was spent',
+  'run.no_covering_source': 'No source of the pack covers this subject',
+  'run.cancelled': 'The investigation was cancelled',
+  'run.interrupted': 'The investigation was interrupted',
+  'source.timed_out': 'The source did not answer in time',
+  'source.http_status': 'The source answered with an error',
+  'source.truncated': 'The answer was truncated',
+  'source.thin_response': 'The source answered with very little content',
+  'source.querier_error': 'The source could not be queried',
+  'source.opencti_unavailable': 'OpenCTI could not be read',
+  'source.opencti_known': 'Known in OpenCTI',
+  'source.opencti_none_known': 'Nothing known in OpenCTI',
+  'source.case_context': 'Case context read',
+  'source.case_context_empty': 'The case holds no context yet',
+  'source.case_run_missing': 'The investigation of this case is not available',
+  'source.enrichment_wave': 'Enrichment jobs ran through the connectors',
+  'source.enrichment_nothing_to_enrich': 'Nothing to enrich',
+  'source.enrichment_awaiting_approval': 'Enrichment jobs are waiting for an approval',
+  'source.enrichment_refused': 'Enrichment jobs were refused by the policy',
+  'source.enrichment_timed_out': 'The enrichment jobs did not end in time',
+};
+
+/** The detail of a step in the reader's language: its label and its parameters. */
+export const stepDetail = (code: string | null | undefined, params: unknown, translate: (text: string) => string) => {
+  if (!code) return null;
+  const label = STEP_DETAIL_LABELS[code];
+  const values = params && typeof params === 'object' && !Array.isArray(params)
+    ? Object.entries(params as Record<string, unknown>)
+        .filter(([, value]) => typeof value === 'string' || typeof value === 'number')
+        .map(([key, value]) => `${key.replace(/_/g, ' ')}: ${value}`)
+    : [];
+  const text = label ? translate(label) : code.replace(/^(run|source)\./, '').replace(/_/g, ' ');
+  return values.length > 0 ? `${text} (${values.join(', ')})` : text;
 };
 
 // Analysis of Competing Hypotheses notation, from strongly inconsistent to
@@ -88,6 +167,13 @@ export const EVIDENCE_CATEGORY_LABELS: Record<string, string> = {
   temporal: 'Temporal plausibility',
   source_reliability: 'Source reliability',
   language_timezone: 'Language and timezone',
+};
+
+export const EVIDENCE_KIND_LABELS: Record<string, string> = {
+  url: 'Web page',
+  document: 'Document',
+  tool_result: 'Tool result',
+  opencti_object: 'OpenCTI object',
 };
 
 export const CONFIDENCE_LABELS: Record<string, string> = {
@@ -127,16 +213,6 @@ const PRIORITY_SEVERITIES: Record<string, ChipSeverity> = {
 
 export const prioritySeverity = (priority: string): ChipSeverity => PRIORITY_SEVERITIES[priority] ?? 'neutral';
 
-export const PLAN_STEP_KIND_LABELS: Record<string, string> = {
-  enrichment: 'Enrichment',
-  pivot: 'Pivot',
-  correlation: 'Correlation',
-  timeline: 'Timeline',
-  attribution: 'Attribution',
-  recommendation: 'Recommendation',
-  report: 'Report',
-};
-
 export const APPROVAL_KIND_LABELS: Record<string, string> = {
   enrichment: 'Paid or restricted enrichment',
   recommendation: 'Sensitive recommendation',
@@ -154,25 +230,21 @@ export const ENRICHMENT_STATUS_LABELS: Record<string, string> = {
   skipped: 'Skipped',
 };
 
-export const EVIDENCE_ORIGIN_LABELS: Record<string, string> = {
-  subject: 'Investigated entity',
-  context: 'Knowledge graph',
-  enrichment: 'Enrichment',
-  agent: 'Agent',
+const ENRICHMENT_STATUS_SEVERITIES: Record<string, ChipSeverity> = {
+  dispatched: 'info',
+  completed: 'low',
+  awaiting_approval: 'medium',
+  timeout: 'medium',
+  failed: 'high',
+  rejected: 'high',
 };
+
+export const enrichmentStatusSeverity = (status: string): ChipSeverity => ENRICHMENT_STATUS_SEVERITIES[status] ?? 'neutral';
 
 /** Share of a budget used, as the 0-100 percentage the progress bar expects. */
 export const budgetPercent = (used: number, max: number) => {
   if (!max || max <= 0) return used > 0 ? 100 : 0;
   return Math.max(0, Math.min(100, Math.round((used / max) * 100)));
-};
-
-export const formatDuration = (ms: number) => {
-  if (!Number.isFinite(ms) || ms < 1000) return `${Math.max(0, Math.round(ms || 0))} ms`;
-  const seconds = ms / 1000;
-  if (seconds < 60) return `${seconds.toFixed(1)} s`;
-  const minutes = Math.floor(seconds / 60);
-  return `${minutes} min ${Math.round(seconds % 60)} s`;
 };
 
 export const formatProbability = (probability: number) => `${Math.round(Math.max(0, Math.min(1, probability)) * 100)}%`;
@@ -239,101 +311,163 @@ export const consumeGraphAutoOpen = (runId: string) => {
   }
 };
 
-export type GoalStatus = 'pending' | 'running' | 'done' | 'skipped' | 'failed' | 'awaiting_approval';
+// region goal plan
 
-export interface GoalPlanItem {
-  id: string;
-  title: string;
-  status: GoalStatus;
-  kind: string | null;
-  approvalRequired: boolean;
-  children: GoalPlanItem[];
+interface StepLike {
+  readonly id: string;
+  readonly investigation_id: string;
+  readonly position: number;
+  readonly action?: string | null;
+  readonly status: string;
 }
 
-const GOAL_STATUS_ALIASES: Record<string, GoalStatus> = {
-  pending: 'pending',
-  planned: 'pending',
-  todo: 'pending',
-  running: 'running',
-  in_progress: 'running',
-  active: 'running',
-  done: 'done',
-  completed: 'done',
-  achieved: 'done',
-  answered: 'done',
-  skipped: 'skipped',
-  abandoned: 'skipped',
-  failed: 'failed',
-  blocked: 'awaiting_approval',
-  awaiting_approval: 'awaiting_approval',
-};
+export interface GoalPlanAction<S extends StepLike> {
+  slug: string;
+  label: string;
+  description: string | null;
+  producesReport: boolean;
+  servable: boolean;
+  status: InvestigationStepStatusValue;
+  steps: S[];
+}
 
-export const normalizeGoalStatus = (value: unknown): GoalStatus => {
-  if (typeof value !== 'string') return 'pending';
-  return GOAL_STATUS_ALIASES[value.toLowerCase()] ?? 'pending';
-};
+export interface GoalPlanView<S extends StepLike> {
+  objective: string | null;
+  reachable: boolean;
+  actions: GoalPlanAction<S>[];
+  // Steps of the engine that serve no action of the plan.
+  otherSteps: S[];
+}
 
-const MAX_GOAL_DEPTH = 3;
-const MAX_GOALS = 50;
+const MAX_ACTIONS = 50;
 
-const goalItemFrom = (raw: unknown, path: string, depth: number): GoalPlanItem | null => {
-  if (!raw || typeof raw !== 'object') return null;
-  const goal = raw as Record<string, unknown>;
-  const title = [goal.title, goal.goal, goal.description, goal.question, goal.name].find((value) => typeof value === 'string' && value.trim().length > 0) as string | undefined;
-  if (!title) return null;
-  const rawChildren = [goal.steps, goal.sub_goals, goal.subgoals, goal.children].find(Array.isArray) as unknown[] | undefined;
-  const children = depth < MAX_GOAL_DEPTH && rawChildren
-    ? rawChildren.slice(0, MAX_GOALS).map((child, index) => goalItemFrom(child, `${path}.${index + 1}`, depth + 1)).filter((child): child is GoalPlanItem => child !== null)
-    : [];
-  return {
-    id: typeof goal.id === 'string' && goal.id ? goal.id : path,
-    title: title.trim(),
-    status: normalizeGoalStatus(goal.status),
-    kind: typeof goal.kind === 'string' ? goal.kind : null,
-    approvalRequired: goal.approval_required === true,
-    children,
-  };
+const text = (value: unknown): string | null => (typeof value === 'string' && value.trim().length > 0 ? value.trim() : null);
+
+/**
+ * The state of an action, derived from its steps the way the engine block
+ * does: what holds is never sent, it is read from what the sources answered.
+ */
+export const actionStatus = (steps: readonly StepLike[]): InvestigationStepStatusValue => {
+  if (steps.length === 0) return 'pending';
+  const statuses = steps.map((step) => step.status);
+  if (statuses.includes('active')) return 'active';
+  if (statuses.includes('pending')) return statuses.some((status) => status !== 'pending') ? 'active' : 'pending';
+  if (statuses.includes('completed')) return statuses.some((status) => status === 'error' || status === 'degraded') ? 'degraded' : 'completed';
+  if (statuses.includes('degraded')) return 'degraded';
+  if (statuses.includes('error')) return statuses.every((status) => status === 'error') ? 'error' : 'degraded';
+  if (statuses.includes('empty')) return 'empty';
+  return 'skipped';
 };
 
 /**
- * Goals of the investigation engine's goal plan, when the run carries one in a
- * shape we can read (`goals` with nested `steps` / `sub_goals`); null otherwise.
+ * The goal plan of the latest engine run (`goal_plan` of the run, the shape
+ * of the engine's GoalPlanResponse) with the steps that serve each action.
+ * Steps of earlier engine runs (continuations) keep their own actions.
  */
-export const goalsFromGoalPlan = (goalPlan: unknown): GoalPlanItem[] | null => {
-  if (!goalPlan || typeof goalPlan !== 'object' || Array.isArray(goalPlan)) return null;
-  const goals = (goalPlan as { goals?: unknown }).goals;
-  if (!Array.isArray(goals)) return null;
-  const items = goals.slice(0, MAX_GOALS).map((goal, index) => goalItemFrom(goal, String(index + 1), 1)).filter((goal): goal is GoalPlanItem => goal !== null);
-  return items.length > 0 ? items : null;
-};
-
-interface PlanStepLike {
-  readonly id: string;
-  readonly kind: string;
-  readonly description: string;
-  readonly status: string;
-  readonly approval_required: boolean;
-}
-
-/** The run's own plan as goals, so both representations render the same way. */
-export const goalsFromPlan = (plan: readonly PlanStepLike[]): GoalPlanItem[] => plan.map((step) => ({
-  id: step.id,
-  title: step.description,
-  status: normalizeGoalStatus(step.status),
-  kind: step.kind,
-  approvalRequired: step.approval_required,
-  children: [],
-}));
-
-/** Citation number of each piece of evidence, in the order the run collected them (1-based). */
-export const citationNumbers = (evidence: readonly { readonly id: string }[]) => {
-  const numbers = new Map<string, number>();
-  evidence.forEach((item) => {
-    if (!numbers.has(item.id)) numbers.set(item.id, numbers.size + 1);
+export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: readonly S[]): GoalPlanView<S> => {
+  const plan = goalPlan && typeof goalPlan === 'object' && !Array.isArray(goalPlan) ? goalPlan as Record<string, unknown> : {};
+  const rawActions = Array.isArray(plan.actions) ? plan.actions.slice(0, MAX_ACTIONS) : [];
+  const ordered = [...steps].sort((a, b) => a.position - b.position);
+  const used = new Set<string>();
+  const actions: GoalPlanAction<S>[] = [];
+  rawActions.forEach((raw) => {
+    const action = raw && typeof raw === 'object' ? raw as Record<string, unknown> : null;
+    const slug = text(action?.slug);
+    if (!action || !slug || actions.some((existing) => existing.slug === slug)) return;
+    const actionSteps = ordered.filter((step) => step.action === slug);
+    actionSteps.forEach((step) => used.add(step.id));
+    actions.push({
+      slug,
+      label: text(action.label) ?? slug,
+      description: text(action.description),
+      producesReport: action.produces_report === true,
+      servable: action.servable !== false,
+      status: 'pending',
+      steps: actionSteps,
+    });
   });
-  return numbers;
+  // An engine without a declared plan still names the action of each step.
+  ordered.forEach((step) => {
+    if (used.has(step.id) || !step.action) return;
+    const existing = actions.find((action) => action.slug === step.action);
+    if (existing) {
+      existing.steps.push(step);
+    } else {
+      actions.push({ slug: step.action, label: step.action.replace(/_/g, ' '), description: null, producesReport: false, servable: true, status: 'pending', steps: [step] });
+    }
+    used.add(step.id);
+  });
+  return {
+    objective: text(plan.objective),
+    reachable: plan.reachable !== false,
+    actions: actions.map((action) => ({ ...action, status: actionStatus(action.steps) })),
+    otherSteps: ordered.filter((step) => !used.has(step.id)),
+  };
 };
+
+/** The objective of a goal plan, with its `{value}` placeholder filled with the investigated entity. */
+export const goalObjective = (objective: string, subjectName: string | null | undefined) => objective.replace(/\{value\}/g, subjectName ?? '');
+
+// endregion
 
 export const investigationGraphPath = (workspaceId: string) => `/dashboard/workspaces/investigations/${workspaceId}`;
 
 export const elementPath = (id: string) => `/dashboard/id/${id}`;
+
+/** The Autopilot tab of a case, on the investigation it holds. */
+export const caseAutopilotPath = (caseItem: { id: string; entity_type: string }, runId?: string | null) => {
+  const base = resolveLink(caseItem.entity_type);
+  if (!base) return elementPath(caseItem.id);
+  const path = `${base}/${caseItem.id}/autopilot`;
+  return runId ? `${path}?run=${encodeURIComponent(runId)}` : path;
+};
+
+// region evidence
+
+interface EvidenceLike {
+  readonly id: string;
+  readonly n?: number | null;
+  readonly kind: string;
+  readonly opencti_id?: string | null;
+  readonly entity_type?: string | null;
+  readonly href?: string | null;
+}
+
+/**
+ * Citation number of each piece of evidence: the report's own number when the
+ * engine cited it, else the order the run collected it in, after the cited ones.
+ */
+export const citationNumbers = (evidence: readonly EvidenceLike[]) => {
+  const numbers = new Map<string, number>();
+  let next = Math.max(0, ...evidence.map((item) => item.n ?? 0));
+  evidence.forEach((item) => {
+    if (numbers.has(item.id)) return;
+    if (item.n && item.n > 0) {
+      numbers.set(item.id, item.n);
+    } else {
+      next += 1;
+      numbers.set(item.id, next);
+    }
+  });
+  return numbers;
+};
+
+/** Where an OpenCTI object of the evidence opens, by its type when known. */
+export const evidenceObjectPath = (item: EvidenceLike) => {
+  if (!item.opencti_id) return null;
+  const base = item.entity_type ? resolveLink(item.entity_type) : null;
+  return base ? `${base}/${item.opencti_id}` : elementPath(item.opencti_id);
+};
+
+/** A followable address of a cited passage (web pages only). */
+export const evidenceHref = (item: EvidenceLike) => {
+  if (item.kind !== 'url' || !item.href) return null;
+  try {
+    const url = new URL(item.href);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
+// endregion

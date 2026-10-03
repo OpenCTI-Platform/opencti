@@ -34,6 +34,7 @@ import {
   consistencyOf,
   elementPath,
   EVIDENCE_CATEGORY_LABELS,
+  evidenceObjectPath,
   feedbackDecisionFor,
   formatProbability,
   isRunActive,
@@ -96,11 +97,16 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
   const { t_i18n } = useFormatter();
   const { hypotheses } = run;
   const numbers = citationNumbers(run.evidence);
-  const evidenceNames = new Map(run.evidence.map((item) => [item.id, item.name ?? item.id]));
-  const rows: { id: string; name: string }[] = [];
+  const evidenceById = new Map(run.evidence.map((item) => [item.id, item]));
+  const rows: { id: string; name: string; path: string | null }[] = [];
   hypotheses.forEach((hypothesis) => hypothesis.evidence.forEach((cell) => {
     if (!rows.some((row) => row.id === cell.evidence_id)) {
-      rows.push({ id: cell.evidence_id, name: cell.evidence_name ?? evidenceNames.get(cell.evidence_id) ?? cell.evidence_id });
+      const item = evidenceById.get(cell.evidence_id);
+      rows.push({
+        id: cell.evidence_id,
+        name: cell.evidence_name ?? item?.label ?? cell.evidence_id,
+        path: item ? (!item.in_draft && evidenceObjectPath(item)) || null : elementPath(cell.evidence_id),
+      });
     }
   }));
   rows.sort((a, b) => (numbers.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (numbers.get(b.id) ?? Number.MAX_SAFE_INTEGER));
@@ -148,7 +154,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                       <Typography component="span" variant="body2" color="text.secondary" sx={{ marginRight: 1 }}>
                         {numbers.has(row.id) ? `[${numbers.get(row.id)}]` : ''}
                       </Typography>
-                      <Link to={elementPath(row.id)}>{row.name}</Link>
+                      {row.path ? <Link to={row.path}>{row.name}</Link> : <span>{row.name}</span>}
                     </TableCell>
                     {hypotheses.map((hypothesis) => {
                       const cell = hypothesis.evidence.find((item) => item.evidence_id === row.id);

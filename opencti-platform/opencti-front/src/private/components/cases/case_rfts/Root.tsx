@@ -6,7 +6,7 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
-import InvestigateWithAI from '@components/investigation_runs/InvestigateWithAI';
+import RunCaseAutopilotAskAI from '@components/investigation_runs/RunCaseAutopilotAskAI';
 import InvestigationRunsTab from '@components/investigation_runs/InvestigationRunsTab';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -172,7 +172,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
               enableReferences={enableReferences}
             />
           ),
-          ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab caseId={caseData.id} caseBasePath={basePath} /> } : {}),
+          ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Rft" /> } : {}),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}
@@ -186,7 +186,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
         }}
         extraActions={!isKnowledgeOrContent && (
           <>
-            <InvestigateWithAI subjectId={caseData.id} caseBasePath={basePath} />
+            <RunCaseAutopilotAskAI subjectId={caseData.id} subjectType="Case-Rft" basePath={basePath} />
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
           </>
         )}

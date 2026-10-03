@@ -22,14 +22,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import InvestigateWithAI from './InvestigateWithAI';
 import InvestigationRunView from './InvestigationRunView';
 import { runStatusLabel } from './investigationRunUtils';
 import { InvestigationRunsTabQuery } from './__generated__/InvestigationRunsTabQuery.graphql';
 
 const investigationRunsTabQuery = graphql`
-  query InvestigationRunsTabQuery($caseId: String) {
-    investigationRuns(caseId: $caseId, first: 25, orderBy: created_at, orderMode: desc) {
+  query InvestigationRunsTabQuery($caseId: String, $subjectId: String) {
+    investigationRuns(caseId: $caseId, subjectId: $subjectId, first: 25, orderBy: created_at, orderMode: desc) {
       edges {
         node {
           id
@@ -44,19 +43,21 @@ const investigationRunsTabQuery = graphql`
 `;
 
 interface InvestigationRunsTabProps {
-  caseId: string;
-  caseBasePath: string;
+  entityId: string;
+  entityType: string;
 }
 
-/** The Autopilot tab of a case: its investigations, the latest one open and live. */
-const InvestigationRunsTab = ({ caseId, caseBasePath }: InvestigationRunsTabProps) => {
+/** The Autopilot tab of an incident or a case: its investigations, the latest one open and live. */
+const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProps) => {
   const { t_i18n, fldt } = useFormatter();
   const [searchParams, setSearchParams] = useSearchParams();
   const [fetchKey, setFetchKey] = useState(0);
   const requestedRunId = searchParams.get('run');
+  // A case holds the runs attached to it; an incident, the runs that investigated it.
+  const isIncident = entityType === 'Incident';
   const data = useLazyLoadQuery<InvestigationRunsTabQuery>(
     investigationRunsTabQuery,
-    { caseId },
+    isIncident ? { subjectId: entityId } : { caseId: entityId },
     { fetchPolicy: 'store-and-network', fetchKey: `${requestedRunId ?? ''}-${fetchKey}` },
   );
   const runs = (data.investigationRuns?.edges ?? []).map((edge) => edge.node);
@@ -68,31 +69,28 @@ const InvestigationRunsTab = ({ caseId, caseBasePath }: InvestigationRunsTabProp
   };
   return (
     <Stack spacing={3} data-testid="case-autopilot-tab">
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }} justifyContent="space-between">
-        {runs.length > 1 ? (
-          <Select value={selectedRun?.id} onValueChange={selectRun}>
-            <SelectTrigger aria-label={t_i18n('Investigation')} style={{ minWidth: 360 }}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {runs.map((run) => (
-                <SelectItem key={run.id} value={run.id}>
-                  {`${fldt(run.created_at)} - ${t_i18n(runStatusLabel(run.run_status))}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : <span />}
-        <InvestigateWithAI subjectId={caseId} caseBasePath={caseBasePath} />
-      </Stack>
+      {runs.length > 1 && (
+        <Select value={selectedRun?.id} onValueChange={selectRun}>
+          <SelectTrigger aria-label={t_i18n('Investigation')} style={{ minWidth: 360, alignSelf: 'flex-start' }}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Investigation')}>
+            {runs.map((run) => (
+              <SelectItem key={run.id} value={run.id}>
+                {`${fldt(run.created_at)} - ${t_i18n(runStatusLabel(run.run_status))}`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       {selectedRun ? (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <InvestigationRunView key={selectedRun.id} runId={selectedRun.id} currentEntityId={caseId} onDeleted={onDeleted} />
+          <InvestigationRunView key={selectedRun.id} runId={selectedRun.id} currentEntityId={entityId} onDeleted={onDeleted} />
         </Suspense>
       ) : (
         <Card title={t_i18n('Case Autopilot')}>
-          <Typography variant="body2">
-            {t_i18n('No investigation yet. Case Autopilot investigates this case with the connectors of this platform, scores attribution hypotheses, proposes recommendations and writes its results to a draft you approve.')}
+          <Typography variant="body2" data-testid="case-autopilot-empty">
+            {t_i18n('No investigation yet. Choose Run Case Autopilot in the Ask AI menu: Case Autopilot investigates with the XTM One investigation engine and the connectors of this platform, scores the hypotheses, proposes recommendations and writes its results to a draft you approve.')}
           </Typography>
         </Card>
       )}

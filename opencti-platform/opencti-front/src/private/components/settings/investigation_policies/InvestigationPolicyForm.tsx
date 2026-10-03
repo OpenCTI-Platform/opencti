@@ -15,30 +15,64 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Field, Form, Formik, FormikHelpers } from 'formik';
+import { Field, Form, Formik, FormikHelpers, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 import Typography from '@mui/material/Typography';
+import { Select, SelectContent, SelectHelperText, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from '@common/button/Button';
 import PlaybookFlowFieldRunAs from '@components/data/playbooks/playbookFlow/playbookFlowFields/PlaybookFlowFieldRunAs';
 import TextField from '../../../../components/TextField';
 import ComboboxField from '../../../../components/ComboboxField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { InvestigationPolicyFormConnectorsQuery } from './__generated__/InvestigationPolicyFormConnectorsQuery.graphql';
-import { AUTONOMOUS_ACTION_LABELS, AUTONOMOUS_ACTIONS, type InvestigationPolicyFormPolicy, type InvestigationPolicyFormValues, type Option } from './investigationPolicyUtils';
+import { engineReasonLabel } from '../../investigation_runs/investigationRunUtils';
+import { InvestigationPolicyFormQuery, InvestigationPolicyFormQuery$data } from './__generated__/InvestigationPolicyFormQuery.graphql';
+import {
+  AUTONOMOUS_ACTION_LABELS,
+  AUTONOMOUS_ACTIONS,
+  DEFAULT_PACK_VALUE,
+  toPackOptions,
+  type InvestigationPolicyFormPolicy,
+  type InvestigationPolicyFormValues,
+  type Option,
+} from './investigationPolicyUtils';
 
-const investigationPolicyFormConnectorsQuery = graphql`
-  query InvestigationPolicyFormConnectorsQuery {
+const investigationPolicyFormQuery = graphql`
+  query InvestigationPolicyFormQuery {
     investigationEnrichmentConnectors {
       id
       name
       active
       connector_scope
     }
+    investigationPacks {
+      available
+      reason
+      packs {
+        slug
+        label
+        description
+        recommended
+        options {
+          key
+          label
+          description
+          default
+          choices {
+            value
+            label
+            description
+          }
+        }
+      }
+    }
   }
 `;
+
+type InvestigationPackItem = InvestigationPolicyFormQuery$data['investigationPacks']['packs'][number];
 
 export const investigationPolicyValidator = (t: (value: string) => string) => Yup.object().shape({
   name: Yup.string().trim().min(2, t('This field must be at least 2 characters')).required(t('This field is required')),
@@ -46,10 +80,84 @@ export const investigationPolicyValidator = (t: (value: string) => string) => Yu
   agent_slug: Yup.string().max(200),
   auto_approve_min_confidence: Yup.number().integer().min(0).max(100).required(t('This field is required')),
   attribution_min_confidence: Yup.number().integer().min(0).max(100).required(t('This field is required')),
-  max_tool_calls: Yup.number().integer().min(1).max(500).required(t('This field is required')),
+  max_iterations: Yup.number().integer().min(1).max(50).required(t('This field is required')),
   max_enrichment_jobs: Yup.number().integer().min(0).max(200).required(t('This field is required')),
   max_minutes: Yup.number().integer().min(1).max(1440).required(t('This field is required')),
 });
+
+/** The options of the selected pack; an option left unset runs with the pack's own default. */
+const PackOptionsFields = ({ pack }: { pack: InvestigationPackItem | undefined }) => {
+  const { t_i18n } = useFormatter();
+  const { values, setFieldValue } = useFormikContext<InvestigationPolicyFormValues>();
+  if (!pack || pack.options.length === 0) return null;
+  return (
+    <>
+      {pack.options.map((option) => (
+        <div key={option.key} style={{ marginTop: 20 }} data-testid={`investigation-pack-option-${option.key}`}>
+          <Select
+            value={values.pack_options[option.key] ?? option.default ?? ''}
+            onValueChange={(next) => setFieldValue('pack_options', { ...values.pack_options, [option.key]: next })}
+          >
+            <SelectLabel>{option.label}</SelectLabel>
+            <SelectTrigger className="w-full" aria-label={option.label}>
+              <SelectValue placeholder={t_i18n('Pack default')} />
+            </SelectTrigger>
+            <SelectContent aria-label={option.label}>
+              {option.choices.map((choice) => (
+                <SelectItem key={choice.value} value={choice.value}>{choice.label}</SelectItem>
+              ))}
+            </SelectContent>
+            {option.description && <SelectHelperText>{option.description}</SelectHelperText>}
+          </Select>
+        </div>
+      ))}
+    </>
+  );
+};
+
+interface PackPickerProps {
+  catalog: InvestigationPolicyFormQuery$data['investigationPacks'];
+  storedPackId: string | null | undefined;
+}
+
+/** The pack of the XTM One investigation engine, from the packs the connected XTM One offers. */
+const PackPicker = ({ catalog, storedPackId }: PackPickerProps) => {
+  const { t_i18n } = useFormatter();
+  const { values, setFieldValue } = useFormikContext<InvestigationPolicyFormValues>();
+  const packs = catalog.packs;
+  // A pack removed from XTM One since the policy was saved still shows, by its slug, so it can be changed.
+  const orphanPackId = storedPackId && !packs.some((pack) => pack.slug === storedPackId) ? storedPackId : null;
+  const reason = catalog.available ? null : engineReasonLabel(catalog.reason);
+  const helper = reason
+    ? `${t_i18n('The packs of XTM One cannot be listed')}: ${t_i18n(reason)}`
+    : t_i18n('Pack of the XTM One investigation engine used by the investigations of this policy.');
+  const selected = packs.find((pack) => pack.slug === values.pack_id);
+  return (
+    <>
+      <Field
+        component={SelectFieldFds}
+        name="pack_id"
+        label={t_i18n('Investigation pack')}
+        helpertext={helper}
+        fullWidth
+        containerstyle={{ marginTop: 10 }}
+        onChange={() => setFieldValue('pack_options', {})}
+      >
+        <SelectItem value={DEFAULT_PACK_VALUE}>{t_i18n('Default pack (OpenCTI case investigation)')}</SelectItem>
+        {packs.map((pack) => (
+          <SelectItem key={pack.slug} value={pack.slug}>
+            {pack.recommended ? `${pack.label} (${t_i18n('recommended')})` : pack.label}
+          </SelectItem>
+        ))}
+        {orphanPackId && <SelectItem value={orphanPackId}>{`${orphanPackId} (${t_i18n('not offered by XTM One')})`}</SelectItem>}
+      </Field>
+      {selected?.description && (
+        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>{selected.description}</Typography>
+      )}
+      <PackOptionsFields pack={selected} />
+    </>
+  );
+};
 
 interface InvestigationPolicyFormProps {
   policy: InvestigationPolicyFormPolicy;
@@ -60,7 +168,7 @@ interface InvestigationPolicyFormProps {
 
 const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: InvestigationPolicyFormProps) => {
   const { t_i18n } = useFormatter();
-  const { investigationEnrichmentConnectors } = useLazyLoadQuery<InvestigationPolicyFormConnectorsQuery>(investigationPolicyFormConnectorsQuery, {});
+  const { investigationEnrichmentConnectors, investigationPacks } = useLazyLoadQuery<InvestigationPolicyFormQuery>(investigationPolicyFormQuery, {});
   const connectorOptions: Option[] = investigationEnrichmentConnectors.map((connector) => ({
     value: connector.id,
     label: connector.active ? connector.name : `${connector.name} (${t_i18n('inactive')})`,
@@ -72,7 +180,8 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
     name: policy.name,
     description: policy.description ?? '',
     is_default: policy.is_default,
-    pack_id: policy.pack_id ?? '',
+    pack_id: policy.pack_id ?? DEFAULT_PACK_VALUE,
+    pack_options: toPackOptions(policy.pack_options),
     agent_slug: policy.agent_slug ?? '',
     allowed_actions: actionOptions.filter((option) => policy.allowed_actions.includes(option.value)),
     enrichment_connector_ids: policy.enrichment_connector_ids.map(connectorOption),
@@ -80,7 +189,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
     auto_approve_low_risk: policy.auto_approve_low_risk,
     auto_approve_min_confidence: policy.auto_approve_min_confidence,
     attribution_min_confidence: policy.attribution_min_confidence,
-    max_tool_calls: policy.max_tool_calls,
+    max_iterations: policy.max_iterations,
     max_enrichment_jobs: policy.max_enrichment_jobs,
     max_minutes: policy.max_minutes,
     trigger_on_case_rfi_creation: policy.trigger_on_case_rfi_creation,
@@ -98,14 +207,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
           <Field component={TextField} name="description" label={t_i18n('Description')} fullWidth multiline rows={2} style={{ marginTop: 20 }} />
           <Field component={SwitchField} type="checkbox" name="is_default" label={t_i18n('Default policy')} containerstyle={fieldSpacingContainerStyle} />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Investigation engine')}</Typography>
-          <Field
-            component={TextField}
-            name="pack_id"
-            label={t_i18n('Investigation pack')}
-            helperText={t_i18n('Pack of the XTM One investigation engine used by the investigations of this policy. Leave empty for the default pack.')}
-            fullWidth
-            style={{ marginTop: 10 }}
-          />
+          <PackPicker catalog={investigationPacks} storedPackId={policy.pack_id} />
           <Field
             component={TextField}
             name="agent_slug"
@@ -152,7 +254,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
           <Field component={TextField} name="auto_approve_min_confidence" type="number" label={t_i18n('Minimum confidence for the automatic approval (%)')} fullWidth style={{ marginTop: 20 }} />
           <Field component={TextField} name="attribution_min_confidence" type="number" label={t_i18n('Minimum confidence to write an attribution (%)')} fullWidth style={{ marginTop: 20 }} />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Budget')}</Typography>
-          <Field component={TextField} name="max_tool_calls" type="number" label={t_i18n('Maximum tool calls')} fullWidth style={{ marginTop: 10 }} />
+          <Field component={TextField} name="max_iterations" type="number" label={t_i18n('Maximum iterations')} fullWidth style={{ marginTop: 10 }} />
           <Field component={TextField} name="max_enrichment_jobs" type="number" label={t_i18n('Maximum enrichment jobs')} fullWidth style={{ marginTop: 20 }} />
           <Field component={TextField} name="max_minutes" type="number" label={t_i18n('Maximum duration (minutes)')} fullWidth style={{ marginTop: 20 }} />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Triggers and identity')}</Typography>
