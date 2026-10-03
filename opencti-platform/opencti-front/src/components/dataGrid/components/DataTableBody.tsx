@@ -10,6 +10,7 @@ import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
 import DataTableSearchEmptyState from './DataTableSearchEmptyState';
 import { removeEmptyFiltersFromList } from 'src/utils/filters/filtersUtils';
+import { SinceLastVisitBatchProvider } from '@components/common/time_machine/SinceLastVisitBatch';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -189,7 +190,7 @@ const DataTableBody = ({
     || removeEmptyFiltersFromList(filters?.filters ?? []).length > 0;
 
   return (
-    <>
+    <SinceLastVisitBatchProvider enabled={variant === DataTableVariant.default}>
       <div style={{ width: rowWidth }}>
         {!hideHeaders && (
           <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
@@ -252,7 +253,7 @@ const DataTableBody = ({
           </>
         )}
       </div>
-    </>
+    </SinceLastVisitBatchProvider>
   );
 };
 
