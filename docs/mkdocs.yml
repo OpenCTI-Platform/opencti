@@ -181,6 +181,7 @@ nav:
         - Techniques: usage/exploring-techniques.md
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
+      - Defense: usage/defense-hub.md
       - Pivot and investigate: usage/pivoting.md
       - Graph analytics: usage/graph-analytics.md
     - Create knowledge:
@@ -204,6 +205,7 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
+      - Curation: usage/curation-hub.md
       - Refine content ✨: usage/refine-content.md
     - Act on knowledge:
       - Case management: usage/case-management.md

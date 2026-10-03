@@ -1366,6 +1366,7 @@
   "Default values set": "Standardwerte gesetzt",
   "Default: Reuse {entityType} author (leave empty to inherit)": "Standard: Autor {entityType} wiederverwenden (leer lassen, um zu erben)",
   "Default: Reuse main entity author (leave empty to inherit)": "Voreinstellung: Reuse main entity author (leer lassen, um zu erben)",
+  "Defense": "Verteidigung",
   "Define a group that will be assigned to each user created on the fly for ingestion": "Definieren Sie eine Gruppe, die jedem Benutzer zugewiesen wird, der im laufenden Betrieb für jeden Ingestion-Typ erstellt wird",
   "Define at which score thresholds the indicator is updated.": "Definieren Sie, bei welchen Score-Schwellenwerten der Indikator aktualisiert wird.",
   "Define Relationships Between Entities": "Definieren Sie Beziehungen zwischen Entitäten",

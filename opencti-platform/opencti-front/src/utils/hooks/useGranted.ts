@@ -87,6 +87,34 @@ const checkCapabilities = (capabilities: string[], userCapabilities: string[], m
   return matchAll ? capabilities.every(capabilityMatches) : capabilities.some(capabilityMatches);
 };
 
+interface GrantedUser {
+  id: string;
+  capabilities: readonly { name: string }[];
+  capabilitiesInDraft?: readonly { name: string }[] | null;
+  draftContext?: unknown;
+}
+
+/**
+ * The rule of `useGranted` for a user already in hand, so a list of entries (menu areas, hub tabs)
+ * can be checked in one render: bypass, then the base capabilities, then base and draft
+ * capabilities together in a draft context.
+ */
+export const isGrantedTo = (me: GrantedUser, capabilities: string[], matchAll = false): boolean => {
+  // Prevent use of the old SETTINGS capability for future uses
+  if (capabilities.includes(SETTINGS)) {
+    throw new Error('The SETTINGS capability should not be used');
+  }
+  if (isBypassUser(me)) {
+    return true;
+  }
+  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
+  if (checkCapabilities(capabilities, userBaseCapabilities, matchAll)) {
+    return true;
+  }
+  return !!me.draftContext
+    && checkCapabilities(capabilities, [...userBaseCapabilities, ...getCapabilitiesName(me.capabilitiesInDraft ?? [])], matchAll);
+};
+
 const useGranted = (
   capabilities: string[],
   matchAll = false,
@@ -97,33 +125,14 @@ const useGranted = (
   const { me } = useAuth();
   const { capabilitiesInDraft } = options;
 
-  // Prevent use of the old SETTINGS capability for future uses
-  if (capabilities.includes(SETTINGS)) {
-    throw new Error('The SETTINGS capability should not be used');
-  }
-
-  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
-  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
-
-  if (isBypassUser(me)) {
+  if (isGrantedTo(me, capabilities, matchAll)) {
     return true;
   }
 
-  // Check base capabilities
-  const baseGranted = checkCapabilities(capabilities, userBaseCapabilities, matchAll);
-
   // Check capabilities in Draft if provided
-  const draftGranted = capabilitiesInDraft?.length
-    ? checkCapabilities(capabilitiesInDraft, userCapabilitiesInDraft, matchAll)
+  return capabilitiesInDraft?.length
+    ? checkCapabilities(capabilitiesInDraft, getCapabilitiesName(me.capabilitiesInDraft), matchAll)
     : false;
-
-  // Check base and draft capabilities in draft context
-  const draftGrantedInDraftContext = me.draftContext
-    ? checkCapabilities(capabilities, [...userBaseCapabilities, ...userCapabilitiesInDraft], matchAll)
-    : false;
-
-  // Access is granted if EITHER check passes
-  return baseGranted || draftGranted || draftGrantedInDraftContext;
 };
 
 export default useGranted;
