@@ -102,5 +102,5 @@ runs:
         name: sbom-${{  inputs.sbom_name || inputs.artifact_name || inputs.image_name }}
         path: "*.cdx.json"
         overwrite: ${{ inputs.overwrite }}
-        retention-days: 3
+        retention-days: 10
 
