@@ -8,6 +8,7 @@ import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionLi
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_INVESTIGATION_POLICY, ENTITY_TYPE_INVESTIGATION_RUN } from '../modules/investigationRun/investigationRun-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
@@ -65,6 +66,8 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_SAVED_FILTER,
   ENTITY_TYPE_PIR,
+  ENTITY_TYPE_INVESTIGATION_RUN,
+  ENTITY_TYPE_INVESTIGATION_POLICY,
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_PLAYBOOK,

@@ -1,0 +1,551 @@
+# Case Autopilot: autonomous, auditable investigation runs (Enterprise Edition).
+
+enum InvestigationRunStatus {
+  planned
+  running
+  awaiting_approval
+  completed
+  failed
+  cancelled
+}
+
+enum InvestigationRunTrigger {
+  manual
+  playbook
+  case_rfi_creation
+}
+
+enum InvestigationRunPhase {
+  initializing
+  planning
+  enriching
+  waiting_enrichment
+  iterating
+  concluding
+  finalizing
+  awaiting_validation
+  validating
+  done
+}
+
+enum InvestigationPlanStepKind {
+  enrichment
+  pivot
+  correlation
+  timeline
+  attribution
+  recommendation
+  report
+}
+
+enum InvestigationPlanStepStatus {
+  pending
+  running
+  done
+  skipped
+  failed
+  awaiting_approval
+}
+
+enum InvestigationLedgerStatus {
+  done
+  failed
+  skipped
+}
+
+enum InvestigationEvidenceCategory {
+  infrastructure_overlap
+  tooling
+  ttp_overlap
+  victimology
+  temporal
+  source_reliability
+  language_timezone
+}
+
+enum InvestigationEvidenceOrigin {
+  subject
+  context
+  enrichment
+  agent
+}
+
+enum InvestigationConfidenceLabel {
+  almost_certain
+  very_likely
+  likely
+  roughly_even
+  unlikely
+  very_unlikely
+  remote
+}
+
+enum InvestigationRecommendationActionKind {
+  task
+  course_of_action
+  severity_change
+  sharing
+  notification
+  case_closure
+  other
+}
+
+enum InvestigationRecommendationPriority {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum InvestigationRecommendationStatus {
+  proposed
+  awaiting_approval
+  task_created
+  applied
+  dismissed
+}
+
+enum InvestigationApprovalKind {
+  enrichment
+  recommendation
+  draft_validation
+}
+
+enum InvestigationApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+enum InvestigationEnrichmentRequestStatus {
+  queued
+  awaiting_approval
+  dispatched
+  completed
+  failed
+  rejected
+  timeout
+  skipped
+}
+
+enum InvestigationFeedbackItemType {
+  hypothesis
+  recommendation
+}
+
+enum InvestigationFeedbackDecision {
+  accepted
+  rejected
+}
+
+enum InvestigationAutonomousAction {
+  enrichment
+  create_case
+  add_to_case
+  create_note
+  create_relationship
+}
+
+enum InvestigationRecommendationApplyMode {
+  task
+  course_of_action
+}
+
+type InvestigationPlanStep {
+  id: String!
+  kind: InvestigationPlanStepKind!
+  description: String!
+  status: InvestigationPlanStepStatus!
+  approval_required: Boolean!
+}
+
+type InvestigationLedgerEntry {
+  id: String!
+  step_id: String
+  iteration: Int!
+  tool: String!
+  description: String!
+  input_ref: String
+  output_ref: String
+  status: InvestigationLedgerStatus!
+  started_at: DateTime!
+  duration_ms: Int!
+  cost_units: Int!
+  work_id: String
+  error: String
+}
+
+type InvestigationEvidence {
+  id: String!
+  standard_id: String
+  entity_type: String!
+  name: String
+  origin: InvestigationEvidenceOrigin!
+  in_draft: Boolean!
+  element: StixObjectOrStixRelationship
+}
+
+type InvestigationEvidenceCell {
+  evidence_id: String!
+  evidence_standard_id: String
+  evidence_type: String
+  evidence_name: String
+  category: InvestigationEvidenceCategory!
+  consistency: Int!
+  weight: Float!
+  diagnosticity: Float!
+  rationale: String
+  element: StixObjectOrStixRelationship
+}
+
+type InvestigationHypothesis {
+  candidate_id: String!
+  candidate_standard_id: String
+  candidate_name: String
+  candidate_type: String
+  rationale: String
+  evidence: [InvestigationEvidenceCell!]!
+  rank: Int!
+  score: Float!
+  inconsistency: Float!
+  probability: Float!
+  confidence: Int!
+  confidence_label: InvestigationConfidenceLabel!
+  explanation: String!
+  candidate: StixCoreObject
+}
+
+type InvestigationTimelineEvent {
+  ts: DateTime!
+  entity_id: String!
+  entity_type: String!
+  name: String
+  event: String!
+}
+
+type InvestigationRecommendation {
+  id: String!
+  course_of_action_id: String
+  text: String!
+  priority: InvestigationRecommendationPriority!
+  rationale: String
+  action_kind: InvestigationRecommendationActionKind!
+  severity: String
+  approval_required: Boolean!
+  status: InvestigationRecommendationStatus!
+  task_id: String
+  courseOfAction: CourseOfAction
+}
+
+type InvestigationFeedback {
+  item_type: InvestigationFeedbackItemType!
+  item_ref: String!
+  decision: InvestigationFeedbackDecision!
+  comment: String
+  user_id: String!
+  ts: DateTime!
+  user: Creator
+}
+
+type InvestigationBudget {
+  max_tool_calls: Int!
+  max_enrichment_jobs: Int!
+  max_minutes: Int!
+  used_tool_calls: Int!
+  used_enrichment_jobs: Int!
+  used_minutes: Float!
+}
+
+type InvestigationApproval {
+  id: String!
+  kind: InvestigationApprovalKind!
+  status: InvestigationApprovalStatus!
+  description: String!
+  reason: String
+  connector_id: String
+  entity_id: String
+  recommendation_id: String
+  created_at: DateTime!
+  decided_at: DateTime
+  decided_by: String
+  rejection_reason: String
+}
+
+type InvestigationEnrichmentRequest {
+  id: String!
+  entity_id: String!
+  connector_id: String!
+  connector_name: String
+  reason: String
+  status: InvestigationEnrichmentRequestStatus!
+  requested_by: String!
+  iteration: Int!
+  work_id: String
+  created_at: DateTime!
+  completed_at: DateTime
+}
+
+type InvestigationAcceptance {
+  hypotheses_accepted: Int!
+  hypotheses_rejected: Int!
+  recommendations_accepted: Int!
+  recommendations_rejected: Int!
+  rate: Float
+}
+
+type InvestigationRunReport {
+  executive_summary: String!
+  timeline: String!
+  hypotheses: String!
+  recommendations: String!
+  iocs: String!
+}
+
+type InvestigationRun implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  objectMarking: [MarkingDefinition!]
+  # Investigation run
+  name: String!
+  subject_id: String!
+  subject_type: String!
+  subject: StixCoreObject
+  case_id: String
+  case: Case
+  workspace_id: String
+  workspace: Workspace
+  draft_id: String
+  draft: DraftWorkspace
+  policy_id: String
+  policy: InvestigationPolicy
+  agent_slug: String
+  run_trigger: InvestigationRunTrigger!
+  run_status: InvestigationRunStatus!
+  run_phase: InvestigationRunPhase!
+  status_reason: String
+  iteration: Int!
+  started_at: DateTime
+  completed_at: DateTime
+  run_as_id: String!
+  runAs: Creator
+  plan: [InvestigationPlanStep!]!
+  steps: [InvestigationLedgerEntry!]!
+  evidence: [InvestigationEvidence!]!
+  hypotheses: [InvestigationHypothesis!]!
+  timeline: [InvestigationTimelineEvent!]!
+  recommendations: [InvestigationRecommendation!]!
+  analyst_feedback: [InvestigationFeedback!]!
+  approvals: [InvestigationApproval!]!
+  enrichment_requests: [InvestigationEnrichmentRequest!]!
+  budget: InvestigationBudget!
+  summary: String
+  acceptance: InvestigationAcceptance!
+  report: InvestigationRunReport!
+}
+
+type InvestigationPolicy implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  # Investigation policy
+  name: String!
+  description: String
+  is_default: Boolean!
+  agent_slug: String
+  allowed_actions: [InvestigationAutonomousAction!]!
+  enrichment_connector_ids: [String!]!
+  approval_connector_ids: [String!]!
+  auto_approve_low_risk: Boolean!
+  auto_approve_min_confidence: Int!
+  attribution_min_confidence: Int!
+  max_tool_calls: Int!
+  max_enrichment_jobs: Int!
+  max_minutes: Int!
+  trigger_on_case_rfi_creation: Boolean!
+  run_as_id: String
+  runAs: Creator
+  runs_count: Int!
+  acceptance: InvestigationAcceptance!
+}
+
+enum InvestigationRunsOrdering {
+  created_at
+  updated_at
+  started_at
+  completed_at
+  run_status
+  _score
+}
+
+enum InvestigationPoliciesOrdering {
+  name
+  created_at
+  updated_at
+  _score
+}
+
+type InvestigationRunConnection {
+  pageInfo: PageInfo!
+  edges: [InvestigationRunEdge!]!
+}
+
+type InvestigationRunEdge {
+  cursor: String!
+  node: InvestigationRun!
+}
+
+type InvestigationPolicyConnection {
+  pageInfo: PageInfo!
+  edges: [InvestigationPolicyEdge!]!
+}
+
+type InvestigationPolicyEdge {
+  cursor: String!
+  node: InvestigationPolicy!
+}
+
+type InvestigationRunEnrichmentAccepted {
+  entity_id: String!
+  connector_id: String!
+  status: InvestigationEnrichmentRequestStatus!
+}
+
+type InvestigationRunEnrichmentRejected {
+  entity_id: String!
+  connector_id: String!
+  reason: String!
+}
+
+type InvestigationRunEnrichmentRequestResult {
+  accepted: [InvestigationRunEnrichmentAccepted!]!
+  rejected: [InvestigationRunEnrichmentRejected!]!
+}
+
+extend interface Case {
+  latestInvestigationRun: InvestigationRun
+}
+extend type CaseIncident {
+  latestInvestigationRun: InvestigationRun
+}
+extend type CaseRfi {
+  latestInvestigationRun: InvestigationRun
+}
+extend type CaseRft {
+  latestInvestigationRun: InvestigationRun
+}
+extend type Feedback {
+  latestInvestigationRun: InvestigationRun
+}
+extend type Incident {
+  latestInvestigationRun: InvestigationRun
+}
+
+type Query {
+  investigationRun(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE])
+  investigationRuns(
+    first: Int
+    after: ID
+    orderBy: InvestigationRunsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    subjectId: String
+    caseId: String
+  ): InvestigationRunConnection @auth(for: [KNOWLEDGE])
+  investigationPolicy(id: ID!): InvestigationPolicy @auth(for: [KNOWLEDGE])
+  investigationPolicies(
+    first: Int
+    after: ID
+    orderBy: InvestigationPoliciesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): InvestigationPolicyConnection @auth(for: [KNOWLEDGE])
+}
+
+input InvestigationRunFeedbackInput {
+  item_type: InvestigationFeedbackItemType!
+  item_ref: String!
+  decision: InvestigationFeedbackDecision!
+  comment: String @constraint(maxLength: 2000)
+}
+
+input InvestigationRunEnrichmentRequestInput {
+  entity_ids: [String!]!
+  connector_ids: [String!]!
+  reason: String @constraint(maxLength: 2000)
+}
+
+input InvestigationRunStepInput {
+  tool: String! @constraint(minLength: 1, maxLength: 200)
+  description: String! @constraint(minLength: 1, maxLength: 2000)
+  input_ref: String @constraint(maxLength: 500)
+  output_ref: String @constraint(maxLength: 500)
+  status: InvestigationLedgerStatus
+}
+
+input InvestigationEvidenceCellInput {
+  evidence_id: String!
+  category: InvestigationEvidenceCategory!
+  consistency: Int!
+  rationale: String @constraint(maxLength: 2000)
+}
+
+input InvestigationHypothesisInput {
+  candidate_id: String!
+  candidate_name: String @constraint(maxLength: 500)
+  candidate_type: String @constraint(maxLength: 100)
+  rationale: String @constraint(maxLength: 4000)
+  evidence: [InvestigationEvidenceCellInput!]!
+}
+
+input InvestigationPolicyAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  is_default: Boolean
+  agent_slug: String
+  allowed_actions: [InvestigationAutonomousAction!]
+  enrichment_connector_ids: [String!]
+  approval_connector_ids: [String!]
+  auto_approve_low_risk: Boolean
+  auto_approve_min_confidence: Int @constraint(min: 0, max: 100)
+  attribution_min_confidence: Int @constraint(min: 0, max: 100)
+  max_tool_calls: Int @constraint(min: 1, max: 500)
+  max_enrichment_jobs: Int @constraint(min: 0, max: 200)
+  max_minutes: Int @constraint(min: 1, max: 1440)
+  trigger_on_case_rfi_creation: Boolean
+  run_as_id: String
+}
+
+type Mutation {
+  investigationRunAdd(subjectId: ID!, policyId: ID): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
+  investigationRunCancel(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  investigationRunFeedback(id: ID!, input: InvestigationRunFeedbackInput!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunRecommendationApply(id: ID!, recommendationId: String!, mode: InvestigationRecommendationApplyMode!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunEnrichmentRequest(id: ID!, input: InvestigationRunEnrichmentRequestInput!): InvestigationRunEnrichmentRequestResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunStepRecord(id: ID!, input: InvestigationRunStepInput!): InvestigationLedgerEntry @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunHypothesesPropose(id: ID!, input: [InvestigationHypothesisInput!]!): [InvestigationHypothesis!] @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
+  investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
+  investigationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETPARAMETERS])
+}
+
+type Subscription {
+  investigationRun(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE])
+}

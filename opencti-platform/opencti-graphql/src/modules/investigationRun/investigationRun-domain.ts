@@ -1,0 +1,895 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import { v4 as uuidv4 } from 'uuid';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreCommon, BasicStoreEntity, StoreEntity } from '../../types/store';
+import {
+  FilterMode,
+  InvestigationApprovalKind,
+  InvestigationApprovalStatus,
+  InvestigationEnrichmentRequestStatus,
+  InvestigationEvidenceOrigin,
+  InvestigationFeedbackDecision,
+  InvestigationFeedbackItemType,
+  InvestigationLedgerStatus,
+  InvestigationRecommendationActionKind,
+  InvestigationRecommendationApplyMode,
+  InvestigationRecommendationStatus,
+  InvestigationRunPhase,
+  InvestigationRunStatus,
+  InvestigationRunTrigger,
+  OrderingMode,
+  type InvestigationHypothesisInput,
+  type InvestigationRunEnrichmentRequestInput,
+  type InvestigationRunFeedbackInput,
+  type InvestigationRunStepInput,
+  type QueryInvestigationRunsArgs,
+} from '../../generated/graphql';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { elFindByIds } from '../../database/engine';
+import { internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../database/middleware-loader';
+import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../../database/middleware';
+import { deleteInternalObject } from '../../domain/internalObject';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { lockResources } from '../../lock/master-lock';
+import { READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../utils/access';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
+import { taskAdd } from '../task/task-domain';
+import { validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { connectorsForEnrichment } from '../../database/repository';
+import { resolveUserByIdFromCache } from '../user/user-domain';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
+import {
+  ACTIVE_RUN_STATUSES,
+  ENTITY_TYPE_INVESTIGATION_RUN,
+  INVESTIGATION_CASE_SUBJECT_TYPES,
+  INVESTIGATION_DEFAULT_AGENT_SLUG,
+  INVESTIGATION_LIMITS,
+  INVESTIGATION_SUBJECT_TYPES,
+  TERMINAL_RUN_STATUSES,
+  type BasicStoreEntityInvestigationPolicy,
+  type BasicStoreEntityInvestigationRun,
+  type InvestigationApproval,
+  type InvestigationEnrichmentRequest,
+  type InvestigationEvidence,
+  type InvestigationFeedback,
+  type InvestigationRecommendation,
+  type StoreEntityInvestigationRun,
+} from './investigationRun-types';
+import { applyInvestigationPolicyAcceptanceDelta, getDefaultInvestigationPolicy, loadInvestigationPolicy } from './investigationPolicy-domain';
+import {
+  appendLedger,
+  buildBudget,
+  buildLedgerEntry,
+  evaluateEnrichmentRequest,
+  feedbackCounterDelta,
+  isEnrichmentRejection,
+  statusTransition,
+  upsertFeedback,
+} from './investigationRun-state';
+import { groundHypotheses, type AllowedIds } from './investigationRun-agent';
+import { scoreAchMatrix, type AchEvidenceMeta } from './investigationRun-ach';
+import { pushInvestigationFeedback } from './investigationRun-xtm';
+import { ATTRIBUTION_CANDIDATE_TYPES, evidenceFromElement, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+
+const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
+
+const outOfDraft = (context: AuthContext): AuthContext => ({ ...context, draft_context: '' });
+
+// region access
+
+export const isInvestigableEntityType = (entityType: string) => {
+  return INVESTIGATION_SUBJECT_TYPES.includes(entityType) || isStixCyberObservable(entityType);
+};
+
+export const loadInvestigationRun = (context: AuthContext, id: string) => {
+  return internalLoadById<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, id, { type: ENTITY_TYPE_INVESTIGATION_RUN });
+};
+
+// The markings and organizations of the investigated entity are copied on
+// the run: the engine only returns it to users who can see the entity.
+export const findInvestigationRunById = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
+  return storeLoadById<BasicStoreEntityInvestigationRun>(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
+};
+
+const findAccessibleRun = async (context: AuthContext, user: AuthUser, id: string) => {
+  const run = await findInvestigationRunById(context, user, id);
+  if (!run) {
+    throw FunctionalError('Investigation run not found', { id });
+  }
+  return run;
+};
+
+const emptyConnection = () => ({ edges: [], pageInfo: { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 } });
+
+export const findInvestigationRunsPaginated = async (context: AuthContext, user: AuthUser, args: QueryInvestigationRunsArgs) => {
+  await checkEnterpriseEdition(context);
+  const { subjectId, caseId, ...listArgs } = args;
+  const liveContext = outOfDraft(context);
+  let { filters } = listArgs;
+  if (subjectId) {
+    const subject = await internalLoadById<BasicStoreEntity>(liveContext, user, subjectId);
+    if (!subject) return emptyConnection();
+    filters = addFilter(filters, 'subject_id', [subject.internal_id]);
+  }
+  if (caseId) {
+    const caseEntity = await internalLoadById<BasicStoreEntity>(liveContext, user, caseId, { type: ENTITY_TYPE_CONTAINER_CASE });
+    if (!caseEntity) return emptyConnection();
+    filters = addFilter(filters, 'case_ids', [caseEntity.internal_id, caseEntity.standard_id]);
+  }
+  return pageEntitiesConnection<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    ...listArgs,
+    filters,
+    orderBy: listArgs.orderBy ?? 'created_at',
+    orderMode: listArgs.orderMode ?? OrderingMode.Desc,
+  });
+};
+
+const LATEST_RUNS_PAGE = 500;
+
+// Batch loader behind the run badges of case and incident lists: one query for
+// the page, per-entity queries only when that page could have hidden a run.
+export const batchLatestInvestigationRuns = async (context: AuthContext, user: AuthUser, entityIds: string[]) => {
+  const liveContext = outOfDraft(context);
+  const ids = Array.from(new Set(entityIds));
+  const filtersFor = (values: string[]) => ({
+    mode: FilterMode.Or,
+    filters: [{ key: ['case_ids'], values }, { key: ['subject_id'], values }],
+    filterGroups: [],
+  });
+  const runs = await topEntitiesList<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: filtersFor(ids),
+    orderBy: 'created_at',
+    orderMode: 'desc' as never,
+    first: LATEST_RUNS_PAGE,
+  });
+  const latestFor = (id: string) => runs.find((run) => run.subject_id === id || (run.case_ids ?? []).includes(id)) ?? null;
+  const results = ids.map((id) => latestFor(id));
+  if (runs.length >= LATEST_RUNS_PAGE) {
+    await Promise.all(ids.map(async (id, index) => {
+      if (results[index]) return;
+      const [run] = await topEntitiesList<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
+        filters: filtersFor([id]),
+        orderBy: 'created_at',
+        orderMode: 'desc' as never,
+        first: 1,
+      });
+      results[index] = run ?? null;
+    }));
+  }
+  const byId = new Map(ids.map((id, index) => [id, results[index]]));
+  return entityIds.map((id) => byId.get(id) ?? null) as unknown as BasicStoreCommon[];
+};
+
+// endregion
+
+// region updates
+
+/**
+ * Read-modify-write of a run under its own lock. Every writer (manager,
+ * analysts, agent tools) goes through here so concurrent updates never lose
+ * a ledger entry or a decision. The lock is held only for the update itself,
+ * never during an agent call or an enrichment wait.
+ */
+export const updateInvestigationRun = async (
+  context: AuthContext,
+  runId: string,
+  mutate: (run: BasicStoreEntityInvestigationRun) => Promise<Record<string, unknown> | null> | Record<string, unknown> | null,
+): Promise<BasicStoreEntityInvestigationRun> => {
+  const lock = await lockResources([runLockKey(runId)]);
+  try {
+    const run = await loadInvestigationRun(outOfDraft(context), runId);
+    if (!run) {
+      throw FunctionalError('Investigation run not found', { id: runId });
+    }
+    const patch = await mutate(run);
+    if (!patch || Object.keys(patch).length === 0) {
+      return run;
+    }
+    const { element } = await patchAttribute<StoreEntityInvestigationRun>(outOfDraft(context), INVESTIGATION_MANAGER_USER, runId, ENTITY_TYPE_INVESTIGATION_RUN, patch);
+    await notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].EDIT_TOPIC, element, INVESTIGATION_MANAGER_USER);
+    return element as unknown as BasicStoreEntityInvestigationRun;
+  } finally {
+    await lock.unlock();
+  }
+};
+
+// endregion
+
+// region creation
+
+export interface InvestigationRunAddOptions {
+  trigger?: InvestigationRunTrigger;
+  // Identity the run acts as when it is not the caller (playbooks, hooks).
+  runAsUserId?: string | null;
+}
+
+export const findActiveInvestigationRunForSubject = async (context: AuthContext, subjectId: string) => {
+  const [run] = await topEntitiesList<BasicStoreEntityInvestigationRun>(outOfDraft(context), INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['subject_id'], values: [subjectId] },
+        { key: ['run_status'], values: ACTIVE_RUN_STATUSES },
+      ],
+      filterGroups: [],
+    },
+    first: 1,
+  });
+  return run ?? null;
+};
+
+const resolveRunAsUser = async (context: AuthContext, user: AuthUser, runAsUserId?: string | null): Promise<AuthUser> => {
+  if (!runAsUserId || runAsUserId === user.id) {
+    return user;
+  }
+  const runAsUser = await resolveUserByIdFromCache(context, runAsUserId);
+  if (!runAsUser) {
+    throw FunctionalError('The run-as user of the investigation cannot be found', { runAsUserId });
+  }
+  return runAsUser;
+};
+
+export const addInvestigationRun = async (
+  context: AuthContext,
+  user: AuthUser,
+  subjectId: string,
+  policyId?: string | null,
+  opts: InvestigationRunAddOptions = {},
+): Promise<BasicStoreEntityInvestigationRun> => {
+  await checkEnterpriseEdition(context);
+  const liveContext = outOfDraft(context);
+  const trigger = opts.trigger ?? InvestigationRunTrigger.Manual;
+  const runUser = await resolveRunAsUser(liveContext, user, opts.runAsUserId);
+  // The run sees what its identity sees: the caller must be able to see the subject too.
+  const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, subjectId);
+  const callerSees = subject && (runUser.id === user.id || await internalLoadById(liveContext, user, subject.internal_id));
+  if (!subject || !callerSees) {
+    throw FunctionalError('The entity to investigate cannot be found', { subjectId });
+  }
+  if (!isInvestigableEntityType(subject.entity_type)) {
+    throw FunctionalError('Case Autopilot investigates incidents, cases, indicators and observables only', { entityType: subject.entity_type });
+  }
+  if (!isUserHasCapability(runUser, KNOWLEDGE_KNUPDATE)) {
+    throw ForbiddenAccess('The identity of the investigation must be allowed to update knowledge');
+  }
+  const policy = policyId ? await loadInvestigationPolicy(liveContext, policyId) : await getDefaultInvestigationPolicy(liveContext);
+  if (!policy) {
+    throw FunctionalError('Investigation policy not found', { policyId });
+  }
+  // Dedupe on the subject: one active investigation at a time.
+  const active = await findActiveInvestigationRunForSubject(liveContext, subject.internal_id);
+  if (active) {
+    return active;
+  }
+  const isCase = INVESTIGATION_CASE_SUBJECT_TYPES.includes(subject.entity_type);
+  const subjectName = extractEntityRepresentativeName(subject) || subject.internal_id;
+  const subjectEvidence: InvestigationEvidence = { ...evidenceFromElement(subject), origin: InvestigationEvidenceOrigin.Subject };
+  const runInput = {
+    name: `Case Autopilot - ${subjectName}`.slice(0, 250),
+    subject_id: subject.internal_id,
+    subject_type: subject.entity_type,
+    case_id: isCase ? subject.internal_id : null,
+    case_ids: isCase ? [subject.internal_id, subject.standard_id] : [],
+    policy_id: policy.internal_id,
+    agent_slug: policy.agent_slug || INVESTIGATION_DEFAULT_AGENT_SLUG,
+    run_trigger: trigger,
+    run_status: InvestigationRunStatus.Planned,
+    run_phase: InvestigationRunPhase.Initializing,
+    iteration: 0,
+    active_ms: 0,
+    agent_failures: 0,
+    run_as_id: runUser.id,
+    pending_work_ids: [],
+    plan: [],
+    steps: [],
+    evidence: [subjectEvidence],
+    hypotheses: [],
+    timeline: [],
+    recommendations: [],
+    analyst_feedback: [],
+    approvals: [],
+    enrichment_requests: [],
+    budget: buildBudget(policy),
+    objectMarking: markingIdsOf(subject),
+    objectOrganization: organizationIdsOf(subject),
+  };
+  const created = await createEntity(liveContext, INVESTIGATION_MANAGER_USER, runInput, ENTITY_TYPE_INVESTIGATION_RUN);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `launches Case Autopilot on \`${subjectName}\``,
+    context_data: { id: subject.internal_id, entity_type: subject.entity_type, input: { run_id: created.internal_id, policy_id: policy.internal_id, trigger } },
+  });
+  addInvestigationRunCount(trigger);
+  return notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].ADDED_TOPIC, created, user);
+};
+
+// endregion
+
+// region analyst actions
+
+export const cancelInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
+  const run = await findAccessibleRun(context, user, id);
+  if (TERMINAL_RUN_STATUSES.includes(run.run_status)) {
+    return run;
+  }
+  const updated = await updateInvestigationRun(context, id, (current) => {
+    if (!ACTIVE_RUN_STATUSES.includes(current.run_status)) return null;
+    const now = new Date();
+    return {
+      ...statusTransition(current, InvestigationRunStatus.Cancelled, InvestigationRunPhase.Done, now, `Cancelled by ${user.name}`),
+      pending_work_ids: [],
+      approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
+        ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Run cancelled' }
+        : approval)),
+    };
+  });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `cancels Case Autopilot run \`${run.name}\``,
+    context_data: { id: run.subject_id, entity_type: run.subject_type, input: { run_id: id } },
+  });
+  if (updated.run_status === InvestigationRunStatus.Cancelled) {
+    addInvestigationRunOutcomeCount(InvestigationRunStatus.Cancelled);
+  }
+  return updated;
+};
+
+export const deleteInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
+  const run = await findAccessibleRun(context, user, id);
+  if (ACTIVE_RUN_STATUSES.includes(run.run_status)) {
+    throw FunctionalError('Cancel the investigation before deleting it', { id });
+  }
+  await deleteInternalObject(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
+  await notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].DELETE_TOPIC, run, user);
+  return id;
+};
+
+const feedbackItemLabel = (run: BasicStoreEntityInvestigationRun, itemType: InvestigationFeedbackItemType, itemRef: string) => {
+  if (itemType === InvestigationFeedbackItemType.Hypothesis) {
+    const hypothesis = run.hypotheses.find((h) => h.candidate_id === itemRef);
+    return hypothesis ? { label: hypothesis.candidate_name ?? itemRef, hypothesis } : null;
+  }
+  const recommendation = run.recommendations.find((r) => r.id === itemRef);
+  return recommendation ? { label: recommendation.text, recommendation } : null;
+};
+
+const sendFeedbackToXtmOne = (user: AuthUser, run: BasicStoreEntityInvestigationRun, entries: InvestigationFeedback[]) => {
+  const decisions = entries.map((entry) => {
+    const item = feedbackItemLabel(run, entry.item_type, entry.item_ref);
+    if (entry.item_type === InvestigationFeedbackItemType.Hypothesis && item && 'hypothesis' in item && item.hypothesis) {
+      const { hypothesis } = item;
+      return {
+        item_type: entry.item_type,
+        item_ref: entry.item_ref,
+        label: item.label,
+        candidate_type: hypothesis.candidate_type,
+        decision: entry.decision,
+        comment: entry.comment ?? null,
+        probability: hypothesis.probability,
+        confidence_label: hypothesis.confidence_label,
+        evidence_categories: Array.from(new Set(hypothesis.evidence.map((cell) => cell.category))),
+      };
+    }
+    const recommendation = item && 'recommendation' in item ? item.recommendation : null;
+    return {
+      item_type: entry.item_type,
+      item_ref: entry.item_ref,
+      label: item?.label ?? entry.item_ref,
+      action_kind: recommendation?.action_kind ?? null,
+      decision: entry.decision,
+      comment: entry.comment ?? null,
+    };
+  });
+  pushInvestigationFeedback(
+    { id: user.id, user_email: user.user_email },
+    {
+      agent_slug: run.agent_slug || INVESTIGATION_DEFAULT_AGENT_SLUG,
+      run_id: run.internal_id,
+      subject: { id: run.subject_id, entity_type: run.subject_type, name: run.name },
+      decisions,
+    },
+  ).catch((cause) => logApp.warn('[CASE AUTOPILOT] Feedback push failed', { cause }));
+};
+
+const recordFeedback = async (
+  context: AuthContext,
+  user: AuthUser,
+  run: BasicStoreEntityInvestigationRun,
+  entry: InvestigationFeedback,
+  extraPatch: (current: BasicStoreEntityInvestigationRun) => Record<string, unknown> = () => ({}),
+) => {
+  const holder: { previous: InvestigationFeedback | null } = { previous: null };
+  const updated = await updateInvestigationRun(context, run.internal_id, (current) => {
+    const result = upsertFeedback(current.analyst_feedback, entry);
+    holder.previous = result.previous;
+    return { analyst_feedback: result.feedback, ...extraPatch(current) };
+  });
+  if (run.policy_id) {
+    // A repeated identical decision yields a null delta, which is skipped.
+    await applyInvestigationPolicyAcceptanceDelta(context, run.policy_id, feedbackCounterDelta(holder.previous, entry));
+  }
+  addInvestigationFeedbackCount(entry.item_type, entry.decision);
+  sendFeedbackToXtmOne(user, updated, [entry]);
+  return updated;
+};
+
+export const addInvestigationRunFeedback = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunFeedbackInput) => {
+  const run = await findAccessibleRun(context, user, id);
+  if (!feedbackItemLabel(run, input.item_type, input.item_ref)) {
+    throw FunctionalError('Unknown hypothesis or recommendation', { id, itemRef: input.item_ref });
+  }
+  const entry: InvestigationFeedback = {
+    item_type: input.item_type,
+    item_ref: input.item_ref,
+    decision: input.decision,
+    comment: input.comment?.trim().slice(0, INVESTIGATION_LIMITS.textLength) || null,
+    user_id: user.id,
+    ts: new Date().toISOString(),
+  };
+  const updated = await recordFeedback(context, user, run, entry);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `${input.decision === InvestigationFeedbackDecision.Accepted ? 'accepts' : 'rejects'} a Case Autopilot ${input.item_type} of \`${run.name}\``,
+    context_data: { id: run.subject_id, entity_type: run.subject_type, input },
+  });
+  return updated;
+};
+
+// The live case of a run: the investigated case, the case found at start, or
+// the case the run created once its draft was validated.
+export const resolveLiveCase = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
+  const caseIds = run.case_ids ?? [];
+  if (caseIds.length === 0) return null;
+  const cases = await elFindByIds<BasicStoreEntity>(outOfDraft(context), user, caseIds, { type: ENTITY_TYPE_CONTAINER_CASE }) as BasicStoreEntity[];
+  return cases[0] ?? null;
+};
+
+const createRecommendationTask = async (
+  context: AuthContext,
+  user: AuthUser,
+  run: BasicStoreEntityInvestigationRun,
+  recommendation: InvestigationRecommendation,
+  liveCase: BasicStoreEntity | null,
+) => {
+  const anchor = liveCase ?? await internalLoadById<BasicStoreEntity>(outOfDraft(context), user, run.subject_id);
+  if (!anchor) {
+    throw FunctionalError('The investigated entity is no longer accessible', { id: run.internal_id });
+  }
+  const description = [
+    recommendation.rationale ?? '',
+    '',
+    `Recommended by Case Autopilot (${recommendation.priority}, ${recommendation.action_kind.replace(/_/g, ' ')}) in the investigation "${run.name}".`,
+  ].join('\n').trim();
+  const task = await taskAdd(outOfDraft(context), user, {
+    name: recommendation.text.slice(0, 250),
+    description,
+    objects: [anchor.internal_id],
+    objectMarking: markingIdsOf(anchor),
+  });
+  return task.internal_id ?? task.id;
+};
+
+export const applyInvestigationRecommendation = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  recommendationId: string,
+  mode: InvestigationRecommendationApplyMode,
+) => {
+  const run = await findAccessibleRun(context, user, id);
+  const recommendation = run.recommendations.find((r) => r.id === recommendationId);
+  if (!recommendation) {
+    throw FunctionalError('Unknown recommendation', { id, recommendationId });
+  }
+  if (recommendation.status !== InvestigationRecommendationStatus.Proposed) {
+    throw FunctionalError('This recommendation was already handled or is waiting for an approval', { id, recommendationId, status: recommendation.status });
+  }
+  const liveCase = await resolveLiveCase(context, user, run);
+  let statusPatch: Partial<InvestigationRecommendation>;
+  if (mode === InvestigationRecommendationApplyMode.CourseOfAction) {
+    if (!recommendation.course_of_action_id) {
+      throw FunctionalError('This recommendation does not reference a course of action', { id, recommendationId });
+    }
+    if (!liveCase) {
+      throw FunctionalError('Approve the investigation draft first: the course of action is applied to the case', { id });
+    }
+    await stixDomainObjectAddRelation(outOfDraft(context), user, liveCase.internal_id, { toId: recommendation.course_of_action_id, relationship_type: RELATION_OBJECT });
+    statusPatch = { status: InvestigationRecommendationStatus.Applied };
+  } else {
+    const taskId = await createRecommendationTask(context, user, run, recommendation, liveCase);
+    statusPatch = { status: InvestigationRecommendationStatus.TaskCreated, task_id: taskId };
+  }
+  // Applying a recommendation is the strongest acceptance signal: recorded as such.
+  const entry: InvestigationFeedback = {
+    item_type: InvestigationFeedbackItemType.Recommendation,
+    item_ref: recommendationId,
+    decision: InvestigationFeedbackDecision.Accepted,
+    comment: null,
+    user_id: user.id,
+    ts: new Date().toISOString(),
+  };
+  const updated = await recordFeedback(context, user, run, entry, (current) => ({
+    recommendations: current.recommendations.map((r) => (r.id === recommendationId ? { ...r, ...statusPatch } : r)),
+  }));
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `applies a Case Autopilot recommendation of \`${run.name}\``,
+    context_data: { id: run.subject_id, entity_type: run.subject_type, input: { recommendationId, mode } },
+  });
+  return updated;
+};
+
+// endregion
+
+// region approvals (surfaced through the chatbot approval route)
+
+export interface InvestigationApprovalDecisionInput {
+  tool_call_id: string;
+  decision: 'approve' | 'approve_always' | 'reject';
+  rejection_reason?: string | null;
+}
+
+export interface InvestigationApprovalOutcome {
+  decided: number;
+  run: BasicStoreEntityInvestigationRun;
+}
+
+const requiredCapabilityFor = (approval: InvestigationApproval) => {
+  if (approval.kind === InvestigationApprovalKind.Enrichment) return KNOWLEDGE_KNENRICHMENT;
+  if (approval.kind === InvestigationApprovalKind.DraftValidation) return KNOWLEDGE_KNUPDATE_KNDELETE;
+  return KNOWLEDGE_KNUPDATE;
+};
+
+const executeApprovedRecommendation = async (
+  context: AuthContext,
+  user: AuthUser,
+  run: BasicStoreEntityInvestigationRun,
+  recommendation: InvestigationRecommendation,
+): Promise<Partial<InvestigationRecommendation>> => {
+  const liveCase = await resolveLiveCase(context, user, run);
+  if (recommendation.action_kind === InvestigationRecommendationActionKind.SeverityChange && recommendation.severity && liveCase) {
+    await stixDomainObjectEditField(outOfDraft(context), user, liveCase.internal_id, [{ key: 'severity', value: [recommendation.severity] }]);
+    return { status: InvestigationRecommendationStatus.Applied };
+  }
+  // Autopilot never shares, notifies or closes by itself: the approved action
+  // becomes a task the analyst carries out with the full context.
+  const taskId = await createRecommendationTask(context, user, run, recommendation, liveCase);
+  return { status: InvestigationRecommendationStatus.TaskCreated, task_id: taskId };
+};
+
+export const decideInvestigationApprovals = async (
+  context: AuthContext,
+  user: AuthUser,
+  runId: string,
+  decisions: InvestigationApprovalDecisionInput[],
+): Promise<InvestigationApprovalOutcome> => {
+  const run = await findAccessibleRun(context, user, runId);
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
+    throw ForbiddenAccess();
+  }
+  const now = new Date();
+  const decided: Array<{ approval: InvestigationApproval; approved: boolean; reason: string | null }> = [];
+  decisions.forEach((decision) => {
+    const approval = run.approvals.find((a) => a.id === decision.tool_call_id && a.status === InvestigationApprovalStatus.Pending);
+    if (!approval) return;
+    const approved = decision.decision === 'approve' || decision.decision === 'approve_always';
+    decided.push({ approval, approved, reason: decision.rejection_reason?.slice(0, INVESTIGATION_LIMITS.textLength) ?? null });
+    // "Approve always" extends the decision to the other pending requests of the same connector.
+    if (decision.decision === 'approve_always' && approval.kind === InvestigationApprovalKind.Enrichment) {
+      run.approvals
+        .filter((other) => other.id !== approval.id && other.status === InvestigationApprovalStatus.Pending
+          && other.kind === InvestigationApprovalKind.Enrichment && other.connector_id === approval.connector_id)
+        .forEach((other) => {
+          if (!decided.some((d) => d.approval.id === other.id)) decided.push({ approval: other, approved: true, reason: null });
+        });
+    }
+  });
+  if (decided.length === 0) {
+    return { decided: 0, run };
+  }
+  const missing = decided.find(({ approval }) => !isUserHasCapability(user, requiredCapabilityFor(approval)));
+  if (missing) {
+    throw ForbiddenAccess('You are not allowed to decide this approval', { kind: missing.approval.kind });
+  }
+  // Side effects run with the approver's identity: an approval is their consent.
+  const recommendationPatches = new Map<string, Partial<InvestigationRecommendation>>();
+  let validationWorkId: string | null = null;
+  for (let index = 0; index < decided.length; index += 1) {
+    const { approval, approved } = decided[index];
+    if (approval.kind === InvestigationApprovalKind.Recommendation && approval.recommendation_id) {
+      const recommendation = run.recommendations.find((r) => r.id === approval.recommendation_id);
+      if (recommendation) {
+        recommendationPatches.set(recommendation.id, approved
+          ? await executeApprovedRecommendation(context, user, run, recommendation)
+          : { status: InvestigationRecommendationStatus.Dismissed });
+      }
+    }
+    if (approval.kind === InvestigationApprovalKind.DraftValidation && approved && run.draft_id) {
+      const work = await validateDraftWorkspace(outOfDraft(context), user, run.draft_id);
+      validationWorkId = work?.id ?? null;
+    }
+  }
+  const decidedIds = new Map(decided.map((d) => [d.approval.id, d]));
+  const updated = await updateInvestigationRun(context, runId, (current) => {
+    const approvals = current.approvals.map((approval) => {
+      const decision = decidedIds.get(approval.id);
+      if (!decision || approval.status !== InvestigationApprovalStatus.Pending) return approval;
+      return {
+        ...approval,
+        status: decision.approved ? InvestigationApprovalStatus.Approved : InvestigationApprovalStatus.Rejected,
+        decided_at: now.toISOString(),
+        decided_by: user.id,
+        rejection_reason: decision.approved ? null : decision.reason,
+      };
+    });
+    const enrichmentRequests = current.enrichment_requests.map((request) => {
+      const approval = approvals.find((a) => a.kind === InvestigationApprovalKind.Enrichment && a.entity_id === request.entity_id
+        && a.connector_id === request.connector_id && decidedIds.has(a.id));
+      if (!approval || request.status !== InvestigationEnrichmentRequestStatus.AwaitingApproval) return request;
+      const approved = approval.status === InvestigationApprovalStatus.Approved;
+      return { ...request, status: approved ? InvestigationEnrichmentRequestStatus.Queued : InvestigationEnrichmentRequestStatus.Rejected };
+    });
+    const recommendations = current.recommendations.map((r) => (recommendationPatches.has(r.id) ? { ...r, ...recommendationPatches.get(r.id) } : r));
+    const patch: Record<string, unknown> = { approvals, enrichment_requests: enrichmentRequests, recommendations };
+    const draftDecision = decided.find(({ approval }) => approval.kind === InvestigationApprovalKind.DraftValidation);
+    if (draftDecision && current.run_status === InvestigationRunStatus.AwaitingApproval) {
+      if (draftDecision.approved) {
+        Object.assign(patch, statusTransition(current, InvestigationRunStatus.Running, InvestigationRunPhase.Validating, now), {
+          validation_work_id: validationWorkId,
+          wave_started_at: now.toISOString(),
+        });
+      } else {
+        Object.assign(patch, statusTransition(current, InvestigationRunStatus.Completed, InvestigationRunPhase.Done, now, 'The investigation draft was not approved, it stays open for review'));
+      }
+    } else if (current.run_status === InvestigationRunStatus.AwaitingApproval
+      && current.run_phase !== InvestigationRunPhase.AwaitingValidation
+      && approvals.every((approval) => approval.status !== InvestigationApprovalStatus.Pending)) {
+      // Nothing is waiting any more: the manager resumes the run.
+      Object.assign(patch, statusTransition(current, InvestigationRunStatus.Running, current.run_phase, now));
+    }
+    return patch;
+  });
+  if (updated.run_status === InvestigationRunStatus.Completed && run.run_status !== InvestigationRunStatus.Completed) {
+    addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
+  }
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `decides ${decided.length} Case Autopilot approval(s) of \`${run.name}\``,
+    context_data: {
+      id: run.subject_id,
+      entity_type: run.subject_type,
+      input: { run_id: runId, decisions: decided.map(({ approval, approved }) => ({ id: approval.id, kind: approval.kind, approved })) },
+    },
+  });
+  return { decided: decided.length, run: updated };
+};
+
+// endregion
+
+// region agent tools (called by XTM One with the run identity)
+
+const loadRunForAgent = async (context: AuthContext, user: AuthUser, id: string) => {
+  const run = await findAccessibleRun(context, user, id);
+  if (run.run_as_id !== user.id) {
+    throw ForbiddenAccess('Only the identity of the investigation can act for its agent');
+  }
+  return run;
+};
+
+const runContextFor = (context: AuthContext, run: BasicStoreEntityInvestigationRun): AuthContext => ({
+  ...context,
+  draft_context: run.draft_id ?? '',
+});
+
+export const listPolicyEnrichmentConnectors = async (context: AuthContext, user: AuthUser, policy: BasicStoreEntityInvestigationPolicy) => {
+  const connectors = await connectorsForEnrichment(outOfDraft(context), user, null, true) as Array<{ internal_id: string; name: string; connector_scope?: string[] }>;
+  const allowList = policy.enrichment_connector_ids ?? [];
+  return connectors.filter((connector) => allowList.length === 0 || allowList.includes(connector.internal_id));
+};
+
+export const requestInvestigationEnrichment = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunEnrichmentRequestInput) => {
+  const run = await loadRunForAgent(context, user, id);
+  const policy = run.policy_id ? await loadInvestigationPolicy(outOfDraft(context), run.policy_id) : null;
+  if (!policy) {
+    throw FunctionalError('The policy of the investigation cannot be found', { id });
+  }
+  const connectors = await listPolicyEnrichmentConnectors(context, user, policy);
+  const connectorNames = new Map(connectors.map((connector) => [connector.internal_id, connector.name]));
+  const allowedConnectorIds = new Set(connectors.map((connector) => connector.internal_id));
+  const entityIds = Array.from(new Set(input.entity_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
+  const connectorIds = Array.from(new Set(input.connector_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
+  // Entities the identity of the run can see in its draft, by internal or standard id.
+  const visible = await elFindByIds<BasicStoreEntity>(runContextFor(context, run), user, entityIds, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
+  const resolvedIds = new Map<string, string>();
+  visible.forEach((element) => {
+    resolvedIds.set(element.internal_id, element.internal_id);
+    if (element.standard_id) resolvedIds.set(element.standard_id, element.internal_id);
+  });
+  const accepted: Array<{ entity_id: string; connector_id: string; status: InvestigationEnrichmentRequestStatus }> = [];
+  const rejected: Array<{ entity_id: string; connector_id: string; reason: string }> = [];
+  const now = new Date();
+  await updateInvestigationRun(context, id, (current) => {
+    const newRequests: InvestigationEnrichmentRequest[] = [];
+    const newApprovals: InvestigationApproval[] = [];
+    const allowedEntityIds = new Set(resolvedIds.values());
+    entityIds.forEach((rawEntityId) => {
+      connectorIds.forEach((connectorId) => {
+        const entityId = resolvedIds.get(rawEntityId) ?? rawEntityId;
+        const verdict = evaluateEnrichmentRequest({
+          run: { ...current, enrichment_requests: [...current.enrichment_requests, ...newRequests] },
+          policy,
+          allowedConnectorIds,
+          allowedEntityIds,
+          entityId,
+          connectorId,
+          alreadyAccepted: 0,
+        });
+        if (isEnrichmentRejection(verdict)) {
+          rejected.push({ entity_id: rawEntityId, connector_id: connectorId, reason: verdict });
+          return;
+        }
+        const request: InvestigationEnrichmentRequest = {
+          id: uuidv4(),
+          entity_id: entityId,
+          connector_id: connectorId,
+          connector_name: connectorNames.get(connectorId) ?? null,
+          reason: input.reason?.slice(0, INVESTIGATION_LIMITS.textLength) ?? null,
+          status: verdict,
+          requested_by: 'agent',
+          iteration: current.iteration,
+          work_id: null,
+          created_at: now.toISOString(),
+          completed_at: null,
+        };
+        newRequests.push(request);
+        if (verdict === InvestigationEnrichmentRequestStatus.AwaitingApproval) {
+          newApprovals.push({
+            id: uuidv4(),
+            kind: InvestigationApprovalKind.Enrichment,
+            status: InvestigationApprovalStatus.Pending,
+            description: `Run ${request.connector_name ?? connectorId} on ${entityId}`,
+            reason: request.reason,
+            connector_id: connectorId,
+            entity_id: entityId,
+            recommendation_id: null,
+            created_at: now.toISOString(),
+          });
+        }
+        accepted.push({ entity_id: rawEntityId, connector_id: connectorId, status: verdict });
+      });
+    });
+    const ledgerEntry = buildLedgerEntry(current, {
+      tool: 'request_opencti_enrichment',
+      description: `${accepted.length} enrichment request(s) accepted, ${rejected.length} rejected`,
+      input_ref: entityIds.join(',').slice(0, 500),
+      cost_units: 1,
+    }, now);
+    return {
+      enrichment_requests: [...current.enrichment_requests, ...newRequests],
+      approvals: [...current.approvals, ...newApprovals].slice(-INVESTIGATION_LIMITS.approvals),
+      steps: appendLedger(current.steps, [ledgerEntry]),
+      budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
+    };
+  });
+  return { accepted, rejected };
+};
+
+export const recordInvestigationStep = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunStepInput) => {
+  const run = await loadRunForAgent(context, user, id);
+  if (run.run_status !== InvestigationRunStatus.Running) {
+    throw FunctionalError('The investigation is not running', { id, status: run.run_status });
+  }
+  const now = new Date();
+  const entry = buildLedgerEntry(run, {
+    tool: `agent.${input.tool}`.slice(0, 200),
+    description: input.description,
+    input_ref: input.input_ref ?? null,
+    output_ref: input.output_ref ?? null,
+    status: input.status ?? InvestigationLedgerStatus.Done,
+    cost_units: 1,
+  }, now);
+  await updateInvestigationRun(context, id, (current) => ({
+    steps: appendLedger(current.steps, [entry]),
+    budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
+  }));
+  return entry;
+};
+
+/**
+ * Score an ACH matrix proposed by the agent. Candidates and evidence are
+ * grounded against what the identity of the run can see; the scores the
+ * agent gets back are OpenCTI's, never its own.
+ */
+export const proposeInvestigationHypotheses = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationHypothesisInput[]) => {
+  const run = await loadRunForAgent(context, user, id);
+  if (run.run_status !== InvestigationRunStatus.Running) {
+    throw FunctionalError('The investigation is not running', { id, status: run.run_status });
+  }
+  const citedIds = Array.from(new Set([
+    ...input.map((hypothesis) => hypothesis.candidate_id),
+    ...input.flatMap((hypothesis) => hypothesis.evidence.map((cell) => cell.evidence_id)),
+  ])).slice(0, INVESTIGATION_LIMITS.evidence);
+  const elements = await elFindByIds<BasicStoreEntity>(runContextFor(context, run), user, citedIds, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
+  const allowed: AllowedIds = {
+    evidence: new Set<string>(),
+    candidates: new Set<string>(),
+    coursesOfAction: new Set<string>(),
+    entities: new Set<string>(),
+    connectors: new Set<string>(),
+    aliases: new Map<string, string>(),
+  };
+  const candidateInfo = new Map<string, { name?: string | null; entity_type?: string | null; standard_id?: string | null }>();
+  const evidenceMeta = new Map<string, AchEvidenceMeta>();
+  const newEvidence: InvestigationEvidence[] = [];
+  const knownEvidence = new Set(run.evidence.map((e) => e.id));
+  elements.forEach((element) => {
+    allowed.aliases.set(element.internal_id, element.internal_id);
+    if (element.standard_id) allowed.aliases.set(element.standard_id, element.internal_id);
+    const evidence = evidenceFromElement(element, { origin: InvestigationEvidenceOrigin.Agent, draftId: run.draft_id });
+    allowed.evidence.add(element.internal_id);
+    evidenceMeta.set(element.internal_id, run.evidence.find((known) => known.id === element.internal_id) ?? evidence);
+    if (ATTRIBUTION_CANDIDATE_TYPES.includes(element.entity_type)) {
+      allowed.candidates.add(element.internal_id);
+      candidateInfo.set(element.internal_id, { name: evidence.name, entity_type: element.entity_type, standard_id: element.standard_id });
+    }
+    if (!knownEvidence.has(element.internal_id)) {
+      newEvidence.push(evidence);
+    }
+  });
+  const { hypotheses } = groundHypotheses(input as unknown[], allowed, candidateInfo);
+  const scored = scoreAchMatrix(hypotheses, evidenceMeta);
+  const now = new Date();
+  await updateInvestigationRun(context, id, (current) => ({
+    hypotheses: scored,
+    evidence: [...current.evidence, ...newEvidence.filter((e) => !current.evidence.some((known) => known.id === e.id))].slice(0, INVESTIGATION_LIMITS.evidence),
+    steps: appendLedger(current.steps, [buildLedgerEntry(current, {
+      tool: 'propose_investigation_hypotheses',
+      description: `${scored.length} hypothesis(es) scored`,
+      output_ref: scored[0]?.candidate_id ?? null,
+      cost_units: 1,
+    }, now)]),
+    budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
+  }));
+  return scored;
+};
+
+// endregion
