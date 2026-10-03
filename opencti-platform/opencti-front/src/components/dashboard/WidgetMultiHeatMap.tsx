@@ -3,8 +3,8 @@ import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { heatMapOptions } from '../../utils/Charts';
-import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
 const darkColors = [
   '#001e3c',
@@ -51,7 +51,7 @@ const WidgetMultiHeatMap = ({
   onMounted,
 }: WidgetMultiHeatMapProps) => {
   const theme = useTheme<Theme>();
-  const { fsd } = useFormatter();
+  const axisFormatter = useTimeSeriesAxisFormatter();
 
   const options: ApexOptions = useMemo(() => {
     const interval = Math.trunc((maxValue - minValue) / 9);
@@ -78,13 +78,13 @@ const WidgetMultiHeatMap = ({
     return heatMapOptions(
       theme,
       true,
-      fsd,
+      axisFormatter,
       undefined,
       undefined,
       isStacked,
       colorRanges,
     ) as ApexOptions;
-  }, [theme, isStacked, maxValue, minValue]);
+  }, [theme, isStacked, maxValue, minValue, axisFormatter]);
 
   return (
     <Chart

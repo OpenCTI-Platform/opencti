@@ -61,7 +61,9 @@ export const daysAgo = (
 ): string =>
   moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
 
-export const lastDayOfThePreviousMonth = (): string => moment().subtract(1, 'months').endOf('month').format();
+// Aligned on UTC, as time series buckets are: a local-time bound would spill into the
+// next UTC bucket for negative offsets and add a spurious partial period on the axis.
+export const lastDayOfThePreviousMonth = (): string => moment.utc().subtract(1, 'months').endOf('month').toISOString();
 
 export const daysAfter = (
   number: number | string,

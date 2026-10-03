@@ -169,29 +169,34 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-const getMonday = (d: Date): Date => {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(d.setDate(diff));
-};
-
 export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
-  let startDateParsed = moment.parseZone(startDate);
-  let endDateParsed = moment.parseZone(endDate ?? now());
+  // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
+  // emitted instants as UTC: everything here must stay anchored on UTC, never on the
+  // time zone of the platform process.
+  // Weeks are aligned on the ISO monday, as the date_histogram calendar_interval is.
+  const startOfInterval: moment.unitOfTime.StartOf = interval === 'week' ? 'isoWeek' : (interval as moment.unitOfTime.StartOf);
+  let startDateParsed = moment.utc(startDate);
+  let endDateParsed = moment.utc(endDate ?? now());
   let dateFormat;
   switch (interval) {
     case 'year':
       dateFormat = 'YYYY';
       break;
     case 'quarter':
+      // Elasticsearch keys quarter buckets on the quarter start month, so both bounds
+      // must be truncated: a mid-quarter start would never match any key and flatten
+      // the whole series to zero.
+      dateFormat = 'YYYY-MM';
+      startDateParsed = startDateParsed.startOf(startOfInterval);
+      endDateParsed = endDateParsed.startOf(startOfInterval);
+      break;
     case 'month':
       dateFormat = 'YYYY-MM';
       break;
-    /* v8 ignore next */
     case 'week':
       dateFormat = 'YYYY-MM-DD';
-      startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
-      endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
+      startDateParsed = startDateParsed.startOf(startOfInterval);
+      endDateParsed = endDateParsed.startOf(startOfInterval);
       break;
     case 'hour':
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -200,13 +205,13 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
     default:
       dateFormat = 'YYYY-MM-DD';
   }
-  const startFormatDate = new Date(endDateParsed.format(dateFormat));
-  const endFormatDate = new Date(startDateParsed.format(dateFormat));
+  const formattedEndDate = moment.utc(endDateParsed.format(dateFormat), dateFormat);
+  const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
-  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), duration);
+  const elementsOfInterval = formattedEndDate.diff(formattedStartDate, duration);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = moment(startDateParsed).add(i, duration);
+    const workDate = startDateParsed.clone().add(i, duration);
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
@@ -214,7 +219,8 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
+    // Cloned: startOf() mutates, and workDate is still needed unmodified above.
+    const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
     newData[i] = {
       date: intervalDate,
       value: dataValue,
