@@ -11,6 +11,8 @@ import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 import { STATIC_NOTIFIER_UI } from '../../../../src/modules/notifier/notifier-statics';
 import type { BasicStoreEntity } from '../../../../src/types/store';
+import { finalizeStaleLandscapeState, findLandscapeDiff, userAccessFingerprint, writeActiveLandscapeState } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import type { LandscapeDiffState } from '../../../../src/modules/timeMachine/timeMachine-types';
 
 const HISTORY_BUDGET_MS = 60000;
 
@@ -319,6 +321,11 @@ describe('Knowledge time machine', () => {
     const { data } = await queryAsAdminWithSuccess({ query: AS_OF, variables: { id: intrusionSetId, date: middle(createdAt, updatedAt) } });
     expect(data.entityAsOf.anchor).toEqual('snapshot');
     expect(attributeValues(data.entityAsOf, 'description')).toEqual(['first description']);
+    // Relationships are rebuilt from the relationship set of the snapshot with the events between the two dates only
+    expect(data.entityAsOf.relationships).toEqual([]);
+    const atRelation = await queryAsAdminWithSuccess({ query: AS_OF, variables: { id: intrusionSetId, date: relationAddedAt } });
+    expect(atRelation.data.entityAsOf.anchor).toEqual('snapshot');
+    expect(atRelation.data.entityAsOf.relationships).toEqual([{ relationship_type: 'uses', count: 1 }]);
   });
 
   it('should never return an as-of view of a marking the user cannot access', async () => {
@@ -389,6 +396,36 @@ describe('Knowledge time machine', () => {
     const cached = await queryAsAdminWithSuccess({ query: LANDSCAPE_RUN, variables: { input } });
     expect(cached.data.landscapeDiffRun.id).toEqual(id);
   }, 2 * HISTORY_BUDGET_MS);
+
+  it('should finalize a stale landscape run once and never let its execution revive it', async () => {
+    const staleAt = new Date(Date.now() - 10 * 60000).toISOString();
+    const stale: LandscapeDiffState = {
+      id: `landscape-stale-${Date.now()}`,
+      user_id: SYSTEM_USER.id,
+      access_fingerprint: userAccessFingerprint(testContext, SYSTEM_USER),
+      status: 'running',
+      progress: 1,
+      total: 10,
+      input: { from: createdAt, to: relationAddedAt, group_by: 'entity_type' },
+      scope_entity_types: ['Intrusion-Set'],
+      created_at: staleAt,
+      updated_at: staleAt,
+      expires_at: new Date(Date.now() + 60000).toISOString(),
+      error: null,
+      truncated: false,
+      aggregates: null,
+      entities: [],
+    };
+    expect(await writeActiveLandscapeState(stale)).toBe(true);
+    // A run that progressed since it was read is not finalized
+    expect(await finalizeStaleLandscapeState({ ...stale, updated_at: new Date(Date.now() - 20 * 60000).toISOString() }, { ...stale, status: 'failed' })).toBe(false);
+    // A poll, from any node, finalizes the stale run
+    const found = await findLandscapeDiff(testContext, SYSTEM_USER, stale.id);
+    expect(found?.status).toEqual('failed');
+    // Its execution, wherever it runs, can no longer overwrite the terminal state
+    expect(await writeActiveLandscapeState({ ...stale, status: 'complete', updated_at: new Date().toISOString() })).toBe(false);
+    expect((await findLandscapeDiff(testContext, SYSTEM_USER, stale.id))?.status).toEqual('failed');
+  });
 
   it('should never serve a cached landscape result after one of its counted relationships is reclassified', async () => {
     const name = `${testName} reclassified`;

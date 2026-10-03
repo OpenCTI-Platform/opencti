@@ -635,6 +635,34 @@ const writeState = async (state: LandscapeDiffState) => {
   await getClientBase().set(stateKey(state.id), JSON.stringify(state), 'EX', stateTtl(state));
 };
 
+// Runs are polled through any node but executed by the node that started them: an execution never overwrites a
+// terminal state, so a run finalized elsewhere (found stale by a poll) stops instead of being revived
+const SET_IF_ACTIVE_SCRIPT = `
+local current = redis.call('GET', KEYS[1])
+if current then
+  local status = cjson.decode(current).status
+  if status == 'complete' or status == 'failed' then return 0 end
+end
+redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+return 1`;
+
+// A stale run is only finalized when it did not progress since it was read
+const SET_IF_UNCHANGED_SCRIPT = `
+local current = redis.call('GET', KEYS[1])
+if not current or cjson.decode(current).updated_at ~= ARGV[3] then return 0 end
+redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+return 1`;
+
+export const writeActiveLandscapeState = async (state: LandscapeDiffState): Promise<boolean> => {
+  const written = await getClientBase().eval(SET_IF_ACTIVE_SCRIPT, 1, stateKey(state.id), JSON.stringify(state), stateTtl(state));
+  return written === 1;
+};
+
+export const finalizeStaleLandscapeState = async (stale: LandscapeDiffState, finalized: LandscapeDiffState): Promise<boolean> => {
+  const written = await getClientBase().eval(SET_IF_UNCHANGED_SCRIPT, 1, stateKey(stale.id), JSON.stringify(finalized), stateTtl(finalized), stale.updated_at);
+  return written === 1;
+};
+
 // Kept apart from the state, which is read at every progress poll
 const writeContributors = async (state: LandscapeDiffState, contributors: string[]) => {
   await getClientBase().set(`${LANDSCAPE_CONTRIBUTORS_PREFIX}${state.id}`, JSON.stringify(contributors), 'EX', stateTtl(state));
@@ -701,15 +729,18 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
     draft_context: getDraftContext(requestContext, user),
   };
   let current: LandscapeDiffState = { ...state, status: 'running', updated_at: now() };
-  await writeState(current);
+  const writeOrStop = async (next: LandscapeDiffState) => {
+    if (!await writeActiveLandscapeState(next)) landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
+  };
   try {
+    await writeOrStop(current);
     const computation = await computeLandscapeDiff(context, user, scope, state.input.from, state.input.to, state.input.group_by ?? 'entity_type', {
       signal,
       onProgress: async (progress, total) => {
         signal.throwIfAborted();
         landscapeRunSlots.touch(state.id);
         current = { ...current, progress, total, updated_at: now() };
-        await writeState(current);
+        await writeOrStop(current);
       },
     });
     // An interrupted run keeps its failed state, even if its last read completes afterwards
@@ -726,16 +757,19 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
       entities: computation.entities,
       updated_at: now(),
     };
-    await writeState(current);
-    addLandscapeDiffCount();
+    if (await writeActiveLandscapeState(current)) {
+      addLandscapeDiffCount();
+    } else {
+      logApp.warn('[TIME MACHINE] Landscape diff finalized by another node before its completion', { id: state.id });
+    }
   } catch (err) {
     if (signal.aborted) {
       logApp.warn('[TIME MACHINE] Landscape diff computation interrupted', { id: state.id });
-      await writeState({ ...current, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() });
+      await writeActiveLandscapeState({ ...current, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() });
       return;
     }
     logApp.error('[TIME MACHINE] Landscape diff computation failed', { cause: err, id: state.id });
-    await writeState({ ...current, status: 'failed', error: (err as Error)?.message ?? 'Landscape diff computation failed', updated_at: now() });
+    await writeActiveLandscapeState({ ...current, status: 'failed', error: (err as Error)?.message ?? 'Landscape diff computation failed', updated_at: now() });
   }
 };
 
@@ -897,11 +931,14 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
   if (!state || state.user_id !== user.id || state.access_fingerprint !== userAccessFingerprint(context, user)) return null;
   const isRunning = state.status === 'running' || state.status === 'pending';
   if (isRunning && utcDate().diff(utcDate(state.updated_at), 'seconds') > LANDSCAPE_STALE_SECONDS) {
-    // Aborts the computation and frees its slot when it runs on this node
-    landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
     const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() };
-    await writeState(interrupted);
-    return interrupted;
+    if (await finalizeStaleLandscapeState(state, interrupted)) {
+      // Aborts the computation and frees its slot when it runs on this node; on another node its next write stops it
+      landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
+      return interrupted;
+    }
+    // The run progressed since it was read: its owner is alive
+    return readState(id);
   }
   if (state.status === 'complete' && !await isLandscapeResultAccessible(context, user, await readContributors(state.id), state.aggregates, state.entities)) {
     const outdated: LandscapeDiffState = {
