@@ -9454,6 +9454,7 @@ type Query {
   hunt(id: String!): Hunt
   hunts(first: Int, after: ID, orderBy: HuntsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): HuntConnection
   huntSigmaValidate(sigma_rule: String!): HuntSigmaValidation!
+  huntConfiguration: HuntConfiguration!
   huntStatistics(huntId: ID, startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics!
   huntPackExport(ids: [ID!]!): String
   huntRun(id: String!): HuntRun
@@ -16273,6 +16274,10 @@ type HuntStatistics {
   runs_over_time: [HuntStatisticsPoint!]!
   runs_per_platform: [HuntStatisticsBucket!]!
   verdict_distribution: [HuntStatisticsBucket!]!
+}
+
+type HuntConfiguration {
+  min_schedule_interval_minutes: Int!
 }
 
 type HuntSigmaValidation {

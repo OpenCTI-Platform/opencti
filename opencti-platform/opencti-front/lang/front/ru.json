@@ -2784,7 +2784,7 @@
   "Intrusion sets": "Наборы для вторжения",
   "Intrusion Sets | Threats": "Угрозы вторжения | Угрозы",
   "Invalid cron expression": "Недопустимое выражение cron",
-  "Invalid cron expression, or more often than every 15 minutes": "Недопустимое выражение cron или запуск чаще, чем раз в 15 минут",
+  "Invalid cron expression, or more often than every {count} minutes": "Недопустимое выражение cron или запуск чаще, чем раз в {count} мин.",
   "Invalid cron expression: {detail}": "Недопустимое выражение cron: {detail}",
   "Invalid form to export a template": "Неверная форма для экспорта шаблона",
   "Invalid hexa color code": "Неверный шестигранный цветовой код",

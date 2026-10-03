@@ -2784,7 +2784,7 @@
   "Intrusion sets": "侵入セット",
   "Intrusion Sets | Threats": "侵入セット|脅威",
   "Invalid cron expression": "無効な cron 式",
-  "Invalid cron expression, or more often than every 15 minutes": "cron 式が無効か、15 分ごとより頻繁です",
+  "Invalid cron expression, or more often than every {count} minutes": "cron 式が無効か、{count} 分ごとより頻繁です",
   "Invalid cron expression: {detail}": "無効な cron 式: {detail}",
   "Invalid form to export a template": "テンプレートをエクスポートするフォームが無効",
   "Invalid hexa color code": "無効な16進数のカラーコード",

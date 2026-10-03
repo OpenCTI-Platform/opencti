@@ -52,6 +52,10 @@ type HuntStatistics {
   verdict_distribution: [HuntStatisticsBucket!]!
 }
 
+type HuntConfiguration {
+  min_schedule_interval_minutes: Int!
+}
+
 type HuntSigmaValidation {
   valid: Boolean!
   errors: [String!]!
@@ -303,6 +307,7 @@ type Query {
     toStix: Boolean
   ): HuntConnection @auth(for: [KNOWLEDGE])
   huntSigmaValidate(sigma_rule: String!): HuntSigmaValidation! @auth(for: [KNOWLEDGE])
+  huntConfiguration: HuntConfiguration! @auth(for: [KNOWLEDGE])
   huntStatistics(huntId: ID, startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics! @auth(for: [KNOWLEDGE])
   huntPackExport(ids: [ID!]!): String @auth(for: [KNOWLEDGE])
 }

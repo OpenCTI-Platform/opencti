@@ -1,10 +1,17 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import HuntSchedulePreview from './HuntSchedulePreview';
+import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
+
+vi.mock('./useHuntMinScheduleInterval', () => ({ default: vi.fn() }));
 
 describe('HuntSchedulePreview', () => {
+  beforeEach(() => {
+    vi.mocked(useHuntMinScheduleInterval).mockReturnValue(15);
+  });
+
   it('describes a manual hunt', () => {
     testRender(<HuntSchedulePreview schedule="manual" />);
     expect(screen.getByTestId('hunt-schedule-preview')).toHaveTextContent('Manual, runs only when started');
@@ -25,6 +32,12 @@ describe('HuntSchedulePreview', () => {
   it('rejects a cron firing more often than the minimum interval', () => {
     testRender(<HuntSchedulePreview schedule="*/5 * * * *" />);
     expect(screen.getByTestId('hunt-schedule-preview')).toHaveTextContent('A hunt cannot run more than once every 15 minutes');
+  });
+
+  it('applies the minimum interval configured on the platform', () => {
+    vi.mocked(useHuntMinScheduleInterval).mockReturnValue(60);
+    testRender(<HuntSchedulePreview schedule="*/30 * * * *" />);
+    expect(screen.getByTestId('hunt-schedule-preview')).toHaveTextContent('A hunt cannot run more than once every 60 minutes');
   });
 
   it('rejects an invalid cron expression', () => {

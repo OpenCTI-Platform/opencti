@@ -2784,7 +2784,7 @@
   "Intrusion sets": "침입 세트",
   "Intrusion Sets | Threats": "침입 세트 | 위협",
   "Invalid cron expression": "잘못된 cron 표현식",
-  "Invalid cron expression, or more often than every 15 minutes": "잘못된 cron 표현식이거나 15분 간격보다 자주 실행됩니다",
+  "Invalid cron expression, or more often than every {count} minutes": "잘못된 cron 표현식이거나 {count}분 간격보다 자주 실행됩니다",
   "Invalid cron expression: {detail}": "잘못된 cron 표현식: {detail}",
   "Invalid form to export a template": "템플릿을 내보낼 수 있는 잘못된 양식입니다",
   "Invalid hexa color code": "잘못된 헥사 색상 코드",

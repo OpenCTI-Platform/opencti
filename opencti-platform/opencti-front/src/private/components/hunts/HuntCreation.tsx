@@ -42,6 +42,7 @@ import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
+import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
 import {
   emptyHuntFormValues,
   hasHuntLogic,
@@ -91,6 +92,7 @@ level: high`;
 
 export const useHuntFormValidation = () => {
   const { t_i18n } = useFormatter();
+  const minScheduleInterval = useHuntMinScheduleInterval();
   const { mandatoryAttributes } = useIsMandatoryAttribute(HUNT_ENTITY_TYPE);
   const integerBetween = (min: number, max: number) => Yup.number()
     .typeError(t_i18n('The value must be a number'))
@@ -119,7 +121,11 @@ export const useHuntFormValidation = () => {
     schedule_cron: Yup.string().when('schedule_mode', {
       is: 'cron',
       then: (schema) => schema.required(t_i18n('This field is required'))
-        .test('cron', t_i18n('Invalid cron expression, or more often than every 15 minutes'), (value) => validateHuntSchedule(value ?? '').valid),
+        .test(
+          'cron',
+          t_i18n('Invalid cron expression, or more often than every {count} minutes', { values: { count: minScheduleInterval } }),
+          (value) => validateHuntSchedule(value ?? '', minScheduleInterval).valid,
+        ),
       otherwise: (schema) => schema.nullable(),
     }),
     time_window_hours: integerBetween(1, HUNT_MAX_TIME_WINDOW_HOURS).required(t_i18n('This field is required')),

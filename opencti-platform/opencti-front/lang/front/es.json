@@ -2784,7 +2784,7 @@
   "Intrusion sets": "Sets de intrusión",
   "Intrusion Sets | Threats": "Sets de intrusión | Amenazas",
   "Invalid cron expression": "Expresión cron no válida",
-  "Invalid cron expression, or more often than every 15 minutes": "Expresión cron no válida o más frecuente que cada 15 minutos",
+  "Invalid cron expression, or more often than every {count} minutes": "Expresión cron no válida o más frecuente que cada {count} minutos",
   "Invalid cron expression: {detail}": "Expresión cron no válida: {detail}",
   "Invalid form to export a template": "Formulario inválido para exportar una plantilla",
   "Invalid hexa color code": "Código de color hexa no válido",

@@ -3,7 +3,8 @@
 
 export const HUNT_SCHEDULE_MANUAL = 'manual';
 export const HUNT_SCHEDULE_STANDING = 'standing';
-export const HUNT_MIN_SCHEDULE_INTERVAL_MINUTES = 15;
+// Default of hunt_manager:min_schedule_interval_minutes, used until the platform value is loaded
+export const HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES = 15;
 
 export type HuntScheduleMode = 'manual' | 'standing' | 'cron';
 
@@ -224,10 +225,10 @@ export interface HuntScheduleValidation {
   detail?: string;
 }
 
-/** Same rule as the backend: manual, standing, or a cron expression firing at most once every 15 minutes. */
+/** Same rule as the backend: manual, standing, or a cron expression firing at most once every `minIntervalMinutes`. */
 export const validateHuntSchedule = (
   schedule: string | null | undefined,
-  minIntervalMinutes = HUNT_MIN_SCHEDULE_INTERVAL_MINUTES,
+  minIntervalMinutes = HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES,
 ): HuntScheduleValidation => {
   if (huntScheduleMode(schedule) !== 'cron') {
     return { valid: true };

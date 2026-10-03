@@ -2784,7 +2784,7 @@
   "Intrusion sets": "Intrusion sets",
   "Intrusion Sets | Threats": "Intrusion Sets | Threats",
   "Invalid cron expression": "Invalid cron expression",
-  "Invalid cron expression, or more often than every 15 minutes": "Invalid cron expression, or more often than every 15 minutes",
+  "Invalid cron expression, or more often than every {count} minutes": "Invalid cron expression, or more often than every {count} minutes",
   "Invalid cron expression: {detail}": "Invalid cron expression: {detail}",
   "Invalid form to export a template": "Invalid form to export a template",
   "Invalid hexa color code": "Invalid hexa color code",

@@ -3,14 +3,8 @@ import { useTheme } from '@mui/styles';
 import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import {
-  describeHuntSchedule,
-  HUNT_MIN_SCHEDULE_INTERVAL_MINUTES,
-  huntScheduleMode,
-  type HuntScheduleValidation,
-  nextHuntScheduleOccurrences,
-  validateHuntSchedule,
-} from './hunt-schedule-utils';
+import { describeHuntSchedule, huntScheduleMode, type HuntScheduleValidation, nextHuntScheduleOccurrences, validateHuntSchedule } from './hunt-schedule-utils';
+import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
 
 const WEEK_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -28,7 +22,7 @@ export const useHuntScheduleText = () => {
 };
 
 /** Translated error of an invalid schedule, null when the schedule is valid. */
-export const useHuntScheduleError = () => {
+export const useHuntScheduleError = (minIntervalMinutes: number) => {
   const { t_i18n } = useFormatter();
   return useCallback((validation: HuntScheduleValidation) => {
     if (validation.valid) {
@@ -38,11 +32,11 @@ export const useHuntScheduleError = () => {
       case 'never':
         return t_i18n('This cron expression never fires');
       case 'too_frequent':
-        return t_i18n('A hunt cannot run more than once every {count} minutes', { values: { count: HUNT_MIN_SCHEDULE_INTERVAL_MINUTES } });
+        return t_i18n('A hunt cannot run more than once every {count} minutes', { values: { count: minIntervalMinutes } });
       default:
         return t_i18n('Invalid cron expression: {detail}', { values: { detail: validation.detail ?? '' } });
     }
-  }, [t_i18n]);
+  }, [t_i18n, minIntervalMinutes]);
 };
 
 interface HuntSchedulePreviewProps {
@@ -55,8 +49,9 @@ const HuntSchedulePreview = ({ schedule, occurrences = 3 }: HuntSchedulePreviewP
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const scheduleText = useHuntScheduleText();
-  const scheduleError = useHuntScheduleError();
-  const validation = useMemo(() => validateHuntSchedule(schedule), [schedule]);
+  const minIntervalMinutes = useHuntMinScheduleInterval();
+  const scheduleError = useHuntScheduleError(minIntervalMinutes);
+  const validation = useMemo(() => validateHuntSchedule(schedule, minIntervalMinutes), [schedule, minIntervalMinutes]);
   const nextRuns = useMemo(
     () => (validation.valid ? nextHuntScheduleOccurrences(schedule, occurrences) : []),
     [schedule, occurrences, validation.valid],

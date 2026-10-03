@@ -11456,6 +11456,11 @@ export type HuntAddInput = {
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type HuntConfiguration = {
+  __typename?: 'HuntConfiguration';
+  min_schedule_interval_minutes: Scalars['Int']['output'];
+};
+
 export type HuntConnection = {
   __typename?: 'HuntConnection';
   edges: Array<HuntEdge>;
@@ -25688,6 +25693,7 @@ export type Query = {
   groups?: Maybe<GroupConnection>;
   guessMimeType?: Maybe<Scalars['String']['output']>;
   hunt?: Maybe<Hunt>;
+  huntConfiguration: HuntConfiguration;
   huntConnectors: Array<HuntConnector>;
   huntPackExport?: Maybe<Scalars['String']['output']>;
   huntRun?: Maybe<HuntRun>;
@@ -41846,6 +41852,7 @@ export type ResolversTypes = ResolversObject<{
   HostnameAddInput: HostnameAddInput;
   Hunt: ResolverTypeWrapper<BasicStoreEntityHunt>;
   HuntAddInput: HuntAddInput;
+  HuntConfiguration: ResolverTypeWrapper<HuntConfiguration>;
   HuntConnection: ResolverTypeWrapper<Omit<HuntConnection, 'edges'> & { edges: Array<ResolversTypes['HuntEdge']> }>;
   HuntConnector: ResolverTypeWrapper<HuntConnectorView>;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
@@ -43012,6 +43019,7 @@ export type ResolversParentTypes = ResolversObject<{
   HostnameAddInput: HostnameAddInput;
   Hunt: BasicStoreEntityHunt;
   HuntAddInput: HuntAddInput;
+  HuntConfiguration: HuntConfiguration;
   HuntConnection: Omit<HuntConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntEdge']> };
   HuntConnector: HuntConnectorView;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
@@ -47583,6 +47591,10 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
+  min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type HuntConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnection'] = ResolversParentTypes['HuntConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['HuntEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
@@ -51989,6 +52001,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
   guessMimeType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryGuessMimeTypeArgs, 'fileId'>>;
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<QueryHuntArgs, 'id'>>;
+  huntConfiguration?: Resolver<ResolversTypes['HuntConfiguration'], ParentType, ContextType>;
   huntConnectors?: Resolver<Array<ResolversTypes['HuntConnector']>, ParentType, ContextType, Partial<QueryHuntConnectorsArgs>>;
   huntPackExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryHuntPackExportArgs, 'ids'>>;
   huntRun?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<QueryHuntRunArgs, 'id'>>;
@@ -56364,6 +56377,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HistoryChange?: HistoryChangeResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   Hunt?: HuntResolvers<ContextType>;
+  HuntConfiguration?: HuntConfigurationResolvers<ContextType>;
   HuntConnection?: HuntConnectionResolvers<ContextType>;
   HuntConnector?: HuntConnectorResolvers<ContextType>;
   HuntEdge?: HuntEdgeResolvers<ContextType>;
