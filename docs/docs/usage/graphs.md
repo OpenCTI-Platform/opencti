@@ -26,6 +26,10 @@ Above a node, **badges** give its state:
 | Coloured dot | A marking of the entity, in the colour of the marking (for example TLP:GREEN). |
 | Gauge with a number | A low confidence (below 50), with its value. |
 | Wand | The entity is inferred by the rules engine. |
+| Clock, warning colour | Stale knowledge: no source asserted the entity for longer than the decay rules allow (see [Provenance](provenance.md)). |
+| Split arrow, error colour | The sources of the entity disagree on some of its values. |
+
+Knowledge asserted by several distinct sources is circled by a second, success-coloured ring outside the ring of its type, thicker with every additional source; the hover card gives the number of sources.
 
 Other features of the platform can add their own badges (see [Extend the graph](#extend-the-graph)).
 
@@ -39,7 +43,7 @@ In investigations, a small counter on the top right of a node tells how many rel
 | Dashed line, warning colour | An inferred relationship. |
 | Dotted line | A relationship with a low confidence (below 50). |
 
-Links end with an arrowhead on their target. Several relationships between the same two entities are fanned out instead of drawn on top of each other. The name of a relationship appears along its link when you zoom in, or when the link is selected or hovered; labels that would overlap are left out.
+Links end with an arrowhead on their target. Several relationships between the same two entities are fanned out instead of drawn on top of each other. The name of a relationship appears along its link when you zoom in, or when the link is selected or hovered, followed by the number of its sources when several sources assert it (for example `uses (3)`); labels that would overlap are left out.
 
 ### Level of detail
 
@@ -53,7 +57,7 @@ The controls on the top left of the graph zoom in and out, fit the whole graph, 
 
 Hovering an entity or a relationship, or selecting it, keeps it and its direct neighbours at full strength and fades the rest of the graph.
 
-After a short moment on an element, a **hover card** opens with its key facts: type, name, date, author, confidence, markings, relationship counts, badges and, in investigations, the number of relationships not drawn yet. Its quick actions apply to the entity directly:
+After a short moment on an element, a **hover card** opens with its key facts: type, name, date, author, confidence, number of sources, markings, relationship counts, badges and, in investigations, the number of relationships not drawn yet. Its quick actions apply to the entity directly:
 
 - **Open in a new tab**;
 - **Expand this entity** (investigations);
@@ -138,7 +142,7 @@ Features of the platform add states and actions to the graph without changing it
 - a **badge provider** returns badges for a node from the data the graph received, and returns nothing when its data is absent;
 - a **node action** adds a quick action to the hover card of the nodes it applies to.
 
-Both are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts` and `graphNodeActionRegistry.ts`).
+Both are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts` and `graphNodeActionRegistry.ts`); the stale knowledge and source conflict badges of the provenance feature are an example.
 
 ## What's next?
 
