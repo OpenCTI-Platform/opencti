@@ -15,9 +15,18 @@ const threatPulsePreviewBannerQuery = graphql`
     pulseStatus {
       access
       preview_entities
+      preview_since
     }
   }
 `;
+
+const PREVIEW_BANNER_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// The banner announces the preview: it shows during the first day the preview matches objects of the platform.
+export const isPreviewBannerWindowOpen = (previewSince: string | null | undefined, now = Date.now()) => {
+  const since = previewSince ? Date.parse(previewSince) : Number.NaN;
+  return !Number.isNaN(since) && now - since < PREVIEW_BANNER_WINDOW_MS;
+};
 
 const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: PreloadedQuery<ThreatPulsePreviewBannerQuery>; dismissKey: string }) => {
   const { t_i18n, n } = useFormatter();
@@ -26,7 +35,10 @@ const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: P
   const { trackCtaClick } = useThreatPulseTelemetry('banner');
   const { pulseStatus } = usePreloadedQuery(threatPulsePreviewBannerQuery, queryRef);
   const [dismissed] = useState(() => localStorage.getItem(dismissKey) === 'true');
-  const isVisible = !dismissed && pulseStatus.access === 'preview' && pulseStatus.preview_entities > 0;
+  const isVisible = !dismissed
+    && pulseStatus.access === 'preview'
+    && pulseStatus.preview_entities > 0
+    && isPreviewBannerWindowOpen(pulseStatus.preview_since);
   useThreatPulseImpression('banner', isVisible);
 
   // The banner resolves its own visibility: useTopBanner keeps the shared top offset in sync through this bus.
@@ -63,8 +75,8 @@ const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: P
 };
 
 /**
- * One dismissable banner per user once the Threat Pulse preview matches objects of the platform: the count of local
- * objects found in the community digest and the one step to the full experience.
+ * One dismissable banner per user, the first day the Threat Pulse preview matches objects of the platform: the count
+ * of local objects found in the community digest and the one step to the full experience.
  */
 const ThreatPulsePreviewBanner = () => {
   const { me } = useAuth();
