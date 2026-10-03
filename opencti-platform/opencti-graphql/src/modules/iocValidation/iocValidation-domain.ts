@@ -486,15 +486,31 @@ export const maintainIocValidationRequests = async (context: AuthContext) => {
 // endregion
 
 // region resolvers helpers
+// Every field of every request of a page goes through the request-scoped batch loader, which applies
+// the reader's access like storeLoadByIds: one lookup per resolution tick instead of one per field.
+// That loader is bound to the request user, so any other user is loaded directly.
+const loadReadableByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
+  const uniqueIds = [...new Set(ids)];
+  if (uniqueIds.length === 0) return [];
+  const loader = context.user?.id === user.id ? context.batch?.idsBatchLoader : undefined;
+  const loaded: Array<T | undefined> = loader
+    ? await Promise.all(uniqueIds.map((id) => loader.load({ id, type })))
+    : await storeLoadByIds<T>(context, user, uniqueIds, type);
+  return loaded.filter((element): element is T => !!element);
+};
+
+const findReaderIndicatorIds = async (context: AuthContext, user: AuthUser, indicatorIds: string[]) => {
+  const indicators = await loadReadableByIds<BasicStoreEntityIndicator>(context, user, indicatorIds, ENTITY_TYPE_INDICATOR);
+  return new Set(indicators.map((i) => i.internal_id));
+};
+
 export const loadRequestPlatforms = (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
-  return storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, user, request.platform_ids ?? [], ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
-    .then((platforms) => platforms.filter((p) => p));
+  return loadReadableByIds<BasicStoreEntitySecurityPlatform>(context, user, request.platform_ids ?? [], ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
 };
 
 export const loadRequestDeployments = (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = (request.pairs ?? []).map((pair) => pair.deployed_on_id);
-  if (ids.length === 0) return Promise.resolve([]);
-  return storeLoadByIds<BasicStoreRelationDeployedOn>(context, user, ids, RELATION_DEPLOYED_ON).then((relations) => relations.filter((r) => r));
+  return loadReadableByIds<BasicStoreRelationDeployedOn>(context, user, ids, RELATION_DEPLOYED_ON);
 };
 
 export const loadRequestConnector = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
@@ -504,7 +520,7 @@ export const loadRequestConnector = async (context: AuthContext, user: AuthUser,
 };
 
 export const filterReadableIocs = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
-  const readable = await findReadableIndicatorIds(context, user, request.indicator_ids ?? []);
+  const readable = await findReaderIndicatorIds(context, user, request.indicator_ids ?? []);
   return {
     iocs: (request.iocs ?? []).filter((ioc) => readable.has(ioc.indicator_id)),
     readable,
@@ -512,7 +528,7 @@ export const filterReadableIocs = async (context: AuthContext, user: AuthUser, r
 };
 
 export const filterReadableIndicatorIds = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
-  const readable = await findReadableIndicatorIds(context, user, request.indicator_ids ?? []);
+  const readable = await findReaderIndicatorIds(context, user, request.indicator_ids ?? []);
   return (request.indicator_ids ?? []).filter((id) => readable.has(id));
 };
 
@@ -525,7 +541,7 @@ export const filterReadablePlatformIds = async (context: AuthContext, user: Auth
 export const filterReadableSkipped = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = [...new Set((request.skipped ?? []).map((s) => s.indicator_id))];
   const [readable, readablePlatforms] = await Promise.all([
-    findReadableIndicatorIds(context, user, ids),
+    findReaderIndicatorIds(context, user, ids),
     filterReadablePlatformIds(context, user, request),
   ]);
   const platforms = new Set(readablePlatforms);
@@ -534,7 +550,7 @@ export const filterReadableSkipped = async (context: AuthContext, user: AuthUser
 
 export const readableResultsSummary = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const [readableIndicators, readablePlatforms] = await Promise.all([
-    findReadableIndicatorIds(context, user, request.indicator_ids ?? []),
+    findReaderIndicatorIds(context, user, request.indicator_ids ?? []),
     filterReadablePlatformIds(context, user, request),
   ]);
   const platforms = new Set(readablePlatforms);
