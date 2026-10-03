@@ -27,7 +27,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { FilterMode, OrderingMode } from '../../generated/graphql';
+import { FilterMode, OrderingMode, StatusScope } from '../../generated/graphql';
 import type {
   TimelineContainerData,
   TimelineDerivationInput,
@@ -224,12 +224,21 @@ const findContainersReferencing = async <T extends BasicStoreEntity>(context: Au
   return findBoundedEntities<T>(context, bounds, types, filters, maxSize);
 };
 
-const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineStatusData>> => {
-  const statuses = await getEntitiesListFromCache<any>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
-  const maxOrderByType = new Map<string, number>();
+interface TimelineStatusSource {
+  internal_id: string;
+  name: string;
+  order: number;
+  type: string;
+  scope?: string | null;
+}
+
+export const buildTimelineStatuses = (statuses: TimelineStatusSource[]): Map<string, TimelineStatusData> => {
+  // One type has one workflow per scope (the case workflow, the request access workflow of requests for information)
+  const workflowOf = (status: TimelineStatusSource) => `${status.type}|${status.scope ?? StatusScope.Global}`;
+  const maxOrderByWorkflow = new Map<string, number>();
   statuses.forEach((status) => {
-    const current = maxOrderByType.get(status.type);
-    if (current === undefined || status.order > current) maxOrderByType.set(status.type, status.order);
+    const current = maxOrderByWorkflow.get(workflowOf(status));
+    if (current === undefined || status.order > current) maxOrderByWorkflow.set(workflowOf(status), status.order);
   });
   const map = new Map<string, TimelineStatusData>();
   statuses.forEach((status) => {
@@ -239,10 +248,15 @@ const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineS
       order: status.order,
       type: status.type,
       // The last status of a workflow (highest order) is its closed category
-      is_final: maxOrderByType.get(status.type) === status.order,
+      is_final: maxOrderByWorkflow.get(workflowOf(status)) === status.order,
     });
   });
   return map;
+};
+
+const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineStatusData>> => {
+  const statuses = await getEntitiesListFromCache<TimelineStatusSource & BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
+  return buildTimelineStatuses(statuses);
 };
 
 export const isContainerClosed = async (context: AuthContext, container: AnyStoreElement): Promise<boolean> => {

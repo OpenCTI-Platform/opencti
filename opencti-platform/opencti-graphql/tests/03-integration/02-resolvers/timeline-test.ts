@@ -7,6 +7,9 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2
 import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
+import { createEntity, deleteElementById } from '../../../src/database/middleware';
+import { MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../../src/utils/access';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 
 const KILL_CHAIN_PHASE_ADD = gql`
   mutation TimelineKillChainPhaseAdd($input: KillChainPhaseAddInput!) {
@@ -812,6 +815,23 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: unknownMarking } });
       const manual = await listTimeline(secondCase.id, { sources: ['manual'] });
       expect(manual.map((event) => event.title)).not.toContain('Unknown marking milestone');
+    });
+
+    it('should leave out a manual event about an element restricted to fewer members than the container', async () => {
+      const restrictedCase = await createEntity(testContext, SYSTEM_USER, {
+        name: 'Timeline restricted request',
+        authorized_members: [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      const added = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T17:00:00.000Z', title: 'Restricted request answered', element_id: restrictedCase.id } },
+      });
+      const result = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
+      const extension = JSON.parse(result.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE];
+      // Its title and description speak about the element: the event stays local, not only its reference
+      expect(extension.events.map((e: { title: string }) => e.title)).not.toContain('Restricted request answered');
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
+      await deleteElementById(testContext, SYSTEM_USER, restrictedCase.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
     });
   });
 

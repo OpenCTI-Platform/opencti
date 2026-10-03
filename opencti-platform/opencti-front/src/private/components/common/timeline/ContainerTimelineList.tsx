@@ -107,57 +107,59 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
               const lane = event.lane as TimelineLane;
               const selected = event.id === selectedId;
               return (
-                <div
-                  key={event.id}
-                  role="listitem"
-                  ref={(node) => {
-                    if (node) itemRefs.current.set(event.id, node);
-                    else itemRefs.current.delete(event.id);
-                  }}
-                  tabIndex={event.id === activeId ? 0 : -1}
-                  aria-current={selected ? 'true' : undefined}
-                  aria-label={`${event.title}, ${fldt(event.event_time)}, ${t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)}`}
-                  data-testid={`timeline-list-event-${event.id}`}
-                  onFocus={() => setFocusedId(event.id)}
-                  onKeyDown={(keyEvent) => onItemKeyDown(keyEvent, event)}
-                  onClick={() => onSelect(event.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 10,
-                    padding: '8px 10px',
-                    marginBottom: 4,
-                    borderLeft: `4px solid ${colors.lanes[lane] ?? colors.textSecondary}`,
-                    borderRadius: 4,
-                    background: selected ? colors.laneBackground : 'transparent',
-                    outlineColor: colors.focus,
-                    cursor: 'pointer',
-                    opacity: event.hidden ? 0.55 : 1,
-                  }}
-                >
-                  <div style={{ minWidth: 150, color: colors.textSecondary, fontSize: 12 }}>
-                    <div>{fldt(event.event_time)}</div>
-                    {event.event_end_time && <div>{`\u2192 ${fldt(event.event_end_time)}`}</div>}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 600 }}>{event.title}</span>
-                      {event.pinned && <PushPinOutlined fontSize="inherit" titleAccess={t_i18n('Pinned')} />}
-                      {event.hidden && <VisibilityOffOutlined fontSize="inherit" titleAccess={t_i18n('Hidden')} />}
+                <div key={event.id} role="listitem">
+                  {/* The row opens the event: button semantics on the row content, list semantics on its wrapper */}
+                  <div
+                    role="button"
+                    ref={(node) => {
+                      if (node) itemRefs.current.set(event.id, node);
+                      else itemRefs.current.delete(event.id);
+                    }}
+                    tabIndex={event.id === activeId ? 0 : -1}
+                    aria-current={selected ? 'true' : undefined}
+                    aria-label={`${event.title}, ${fldt(event.event_time)}, ${t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)}`}
+                    data-testid={`timeline-list-event-${event.id}`}
+                    onFocus={() => setFocusedId(event.id)}
+                    onKeyDown={(keyEvent) => onItemKeyDown(keyEvent, event)}
+                    onClick={() => onSelect(event.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: theme.spacing(1.25),
+                      padding: theme.spacing(1, 1.25),
+                      marginBottom: theme.spacing(0.5),
+                      borderLeft: `4px solid ${colors.lanes[lane] ?? colors.textSecondary}`,
+                      borderRadius: theme.shape.borderRadius,
+                      background: selected ? colors.laneBackground : 'transparent',
+                      outlineColor: colors.focus,
+                      cursor: 'pointer',
+                      opacity: event.hidden ? 0.55 : 1,
+                    }}
+                  >
+                    <div style={{ minWidth: 150, color: colors.textSecondary, fontSize: 12 }}>
+                      <div>{fldt(event.event_time)}</div>
+                      {event.event_end_time && <div>{`\u2192 ${fldt(event.event_end_time)}`}</div>}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                      <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
-                      <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
-                      <TimelineSourceStateChip state={event.source_state} />
-                      {event.precision !== 'exact' && (
-                        <Chip label={t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? event.precision)} severity="medium" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 600 }}>{event.title}</span>
+                        {event.pinned && <PushPinOutlined fontSize="inherit" titleAccess={t_i18n('Pinned')} />}
+                        {event.hidden && <VisibilityOffOutlined fontSize="inherit" titleAccess={t_i18n('Hidden')} />}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                        <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
+                        <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
+                        <TimelineSourceStateChip state={event.source_state} />
+                        {event.precision !== 'exact' && (
+                          <Chip label={t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? event.precision)} severity="medium" />
+                        )}
+                        {event.source === 'manual' && <Chip label={t_i18n('Milestone')} severity="info" />}
+                      </div>
+                      {event.element_name && (
+                        <div style={{ marginTop: 4, fontSize: 12, color: colors.textSecondary }}>{event.element_name}</div>
                       )}
-                      {event.source === 'manual' && <Chip label={t_i18n('Milestone')} severity="info" />}
+                      {event.annotation && <div style={{ marginTop: 4, fontSize: 12, fontStyle: 'italic' }}>{event.annotation}</div>}
                     </div>
-                    {event.element_name && (
-                      <div style={{ marginTop: 4, fontSize: 12, color: colors.textSecondary }}>{event.element_name}</div>
-                    )}
-                    {event.annotation && <div style={{ marginTop: 4, fontSize: 12, fontStyle: 'italic' }}>{event.annotation}</div>}
                   </div>
                 </div>
               );

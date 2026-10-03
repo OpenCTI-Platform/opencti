@@ -386,15 +386,13 @@ const buildExchange = async (
   scope: ContainerVisibilityScope,
 ): Promise<StoreTimelineExchange> => {
   const containerId = container.internal_id;
-  const { resolved, isElementAsVisibleAsContainer } = scope;
-  const containerMarkings = new Set(markingsOf(container));
-  // The element of an exchanged event may stay local (no element_ref): the event itself must be as visible as the container
-  const isAsVisibleAsContainer = (event: StoredTimelineEvent) => markingsOf(event).every((id) => containerMarkings.has(id));
-  const manual = events.filter((e) => e.event_source === 'manual' && isAsVisibleAsContainer(e));
+  const { resolved, isElementAsVisibleAsContainer, isEventAsVisibleAsContainer } = scope;
+  // The title and description of a manual event speak about its element: the event travels only when both are as visible as the container
+  const manual = events.filter((e) => e.event_source === 'manual' && isEventAsVisibleAsContainer(e));
   const annotated = events.filter((e) => e.event_source === 'derived' && (e.analyst_fields ?? []).length > 0 && e.element_id
     // Only annotations of events whose identity is portable travel: history-based events depend on local history ids
     && e.internal_id === computeDerivedEventId(containerId, e.rule_id ?? '', e.element_id, e.kind)
-    && isAsVisibleAsContainer(e));
+    && isEventAsVisibleAsContainer(e));
   const portableElementRef = (elementId: string | null | undefined): string | undefined => {
     const element = elementId ? resolved[elementId] : undefined;
     return element && isElementAsVisibleAsContainer(element) ? element.standard_id as string : undefined;

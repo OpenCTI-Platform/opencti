@@ -53,7 +53,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     const list = page.getByTestId('timeline-list');
     await expect(list).toContainText(taskCreated);
     await capture('timeline-list');
-    const taskEvent = list.getByRole('listitem', { name: new RegExp(`^${taskCreated}`) });
+    const taskEvent = list.getByRole('button', { name: new RegExp(`^${taskCreated}`) });
     await taskEvent.focus();
     await page.keyboard.press('Enter');
     const drawer = page.getByTestId('timeline-event-drawer');
@@ -82,7 +82,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(page.getByText('The event has been added to the timeline')).toBeVisible();
     await expect(list).toContainText(milestoneTitle);
 
-    await list.getByRole('listitem', { name: new RegExp(`^${milestoneTitle}`) }).click();
+    await list.getByRole('button', { name: new RegExp(`^${milestoneTitle}`) }).click();
     await expect(drawer).toBeVisible();
     await page.getByTestId('timeline-event-more').click();
     await page.getByTestId('timeline-event-hide').click();

@@ -44,8 +44,8 @@ const TIMELINE_MANAGER_STREAM_BATCH_SIZE = conf.get('timeline_manager:stream_bat
 const TIMELINE_MANAGER_MAX_STREAM_BATCHES = conf.get('timeline_manager:max_stream_batches_per_run') ?? 20;
 const TIMELINE_MANAGER_REGENERATION_BATCH = conf.get('timeline_manager:regeneration_batch_size') ?? 20;
 const TIMELINE_MANAGER_MAX_CONCURRENCY = conf.get('timeline_manager:max_concurrency') ?? 2;
-// Containers impacted by a single stream batch through a shared element are bounded
-const TIMELINE_MANAGER_MAX_IMPACTED = conf.get('timeline_manager:max_impacted_containers') ?? 1000;
+// Containers impacted through a shared element are read and queued page by page: none is dropped, each page is bounded
+const TIMELINE_MANAGER_IMPACTED_PAGE_SIZE = conf.get('timeline_manager:impacted_containers_page_size') ?? 1000;
 // Nightly consistency pass (UTC hour), and the age after which a timeline is regenerated even without any change
 const TIMELINE_MANAGER_CONSISTENCY_HOUR = conf.get('timeline_manager:consistency_hour') ?? 2;
 const TIMELINE_MANAGER_CONSISTENCY_MAX_AGE_DAYS = conf.get('timeline_manager:consistency_max_age_days') ?? 30;
@@ -104,42 +104,59 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   collector.related.add(id);
 };
 
-const resolveImpactedContainers = async (context: AuthContext, collector: ImpactCollector): Promise<string[]> => {
-  const impacted = new Set(collector.containers);
+type ImpactedContainersSink = (containerIds: string[]) => Promise<void>;
+
+/**
+ * Queue every container impacted by the collected changes. A widely shared element can sit in thousands of cases:
+ * they are read page by page and each page is queued before the next one is read, so none is dropped and the memory
+ * stays bounded. The queue then regenerates them by bounded batches.
+ */
+const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
+  await enqueue(Array.from(collector.containers));
   const contained = Array.from(collector.contained);
   if (contained.length > 0) {
-    const containers = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
+    await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
       filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: contained }], filterGroups: [] },
       noFiltersChecking: true,
       baseData: true,
-      maxSize: TIMELINE_MANAGER_MAX_IMPACTED,
+      first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
+      callback: async (containers: BasicStoreEntity[]) => {
+        await enqueue(containers.map((c) => c.internal_id));
+      },
     } as any);
-    containers.forEach((c) => impacted.add(c.internal_id));
   }
   const references = Array.from(collector.references);
   if (references.length > 0) {
     const referenced = await internalFindByIds(context, SYSTEM_USER, references, { type: TIMELINE_CONTAINER_TYPES, baseData: true });
-    (referenced as unknown as BasicStoreEntity[]).forEach((c) => impacted.add(c.internal_id));
+    await enqueue((referenced as unknown as BasicStoreEntity[]).map((c) => c.internal_id));
   }
   const related = Array.from(collector.related);
   if (related.length > 0) {
-    const relatedArgs = { baseData: true, maxSize: TIMELINE_MANAGER_MAX_IMPACTED };
-    const [fromIncidents, toIncidents] = await Promise.all([
-      fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { ...relatedArgs, toId: related, fromTypes: [ENTITY_TYPE_INCIDENT] } as any),
-      fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { ...relatedArgs, fromId: related, toTypes: [ENTITY_TYPE_INCIDENT] } as any),
-    ]);
-    fromIncidents.forEach((r) => impacted.add(r.fromId));
-    toIncidents.forEach((r) => impacted.add(r.toId));
+    const relatedArgs = { baseData: true, first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE };
+    await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+      ...relatedArgs,
+      toId: related,
+      fromTypes: [ENTITY_TYPE_INCIDENT],
+      callback: async (relations: BasicStoreRelation[]) => {
+        await enqueue(relations.map((r) => r.fromId));
+      },
+    } as any);
+    await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+      ...relatedArgs,
+      fromId: related,
+      toTypes: [ENTITY_TYPE_INCIDENT],
+      callback: async (relations: BasicStoreRelation[]) => {
+        await enqueue(relations.map((r) => r.toId));
+      },
+    } as any);
   }
-  return Array.from(impacted).filter((id) => !!id);
 };
 
 export const timelineStreamEventsHandler = async (context: AuthContext, streamEvents: Array<SseEvent<DataEvent>>) => {
   if (streamEvents.length === 0) return;
   const collector: ImpactCollector = { containers: new Set(), contained: new Set(), related: new Set(), references: new Set() };
   streamEvents.forEach((event) => collectTimelineImpacts(event, collector));
-  const impacted = await resolveImpactedContainers(context, collector);
-  await enqueueTimelineRegeneration(impacted);
+  await queueImpactedContainers(context, collector, (ids) => enqueueTimelineRegeneration(ids));
 };
 
 const resolveStreamStart = async (): Promise<string> => {
