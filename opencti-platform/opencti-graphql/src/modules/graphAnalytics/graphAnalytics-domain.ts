@@ -1,7 +1,7 @@
 import conf, { booleanConf, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreEntity } from '../../types/store';
-import { elAggregationSearch, elCount, elFindByIds, elHistogramCount, elList } from '../../database/engine';
+import { elAggregationSearch, elCount, elFindByIds, elHistogramCount, elList, isUserWithCompleteRelationshipsView } from '../../database/engine';
 import { fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { createRelation, deleteElementById } from '../../database/middleware';
 import { fillTimeSeries, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -38,6 +38,7 @@ import { keepAccessibleEndpoints } from './graphAnalytics-features';
 import { computeSimilarityScore } from './graphAnalytics-scoring';
 import {
   addClusterPromotion,
+  computeDegreeMetrics,
   countSimilarityRows,
   finalizeClusteringRun,
   GRAPH_METRICS_ENTITY_INDICES,
@@ -53,6 +54,7 @@ import {
   type GraphClusterKind,
   type GraphClusterSource,
   type GraphFeatureFamily,
+  type GraphMetrics,
 } from './graphAnalytics-types';
 import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
@@ -67,6 +69,7 @@ import {
 
 const SIMILARITY_MAX_RESULTS: number = conf.get('graph_analytics:similarity_max_results') ?? 100;
 const MATRIX_MAX_ENTITIES: number = conf.get('graph_analytics:matrix_max_entities') ?? 25;
+const MATRIX_MAX_CANDIDATES = 500;
 const CLUSTER_AGGREGATION_PAGE_SIZE = 5000;
 export const PROMOTION_MAX_MEMBERS = 2000;
 const INVESTIGATION_MAX_ELEMENTS = 2000;
@@ -206,14 +209,33 @@ const loadMatrixEntities = async (context: AuthContext, user: AuthUser, args: Gr
     throw FunctionalError('A similarity matrix needs entity ids, types or filters');
   }
   const limit = clamp(args.first, 10, 2, MATRIX_MAX_ENTITIES);
-  return elList<BasicStoreEntity>(context, user, READ_ENTITIES_INDICES, {
-    types: args.types && args.types.length > 0 ? args.types : [ABSTRACT_STIX_CORE_OBJECT],
-    filters: args.filters ?? undefined,
-    orderBy: `${GRAPH_METRICS_ATTRIBUTE}.degree`,
+  const types = args.types && args.types.length > 0 ? args.types : [ABSTRACT_STIX_CORE_OBJECT];
+  const filters = args.filters ?? undefined;
+  if (await isUserWithCompleteRelationshipsView(context, user)) {
+    return elList<BasicStoreEntity>(context, user, READ_ENTITIES_INDICES, {
+      types,
+      filters,
+      orderBy: `${GRAPH_METRICS_ATTRIBUTE}.degree`,
+      orderMode: OrderingMode.Desc,
+      first: limit,
+      maxSize: limit,
+    });
+  }
+  // The stored degree counts relationships the caller may not read: the latest matches are ranked by visible degree
+  const candidates = await elList<BasicStoreEntity>(context, user, READ_ENTITIES_INDICES, {
+    types,
+    filters,
+    orderBy: 'created_at',
     orderMode: OrderingMode.Desc,
-    first: limit,
-    maxSize: limit,
+    first: MATRIX_MAX_CANDIDATES,
+    maxSize: MATRIX_MAX_CANDIDATES,
   });
+  const degrees = await computeDegreeMetrics(context, user, candidates.map((candidate) => candidate.internal_id));
+  return candidates
+    .map((entity, index) => ({ entity, index, degree: degrees.get(entity.internal_id)?.degree ?? 0 }))
+    .sort((a, b) => (b.degree - a.degree) || (a.index - b.index))
+    .slice(0, limit)
+    .map(({ entity }) => entity);
 };
 
 /** Pairwise scores computed live from the caller's view of the knowledge (no precomputed data involved). */
@@ -290,6 +312,60 @@ const countVisibleMembers = async (context: AuthContext, user: AuthUser, cluster
   return elCount(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters: clusterMembersFilter(clusterId) });
 };
 
+/** Number of members visible to the caller for each given cluster, keyed by lower-cased cluster id. */
+const countVisibleMembersOfClusters = async (context: AuthContext, user: AuthUser, clusterIds: string[]): Promise<Map<string, number>> => {
+  const counts = new Map<string, number>();
+  if (clusterIds.length === 0) return counts;
+  const filters: FilterGroup = {
+    mode: FilterMode.And,
+    filters: [{ key: [`${GRAPH_METRICS_ATTRIBUTE}.cluster_id`], values: clusterIds }],
+    filterGroups: [],
+  };
+  const aggregations = await elAggregationSearch(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, noFiltersChecking: true }, {
+    clusters: { terms: { field: `${GRAPH_METRICS_ATTRIBUTE}.cluster_id.keyword`, size: clusterIds.length } },
+  });
+  const buckets: any[] = aggregations.clusters?.buckets ?? [];
+  buckets.forEach((bucket) => counts.set(String(bucket.key).toLowerCase(), bucket.doc_count));
+  return counts;
+};
+
+/**
+ * x_opencti_graph_metrics as the caller may read them. The stored metrics count every relationship of the platform and
+ * are returned as is to callers reading all of them. For the others, degree and cluster size are counted again from
+ * what they can access, and the betweenness, which cannot be derived from a partial view of the graph, is withheld.
+ */
+export const batchGraphMetrics = async (context: AuthContext, user: AuthUser, elements: BasicStoreBase[]): Promise<Array<GraphMetrics | null>> => {
+  const stored = elements.map((element) => (element as unknown as Record<string, GraphMetrics | null | undefined>)[GRAPH_METRICS_ATTRIBUTE] ?? null);
+  if (stored.every((metrics) => !metrics) || await isUserWithCompleteRelationshipsView(context, user)) {
+    return stored;
+  }
+  const measuredIds = elements.filter((_, index) => stored[index]).map((element) => element.internal_id);
+  const clusterIds = Array.from(new Set(stored.map((metrics) => metrics?.cluster_id).filter((id): id is string => !!id)));
+  const [degrees, clusterSizes] = await Promise.all([
+    computeDegreeMetrics(context, user, measuredIds),
+    countVisibleMembersOfClusters(context, user, clusterIds),
+  ]);
+  return elements.map((element, index) => {
+    const metrics = stored[index];
+    if (!metrics) return null;
+    const visibleDegree = degrees.get(element.internal_id) ?? { degree: 0, degree_by_type: [] };
+    return {
+      ...metrics,
+      degree: visibleDegree.degree,
+      degree_by_type: visibleDegree.degree_by_type,
+      betweenness_approx: null,
+      cluster_size: metrics.cluster_id ? (clusterSizes.get(metrics.cluster_id.toLowerCase()) ?? 0) : null,
+    };
+  });
+};
+
+export const loadGraphMetrics = async (context: AuthContext, user: AuthUser, element: BasicStoreBase): Promise<GraphMetrics | null> => {
+  const loader = context.batch?.graphMetricsBatchLoader;
+  if (loader) return loader.load(element);
+  const [metrics] = await batchGraphMetrics(context, user, [element]);
+  return metrics;
+};
+
 export interface GraphClustersArgs {
   first?: number | null;
   after?: string | null;
@@ -315,18 +391,47 @@ export const findGraphClusters = async (context: AuthContext, user: AuthUser, ar
     ],
     filterGroups: args.filters ? [args.filters] : [],
   };
+  const visibleCount = (cluster: BasicStoreEntityGraphCluster) => visible.get(cluster.internal_id.toLowerCase()) ?? visible.get(cluster.internal_id) ?? 0;
+  const first = clamp(args.first, 25, 1, 500);
+  const orderBy = args.orderBy ?? 'members_count';
+  const orderMode = args.orderMode ?? OrderingMode.Desc;
+  if (orderBy === 'members_count' && !(await isUserWithCompleteRelationshipsView(context, user))) {
+    // The stored members count includes members the caller cannot read: clusters are ranked by their visible count
+    const matching = await elList<BasicStoreEntityGraphCluster>(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
+      types: [ENTITY_TYPE_GRAPH_CLUSTER],
+      ids: Array.from(visible.keys()),
+      search: args.search,
+      filters,
+    });
+    const direction = orderMode === OrderingMode.Asc ? 1 : -1;
+    const ranked = matching
+      .map((cluster) => ({ ...cluster, members_count: visibleCount(cluster) }))
+      .sort((a, b) => (direction * (a.members_count - b.members_count)) || a.internal_id.localeCompare(b.internal_id));
+    const offset = args.after ? Math.max(0, Number.parseInt(args.after, 10) + 1 || 0) : 0;
+    const page = ranked.slice(offset, offset + first);
+    return {
+      edges: page.map((node, index) => ({ cursor: String(offset + index), node })),
+      pageInfo: {
+        startCursor: page.length > 0 ? String(offset) : '',
+        endCursor: page.length > 0 ? String(offset + page.length - 1) : '',
+        hasNextPage: offset + page.length < ranked.length,
+        hasPreviousPage: offset > 0,
+        globalCount: ranked.length,
+      },
+    };
+  }
   const connection = await pageEntitiesConnection<BasicStoreEntityGraphCluster>(context, user, [ENTITY_TYPE_GRAPH_CLUSTER], {
     ids: Array.from(visible.keys()),
-    first: clamp(args.first, 25, 1, 500),
+    first,
     after: args.after,
     search: args.search,
-    orderBy: args.orderBy ?? 'members_count',
-    orderMode: args.orderMode ?? OrderingMode.Desc,
+    orderBy,
+    orderMode,
     filters,
     indices: [READ_INDEX_INTERNAL_OBJECTS],
   });
   connection.edges.forEach((edge) => {
-    edge.node.members_count = visible.get(edge.node.internal_id.toLowerCase()) ?? visible.get(edge.node.internal_id) ?? 0;
+    edge.node.members_count = visibleCount(edge.node);
   });
   return connection;
 };

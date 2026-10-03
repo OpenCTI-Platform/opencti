@@ -11,6 +11,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import type { GraphClusterMembersLinesPaginationQuery, GraphClusterMembersLinesPaginationQuery$variables } from './__generated__/GraphClusterMembersLinesPaginationQuery.graphql';
 import type { GraphClusterMembersLines_data$data } from './__generated__/GraphClusterMembersLines_data.graphql';
 import type { GraphClusterMembersLine_node$data } from './__generated__/GraphClusterMembersLine_node.graphql';
+import useGraphMetricsPlatformView, { isGraphMetricsSortKey } from '../../common/graph_analytics/useGraphMetricsPlatformView';
 
 const membersLinesQuery = graphql`
   query GraphClusterMembersLinesPaginationQuery(
@@ -104,13 +105,14 @@ interface GraphClusterMembersProps {
   clusterId: string;
 }
 
-/** Members of a cluster the user can access, most connected first. */
+/** Members of a cluster the user can access, most connected first for users reading every relationship. */
 const GraphClusterMembers = ({ clusterId }: GraphClusterMembersProps) => {
   const navigate = useNavigate();
+  const hasGraphMetricsPlatformView = useGraphMetricsPlatformView();
   const storageKey = `GraphClusterMembers-${clusterId}`;
   const initialValues = {
     searchTerm: '',
-    sortBy: 'graph_degree',
+    sortBy: hasGraphMetricsPlatformView ? 'graph_degree' : 'created_at',
     orderAsc: false,
     filters: emptyFilterGroup,
     numberOfElements: { number: 0, symbol: '' },
@@ -122,6 +124,7 @@ const GraphClusterMembers = ({ clusterId }: GraphClusterMembersProps) => {
   const userFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
+    ...(!hasGraphMetricsPlatformView && isGraphMetricsSortKey(paginationOptions.orderBy) ? { orderBy: 'created_at' } : {}),
     filters: {
       mode: 'and',
       filters: [{ key: ['graph_cluster_id'], values: [clusterId] }],
@@ -140,7 +143,7 @@ const GraphClusterMembers = ({ clusterId }: GraphClusterMembersProps) => {
       id: 'graph_degree',
       label: 'Graph degree',
       percentWidth: 10,
-      isSortable: true,
+      isSortable: hasGraphMetricsPlatformView,
       render: ({ x_opencti_graph_metrics }: GraphClusterMembersLine_node$data) => x_opencti_graph_metrics?.degree ?? '-',
     },
     createdBy: { percentWidth: 15, isSortable: false },

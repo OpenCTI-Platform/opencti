@@ -13,7 +13,7 @@ Graph analytics are part of the Community Edition and do not use any AI.
 
 !!! note "Access rights"
 
-    Analytics respect markings and organization restrictions. A path never goes through an entity you cannot access, a similar entity is only listed when you can access it, and only the shared evidence you can access is displayed.
+    Analytics respect markings and organization restrictions. A path never goes through an entity you cannot access, a similar entity is only listed when you can access it, only the shared evidence you can access is displayed, and graph metrics never count relationships you cannot read (see [graph metrics and access restrictions](#graph-metrics-and-access-restrictions)).
 
 ## Find paths between two entities
 
@@ -96,6 +96,18 @@ Every entity carries graph metrics, refreshed in the background without changing
 - **Graph cluster** and **graph cluster size**: the cluster the entity belongs to.
 
 You can filter on **Graph degree** and **Graph cluster** in lists and dashboards, sort lists by these metrics, and display them as list widget columns. For instance, a list widget of intrusion sets sorted by graph degree shows the hubs of your threat landscape.
+
+### Graph metrics and access restrictions
+
+The metrics computed in the background count every relationship of the platform. They are shown as computed, and can be used to filter, sort and rank, only by users who can read every relationship: users with the **Bypass** capability, and users who hold every marking definition and, when a platform organization is set, belong to it.
+
+For every other user, nothing derived from relationships they cannot read is disclosed:
+
+- **Graph degree** and its split by relationship type are counted from the relationships the user can read.
+- **Graph cluster size** is the number of cluster members the user can read.
+- **Approximate betweenness** is not displayed, as it cannot be derived from a partial view of the graph.
+- The **Graph degree** filter and the sorting options based on graph metrics are not offered. A list widget ranked by a graph metric explains why it is empty, and the API rejects such filters and sorts.
+- Clusters are ranked by the number of members the user can read, and the similarity matrix of a data selection ranks the 500 most recently created matching entities by the number of relationships the user can read.
 
 ## Dashboards
 

@@ -11,6 +11,7 @@ import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
+import useGraphMetricsPlatformView, { isGraphMetricsSortKey } from '../graph_analytics/useGraphMetricsPlatformView';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -604,4 +605,25 @@ const StixCoreObjectsList = ({
   );
 };
 
-export default StixCoreObjectsList;
+// A list ranked by graph metrics needs a view of every relationship: other users get an explanation instead of an error
+const StixCoreObjectsListWithGraphMetricsCheck = (props: StixCoreObjectsListProps) => {
+  const { t_i18n } = useFormatter();
+  const hasGraphMetricsPlatformView = useGraphMetricsPlatformView();
+  const { dataSelection, parameters, title, height, variant, popover } = props;
+  if (!hasGraphMetricsPlatformView && isGraphMetricsSortKey(dataSelection[0]?.sort_by)) {
+    return (
+      <WidgetContainer
+        padding="horizontal"
+        height={height}
+        title={parameters?.title ?? title ?? t_i18n('Entities list')}
+        variant={variant}
+        action={popover}
+      >
+        <WidgetNoData message={t_i18n('This list is ranked by graph metrics, which require access to every relationship of the platform.')} />
+      </WidgetContainer>
+    );
+  }
+  return <StixCoreObjectsList {...props} />;
+};
+
+export default StixCoreObjectsListWithGraphMetricsCheck;

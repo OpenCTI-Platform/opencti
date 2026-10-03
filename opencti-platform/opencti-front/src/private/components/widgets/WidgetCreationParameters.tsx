@@ -35,11 +35,13 @@ import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
+import useGraphMetricsPlatformView, { GRAPH_METRICS_SORT_KEYS } from '@components/common/graph_analytics/useGraphMetricsPlatformView';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
 
   const { t_i18n } = useFormatter();
+  const hasGraphMetricsPlatformView = useGraphMetricsPlatformView();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -69,9 +71,7 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_max',
     'opinions_metrics_min',
     'opinions_metrics_total',
-    'graph_degree',
-    'graph_betweenness',
-    'graph_cluster_size',
+    ...(hasGraphMetricsPlatformView ? GRAPH_METRICS_SORT_KEYS : []),
   ];
 
   const draftWorkspaceSortByValues: { value: string; label: string }[] = [

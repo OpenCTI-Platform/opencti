@@ -1,4 +1,6 @@
 import type { Resolvers } from '../../generated/graphql';
+import type { BasicStoreBase } from '../../types/store';
+import type { AuthContext } from '../../types/user';
 import {
   addGraphClusterToInvestigation,
   findGraphClusterById,
@@ -13,6 +15,7 @@ import {
   graphClusterTimeline,
   graphSimilarityMatrix,
   listGraphAnalyticsEdges,
+  loadGraphMetrics,
   PROMOTION_MAX_MEMBERS,
   promoteGraphCluster,
   recordGraphAnalyticsPivot,
@@ -58,4 +61,11 @@ const graphAnalyticsResolvers: Resolvers = {
   },
 };
 
-export default graphAnalyticsResolvers;
+// Interface field resolver, inherited by every Stix Core Object type (the generated interface type would also require __resolveType)
+const stixCoreObjectResolvers = {
+  x_opencti_graph_metrics: (stixCoreObject: BasicStoreBase, _: unknown, context: AuthContext) => loadGraphMetrics(context, context.user!, stixCoreObject),
+};
+
+const resolvers: Record<string, unknown> = { ...graphAnalyticsResolvers, StixCoreObject: stixCoreObjectResolvers };
+
+export default resolvers;
