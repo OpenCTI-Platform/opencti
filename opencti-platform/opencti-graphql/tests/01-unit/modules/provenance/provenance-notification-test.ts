@@ -76,6 +76,13 @@ describe('Provenance triggers', () => {
     expect(conflicts.newConflictValues).toEqual(2);
   });
 
+  it('should count every source, including the ones no longer detailed in the bounded assertions', () => {
+    const manySources = Array.from({ length: 250 }, (_, index) => `source-${index}`);
+    const element = { x_opencti_assertions: [assertion('source-249')], assertion_source_ids: manySources };
+    expect(computeProvenanceChange(element, ['source-0']).corroboration).toBeUndefined();
+    expect(computeProvenanceChange(element, ['source-250']).corroboration).toEqual({ from: 250, to: 251 });
+  });
+
   it('should default and bound the corroboration threshold', () => {
     expect(resolveCorroborationThreshold(['create'], undefined)).toBeNull();
     expect(resolveCorroborationThreshold(['corroboration'], undefined)).toEqual(2);

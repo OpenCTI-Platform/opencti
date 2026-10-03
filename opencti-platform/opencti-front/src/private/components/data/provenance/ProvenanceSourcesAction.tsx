@@ -13,10 +13,19 @@ interface ProvenanceSourcesActionProps {
 
 /**
  * Row action opening the Sources panel of an element (adopt or dismiss conflicting values, confirm freshness).
+ * onChange runs when the panel closes after a change, so that the list can drop the rows that left its filter.
  */
 const ProvenanceSourcesAction = ({ id, onChange }: ProvenanceSourcesActionProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
+  const [changed, setChanged] = useState(false);
+  const close = () => {
+    setOpen(false);
+    if (changed) {
+      setChanged(false);
+      onChange?.();
+    }
+  };
   return (
     <>
       <Tooltip>
@@ -37,8 +46,8 @@ const ProvenanceSourcesAction = ({ id, onChange }: ProvenanceSourcesActionProps)
         </TooltipTrigger>
         <TooltipContent>{t_i18n('View sources')}</TooltipContent>
       </Tooltip>
-      <Drawer title={t_i18n('Sources')} open={open} onClose={() => setOpen(false)}>
-        {open ? <ProvenanceSourcesPanel id={id} onChange={onChange} /> : null}
+      <Drawer title={t_i18n('Sources')} open={open} onClose={close}>
+        {open ? <ProvenanceSourcesPanel id={id} onChange={() => setChanged(true)} /> : null}
       </Drawer>
     </>
   );

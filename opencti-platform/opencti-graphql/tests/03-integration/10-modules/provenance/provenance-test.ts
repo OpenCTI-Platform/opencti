@@ -14,7 +14,8 @@ import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notifi
 import { applyKnowledgeDecayRules } from '../../../../src/modules/provenance/provenance-freshness';
 import { runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
 import { notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { PROVENANCE_SIDE_CHANNEL_FIELDS } from '../../../../src/modules/provenance/provenance-types';
+import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
+import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
 
 const MALWARE_NAME = 'Provenance malware';
@@ -132,6 +133,7 @@ const ageElement = async (id: string, days: number) => {
 
 describe('Provenance: every fact knows who said it', () => {
   let malwareId = '';
+  let boundedMalwareId = '';
   let attackPatternId = '';
   let usesId = '';
   let ruleId = '';
@@ -151,6 +153,9 @@ describe('Provenance: every fact knows who said it', () => {
     const deleteQuery = gql`mutation Delete($id: ID!) { stixDomainObjectEdit(id: $id) { delete } }`;
     if (malwareId) {
       await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: malwareId } });
+    }
+    if (boundedMalwareId) {
+      await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: boundedMalwareId } });
     }
     if (attackPatternId) {
       await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: attackPatternId } });
@@ -222,6 +227,34 @@ describe('Provenance: every fact knows who said it', () => {
     expect(extension.conflicting_fields).toEqual(['description']);
     expect(extension.sources_by_kind.user).toEqual(2);
     expect(JSON.stringify(extension)).not.toContain(ADMIN_USER.name);
+  });
+
+  it('should keep counting the sources whose detail no longer fits in the bounded assertions', async () => {
+    const created = await createEntity(testContext, ADMIN_USER, { name: `${MALWARE_NAME} bounded`, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);
+    boundedMalwareId = created.id;
+    const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, boundedMalwareId);
+    const feedAssertion = (id: string, first: string, last: string): StoreAssertion => ({
+      source_id: id, source_kind: SOURCE_KIND_FEED, source_name: `Feed ${id}`, first_asserted_at: first, last_asserted_at: last, assert_count: 1, confidence: 50, work_id: null,
+    });
+    const params = buildProvenanceScriptParams({
+      assertions: [
+        feedAssertion('feed-earliest', '2020-01-01T00:00:00.000Z', '2020-01-02T00:00:00.000Z'),
+        feedAssertion('feed-middle', '2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z'),
+        feedAssertion('feed-recent', '2026-09-01T00:00:00.000Z', '2026-09-02T00:00:00.000Z'),
+      ],
+    });
+    // Detail bound lowered to 2 to exercise the eviction of the stored script
+    await elUpdate(testContext, element._index, element.internal_id, {
+      script: { source: PROVENANCE_UPDATE_SCRIPT, lang: 'painless', params: { ...params, max_assertions: 2 } },
+    });
+    const malware = await loadMalware(boundedMalwareId);
+    // The creating user and three feeds are all counted; the details keep the earliest and the most recent source
+    expect(malware.corroboration_count).toEqual(4);
+    expect(malware.single_sourced).toEqual(false);
+    expect(malware.x_opencti_assertions.map((assertion: { source_id: string }) => assertion.source_id).sort())
+      .toEqual([ADMIN_USER.id, 'feed-earliest'].sort());
+    const stix = JSON.parse(malware.toStix);
+    expect(stix.extensions[STIX_EXT_OCTI_PROVENANCE]).toMatchObject({ corroboration_count: 4, first_asserted: '2020-01-01T00:00:00.000Z' });
   });
 
   it('should filter and sort on corroboration and freshness', async () => {

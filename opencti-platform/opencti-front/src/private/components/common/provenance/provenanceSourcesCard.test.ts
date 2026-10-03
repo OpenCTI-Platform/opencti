@@ -27,9 +27,15 @@ describe('buildSourcesCardModel', () => {
   });
 
   it('keeps every source under the limit', () => {
-    const model = buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z'), assertion('b', '2026-09-02T00:00:00.000Z')], null, 5);
+    const model = buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z'), assertion('b', '2026-09-02T00:00:00.000Z')], null, 2, 5);
     expect(model?.sources.map((source) => source.source_id)).toEqual(['b', 'a']);
     expect(model?.hiddenSourcesCount).toBe(0);
+  });
+
+  it('counts the sources whose detail is no longer kept among the sources left to the panel', () => {
+    const model = buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z'), assertion('b', '2026-09-02T00:00:00.000Z')], null, 240, 1);
+    expect(model?.sources.map((source) => source.source_id)).toEqual(['b']);
+    expect(model?.hiddenSourcesCount).toBe(239);
   });
 
   it('only reports the fields that still have alternative values', () => {

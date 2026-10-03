@@ -209,6 +209,13 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
             </TableBody>
           </Table>
         )}
+        {(element.corroboration_count ?? 0) > assertions.length && (
+          <Typography variant="caption" component="p" sx={{ marginTop: 1 }} data-testid="provenance-bounded-sources">
+            {t_i18n('Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.', {
+              values: { count: assertions.length, total: element.corroboration_count },
+            })}
+          </Typography>
+        )}
       </Card>
 
       {conflicts.length > 0 && (

@@ -6,6 +6,7 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
 import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
+import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
 
 const CONFLICTS_FILTERS: FilterGroup = {
   mode: 'and',
@@ -31,12 +32,16 @@ const SourceConflicts = () => {
         <TabsList>
           <TabsTrigger value="entities">{t_i18n('Entities')}</TabsTrigger>
           <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
+          <TabsTrigger value="sightings">{t_i18n('Sightings')}</TabsTrigger>
         </TabsList>
         <TabsContent value="entities">
           {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-conflicts-entities" fixedFilters={CONFLICTS_FILTERS} withConflicts />}
         </TabsContent>
         <TabsContent value="relationships">
           {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-conflicts-relationships" fixedFilters={CONFLICTS_FILTERS} withConflicts />}
+        </TabsContent>
+        <TabsContent value="sightings">
+          {tab === 'sightings' && <ProvenanceKnowledgeSightings storageKey="provenance-conflicts-sightings" fixedFilters={CONFLICTS_FILTERS} withConflicts />}
         </TabsContent>
       </Tabs>
     </div>

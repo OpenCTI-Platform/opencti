@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "Отменить выделение связей выбранных узлов",
   "Design structured intake forms so analysts can submit curated data into the platform.": "Создавайте структурированные формы приема, чтобы аналитики могли отправлять отобранные данные в платформу.",
   "Details": "Подробности",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "Сведения хранятся для {count} из {total} источников: самого раннего и недавно активных.",
   "Detection": "Обнаружение",
   "Diamond": "Diamond",
   "Dictate a message": "Продиктовать сообщение",

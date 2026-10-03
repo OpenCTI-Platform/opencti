@@ -154,7 +154,10 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
               disabled={isEdition}
               fullWidth
               containerstyle={fieldSpacingContainerStyle}
-              onChange={() => setFieldValue('target_types', [])}
+              onChange={() => {
+                setFieldValue('target_types', []);
+                filterHelpers.handleClearAllFilters();
+              }}
             >
               <SelectItem value="relationship">{t_i18n('Relationships')}</SelectItem>
               <SelectItem value="entity">{t_i18n('Entities')}</SelectItem>

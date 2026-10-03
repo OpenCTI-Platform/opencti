@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "Deseleccionar relaciones de nodos seleccionados",
   "Design structured intake forms so analysts can submit curated data into the platform.": "Diseñe formularios de entrada estructurados para que los analistas puedan enviar datos seleccionados a la plataforma.",
   "Details": "Detalles",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "Se conservan los detalles de {count} de las {total} fuentes: la primera y las más recientemente activas.",
   "Detection": "Detección",
   "Diamond": "Diamante",
   "Dictate a message": "Dictar un mensaje",

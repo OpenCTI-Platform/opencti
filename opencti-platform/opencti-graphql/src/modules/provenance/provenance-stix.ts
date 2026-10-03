@@ -1,11 +1,20 @@
 import type { StixProvenanceExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../types/stix-2-1-extensions';
-import { ASSERTION_SOURCE_KINDS, ATTRIBUTE_ASSERTIONS, ATTRIBUTE_CONFLICTS, ATTRIBUTE_FRESHNESS_STALE, type StoreAssertion, type StoreConflict } from './provenance-types';
+import {
+  ASSERTION_SOURCE_KINDS,
+  ATTRIBUTE_ASSERTIONS,
+  ATTRIBUTE_CONFLICTS,
+  ATTRIBUTE_CORROBORATION_COUNT,
+  ATTRIBUTE_FRESHNESS_STALE,
+  type StoreAssertion,
+  type StoreConflict,
+} from './provenance-types';
 
 type ProvenanceSource = {
   entity_type: string;
   [ATTRIBUTE_ASSERTIONS]?: StoreAssertion[] | null;
   [ATTRIBUTE_CONFLICTS]?: StoreConflict[] | null;
+  [ATTRIBUTE_CORROBORATION_COUNT]?: number | null;
   [ATTRIBUTE_FRESHNESS_STALE]?: boolean | null;
 };
 
@@ -41,13 +50,15 @@ export const buildProvenanceStixExtension = (instance: ProvenanceSource): StixPr
   const conflictingFields = (instance[ATTRIBUTE_CONFLICTS] ?? [])
     .filter((conflict) => (conflict.values ?? []).length > 0)
     .map((conflict) => conflict.field);
+  // Every source ever counted, including the ones whose detail was dropped from the bounded assertions
+  const corroborationCount = Math.max(instance[ATTRIBUTE_CORROBORATION_COUNT] ?? 0, assertions.length);
   return {
     extension_type: 'property-extension',
-    corroboration_count: assertions.length,
+    corroboration_count: corroborationCount,
     assertions_count: assertionsCount,
     first_asserted: toStixDate(firstAsserted),
     last_asserted: toStixDate(lastAsserted),
-    single_sourced: assertions.length === 1,
+    single_sourced: corroborationCount === 1,
     has_conflicts: conflictingFields.length > 0,
     conflicting_fields: conflictingFields,
     freshness_stale: instance[ATTRIBUTE_FRESHNESS_STALE] === true,

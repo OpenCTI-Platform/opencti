@@ -10,18 +10,18 @@ import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types
 import ProvenanceSourcesAction from './ProvenanceSourcesAction';
 import { conflictingFieldsColumn } from './ProvenanceKnowledgeEntities';
 import {
-  ProvenanceKnowledgeRelationshipsLinesPaginationQuery,
-  ProvenanceKnowledgeRelationshipsLinesPaginationQuery$variables,
-} from './__generated__/ProvenanceKnowledgeRelationshipsLinesPaginationQuery.graphql';
-import { ProvenanceKnowledgeRelationshipsLines_data$data } from './__generated__/ProvenanceKnowledgeRelationshipsLines_data.graphql';
+  ProvenanceKnowledgeSightingsLinesPaginationQuery,
+  ProvenanceKnowledgeSightingsLinesPaginationQuery$variables,
+} from './__generated__/ProvenanceKnowledgeSightingsLinesPaginationQuery.graphql';
+import { ProvenanceKnowledgeSightingsLines_data$data } from './__generated__/ProvenanceKnowledgeSightingsLines_data.graphql';
 
-const provenanceKnowledgeRelationshipsLineFragment = graphql`
-  fragment ProvenanceKnowledgeRelationshipsLine_node on StixCoreRelationship {
+const provenanceKnowledgeSightingsLineFragment = graphql`
+  fragment ProvenanceKnowledgeSightingsLine_node on StixSightingRelationship {
     id
     entity_type
     parent_types
-    relationship_type
     created_at
+    attribute_count
     corroboration_count
     freshness_days
     freshness_stale
@@ -34,13 +34,6 @@ const provenanceKnowledgeRelationshipsLineFragment = graphql`
     draftVersion {
       draft_id
       draft_operation
-    }
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
-      }
     }
     objectMarking {
       id
@@ -96,37 +89,37 @@ const provenanceKnowledgeRelationshipsLineFragment = graphql`
   }
 `;
 
-const provenanceKnowledgeRelationshipsLinesQuery = graphql`
-  query ProvenanceKnowledgeRelationshipsLinesPaginationQuery(
+const provenanceKnowledgeSightingsLinesQuery = graphql`
+  query ProvenanceKnowledgeSightingsLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixCoreRelationshipsOrdering
+    $orderBy: StixSightingRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    ...ProvenanceKnowledgeRelationshipsLines_data
+    ...ProvenanceKnowledgeSightingsLines_data
     @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
   }
 `;
 
-const provenanceKnowledgeRelationshipsLinesFragment = graphql`
-  fragment ProvenanceKnowledgeRelationshipsLines_data on Query
+const provenanceKnowledgeSightingsLinesFragment = graphql`
+  fragment ProvenanceKnowledgeSightingsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: last_asserted_at }
+    orderBy: { type: "StixSightingRelationshipsOrdering", defaultValue: last_asserted_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "ProvenanceKnowledgeRelationshipsLinesRefetchQuery") {
-    stixCoreRelationships(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
-    @connection(key: "Pagination_provenance_stixCoreRelationships") {
+  @refetchable(queryName: "ProvenanceKnowledgeSightingsLinesRefetchQuery") {
+    stixSightingRelationships(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
+    @connection(key: "Pagination_provenance_stixSightingRelationships") {
       edges {
         node {
           id
-          ...ProvenanceKnowledgeRelationshipsLine_node
+          ...ProvenanceKnowledgeSightingsLine_node
         }
       }
       pageInfo {
@@ -138,14 +131,14 @@ const provenanceKnowledgeRelationshipsLinesFragment = graphql`
   }
 `;
 
-interface ProvenanceKnowledgeRelationshipsProps {
+interface ProvenanceKnowledgeSightingsProps {
   storageKey: string;
   // Fixed provenance filter of the view (stale knowledge, conflicts), not editable by the user
   fixedFilters: FilterGroup;
   withConflicts?: boolean;
 }
 
-const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConflicts = false }: ProvenanceKnowledgeRelationshipsProps) => {
+const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts = false }: ProvenanceKnowledgeSightingsProps) => {
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -153,54 +146,54 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
     orderAsc: true,
     openExports: false,
   };
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ProvenanceKnowledgeRelationshipsLinesPaginationQuery$variables>(
+  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ProvenanceKnowledgeSightingsLinesPaginationQuery$variables>(
     storageKey,
     initialValues,
   );
-  const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', viewStorage.filters);
+  const userFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [fixedFilters, userFilters as FilterGroup] };
-  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeRelationshipsLinesPaginationQuery$variables;
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<ProvenanceKnowledgeRelationshipsLinesPaginationQuery>(
-    provenanceKnowledgeRelationshipsLinesQuery,
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeSightingsLinesPaginationQuery$variables;
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<ProvenanceKnowledgeSightingsLinesPaginationQuery>(
+    provenanceKnowledgeSightingsLinesQuery,
     queryPaginationOptions,
   );
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
     fromType: { percentWidth: 9 },
-    fromName: { percentWidth: withConflicts ? 13 : 16 },
-    relationship_type: { percentWidth: 10 },
+    fromName: { percentWidth: withConflicts ? 15 : 19 },
     toType: { percentWidth: 9 },
-    toName: { percentWidth: withConflicts ? 13 : 16 },
+    toName: { percentWidth: withConflicts ? 15 : 19 },
     ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
-    corroboration_count: { percentWidth: 10 },
+    attribute_count: { percentWidth: 7 },
+    corroboration_count: { percentWidth: 9 },
     freshness_days: { percentWidth: 8 },
     last_asserted_at: { percentWidth: 11 },
     objectMarking: { percentWidth: 9, isSortable: false },
   };
 
   const preloadedPaginationProps = {
-    linesQuery: provenanceKnowledgeRelationshipsLinesQuery,
-    linesFragment: provenanceKnowledgeRelationshipsLinesFragment,
+    linesQuery: provenanceKnowledgeSightingsLinesQuery,
+    linesFragment: provenanceKnowledgeSightingsLinesFragment,
     queryRef,
-    nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
+    nodePath: ['stixSightingRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<ProvenanceKnowledgeRelationshipsLinesPaginationQuery>;
+  } as UsePreloadedPaginationFragment<ProvenanceKnowledgeSightingsLinesPaginationQuery>;
 
   return queryRef ? (
     <DataTable
       dataColumns={dataColumns}
-      resolvePath={(data: ProvenanceKnowledgeRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((edge) => edge?.node)}
+      resolvePath={(data: ProvenanceKnowledgeSightingsLines_data$data) => data.stixSightingRelationships?.edges?.map((edge) => edge?.node)}
       storageKey={storageKey}
       initialValues={initialValues}
       contextFilters={contextFilters}
-      lineFragment={provenanceKnowledgeRelationshipsLineFragment}
+      lineFragment={provenanceKnowledgeSightingsLineFragment}
       preloadedPaginationProps={preloadedPaginationProps}
-      exportContext={{ entity_type: 'stix-core-relationship' }}
-      availableEntityTypes={['stix-core-relationship']}
+      exportContext={{ entity_type: 'stix-sighting-relationship' }}
+      availableEntityTypes={['stix-sighting-relationship']}
       actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} onChange={refresh} />}
     />
   ) : null;
 };
 
-export default ProvenanceKnowledgeRelationships;
+export default ProvenanceKnowledgeSightings;

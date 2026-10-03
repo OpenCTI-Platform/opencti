@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "Deselect Relationships of Selected Nodes",
   "Design structured intake forms so analysts can submit curated data into the platform.": "Design structured intake forms so analysts can submit curated data into the platform.",
   "Details": "Details",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.",
   "Detection": "Detection",
   "Diamond": "Diamond",
   "Dictate a message": "Dictate a message",

@@ -19,6 +19,8 @@ An assertion links a piece of knowledge to one source. A source can be:
 
 For each source, OpenCTI keeps the first and last assertion dates, the number of times the source asserted the knowledge and the confidence it provided. When a source sends the same knowledge again, only its assertion is updated: no new history entry is written, and the modification date of the knowledge does not change.
 
+The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters.
+
 Assertions are recorded after deduplication, on the stored object. A source asserting a duplicate of an existing entity therefore corroborates the existing entity. When entities are merged, their assertions are merged too.
 
 !!! note "Data created before provenance tracking"
@@ -81,8 +83,10 @@ Two parameters are available in the "Procedures" card of "Settings > Parameters"
 
 The "Data > Curation" hub gathers the data-quality views of the platform. Provenance adds two tabs to it:
 
-- **Conflicts**: the entities and relationships with source conflicts, with direct access to their sources panel to adopt or dismiss the alternative values.
-- **Stale knowledge**: the entities and relationships flagged as stale by a [knowledge decay rule](../administration/decay-rules.md#knowledge-decay-rules), with direct access to their sources panel to confirm them.
+- **Conflicts**: the entities, relationships and sightings with source conflicts, with direct access to their sources panel to adopt or dismiss the alternative values.
+- **Stale knowledge**: the entities, relationships and sightings flagged as stale by a [knowledge decay rule](../administration/decay-rules.md#knowledge-decay-rules), with direct access to their sources panel to confirm them.
+
+Once the sources panel of a row is closed after a change, the list is refreshed: a row whose conflicts are all resolved, or which is confirmed, leaves the tab.
 
 ## Widgets
 
@@ -117,7 +121,7 @@ Provenance travels in STIX bundles, streams and exports as a summary only, in th
 }
 ```
 
-Source names and identifiers never leave the platform. The extension is computed by the platform and ignored on import.
+Source names and identifiers never leave the platform. The extension is computed by the platform and ignored on import. `corroboration_count` and `single_sourced` count every source of the element. `assertions_count` and `sources_by_kind` are computed from the sources whose details are kept.
 
 In the Python client, `OpenCTIApiClient.get_provenance_extension(stix_object)` reads this summary from a STIX object, and `stix_object_or_stix_relationship.read_provenance(id=...)` returns the assertions, conflicts and procedures of an element.
 

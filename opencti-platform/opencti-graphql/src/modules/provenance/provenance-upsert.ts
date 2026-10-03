@@ -28,14 +28,19 @@ import {
 import { resolveAssertionSource, resolveSourceOfUser } from './provenance-source';
 import {
   type AssertionSource,
+  ATTRIBUTE_ASSERTION_SOURCE_IDS,
+  ATTRIBUTE_ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTIONS,
   ATTRIBUTE_CONFLICTS,
+  ATTRIBUTE_FRESHNESS_STALE,
   ATTRIBUTE_PROCEDURES,
   type StoreAssertion,
   type StoreConflict,
   type StoreProcedure,
   type StoreProvenanceFields,
 } from './provenance-types';
+import { type FreshnessState, isFreshAfterMerge } from './provenance-freshness';
+import { getActiveKnowledgeDecayRules } from '../decayRule/decayRule-knowledge';
 import {
   applyProvenanceUpdate,
   computeProvenanceChange,
@@ -154,6 +159,8 @@ export const mergeProvenanceOnEntitiesMerge = async (
   try {
     const at = now();
     const assertions: StoreAssertion[] = sources.flatMap((source) => source[ATTRIBUTE_ASSERTIONS] ?? []);
+    const sourceIdsAdd: string[] = sources.flatMap((source) => source[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? []);
+    const sourceKindsAdd: string[] = sources.flatMap((source) => source[ATTRIBUTE_ASSERTION_SOURCE_KINDS] ?? []);
     const proceduresAdd: StoreProcedure[] = sources.flatMap((source) => source[ATTRIBUTE_PROCEDURES] ?? []);
     const conflictsAdd: ConflictAddition[] = sources.flatMap((source) => (source[ATTRIBUTE_CONFLICTS] ?? [])
       .flatMap((conflict: StoreConflict) => (conflict.values ?? []).map((value) => ({ field: conflict.field, value }))));
@@ -173,12 +180,17 @@ export const mergeProvenanceOnEntitiesMerge = async (
         }
       }
     }
-    if (assertions.length === 0 && proceduresAdd.length === 0 && conflictsAdd.length === 0) {
+    if (assertions.length === 0 && sourceIdsAdd.length === 0 && proceduresAdd.length === 0 && conflictsAdd.length === 0) {
       return;
     }
+    const inheritedLastAssertedAt = assertions.reduce<string | undefined>((last, assertion) => {
+      return !last || assertion.last_asserted_at > last ? assertion.last_asserted_at : last;
+    }, undefined);
+    const resetFreshness = target[ATTRIBUTE_FRESHNESS_STALE] === true
+      && isFreshAfterMerge(target as FreshnessState, inheritedLastAssertedAt, await getActiveKnowledgeDecayRules(context));
     const { before, writeOpts } = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
-    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd }, writeOpts);
-    const change = computeProvenanceChange(before, assertions.map((assertion) => assertion.source_id), conflictsAdd);
+    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness }, writeOpts);
+    const change = computeProvenanceChange(before, [...sourceIdsAdd, ...assertions.map((assertion) => assertion.source_id)], conflictsAdd);
     await publishProvenanceChange(context, target, change);
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to merge the provenance of merged entities', { cause: err, id: target.internal_id });

@@ -13,7 +13,7 @@ import {
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_CORE_RELATIONSHIPS } from '../../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff } from '../../../../src/modules/provenance/provenance-freshness';
+import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff, isFreshAfterMerge } from '../../../../src/modules/provenance/provenance-freshness';
 
 const relationshipRule = (overrides: Partial<KnowledgeDecayRuleDefinition> = {}): KnowledgeDecayRuleDefinition => ({
   name: 'Stale C2',
@@ -109,6 +109,23 @@ describe('Knowledge freshness manager', () => {
     rule,
     types: resolveKnowledgeDecayRuleTypes(rule),
     filters: filters as any,
+  });
+
+  it('should reconcile the stale flag with the assertions inherited from merged elements', () => {
+    const reference = new Date('2026-10-11T00:00:00.000Z');
+    const rules = [{ id: 'rule-30', stale_after_days: 30 }];
+    const stale = { freshness_stale: true, freshness_stale_at: '2026-10-05T00:00:00.000Z', freshness_rule_id: 'rule-30' };
+    // A source asserted the element after the stale decision
+    expect(isFreshAfterMerge(stale, '2026-10-06T00:00:00.000Z', rules, reference)).toBe(true);
+    // Older than the decision but within the delay of the rule
+    expect(isFreshAfterMerge(stale, '2026-09-20T00:00:00.000Z', rules, reference)).toBe(true);
+    // Still beyond the delay of the rule: the flag stays and the policy is not applied twice
+    expect(isFreshAfterMerge(stale, '2026-08-01T00:00:00.000Z', rules, reference)).toBe(false);
+    // The rule that flagged the element is no longer active
+    expect(isFreshAfterMerge(stale, '2026-08-01T00:00:00.000Z', [], reference)).toBe(true);
+    // Nothing to reconcile
+    expect(isFreshAfterMerge({ freshness_stale: false }, '2026-10-06T00:00:00.000Z', rules, reference)).toBe(false);
+    expect(isFreshAfterMerge(stale, undefined, rules, reference)).toBe(false);
   });
 
   it('should compute the stale cutoff from the number of days', () => {

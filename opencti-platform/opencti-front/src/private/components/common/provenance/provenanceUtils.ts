@@ -144,20 +144,23 @@ export interface SourcesCardModel {
 
 /**
  * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the fields
- * on which sources disagree. Null when no source asserted the element, so that the card is not rendered.
+ * on which sources disagree. The corroboration counts every source, including the ones whose detail is no longer
+ * kept. Null when no source asserted the element, so that the card is not rendered.
  */
 export const buildSourcesCardModel = (
   assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined,
   conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
+  corroborationCount?: number | null,
   maxSources = SOURCES_CARD_MAX_SOURCES,
 ): SourcesCardModel | null => {
   const sorted = sortAssertionsByRecency(assertions);
   if (sorted.length === 0) {
     return null;
   }
+  const sources = sorted.slice(0, maxSources);
   return {
-    sources: sorted.slice(0, maxSources),
-    hiddenSourcesCount: Math.max(0, sorted.length - maxSources),
+    sources,
+    hiddenSourcesCount: Math.max(sorted.length, corroborationCount ?? 0) - sources.length,
     conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field),
   };
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -132,7 +132,8 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
   const userFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [fixedFilters, userFilters as FilterGroup] };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeEntitiesLinesPaginationQuery$variables;
-  const queryRef = useQueryLoading<ProvenanceKnowledgeEntitiesLinesPaginationQuery>(provenanceKnowledgeEntitiesLinesQuery, queryPaginationOptions);
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<ProvenanceKnowledgeEntitiesLinesPaginationQuery>(provenanceKnowledgeEntitiesLinesQuery, queryPaginationOptions);
+  const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 12 },
@@ -164,7 +165,7 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
       preloadedPaginationProps={preloadedPaginationProps}
       exportContext={{ entity_type: 'Stix-Core-Object' }}
       availableEntityTypes={['Stix-Core-Object']}
-      actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} />}
+      actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} onChange={refresh} />}
     />
   ) : null;
 };

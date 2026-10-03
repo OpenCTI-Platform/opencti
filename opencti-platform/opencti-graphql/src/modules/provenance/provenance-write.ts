@@ -57,14 +57,19 @@ export interface ProvenanceUpdate {
   // Retention: conflict values not re-asserted since this date are dropped
   conflictsPurgeBefore?: string;
   proceduresAdd?: StoreProcedure[];
+  // Sources counted by merged elements beyond the assertions they still detail
+  sourceIdsAdd?: string[];
+  sourceKindsAdd?: string[];
   resetFreshness?: boolean;
   freshnessFlag?: FreshnessFlag;
 }
 
 // Single constant source so the engine compiles it once, every variation goes through params.
+// Assertions detail the max_assertions most recently active sources, while the flat source ids and kinds keep every
+// source that ever asserted the element: corroboration is counted from the ids, never from the bounded details.
 export const PROVENANCE_UPDATE_SCRIPT = `
   List assertions = ctx._source.${ATTRIBUTE_ASSERTIONS};
-  if (params.assertions.size() > 0 || assertions != null) {
+  if (params.assertions.size() > 0 || params.source_ids_add.size() > 0 || assertions != null) {
     if (assertions == null) { assertions = new ArrayList(); ctx._source.${ATTRIBUTE_ASSERTIONS} = assertions; }
     for (def incoming : params.assertions) {
       def current = null;
@@ -100,26 +105,43 @@ export const PROVENANCE_UPDATE_SCRIPT = `
         }
       }
     }
-    while (assertions.size() > params.max_assertions) {
-      int oldest = 0;
-      for (int i = 1; i < assertions.size(); ++i) {
-        if (assertions.get(i).last_asserted_at.compareTo(assertions.get(oldest).last_asserted_at) < 0) { oldest = i; }
-      }
-      assertions.remove(oldest);
-    }
-    String last = null;
     List sourceIds = new ArrayList();
     List sourceKinds = new ArrayList();
+    def storedIds = ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_IDS};
+    if (storedIds instanceof List) { sourceIds.addAll(storedIds); } else if (storedIds != null) { sourceIds.add(storedIds); }
+    def storedKinds = ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_KINDS};
+    if (storedKinds instanceof List) { sourceKinds.addAll(storedKinds); } else if (storedKinds != null) { sourceKinds.add(storedKinds); }
+    for (def addedId : params.source_ids_add) { if (!sourceIds.contains(addedId)) { sourceIds.add(addedId); } }
+    for (def addedKind : params.source_kinds_add) { if (!sourceKinds.contains(addedKind)) { sourceKinds.add(addedKind); } }
     for (def item : assertions) {
-      def date = item.last_asserted_at;
-      if (date != null && (last == null || date.compareTo(last) > 0)) { last = date; }
       if (!sourceIds.contains(item.source_id)) { sourceIds.add(item.source_id); }
       if (item.source_kind != null && !sourceKinds.contains(item.source_kind)) { sourceKinds.add(item.source_kind); }
     }
+    if (assertions.size() > params.max_assertions) {
+      int earliest = 0;
+      String earliestAt = null;
+      for (int i = 0; i < assertions.size(); ++i) {
+        def firstAt = assertions.get(i).first_asserted_at;
+        if (firstAt != null && (earliestAt == null || firstAt.compareTo(earliestAt) < 0)) { earliest = i; earliestAt = firstAt; }
+      }
+      def kept = assertions.get(earliest);
+      while (assertions.size() > params.max_assertions) {
+        int oldest = -1;
+        for (int i = 0; i < assertions.size(); ++i) {
+          if (assertions.get(i) !== kept && (oldest < 0 || assertions.get(i).last_asserted_at.compareTo(assertions.get(oldest).last_asserted_at) < 0)) { oldest = i; }
+        }
+        assertions.remove(oldest);
+      }
+    }
+    String last = null;
+    for (def item : assertions) {
+      def date = item.last_asserted_at;
+      if (date != null && (last == null || date.compareTo(last) > 0)) { last = date; }
+    }
     ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_IDS} = sourceIds;
     ctx._source.${ATTRIBUTE_ASSERTION_SOURCE_KINDS} = sourceKinds;
-    ctx._source.${ATTRIBUTE_CORROBORATION_COUNT} = assertions.size();
-    ctx._source.${ATTRIBUTE_SINGLE_SOURCED} = assertions.size() == 1;
+    ctx._source.${ATTRIBUTE_CORROBORATION_COUNT} = sourceIds.size();
+    ctx._source.${ATTRIBUTE_SINGLE_SOURCED} = sourceIds.size() == 1;
     if (last != null) { ctx._source.${ATTRIBUTE_LAST_ASSERTED_AT} = last; }
   }
   if (params.reset_freshness && ctx._source.freshness_stale == true) {
@@ -273,6 +295,8 @@ export const buildProvenanceScriptParams = (update: ProvenanceUpdate) => ({
   conflicts_remove: update.conflictsRemove ?? [],
   conflicts_purge_before: update.conflictsPurgeBefore ?? null,
   procedures_add: update.proceduresAdd ?? [],
+  source_ids_add: update.sourceIdsAdd ?? [],
+  source_kinds_add: update.sourceKindsAdd ?? [],
   reset_freshness: update.resetFreshness === true,
   freshness_flag: update.freshnessFlag ?? null,
   max_assertions: MAX_ASSERTIONS_PER_ELEMENT,
@@ -356,9 +380,10 @@ export const computeProvenanceChange = (
   sourceIds: string[],
   conflictsAdd: ConflictAddition[] = [],
 ): ProvenanceChange => {
-  const previousSources = new Set((element[ATTRIBUTE_ASSERTIONS] ?? []).map((assertion) => assertion.source_id));
+  const storedSourceIds = element[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? [];
+  const previousSources = new Set([...storedSourceIds, ...(element[ATTRIBUTE_ASSERTIONS] ?? []).map((assertion) => assertion.source_id)]);
   const from = previousSources.size;
-  const to = Math.min(MAX_ASSERTIONS_PER_ELEMENT, new Set([...previousSources, ...sourceIds]).size);
+  const to = new Set([...previousSources, ...sourceIds]).size;
   const knownValues = new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
   const newConflicts = conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
   return {
@@ -375,7 +400,7 @@ export const publishProvenanceChange = async (context: AuthContext, element: Pro
   }
 };
 
-const PROVENANCE_SNAPSHOT_FIELDS = [`${ATTRIBUTE_ASSERTIONS}.source_id`, ATTRIBUTE_CONFLICTS];
+const PROVENANCE_SNAPSHOT_FIELDS = [`${ATTRIBUTE_ASSERTIONS}.source_id`, ATTRIBUTE_ASSERTION_SOURCE_IDS, ATTRIBUTE_CONFLICTS];
 
 /**
  * Provenance of the element as currently stored (realtime get, not a search), so that trigger events

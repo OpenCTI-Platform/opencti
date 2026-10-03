@@ -6,6 +6,7 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
 import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
+import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
 
 const STALE_FILTERS: FilterGroup = {
   mode: 'and',
@@ -31,12 +32,16 @@ const StaleKnowledge = () => {
         <TabsList>
           <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
           <TabsTrigger value="entities">{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="sightings">{t_i18n('Sightings')}</TabsTrigger>
         </TabsList>
         <TabsContent value="relationships">
           {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-stale-relationships" fixedFilters={STALE_FILTERS} />}
         </TabsContent>
         <TabsContent value="entities">
           {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-stale-entities" fixedFilters={STALE_FILTERS} />}
+        </TabsContent>
+        <TabsContent value="sightings">
+          {tab === 'sightings' && <ProvenanceKnowledgeSightings storageKey="provenance-stale-sightings" fixedFilters={STALE_FILTERS} />}
         </TabsContent>
       </Tabs>
     </div>

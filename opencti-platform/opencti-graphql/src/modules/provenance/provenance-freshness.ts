@@ -20,7 +20,7 @@ import {
   FRESHNESS_POLICY_LOWER_CONFIDENCE,
   FRESHNESS_POLICY_REVOKE,
 } from '../decayRule/decayRule-types';
-import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
+import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
 import { applyProvenanceUpdate, isNoopUpdate } from './provenance-write';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -45,6 +45,37 @@ export interface KnowledgeFreshnessRunResult {
 
 export const computeStaleCutoff = (staleAfterDays: number, reference: Date = new Date()) => {
   return new Date(reference.getTime() - staleAfterDays * DAY_IN_MS).toISOString();
+};
+
+export interface FreshnessState {
+  [ATTRIBUTE_FRESHNESS_STALE]?: boolean | null;
+  [ATTRIBUTE_FRESHNESS_STALE_AT]?: string | null;
+  [ATTRIBUTE_FRESHNESS_RULE_ID]?: string | null;
+}
+
+/**
+ * Whether the assertions inherited from merged elements make a stale element fresh again: a source asserted it after
+ * the stale decision, or within the delay of the active rule that flagged it. A flag whose rule is no longer active
+ * is not kept either. Otherwise the flag stays, so that the rule policy is never applied twice.
+ */
+export const isFreshAfterMerge = (
+  target: FreshnessState,
+  inheritedLastAssertedAt: string | null | undefined,
+  activeRules: Pick<BasicStoreEntityDecayRule, 'id' | 'stale_after_days'>[],
+  reference: Date = new Date(),
+) => {
+  if (target[ATTRIBUTE_FRESHNESS_STALE] !== true || !inheritedLastAssertedAt) {
+    return false;
+  }
+  const staleAt = target[ATTRIBUTE_FRESHNESS_STALE_AT];
+  if (staleAt && inheritedLastAssertedAt > staleAt) {
+    return true;
+  }
+  const rule = activeRules.find((candidate) => candidate.id === target[ATTRIBUTE_FRESHNESS_RULE_ID]);
+  if (!rule || !Number.isInteger(rule.stale_after_days)) {
+    return true;
+  }
+  return inheritedLastAssertedAt >= computeStaleCutoff(rule.stale_after_days as number, reference);
 };
 
 /**

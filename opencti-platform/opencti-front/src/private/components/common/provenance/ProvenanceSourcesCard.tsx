@@ -71,7 +71,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen }: ProvenanceSource
   const { t_i18n, fldt, nsdt } = useFormatter();
   const data = useLazyLoadQuery<ProvenanceSourcesCardQuery>(provenanceSourcesCardQuery, { id }, { fetchPolicy: 'store-and-network', fetchKey });
   const element = data.stixObjectOrStixRelationship as ProvenanceData | null;
-  const model = element ? buildSourcesCardModel(element.x_opencti_assertions, element.x_opencti_conflicts) : null;
+  const model = element ? buildSourcesCardModel(element.x_opencti_assertions, element.x_opencti_conflicts, element.corroboration_count) : null;
   if (!element || !model) {
     return null;
   }

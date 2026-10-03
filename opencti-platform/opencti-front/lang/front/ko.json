@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "선택한 노드에서 관계 선택 취소",
   "Design structured intake forms so analysts can submit curated data into the platform.": "구조화된 접수 양식을 설계하여 분석가가 선별된 데이터를 플랫폼에 제출할 수 있게 합니다.",
   "Details": "세부사항",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "{total}개 출처 중 {count}개의 세부 정보가 보관됩니다: 가장 오래된 출처와 최근 활동한 출처입니다.",
   "Detection": "탐지",
   "Diamond": "Diamond",
   "Dictate a message": "메시지 받아쓰기",

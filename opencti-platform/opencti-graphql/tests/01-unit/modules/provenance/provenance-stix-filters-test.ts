@@ -44,6 +44,22 @@ describe('Provenance STIX extension', () => {
     expect(JSON.stringify(extension)).not.toContain('Source a');
   });
 
+  it('should count the sources whose detail is no longer kept', () => {
+    const extension = buildProvenanceStixExtension({
+      entity_type: 'Malware',
+      x_opencti_assertions: [assertion('a', 'connector', '2026-01-01T00:00:00.000Z', '2026-09-01T00:00:00.000Z', 3)],
+      corroboration_count: 240,
+    });
+    expect(extension?.corroboration_count).toEqual(240);
+    expect(extension?.single_sourced).toEqual(false);
+    const single = buildProvenanceStixExtension({
+      entity_type: 'Malware',
+      x_opencti_assertions: [assertion('a', 'connector', '2026-01-01T00:00:00.000Z', '2026-09-01T00:00:00.000Z', 3)],
+    });
+    expect(single?.corroboration_count).toEqual(1);
+    expect(single?.single_sourced).toEqual(true);
+  });
+
   it('should leave elements without provenance untouched', () => {
     const stix: { id: string; extensions: Record<string, unknown> } = { id: 'malware--1', extensions: { other: {} } };
     expect(withProvenanceStixExtension({ entity_type: 'Malware' }, stix)).toBe(stix);

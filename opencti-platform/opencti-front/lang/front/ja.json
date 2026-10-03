@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "選択したノードから関係の選択を解除します",
   "Design structured intake forms so analysts can submit curated data into the platform.": "構造化されたインテイクフォームを設計し、アナリストがキュレートされたデータをプラットフォームに送信できるようにします。",
   "Details": "詳細",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "{total} 件のソースのうち {count} 件の詳細を保持しています：最初のソースと最近アクティブなソースです。",
   "Detection": "検出",
   "Diamond": "ダイヤモンド",
   "Dictate a message": "メッセージを音声入力する",

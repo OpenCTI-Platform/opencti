@@ -1412,6 +1412,7 @@
   "Deselect Relationships of Selected Nodes": "取消选择选定节点的关系",
   "Design structured intake forms so analysts can submit curated data into the platform.": "设计结构化的接入表单，使分析师可以向平台提交经过整理的数据。",
   "Details": "详情",
+  "Details are kept for {count} of the {total} sources: the earliest one and the most recently active ones.": "已保留 {total} 个来源中 {count} 个的详细信息：最早的来源和最近活跃的来源。",
   "Detection": "检测",
   "Diamond": "钻石",
   "Dictate a message": "语音输入消息",
