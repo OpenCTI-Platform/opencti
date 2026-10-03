@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import {
-  type BackfillSourceResolver,
-  computeBackfillAssertions,
-  findRunningWorkConnector,
-  readBackfillState,
-} from '../../../../src/modules/provenance/provenance-backfill';
+import { type BackfillSourceResolver, computeBackfillAssertions, findRunningWorkConnector, readBackfillState } from '../../../../src/modules/provenance/provenance-backfill';
 import type { AssertionSource } from '../../../../src/modules/provenance/provenance-types';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
 
