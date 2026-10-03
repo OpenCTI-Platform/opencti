@@ -80,6 +80,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     call: (config: AxiosRequestConfig) => caller(config),
     get: async (url: string, opts: any = {}) => caller.get(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
+    patch: async (url: string, data: object, opts: any = {}) => caller.patch(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     delete: async (url: string, opts: any = {}) => caller.delete(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     head: async (url: string, opts: any = {}) => caller.head(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
   };
