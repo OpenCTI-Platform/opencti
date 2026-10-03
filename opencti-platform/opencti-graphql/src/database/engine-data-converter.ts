@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { isNotEmptyField } from './utils';
 import { logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -12,42 +11,57 @@ import type { BasicStoreBase, BasicStoreRelation, StoreConnection } from '../typ
 
 export const INNER_HITS_WINDOWS_SIZE = 100;
 
-const elBuildRelation = (type: string, connection: StoreConnection) => {
-  return {
-    [type]: null,
-    [`${type}Id`]: connection.internal_id,
-    [`${type}Role`]: connection.role,
-    [`${type}Name`]: connection.name,
-    [`${type}Type`]: connection.types.find((connectionType) => !isAbstract(connectionType)),
-  };
+const elAssignRelation = (
+  concept: Record<string, any>,
+  type: string,
+  connection: StoreConnection,
+) => {
+  concept[type] = null;
+  concept[`${type}Id`] = connection.internal_id;
+  concept[`${type}Role`] = connection.role;
+  concept[`${type}Name`] = connection.name;
+  concept[`${type}Type`] = connection.types.find((connectionType) => !isAbstract(connectionType));
 };
-const elMergeRelation = (
-  concept: { internal_id: string; base_type: string; entity_type: string },
+const elAssignFromRelation = (
+  concept: Record<string, any>,
+  connection: StoreConnection,
+) => {
+  elAssignRelation(concept, 'from', connection);
+  concept.source_ref = `${convertTypeToStixType(concept.fromType as string)}--temporary`;
+  return concept;
+};
+const elAssignToRelation = (
+  concept: Record<string, any>,
+  connection: StoreConnection,
+) => {
+  elAssignRelation(concept, 'to', connection);
+  concept.target_ref = `${convertTypeToStixType(concept.toType as string)}--temporary`;
+  return concept;
+};
+const elAssignInnerRelations = (
+  concept: Record<string, any>,
   fromConnection: StoreConnection | undefined,
   toConnection: StoreConnection | undefined,
 ) => {
   if (!fromConnection || !toConnection) {
     throw DatabaseError('Reconstruction of the relation fail', concept.internal_id);
   }
-  const from = elBuildRelation('from', fromConnection);
-  from.source_ref = `${convertTypeToStixType(from.fromType as string)}--temporary`;
-  const to = elBuildRelation('to', toConnection);
-  to.target_ref = `${convertTypeToStixType(to.toType as string)}--temporary`;
-  return R.mergeAll([concept, from, to]);
+  elAssignFromRelation(concept, fromConnection);
+  elAssignToRelation(concept, toConnection);
+  return concept;
 };
-export const elRebuildRelation = (concept: { internal_id: string; base_type: string; entity_type: string }) => {
+export const elRebuildRelation = (concept: Record<string, any>) => {
   if (concept.base_type === BASE_TYPE_RELATION) {
     const { connections } = concept as BasicStoreRelation;
     const entityType = concept.entity_type;
-    const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
-    const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
-    const relation = elMergeRelation(concept as BasicStoreRelation, fromConnection, toConnection);
-    relation.relationship_type = relation.entity_type;
-    return R.dissoc('connections', relation);
+    const fromConnection = connections.find((connection) => connection.role === `${entityType}_from`);
+    const toConnection = connections.find((connection) => connection.role === `${entityType}_to`);
+    elAssignInnerRelations(concept as BasicStoreRelation, fromConnection, toConnection);
+    concept.relationship_type = concept.entity_type;
+    delete concept.connections;
   }
   return concept;
 };
-
 const processInnerHits = (data: Record<string, any>, innerHits: any, internalId: string) => {
   Object.keys(innerHits).forEach((innerHitKey) => {
     const nestedHits = innerHits[innerHitKey];
@@ -71,46 +85,46 @@ const processInnerHits = (data: Record<string, any>, innerHits: any, internalId:
 };
 
 const elDataConverter = <T>(esHit: any): T => {
-  const elementData = esHit._source;
-  // Base element mapping
-  const data: Record<string, any> = {
-    _index: esHit._index,
-    _id: esHit._id,
-    id: elementData.internal_id,
-    sort: esHit.sort,
-    ...elRebuildRelation(elementData),
-    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {}),
-  };
+  const data: Record<string, any> = esHit._source;
+  data._index = esHit._index;
+  data._id = esHit._id;
+  data.id = data.internal_id;
+  data.sort = esHit.sort;
+  elRebuildRelation(data);
+  if (isNotEmptyField(esHit.fields)) {
+    Object.assign(data, esHit.fields);
+  }
   // Inner elements mapping
   if (esHit.inner_hits) {
-    processInnerHits(data, esHit.inner_hits, elementData.internal_id);
+    processInnerHits(data, esHit.inner_hits, data.internal_id);
   }
   // Rule inference mapping
   const ruleInferences = [];
-  const entries = Object.entries(data);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    if (key.startsWith(RULE_PREFIX)) {
+  // Only get all object keys here
+  // Values will be loaded dynamically only if needed for rel_*/i_rule_* prefixed keys
+  const keys = Object.keys(data);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    if (keys[index].startsWith(RULE_PREFIX)) {
+      const val = data[key];
       const rule = key.substring(RULE_PREFIX.length);
       const ruleDefinitions: any = Object.values(val);
       for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
         const { inferred, explanation } = ruleDefinitions[rIndex];
-        const attributes = R.toPairs(inferred).map((s) => ({ field: R.head(s), value: String(R.last(s)) }));
+        const attributes = Object.entries(inferred ?? {}).map(([field, value]) => ({ field, value: String(value) }));
         ruleInferences.push({ rule, explanation, attributes });
       }
-      data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       // Rebuild rel to stix attributes
+      const val = data[key];
       const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
       if (isSingleRelationsRef(data.entity_type, relType)) {
-        data[relType] = R.head(val);
+        data[relType] = val[0];
       } else {
         const relData = [...(data[relType] ?? []), ...val];
-        data[relType] = isStixRefUnidirectionalRelationship(relType) ? R.uniq(relData) : relData;
+        data[relType] = isStixRefUnidirectionalRelationship(relType) ? [...new Set(relData)] : relData;
       }
-    } else {
-      data[key] = val;
     }
   }
   if (ruleInferences.length > 0) {
