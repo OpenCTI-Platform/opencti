@@ -22,6 +22,9 @@ export const SOURCE_KIND_LABELS: Record<string, string> = {
   manual: 'Analyst',
 };
 
+// Settings of the computation, weights, thresholds, tuning, autonomy and gaps, under Settings > Customization
+export const SOURCE_INTELLIGENCE_SETTINGS_PATH = '/dashboard/settings/customization/source_intelligence';
+
 // Provenance assertion kinds and the source kind scoring them, as the backend joins them (inference and emulation are not sources)
 export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, string> = {
   connector: 'connector',
