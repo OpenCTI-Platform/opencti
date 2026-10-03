@@ -5,6 +5,7 @@ import type { DataEvent, SseEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_DEPLOYED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import {
   backfillIndicatorDeploymentCounters,
   flagExpiredDeployments,
@@ -47,17 +48,20 @@ export const indicatorDeploymentCronHandler = async () => {
 type DeploymentEventData = {
   type?: string;
   relationship_type?: string;
-  extensions?: Record<string, { source_ref?: string; type?: string }>;
+  extensions?: Record<string, { id?: string; source_ref?: string; type?: string }>;
 };
 
-// Indicators whose deployed-on relationships changed in this batch of events.
+// Indicators whose deployed-on relationships changed in this batch of events. A merge redirects the
+// relationships of the merged indicators to the surviving one without relationship events.
 export const extractDeploymentIndicatorIds = (events: Array<SseEvent<DataEvent>>) => {
   const ids = new Set<string>();
   events.forEach((event) => {
     const data = event.data?.data as DeploymentEventData | undefined;
+    const extension = data?.extensions?.[STIX_EXT_OCTI];
     if (data?.type === 'relationship' && data.relationship_type === RELATION_DEPLOYED_ON) {
-      const sourceRef = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-      if (sourceRef) ids.add(sourceRef);
+      if (extension?.source_ref) ids.add(extension.source_ref);
+    } else if (event.data?.type === 'merge' && extension?.type === ENTITY_TYPE_INDICATOR && extension.id) {
+      ids.add(extension.id);
     }
   });
   return [...ids];

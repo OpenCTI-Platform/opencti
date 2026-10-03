@@ -9,6 +9,7 @@ import { ConnectorType } from '../../../../src/generated/graphql';
 import { maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { elDeleteElements } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import type { BasicStoreRelation } from '../../../../src/types/store';
 
@@ -90,6 +91,11 @@ const CONNECTORS_LIST = gql`
 const STATUS_UPDATE = gql`
   mutation StatusUpdate($id: ID!, $input: IocValidationRequestStatusInput!) {
     iocValidationRequestStatusUpdate(id: $id, input: $input) { id status status_message openaev_simulation_id completed_at results_summary { total requested error skipped } }
+  }
+`;
+const REQUESTS_FILTERED = gql`
+  query RequestsFiltered($filters: FilterGroup) {
+    iocValidationRequests(first: 50, filters: $filters) { edges { node { id } } }
   }
 `;
 const REPORT_RESULTS = gql`
@@ -300,7 +306,36 @@ describe('IOC validation requests', () => {
     });
     const unchanged = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(unchanged.data?.stixCoreRelationship.validation_status).toEqual('missed');
+    // A sighting write lost after the verdict (removed here without event) is repaired by a retry of the same verdict
+    await elDeleteElements(testContext, ADMIN_USER, [sighting as never], { forceDelete: true, forceRefresh: true });
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'missed', observedAt }] },
+    });
+    const repaired = await storeLoadById<BasicStoreRelation & { x_opencti_negative?: boolean }>(testContext, ADMIN_USER, sightingId, STIX_SIGHTING_RELATIONSHIP);
+    expect(repaired?.x_opencti_negative).toEqual(true);
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+  });
+
+  it('should only filter requests on plain attributes and accessible references', async () => {
+    const byPlatform = await queryAsAdminWithSuccess({
+      query: REQUESTS_FILTERED,
+      variables: { filters: { mode: 'and', filters: [{ key: 'platform_ids', values: [platformId] }], filterGroups: [] } },
+    });
+    expect(byPlatform.data?.iocValidationRequests.edges.map((e: { node: { id: string } }) => e.node.id)).toContain(requestId);
+    const unknownPlatform = await queryAsAdminWithSuccess({
+      query: REQUESTS_FILTERED,
+      variables: { filters: { mode: 'and', filters: [{ key: 'platform_ids', values: ['identity--00000000-0000-4000-8000-000000000000'] }], filterGroups: [] } },
+    });
+    expect(unknownPlatform.data?.iocValidationRequests.edges).toEqual([]);
+    await queryAsAdminWithError({
+      query: REQUESTS_FILTERED,
+      variables: { filters: { mode: 'and', filters: [{ key: 'iocs.value', values: ['validation.evil.example'] }], filterGroups: [] } },
+    });
+    await queryAsAdminWithError({
+      query: REQUESTS_FILTERED,
+      variables: { filters: { mode: 'and', filters: [{ key: 'indicator_ids', values: [liveIndicatorId], operator: 'not_eq' }], filterGroups: [] } },
+    });
   });
 
   it('should release the waiting pairs when a request is deleted', async () => {
