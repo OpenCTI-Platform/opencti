@@ -140,6 +140,7 @@ export interface EntityDiffResult {
   from: string;
   to: string;
   existed_at_from: boolean;
+  exists_at_to: boolean;
   restricted: boolean;
   complete: boolean;
   warnings: string[];
@@ -729,6 +730,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
       from,
       to,
       existed_at_from: false,
+      exists_at_to: false,
       restricted: false,
       complete: atTo.replay.complete,
       warnings: atTo.replay.warnings,
@@ -757,6 +759,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
       from,
       to,
       existed_at_from: existedAtFrom,
+      exists_at_to: true,
       restricted: true,
       complete,
       warnings,
@@ -855,6 +858,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     from,
     to,
     existed_at_from: existedAtFrom,
+    exists_at_to: true,
     restricted: false,
     complete: complete && !eventsTruncated,
     warnings: diffWarnings,

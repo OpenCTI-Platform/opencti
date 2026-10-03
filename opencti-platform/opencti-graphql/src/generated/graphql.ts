@@ -8926,6 +8926,7 @@ export type EntityDiff = {
   entity_id: Scalars['ID']['output'];
   entity_type: Scalars['String']['output'];
   existed_at_from: Scalars['Boolean']['output'];
+  exists_at_to: Scalars['Boolean']['output'];
   from: Scalars['DateTime']['output'];
   relationships: Array<EntityDiffRelationshipChange>;
   relationships_truncated: Scalars['Boolean']['output'];
@@ -46207,6 +46208,7 @@ export type EntityDiffResolvers<ContextType = any, ParentType extends ResolversP
   entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   existed_at_from?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  exists_at_to?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   relationships?: Resolver<Array<ResolversTypes['EntityDiffRelationshipChange']>, ParentType, ContextType>;
   relationships_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

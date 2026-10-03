@@ -25,6 +25,7 @@ const entityDiffTabQuery = graphql`
       from
       to
       existed_at_from
+      exists_at_to
       restricted
       complete
       warnings
@@ -179,7 +180,12 @@ const EntityDiffContent = ({ entityId, range }: { entityId: string; range: DateR
           {diff.warnings.map((warning) => <div key={warning}>{warningMessage(warning)}</div>)}
         </Alert>
       )}
-      {!diff.existed_at_from && (
+      {!diff.exists_at_to && (
+        <Alert severity="info" sx={{ marginBottom: 2 }}>
+          {t_i18n('This entity did not exist yet during this period.')}
+        </Alert>
+      )}
+      {diff.exists_at_to && !diff.existed_at_from && (
         <Alert severity="info" sx={{ marginBottom: 2 }}>
           {t_i18n('This entity did not exist at the start of the period, its creation is part of the changes.')}
         </Alert>

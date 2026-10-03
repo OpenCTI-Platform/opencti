@@ -5041,6 +5041,7 @@
   "This decision could not be sent. Reload the chat and try again.": "Это решение не удалось отправить. Обновите чат и попробуйте ещё раз.",
   "This entity did not exist at the start of the period, its creation is part of the changes.": "Эта сущность не существовала в начале периода, её создание входит в изменения.",
   "This entity did not exist on": "Эта сущность не существовала на",
+  "This entity did not exist yet during this period.": "Эта сущность ещё не существовала в этот период.",
   "This entity has been deleted on": "Эта сущность была удалена",
   "This entity has several key fields, which is incompatible with bulk creation": "Эта сущность имеет несколько ключевых полей, что несовместимо с массовым созданием",
   "This entity type is managed by a workflow, status is read-only here": "Этот тип сущности управляется рабочим процессом; статус здесь доступен только для чтения",

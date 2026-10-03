@@ -67,6 +67,7 @@ const DIFF = gql`
       entity_id
       restricted
       existed_at_from
+      exists_at_to
       summary { attributes_changed relationships_added relationships_removed confidence_before confidence_after relationships_added_by_type { relationship_type count } }
       attributes { key before { display } after { display } changed_by changes_count }
       relationships { relationship_type action target_name target_type is_source }
@@ -202,6 +203,7 @@ describe('Knowledge time machine', () => {
     const diff = data.entityDiff;
     expect(diff.restricted).toBe(false);
     expect(diff.existed_at_from).toBe(true);
+    expect(diff.exists_at_to).toBe(true);
     const description = diff.attributes.find((a: any) => a.key === 'description');
     expect(description.before.map((v: any) => v.display)).toEqual(['first description']);
     expect(description.after.map((v: any) => v.display)).toEqual(['second description']);
@@ -220,6 +222,7 @@ describe('Knowledge time machine', () => {
     const variables = { id: intrusionSetId, from: new Date(createdTime - 120000).toISOString(), to: new Date(createdTime - 60000).toISOString() };
     const { data } = await queryAsAdminWithSuccess({ query: DIFF, variables });
     expect(data.entityDiff.existed_at_from).toEqual(false);
+    expect(data.entityDiff.exists_at_to).toEqual(false);
     expect(data.entityDiff.restricted).toEqual(false);
     expect(data.entityDiff.summary.attributes_changed).toEqual(0);
     expect(data.entityDiff.attributes).toEqual([]);
