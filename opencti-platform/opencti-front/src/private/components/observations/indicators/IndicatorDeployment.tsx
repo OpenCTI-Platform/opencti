@@ -3,6 +3,7 @@ import { Grid, Stack, Typography } from '@mui/material';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import DeployedOnRelationships from '../../data/dissemination_assurance/DeployedOnRelationships';
+import DisseminationAssuranceLink from '../../data/dissemination_assurance/DisseminationAssuranceLink';
 import LiveDeploymentsValidationButton from '../../data/dissemination_assurance/LiveDeploymentsValidationButton';
 import type { IndicatorDeployment_indicator$key } from './__generated__/IndicatorDeployment_indicator.graphql';
 
@@ -50,7 +51,10 @@ const IndicatorDeployment = ({ indicator }: IndicatorDeploymentProps) => {
             <Counter testId="indicator-hit-platforms" label={t_i18n('Platforms with hits')} value={n(data.hit_platforms_count ?? 0)} />
           </Grid>
         </Grid>
-        <LiveDeploymentsValidationButton side="indicator" entityId={data.id} />
+        <Stack direction="row" gap={1}>
+          <DisseminationAssuranceLink />
+          <LiveDeploymentsValidationButton side="indicator" entityId={data.id} />
+        </Stack>
       </Stack>
       <DeployedOnRelationships side="indicator" entityId={data.id} />
     </Stack>
