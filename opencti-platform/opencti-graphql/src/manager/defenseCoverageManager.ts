@@ -9,8 +9,10 @@ import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defe
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import {
   bumpDefenseCoverageVersion,
+  clearFullComputationRunning,
   consumeFullComputationRequest,
   getLastFullComputation,
+  markFullComputationRunning,
   requestFullDefenseCoverageComputation,
   setLastFullComputation,
 } from '../modules/defenseCoverage/defenseCoverage-state';
@@ -56,6 +58,7 @@ export const defenseCoverageCronHandler = async () => {
     return;
   }
   const startedAt = new Date().toISOString();
+  await markFullComputationRunning(startedAt);
   try {
     await runComputation(context);
     await setLastFullComputation(startedAt);
@@ -63,6 +66,8 @@ export const defenseCoverageCronHandler = async () => {
     // Keep the request so the next run retries
     await requestFullDefenseCoverageComputation();
     throw e;
+  } finally {
+    await clearFullComputationRunning();
   }
 };
 

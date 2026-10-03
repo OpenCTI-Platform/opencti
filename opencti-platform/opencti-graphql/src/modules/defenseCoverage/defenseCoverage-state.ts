@@ -5,6 +5,8 @@ import { now } from '../../utils/format';
 const STATE_VERSION = 'DEFENSE_COVERAGE_VERSION';
 const STATE_FULL_RUN = 'DEFENSE_COVERAGE_FULL_RUN';
 const STATE_FULL_REQUESTED = 'DEFENSE_COVERAGE_FULL_REQUESTED';
+const STATE_FULL_RUNNING_SINCE = 'DEFENSE_COVERAGE_FULL_RUNNING_SINCE';
+const FULL_RUNNING_MAX_DURATION = 2 * 60 * 60 * 1000;
 
 /**
  * Version of the stored coverage. Bumped after every write so readers drop their caches.
@@ -45,4 +47,22 @@ export const consumeFullComputationRequest = async (): Promise<boolean> => {
 
 export const isFullComputationRequested = async (): Promise<boolean> => {
   return (await redisGetManagerEventState(STATE_FULL_REQUESTED)) === 'true';
+};
+
+export const markFullComputationRunning = async (startedAt: string) => {
+  await redisSetManagerEventState(STATE_FULL_RUNNING_SINCE, startedAt);
+};
+
+export const clearFullComputationRunning = async () => {
+  await redisSetManagerEventState(STATE_FULL_RUNNING_SINCE, '');
+};
+
+/**
+ * Whether a full computation is in progress. Bounded in time so a node stopped mid-run never leaves it running forever.
+ */
+export const isFullComputationRunning = async (): Promise<boolean> => {
+  const since = await redisGetManagerEventState(STATE_FULL_RUNNING_SINCE);
+  if (!since) return false;
+  const elapsed = Date.now() - new Date(since).getTime();
+  return Number.isFinite(elapsed) && elapsed < FULL_RUNNING_MAX_DURATION;
 };

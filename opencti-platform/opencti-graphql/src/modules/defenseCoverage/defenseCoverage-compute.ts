@@ -12,6 +12,7 @@ import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indica
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { doYield } from '../../utils/eventloop-utils';
 import { now } from '../../utils/format';
 import { FilterMode } from '../../generated/graphql';
@@ -170,7 +171,35 @@ export interface ComputationGraph {
   resultsById: Map<string, BasicStoreEntity>;
   dataComponentIdsByName: Map<string, string[]>;
   mappings: LogsourceCondition[];
+  // Access signature of every loaded evidence element: markings and granted organizations come with every load
+  // (security doc values), authorized members with the base fields
+  accessKeyById?: Map<string, string>;
 }
+
+const accessSignature = (element: BasicStoreEntity | BasicStoreRelation) => {
+  const data = element as unknown as Record<string, unknown>;
+  const ids = (key: string) => [...((data[key] as string[] | undefined) ?? [])].sort().join(',');
+  const members = ((data.authorized_members as { id: string; access_right: string }[] | undefined) ?? [])
+    .map((member) => `${member.id}:${member.access_right}`)
+    .sort()
+    .join(',');
+  return `${ids(RELATION_OBJECT_MARKING)};${ids(RELATION_GRANTED_TO)};${members}`;
+};
+
+const buildAccessKeys = (elements: Array<BasicStoreEntity | BasicStoreRelation>) => {
+  const keys = new Map<string, string>();
+  elements.forEach((element) => keys.set(element.internal_id, accessSignature(element)));
+  return keys;
+};
+
+type EvidenceRefs = { id: string; rel: string; detects?: string; inferred_from?: string };
+const evidenceAccessKey = (graph: ComputationGraph) => {
+  const { accessKeyById } = graph;
+  if (!accessKeyById) return undefined;
+  return (evidence: EvidenceRefs) => [evidence.id, evidence.rel, evidence.detects, evidence.inferred_from]
+    .map((id) => (id ? accessKeyById.get(id) ?? '' : ''))
+    .join('|');
+};
 
 const relationScores = (relation: BasicStoreRelation): DefenseScore[] => {
   const information = (relation as unknown as { coverage_information?: { coverage_name: string; coverage_score: number }[] }).coverage_information ?? [];
@@ -271,18 +300,19 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
     });
   });
 
+  const accessKey = evidenceAccessKey(graph);
   const platforms = Array.from(vectors.values()).map((vector) => ({
     ...vector,
-    telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES),
-    deployments: capEvidences(vector.deployments, MAX_EVIDENCES),
-    validations: capEvidences(vector.validations, MAX_EVIDENCES),
+    telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES, accessKey),
+    deployments: capEvidences(vector.deployments, MAX_EVIDENCES, accessKey),
+    validations: capEvidences(vector.validations, MAX_EVIDENCES, accessKey),
   }));
   const coverage: DefenseCoverage = {
     computed_at: computedAt,
-    data_components: capEvidences(dataComponents, MAX_EVIDENCES),
-    rules: capEvidences(rules, MAX_EVIDENCES),
-    mitigations: capEvidences(mitigations, MAX_EVIDENCES),
-    validations: capEvidences(validations, MAX_EVIDENCES),
+    data_components: capEvidences(dataComponents, MAX_EVIDENCES, accessKey),
+    rules: capEvidences(rules, MAX_EVIDENCES, accessKey),
+    mitigations: capEvidences(mitigations, MAX_EVIDENCES, accessKey),
+    validations: capEvidences(validations, MAX_EVIDENCES, accessKey),
     platforms,
     level: 0,
   };
@@ -502,6 +532,7 @@ export const computeDefenseCoverage = async (
     resultsById: new Map(results.map((r) => [r.internal_id, r])),
     dataComponentIdsByName,
     mappings,
+    accessKeyById: buildAccessKeys([...detects, ...provides, ...dataComponents, ...indicates, ...rules, ...deployments, ...mitigates, ...hasCovered, ...results]),
   };
 
   // 5. Vectors, written only when they changed
