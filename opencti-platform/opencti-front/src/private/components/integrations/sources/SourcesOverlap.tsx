@@ -1,13 +1,12 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
 import Card from '@common/card/Card';
 import Chart from '@components/common/charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { Theme } from '../../../../components/Theme';
 import SourcePeriodSelect from './SourcePeriodSelect';
@@ -43,7 +42,7 @@ interface SourcesOverlapMatrixProps {
 }
 
 const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { sourceOverlap } = usePreloadedQuery(sourcesOverlapQuery, queryRef);
@@ -97,17 +96,24 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
 
   if (sources.length < 2) {
     return (
-      <Typography variant="body2" sx={{ padding: 2 }} data-testid="source-overlap-empty">
-        {t_i18n('At least two scored sources are needed to compute an overlap matrix.')}
-      </Typography>
+      <Stack gap={0.5} sx={{ padding: 2 }} data-testid="source-overlap-empty">
+        <Typography variant="body2">{t_i18n('The overlap appears once two sources have scorecards.')}</Typography>
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+          {t_i18n('It compares the objects each source asserted in the period, so that redundant sources stand out.')}
+        </Typography>
+      </Stack>
     );
   }
   return (
     <Box data-testid="source-overlap-matrix">
-      <Typography variant="body2" sx={{ color: theme.palette.text.secondary, marginBottom: 1 }}>
+      <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
         {t_i18n('Each cell is the share of the objects of the row source that the column source also asserted. Above 90 percent, the row source brings almost nothing the column source does not.')}
-        {sourceOverlap.computed_at && ` ${t_i18n('Computed')}: ${nsdt(sourceOverlap.computed_at)}.`}
       </Typography>
+      {sourceOverlap.computed_at && (
+        <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0, marginBottom: 1 }}>
+          {t_i18n('Computed {time}', { values: { time: rd(sourceOverlap.computed_at) } })}
+        </Typography>
+      )}
       <Box sx={{ height: Math.max(360, 28 * sources.length + 160) }}>
         <Chart options={options} series={series} type="heatmap" width="100%" height="100%" />
       </Box>
@@ -129,7 +135,7 @@ const SourcesOverlap = () => {
       )}
     >
       {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Suspense fallback={<Skeleton variant="rounded" height={360} aria-hidden />}>
           <SourcesOverlapMatrix queryRef={queryRef} />
         </Suspense>
       )}

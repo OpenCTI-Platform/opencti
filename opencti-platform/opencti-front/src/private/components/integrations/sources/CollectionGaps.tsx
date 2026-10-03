@@ -1,21 +1,20 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Switch } from '@filigran/design-system';
+import { Alert, Chip, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Tag from '@common/tag/Tag';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
 import { ValueScoreBar } from './SourcesLeaderboard';
-import { formatRatio } from './sourceIntelligenceUtils';
+import { useSourceMetricFormat } from './SourceMetricValue';
 import notifyMutationOutcome from './notifyMutationOutcome';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CollectionGapsQuery } from './__generated__/CollectionGapsQuery.graphql';
@@ -114,21 +113,53 @@ export const collectionGapsQuery = graphql`
 
 const PAGE_SIZE = 20;
 
-const HUB_STATUS_MESSAGES: Record<string, string> = {
-  partial: 'XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.',
-  unreachable: 'XTM Hub is unreachable: only the connectors of the local catalog are recommended.',
-  not_registered: 'This platform is not registered on XTM Hub: only the connectors of the local catalog are recommended.',
-  error: 'XTM Hub returned an error: only the connectors of the local catalog are recommended.',
+// Why the ranking does not come from XTM Hub alone, and whether trying again can help
+const HUB_STATUS_ALERTS: Record<string, { title: string; description: string; retry: boolean }> = {
+  partial: {
+    title: 'XTM Hub returned a partial ranking.',
+    description: 'Its first matches are combined with the connectors of the local catalog.',
+    retry: true,
+  },
+  unreachable: {
+    title: 'XTM Hub could not be reached.',
+    description: 'Only the connectors of the local catalog are recommended for now.',
+    retry: true,
+  },
+  not_registered: {
+    title: 'This platform is not registered on XTM Hub.',
+    description: 'Only the connectors of the local catalog are recommended. Register the platform on XTM Hub to rank the whole catalog.',
+    retry: false,
+  },
+  error: {
+    title: 'XTM Hub returned an error.',
+    description: 'Only the connectors of the local catalog are recommended for now.',
+    retry: true,
+  },
 };
+
+const sourceIntelligenceRecomputeMutation = graphql`
+  mutation CollectionGapsRecomputeMutation {
+    sourceIntelligenceRecompute
+  }
+`;
 
 interface CollectionGapsListProps {
   queryRef: PreloadedQuery<CollectionGapsQuery>;
 }
 
 const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, rd, fldt } = useFormatter();
   const theme = useTheme<Theme>();
+  const format = useSourceMetricFormat();
   const canDeploy = useGranted([MODULES_MODMANAGE]);
+  const canRecompute = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
+  const [commitRecompute, recomputing] = useApiMutation(sourceIntelligenceRecomputeMutation);
+  const handleRetry = () => commitRecompute({
+    variables: {},
+    onCompleted: (_, errors) => {
+      notifyMutationOutcome(errors, { success: t_i18n('The scorecards will be recomputed in the next minutes') });
+    },
+  });
   // Gap and connector pairs deployed from this page, until the next gap computation marks them as deployed
   const [deployedHere, setDeployedHere] = useState<Set<string>>(() => new Set());
   const [commitDeploy, deploying] = useApiMutation<CollectionGapsDeployMutation>(collectionGapDeployMutation);
@@ -136,9 +167,12 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
     variables: { id: gapId, slug },
     onCompleted: (response, errors) => {
       const recommendation = response.collectionGapDeployConnector;
-      const failure = !errors?.length && recommendation?.status !== 'applied'
-        ? `${t_i18n('The recommendation could not be applied')}${recommendation?.error_message ? `: ${recommendation.error_message}` : ''}`
-        : null;
+      let failure: string | null = null;
+      if (!errors?.length && recommendation?.status !== 'applied') {
+        failure = recommendation?.error_message
+          ? t_i18n('The connector could not be deployed: {reason}', { values: { reason: recommendation.error_message } })
+          : t_i18n('The connector could not be deployed.');
+      }
       if (notifyMutationOutcome(errors, { success: t_i18n('Connector deployed through XTM Composer'), failure })) {
         setDeployedHere((current) => new Set(current).add(`${gapId}|${slug}`));
       }
@@ -169,24 +203,36 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                 ) : (
                   <Typography variant="body2">{t_i18n('Restricted PIR')}</Typography>
                 )}
-                <Tag
-                  label={gap.is_gap ? t_i18n('Collection gap') : t_i18n('Covered')}
-                  color={gap.is_gap ? theme.palette.warn.main : theme.palette.success.main}
-                />
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                  {`${t_i18n('Weight')} ${gap.criterion_weight} - ${t_i18n('Computed')} ${gap.computed_at ? nsdt(gap.computed_at) : '-'}`}
-                </Typography>
+                <Chip severity={gap.is_gap ? 'medium' : 'low'} size="sm" label={gap.is_gap ? t_i18n('Collection gap') : t_i18n('Covered')} />
+                {gap.computed_at ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Typography variant="caption" tabIndex={0} sx={{ color: theme.palette.text.secondary }}>
+                        {t_i18n('Criterion weight {weight}, computed {time}', { values: { weight: gap.criterion_weight, time: rd(gap.computed_at) } })}
+                      </Typography>
+                    </TooltipTrigger>
+                    <TooltipContent>{fldt(gap.computed_at)}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t_i18n('Criterion weight {weight}', { values: { weight: gap.criterion_weight } })}
+                  </Typography>
+                )}
               </Stack>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>{gap.criterion_label}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>{gap.criterion_label}</Typography>
               <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary, marginTop: 0.5 }}>
-                {`${gap.matched_relationships} ${t_i18n('matching relationships')}, ${gap.recent_relationships} ${t_i18n('recent')}, ${gap.distinct_sources} ${t_i18n('distinct sources')}`}
+                {t_i18n('{matched, plural, one {# matching relationship} other {# matching relationships}}, {recent} in the window, {sources, plural, one {# distinct source} other {# distinct sources}}', {
+                  values: { matched: gap.matched_relationships, recent: gap.recent_relationships, sources: gap.distinct_sources },
+                })}
               </Typography>
               {gap.covering_sources.length > 0 && (
                 <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ marginTop: 1 }}>
                   {gap.covering_sources.map((covering) => (
                     <Tag
                       key={covering.source_id}
-                      label={`${covering.source?.name ?? t_i18n('Restricted')} ${formatRatio(covering.share, 0)}`}
+                      label={t_i18n('{source}: {share}', {
+                        values: { source: covering.source?.name ?? t_i18n('Restricted source'), share: format.ratio(covering.share, 0) ?? '' },
+                      })}
                       size="small"
                     />
                   ))}
@@ -201,10 +247,17 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
           {gap.is_gap && (
             <Box sx={{ marginTop: 2 }}>
               <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>{t_i18n('Recommended integrations')}</Typography>
-              {gap.hub_status && HUB_STATUS_MESSAGES[gap.hub_status] && (
-                <Typography variant="caption" component="div" sx={{ color: theme.palette.warn.main, marginBottom: 1 }}>
-                  {t_i18n(HUB_STATUS_MESSAGES[gap.hub_status])}
-                </Typography>
+              {gap.hub_status && HUB_STATUS_ALERTS[gap.hub_status] && (
+                <Box sx={{ marginBottom: 1 }}>
+                  <Alert
+                    severity="warning"
+                    title={t_i18n(HUB_STATUS_ALERTS[gap.hub_status].title)}
+                    description={t_i18n(HUB_STATUS_ALERTS[gap.hub_status].description)}
+                    action={HUB_STATUS_ALERTS[gap.hub_status].retry && canRecompute ? (
+                      <Button variant="secondary" size="small" onClick={handleRetry} disabled={recomputing}>{t_i18n('Retry')}</Button>
+                    ) : undefined}
+                  />
+                </Box>
               )}
               {gap.recommended_connectors.length === 0 ? (
                 <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -219,7 +272,7 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                       <Stack key={connector.slug} direction="row" gap={2} alignItems="center" justifyContent="space-between">
                         <Box sx={{ minWidth: 0 }}>
                           <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{connector.title}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>{connector.title}</Typography>
                             <Tag label={connector.origin === 'hub' ? t_i18n('XTM Hub') : t_i18n('Local catalog')} size="small" />
                             {connector.verified && <Tag label={t_i18n('Verified')} size="small" color={theme.palette.success.main} />}
                             {deployed && <Tag label={t_i18n('Already deployed')} size="small" />}
@@ -281,7 +334,7 @@ const CollectionGapsView = () => {
         <Switch checked={onlyGaps} onCheckedChange={setOnlyGaps} label={t_i18n('Only gaps')} data-testid="collection-gaps-only" />
       </Stack>
       {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Suspense fallback={<Skeleton variant="rounded" height={160} aria-hidden />}>
           <CollectionGapsList queryRef={queryRef} />
         </Suspense>
       )}

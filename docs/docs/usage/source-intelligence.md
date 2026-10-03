@@ -23,9 +23,9 @@ Connector health (status, queue, errors) is not duplicated here: the scorecard p
 
 ### How facts are attributed to sources
 
-When [provenance tracking](reliability-confidence.md) records the sources that asserted every fact (first and last assertion per source), scorecards use these assertions: a fact asserted by three connectors counts for the three of them, and lead time is exact. The status header then shows **Provenance: assertions**.
+When [provenance tracking](reliability-confidence.md) records the sources that asserted every fact (first and last assertion per source), scorecards use these assertions: a fact asserted by three connectors counts for the three of them, and lead time is exact. The status header then reads **Attribution from the sources recorded on every fact**.
 
-Otherwise, the platform falls back to the creators and the author of each object (**Provenance: creators**). Lead time is then approximated.
+Otherwise, the platform falls back to the creators and the author of each object (**Attribution from creators and authors, lead time approximated**).
 
 ## Scorecards
 
@@ -48,6 +48,23 @@ Every source has a scorecard over three rolling windows: 7, 30 and 90 days. The 
 The **operational value score** (0-100) is the weighted average of unique contribution, first-reporter share, accuracy, relevance, impact and the inverse of noise. Default weights are 25, 15, 20, 15, 15 and 10 percent. Metrics that cannot be computed for a source (for example lead time when it shares nothing) are left out and the remaining weights are rescaled. The weights are configurable.
 
 Indicator scores and their decay are not changed by source intelligence: scorecards only read the knowledge.
+
+### Status header and counters
+
+The top of the Sources area tells you whether the scorecards are current:
+
+| State | Meaning | Action offered |
+|---|---|---|
+| Up to date | The last computation succeeded; the header says when. | **Recompute** |
+| Computing | A computation is running. | None, the state updates when it ends. |
+| Recompute requested | A computation starts in the next minutes. | None |
+| Failed | The last computation failed; the reason is shown below the header. | **Retry the computation** |
+| Not computed yet | No computation has run on this platform. | **Compute now** |
+| Manager stopped | The source intelligence manager is not running. | **Open settings** |
+
+When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
+
+A value that could not be measured (for example lead time for a source that shares no object with another source) reads **Not measured**; hover it to see why.
 
 ### Leaderboard and scorecard page
 
@@ -117,15 +134,15 @@ In the settings, an administrator can allow some recommendation kinds to be appl
 
 Dashboard widgets can use the **Sources** perspective to display any scorecard metric: number, list, distribution, horizontal bars, donut, time series and bubble chart (for example volume against value score). The dashboard time range selects the 7, 30 or 90-day window.
 
-Click **Create the Intelligence ROI dashboard** in the Sources header to create a ready-made dashboard with the main metrics. Sources widgets are not available in public dashboards.
+Click **Create ROI dashboard** in the Sources header to create the ready-made "Intelligence ROI" dashboard with the main metrics. Sources widgets are not available in public dashboards.
 
 ## Settings
 
-The settings are in **Settings > Customization > Source intelligence** (also reachable from the **Settings** button of the Sources area) and require the customization capability. They give access to:
+The settings are in **Settings > Customization > Source intelligence** (also reachable from the **Open settings** button of the Sources area) and require the customization capability. They give access to:
 
 - the computation: on or off, daily recompute hour (UTC), history backfill, snapshot retention, maximum number of scanned objects, false positive labels, corroboration and overlap parameters, author and analyst discovery,
 - the value score weights,
 - the recommendation thresholds and tuning steps,
 - the autonomy policy and the collection gap parameters (EE).
 
-Scorecards are computed once a day. Between two computations, the volume counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Ratios, scores and medians are refreshed by the daily computation. Use **Recompute** in the Sources header to request a computation in the next minutes after a change.
+Scorecards are computed once a day. Between two computations, the volume counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Ratios, scores and medians are refreshed by the daily computation. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.

@@ -101,7 +101,7 @@ export const SourceRecommendationsList = ({ queryRef, hideSource = false, emptyM
   return (
     <Stack gap={1.5} data-testid="source-recommendations-list">
       <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-        {`${data.sourceRecommendations?.pageInfo.globalCount ?? edges.length} ${t_i18n('recommendations')}`}
+        {t_i18n('{count, plural, one {# recommendation} other {# recommendations}}', { values: { count: data.sourceRecommendations?.pageInfo.globalCount ?? edges.length } })}
       </Typography>
       {edges.map((edge) => edge?.node && (
         <SourceRecommendationCard key={edge.node.id} data={edge.node} hideSource={hideSource} onChange={handleChange} />

@@ -5,7 +5,7 @@ const SOURCES_URL = '/dashboard/integrations/sources';
 /**
  * Content of the test
  * -------------------
- * Open Integrations > Sources and request a recomputation
+ * Open Integrations > Sources, read the status header and the counters, and request a recomputation
  * Navigate through the leaderboard, overlap, collection gaps and recommendations views
  * Open the settings under Settings > Customization from the Sources area
  * Open the scorecard page of a scored source when the manager already scored one
@@ -17,10 +17,15 @@ test('Source intelligence navigation and settings', { tag: ['@sourceIntelligence
   await expect(page).toHaveURL(new RegExp(`${SOURCES_URL}`));
   await expect(page.getByTestId('source-intelligence-page')).toBeVisible();
   await expect(page.getByTestId('source-intelligence-status')).toBeVisible();
+  await expect(page.getByTestId('source-intelligence-kpis')).toBeVisible();
 
-  // region Recompute
-  await page.getByTestId('source-intelligence-recompute').click();
-  await expect(page.getByText('The scorecards will be recomputed in the next minutes')).toBeVisible();
+  // region Recompute, offered unless a computation is running or already requested
+  const recompute = page.getByTestId('source-intelligence-recompute');
+  if (await recompute.isVisible()) {
+    await recompute.click();
+    await expect(page.getByText('The scorecards will be recomputed in the next minutes')).toBeVisible();
+    await expect(recompute).toBeHidden();
+  }
   // endregion
 
   // region Leaderboard and scorecard page
