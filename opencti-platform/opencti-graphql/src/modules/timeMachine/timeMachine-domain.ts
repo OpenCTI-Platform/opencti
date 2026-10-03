@@ -702,16 +702,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
   if (!element) {
     throw FunctionalError('Element not found', { id });
   }
-  // One reconstruction at `to`, then rewind to `from` with the events of the period
-  const atTo = await reconstructAt(context, element, to);
-  const periodEvents = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, { from, to, max: MAX_REPLAY_EVENTS + 1 });
-  const atFrom = replayBackward(atTo.replay.document, element.entity_type, periodEvents, from, MAX_REPLAY_EVENTS);
-  const warnings = [...new Set([...atTo.replay.warnings, ...atFrom.warnings])];
-  const complete = atTo.replay.complete && atFrom.complete;
-  const [accessibleTo, accessibleFrom] = await Promise.all([
-    isAsOfDocumentAccessible(context, user, element, atTo.replay.document),
-    atFrom.exists ? isAsOfDocumentAccessible(context, user, element, atFrom.document) : Promise.resolve(true),
-  ]);
+  const existedAt = (date: string) => !element.created_at || !utcDate(element.created_at).isAfter(utcDate(date));
   const emptySummary: EntityDiffSummary = {
     attributes_changed: 0,
     relationships_added: 0,
@@ -727,6 +718,37 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     relationships_added_by_type: [],
     relationships_removed_by_type: [],
   };
+  // One reconstruction at `to`, then rewind to `from` with the events of the period
+  const atTo = await reconstructAt(context, element, to);
+  if (!atTo.replay.exists || !existedAt(to)) {
+    // The element did not exist yet at the end of the period: nothing changed during it
+    return {
+      entity_id: element.internal_id,
+      entity_type: element.entity_type,
+      representative: extractEntityRepresentativeName(element),
+      from,
+      to,
+      existed_at_from: false,
+      restricted: false,
+      complete: atTo.replay.complete,
+      warnings: atTo.replay.warnings,
+      summary: emptySummary,
+      attributes: [],
+      relationships: [],
+      relationships_truncated: false,
+      container_objects: [],
+      container_objects_truncated: false,
+    };
+  }
+  const periodEvents = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, { from, to, max: MAX_REPLAY_EVENTS + 1 });
+  const atFrom = replayBackward(atTo.replay.document, element.entity_type, periodEvents, from, MAX_REPLAY_EVENTS);
+  const existedAtFrom = atFrom.exists && existedAt(from);
+  const warnings = [...new Set([...atTo.replay.warnings, ...atFrom.warnings])];
+  const complete = atTo.replay.complete && atFrom.complete;
+  const [accessibleTo, accessibleFrom] = await Promise.all([
+    isAsOfDocumentAccessible(context, user, element, atTo.replay.document),
+    existedAtFrom ? isAsOfDocumentAccessible(context, user, element, atFrom.document) : Promise.resolve(true),
+  ]);
   if (!accessibleTo || !accessibleFrom) {
     return {
       entity_id: element.internal_id,
@@ -734,7 +756,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
       representative: RESTRICTED_VALUE,
       from,
       to,
-      existed_at_from: atFrom.exists,
+      existed_at_from: existedAtFrom,
       restricted: true,
       complete,
       warnings,
@@ -748,7 +770,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
   }
   const userNames = await loadUserNames(context);
   // Attributes
-  const fromDocument = atFrom.exists ? visibleDocument(user, element.entity_type, atFrom.document) : {};
+  const fromDocument = existedAtFrom ? visibleDocument(user, element.entity_type, atFrom.document) : {};
   const toDocument = visibleDocument(user, element.entity_type, atTo.replay.document);
   const deltas = diffDocuments(fromDocument, toDocument);
   const humanize = await humanizeAttributeValues(context, user, element.entity_type, [fromDocument, toDocument]);
@@ -832,7 +854,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     representative: extractEntityRepresentativeName(element),
     from,
     to,
-    existed_at_from: atFrom.exists,
+    existed_at_from: existedAtFrom,
     restricted: false,
     complete: complete && !eventsTruncated,
     warnings: diffWarnings,
