@@ -208,6 +208,10 @@ const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
 
 type ReportOutcome = 'created' | 'updated' | 'unchanged';
 
+// Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
+// of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
+const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
+
 const applyDeploymentReport = async (
   context: AuthContext,
   user: AuthUser,
@@ -215,8 +219,7 @@ const applyDeploymentReport = async (
   platform: BasicStoreEntitySecurityPlatform,
   report: DeploymentReport,
 ): Promise<{ element: BasicStoreRelationDeployedOn; outcome: ReportOutcome }> => {
-  const lockKey = `deployed-on-${indicator.internal_id}-${platform.internal_id}`;
-  const lock = await lockResources([lockKey]);
+  const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
   try {
     const now = new Date();
     const existing = await findDeployedOn(context, user, indicator.internal_id, platform.internal_id);
@@ -332,7 +335,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     loadSecurityPlatform(context, user, args.platformId),
   ]);
   const sightingStixId = hitsSightingStixId(indicator.internal_id, platform.internal_id);
-  const lock = await lockResources([sightingStixId, `deployed-on-${indicator.internal_id}-${platform.internal_id}`]);
+  const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
   try {
     const existing = await findDeployedOn(context, user, indicator.internal_id, platform.internal_id);
     const existingSighting = await internalLoadById<BasicStoreRelation & { attribute_count?: number; first_seen?: string; last_seen?: string }>(
