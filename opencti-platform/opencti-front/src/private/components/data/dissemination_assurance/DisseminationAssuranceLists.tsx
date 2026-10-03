@@ -15,9 +15,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { PATH_INDICATORS } from '@components/common/routes/paths';
-import DisseminationAssuranceMenu from './DisseminationAssuranceMenu';
 import { buildSavedListFilters, buildSavedListIndicatorsLink, SAVED_LISTS, type SavedListId } from './disseminationAssuranceUtils';
 import type { DisseminationAssuranceListsLine_node$data } from './__generated__/DisseminationAssuranceListsLine_node.graphql';
 import type { DisseminationAssuranceListsLines_data$data } from './__generated__/DisseminationAssuranceListsLines_data.graphql';
@@ -191,6 +189,7 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
           preloadedPaginationProps={preloadedPaginationProps}
           exportContext={{ entity_type: 'Indicator' }}
           entityTypes={['Indicator']}
+          emptyStateMessage={t_i18n('No indicator in this list')}
         />
       )}
     </div>
@@ -200,18 +199,11 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
 const DisseminationAssuranceLists = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Dissemination assurance | Data'));
+  setTitle(t_i18n('Dissemination assurance | Defense'));
   const [listId, setListId] = useState<SavedListId>('disseminated_not_deployed');
   const current = SAVED_LISTS.find((list) => list.id === listId) ?? SAVED_LISTS[0];
   return (
-    <div style={{ paddingRight: 200 }} data-testid="dissemination-assurance-lists-page">
-      <DisseminationAssuranceMenu />
-      <Breadcrumbs elements={[
-        { label: t_i18n('Defense') },
-        { label: t_i18n('Dissemination assurance') },
-        { label: t_i18n('Lists'), current: true },
-      ]}
-      />
+    <div data-testid="dissemination-assurance-lists-page">
       <Tabs value={listId} onValueChange={(value: string) => setListId(value as SavedListId)}>
         <TabsList className="mb-4">
           {SAVED_LISTS.map((list) => (

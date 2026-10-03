@@ -23,6 +23,7 @@ const liveDeploymentsQuery = graphql`
           from {
             ... on Indicator {
               id
+              name
             }
           }
           to {
@@ -43,6 +44,7 @@ const liveDeploymentsQuery = graphql`
           from {
             ... on Indicator {
               id
+              name
             }
           }
           to {
@@ -60,10 +62,12 @@ const liveDeploymentsQuery = graphql`
 interface LiveDeploymentsValidationButtonProps {
   side: 'indicator' | 'platform';
   entityId: string;
+  /** Name of the indicator, on its own page. */
+  entityName?: string;
 }
 
-const LiveDeploymentsDialog = ({ side, entityId, onClose }: LiveDeploymentsValidationButtonProps & { onClose: () => void }) => {
-  const { t_i18n, n } = useFormatter();
+const LiveDeploymentsDialog = ({ side, entityId, entityName, onClose }: LiveDeploymentsValidationButtonProps & { onClose: () => void }) => {
+  const { t_i18n } = useFormatter();
   const { unproven, proven } = useLazyLoadQuery<LiveDeploymentsValidationButtonQuery>(
     liveDeploymentsQuery,
     {
@@ -87,16 +91,25 @@ const LiveDeploymentsDialog = ({ side, entityId, onClose }: LiveDeploymentsValid
         validationStatus: node.validation_status,
       })).filter((candidate) => candidate.indicatorId), false);
   const platformOptions = [...platforms.entries()].map(([id, name]) => ({ id, name }));
-  const summary = side === 'indicator'
-    ? `${t_i18n('Live on')} ${n(platformOptions.length)} ${t_i18n('security platform(s)')}`
-    : `${n(indicatorIds.length)} ${t_i18n('live indicator(s) selected, never validated first')}`;
+  const indicatorNames = new Map<string, string>();
+  nodes.forEach((node) => {
+    if (node.from?.id) indicatorNames.set(node.from.id, node.from.name ?? node.from.id);
+  });
+  const indicators = platformOptions.length > 0
+    ? indicatorIds.map((id) => ({ id, name: indicatorNames.get(id) ?? entityName ?? id }))
+    : [];
+  const counts = { count: indicators.length, platforms: platformOptions.length };
+  const summary = t_i18n(
+    '{count, plural, one {# live indicator} other {# live indicators}} on {platforms, plural, one {# platform} other {# platforms}}',
+    { values: counts },
+  );
   return (
     <IocValidationRequestDialog
       open
       onClose={onClose}
-      indicatorIds={platformOptions.length > 0 ? indicatorIds : []}
+      indicators={indicators}
       platforms={platformOptions}
-      defaultName={`${t_i18n('Validation of')} ${n(platformOptions.length)} ${t_i18n('security platform(s)')}`}
+      defaultName={t_i18n('{count, plural, one {Validation of # live indicator} other {Validation of # live indicators}}', { values: counts })}
       summary={platformOptions.length > 0 ? summary : t_i18n('No live deployment to validate')}
     />
   );
@@ -115,7 +128,7 @@ const LiveDeploymentsValidationButton = (props: LiveDeploymentsValidationButtonP
           onClick={() => setOpen(true)}
           data-testid="request-validation-button"
         >
-          {t_i18n('Request validation')}
+          {t_i18n('Validate live deployments')}
         </Button>
         {open && (
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

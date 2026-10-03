@@ -1,14 +1,27 @@
-import { Suspense, useMemo } from 'react';
+import { ReactNode, Suspense, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Link } from 'react-router';
 import { Box, Grid, Stack, Typography } from '@mui/material';
+import { ShieldSyncOutline } from 'mdi-material-ui';
+import { Badge, Hero, HeroBody, HeroHeader } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { useDeploymentStatusLabel, useValidationStatusLabel } from './DisseminationStatusChips';
-import { funnelShare, isDeploymentStatus, isValidationStatus } from './disseminationAssuranceUtils';
+import {
+  buildKpiFilters,
+  DISSEMINATION_ASSURANCE_DOCUMENTATION_URL,
+  funnelShare,
+  isDeploymentStatus,
+  isValidationStatus,
+  type KpiId,
+  sumStatuses,
+} from './disseminationAssuranceUtils';
 import type { DisseminationAssuranceMetricsQuery } from './__generated__/DisseminationAssuranceMetricsQuery.graphql';
 
 const disseminationAssuranceMetricsQuery = graphql`
@@ -52,35 +65,97 @@ const disseminationAssuranceMetricsQuery = graphql`
 interface DisseminationAssuranceMetricsProps {
   platformId?: string;
   startDate?: string | null;
+  /** Renders the deployments under the KPI strip, filtered by the selected counter. */
+  renderDeployments?: (kpiFilters: FilterGroup | undefined) => ReactNode;
 }
 
 const CHART_HEIGHT = 280;
 
-const KpiCard = ({ label, value, caption, testId }: { label: string; value: string; caption?: string; testId: string }) => (
-  <Card padding="default" fullHeight>
-    <Stack gap={0.5} data-testid={testId}>
-      <Typography variant="body2" color="text.secondary">{label}</Typography>
-      <Typography variant="h1" component="span" sx={{ fontSize: 28 }}>{value}</Typography>
-      {caption && <Typography variant="caption" color="text.secondary">{caption}</Typography>}
-    </Stack>
-  </Card>
-);
+interface KpiCounterProps {
+  id: KpiId;
+  label: string;
+  value: string;
+  caption?: string;
+  badge?: string;
+  actionable?: boolean;
+  selected: boolean;
+  onSelect: (id: KpiId) => void;
+}
 
-const DisseminationAssuranceMetricsContent = ({ platformId, startDate }: DisseminationAssuranceMetricsProps) => {
+const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, onSelect }: KpiCounterProps) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Card
+      padding="medium"
+      onClick={() => onSelect(id)}
+      aria-label={selected
+        ? t_i18n('{label}: {value}, filter applied', { values: { label, value } })
+        : t_i18n('{label}: {value}, filter the deployments', { values: { label, value } })}
+      sx={selected ? { outline: '2px solid var(--border-input-focus)', outlineOffset: '-2px' } : undefined}
+    >
+      <Stack gap={0.5} data-testid={`kpi-${id}`}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
+          <Typography variant="body2" color="text.secondary">{label}</Typography>
+          {badge && <Badge tone="error" content={badge} />}
+        </Stack>
+        <Typography
+          variant="h1"
+          component="span"
+          sx={{ fontSize: 28, color: actionable ? 'var(--text-negative-primary)' : undefined }}
+        >
+          {value}
+        </Typography>
+        {caption && <Typography variant="caption" color="text.secondary">{caption}</Typography>}
+      </Stack>
+    </Card>
+  );
+};
+
+const FirstUseHero = () => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Hero data-testid="dissemination-assurance-first-use">
+      <HeroHeader
+        icon={<ShieldSyncOutline />}
+        action={(
+          <Button variant="primary" component={Link} to="/dashboard/integrations">
+            {t_i18n('Configure a stream connector')}
+          </Button>
+        )}
+      >
+        {t_i18n('No deployment reported yet')}
+      </HeroHeader>
+      <HeroBody>
+        <Stack gap={1}>
+          <Typography variant="body2">
+            {t_i18n('Dissemination assurance measures whether the indicators you share reach your security platforms and still work there. Deployments appear here when a stream connector reports back which indicators it pushed, removed or could not deploy.')}
+          </Typography>
+          <Typography variant="body2">
+            <a href={DISSEMINATION_ASSURANCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+              {t_i18n('Read the documentation on deployment write-back')}
+            </a>
+          </Typography>
+        </Stack>
+      </HeroBody>
+    </Hero>
+  );
+};
+
+const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDeployments }: DisseminationAssuranceMetricsProps) => {
   const { t_i18n, n } = useFormatter();
   const deploymentLabel = useDeploymentStatusLabel();
   const validationLabel = useValidationStatusLabel();
+  const [selectedKpi, setSelectedKpi] = useState<KpiId | null>(null);
   const { disseminationAssuranceMetrics: metrics } = useLazyLoadQuery<DisseminationAssuranceMetricsQuery>(
     disseminationAssuranceMetricsQuery,
     { platformId: platformId ?? null, startDate: startDate ?? null, endDate: null },
     { fetchPolicy: 'store-and-network' },
   );
   const funnel = metrics?.funnel;
-  const reference = platformId ? (funnel?.disseminated ?? 0) : (funnel?.created ?? 0);
 
   const funnelStages = useMemo(() => {
     if (!funnel) return [];
-    const stages = [
+    return [
       { label: platformId ? t_i18n('Deployments') : t_i18n('Created'), value: platformId ? funnel.disseminated : funnel.created },
       ...(platformId ? [] : [{ label: t_i18n('Disseminated'), value: funnel.disseminated }]),
       { label: t_i18n('Deployed'), value: funnel.deployed },
@@ -88,12 +163,47 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate }: Dissemi
       { label: t_i18n('With hits'), value: funnel.hit },
       { label: t_i18n('Expired but still deployed'), value: funnel.expired_still_deployed },
     ];
-    return stages;
   }, [funnel, platformId]);
 
   if (!metrics || !funnel) {
     return <WidgetNoData />;
   }
+  const deploymentsCount = sumStatuses(metrics.deployment_statuses);
+  if (!platformId && !startDate && deploymentsCount === 0) {
+    return <FirstUseHero />;
+  }
+
+  const reference = funnel.disseminated;
+  const failed = sumStatuses(metrics.deployment_statuses, ['failed']);
+  const missed = sumStatuses(metrics.validation_statuses, ['missed']);
+  const shareOfDisseminated = (value: number) => t_i18n('{share}% of the disseminated indicators', { values: { share: funnelShare(value, reference) } });
+  const counters: Array<Omit<KpiCounterProps, 'selected' | 'onSelect'>> = [
+    {
+      id: 'disseminated',
+      label: t_i18n('Disseminated'),
+      value: n(funnel.disseminated),
+      caption: platformId
+        ? t_i18n('Indicators recorded on this platform')
+        : t_i18n('{share}% of the created indicators', { values: { share: funnelShare(funnel.disseminated, funnel.created) } }),
+      badge: failed > 0 ? t_i18n('{count, plural, one {# failed} other {# failed}}', { values: { count: failed } }) : undefined,
+    },
+    { id: 'deployed', label: t_i18n('Deployed'), value: n(funnel.deployed), caption: shareOfDisseminated(funnel.deployed) },
+    {
+      id: 'active',
+      label: t_i18n('Active'),
+      value: n(sumStatuses(metrics.deployment_statuses, ['active'])),
+      caption: t_i18n('Deployments the platform confirmed as live'),
+    },
+    { id: 'validated', label: t_i18n('Validated'), value: n(funnel.validated), caption: shareOfDisseminated(funnel.validated) },
+    {
+      id: 'missed',
+      label: t_i18n('Missed'),
+      value: n(missed),
+      caption: t_i18n('Validation tests the platform did not catch'),
+      actionable: missed > 0,
+    },
+  ];
+  const selected = counters.find((counter) => counter.id === selectedKpi);
 
   const deploymentDistribution = metrics.deployment_statuses
     .filter((bucket) => isDeploymentStatus(bucket.status))
@@ -104,36 +214,33 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate }: Dissemi
 
   return (
     <Stack gap={3} data-testid="dissemination-assurance-metrics">
-      <Grid container spacing={3}>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard
-            testId="kpi-disseminated"
-            label={platformId ? t_i18n('Deployments') : t_i18n('Disseminated')}
-            value={n(funnel.disseminated)}
-            caption={platformId ? undefined : `${funnelShare(funnel.disseminated, funnel.created)}% ${t_i18n('of created')}`}
+      <Box
+        role="group"
+        aria-label={t_i18n('Key figures')}
+        sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' } }}
+      >
+        {counters.map((counter) => (
+          <KpiCounter
+            key={counter.id}
+            {...counter}
+            selected={counter.id === selectedKpi}
+            onSelect={(id) => setSelectedKpi((current) => (current === id ? null : id))}
           />
-        </Grid>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard testId="kpi-deployed" label={t_i18n('Deployed')} value={n(funnel.deployed)} caption={`${funnelShare(funnel.deployed, reference)}%`} />
-        </Grid>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard testId="kpi-validated" label={t_i18n('Validated')} value={n(funnel.validated)} caption={`${funnelShare(funnel.validated, reference)}%`} />
-        </Grid>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard testId="kpi-hits" label={t_i18n('With hits')} value={n(funnel.hit)} caption={`${funnelShare(funnel.hit, reference)}%`} />
-        </Grid>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard testId="kpi-expired" label={t_i18n('Expired but still deployed')} value={n(funnel.expired_still_deployed)} />
-        </Grid>
-        <Grid item xs={6} md={4} lg={2}>
-          <KpiCard
-            testId="kpi-proven-share"
-            label={t_i18n('Proven share')}
-            value={`${metrics.proven_share}%`}
-            caption={t_i18n('of live deployments detected or prevented')}
-          />
-        </Grid>
-      </Grid>
+        ))}
+      </Box>
+      {renderDeployments && (
+        <Stack gap={1}>
+          {selected && (
+            <Stack direction="row" alignItems="center" gap={1} data-testid="kpi-filter-applied">
+              <Typography variant="body2" color="text.secondary">
+                {t_i18n('Deployments filtered by "{label}"', { values: { label: selected.label } })}
+              </Typography>
+              <Button variant="tertiary" size="small" onClick={() => setSelectedKpi(null)}>{t_i18n('Clear filters')}</Button>
+            </Stack>
+          )}
+          {renderDeployments(buildKpiFilters(selectedKpi))}
+        </Stack>
+      )}
       <Grid container spacing={3}>
         <Grid item xs={12} lg={platformId ? 12 : 6}>
           <Card title={t_i18n('Lifecycle funnel')}>

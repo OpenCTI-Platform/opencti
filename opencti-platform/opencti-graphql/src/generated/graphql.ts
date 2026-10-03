@@ -15370,6 +15370,7 @@ export type IocValidationResultsSummary = {
 
 export type IocValidationSkipped = {
   __typename?: 'IocValidationSkipped';
+  indicator?: Maybe<Indicator>;
   indicator_id: Scalars['String']['output'];
   platform_id?: Maybe<Scalars['String']['output']>;
   reason: Scalars['String']['output'];
@@ -42571,7 +42572,7 @@ export type ResolversTypes = ResolversObject<{
   IocValidationRequestsOrdering: IocValidationRequestsOrdering;
   IocValidationResultStatus: IocValidationResultStatus;
   IocValidationResultsSummary: ResolverTypeWrapper<IocValidationResultsSummary>;
-  IocValidationSkipped: ResolverTypeWrapper<IocValidationSkipped>;
+  IocValidationSkipped: ResolverTypeWrapper<Omit<IocValidationSkipped, 'indicator'> & { indicator?: Maybe<ResolversTypes['Indicator']> }>;
   IocValidationTestKind: IocValidationTestKind;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
@@ -43714,7 +43715,7 @@ export type ResolversParentTypes = ResolversObject<{
   IocValidationRequestEdge: Omit<IocValidationRequestEdge, 'node'> & { node: ResolversParentTypes['IocValidationRequest'] };
   IocValidationRequestStatusInput: IocValidationRequestStatusInput;
   IocValidationResultsSummary: IocValidationResultsSummary;
-  IocValidationSkipped: IocValidationSkipped;
+  IocValidationSkipped: Omit<IocValidationSkipped, 'indicator'> & { indicator?: Maybe<ResolversParentTypes['Indicator']> };
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
@@ -49715,6 +49716,7 @@ export type IocValidationResultsSummaryResolvers<ContextType = any, ParentType e
 }>;
 
 export type IocValidationSkippedResolvers<ContextType = any, ParentType extends ResolversParentTypes['IocValidationSkipped'] = ResolversParentTypes['IocValidationSkipped']> = ResolversObject<{
+  indicator?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType>;
   indicator_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reason?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

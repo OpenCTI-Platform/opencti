@@ -15,8 +15,10 @@ const SecurityPlatformDeployments = ({ securityPlatformId }: SecurityPlatformDep
       <DisseminationAssuranceLink />
       <LiveDeploymentsValidationButton side="platform" entityId={securityPlatformId} />
     </Stack>
-    <DisseminationAssuranceMetrics platformId={securityPlatformId} />
-    <DeployedOnRelationships side="platform" entityId={securityPlatformId} />
+    <DisseminationAssuranceMetrics
+      platformId={securityPlatformId}
+      renderDeployments={(kpiFilters) => <DeployedOnRelationships side="platform" entityId={securityPlatformId} kpiFilters={kpiFilters} />}
+    />
   </Stack>
 );
 

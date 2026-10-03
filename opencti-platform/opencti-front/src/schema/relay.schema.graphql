@@ -15190,6 +15190,7 @@ type IocValidationIoc {
 
 type IocValidationSkipped {
   indicator_id: String!
+  indicator: Indicator
   platform_id: String
   reason: String!
 }

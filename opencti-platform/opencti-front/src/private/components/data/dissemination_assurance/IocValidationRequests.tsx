@@ -9,7 +9,6 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -19,7 +18,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { deleteNode } from '../../../../utils/store';
 import { MESSAGING$ } from '../../../../relay/environment';
-import DisseminationAssuranceMenu from './DisseminationAssuranceMenu';
 import IocValidationRequestDetails from './IocValidationRequestDetails';
 import { RequestStatusChip } from './DisseminationStatusChips';
 import { TEST_KINDS } from './disseminationAssuranceUtils';
@@ -183,7 +181,7 @@ const RequestDeletion = ({ id, paginationOptions }: { id: string; paginationOpti
 const IocValidationRequests = () => {
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Dissemination assurance | Data'));
+  setTitle(t_i18n('Dissemination assurance | Defense'));
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const [selected, setSelected] = useState<{ id: string; name: string } | null>(null);
   const initialValues = {
@@ -276,14 +274,7 @@ const IocValidationRequests = () => {
   };
 
   return (
-    <div style={{ paddingRight: 200 }} data-testid="ioc-validation-requests-page">
-      <DisseminationAssuranceMenu />
-      <Breadcrumbs elements={[
-        { label: t_i18n('Defense') },
-        { label: t_i18n('Dissemination assurance') },
-        { label: t_i18n('Validation requests'), current: true },
-      ]}
-      />
+    <div data-testid="ioc-validation-requests-page">
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -295,6 +286,7 @@ const IocValidationRequests = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           entityTypes={[ENTITY_TYPE_IOC_VALIDATION_REQUEST]}
           availableFilterKeys={['status', 'test_kinds', 'created_at', 'completed_at']}
+          emptyStateMessage={t_i18n('No validation request yet. Request one with Validate live deployments, on the Deployments tab of an indicator or a security platform.')}
           disableLineSelection
           disableNavigation
           onLineClick={(node: IocValidationRequestsLine_node$data) => setSelected({ id: node.id, name: node.name })}

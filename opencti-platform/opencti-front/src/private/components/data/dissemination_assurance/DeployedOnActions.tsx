@@ -69,7 +69,7 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
               variant="default"
               priority="tertiary"
               size="md"
-              aria-label={t_i18n('Retry deployment')}
+              aria-label={t_i18n('Deploy again')}
               disabled={retrying}
               onClick={(event: React.MouseEvent) => {
                 stop(event);
@@ -86,7 +86,7 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
               data-testid="deployment-retry"
             />
           </TooltipTrigger>
-          <TooltipContent>{t_i18n('Retry deployment')}</TooltipContent>
+          <TooltipContent>{t_i18n('Deploy again')}</TooltipContent>
         </Tooltip>
       )}
       {removable && (

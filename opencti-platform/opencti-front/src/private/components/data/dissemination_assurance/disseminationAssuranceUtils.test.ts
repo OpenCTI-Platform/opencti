@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildKpiFilters,
   buildSavedListFilters,
   buildSavedListIndicatorsLink,
   buildValidationCandidateFilters,
@@ -18,6 +19,7 @@ import {
   REQUEST_STATUS_SEVERITIES,
   SAVED_LISTS,
   selectValidationCandidates,
+  sumStatuses,
   TEST_KINDS,
   toggleTestKind,
   VALIDATION_STATUS_SEVERITIES,
@@ -185,5 +187,24 @@ describe('dissemination assurance helpers', () => {
     expect(isHttpUrl('javascript:alert(1)')).toBe(false);
     expect(isHttpUrl('not a url')).toBe(false);
     expect(isHttpUrl(null)).toBe(false);
+  });
+});
+
+describe('KPI strip', () => {
+  const buckets = [{ status: 'deployed', count: 4 }, { status: 'active', count: 6 }, { status: 'failed', count: 2 }];
+
+  it('should sum the status buckets, all of them or the given statuses', () => {
+    expect(sumStatuses(buckets)).toEqual(12);
+    expect(sumStatuses(buckets, ['active', 'failed'])).toEqual(8);
+    expect(sumStatuses([], ['active'])).toEqual(0);
+  });
+
+  it('should filter the deployments of the selected counter, and none for all deployments', () => {
+    expect(buildKpiFilters(null)).toBeUndefined();
+    expect(buildKpiFilters('disseminated')).toBeUndefined();
+    expect(buildKpiFilters('deployed')?.filters).toEqual([{ key: 'deployment_status', values: ['deployed', 'active'], operator: 'eq', mode: 'or' }]);
+    expect(buildKpiFilters('active')?.filters[0].values).toEqual(['active']);
+    expect(buildKpiFilters('validated')?.filters).toEqual([{ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' }]);
+    expect(buildKpiFilters('missed')?.filters[0]).toEqual({ key: 'validation_status', values: ['missed'], operator: 'eq', mode: 'or' });
   });
 });
