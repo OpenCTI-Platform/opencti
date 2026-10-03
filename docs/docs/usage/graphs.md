@@ -43,7 +43,9 @@ In investigations, a small counter on the top right of a node tells how many rel
 | Dashed line, warning colour | An inferred relationship. |
 | Dotted line | A relationship with a low confidence (below 50). |
 
-Links end with an arrowhead on their target. Several relationships between the same two entities are fanned out instead of drawn on top of each other. The name of a relationship appears along its link when you zoom in, or when the link is selected or hovered, followed by the number of its sources when several sources assert it (for example `uses (3)`); labels that would overlap are left out.
+Links end with an arrowhead on their target. Several relationships between the same two entities are fanned out instead of drawn on top of each other. The name of a relationship appears along its link when you zoom in, or when the link is selected or hovered, followed by the number of its sources when several sources assert it (for example `uses (3)`). A label never covers an entity: it slides along its link when the middle is taken, and is left out when it finds no free place.
+
+In the deterministic layouts, which line entities up, a link that would run through another entity bends around it, so that it never reads as two links.
 
 ### Level of detail
 
@@ -51,7 +53,7 @@ Details appear as they become readable: far out, nodes are plain discs; closer, 
 
 ## Navigate
 
-The controls on the top left of the graph zoom in and out, fit the whole graph, fit the selection, centre the view on the selection, show or hide the legend, show the graph full screen and export it. In full screen, the toolbar and every dialog stay available; press `Esc` or the control again to leave.
+The controls on the top left of the graph zoom in and out, fit the whole graph, fit the selection, centre the view on the selection, show or hide the legend, show the graph full screen and export it. Fitting keeps every entity clear of the controls, the legend and the details panel. In full screen, the toolbar and every dialog stay available; press `Esc` or the control again to leave.
 
 ## Focus and hover cards
 
