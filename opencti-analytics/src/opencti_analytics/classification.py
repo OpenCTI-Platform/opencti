@@ -10,6 +10,8 @@ from opencti_analytics.graph import AnalysisGraph
 
 # Shared with the platform (graphAnalytics-clustering.ts): never change it, cluster
 # ids would no longer match between the platform manager and this process.
+# These ids are provisional: when a run is published, the platform gives a cluster
+# the id of the previous cluster most of whose members it holds.
 CLUSTER_NAMESPACE = uuid.UUID("b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf")
 
 KIND_INFRASTRUCTURE = "infrastructure"

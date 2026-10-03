@@ -16,6 +16,8 @@
   "Infrastructure hubs": "Infraestructuras más conectadas",
   "Joined a graph cluster": "Incorporación a un clúster del grafo",
   "Similarity of the most connected threats": "Similitud de las amenazas más conectadas",
+  "The similar entities could not be loaded.": "No se han podido cargar las entidades similares.",
+  "The similarity matrix could not be loaded.": "No se ha podido cargar la matriz de similitud.",
   "This list is ranked by graph metrics, which require access to every relationship of the platform.": "Esta lista está ordenada por métricas de grafo, que requieren acceso a todas las relaciones de la plataforma.",
   "Threat and malware hubs": "Amenazas y malware más conectados",
   "Threats and malware": "Amenazas y malware",

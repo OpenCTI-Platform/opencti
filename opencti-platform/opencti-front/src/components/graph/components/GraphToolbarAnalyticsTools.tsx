@@ -276,14 +276,19 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [matrix, setMatrix] = useState<NonNullable<GraphToolbarAnalyticsToolsMatrixQuery$data['graphSimilarityMatrix']> | null>(null);
   const [adding, setAdding] = useState(false);
+  const [similarFailed, setSimilarFailed] = useState(false);
+  const [matrixFailed, setMatrixFailed] = useState(false);
 
   const nodeLabel = (node: { id: string; label?: string; name?: string }) => node.name || node.label || node.id;
   const existingIds = new Set(rawObjects.map((o) => o.id));
 
+  // Each request only applies its result while it is the latest one, and a failure is shown in place of the loader
   useEffect(() => {
-    if (!similarOpen) return;
+    if (!similarOpen) return undefined;
+    let latest = true;
     const sources = selectedNodes.slice(0, SIMILAR_MAX_SOURCES);
     setSimilarGroups(null);
+    setSimilarFailed(false);
     Promise.all(sources.map(async (source) => {
       const data = await fetchQuery<GraphToolbarAnalyticsToolsSimilarQuery>(similarQuery, {
         id: source.id,
@@ -293,18 +298,33 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
       const nodes = (data?.similarEntities?.edges ?? []).map((edge) => edge.node);
       return { sourceId: source.id, sourceLabel: nodeLabel(source), nodes };
     })).then((groups) => {
+      if (!latest) return;
       setSimilarGroups(groups);
       const candidates = groups.flatMap((group) => group.nodes.map((node) => node.entity.id)).filter((id) => !existingIds.has(id));
       setChecked(new Set(candidates));
+    }).catch(() => {
+      if (latest) setSimilarFailed(true);
     });
+    return () => {
+      latest = false;
+    };
   }, [similarOpen, minScore]);
 
   useEffect(() => {
-    if (!matrixOpen) return;
+    if (!matrixOpen) return undefined;
+    let latest = true;
     setMatrix(null);
+    setMatrixFailed(false);
     fetchQuery<GraphToolbarAnalyticsToolsMatrixQuery>(matrixQuery, {
       ids: selectedNodes.slice(0, MATRIX_MAX_ENTITIES).map((node) => node.id),
-    }).toPromise().then((data) => setMatrix(data?.graphSimilarityMatrix ?? { entities: [], cells: [] }));
+    }).toPromise().then((data) => {
+      if (latest) setMatrix(data?.graphSimilarityMatrix ?? { entities: [], cells: [] });
+    }).catch(() => {
+      if (latest) setMatrixFailed(true);
+    });
+    return () => {
+      latest = false;
+    };
   }, [matrixOpen]);
 
   const addPaths = async (paths: StixPathResult[]) => {
@@ -430,7 +450,11 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
                 {t_i18n('Only the first five selected entities are used.')}
               </Alert>
             )}
-            {similarGroups === null ? <Loader variant={LoaderVariant.inElement} /> : similarGroups.map((group) => (
+            {similarFailed && (
+              <Alert severity="error" variant="outlined">{t_i18n('The similar entities could not be loaded.')}</Alert>
+            )}
+            {!similarFailed && similarGroups === null && <Loader variant={LoaderVariant.inElement} />}
+            {(similarGroups ?? []).map((group) => (
               <Box key={group.sourceId} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Text variant="title-sm">{`${t_i18n('Similar to')} ${group.sourceLabel}`}</Text>
                 {group.nodes.length === 0 && <Text variant="content-compact">{t_i18n('No similar entity found yet.')}</Text>}
@@ -470,7 +494,11 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
       {matrixOpen && (
         <Dialog open onClose={() => setMatrixOpen(false)} size="large" title={t_i18n('Similarity matrix')} showCloseButton>
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            {matrix === null ? <Loader variant={LoaderVariant.inElement} /> : (
+            {matrixFailed && (
+              <Alert severity="error" variant="outlined">{t_i18n('The similarity matrix could not be loaded.')}</Alert>
+            )}
+            {!matrixFailed && matrix === null && <Loader variant={LoaderVariant.inElement} />}
+            {matrix !== null && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {selectedNodes.length > MATRIX_MAX_ENTITIES && (
                   <Alert severity="info" variant="outlined">{t_i18n('Only the first 25 selected entities are compared.')}</Alert>

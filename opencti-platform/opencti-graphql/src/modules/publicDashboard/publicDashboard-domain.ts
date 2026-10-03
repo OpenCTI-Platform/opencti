@@ -25,6 +25,7 @@ import {
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
   type QueryPublicStixRelationshipsNumberArgs,
+  StixCoreObjectsOrdering,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -47,7 +48,7 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
 import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
-import { isStixCoreObject } from '../../schema/stixCoreObject';
+import { isStixCoreObject, stixCoreObjectOptions } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -55,6 +56,10 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
+
+// Sorts of public lists: the values of the StixCoreObjectsOrdering enum, mapped to their fields like by the private API
+const STIX_CORE_OBJECTS_ORDERINGS: string[] = Object.values(StixCoreObjectsOrdering);
+const STIX_CORE_OBJECTS_ORDERING_FIELDS: Record<string, string> = stixCoreObjectOptions.StixCoreObjectsOrdering;
 
 export const findById = (
   context: AuthContext,
@@ -646,14 +651,16 @@ export const publicStixCoreObjectsPaginated = async (
 
   const selection = dataSelection[0];
   const { filters } = selection;
+  // a list keeps its configured sort (a timeline has none); graph metrics sorts are checked by the engine like for any user
+  const sortBy = selection.sort_by && STIX_CORE_OBJECTS_ORDERINGS.includes(selection.sort_by) ? selection.sort_by : null;
 
   const parameters = {
     startDate: args.startDate,
     endDate: args.endDate,
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
-    orderBy: selection.date_attribute,
-    orderMode: 'desc',
+    orderBy: sortBy ? (STIX_CORE_OBJECTS_ORDERING_FIELDS[sortBy] ?? sortBy) : selection.date_attribute,
+    orderMode: sortBy ? (selection.sort_mode ?? 'asc') : 'desc',
     first: selection.number ?? 10,
   };
 

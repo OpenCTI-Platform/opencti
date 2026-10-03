@@ -16,6 +16,8 @@
   "Infrastructure hubs": "Infrastructure hubs",
   "Joined a graph cluster": "Joined a graph cluster",
   "Similarity of the most connected threats": "Similarity of the most connected threats",
+  "The similar entities could not be loaded.": "The similar entities could not be loaded.",
+  "The similarity matrix could not be loaded.": "The similarity matrix could not be loaded.",
   "This list is ranked by graph metrics, which require access to every relationship of the platform.": "This list is ranked by graph metrics, which require access to every relationship of the platform.",
   "Threat and malware hubs": "Threat and malware hubs",
   "Threats and malware": "Threats and malware",
