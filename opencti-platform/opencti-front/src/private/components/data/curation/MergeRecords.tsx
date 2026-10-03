@@ -117,9 +117,12 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
     openExports: false,
     filters: emptyFilterGroup,
   };
+  // In the Changes tab, the URL selects the view (`?view=merges`): the list keeps its state in local storage
+  // only, as writing its parameters into the URL would replace the view parameter.
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<MergeRecordsListQuery$variables>(
     storageKey,
     initialValues,
+    Boolean(entityId),
   );
   const typeContextFilters = useBuildEntityTypeBasedFilterContext('MergeRecord', viewStorage.filters);
   const contextFilters: FilterGroup = entityId ? {

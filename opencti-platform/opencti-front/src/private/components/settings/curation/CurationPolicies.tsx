@@ -146,7 +146,9 @@ const CurationPoliciesComponent = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CurationPoliciesListQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  // The page selects this tab through `?tab=policies`: the list keeps its state in local storage only,
+  // as writing its parameters into the URL would replace the tab parameter.
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CurationPoliciesListQuery$variables>(LOCAL_STORAGE_KEY, initialValues, true);
   const contextFilters = useBuildEntityTypeBasedFilterContext('CurationPolicy', viewStorage.filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as CurationPoliciesListQuery$variables;
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<CurationPoliciesListQuery>(policiesListQuery, queryPaginationOptions);
