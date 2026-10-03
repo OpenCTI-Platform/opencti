@@ -1,0 +1,433 @@
+import gql from 'graphql-tag';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
+import { computeDefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+
+const SIGMA_RULE = `title: Defense matrix test rule
+id: 5f3c3f5a-1d2b-4c6e-9f0a-1234567890ab
+status: test
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: 'defense-matrix-test.exe'
+  condition: selection
+level: high
+`;
+
+const STIX_DOMAIN_OBJECT_DELETE = gql`
+  mutation StixDomainObjectDelete($id: ID!) {
+    stixDomainObjectEdit(id: $id) { delete }
+  }
+`;
+const ATTACK_PATTERN_ADD = gql`
+  mutation AttackPatternAdd($input: AttackPatternAddInput!) {
+    attackPatternAdd(input: $input) { id }
+  }
+`;
+const DATA_COMPONENT_ADD = gql`
+  mutation DataComponentAdd($input: DataComponentAddInput!) {
+    dataComponentAdd(input: $input) { id }
+  }
+`;
+const COURSE_OF_ACTION_ADD = gql`
+  mutation CourseOfActionAdd($input: CourseOfActionAddInput!) {
+    courseOfActionAdd(input: $input) { id }
+  }
+`;
+const INTRUSION_SET_ADD = gql`
+  mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
+    intrusionSetAdd(input: $input) { id }
+  }
+`;
+const PLATFORM_ADD = gql`
+  mutation SecurityPlatformAdd($input: SecurityPlatformAddInput!) {
+    securityPlatformAdd(input: $input) { id }
+  }
+`;
+const PLATFORM_DELETE = gql`
+  mutation SecurityPlatformDelete($id: ID!) {
+    securityPlatformDelete(id: $id)
+  }
+`;
+const INDICATOR_ADD = gql`
+  mutation IndicatorAdd($input: IndicatorAddInput!) {
+    indicatorAdd(input: $input) { id x_opencti_rule_status x_opencti_rule_level x_opencti_rule_logsource { category product service } }
+  }
+`;
+const INDICATOR_DELETE = gql`
+  mutation IndicatorDelete($id: ID!) {
+    indicatorDelete(id: $id)
+  }
+`;
+const RELATIONSHIP_ADD = gql`
+  mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) { id }
+  }
+`;
+const REPORT_DEPLOYMENT = gql`
+  mutation IndicatorReportDeployment($indicatorId: StixRef!, $platformId: StixRef!, $status: IndicatorDeploymentStatus!, $externalId: String) {
+    indicatorReportDeployment(indicatorId: $indicatorId, platformId: $platformId, status: $status, externalId: $externalId) { id deployment_status }
+  }
+`;
+const DEFENSE_PLATFORMS = gql`
+  query DefensePlatforms {
+    defensePlatforms { id name entity_type security_platform_type }
+  }
+`;
+const DEFENSE_MATRIX = gql`
+  query DefenseMatrix($platformIds: [String!], $threatScope: DefenseThreatScope) {
+    defenseMatrix(platformIds: $platformIds, threatScope: $threatScope) {
+      computed_at
+      threats_count
+      levels
+      cells {
+        attack_pattern_id
+        x_mitre_id
+        level
+        telemetry
+        detection
+        validated
+        mitigated
+        recommended_action
+        threats_count
+        platforms { platform_id level telemetry detection recommended_action data_components_count rules_count }
+      }
+    }
+  }
+`;
+const DEFENSE_TECHNIQUE = gql`
+  query DefenseTechnique($id: String!, $platformIds: [String!], $threatScope: DefenseThreatScope) {
+    defenseTechnique(id: $id, platformIds: $platformIds, threatScope: $threatScope) {
+      cell { level recommended_action }
+      dataComponents { dataComponent { id } providedBy { id } }
+      rules { indicator { id } deployments { platform { id } status } }
+      mitigations { id }
+      threats { threat { id } confidence }
+      gaps { platform_id level validation_requests { security_coverage_id grouping_id threat_id } }
+    }
+  }
+`;
+const DEFENSE_GAPS = gql`
+  query DefenseGaps($platformIds: [String!], $threatScope: DefenseThreatScope, $filter: DefenseGapsFilter) {
+    defenseGaps(platformIds: $platformIds, threatScope: $threatScope, filter: $filter, first: 50) {
+      edges { node { id attack_pattern_id platform_id level recommended_action threats_count priority last_validation_requested_at } }
+      pageInfo { globalCount hasNextPage }
+    }
+  }
+`;
+const DEFENSE_GAP_EXPORT = gql`
+  query DefenseGapExport($platformIds: [String!], $threatScope: DefenseThreatScope, $filter: DefenseGapsFilter) {
+    defenseGapExport(platformIds: $platformIds, threatScope: $threatScope, filter: $filter)
+  }
+`;
+const ATTACK_PATTERNS_BY_LEVEL = gql`
+  query AttackPatternsByLevel($filters: FilterGroup, $search: String) {
+    attackPatterns(filters: $filters, search: $search, first: 50) { edges { node { id } } }
+  }
+`;
+const DEFENSE_VALIDATE = gql`
+  mutation DefenseValidate($input: DefenseValidationInput!) {
+    defenseGapsValidate(input: $input) {
+      gaps_count
+      securityCoverage { id objectCovered { ... on Grouping { id } } }
+      grouping { id objects { edges { node { ... on BasicObject { id } } } } }
+    }
+  }
+`;
+const SECURITY_COVERAGE_DELETE = gql`
+  mutation SecurityCoverageDelete($id: ID!) {
+    securityCoverageDelete(id: $id)
+  }
+`;
+const GROUPING_DELETE = gql`
+  mutation GroupingDelete($id: ID!) {
+    groupingDelete(id: $id)
+  }
+`;
+const MAPPING_ADD = gql`
+  mutation MappingAdd($input: DefenseLogsourceMappingAddInput!) {
+    defenseLogsourceMappingAdd(input: $input) { id name built_in active data_components }
+  }
+`;
+const MAPPING_PATCH = gql`
+  mutation MappingPatch($id: ID!, $input: [EditInput!]!) {
+    defenseLogsourceMappingFieldPatch(id: $id, input: $input) { id active description }
+  }
+`;
+const MAPPING_DELETE = gql`
+  mutation MappingDelete($id: ID!) {
+    defenseLogsourceMappingDelete(id: $id)
+  }
+`;
+const MAPPINGS = gql`
+  query Mappings($search: String) {
+    defenseLogsourceMappings(search: $search, first: 100) { edges { node { id name built_in active logsource_category logsource_product } } }
+  }
+`;
+const PROVIDES_FROM_LOGSOURCES = gql`
+  mutation ProvidesFromLogsources($id: ID!, $logsources: [DefenseLogsourceInput!]!) {
+    defensePlatformProvidesFromLogsources(id: $id, logsources: $logsources) {
+      created_count
+      unmatched_data_components
+      dataComponents { id }
+    }
+  }
+`;
+const RECOMPUTE = gql`
+  mutation Recompute {
+    defenseCoverageRecompute
+  }
+`;
+const STATUS = gql`
+  query Status {
+    defenseCoverageStatus { computed_at full_computation_requested }
+  }
+`;
+
+const LEVEL_DETECTION_DEPLOYED = 3;
+const MITRE_ID = 'T9901';
+
+describe('Threat-informed defense matrix', () => {
+  const created: { [key: string]: string } = {};
+  let securityCoverageId: string | undefined;
+  let groupingId: string | undefined;
+  let mappingId: string | undefined;
+
+  const relate = async (fromId: string, toId: string, relationship_type: string) => {
+    const result = await queryAsAdminWithSuccess({ query: RELATIONSHIP_ADD, variables: { input: { fromId, toId, relationship_type, confidence: 80 } } });
+    return result.data?.stixCoreRelationshipAdd.id as string;
+  };
+  const scope = (threatIds: string[]) => ({ mode: 'SELECTED', threatIds });
+
+  beforeAll(async () => {
+    const attackPattern = await queryAsAdminWithSuccess({
+      query: ATTACK_PATTERN_ADD,
+      variables: { input: { name: 'Defense matrix test technique', x_mitre_id: MITRE_ID, description: 'Defense matrix integration test' } },
+    });
+    created.attackPattern = attackPattern.data?.attackPatternAdd.id;
+    const dataComponent = await queryAsAdminWithSuccess({ query: DATA_COMPONENT_ADD, variables: { input: { name: 'Defense matrix test telemetry' } } });
+    created.dataComponent = dataComponent.data?.dataComponentAdd.id;
+    const mappedComponent = await queryAsAdminWithSuccess({ query: DATA_COMPONENT_ADD, variables: { input: { name: 'Defense matrix mapped telemetry' } } });
+    created.mappedComponent = mappedComponent.data?.dataComponentAdd.id;
+    const courseOfAction = await queryAsAdminWithSuccess({ query: COURSE_OF_ACTION_ADD, variables: { input: { name: 'Defense matrix test mitigation' } } });
+    created.courseOfAction = courseOfAction.data?.courseOfActionAdd.id;
+    const threat = await queryAsAdminWithSuccess({ query: INTRUSION_SET_ADD, variables: { input: { name: 'Defense matrix test threat' } } });
+    created.threat = threat.data?.intrusionSetAdd.id;
+    const restrictedThreat = await queryAsAdminWithSuccess({
+      query: INTRUSION_SET_ADD,
+      variables: { input: { name: 'Defense matrix restricted threat', objectMarking: [MARKING_TLP_RED] } },
+    });
+    created.restrictedThreat = restrictedThreat.data?.intrusionSetAdd.id;
+    const platform = await queryAsAdminWithSuccess({ query: PLATFORM_ADD, variables: { input: { name: 'Defense matrix test EDR', security_platform_type: 'EDR' } } });
+    created.platform = platform.data?.securityPlatformAdd.id;
+    const indicator = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: {
+        input: {
+          name: 'Defense matrix test rule',
+          pattern: SIGMA_RULE,
+          pattern_type: 'sigma',
+          x_opencti_rule_status: 'test',
+          x_opencti_rule_level: 'high',
+          x_opencti_rule_logsource: { category: 'process_creation', product: 'windows' },
+        },
+      },
+    });
+    created.indicator = indicator.data?.indicatorAdd.id;
+    expect(indicator.data?.indicatorAdd.x_opencti_rule_status).toEqual('test');
+    expect(indicator.data?.indicatorAdd.x_opencti_rule_logsource).toEqual({ category: 'process_creation', product: 'windows', service: null });
+
+    await relate(created.dataComponent, created.attackPattern, 'detects');
+    await relate(created.platform, created.dataComponent, 'provides');
+    await relate(created.indicator, created.attackPattern, 'indicates');
+    await relate(created.courseOfAction, created.attackPattern, 'mitigates');
+    await relate(created.threat, created.attackPattern, 'uses');
+    await relate(created.restrictedThreat, created.attackPattern, 'uses');
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId: created.indicator, platformId: created.platform, status: 'active', externalId: 'defense-test-rule' },
+    });
+    await computeDefenseCoverage(testContext, SYSTEM_USER, {});
+  });
+
+  afterAll(async () => {
+    if (securityCoverageId) await queryAsAdminWithSuccess({ query: SECURITY_COVERAGE_DELETE, variables: { id: securityCoverageId } });
+    if (groupingId) await queryAsAdminWithSuccess({ query: GROUPING_DELETE, variables: { id: groupingId } });
+    if (mappingId) await queryAsAdminWithSuccess({ query: MAPPING_DELETE, variables: { id: mappingId } });
+    if (created.indicator) await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: created.indicator } });
+    if (created.platform) await queryAsAdminWithSuccess({ query: PLATFORM_DELETE, variables: { id: created.platform } });
+    const domainObjects = ['attackPattern', 'dataComponent', 'mappedComponent', 'courseOfAction', 'threat', 'restrictedThreat'];
+    for (let index = 0; index < domainObjects.length; index += 1) {
+      const id = created[domainObjects[index]];
+      if (id) await queryAsAdminWithSuccess({ query: STIX_DOMAIN_OBJECT_DELETE, variables: { id } });
+    }
+    await computeDefenseCoverage(testContext, SYSTEM_USER, {});
+  });
+
+  it('should list the security platforms of the matrix', async () => {
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_PLATFORMS });
+    const platform = result.data?.defensePlatforms.find((p: { id: string }) => p.id === created.platform);
+    expect(platform).toEqual({ id: created.platform, name: 'Defense matrix test EDR', entity_type: 'SecurityPlatform', security_platform_type: 'EDR' });
+  });
+
+  it('should compute the defense level of a technique on a security platform', async () => {
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_MATRIX, variables: { platformIds: [created.platform], threatScope: scope([created.threat]) } });
+    const matrix = result.data?.defenseMatrix;
+    expect(matrix.computed_at).toBeDefined();
+    expect(matrix.threats_count).toEqual(1);
+    const cell = matrix.cells.find((c: { attack_pattern_id: string }) => c.attack_pattern_id === created.attackPattern);
+    expect(cell.x_mitre_id).toEqual(MITRE_ID);
+    expect(cell.level).toEqual(LEVEL_DETECTION_DEPLOYED);
+    expect(cell.telemetry).toBe(true);
+    expect(cell.detection).toEqual('active');
+    expect(cell.validated).toEqual('none');
+    expect(cell.mitigated).toBe(true);
+    expect(cell.recommended_action).toEqual('validate');
+    expect(cell.threats_count).toEqual(1);
+    expect(cell.platforms).toEqual([expect.objectContaining({
+      platform_id: created.platform,
+      level: LEVEL_DETECTION_DEPLOYED,
+      telemetry: true,
+      detection: 'active',
+      recommended_action: 'validate',
+      data_components_count: 1,
+      rules_count: 1,
+    })]);
+  });
+
+  it('should store the aggregated level as a filterable attack pattern attribute', async () => {
+    const filters = { mode: 'and', filters: [{ key: ['defense_level'], values: [String(LEVEL_DETECTION_DEPLOYED)], operator: 'gte' }], filterGroups: [] };
+    const result = await queryAsAdminWithSuccess({ query: ATTACK_PATTERNS_BY_LEVEL, variables: { filters, search: 'Defense matrix test technique' } });
+    expect(result.data?.attackPatterns.edges.map((e: { node: { id: string } }) => e.node.id)).toContain(created.attackPattern);
+  });
+
+  it('should explain the level with every evidence', async () => {
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform], threatScope: scope([created.threat]) } });
+    const technique = result.data?.defenseTechnique;
+    expect(technique.cell.level).toEqual(LEVEL_DETECTION_DEPLOYED);
+    expect(technique.dataComponents).toEqual([{ dataComponent: { id: created.dataComponent }, providedBy: [{ id: created.platform }] }]);
+    expect(technique.rules).toEqual([{ indicator: { id: created.indicator }, deployments: [{ platform: { id: created.platform }, status: 'active' }] }]);
+    expect(technique.mitigations).toEqual([{ id: created.courseOfAction }]);
+    expect(technique.threats).toEqual([{ threat: { id: created.threat }, confidence: 80 }]);
+  });
+
+  it('should never reveal a threat the reader cannot see in the overlay', async () => {
+    const variables = { platformIds: [created.platform], threatScope: scope([created.threat, created.restrictedThreat]) };
+    const asAdmin = await queryAsAdminWithSuccess({ query: DEFENSE_MATRIX, variables });
+    const adminCell = asAdmin.data?.defenseMatrix.cells.find((c: { attack_pattern_id: string }) => c.attack_pattern_id === created.attackPattern);
+    expect(adminCell.threats_count).toEqual(2);
+    const asGreenUser = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: DEFENSE_MATRIX, variables });
+    expect(asGreenUser.data?.defenseMatrix.threats_count).toEqual(1);
+    const userCell = asGreenUser.data?.defenseMatrix.cells.find((c: { attack_pattern_id: string }) => c.attack_pattern_id === created.attackPattern);
+    expect(userCell.threats_count).toEqual(1);
+  });
+
+  it('should list the technique in the gap backlog with its priority and export it', async () => {
+    const variables = { platformIds: [created.platform], threatScope: scope([created.threat]), filter: { search: MITRE_ID } };
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables });
+    const gaps = result.data?.defenseGaps.edges.map((e: { node: unknown }) => e.node);
+    expect(result.data?.defenseGaps.pageInfo.globalCount).toEqual(1);
+    expect(gaps[0]).toEqual(expect.objectContaining({
+      attack_pattern_id: created.attackPattern,
+      platform_id: created.platform,
+      level: LEVEL_DETECTION_DEPLOYED,
+      recommended_action: 'validate',
+      threats_count: 1,
+    }));
+    expect(gaps[0].priority).toBeGreaterThan(0);
+    const usedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, threatScope: { mode: 'NONE' }, filter: { search: MITRE_ID, onlyUsedByThreats: true } } });
+    expect(usedOnly.data?.defenseGaps.edges).toEqual([]);
+    const csv = await queryAsAdminWithSuccess({ query: DEFENSE_GAP_EXPORT, variables });
+    const lines = (csv.data?.defenseGapExport as string).trim().split('\n');
+    expect(lines[0]).toContain('technique_id');
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain(MITRE_ID);
+    expect(lines[1]).toContain('Defense matrix test EDR');
+  });
+
+  it('should validate the technique through a security coverage of a grouping', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: DEFENSE_VALIDATE,
+      variables: { input: { attackPatternIds: [created.attackPattern], platformIds: [created.platform], threatId: created.threat, name: 'Defense matrix test validation' } },
+    });
+    const validation = result.data?.defenseGapsValidate;
+    securityCoverageId = validation.securityCoverage.id;
+    groupingId = validation.grouping.id;
+    expect(validation.gaps_count).toEqual(2);
+    expect(validation.securityCoverage.objectCovered.id).toEqual(groupingId);
+    const objectIds = validation.grouping.objects.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(objectIds).toEqual(expect.arrayContaining([created.attackPattern, created.threat]));
+    const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
+    const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
+    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+  });
+
+  it('should reject an empty or unknown validation request', async () => {
+    await queryAsAdminWithError({ query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [] } } }, 'Select at least one technique to validate');
+    await queryAsAdminWithError(
+      { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], platformIds: ['unknown-platform'] } } },
+      'Some security platforms of the validation request cannot be found',
+    );
+  });
+
+  it('should manage custom telemetry mappings and protect the built-in ones', async () => {
+    const added = await queryAsAdminWithSuccess({
+      query: MAPPING_ADD,
+      variables: { input: { logsource_product: 'defense-matrix-test', data_components: ['Defense matrix mapped telemetry', ' '], description: 'Integration test' } },
+    });
+    mappingId = added.data?.defenseLogsourceMappingAdd.id;
+    expect(added.data?.defenseLogsourceMappingAdd).toEqual(expect.objectContaining({ built_in: false, active: true, data_components: ['Defense matrix mapped telemetry'] }));
+    await queryAsAdminWithError(
+      { query: MAPPING_ADD, variables: { input: { logsource_product: 'defense-matrix-test', data_components: ['Other'] } } },
+      'A mapping already exists for this log source',
+    );
+    const patched = await queryAsAdminWithSuccess({ query: MAPPING_PATCH, variables: { id: mappingId, input: [{ key: 'description', value: ['Updated'] }] } });
+    expect(patched.data?.defenseLogsourceMappingFieldPatch.description).toEqual('Updated');
+    await queryAsAdminWithError(
+      { query: MAPPING_PATCH, variables: { id: mappingId, input: [{ key: 'logsource_product', value: ['other'] }] } },
+      'Only the data components, the description and the activation of a log source mapping can be updated',
+    );
+    const builtIns = await queryAsAdminWithSuccess({ query: MAPPINGS, variables: { search: 'process_creation' } });
+    const builtIn = builtIns.data?.defenseLogsourceMappings.edges.map((e: { node: { id: string; built_in: boolean } }) => e.node).find((m: { built_in: boolean }) => m.built_in);
+    expect(builtIn).toBeDefined();
+    await queryAsAdminWithError({ query: MAPPING_DELETE, variables: { id: builtIn.id } }, 'Built-in log source mappings cannot be deleted, deactivate them instead');
+  });
+
+  it('should declare the telemetry of a platform from its log sources', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: PROVIDES_FROM_LOGSOURCES,
+      variables: { id: created.platform, logsources: [{ product: 'defense-matrix-test' }] },
+    });
+    const provides = result.data?.defensePlatformProvidesFromLogsources;
+    expect(provides.created_count).toEqual(1);
+    expect(provides.dataComponents).toEqual([{ id: created.mappedComponent }]);
+    expect(provides.unmatched_data_components).toEqual([]);
+    await queryAsAdminWithError({ query: PROVIDES_FROM_LOGSOURCES, variables: { id: created.platform, logsources: [] } }, 'Provide between 1 and 200 log sources');
+  });
+
+  it('should request a full computation', async () => {
+    const result = await queryAsAdminWithSuccess({ query: RECOMPUTE });
+    expect(result.data?.defenseCoverageRecompute).toBe(true);
+    const status = await queryAsAdminWithSuccess({ query: STATUS });
+    expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
+  });
+
+  it('should enforce the capabilities of every surface', async () => {
+    await queryAsUserWithSuccess(USER_PARTICIPATE, { query: DEFENSE_PLATFORMS });
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: DEFENSE_VALIDATE,
+      variables: { input: { attackPatternIds: [created.attackPattern] } },
+    });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: RECOMPUTE });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: MAPPINGS, variables: {} });
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: PROVIDES_FROM_LOGSOURCES,
+      variables: { id: created.platform, logsources: [{ product: 'defense-matrix-test' }] },
+    });
+  });
+});
