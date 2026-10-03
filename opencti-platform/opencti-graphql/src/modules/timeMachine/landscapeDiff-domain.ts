@@ -254,11 +254,13 @@ const processBatch = async (
 ) => {
   const ids = batch.map((entity) => entity.internal_id);
   const idSet = new Set(ids);
-  // 1. Relationships created in the period. The budget applies to distinct relationships: a relationship
-  // already counted from another batch can be read once more, so the read is sized to let it through.
-  const budget = LANDSCAPE_MAX_RELATIONSHIPS - acc.relationshipsFetched;
-  const maxSize = budget > 0 ? budget + acc.countedRelationships.size : 0;
-  // One extra relationship is read to know whether some were left out (only that one once the budget is spent)
+  // 1. Relationships created in the period. Both scoped sides of a relationship are counted the first time it is read,
+  // whatever their batch: a later batch only looks for new relationships once the budget is spent. The relationships
+  // counted from earlier batches that it reads again are the ones its entities already count, so the read lets them through.
+  const budget = Math.max(0, LANDSCAPE_MAX_RELATIONSHIPS - acc.relationshipsFetched);
+  const alreadyCounted = batch.reduce((total, entity) => total + (acc.entities.get(entity.internal_id)?.relationships_added ?? 0), 0);
+  const maxSize = budget + alreadyCounted;
+  // One extra relationship is read to know whether some were left out
   const fetched = await fullRelationsList<BasicStoreRelation>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -270,26 +272,25 @@ const processBatch = async (
     baseFields: ['created_at'],
   } as any);
   if (fetched.length > maxSize) acc.truncated = true;
-  const relations = fetched.slice(0, maxSize);
   let newRelationships = 0;
-  relations.forEach((relation) => {
-    if (!acc.countedRelationships.has(relation.internal_id)) {
-      if (newRelationships >= budget) {
-        acc.truncated = true;
-        return;
-      }
-      newRelationships += 1;
-      acc.countedRelationships.add(relation.internal_id);
-      acc.newRelationships += 1;
-      increment(acc.newRelationshipsByType, relation.entity_type);
+  fetched.slice(0, maxSize).forEach((relation) => {
+    if (acc.countedRelationships.has(relation.internal_id)) return;
+    if (newRelationships >= budget) {
+      acc.truncated = true;
+      return;
     }
-    // Each scoped side is in exactly one batch, so per-entity counters are updated once
-    if (idSet.has(relation.fromId)) {
-      acc.entities.get(relation.fromId)!.relationships_added += 1;
+    newRelationships += 1;
+    acc.countedRelationships.add(relation.internal_id);
+    acc.newRelationships += 1;
+    increment(acc.newRelationshipsByType, relation.entity_type);
+    const fromEntity = acc.entities.get(relation.fromId);
+    if (fromEntity) {
+      fromEntity.relationships_added += 1;
       registerTarget(acc, relation.toId, relation.toType, relation.entity_type, relation.fromId);
     }
-    if (idSet.has(relation.toId)) {
-      acc.entities.get(relation.toId)!.relationships_added += 1;
+    const toEntity = acc.entities.get(relation.toId);
+    if (toEntity) {
+      toEntity.relationships_added += 1;
       registerTarget(acc, relation.fromId, relation.fromType, relation.entity_type, relation.toId);
     }
   });
@@ -427,6 +428,8 @@ const buildAggregates = async (
     return toBuckets(buckets, labels);
   };
   const infrastructure = buildNamedItems(acc, resolved, (target) => INFRASTRUCTURE_TYPES.includes(target.type));
+  const malware = buildNamedItems(acc, resolved, uses(ENTITY_TYPE_MALWARE));
+  const tools = buildNamedItems(acc, resolved, uses(ENTITY_TYPE_TOOL));
   // Indicators are only counted, but a visible relationship can point to an indicator the user cannot access
   const indicatorIds = [...acc.targets.entries()]
     .filter(([, target]) => target.type === ENTITY_TYPE_INDICATOR && target.relationshipTypes.has(RELATION_INDICATES))
@@ -462,8 +465,11 @@ const buildAggregates = async (
     score_changes: entities.filter((e) => hasChanged(e.score_before, e.score_after)).length,
     new_techniques_by_tactic: toBuckets(techniquesByTactic),
     new_techniques: techniques.slice(0, LANDSCAPE_MAX_ITEMS),
-    new_malware: buildNamedItems(acc, resolved, uses(ENTITY_TYPE_MALWARE)).slice(0, LANDSCAPE_MAX_ITEMS),
-    new_tools: buildNamedItems(acc, resolved, uses(ENTITY_TYPE_TOOL)).slice(0, LANDSCAPE_MAX_ITEMS),
+    new_techniques_count: techniques.length,
+    new_malware: malware.slice(0, LANDSCAPE_MAX_ITEMS),
+    new_malware_count: malware.length,
+    new_tools: tools.slice(0, LANDSCAPE_MAX_ITEMS),
+    new_tools_count: tools.length,
     new_victims_by_sector: victimsBy(ENTITY_TYPE_IDENTITY_SECTOR),
     new_victims_by_country: victimsBy(ENTITY_TYPE_LOCATION_COUNTRY),
     new_victims_by_region: victimsBy(ENTITY_TYPE_LOCATION_REGION),

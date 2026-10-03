@@ -72,9 +72,9 @@ export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates, opts
     `\`${aggregates.removed_relationships}\` removed`,
     `\`${aggregates.revocations}\` revocation(s)`,
   ];
-  if (aggregates.new_techniques.length > 0) parts.push(`\`${aggregates.new_techniques.length}\` new technique(s)`);
-  if (aggregates.new_malware.length > 0) parts.push(`\`${aggregates.new_malware.length}\` new malware`);
-  if (aggregates.new_tools.length > 0) parts.push(`\`${aggregates.new_tools.length}\` new tool(s)`);
+  if (aggregates.new_techniques_count > 0) parts.push(`\`${aggregates.new_techniques_count}\` new technique(s)`);
+  if (aggregates.new_malware_count > 0) parts.push(`\`${aggregates.new_malware_count}\` new malware`);
+  if (aggregates.new_tools_count > 0) parts.push(`\`${aggregates.new_tools_count}\` new tool(s)`);
   if (aggregates.new_infrastructure_count > 0) parts.push(`\`${aggregates.new_infrastructure_count}\` new infrastructure`);
   if (opts.listed !== undefined && aggregates.entities_changed > opts.listed) {
     parts.push(`\`${aggregates.entities_changed - opts.listed}\` other changed entities not listed`);
