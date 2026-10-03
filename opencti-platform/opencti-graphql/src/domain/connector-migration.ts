@@ -17,7 +17,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
-import { resolveUserByIdFromCache, userEditField } from './user';
+import { resolveUserByIdFromCache, userEditField } from '../modules/user/user-domain';
 import { now } from '../utils/format';
 import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
@@ -363,6 +363,7 @@ export const migrateConnectorToManaged = async (
     manager_contract_image: contract.container_image,
     manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(contractData),
     manager_contract_configuration: filteredConfigurations,
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
   };
 

@@ -18,6 +18,22 @@ export type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   format?: string;
 };
 
+export interface CatalogContractVersion {
+  version: string;
+  support_version?: string | null;
+  min_version?: string | null;
+  max_version?: string | null;
+}
+
+export interface CatalogContractCompatibility {
+  is_compatible: boolean;
+  latest_compatible_version: string | null;
+  // Set only when no version is compatible: the platform version to upgrade to
+  minimum_platform_version: string | null;
+  // Set only when no version is compatible because the platform is newer than all of them
+  maximum_platform_version: string | null;
+}
+
 export interface CatalogContract {
   title: string;
   slug: string;
@@ -34,6 +50,8 @@ export interface CatalogContract {
   source_code: string;
   manager_supported: boolean;
   container_version: string;
+  versions?: CatalogContractVersion[] | null;
+  compatibility?: CatalogContractCompatibility | null;
   container_image: string;
   container_type: IngestionConnectorType;
   config_schema: {
@@ -66,7 +84,10 @@ export interface CatalogType {
 }
 
 // region Api types
-export type GraphqlCatalogContract = CatalogContract;
+export type GraphqlCatalogContract = CatalogContract & {
+  min_version: string | null;
+  max_version: string | null;
+};
 export interface GraphqlCatalog {
   id: string;
   entity_type: string;
@@ -75,6 +96,11 @@ export interface GraphqlCatalog {
   name: string;
   description: string;
   contracts: string[]; // JSON.Stringified GraphqlCatalogContract items
+}
+
+export interface GraphqlCatalogRevision {
+  catalog_id: string;
+  revision: string | null;
 }
 // endregion
 
@@ -102,6 +128,8 @@ export interface CatalogContractEntityFields {
   playbook_supported: boolean;
   max_confidence_level: number;
   support_version?: string;
+  min_version?: string;
+  max_version?: string;
   subscription_link?: string;
   source_code?: string;
   manager_supported: boolean;

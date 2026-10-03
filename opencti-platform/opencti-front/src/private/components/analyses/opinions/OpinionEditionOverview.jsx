@@ -144,7 +144,7 @@ const OpinionEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
+              containerStyle={{ width: '100%' }}
               variant="edit"
               multiple={false}
               editContext={context}

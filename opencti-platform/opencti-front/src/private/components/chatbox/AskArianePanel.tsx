@@ -38,6 +38,14 @@ const CHATBOT_API_ENDPOINTS: ApiEndpoints = {
   sessions: '/sessions',
   upload: '/upload',
   download: '/files',
+  // Composer prompt picker and quota indicator. The chatbot defaults
+  // ('/chat/prompts', '/chat/quota') are XTM One-style paths the proxy
+  // does not serve, which left both affordances hidden.
+  prompts: '/prompts',
+  quota: '/quota',
+  // Persisted thumbs rating of an answer, sent as POST / DELETE
+  // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
+  feedback: '/conversations',
 };
 
 interface AskArianePanelProps {
@@ -70,6 +78,16 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     const message = intl.messages[key];
     return typeof message === 'string' ? message : key;
   }, [intl]);
+  // The full tag, region included: it picks the date format and the
+  // read-aloud voice. Canonical case (`en-us` -> `en-US`) is how browsers
+  // report their voices.
+  const chatbotLocale = useMemo(() => {
+    try {
+      return Intl.getCanonicalLocales(intl.locale)[0];
+    } catch {
+      return undefined;
+    }
+  }, [intl.locale]);
   const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
@@ -187,6 +205,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       backendType="rest"
       apiBaseUrl={`${APP_BASE_PATH}/chatbot`}
       apiEndpoints={CHATBOT_API_ENDPOINTS}
+      locale={chatbotLocale}
       user={user}
       disableFileManagement={false}
       t={tChatbot}

@@ -2,20 +2,20 @@ import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import OpinionEditionOverview from './OpinionEditionOverview';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 
 const OpinionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, opinion, open } = props;
+  const { handleClose, opinion, open, controlledDial } = props;
   const { editContext } = opinion;
 
   return (
     <Drawer
-      title={t_i18n('Update a opinions')}
+      title={t_i18n('Update an opinion')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      controlledDial={controlledDial}
       context={editContext}
     >
       <OpinionEditionOverview

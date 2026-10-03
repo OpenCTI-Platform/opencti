@@ -432,8 +432,8 @@ describe('Filters utils', () => {
     });
 
     it('should return all the types if several entity types filters', () => {
-      // filters: Report AND Malware
-      // result: Malware
+      // filters: Report OR Malware
+      // result: Report, Malware
       const filters = {
         mode: 'or',
         filters: [
@@ -444,6 +444,21 @@ describe('Filters utils', () => {
       };
       const result = getEntityTypeThreeFirstLevelsFilterValues(filters, [], ['Malware', 'Report', 'Country', 'City']);
       expect(result).toEqual(['Report', 'Malware']);
+    });
+
+    it('should return all the types if both entity type and relationship type filters', () => {
+      // filters: Report OR related-to
+      // result: Report, related-to
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Report'] },
+          { key: 'relationship_type', operator: 'eq', values: ['related-to'] },
+        ],
+        filterGroups: [],
+      };
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, []);
+      expect(result).toEqual(['Report', 'related-to']);
     });
 
     it('should return all the types if several entity types filters', () => {

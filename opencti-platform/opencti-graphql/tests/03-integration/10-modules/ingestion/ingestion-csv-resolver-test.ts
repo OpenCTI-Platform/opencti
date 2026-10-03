@@ -8,7 +8,7 @@ import { now } from '../../../../src/utils/format';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import pjson from '../../../../package.json';
 import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../../src/generated/graphql';
-import { findById as findUserById } from '../../../../src/domain/user';
+import { findById as findUserById } from '../../../../src/modules/user/user-domain';
 import { regenerateCsvMapperUUID } from '../../../../src/modules/ingestion/ingestion-converter';
 import type { CsvMapperResolved } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';

@@ -80,6 +80,8 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_available_news_feed_types?: string[];
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
+  platform_procedures_preservation?: boolean;
+  platform_procedures_description_policy?: 'longest' | 'most_recent';
   filigran_chatbot_ai_cgu_status: CguStatus;
   view_all_users: boolean;
   platform_ip_whitelist?: string[];
@@ -89,6 +91,14 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth?: LocalAuthConfig;
   cert_auth?: CertAuthConfig;
   headers_auth?: HeadersAuthConfig;
+  platform_session_max_concurrent?: number;
+  password_policy_min_length?: number;
+  password_policy_max_length?: number;
+  password_policy_min_symbols?: number;
+  password_policy_min_numbers?: number;
+  password_policy_min_words?: number;
+  password_policy_min_lowercase?: number;
+  password_policy_min_uppercase?: number;
   password_policy_validity_days?: number;
   smtp_configuration?: SmtpConfiguration;
 }

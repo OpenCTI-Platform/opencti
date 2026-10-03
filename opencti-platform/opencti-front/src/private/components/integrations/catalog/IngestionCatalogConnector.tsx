@@ -4,6 +4,7 @@ import IngestionCatalogConnectorHeader from '@components/integrations/catalog/In
 import IngestionCatalogConnectorOverview from '@components/integrations/catalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/integrations/catalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -63,12 +64,14 @@ const IngestionCatalogConnectorComponent = ({
   const deploymentCount = connector
     ? (deploymentCounts.get(connector.container_image) ?? 0)
     : 0;
+  const canDeploy = connector ? canDeployConnector(connector) : false;
 
+  // connector and onClickDeploy are new on every render: depending on them would open the dialog in a loop
   useEffect(() => {
-    if (openConfig && contract && connector) {
+    if (openConfig && contract && connector && canDeploy) {
       onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
-  }, [openConfig, contract]);
+  }, [openConfig, contract, canDeploy]);
 
   if (!contract) return <ErrorNotFound />;
 

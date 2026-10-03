@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   addSecurityCoverage,
+  getSecurityCoverageResultIds,
   listSecurityCoverageResults,
   securityCoverageDelete,
   securityCoverageStixBundle,
@@ -104,6 +105,43 @@ describe('SecurityCoverage domain', () => {
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(0);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should return all coverage results when upserting with a new external_uri', async () => {
+      const firstCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a201',
+      });
+      // Same objectCovered, so the SecurityCoverage is upserted
+      const upsertedCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a202',
+      });
+      expect(upsertedCoverage.id).toEqual(firstCoverage.id);
+
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, upsertedCoverage);
+      expect(results.length).toEqual(2);
+      // The returned coverage must reference every result, not only the one just created
+      const returnedResultIds = getSecurityCoverageResultIds(upsertedCoverage);
+      expect(returnedResultIds.length).toEqual(2);
+      expect([...returnedResultIds].sort()).toEqual(results.map((r) => r.id).sort());
+
+      await securityCoverageDelete(testContext, ADMIN_USER, upsertedCoverage.id);
+    });
+
+    it('should not duplicate the coverage result when upserting with the same external_uri', async () => {
+      const input = {
+        ...BASE_INPUT(),
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a203',
+      };
+      await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const upsertedCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, upsertedCoverage);
+      expect(results.length).toEqual(1);
+      expect(getSecurityCoverageResultIds(upsertedCoverage)).toEqual([results[0].id]);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, upsertedCoverage.id);
     });
   });
 

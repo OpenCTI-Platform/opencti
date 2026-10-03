@@ -4,13 +4,25 @@ import type { UserMergeHandler, UserMergeHandlerPlan } from '../../../../src/mod
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
 const openedEntries: { handler: string; dryRun: boolean }[] = [];
+const refusals: { handler: string; message: string }[] = [];
 
 vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
   withJournalEntry: async (input: { handler: string; dryRun: boolean }, execute: () => Promise<unknown>) => {
     openedEntries.push({ handler: input.handler, dryRun: input.dryRun });
     return execute();
   },
+  journalRefusal: async (input: { handler: string }, message: string) => {
+    refusals.push({ handler: input.handler, message });
+  },
   readJournalEntries: async () => [],
+}));
+
+const cacheResets: string[] = [];
+
+vi.mock('../../../../src/database/redis', () => ({
+  publishCacheResetEvent: async (entityType: string) => {
+    cacheResets.push(entityType);
+  },
 }));
 
 const storedUsers = new Map<string, unknown>([
@@ -18,11 +30,11 @@ const storedUsers = new Map<string, unknown>([
   ['target-id', { internal_id: 'target-id', allowed_marking: [], organizations: [], capabilities: [] }],
 ]);
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   resolveUserById: async (_context: unknown, id: string) => storedUsers.get(id),
 }));
 
-const { executeUserMerge } = await import('../../../../src/modules/userMerge/userMerge-engine');
+const { executeUserMerge, USER_MERGE_CACHED_ENTITY_TYPES } = await import('../../../../src/modules/userMerge/userMerge-engine');
 const { registerUserMergeHandler } = await import('../../../../src/modules/userMerge/userMerge-registry');
 
 const plan = (handler: string, count: number): UserMergeHandlerPlan => ({
@@ -58,7 +70,41 @@ describe('userMerge engine', () => {
   afterEach(() => {
     resetUserMergeHandlers();
     openedEntries.length = 0;
+    refusals.length = 0;
+    cacheResets.length = 0;
     vi.restoreAllMocks();
+  });
+
+  // Handlers write straight to Elasticsearch, which notifies no cache: without the reset a live
+  // stream or a trigger keeps evaluating the source id until a restart, on every node.
+  it('should reset every cached entity type once the real pass has written', async () => {
+    registerUserMergeHandler(mockHandler('handler-a'));
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Success);
+    expect(cacheResets.sort()).toEqual([...USER_MERGE_CACHED_ENTITY_TYPES].sort());
+  });
+
+  it('should reset no cache when nothing was written', async () => {
+    let computeCount = 0;
+    registerUserMergeHandler(mockHandler('handler-a', {
+      compute: async () => {
+        computeCount += 1;
+        return plan('handler-a', computeCount);
+      },
+    }));
+    await execute(true);
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Failed);
+    expect(cacheResets).toEqual([]);
+  });
+
+  it('should still reset the caches when a handler fails after another one wrote', async () => {
+    registerUserMergeHandler(mockHandler('handler-a'));
+    registerUserMergeHandler(mockHandler('handler-b', {
+      apply: async () => {
+        throw new Error('bulk rewrite failed');
+      },
+    }));
+    expect((await execute(false)).status).toEqual(UserMergeStatus.Failed);
+    expect(cacheResets.sort()).toEqual([...USER_MERGE_CACHED_ENTITY_TYPES].sort());
   });
 
   it('should not apply anything in dry mode', async () => {
@@ -124,6 +170,58 @@ describe('userMerge engine', () => {
     expect(result.message).toContain('dry only [user.password|User|1|true]');
     expect(result.message).toContain('real only [user.password|User|2|true]');
     expect(apply).not.toHaveBeenCalled();
+  });
+
+  it('should journal the refusal, which a run stopped before the write loop otherwise leaves unrecorded', async () => {
+    let computeCount = 0;
+    registerUserMergeHandler(mockHandler('handler-a'));
+    registerUserMergeHandler(mockHandler('handler-b', {
+      compute: async () => {
+        computeCount += 1;
+        return plan('handler-b', computeCount);
+      },
+    }));
+    await execute(false);
+    expect(refusals).toHaveLength(1);
+    expect(refusals[0].handler).toEqual('handler-b');
+    expect(refusals[0].message).toContain('real only [user.password|User|2|true]');
+  });
+
+  it('should leave the platform untouched when a later handler is the one that moved', async () => {
+    const apply = vi.fn(async () => 3);
+    registerUserMergeHandler(mockHandler('handler-a', { apply }));
+    let computeCount = 0;
+    registerUserMergeHandler(mockHandler('handler-b', {
+      covers: ['user.otp'],
+      compute: async () => {
+        computeCount += 1;
+        return plan('handler-b', computeCount);
+      },
+    }));
+    const result = await execute(false);
+    expect(result.status).toEqual(UserMergeStatus.Failed);
+    // A refusal that leaves the earlier handlers applied is not recoverable: the platform is
+    // half merged and no report describes that state.
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it('should not read a handler destroying what a later one counts as the platform moving', async () => {
+    // What the source deactivation does to the sessions the runtime handler counts: a correct
+    // merge, not a platform that moved while the operator was reading the report.
+    let sessions = 1;
+    registerUserMergeHandler(mockHandler('handler-a', {
+      apply: async () => {
+        sessions = 0;
+        return 1;
+      },
+    }));
+    registerUserMergeHandler(mockHandler('handler-b', {
+      covers: ['user.otp'],
+      compute: async () => plan('handler-b', sessions),
+    }));
+    const result = await execute(false);
+    expect(result.status).toEqual(UserMergeStatus.Success);
+    expect(result.report?.handlers[1].changes[0].count).toEqual(1);
   });
 
   it('should journal both passes and mark them apart', async () => {

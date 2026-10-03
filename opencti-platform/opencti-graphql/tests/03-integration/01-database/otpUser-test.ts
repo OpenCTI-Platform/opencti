@@ -3,7 +3,7 @@ import { executionContext } from '../../../src/utils/access';
 import { patchAttribute } from '../../../src/database/middleware';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { findById, otpUserActivation, otpUserDeactivation } from '../../../src/domain/user';
+import { findById, otpUserActivation, otpUserDeactivation } from '../../../src/modules/user/user-domain';
 import { totp } from '../../../src/utils/totp';
 
 const buildContextWithSession = (baseUser: any) => {

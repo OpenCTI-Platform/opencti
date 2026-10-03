@@ -95,6 +95,37 @@ export const findAllCatalogsExcluding = async (
   return findAllCatalogs(context, user, filters);
 };
 
+export const findAllCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+  const filters: FilterGroupWithNested | undefined = excludedIds?.length
+    ? {
+        filters: excludedIds.map((catalogId) => ({
+          key: ['catalog_id'],
+          values: [catalogId],
+          operator: FilterOperator.NotEq,
+        })),
+        filterGroups: [],
+        mode: FilterMode.And,
+      }
+    : undefined;
+
+  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters,
+      baseData: true,
+      baseFields: ['catalog_id', 'revision'],
+    },
+  );
+
+  return catalogs.map((catalog) => ({
+    catalog_id: catalog.catalog_id,
+    revision: catalog.revision,
+  }));
+};
+
 export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {
   for (let idx = 0; idx < catalogEntities.length; ++idx) {
     const catalogEntity = catalogEntities[idx];
@@ -161,12 +192,12 @@ export const findCatalogContractsByCatalogId = async (
   }, new Map<string, BasicStoreEntityCatalogContract>());
 };
 
-export const findLatestCompatibleCatalogContractsByCatalogId = async (
+export const findCatalogContractsBySlug = async (
   context: AuthContext,
   user: AuthUser,
-  catalogId: string,
+  contractSlug: string,
 ) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
@@ -174,29 +205,14 @@ export const findLatestCompatibleCatalogContractsByCatalogId = async (
       indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
         filters: [{
-          key: ['catalog_id'],
-          values: [catalogId],
+          key: ['slug'],
+          values: [contractSlug],
         }],
         filterGroups: [],
         mode: FilterMode.And,
       },
     },
   );
-  const compatibleContracts = filterAndSortLatestCompatibleContracts(contracts);
-  logApp.debug('[OPENCTI-MODULE] Loaded compatible catalog contracts', {
-    module: 'catalog',
-    catalogId,
-    platformVersion: PLATFORM_VERSION,
-    compatibleContractsCount: compatibleContracts.length,
-  });
-  // Keep latest compatible version by slug (results are sorted by version desc).
-  return compatibleContracts.reduce((map, contract) => {
-    if (map.has(contract.slug)) {
-      return map;
-    }
-    map.set(contract.slug, contract);
-    return map;
-  }, new Map<string, BasicStoreEntityCatalogContract>());
 };
 
 export const findLatestCompatibleCatalogContractBySlug = async (
@@ -223,12 +239,12 @@ export const findLatestCompatibleCatalogContractBySlug = async (
   return filterAndSortLatestCompatibleContracts(contracts)[0];
 };
 
-export const findLatestCompatibleCatalogContractByImageName = async (
+export const findCatalogContractsByImageName = async (
   context: AuthContext,
   user: AuthUser,
   imageName: string,
 ) => {
-  const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
     user,
     [ENTITY_TYPE_CATALOG_CONTRACT],
@@ -244,6 +260,14 @@ export const findLatestCompatibleCatalogContractByImageName = async (
       },
     },
   );
+};
+
+export const findLatestCompatibleCatalogContractByImageName = async (
+  context: AuthContext,
+  user: AuthUser,
+  imageName: string,
+) => {
+  const contracts = await findCatalogContractsByImageName(context, user, imageName);
   const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
     logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {

@@ -117,6 +117,12 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
+// Provenance events of live knowledge triggers, opt-in
+export const provenanceEventTypesOptions = [
+  { value: 'corroboration', label: 'Corroboration reached' },
+  { value: 'conflict', label: 'Source conflict detected' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return filterEventTypesOptions.find((o) => o.value === event_type);
-});
+  return [...filterEventTypesOptions, ...provenanceEventTypesOptions].find((o) => o.value === event_type);
+}).filter((option) => option !== undefined);

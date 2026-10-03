@@ -12,7 +12,7 @@ import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { sessionAuthenticateUser, userWithOrigin } from '../modules/user/user-domain';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, downloadFileRange, downloadLocalFileRange, getFileContent } from '../database/raw-file-storage';
@@ -29,7 +29,7 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { extractRefererPathFromReq, setCookieError, decodeOidcState, clientErrorResponse, isClientRequestError, logMalformedRequest } from './httpUtils';
 import {
   getChatbotConfig,
   getChatbotAgents,
@@ -45,6 +45,10 @@ import {
   getLegacyChatbotProxy,
   postChatbotMessageApprove,
   getChatbotPendingApprovals,
+  getChatbotPrompts,
+  getChatbotQuota,
+  postChatbotMessageFeedback,
+  deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -630,6 +634,12 @@ const createApp = async (app, schema) => {
   // prompt (and the `tool_call_id`s a decision must name) back.
   app.post(`${basePath}/chatbot/messages/approve`, postChatbotMessageApprove);
   app.get(`${basePath}/chatbot/conversations/:conversationId/pending-approvals`, getChatbotPendingApprovals);
+  // Composer extras (prompt picker, quota indicator) and persisted thumbs
+  // feedback on an answer.
+  app.get(`${basePath}/chatbot/prompts`, getChatbotPrompts);
+  app.get(`${basePath}/chatbot/quota`, getChatbotQuota);
+  app.post(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, postChatbotMessageFeedback);
+  app.delete(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, deleteChatbotMessageFeedback);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
@@ -671,6 +681,15 @@ const createApp = async (app, schema) => {
 
   // Error handling
   app.use((err, req, res, _next) => {
+    // graphql-upload patches res.send to wait for the request to close; no-op otherwise. Must
+    // cover the 500 below too, or an unread multipart body holds that answer back the same way.
+    req.resume();
+    if (isClientRequestError(err)) {
+      logMalformedRequest(req, err);
+      const { status, body } = clientErrorResponse(err);
+      res.status(status).send(body);
+      return;
+    }
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });

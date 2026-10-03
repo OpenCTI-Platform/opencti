@@ -126,6 +126,7 @@ type WorkflowInstance {
     pendingStatus: WorkflowExecutionStatus
     pendingError: String
     pendingTransition: WorkflowPendingTransition
+    scope: String
 }
 
 extend type DraftWorkspace {

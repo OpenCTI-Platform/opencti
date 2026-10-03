@@ -21,7 +21,7 @@ import {
   SOURCE_RELIABILITY_FILTER,
 } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
-import { addUser, findById } from '../../../src/domain/user';
+import { addUser, findById } from '../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';

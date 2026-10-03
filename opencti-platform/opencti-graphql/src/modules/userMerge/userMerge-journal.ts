@@ -107,6 +107,21 @@ export const withJournalEntry = async <T extends UserMergeHandlerOutcome>(
   return outcome;
 };
 
+/**
+ * Records a refusal between the two passes, which would otherwise leave the same entries as a
+ * successful dry-run. Journalled as dry since nothing was written. A journal failure is swallowed
+ * so it cannot replace the refusal the caller is about to raise.
+ */
+export const journalRefusal = async (input: Omit<JournalEntryInput, 'dryRun'>, message: string): Promise<void> => {
+  try {
+    const entryId = await openJournalEntry({ ...input, dryRun: true });
+    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
+  } catch (err) {
+    const cause = err instanceof Error ? err.message : String(err);
+    logApp.error('[MERGE_USERS] refusal not journalled', { merge_id: input.mergeId, handler: input.handler, cause });
+  }
+};
+
 export const readJournalEntries = async (mergeId?: string, first?: number): Promise<UserMergeJournalRecord[]> => {
   const entries = await redisUserMergeJournalRead(mergeId) as UserMergeJournalRecord[];
   const sorted = [...entries].sort((a, b) => b.started_at.localeCompare(a.started_at));

@@ -11,6 +11,7 @@ import { OpenInNewOutlined } from '@mui/icons-material';
 const fragment = graphql`
   fragment GoToOpenAEVDrawerFragment on SecurityCoverage {
     results {
+      id
       name
       external_uri
     }

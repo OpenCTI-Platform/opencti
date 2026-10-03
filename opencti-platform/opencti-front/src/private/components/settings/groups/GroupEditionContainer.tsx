@@ -128,7 +128,6 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       context={editContext}
       onClose={handleClose}
       open={open}
-      disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
       <Box sx={{

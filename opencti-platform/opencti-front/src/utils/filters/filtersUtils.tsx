@@ -340,7 +340,7 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type', 'relationship_type'], 'eq')
     .map(({ values }) => values)
     .flat();
   if (filters.filterGroups.length > 0) {
@@ -349,7 +349,7 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
       .map((fg) => fg.filters)
       .flat();
     if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type', 'relationship_type'], 'eq')
         .map(({ values }) => values)
         .flat();
       if (secondLevelValues.length > 0) {

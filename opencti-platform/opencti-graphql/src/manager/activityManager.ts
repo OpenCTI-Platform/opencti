@@ -153,13 +153,36 @@ const initActivityManager = () => {
   let running = false;
   let shutdown = false;
   const waitTimer = new InterruptibleTimer();
-  const activityHandler = async (lastEventId: string) => {
+  // Find the last event id indexed, to restart the stream consumption from this point.
+  // Must be computed at each (re)start, as the processor can stop at any time (redis error, lock lost, ...)
+  const resolveLastIndexedEventId = async () => {
+    const context = executionContext('activity_manager');
+    const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
+      first: 1,
+      indices: [INDEX_HISTORY],
+      orderBy: ['timestamp'],
+      orderMode: OrderingMode.Desc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['event_access'], values: ['EXISTS'] }],
+        filterGroups: [],
+      },
+      noFiltersChecking: true,
+    });
+    if (histoElements.length > 0) {
+      const histoDate = histoElements[0].timestamp;
+      return `${utcDate(histoDate).unix() * 1000}-0`;
+    }
+    return '0-0';
+  };
+  const activityHandler = async () => {
     let lock;
     try {
       // Lock the manager
       lock = await lockResources([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
+      const lastEventId = await resolveLastIndexedEventId();
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor('Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
@@ -183,29 +206,9 @@ const initActivityManager = () => {
   return {
     start: async () => {
       shutdown = false;
-      // To start the manager we need to find the last event id indexed
-      // and restart the stream consumption from this point.
-      const context = executionContext('activity_manager');
-      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
-        first: 1,
-        indices: [INDEX_HISTORY],
-        orderBy: ['timestamp'],
-        orderMode: OrderingMode.Desc,
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['event_access'], values: ['EXISTS'] }],
-          filterGroups: [],
-        },
-        noFiltersChecking: true,
-      });
-      let lastEventId = '0-0';
-      if (histoElements.length > 0) {
-        const histoDate = histoElements[0].timestamp;
-        lastEventId = `${utcDate(histoDate).unix() * 1000}-0`;
-      }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        await activityHandler(lastEventId);
+        await activityHandler();
       }, SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {

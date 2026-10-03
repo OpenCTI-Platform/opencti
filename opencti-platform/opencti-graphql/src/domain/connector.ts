@@ -1,4 +1,5 @@
 import { v5 as uuidv5 } from 'uuid';
+import semver from 'semver';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -68,7 +69,7 @@ import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
+import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -262,6 +263,14 @@ export const managedConnectorAdd = async (
   // Get contract
   const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
   if (isEmptyField(targetContract)) {
+    // Distinguish an unknown connector from a connector that the platform version cannot run
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    if (imageContracts.length > 0) {
+      throw FunctionalError('This connector is not compatible with the platform version', {
+        image: input.manager_contract_image,
+        platformVersion: PLATFORM_VERSION,
+      });
+    }
     throw UnsupportedError('Target contract not found');
   }
   if (!targetContract.manager_supported) {
@@ -313,6 +322,7 @@ export const managedConnectorAdd = async (
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(targetContract),
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,
@@ -345,6 +355,13 @@ export const registerConnector = async (
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
+  const { version = null, slug = null } = connectorData;
+  if (!isEmptyField(version) && !semver.valid(version) && version !== 'rolling') {
+    logApp.warn('[OPENCTI-MODULE] Connector version is not a valid format', {
+      version,
+      module: 'connector',
+    });
+  }
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -362,6 +379,8 @@ export const registerConnector = async (
       playbook_compatible,
       listen_callback_uri,
       xtm_one_intent,
+      version,
+      slug,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
@@ -386,6 +405,8 @@ export const registerConnector = async (
     playbook_compatible,
     listen_callback_uri,
     xtm_one_intent,
+    version,
+    slug,
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,

@@ -82,8 +82,10 @@ const Dialog = ({
 
       {/* This element scrolls, so a field flush with the edge loses the focus ring the
           library paints 4px outside it; `&&` because MUI's `.MuiDialogTitle-root + &`
-          outranks a plain `sx`. See fds-migration/MIGRATION-DECISIONS.md#dialog-padding-keys */}
-      <DialogContent {...contentProps} sx={{ px: 3, '&&': { py: '4px', my: '-4px' } }}>
+          outranks a plain `sx`. See fds-migration/MIGRATION-DECISIONS.md#dialog-padding-keys
+          `position: relative` keeps absolutely positioned descendants inside this scroller;
+          otherwise they anchor to the (relative) paper and make it scroll too. */}
+      <DialogContent {...contentProps} sx={{ px: 3, position: 'relative', '&&': { py: '4px', my: '-4px' } }}>
         {children}
       </DialogContent>
     </MUIDialog>

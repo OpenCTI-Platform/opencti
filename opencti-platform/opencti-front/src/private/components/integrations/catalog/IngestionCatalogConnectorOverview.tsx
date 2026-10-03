@@ -2,6 +2,7 @@ import Button from '@common/button/Button';
 import { Launch } from 'mdi-material-ui';
 import Grid from '@mui/material/Grid2';
 import { IngestionConnector } from '@components/integrations/catalog/types';
+import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
@@ -11,11 +12,13 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
+  const latestCompatibleVersion = connector.compatibility?.latest_compatible_version ?? null;
 
   return (
     <Grid container spacing={2} sx={{ marginBottom: 20 }}>
       <Grid size={{ xs: 12, md: 8 }}>
         <Card title={t_i18n('Overview')}>
+          <IngestionCatalogCompatibilityAlert connector={connector} sx={{ marginBottom: 2 }} />
           <MarkdownDisplay content={connector.description} />
         </Card>
       </Grid>
@@ -52,6 +55,13 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               >
                 {t_i18n('Vendor contact')}
               </Button>
+            </Grid>
+
+            <Grid size={12}>
+              <Label>
+                {t_i18n('Latest Compatible Version')}
+              </Label>
+              {latestCompatibleVersion ?? t_i18n('None')}
             </Grid>
 
             <Grid size={12}>

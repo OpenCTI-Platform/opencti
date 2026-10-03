@@ -1,6 +1,6 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
-import { userAddRelation } from '../domain/user';
+import { userAddRelation } from '../modules/user/user-domain';
 import { groupAddRelation } from '../domain/group';
 import { fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';

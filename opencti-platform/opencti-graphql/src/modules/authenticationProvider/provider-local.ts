@@ -1,5 +1,5 @@
 import LocalStrategy from 'passport-local';
-import { login } from '../../domain/user';
+import { login } from '../user/user-domain';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import passport from 'passport';
 import { AuthType, EnvStrategyType, LOCAL_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';

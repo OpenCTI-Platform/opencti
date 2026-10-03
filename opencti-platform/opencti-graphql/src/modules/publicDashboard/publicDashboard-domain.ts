@@ -42,7 +42,7 @@ import {
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
-import { bookmarks, checkUserCanShareMarkings } from '../../domain/user';
+import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
@@ -220,7 +220,7 @@ export const addPublicDashboard = async (
     const markingLevels = await Promise.all(input.allowed_markings_ids.map((id) => {
       return findMarkingDefinitionById(context, user, id);
     }));
-    await checkUserCanShareMarkings(context, user, markingLevels);
+    await checkUserCanShareMarkings(context, user, markingLevels as StoreMarkingDefinition[]);
   }
 
   const uriKey = sanitizePublicDashboardUriKey(input.uri_key);

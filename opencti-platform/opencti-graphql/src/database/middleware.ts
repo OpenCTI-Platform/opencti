@@ -170,6 +170,7 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -214,6 +215,8 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { computeCreationProvenance, recordUpsertProvenance, removeProvenanceInputs } from '../modules/provenance/provenance-write';
+import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../modules/provenance/provenance-upsert';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -236,7 +239,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -1885,6 +1888,10 @@ const mergeEntitiesRaw = async (
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
       }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
+      }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
         const concatSource = mergedEntityCurrentFieldValue as any[] ?? [];
@@ -2031,6 +2038,7 @@ export const mergeEntities = async (
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
     }
+    await mergeProvenanceOnEntitiesMerge(context, user, mergedInstance, sources);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
@@ -2492,6 +2500,8 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
+  skipUserIndividualSync?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2569,12 +2579,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2859,7 +2863,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {
@@ -2875,7 +2885,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user) && !opts.skipUserIndividualSync) {
       const args = {
         filters: {
           mode: FilterMode.And,
@@ -3156,7 +3166,11 @@ const upsertEntityRule = async (
   logApp.debug('Upsert inferred entity', { input });
   const patch = await createUpsertRulePatch(instance, input, opts);
   const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  const result = await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  if (!opts.fromRuleDeletion && element) {
+    await recordUpsertProvenance(context, RULE_MANAGER_USER, element, { input, confidence: patch.confidence ?? instance.confidence, fromRule });
+  }
+  return result;
 };
 const upsertRelationRule = async (
   context: AuthContext,
@@ -3183,7 +3197,11 @@ const upsertRelationRule = async (
   // 03 - Create the patch
   const patch = await createUpsertRulePatch(instance, input, opts);
   const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  const result = await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  if (!fromRuleDeletion && element) {
+    await recordUpsertProvenance(context, RULE_MANAGER_USER, element, { input, confidence: patch.confidence ?? instance.confidence, fromRule });
+  }
+  return result;
 };
 // endregion
 
@@ -3289,6 +3307,7 @@ const upsertElement = async (
     }
     resolvedElement = finalResolvedElement;
   }
+  removeProvenanceInputs(basePatch);
 
   // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
   if ((resolvedElement as Record<string, any>).decay_exclusion_applied_rule) {
@@ -3323,16 +3342,32 @@ const upsertElement = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
-  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  const resolvedInputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  // Procedures preservation and conflicts tracking, computed from the resolution outcome
+  const preparedProvenance = await prepareUpsertProvenance(context, user, resolvedElement, type, {
+    basePatch,
+    updatePatch,
+    inputs: resolvedInputs,
+    isConfidenceMatch: confidenceForUpsert.isConfidenceMatch,
+    confidence: confidenceForUpsert.confidenceLevelToApply,
+  });
+  const { inputs } = preparedProvenance;
 
   // -- If modifications need to be done, add updated_at and modified
+  let upsertResult;
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
+    upsertResult = await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
+  } else {
+    // -- No modification applied
+    upsertResult = { element: resolvedElement, event: null, isCreation: false };
   }
-  // -- No modification applied
-  return { element: resolvedElement, event: null, isCreation: false };
+  // -- Whatever the resolution, the writing source asserted this element
+  if (preparedProvenance.record) {
+    await recordUpsertProvenance(context, user, resolvedElement, preparedProvenance.record);
+  }
+  return upsertResult;
 };
 
 export const getExistingRelations = async (
@@ -3411,7 +3446,7 @@ export const createRelationRaw = async (
   const { fromId, toId, relationship_type: relationshipType } = rawInput;
 
   // region confidence control
-  const input = structuredClone(rawInput);
+  const input = opts.restore ? structuredClone(rawInput) : removeProvenanceInputs(structuredClone(rawInput));
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, relationshipType);
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
@@ -3524,6 +3559,14 @@ export const createRelationRaw = async (
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
+    const relationProvenance = await computeCreationProvenance(context, user, relationshipType, resolvedInput, {
+      fromRule,
+      restore: opts.restore,
+      procedures: await creationProceduresBuilder(context, relationshipType, resolvedInput),
+    });
+    if (relationProvenance) {
+      dataRel.element = { ...dataRel.element, ...relationProvenance };
+    }
     // Index the created element
     lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataRel);
@@ -3725,7 +3768,7 @@ const internalCreateEntityRaw = async (
   opts: CreateEntityRawOpts = {},
 ) => {
   // region confidence control
-  const input = { ...rawInput };
+  const input = opts.restore ? { ...rawInput } : removeProvenanceInputs({ ...rawInput });
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming
@@ -3923,6 +3966,10 @@ const internalCreateEntityRaw = async (
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
+    const entityProvenance = await computeCreationProvenance(context, user, type, resolvedInput, { fromRule, restore: opts.restore });
+    if (entityProvenance) {
+      dataEntity.element = { ...dataEntity.element, ...entityProvenance };
+    }
 
     await rewriteEmbeddedDataUriImagesInDescriptions(context, user, dataEntity.element, {
       entityType: type,
