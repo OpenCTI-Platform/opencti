@@ -17,6 +17,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
+import InvestigateWithAI from '@components/investigation_runs/InvestigateWithAI';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -189,6 +190,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               ),
             }}
+            extraActions={location.pathname === `${basePath}/overview` && <InvestigateWithAI subjectId={indicator.id} />}
           />
         </div>
       ) : (

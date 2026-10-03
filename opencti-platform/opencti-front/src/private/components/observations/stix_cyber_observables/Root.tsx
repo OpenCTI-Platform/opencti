@@ -7,6 +7,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootStixCyberObservableSubscription } from '@components/observations/stix_cyber_observables/__generated__/RootStixCyberObservableSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
+import InvestigateWithAI from '@components/investigation_runs/InvestigateWithAI';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
@@ -176,6 +177,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                 />
               ),
             }}
+            extraActions={location.pathname === `${basePath}/overview` && <InvestigateWithAI subjectId={stixCyberObservable.id} />}
           />
         </div>
       ) : (
