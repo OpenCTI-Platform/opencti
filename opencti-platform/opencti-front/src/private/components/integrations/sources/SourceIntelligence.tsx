@@ -4,7 +4,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
-import { DashboardOutlined, RefreshOutlined } from '@mui/icons-material';
+import { DashboardOutlined, RefreshOutlined, SettingsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -16,7 +16,7 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import notifyMutationOutcome from './notifyMutationOutcome';
-import useGranted, { EXPLORE_EXUPDATE, INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, INGESTION_SETINGESTIONS, MODULES_MODMANAGE, SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
 import { paperBg, paperBorder } from '../paperSurface';
@@ -24,7 +24,7 @@ import SourcesLeaderboard from './SourcesLeaderboard';
 import SourcesOverlap from './SourcesOverlap';
 import CollectionGaps from './CollectionGaps';
 import SourceRecommendations from './SourceRecommendations';
-import SourceIntelligenceSettings from './SourceIntelligenceSettings';
+import { SOURCE_INTELLIGENCE_SETTINGS_PATH } from './sourceIntelligenceUtils';
 import { SourceIntelligenceStatusQuery } from './__generated__/SourceIntelligenceStatusQuery.graphql';
 
 export const sourceIntelligenceStatusQuery = graphql`
@@ -63,8 +63,8 @@ const sourceIntelligenceDashboardCreateMutation = graphql`
   }
 `;
 
-export type SourceIntelligenceView = 'leaderboard' | 'overlap' | 'gaps' | 'recommendations' | 'settings';
-const SOURCE_INTELLIGENCE_VIEWS: SourceIntelligenceView[] = ['leaderboard', 'overlap', 'gaps', 'recommendations', 'settings'];
+export type SourceIntelligenceView = 'leaderboard' | 'overlap' | 'gaps' | 'recommendations';
+const SOURCE_INTELLIGENCE_VIEWS: SourceIntelligenceView[] = ['leaderboard', 'overlap', 'gaps', 'recommendations'];
 
 interface SourceIntelligenceHeaderProps {
   queryRef: PreloadedQuery<SourceIntelligenceStatusQuery>;
@@ -78,6 +78,7 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
   const { sourceIntelligenceStatus: status } = usePreloadedQuery(sourceIntelligenceStatusQuery, queryRef);
   const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const canCreateDashboard = useGranted([EXPLORE_EXUPDATE]);
+  const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const [recomputeRequested, setRecomputeRequested] = useState(false);
   const [commitRecompute, recomputing] = useApiMutation(sourceIntelligenceRecomputeMutation);
   const [commitDashboard, creatingDashboard] = useApiMutation(sourceIntelligenceDashboardCreateMutation);
@@ -142,6 +143,17 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
               {t_i18n('Create the Intelligence ROI dashboard')}
             </Button>
           )}
+          {canCustomize && (
+            <Button
+              variant="secondary"
+              startIcon={<SettingsOutlined />}
+              component={Link}
+              to={SOURCE_INTELLIGENCE_SETTINGS_PATH}
+              data-testid="source-intelligence-settings"
+            >
+              {t_i18n('Settings')}
+            </Button>
+          )}
           {canManage && (
             <Button
               startIcon={<RefreshOutlined />}
@@ -197,11 +209,14 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Source Intelligence'));
   const isEnterpriseEdition = useEnterpriseEdition();
-  const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const statusQueryRef = useQueryLoading<SourceIntelligenceStatusQuery>(sourceIntelligenceStatusQuery, {});
   const view = (forcedView ?? viewParam ?? 'leaderboard') as SourceIntelligenceView;
 
-  if (!SOURCE_INTELLIGENCE_VIEWS.includes(view) || (view === 'settings' && !canManage)) {
+  // The settings moved to Settings > Customization
+  if ((view as string) === 'settings') {
+    return <Navigate to={SOURCE_INTELLIGENCE_SETTINGS_PATH} replace={true} />;
+  }
+  if (!SOURCE_INTELLIGENCE_VIEWS.includes(view)) {
     return <Navigate to="/dashboard/integrations/sources" replace={true} />;
   }
 
@@ -261,11 +276,6 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
                 </Stack>
               </Link>
             </TabsTrigger>
-            {canManage && (
-              <TabsTrigger value="settings" asChild>
-                <Link to={viewLink('settings')} data-testid="source-intelligence-tab-settings">{t_i18n('Settings')}</Link>
-              </TabsTrigger>
-            )}
           </TabsList>
         </Tabs>
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
@@ -273,7 +283,6 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
           {view === 'overlap' && <SourcesOverlap />}
           {view === 'gaps' && <CollectionGaps />}
           {view === 'recommendations' && <SourceRecommendations />}
-          {view === 'settings' && <SourceIntelligenceSettings />}
         </Suspense>
       </PageContainer>
     </div>

@@ -119,7 +119,7 @@ Click **Create the Intelligence ROI dashboard** in the Sources header to create 
 
 ## Settings
 
-The **Settings** tab gives access to:
+The settings are in **Settings > Customization > Source intelligence** (also reachable from the **Settings** button of the Sources area) and require the customization capability. They give access to:
 
 - the computation: on or off, daily recompute hour (UTC), history backfill, snapshot retention, maximum number of scanned objects, false positive labels, corroboration and overlap parameters, author and analyst discovery,
 - the value score weights,

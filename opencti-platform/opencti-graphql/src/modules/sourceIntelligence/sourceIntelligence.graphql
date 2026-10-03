@@ -567,7 +567,7 @@ type Query {
     sourceId: ID
   ): SourceRecommendationConnection @auth(for: [MODULES, INGESTION])
   sourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES, INGESTION])
-  sourceIntelligenceSettings: SourceIntelligenceSettings @auth(for: [MODULES, INGESTION])
+  sourceIntelligenceSettings: SourceIntelligenceSettings @auth(for: [MODULES, INGESTION, SETTINGS_SETCUSTOMIZATION])
   sourceIntelligenceStatus: SourceIntelligenceStatus! @auth(for: [MODULES, INGESTION])
   # Dashboard widgets of the Sources perspective
   sourceScorecardMetrics: [SourceScorecardMetric!]! @auth(for: [MODULES, INGESTION])
@@ -609,7 +609,7 @@ type Mutation {
   revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
-  sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
+  sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [SETTINGS_SETCUSTOMIZATION, MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceRecompute: Boolean @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceDashboardCreate(name: String): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }

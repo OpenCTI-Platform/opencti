@@ -6,7 +6,8 @@ const SOURCES_URL = '/dashboard/integrations/sources';
  * Content of the test
  * -------------------
  * Open Integrations > Sources and request a recomputation
- * Navigate through the leaderboard, overlap, collection gaps, recommendations and settings views
+ * Navigate through the leaderboard, overlap, collection gaps and recommendations views
+ * Open the settings under Settings > Customization from the Sources area
  * Open the scorecard page of a scored source when the manager already scored one
  * Edit a setting and restore it
  */
@@ -47,8 +48,10 @@ test('Source intelligence navigation and settings', { tag: ['@sourceIntelligence
   await expect(page.getByTestId('source-recommendations-list').or(page.getByTestId('source-recommendations-empty'))).toBeVisible();
   // endregion
 
-  // region Settings
-  await page.getByTestId('source-intelligence-tab-settings').click();
+  // region Settings, under Settings > Customization
+  await page.getByTestId('source-intelligence-settings').click();
+  await expect(page).toHaveURL(/\/dashboard\/settings\/customization\/source_intelligence/);
+  await expect(page.getByTestId('source-intelligence-settings-page')).toBeVisible();
   const form = page.getByTestId('source-intelligence-settings-form');
   await expect(form).toBeVisible();
   const submit = page.getByTestId('source-intelligence-settings-submit');
