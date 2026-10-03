@@ -652,7 +652,6 @@ const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser
 
 // When deleting a draft, we need to move all users that are still in the draft context back to the live context
 const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser, draftId: string) => {
-  await runDraftClosureHandlers(context, draftId);
   const usersWithDraftContext = await findAllUsersWithDraftContext(context, user, draftId);
   if (usersWithDraftContext.length > 0) {
     await elDeleteDraftContextFromUsers(context, user, draftId);
@@ -685,6 +684,7 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   if (!hasEditOrManage || !hasDeleteCapability) {
     throw ForbiddenAccess();
   }
+  await runDraftClosureHandlers(context, id);
   await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
@@ -785,6 +785,7 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
     throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
+  await runDraftClosureHandlers(context, draft_id);
   const stixBundle = await buildDraftValidationBundle(context, user, draft_id);
   const jsonBundle = JSON.stringify(stixBundle);
   const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');

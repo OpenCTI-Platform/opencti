@@ -37,7 +37,14 @@ import {
   type SourceOverlapShare,
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
-import { PROVENANCE_ATTRIBUTE, PROVENANCE_LAST_ASSERTED_AT, type ProvenanceDocument, resolveDocumentAssertions, type SourceResolver } from './sourceIntelligence-provenance';
+import {
+  PROVENANCE_ATTRIBUTE,
+  PROVENANCE_LAST_ASSERTED_AT,
+  type ProvenanceDocument,
+  type ResolvedAssertion,
+  resolveDocumentAssertions,
+  type SourceResolver,
+} from './sourceIntelligence-provenance';
 import {
   computeCostPerActionable,
   computeFreshnessHours,
@@ -318,6 +325,31 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
 };
 // endregion
 
+export interface AssertionActivity extends ResolvedAssertion {
+  start: number;
+  end: number;
+}
+
+/**
+ * Span of the assertions of one source on one object, bounded by the computation time. Undated assertions fall back
+ * to the creation and last update of the object.
+ */
+export const toAssertionActivity = (assertion: ResolvedAssertion, docCreated: number, docUpdated: number, asOf: number): AssertionActivity => ({
+  ...assertion,
+  start: assertion.firstAt ?? docCreated,
+  end: Math.min(assertion.lastAt ?? docUpdated, asOf),
+});
+
+/**
+ * How an object counts for one source in the period starting at `windowStart`: in its volume when the source asserted
+ * it during the period, among its new objects when the first assertion falls in the period, in its last-day volume.
+ */
+export const periodCounting = (activity: AssertionActivity, windowStart: number, asOf: number) => ({
+  inVolume: activity.end >= windowStart,
+  isNew: activity.firstAt !== null && activity.firstAt >= windowStart,
+  lastDay: activity.end >= asOf - DAY_MS,
+});
+
 /**
  * Account one stored document in every period it belongs to, for every source having asserted it.
  */
@@ -332,7 +364,7 @@ export const processDocument = (
   const docCreated = doc.created_at ? new Date(doc.created_at).getTime() : asOf;
   const docUpdated = doc.updated_at ? new Date(doc.updated_at).getTime() : docCreated;
   const assertions = resolveDocumentAssertions(doc, resolver)
-    .map((assertion) => ({ ...assertion, start: assertion.firstAt ?? docCreated, end: Math.min(assertion.lastAt ?? docUpdated, asOf) }))
+    .map((assertion) => toAssertionActivity(assertion, docCreated, docUpdated, asOf))
     .filter((assertion) => assertion.start <= asOf);
   if (assertions.length === 0) {
     return;
@@ -341,19 +373,20 @@ export const processDocument = (
     const period = SCORECARD_PERIODS[p];
     const windowStart = asOf - SCORECARD_PERIOD_DAYS[period] * DAY_MS;
     // Peers, uniqueness and lead time of a period only consider the sources asserting the object during that period
-    const inWindow = assertions.filter((assertion) => assertion.end >= windowStart);
+    const inWindow = assertions.filter((assertion) => periodCounting(assertion, windowStart, asOf).inVolume);
     const distinctSources = inWindow.length;
     const otherSources = distinctSources - 1;
     for (let i = 0; i < inWindow.length; i += 1) {
       const assertion = inWindow[i];
+      const counting = periodCounting(assertion, windowStart, asOf);
       const acc = accumulatorOf(state, period, assertion.sourceId);
       acc.volume_total += 1;
       if (signals.isRelationship) acc.volume_relationships += 1;
       if (signals.isEntity) acc.volume_entities += 1;
       if (signals.isIndicator) acc.volume_indicators += 1;
       if (signals.isObservable) acc.volume_observables += 1;
-      if (assertion.firstAt !== null && assertion.firstAt >= windowStart) acc.new_objects += 1;
-      if (assertion.end >= asOf - DAY_MS) acc.volume_last_day += 1;
+      if (counting.isNew) acc.new_objects += 1;
+      if (counting.lastDay) acc.volume_last_day += 1;
       // Uniqueness and corroboration
       if (distinctSources === 1) acc.unique_count += 1;
       if (otherSources >= settings.corroboration_min_other_sources) acc.corroborated_count += 1;

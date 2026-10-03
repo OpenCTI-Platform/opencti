@@ -124,7 +124,7 @@ export const resolveFeedQuarantineDraftId = async (context: AuthContext, ingesti
 };
 
 /**
- * Validating or deleting a quarantine draft renews it before its users are moved back to the live context, so the
+ * Validating or deleting a quarantine draft renews it before the draft content is read or removed, so the
  * connector user of a quarantined source goes straight to the new draft and never writes in the live knowledge.
  */
 export const renewQuarantinesOfClosingDraft = async (context: AuthContext, draftId: string) => {

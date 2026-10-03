@@ -105,6 +105,8 @@ For each recommendation you can:
 - **Dismiss** it, with an optional reason. A dismissed recommendation is not proposed again before a cooldown (30 days by default).
 - **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
+While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed.
+
 A recommendation that no longer matches the situation is withdrawn automatically. Every application, dismissal and revert is recorded in the [activity logs](../administration/audit/configuration.md).
 
 ### Autonomy policy
@@ -126,4 +128,4 @@ The settings are in **Settings > Customization > Source intelligence** (also rea
 - the recommendation thresholds and tuning steps,
 - the autonomy policy and the collection gap parameters (EE).
 
-Scorecards are computed once a day. Use **Recompute** in the Sources header to request a computation in the next minutes after a change.
+Scorecards are computed once a day. Between two computations, the volume counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Ratios, scores and medians are refreshed by the daily computation. Use **Recompute** in the Sources header to request a computation in the next minutes after a change.
