@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import DeployedIntegrationLine from './DeployedIntegrationLine';
 import { DeployedIntegrationItem } from './useDeployedIntegrations';
@@ -39,5 +39,11 @@ describe('DeployedIntegrationLine', () => {
     const { user } = testRender(<DeployedIntegrationLine item={item} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
     await user.click(screen.getByText('Active'));
     expect(window.location.pathname).toBe('/dashboard/integrations/deployed');
+  });
+
+  it('keeps a middle click on the status cell from opening the line link in a new tab', () => {
+    testRender(<DeployedIntegrationLine item={item} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
+    const middleClick = new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 });
+    expect(fireEvent(screen.getByText('Active'), middleClick)).toBe(false);
   });
 });

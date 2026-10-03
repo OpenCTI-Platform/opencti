@@ -98,6 +98,32 @@ describe('stopLinkNavigation', () => {
     expect(screen.getByTestId('path')).toHaveTextContent('/card');
   });
 
+  const renderNestedAction = () => {
+    const outsideAuxClick = vi.fn();
+    renderInRouter(
+      <div onAuxClick={outsideAuxClick}>
+        <Link to="/card">
+          <div onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+            <button type="button">deploy</button>
+          </div>
+        </Link>
+      </div>,
+    );
+    return { action: screen.getByRole('button', { name: 'deploy' }), outsideAuxClick };
+  };
+
+  it('keeps a middle click on a nested action from opening the enclosing link in a new tab', () => {
+    const { action, outsideAuxClick } = renderNestedAction();
+    expect(auxClick(action, 1)).toBe(false);
+    expect(outsideAuxClick).not.toHaveBeenCalled();
+  });
+
+  it('leaves the right button alone on a nested action', () => {
+    const { action, outsideAuxClick } = renderNestedAction();
+    expect(auxClick(action, 2)).toBe(true);
+    expect(outsideAuxClick).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the default of a portal the action mounts, and still never follows the link', () => {
     renderInRouter(
       <Link to="/card">

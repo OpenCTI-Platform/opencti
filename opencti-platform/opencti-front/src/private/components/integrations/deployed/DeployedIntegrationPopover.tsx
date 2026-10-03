@@ -200,7 +200,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   }
 
   return (
-    <div onClick={stopLinkNavigation}>
+    <div onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
       <IconButton
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}

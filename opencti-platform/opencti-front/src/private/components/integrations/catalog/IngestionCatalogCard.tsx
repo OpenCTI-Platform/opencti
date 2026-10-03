@@ -124,6 +124,7 @@ const ConnectorActions = ({
           direction="row"
           gap={1}
           onClick={stopLinkNavigation}
+          onAuxClick={stopLinkNavigation}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (

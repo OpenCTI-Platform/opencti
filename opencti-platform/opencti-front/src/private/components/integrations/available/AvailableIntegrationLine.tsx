@@ -251,7 +251,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         )}
       </Box>
       {/* Actions column. */}
-      <Box onClick={stopLinkNavigation} sx={cellSx('actions')}>
+      <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('actions')}>
         {item.builtIn ? (
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <Stack direction="row" alignItems="center">

@@ -32,12 +32,15 @@ export const navigationClickHandlers = (path: string, navigate: (path: string) =
   },
 });
 
-// For the actions nested in a card or row rendered as a link: their clicks
-// must neither bubble to the link nor follow it. Only a click inside the link
-// in the DOM has its default cancelled: React also bubbles here the clicks of
-// the portals (menus, dialogs, drawers) an action mounts, and those, like any
-// click outside a link, keep theirs (checkbox toggle, form submit, file picker).
+// For the actions nested in a card or row rendered as a link, as both onClick
+// and onAuxClick (a middle click only fires auxclick, and would open the link
+// in a new tab): their clicks must neither bubble to the link nor follow it.
+// Only a click inside the link in the DOM has its default cancelled: React also
+// bubbles here the clicks of the portals (menus, dialogs, drawers) an action
+// mounts, and those, like any click outside a link, keep theirs (checkbox
+// toggle, form submit, file picker).
 export const stopLinkNavigation = (event: MouseEvent<HTMLElement>) => {
+  if (event.type === 'auxclick' && event.button !== 1) return;
   event.stopPropagation();
   const { currentTarget } = event;
   if (currentTarget.contains(event.target as Node) && currentTarget.closest('a[href]')) {

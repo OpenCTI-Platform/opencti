@@ -248,7 +248,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={stopLinkNavigation}>
+          <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
             {statusChip}
           </Box>
         </Stack>
