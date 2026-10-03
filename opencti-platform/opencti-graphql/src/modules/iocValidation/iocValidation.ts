@@ -4,7 +4,6 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import convertIocValidationRequestToStix from './iocValidation-converter';
 import {
   ENTITY_TYPE_IOC_VALIDATION_REQUEST,
@@ -86,18 +85,6 @@ const IOC_VALIDATION_REQUEST_DEFINITION: ModuleDefinition<StoreEntityIocValidati
     { name: 'external_uri', label: 'External URI', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'work_id', label: 'Work', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    {
-      name: 'requested_by',
-      label: 'Requested by',
-      type: 'string',
-      format: 'id',
-      entityTypes: [ENTITY_TYPE_USER],
-      mandatoryType: 'internal',
-      editDefault: false,
-      multiple: false,
-      upsert: false,
-      isFilterable: true,
-    },
     { name: 'results_summary', label: 'Validation results summary', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'iocs', label: 'Validated IOCs', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'pairs', label: 'Validated deployments', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },

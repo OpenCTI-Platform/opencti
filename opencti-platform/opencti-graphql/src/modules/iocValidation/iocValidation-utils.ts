@@ -23,6 +23,15 @@ export const isIocValidationTestKind = (value: unknown): value is IocValidationT
   return typeof value === 'string' && (IOC_VALIDATION_TEST_KINDS as readonly string[]).includes(value);
 };
 
+/**
+ * The requester of a validation request is the user who created it.
+ * It is read from creator_id rather than a dedicated attribute, so a user merge rewrites it with every other creator.
+ */
+export const requesterIdOf = (request: { creator_id?: string | string[] | null }) => {
+  const creators = Array.isArray(request.creator_id) ? request.creator_id : [request.creator_id];
+  return creators.find((id): id is string => typeof id === 'string' && id.length > 0);
+};
+
 interface ExtractedObservable {
   type: string;
   value?: string;

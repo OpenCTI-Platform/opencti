@@ -2,10 +2,7 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
-import {
-  flagExpiredDeployments,
-  refreshIndicatorDeploymentCounters,
-} from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import { flagExpiredDeployments, refreshIndicatorDeploymentCounters } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { stixLoadById } from '../../../../src/database/middleware';
 
 const INDICATOR_ADD = gql`
@@ -273,7 +270,9 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId, platformId, status: 'active' } });
     await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_REMOVE, variables: { id: deploymentId } });
     // Grace period of 0 ms: the withdrawal is already older than the threshold
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
     const flagged = await flagExpiredDeployments(testContext, ADMIN_USER, 0, 100);
     expect(flagged).toBeGreaterThanOrEqual(1);
     const list = await queryAsAdminWithSuccess({

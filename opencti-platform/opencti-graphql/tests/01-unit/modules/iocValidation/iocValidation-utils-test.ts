@@ -4,6 +4,7 @@ import {
   extractIocFromIndicator,
   isIocValidationTestKind,
   isSummaryComplete,
+  requesterIdOf,
   resolveTestKind,
   summarizeValidationResults,
 } from '../../../../src/modules/iocValidation/iocValidation-utils';
@@ -122,5 +123,19 @@ describe('buildIocValidationRequestForOpenAEV', () => {
       type: 'Ioc-Validation-Request',
     });
     expect(object.description).toBeUndefined();
+  });
+});
+
+describe('IOC validation requester', () => {
+  it('should be the first creator of the request', () => {
+    expect(requesterIdOf({ creator_id: ['user-1', 'user-2'] })).toEqual('user-1');
+    expect(requesterIdOf({ creator_id: 'user-3' })).toEqual('user-3');
+  });
+
+  it('should be undefined when the request has no creator', () => {
+    expect(requesterIdOf({ creator_id: [] })).toBeUndefined();
+    expect(requesterIdOf({ creator_id: null })).toBeUndefined();
+    expect(requesterIdOf({ creator_id: ['', 'user-4'] })).toEqual('user-4');
+    expect(requesterIdOf({})).toBeUndefined();
   });
 });

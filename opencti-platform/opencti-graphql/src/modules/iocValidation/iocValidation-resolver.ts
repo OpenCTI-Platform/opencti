@@ -13,7 +13,7 @@ import {
   requestIndicatorsValidation,
   updateIocValidationRequestStatus,
 } from './iocValidation-domain';
-import { emptyResultsSummary } from './iocValidation-utils';
+import { emptyResultsSummary, requesterIdOf } from './iocValidation-utils';
 
 const iocValidationResolvers: Resolvers = {
   Query: {
@@ -30,7 +30,10 @@ const iocValidationResolvers: Resolvers = {
     skipped: (request, _, context) => filterReadableSkipped(context, context.user!, request as never) as never,
     deployments: (request, _, context) => loadRequestDeployments(context, context.user!, request as never) as never,
     connector: (request, _, context) => loadRequestConnector(context, context.user!, request as never) as never,
-    requested_by: (request, _, context) => (request.requested_by ? loadCreator(context, context.user!, request.requested_by) : null) as never,
+    requested_by: (request, _, context) => {
+      const requesterId = requesterIdOf(request as never);
+      return (requesterId ? loadCreator(context, context.user!, requesterId) : null) as never;
+    },
   },
   Mutation: {
     indicatorsRequestValidation: (_, args, context) => requestIndicatorsValidation(context, context.user!, args) as never,
