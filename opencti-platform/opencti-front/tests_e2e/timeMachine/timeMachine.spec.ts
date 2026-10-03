@@ -25,22 +25,31 @@ test('Time machine: view an entity as of a past date and diff it', { tag: ['@ce'
   await intrusionSetPage.getItemFromList(name).click();
   await expect(intrusionSetDetailsPage.getIntrusionSetDetailsPage()).toBeVisible();
 
-  // The "View as of" mode opens 30 days back: the entity did not exist yet
-  await timeMachine.getAsOfToggle().click();
-  await expect(timeMachine.getAsOfOverview()).toBeVisible();
-  await expect(timeMachine.getAsOfOverview().getByText('Read-only view of this entity as it was on')).toBeVisible();
+  // "View as of" from the more actions menu opens the Changes tab 30 days back: the entity did not exist yet
+  await timeMachine.openViewAsOfFromMenu();
+  await expect(page).toHaveURL(/\/changes\?section=as-of/);
+  await expect(timeMachine.getAsOfSection()).toBeVisible();
+  await expect(timeMachine.getAsOfSection().getByText('Read-only view of this entity as it was on')).toBeVisible();
   await expect(timeMachine.getSlider()).toBeVisible();
   await expect(timeMachine.getNotExistingMessage()).toBeVisible();
   await timeMachine.backToCurrentKnowledge();
-  await expect(timeMachine.getAsOfOverview()).toBeHidden();
+  await expect(page).toHaveURL(/\/overview/);
+  await expect(timeMachine.getAsOfSection()).toBeHidden();
 
-  // The Diff tab covers the last 30 days by default: the creation is part of the changes
-  await timeMachine.goToDiffTab();
-  await expect(page).toHaveURL(/\/diff/);
+  // The Changes tab compares the last 30 days by default: the creation is part of the changes
+  await timeMachine.goToChangesTab();
+  await expect(page).toHaveURL(/\/changes/);
   await expect(timeMachine.getPeriodSelector()).toBeVisible();
   await expect(timeMachine.getDiff()).toBeVisible();
   await expect(timeMachine.getDiff().getByText('This entity did not exist at the start of the period, its creation is part of the changes.')).toBeVisible();
   await expect(timeMachine.getDiff().getByRole('table', { name: 'Attribute changes' })).toContainText(name);
+
+  // Both sections of the Changes tab are one click away from each other
+  await timeMachine.goToChangesSection('View as of');
+  await expect(timeMachine.getAsOfSection()).toBeVisible();
+  await expect(timeMachine.getDiff()).toBeHidden();
+  await timeMachine.goToChangesSection('Compare dates');
+  await expect(timeMachine.getDiff()).toBeVisible();
 
   // Export of the diff
   const downloadPromise = page.waitForEvent('download');
@@ -60,9 +69,9 @@ test('Time machine: compute the landscape changes of intrusion sets and drill do
   await expect(timeMachine.getLandscapeChangesResults()).toBeVisible({ timeout: 60000 });
   await expect(timeMachine.getLandscapeEntities()).toBeVisible();
 
-  // Drill down: each changed entity opens its Diff tab on the same period
+  // Drill down: each changed entity opens its Changes tab on the same period
   await timeMachine.getLandscapeEntities().getByRole('link').first().click();
-  await expect(page).toHaveURL(/\/diff\?from=.+&to=.+/);
+  await expect(page).toHaveURL(/\/changes\?section=compare&from=.+&to=.+/);
   await expect(timeMachine.getDiff()).toBeVisible();
 });
 

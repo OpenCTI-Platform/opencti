@@ -1,12 +1,10 @@
 import { ReactElement, ReactNode } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
-import { TimeMachineProvider } from '@components/common/time_machine/TimeMachineContext';
-import TimeMachineOverview, { TimeMachineAsOfButton } from '@components/common/time_machine/TimeMachineOverview';
-import EntityDiffTab from '@components/common/time_machine/EntityDiffTab';
-import { isPathOverview } from '../../../../utils/tabUtils';
+import TimeMachineOverview from '@components/common/time_machine/TimeMachineOverview';
+import EntityChangesTab from '@components/common/time_machine/EntityChangesTab';
 
 interface StixDomainObjectMainProps {
   entity: { id: string; entity_type: string };
@@ -24,27 +22,20 @@ const StixDomainObjectMain = ({
   pages,
   extraRoutes,
 }: StixDomainObjectMainProps) => {
-  const location = useLocation();
-  // Every entity with a history gets its time machine: the Diff tab and the "View as of" mode of the overview
+  // Every entity with a history gets its time machine: the Changes tab (compare dates, view as of)
+  // and what is new since the last visit on the overview
   const withTimeMachine = pages.history !== undefined;
-  const allPages = withTimeMachine && pages.diff === undefined
-    ? { ...pages, diff: <EntityDiffTab entityId={entity.id} /> }
+  const allPages = withTimeMachine && pages.changes === undefined
+    ? { ...pages, changes: <EntityChangesTab entityId={entity.id} basePath={basePath} /> }
     : pages;
   const tabs = Object.keys(allPages) as StixDomainObjectTabsBoxTab[];
-  const isOverview = isPathOverview(location.pathname, basePath);
-  const actions = withTimeMachine && isOverview ? (
-    <>
-      {extraActions}
-      <TimeMachineAsOfButton />
-    </>
-  ) : extraActions;
   return (
-    <TimeMachineProvider>
+    <>
       <StixDomainObjectTabsBox
         entityType={entity.entity_type}
         basePath={basePath}
         tabs={tabs}
-        extraActions={actions}
+        extraActions={extraActions}
       />
       <Routes>
         <Route
@@ -75,8 +66,8 @@ const StixDomainObjectMain = ({
         {tabs.includes('files') && (
           <Route path="/files" element={allPages.files} />
         )}
-        {tabs.includes('diff') && (
-          <Route path="/diff" element={allPages.diff} />
+        {tabs.includes('changes') && (
+          <Route path="/changes" element={allPages.changes} />
         )}
         {tabs.includes('history') && (
           <Route path="/history" element={allPages.history} />
@@ -94,7 +85,7 @@ const StixDomainObjectMain = ({
           }
         />
       </Routes>
-    </TimeMachineProvider>
+    </>
   );
 };
 

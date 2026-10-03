@@ -60,7 +60,7 @@ The **History** and **Activity** scopes target internal platform logs rather tha
 
 !!! warning "History retention and the time machine"
 
-    The [knowledge time machine](../usage/time-machine.md) (View as of, Diff tab, landscape changes and change digests) is computed from the history. When a History retention rule is active, entities can only be rebuilt with the history that remains, and the knowledge snapshots used to speed up the reconstruction are deleted with the same retention. Choose a History retention covering the periods your analysts compare.
+    The [knowledge time machine](../usage/time-machine.md) (the Changes tab of the entities, landscape changes and change digests) is computed from the history. When a History retention rule is active, entities can only be rebuilt with the history that remains, and the knowledge snapshots used to speed up the reconstruction are deleted with the same retention. Choose a History retention covering the periods your analysts compare.
 
 ## Verification process
 

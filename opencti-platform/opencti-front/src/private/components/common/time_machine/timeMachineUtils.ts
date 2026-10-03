@@ -61,6 +61,29 @@ export const isValidDate = (value: string | null | undefined): value is string =
   return !!value && !Number.isNaN(new Date(value).getTime());
 };
 
+// region Changes tab URL: the section, then its own parameters (period of the comparison, date of the as-of view)
+export const CHANGES_SECTION_SEARCH_PARAM = 'section';
+export const CHANGES_SECTION_COMPARE = 'compare';
+export const CHANGES_SECTION_AS_OF = 'as-of';
+export const FROM_SEARCH_PARAM = 'from';
+export const TO_SEARCH_PARAM = 'to';
+export const AS_OF_SEARCH_PARAM = 'asOf';
+
+export const changesSearch = (section: string, params: Record<string, string> = {}) => {
+  return new URLSearchParams({ [CHANGES_SECTION_SEARCH_PARAM]: section, ...params }).toString();
+};
+
+export const comparePeriodSearch = (range: DateRange) => {
+  return changesSearch(CHANGES_SECTION_COMPARE, { [FROM_SEARCH_PARAM]: range.from, [TO_SEARCH_PARAM]: range.to });
+};
+
+// Section to display: the requested one when it exists, else the as-of view for a link carrying a date, else the comparison
+export const resolveChangesSection = (sections: string[], requested: string | null, asOf: string | null): string => {
+  if (requested && sections.includes(requested)) return requested;
+  return isValidDate(asOf) && sections.includes(CHANGES_SECTION_AS_OF) ? CHANGES_SECTION_AS_OF : CHANGES_SECTION_COMPARE;
+};
+// endregion
+
 // Clamp a date of the slider between two bounds
 export const clampDate = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
