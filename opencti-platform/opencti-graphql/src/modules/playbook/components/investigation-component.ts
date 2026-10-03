@@ -84,8 +84,8 @@ const isInvestigableBundleElement = (element: StixObject) => {
 
 export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationComponentConfiguration> = {
   id: 'PLAYBOOK_INVESTIGATION_COMPONENT',
-  name: 'Investigate with Case Autopilot',
-  description: 'Start an autonomous Case Autopilot investigation for each incident or case of the bundle',
+  name: 'Run Case Autopilot',
+  description: 'Start a Case Autopilot investigation for each incident or case of the bundle',
   icon: 'case-autopilot',
   category: 'transform_and_enrich',
   is_entry_point: false,
