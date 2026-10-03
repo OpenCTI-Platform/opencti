@@ -150,13 +150,20 @@ const curationResolvers: Resolvers = {
       const [member] = await internalFindByIds(context, context.user!, [id]) as BasicStoreEntity[];
       return (member ?? null) as any;
     },
+    authority_connector_sources: async (_, __, context) => {
+      if (!isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return [];
+      const connectors = await getEntitiesListFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+      return connectors
+        .map((connector) => ({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id, source_name: connector.name }))
+        .sort((left, right) => left.source_name.localeCompare(right.source_name)) as any;
+    },
     digest_recipients: async (settings, _, context) => {
       if (settings.digest_recipient_ids.length === 0 || !isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return [];
       return internalFindByIds(context, context.user!, settings.digest_recipient_ids) as any;
     },
   },
   CurationAuthoritySource: {
-    source_name: (source, _, context) => resolveAuthoritySourceName(context, source.source_type, source.source_id),
+    source_name: (source, _, context) => source.source_name ?? resolveAuthoritySourceName(context, source.source_type, source.source_id),
   },
   CurationPolicyDryRun: {
     sample_proposals: (dryRun, _, context) => resolveSampleProposals(context, dryRun as unknown as CurationPolicyDryRunResult) as any,

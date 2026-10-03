@@ -6736,6 +6736,7 @@ export type CurationSettings = {
   adjudication_run_as_id?: Maybe<Scalars['String']['output']>;
   ambiguous_band_max: Scalars['Float']['output'];
   ambiguous_band_min: Scalars['Float']['output'];
+  authority_connector_sources: Array<CurationAuthoritySource>;
   available_detectors: Array<Scalars['String']['output']>;
   behavior_threshold: Scalars['Float']['output'];
   curated_entity_types: Array<Scalars['String']['output']>;
@@ -45772,6 +45773,7 @@ export type CurationSettingsResolvers<ContextType = any, ParentType extends Reso
   adjudication_run_as_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ambiguous_band_max?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   ambiguous_band_min?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  authority_connector_sources?: Resolver<Array<ResolversTypes['CurationAuthoritySource']>, ParentType, ContextType>;
   available_detectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   behavior_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   curated_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

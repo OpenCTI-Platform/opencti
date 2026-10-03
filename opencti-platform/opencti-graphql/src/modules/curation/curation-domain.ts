@@ -341,6 +341,13 @@ export const applyProposalFromTask = async (context: AuthContext, user: AuthUser
 export const adjudicateProposalNow = async (context: AuthContext, user: AuthUser, id: string) => {
   const proposal = await loadOpenProposal(context, user, id);
   const settings = await getCurationSettings(context);
+  if (!settings.adjudication_enabled) {
+    throw FunctionalError('Curation adjudication is disabled in the curation settings');
+  }
+  // Adjudication is bounded to the ambiguous band: confident proposals are decided by analysts or policies.
+  if (!proposal.in_ambiguous_band) {
+    throw FunctionalError('Only proposals in the ambiguous confidence band can be adjudicated', { id, confidence: proposal.confidence_score });
+  }
   return adjudicateProposal(context, user, proposal, settings);
 };
 
