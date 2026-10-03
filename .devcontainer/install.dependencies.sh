@@ -1,10 +1,9 @@
-echo -e "\n\nInstalling OpenCTI Frontend dependencies ...\n"
-cd /opencti/opencti-platform/opencti-front/
+echo -e "\n\nInstalling the JavaScript workspace (front, GraphQL API, custom ESLint rules) ...\n"
+cd /opencti
 yarn install
 
-echo -e "\n\nInstalling OpenCTI GraphQL dependencies ...\n"
+echo -e "\n\nInstalling OpenCTI GraphQL Python dependencies ...\n"
 cd /opencti/opencti-platform/opencti-graphql/
-yarn install
 yarn install:python
 
 echo -e "\n\nInstalling OpenCTI Python client ...\n"

@@ -43,7 +43,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 - **Python Deps**: Required for some internal logic.
 
 ### Commands
-> Only copy `.yarnrc.yml` from the parent if running `yarn install` for the first time. It is not needed for tests or builds once dependencies are installed.
+> The API is a workspace of the repository-root Yarn project: `yarn install` from the root installs it, `yarn workspaces focus opencti-graphql` installs it alone.
 
 ```bash
 # Installation

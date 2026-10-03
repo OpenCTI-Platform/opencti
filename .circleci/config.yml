@@ -85,7 +85,7 @@ jobs:
       - checkout
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-front
-          command: yarn install
+          command: yarn workspaces focus opencti-front
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
@@ -127,7 +127,7 @@ jobs:
           at: ~/
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn install
+          command: yarn workspaces focus opencti-graphql
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: TAG_VERSION=${CIRCLE_TAG} yarn build
@@ -153,7 +153,7 @@ jobs:
           at: ~/
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn install
+          command: yarn workspaces focus opencti-graphql
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn build
@@ -182,7 +182,7 @@ jobs:
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@master#subdirectory=client-python|' -i {} \;          
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn install
+          command: yarn workspaces focus opencti-graphql
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn build
@@ -304,16 +304,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-platform
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/platform
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/platform:${CIRCLE_TAG}"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/platform:latest"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f opencti-platform/Dockerfile $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/platform:${CIRCLE_TAG}"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/platform:latest"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f opencti-platform/Dockerfile $GHCR_TAGS --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -351,16 +351,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-worker
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/worker
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/worker:${CIRCLE_TAG}"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/worker:latest"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS -f opencti-worker/Dockerfile $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/worker:${CIRCLE_TAG}"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/worker:latest"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS -f opencti-worker/Dockerfile $GHCR_TAGS --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -397,16 +397,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-platform
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/platform
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/platform:${CIRCLE_TAG}-fips"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/platform:latest-fips"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_fips $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f opencti-platform/Dockerfile_fips $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/platform:${CIRCLE_TAG}-fips"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/platform:latest-fips"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_fips $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f opencti-platform/Dockerfile_fips $GHCR_TAGS --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -444,16 +444,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-worker
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/worker
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/worker:${CIRCLE_TAG}-fips"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/worker:latest-fips"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_fips $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f opencti-worker/Dockerfile_fips $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/worker:${CIRCLE_TAG}-fips"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/worker:latest-fips"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_fips $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f opencti-worker/Dockerfile_fips $GHCR_TAGS --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -490,16 +490,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-platform
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/platform (UBI9)
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/platform:${CIRCLE_TAG}-ubi9"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/platform:latest-ubi9"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_ubi9 $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f opencti-platform/Dockerfile_ubi9 $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/platform:${CIRCLE_TAG}-ubi9"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/platform:latest-ubi9"
-            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_ubi9 $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --build-arg TAG_VERSION=${CIRCLE_TAG} --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f opencti-platform/Dockerfile_ubi9 $GHCR_TAGS --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -537,16 +537,16 @@ jobs:
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
-          working_directory: ~/opencti_docker/opencti-worker
+          working_directory: ~/opencti_docker
           name: Build Docker image opencti/worker (UBI9)
           command: |
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             DOCKER_TAGS="-t opencti/worker:${CIRCLE_TAG}-ubi9"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && DOCKER_TAGS="$DOCKER_TAGS -t opencti/worker:latest-ubi9"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_ubi9 $DOCKER_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f opencti-worker/Dockerfile_ubi9 $DOCKER_TAGS --push .
             GHCR_TAGS="-t ghcr.io/opencti-platform/opencti/worker:${CIRCLE_TAG}-ubi9"
             [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && GHCR_TAGS="$GHCR_TAGS -t ghcr.io/opencti-platform/opencti/worker:latest-ubi9"
-            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_ubi9 $GHCR_TAGS --push .
+            docker buildx build --pull --progress=plain --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f opencti-worker/Dockerfile_ubi9 $GHCR_TAGS --push .
       - slack/notify:
           event: fail
           template: basic_fail_1

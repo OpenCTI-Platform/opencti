@@ -37,17 +37,17 @@ corepack enable
 ```
 Do **not** add this before every command — assume a dev environment already has corepack enabled.
 
-### 2. Copy .yarnrc.yml (first install only)
-Only needed when running `yarn install` for the first time in a subdirectory that does not already have `.yarnrc.yml`:
+### 2. Install the JavaScript dependencies
+The front, the GraphQL API and the custom ESLint rules are one Yarn workspace, with a single
+`yarn.lock` and a single `.yarnrc.yml` at the repository root. One install covers all three:
 
 ```bash
-# Example for backend
-cd opencti-platform/opencti-graphql
-cp ../.yarnrc.yml .yarnrc.yml
 yarn install
 ```
 
-Do **not** copy `.yarnrc.yml` before running tests or other commands — it only matters for `yarn install`.
+Running `yarn install` from a workspace directory installs the whole workspace too. To install
+a single one, use `yarn workspaces focus <workspace>` (`opencti-front`, `opencti-graphql`,
+`eslint-plugin-custom-rules`). Never copy `.yarnrc.yml` into a subdirectory.
 
 ### 3. Root NX Commands (run from repo root)
 The root `package.json` uses **NX** to orchestrate all workspaces at once. Prefer these over manually running commands in each subdirectory:
@@ -88,7 +88,7 @@ docker compose up -d
 
 ## Common Pitfalls
 
-- **Yarn install fails**: Is `.yarnrc.yml` present in the subdirectory? Run `cp ../.yarnrc.yml .yarnrc.yml` then retry.
+- **Yarn install fails**: run `yarn install` from the repository root; the workspace configuration and lockfile live there.
 - **Yarn not found**: Run `corepack enable` once.
 - **Python Dependencies**: Backend requires `yarn install:python`.
 - **Relay**: Frontend requires `yarn relay` after any GraphQL changes.
