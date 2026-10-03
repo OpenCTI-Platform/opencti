@@ -93,7 +93,8 @@ const SelectionExportButton = () => {
     resolvePath,
   } = useDataTableContext();
   const [exporting, setExporting] = useState(false);
-  const loaded = ((resolvePath(data) ?? []) as ({ id: string } | null)[]).filter((node): node is { id: string } => !!node);
+  // The header buttons render before the first page of the table is loaded
+  const loaded = (((data ? resolvePath(data) : null) ?? []) as ({ id: string } | null)[]).filter((node): node is { id: string } => !!node);
   const ids = selectAll
     ? loaded.map((node) => node.id).filter((id) => !deSelectedElements[id])
     : Object.keys(selectedElements);
