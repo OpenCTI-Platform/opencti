@@ -124,9 +124,10 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
   // The list definition is computed once per mount: "expired" compares valid_until with the opening time.
   const listFilters = useMemo(() => buildSavedListFilters(listId), [listId]);
   const userFilters = useBuildEntityTypeBasedFilterContext('Indicator', viewStorage.filters);
+  // The top-level entity type scopes the select-all background tasks of the toolbar to indicators.
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: [],
+    filters: [{ key: 'entity_type', values: ['Indicator'], operator: 'eq', mode: 'or' }],
     filterGroups: [listFilters, ...(isFilterGroupNotEmpty(userFilters) ? [userFilters] : [])],
   };
   const queryPaginationOptions = {
