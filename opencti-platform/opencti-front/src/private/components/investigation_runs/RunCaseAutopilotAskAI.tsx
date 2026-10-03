@@ -85,7 +85,15 @@ const RunCaseAutopilotAskAI = ({ subjectId, subjectType, basePath }: RunCaseAuto
             onClose={() => setLaunching(false)}
             onStarted={onStarted}
           />
-          <InvestigationRunDrawer runId={drawerRunId} currentEntityId={subjectId} onClose={() => setDrawerRunId(null)} />
+          <InvestigationRunDrawer
+            runId={drawerRunId}
+            currentEntityId={subjectId}
+            onClose={() => setDrawerRunId(null)}
+            onRunStarted={(runId) => {
+              setDrawerRunId(runId);
+              INVESTIGATION_LAUNCHED$.next(subjectId);
+            }}
+          />
         </>
       ) : isAdmin ? (
         <EnterpriseEditionAgreement open={eeDialog} onClose={() => setEeDialog(false)} settingsId={settingsId} />

@@ -90,7 +90,7 @@ import {
 } from './investigationRun-state';
 import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
 import { notifyInvestigationRunStatus } from './investigationRun-notification';
-import { markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import { isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
 const subjectLockKey = (subjectId: string) => `investigation_run_subject_lock_${subjectId}`;
@@ -304,6 +304,12 @@ export const addInvestigationRun = async (
     if (!targetCase || !callerSeesCase) {
       throw FunctionalError('The case of the investigation cannot be found', { caseId: opts.caseId });
     }
+  }
+  // A run and its outputs carry markings and organization sharing but no member
+  // restriction: an entity restricted to authorized members is not investigated.
+  const memberRestricted = [subject, targetCase].find((element) => isMemberRestricted(element));
+  if (memberRestricted) {
+    throw FunctionalError('Case Autopilot does not investigate an entity restricted to authorized members', { id: memberRestricted.internal_id });
   }
   const needsCase = !INVESTIGATION_TAB_SUBJECT_TYPES.includes(subject.entity_type);
   let caseIds: string[] = [];

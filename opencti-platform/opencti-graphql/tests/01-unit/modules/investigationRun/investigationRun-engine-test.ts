@@ -15,6 +15,7 @@ import {
   groundConclusion,
   isReportPending,
   mirrorEvidence,
+  conclusionCandidateIds,
   mirrorReportSources,
   mirrorSteps,
   parseEngineInvestigation,
@@ -153,6 +154,13 @@ describe('Case Autopilot engine state', () => {
     const known = mirrorEvidence([{ ...evidence[0], confidence: 90, n: null }], engine);
     expect(known[0]).toMatchObject({ confidence: 90, n: 1 });
     expect(mirrorReportSources(engine)).toEqual([{ n: 2, label: 'Vendor write-up', href: 'https://vendor.example/apt28' }, { n: 3, label: 'Unsafe', href: null }]);
+  });
+
+  it('names every candidate the conclusion quotes, cited as evidence or not', () => {
+    const engine = engineAnswer() as NonNullable<ReturnType<typeof engineAnswer>>;
+    expect(conclusionCandidateIds(engine.conclusion)).toEqual(['intrusion-set--28', 'unknown-actor']);
+    expect(conclusionCandidateIds(null)).toEqual([]);
+    expect(conclusionCandidateIds({ hypotheses: [{ candidate_id: '' }, { other: 1 }, 'x'] })).toEqual([]);
   });
 
   it('keeps the step that found each piece of evidence', () => {

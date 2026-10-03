@@ -4981,6 +4981,8 @@
   "start_time_gt": "Fecha de inicio después",
   "start_time_lt": "Fecha de inicio antes",
   "Started": "Iniciado",
+  "Started {time}": "Iniciada {time}",
+  "Started {time} - {policy}": "Iniciada {time} - {policy}",
   "Started by a playbook as {user} - {time}": "Iniciada por un playbook como {user} - {time}",
   "Started by a playbook as {user} {time}": "Iniciada por un playbook como {user} {time}",
   "Started manually by {user} - {time}": "Iniciada manualmente por {user} - {time}",

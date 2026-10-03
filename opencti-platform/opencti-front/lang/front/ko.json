@@ -4981,6 +4981,8 @@
   "start_time_gt": "시작 시간 이후",
   "start_time_lt": "시작 시간 이전",
   "Started": "시작됨",
+  "Started {time}": "시작: {time}",
+  "Started {time} - {policy}": "시작: {time} - {policy}",
   "Started by a playbook as {user} - {time}": "플레이북이 {user}(으)로 시작 - {time}",
   "Started by a playbook as {user} {time}": "플레이북이 {user}(으)로 시작 ({time})",
   "Started manually by {user} - {time}": "{user}이(가) 수동으로 시작 - {time}",

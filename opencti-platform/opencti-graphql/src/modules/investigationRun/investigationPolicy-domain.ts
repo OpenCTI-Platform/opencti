@@ -289,8 +289,16 @@ export const deleteInvestigationPolicy = async (context: AuthContext, user: Auth
   if (policy.is_default) {
     throw FunctionalError('The default investigation policy cannot be deleted', { id });
   }
-  const lock = await lockResources([policyUsageLockKey(policy.internal_id)]);
+  // The default lock too: a concurrent promotion cannot make it the default between the check and the deletion.
+  const lock = await lockResources([DEFAULT_POLICY_LOCK, policyUsageLockKey(policy.internal_id)]);
   try {
+    const current = await loadInvestigationPolicy(context, id);
+    if (!current) {
+      throw FunctionalError('Investigation policy not found', { id });
+    }
+    if (current.is_default) {
+      throw FunctionalError('The default investigation policy cannot be deleted', { id });
+    }
     // Runs read their policy on every step: it stays until they end.
     const activeRuns = await countActiveRunsForPolicy(context, policy.internal_id);
     if (activeRuns > 0) {

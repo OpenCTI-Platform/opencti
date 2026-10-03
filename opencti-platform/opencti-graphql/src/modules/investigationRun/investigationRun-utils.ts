@@ -61,6 +61,19 @@ export const organizationIdsOf = (element: object): string[] => {
 };
 
 /**
+ * Whether an element is restricted to authorized members. A run and its
+ * outputs carry markings and organization sharing but no member restriction,
+ * so such an element is never investigated, read into a context or cited.
+ */
+export const isMemberRestricted = (element: object | null | undefined): boolean => {
+  const members = (element as { restricted_members?: unknown[] | null } | null | undefined)?.restricted_members;
+  return Array.isArray(members) && members.length > 0;
+};
+
+/** The elements a run may read or cite: those without a member restriction. */
+export const withoutMemberRestricted = <T extends object>(elements: T[]): T[] => elements.filter((element) => !isMemberRestricted(element));
+
+/**
  * Restrictive organization sharing: what is written from several elements is
  * shared only with the organizations every one of them is shared with, so
  * citing an object never widens who can read it. An element of a type that

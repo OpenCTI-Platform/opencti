@@ -90,7 +90,8 @@ const InvestigationRunEvidenceItem = ({ item, number }: InvestigationRunEvidence
                 sx={{
                   margin: 0,
                   fontStyle: 'italic',
-                  ...(expanded ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }),
+                  // Only a quote that can be expanded is clamped: a short one always shows in full.
+                  ...(longQuote && !expanded ? { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}),
                 }}
               >
                 {item.quote}

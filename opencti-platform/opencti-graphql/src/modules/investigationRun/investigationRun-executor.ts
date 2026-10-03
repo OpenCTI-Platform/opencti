@@ -113,6 +113,7 @@ import {
 import {
   buildAllowedIds,
   buildStartBody,
+  conclusionCandidateIds,
   engineOutcome,
   groundConclusion,
   isReportPending,
@@ -137,6 +138,7 @@ import {
   markingIdsOf,
   organizationIdsOf,
   representativeNameOf,
+  withoutMemberRestricted,
 } from './investigationRun-utils';
 
 export const INVESTIGATION_MANAGER_CONTEXT = 'investigation_run_manager';
@@ -314,7 +316,10 @@ const collectNeighborhood = async (exec: RunExecution, seedIds: string[]) => {
     neighborIds.slice(0, INVESTIGATION_LIMITS.contextEntities),
     { indices: READ_DATA_INDICES_WITHOUT_INTERNAL },
   ) as BasicStoreEntity[];
-  return { relationships, entities };
+  const readable = withoutMemberRestricted(entities);
+  const readableIds = new Set([...seedIds, ...readable.map((entity) => entity.internal_id)]);
+  // A relationship to an entity the run may not read is left out with it.
+  return { relationships: relationships.filter((relationship) => readableIds.has(relationship.fromId) && readableIds.has(relationship.toId)), entities: readable };
 };
 
 // Objects of a case (the case of the run or the investigated case).
@@ -325,7 +330,8 @@ const collectCaseObjects = async (exec: RunExecution, caseId: string) => {
   }) as unknown as BasicStoreRelation[];
   const ids = R.uniq(refs.map((ref) => ref.toId));
   if (ids.length === 0) return [];
-  return elFindByIds<BasicStoreEntity>(exec.draftContext, exec.runUser, ids, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as Promise<BasicStoreEntity[]>;
+  const objects = await elFindByIds<BasicStoreEntity>(exec.draftContext, exec.runUser, ids, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
+  return withoutMemberRestricted(objects);
 };
 
 interface CollectedContext {
@@ -359,7 +365,7 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
     ]).filter((id): id is string => !!id),
   ]).slice(0, INVESTIGATION_LIMITS.candidates);
   const knownIds = new Set(knownElements.map((element) => element.internal_id));
-  const extraCandidates = await findElements(draftContext, runUser, candidateIds.filter((id) => !knownIds.has(id)));
+  const extraCandidates = withoutMemberRestricted(await findElements(draftContext, runUser, candidateIds.filter((id) => !knownIds.has(id))));
   const candidates = [...knownElements, ...extraCandidates].filter((element) => ATTRIBUTION_CANDIDATE_TYPES.includes(element.entity_type));
   // Courses of action mitigating the techniques in scope.
   const attackPatternIds = knownElements.filter((element) => element.entity_type === ENTITY_TYPE_ATTACK_PATTERN).map((element) => element.internal_id);
@@ -706,8 +712,9 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
 // region investigating
 
 // The OpenCTI objects an evidence list cites, read in the run Draft for their markings and sharing.
-const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[]): Promise<BasicStoreCommon[]> => {
-  const ids = R.uniq(evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string)).slice(0, INVESTIGATION_LIMITS.evidence);
+const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], candidateIds: string[] = []): Promise<BasicStoreCommon[]> => {
+  const ids = R.uniq([...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string), ...candidateIds])
+    .slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates);
   if (ids.length === 0) return [];
   const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
   return findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
@@ -764,7 +771,9 @@ const investigate = async (exec: RunExecution) => {
   const engine = result.value;
   const outcome = engineOutcome(engine.status);
   const changed = engine.revision !== run.xtm_revision || engine.status !== run.xtm_status;
-  const cited = changed || outcome !== 'running' ? await citedElements(exec, mirrorEvidence(run.evidence ?? [], engine)) : [];
+  const cited = changed || outcome !== 'running'
+    ? await citedElements(exec, mirrorEvidence(run.evidence ?? [], engine), conclusionCandidateIds(engine.conclusion))
+    : [];
   if (outcome === 'failed') {
     await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited));
     await failRun(exec.liveContext, run.internal_id, `The investigation engine stopped the investigation (${engine.end_reason_code ?? 'aborted'})`, engine.end_reason_code ?? 'engine_aborted');
@@ -1023,11 +1032,16 @@ const listDraftTypes = async (exec: RunExecution) => {
 };
 
 // Markings and organization sharing of everything the run read or wrote about,
-// so its text never outlives their restrictions.
-const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEntity, caseId: string | null): Promise<OutputRestrictions> => {
+// so its text never outlives their restrictions: the cited objects, the case
+// and every candidate threat its hypotheses or its conclusion name.
+const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEntity, caseId: string | null, candidateIds: string[]): Promise<OutputRestrictions> => {
   const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
-  const ids = R.uniq([...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string), ...(caseId ? [caseId] : [])])
-    .slice(0, INVESTIGATION_LIMITS.evidence);
+  const ids = R.uniq([
+    ...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
+    ...exec.run.hypotheses.map((hypothesis) => hypothesis.candidate_id),
+    ...candidateIds,
+    ...(caseId ? [caseId] : []),
+  ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + 1);
   const elements = await findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
   return {
     markings: R.uniq([...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
@@ -1057,7 +1071,8 @@ const ingest = async (exec: RunExecution) => {
   const mirrored = engine ? { ...run, ...mirrorPatch(run, engine, []) } as BasicStoreEntityInvestigationRun : run;
   // OpenCTI objects the engine cites, as the run identity sees them, with the attributes ACH weights them by.
   const objectIds = mirrored.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string);
-  const elements = await findElements(exec.draftContext, runUser, objectIds);
+  // An object restricted to authorized members is not cited either: the run and its outputs cannot carry the restriction.
+  const elements = withoutMemberRestricted(await findElements(exec.draftContext, runUser, objectIds));
   const reliabilities = await loadAuthorReliabilities(exec.draftContext, runUser, elements);
   const fresh = new Map(elementEvidence(elements, reliabilities, run.draft_id).map((evidence) => [evidence.id, evidence]));
   const evidence = mirrored.evidence
@@ -1094,9 +1109,10 @@ const ingest = async (exec: RunExecution) => {
     summary: grounded.summary ?? mirrored.summary ?? null,
   };
   // Every output may quote what the run cites: it carries the markings and the sharing of all of it.
-  const outputRestrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, finalRun.case_id ?? null);
+  const namedCandidates = conclusionCandidateIds(engine?.conclusion);
+  const outputRestrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, finalRun.case_id ?? null, namedCandidates);
   const { outputs, caseId, caseIds, failures } = await writeOutputs({ ...exec, run: finalRun }, subject, engine, outputRestrictions);
-  const restrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, caseId);
+  const restrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, caseId, namedCandidates);
   const recommendationApprovals: InvestigationApproval[] = recommendations
     .filter((recommendation) => recommendation.status === InvestigationRecommendationStatus.AwaitingApproval
       && !run.approvals.some((approval) => approval.recommendation_id === recommendation.id && approval.status === InvestigationApprovalStatus.Pending))

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { intersectOrganizationIds, isCreationSharingWidened } from '../../../../src/modules/investigationRun/investigationRun-utils';
+import { intersectOrganizationIds, isCreationSharingWidened, isMemberRestricted, withoutMemberRestricted } from '../../../../src/modules/investigationRun/investigationRun-utils';
 import { RELATION_GRANTED_TO } from '../../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../../src/schema/stixMetaObject';
@@ -42,5 +42,17 @@ describe('Case Autopilot restrictive organization sharing', () => {
     expect(isCreationSharingWidened(userOf(['org-a']), withPlatformOrganization, true, [])).toBe(false);
     // Without a platform organization there is no organization segregation.
     expect(isCreationSharingWidened(userOf(['org-a']), withoutPlatformOrganization, false, [])).toBe(false);
+  });
+});
+
+describe('Case Autopilot member restrictions', () => {
+  it('never reads or cites an element restricted to authorized members', () => {
+    const open = { internal_id: 'open', restricted_members: [] };
+    const restricted = { internal_id: 'restricted', restricted_members: [{ id: 'user-1', access_right: 'view' }] };
+    expect(isMemberRestricted(open)).toBe(false);
+    expect(isMemberRestricted({ internal_id: 'none' })).toBe(false);
+    expect(isMemberRestricted(null)).toBe(false);
+    expect(isMemberRestricted(restricted)).toBe(true);
+    expect(withoutMemberRestricted([open, restricted]).map((element) => element.internal_id)).toEqual(['open']);
   });
 });

@@ -4981,6 +4981,8 @@
   "start_time_gt": "之后的开始日期",
   "start_time_lt": "之前的开始日期",
   "Started": "已启动",
+  "Started {time}": "启动于 {time}",
+  "Started {time} - {policy}": "启动于 {time} - {policy}",
   "Started by a playbook as {user} - {time}": "由剧本以 {user} 身份启动 - {time}",
   "Started by a playbook as {user} {time}": "由剧本以 {user} 身份启动（{time}）",
   "Started manually by {user} - {time}": "由 {user} 手动启动 - {time}",

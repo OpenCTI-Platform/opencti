@@ -695,3 +695,17 @@ export const parseEngineKnowledge = (knowledge: Record<string, unknown> | null):
 };
 
 // endregion
+
+/**
+ * Candidate threats the conclusion of the engine names, by internal or
+ * standard id: its summary and its hypotheses may quote them whether or not
+ * they are cited as evidence.
+ */
+export const conclusionCandidateIds = (conclusion: Record<string, unknown> | null | undefined): string[] => {
+  const hypotheses = conclusion?.hypotheses;
+  if (!Array.isArray(hypotheses)) return [];
+  return Array.from(new Set(hypotheses
+    .map((hypothesis) => (hypothesis && typeof hypothesis === 'object' ? (hypothesis as Record<string, unknown>).candidate_id : null))
+    .filter((id): id is string => typeof id === 'string' && id.length > 0)))
+    .slice(0, INVESTIGATION_LIMITS.candidates);
+};

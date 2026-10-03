@@ -17,7 +17,6 @@ import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
@@ -28,6 +27,7 @@ import { useFormatter } from '../../../components/i18n';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunView from './InvestigationRunView';
+import InvestigationRunSkeleton from './InvestigationRunSkeleton';
 import RunCaseAutopilotDialog from './RunCaseAutopilotDialog';
 import { INVESTIGATION_LAUNCHED$, runStatusLabel } from './investigationRunUtils';
 import { CASE_AUTOPILOT_DOCS_URL, POLICIES_PATH, XTM_ONE_SETTINGS_PATH } from './investigationRunOutcomes';
@@ -59,34 +59,6 @@ const investigationRunsTabQuery = graphql`
     }
   }
 `;
-
-/** The shape of an investigation while it loads: header, progress, metadata and the first steps. */
-export const InvestigationRunSkeleton = () => (
-  <Stack spacing={3} data-testid="investigation-run-skeleton" aria-busy>
-    <Card title={<Skeleton variant="text" width={160} />}>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Skeleton variant="rounded" width={96} height={24} />
-          <Skeleton variant="text" width="40%" />
-        </Stack>
-        <Skeleton variant="rounded" height={8} />
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' } }}>
-          {[0, 1, 2, 3].map((key) => <Skeleton key={key} variant="text" height={40} />)}
-        </Box>
-      </Stack>
-    </Card>
-    <Card title={<Skeleton variant="text" width={220} />}>
-      <Stack spacing={1.5}>
-        {[0, 1, 2].map((key) => (
-          <Stack key={key} direction="row" spacing={1.5} alignItems="center">
-            <Skeleton variant="circular" width={20} height={20} />
-            <Skeleton variant="text" width={`${60 - key * 10}%`} />
-          </Stack>
-        ))}
-      </Stack>
-    </Card>
-  </Stack>
-);
 
 interface InvestigationRunsTabProps {
   entityId: string;

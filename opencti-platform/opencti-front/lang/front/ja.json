@@ -4981,6 +4981,8 @@
   "start_time_gt": "開始日以降",
   "start_time_lt": "開始日より前",
   "Started": "開始",
+  "Started {time}": "開始: {time}",
+  "Started {time} - {policy}": "開始: {time} - {policy}",
   "Started by a playbook as {user} - {time}": "プレイブックにより {user} として開始 - {time}",
   "Started by a playbook as {user} {time}": "プレイブックにより {user} として開始 ({time})",
   "Started manually by {user} - {time}": "{user} が手動で開始 - {time}",

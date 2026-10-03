@@ -4981,6 +4981,8 @@
   "start_time_gt": "start_time_gt",
   "start_time_lt": "start_time_lt",
   "Started": "Начало",
+  "Started {time}": "Запущено {time}",
+  "Started {time} - {policy}": "Запущено {time} - {policy}",
   "Started by a playbook as {user} - {time}": "Запущено плейбуком от имени {user} - {time}",
   "Started by a playbook as {user} {time}": "Запущено плейбуком от имени {user} {time}",
   "Started manually by {user} - {time}": "Запущено вручную пользователем {user} - {time}",

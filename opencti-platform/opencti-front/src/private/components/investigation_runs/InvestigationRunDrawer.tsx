@@ -16,23 +16,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { Suspense } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import InvestigationRunView from './InvestigationRunView';
+import InvestigationRunSkeleton from './InvestigationRunSkeleton';
 
 interface InvestigationRunDrawerProps {
   runId: string | null;
   currentEntityId?: string;
   onClose: () => void;
+  // A run launched again from the drawer replaces the one it shows.
+  onRunStarted: (runId: string) => void;
 }
 
 /** A live investigation of an entity that has no Autopilot tab (incidents, indicators, observables). */
-const InvestigationRunDrawer = ({ runId, currentEntityId, onClose }: InvestigationRunDrawerProps) => {
+const InvestigationRunDrawer = ({ runId, currentEntityId, onClose, onRunStarted }: InvestigationRunDrawerProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Drawer title={t_i18n('Case Autopilot')} open={!!runId} onClose={onClose}>
       {runId ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <InvestigationRunView runId={runId} currentEntityId={currentEntityId} onDeleted={onClose} />
+        <Suspense fallback={<InvestigationRunSkeleton />}>
+          <InvestigationRunView key={runId} runId={runId} currentEntityId={currentEntityId} onDeleted={onClose} onRunStarted={onRunStarted} />
         </Suspense>
       ) : null}
     </Drawer>
