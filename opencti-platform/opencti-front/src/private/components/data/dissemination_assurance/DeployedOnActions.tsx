@@ -6,7 +6,11 @@ import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/d
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
+import { PayloadError } from 'relay-runtime';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { DeployedOnActionsRetryMutation } from './__generated__/DeployedOnActionsRetryMutation.graphql';
+import { DeployedOnActionsRemoveMutation } from './__generated__/DeployedOnActionsRemoveMutation.graphql';
 import { canRemoveDeployment, canRetryDeployment } from './disseminationAssuranceUtils';
 
 const deployedOnRetryMutation = graphql`
@@ -37,12 +41,17 @@ interface DeployedOnActionsProps {
 const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsProps) => {
   const { t_i18n } = useFormatter();
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [commitRetry, retrying] = useApiMutation(deployedOnRetryMutation, undefined, {
-    successMessage: t_i18n('The connector will deploy the indicator again'),
-  });
-  const [commitRemove, removing] = useApiMutation(deployedOnRemoveMutation, undefined, {
-    successMessage: t_i18n('The connector will remove the indicator from the platform'),
-  });
+  const [commitRetry, retrying] = useApiMutation<DeployedOnActionsRetryMutation>(deployedOnRetryMutation);
+  const [commitRemove, removing] = useApiMutation<DeployedOnActionsRemoveMutation>(deployedOnRemoveMutation);
+
+  // Payload errors reach onCompleted: only a returned deployment confirms the action.
+  const succeeded = (deployment: { id: string } | null | undefined, errors: PayloadError[] | null) => {
+    if (errors && errors.length > 0) {
+      MESSAGING$.notifyError(errors[0].message);
+      return false;
+    }
+    return !!deployment;
+  };
   const retryable = canRetryDeployment(deploymentStatus);
   const removable = canRemoveDeployment(deploymentStatus, revoked);
 
@@ -64,7 +73,14 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
               disabled={retrying}
               onClick={(event: React.MouseEvent) => {
                 stop(event);
-                commitRetry({ variables: { id } });
+                commitRetry({
+                  variables: { id },
+                  onCompleted: (response, errors) => {
+                    if (succeeded(response.indicatorDeploymentRetry, errors)) {
+                      MESSAGING$.notifySuccess(t_i18n('The connector will deploy the indicator again'));
+                    }
+                  },
+                });
               }}
               icon={<ReplayOutlined fontSize="small" />}
               data-testid="deployment-retry"
@@ -109,8 +125,13 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
           <Button
             onClick={() => commitRemove({
               variables: { id },
-              onCompleted: () => setConfirmRemove(false),
-              onError: () => setConfirmRemove(false),
+              onCompleted: (response, errors) => {
+                if (succeeded(response.indicatorDeploymentRemove, errors)) {
+                  setConfirmRemove(false);
+                  MESSAGING$.notifySuccess(t_i18n('The connector will remove the indicator from the platform'));
+                }
+              },
+              onError: () => {},
             })}
             disabled={removing}
           >

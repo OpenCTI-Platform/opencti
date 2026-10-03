@@ -7,6 +7,7 @@ import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../relay/environment';
 import {
   DEFAULT_TEST_KINDS,
   IOC_VALIDATION_MAX_INDICATORS,
@@ -113,9 +114,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
   const [name, setName] = useState(defaultName);
   const [description, setDescription] = useState('');
   const [connectorId, setConnectorId] = useState<string | null>(null);
-  const [commit, submitting] = useApiMutation<IocValidationRequestDialogMutation>(iocValidationRequestMutation, undefined, {
-    successMessage: t_i18n('Validation request sent to OpenAEV, it runs once approved there'),
-  });
+  const [commit, submitting] = useApiMutation<IocValidationRequestDialogMutation>(iocValidationRequestMutation);
 
   useEffect(() => {
     if (open) {
@@ -145,7 +144,22 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
         name: name.trim(),
         description: description.trim() || null,
       },
-      onCompleted: () => onClose(),
+      // Payload errors reach onCompleted: the inputs are kept until a request is actually created.
+      onCompleted: (response, errors) => {
+        const request = response.indicatorsRequestValidation;
+        if ((errors && errors.length > 0) || !request) {
+          MESSAGING$.notifyError(errors?.[0]?.message ?? t_i18n('The validation request could not be created'));
+          return;
+        }
+        if (request.status === 'failed') {
+          MESSAGING$.notifyError(request.status_message ?? t_i18n('The validation request could not be sent to OpenAEV'));
+        } else if (request.status === 'pending') {
+          MESSAGING$.notifySuccess(t_i18n('Validation request saved, it is sent once an OpenAEV IOC validation connector is active'));
+        } else {
+          MESSAGING$.notifySuccess(t_i18n('Validation request sent to OpenAEV, it runs once approved there'));
+        }
+        onClose();
+      },
     });
   };
 
