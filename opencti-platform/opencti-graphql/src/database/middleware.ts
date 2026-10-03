@@ -216,6 +216,7 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { computeCreationProvenance, recordUpsertProvenance, removeProvenanceInputs } from '../modules/provenance/provenance-write';
+import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../modules/provenance/provenance-upsert';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -2037,6 +2038,7 @@ export const mergeEntities = async (
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
     }
+    await mergeProvenanceOnEntitiesMerge(context, user, mergedInstance, sources);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
@@ -3340,7 +3342,16 @@ const upsertElement = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
-  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  const resolvedInputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  // Procedures preservation and conflicts tracking, computed from the resolution outcome
+  const preparedProvenance = await prepareUpsertProvenance(context, user, resolvedElement, type, {
+    basePatch,
+    updatePatch,
+    inputs: resolvedInputs,
+    isConfidenceMatch: confidenceForUpsert.isConfidenceMatch,
+    confidence: confidenceForUpsert.confidenceLevelToApply,
+  });
+  const { inputs } = preparedProvenance;
 
   // -- If modifications need to be done, add updated_at and modified
   let upsertResult;
@@ -3353,7 +3364,9 @@ const upsertElement = async (
     upsertResult = { element: resolvedElement, event: null, isCreation: false };
   }
   // -- Whatever the resolution, the writing source asserted this element
-  await recordUpsertProvenance(context, user, resolvedElement, { input: basePatch, confidence: confidenceForUpsert.confidenceLevelToApply });
+  if (preparedProvenance.record) {
+    await recordUpsertProvenance(context, user, resolvedElement, preparedProvenance.record);
+  }
   return upsertResult;
 };
 
@@ -3546,7 +3559,11 @@ export const createRelationRaw = async (
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
-    const relationProvenance = await computeCreationProvenance(context, user, relationshipType, resolvedInput, { fromRule, restore: opts.restore });
+    const relationProvenance = await computeCreationProvenance(context, user, relationshipType, resolvedInput, {
+      fromRule,
+      restore: opts.restore,
+      procedures: await creationProceduresBuilder(context, relationshipType, resolvedInput),
+    });
     if (relationProvenance) {
       dataRel.element = { ...dataRel.element, ...relationProvenance };
     }

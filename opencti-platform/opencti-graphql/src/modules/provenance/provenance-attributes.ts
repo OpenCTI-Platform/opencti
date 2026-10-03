@@ -175,7 +175,8 @@ export const procedures: ObjectAttribute = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
-  upsert: false, // computed from incoming descriptions, never taken from upsert inputs
+  upsert: false,
+  update: false,
   isFilterable: false,
   mappings: [
     { name: 'text', label: 'Procedure', type: 'string', format: 'text', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },

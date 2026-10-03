@@ -76,7 +76,7 @@ describe('Provenance attributes registration', () => {
 
   it('should never let clients update side-channel provenance fields', () => {
     PROVENANCE_SIDE_CHANNEL_FIELDS.forEach((field) => {
-      const definition = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_MALWARE, field);
+      const definition = schemaAttributesDefinition.getAttribute(RELATION_USES, field);
       expect(definition?.update).toEqual(false);
       expect(definition?.upsert).toEqual(false);
     });

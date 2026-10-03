@@ -1,0 +1,71 @@
+enum AssertionSourceKind {
+  connector
+  feed
+  author
+  user
+  inference
+  emulation
+}
+
+enum ProceduresDescriptionPolicy {
+  longest
+  most_recent
+}
+
+type Assertion {
+  source_id: String!
+  source_kind: AssertionSourceKind!
+  source_name: String!
+  first_asserted_at: DateTime!
+  last_asserted_at: DateTime!
+  assert_count: Int!
+  confidence: Int
+  work_id: String
+}
+
+type SourceConflictValue {
+  value_hash: String!
+  display: String!
+  value: String
+  adoptable: Boolean!
+  source_id: String!
+  source_kind: AssertionSourceKind
+  source_name: String
+  confidence: Int
+  last_asserted_at: DateTime!
+}
+
+type SourceConflict {
+  field: String!
+  values: [SourceConflictValue!]!
+}
+
+type Procedure {
+  text: String!
+  source_id: String
+  last_asserted_at: DateTime
+}
+
+type ProvenanceSourceKindCount {
+  source_kind: AssertionSourceKind!
+  count: Int!
+}
+
+type ProvenanceStatistics {
+  total: Int!
+  with_provenance: Int!
+  single_sourced: Int!
+  corroborated: Int!
+  with_conflicts: Int!
+  stale: Int!
+}
+
+extend type Query {
+  provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics! @auth(for: [KNOWLEDGE, EXPLORE])
+}
+
+extend type Mutation {
+  provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+}

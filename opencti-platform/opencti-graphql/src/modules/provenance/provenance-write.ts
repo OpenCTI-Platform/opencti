@@ -8,19 +8,22 @@ import { now } from '../../utils/format';
 import { isNotEmptyField } from '../../database/utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { resolveAssertionSource } from './provenance-source';
+import type { ConflictAddition, ConflictRemoval } from './provenance-conflicts';
 import {
   type AssertionSource,
   ATTRIBUTE_ASSERTIONS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_HAS_CONFLICTS,
   ATTRIBUTE_LAST_ASSERTED_AT,
+  ATTRIBUTE_PROCEDURES,
   ATTRIBUTE_SINGLE_SOURCED,
   DEFAULT_MAX_CONFLICT_VALUES_PER_FIELD,
   MAX_ASSERTIONS_PER_ELEMENT,
   MAX_CONFLICT_FIELDS_PER_ELEMENT,
+  MAX_PROCEDURES_PER_RELATIONSHIP,
   PROVENANCE_PROTECTED_INPUT_FIELDS,
   type StoreAssertion,
-  type StoreConflictValue,
+  type StoreProcedure,
   type StoreProvenanceFields,
 } from './provenance-types';
 
@@ -30,14 +33,9 @@ export const MAX_CONFLICT_VALUES_PER_FIELD: number = conf.get('provenance:max_co
 
 export type ProvenanceTarget = { _index: string; _id?: string; internal_id: string; entity_type: string };
 
-export interface ConflictAddition {
-  field: string;
-  value: StoreConflictValue;
-}
-
-export interface ConflictRemoval {
-  field: string;
-  value_hash: string;
+export interface FreshnessFlag {
+  rule_id: string;
+  at: string;
 }
 
 export interface ProvenanceUpdate {
@@ -46,111 +44,159 @@ export interface ProvenanceUpdate {
   countMode?: 'sum' | 'max';
   conflictsAdd?: ConflictAddition[];
   conflictsRemove?: ConflictRemoval[];
+  // Retention: conflict values not re-asserted since this date are dropped
+  conflictsPurgeBefore?: string;
+  proceduresAdd?: StoreProcedure[];
   resetFreshness?: boolean;
+  freshnessFlag?: FreshnessFlag;
 }
 
 // Single constant source so the engine compiles it once, every variation goes through params.
 export const PROVENANCE_UPDATE_SCRIPT = `
   List assertions = ctx._source.${ATTRIBUTE_ASSERTIONS};
-  if (assertions == null) { assertions = new ArrayList(); ctx._source.${ATTRIBUTE_ASSERTIONS} = assertions; }
-  for (def incoming : params.assertions) {
-    def current = null;
-    for (def item : assertions) { if (item.source_id == incoming.source_id) { current = item; break; } }
-    if (current == null) {
-      Map created = new HashMap();
-      created.put('source_id', incoming.source_id);
-      created.put('source_kind', incoming.source_kind);
-      created.put('source_name', incoming.source_name);
-      created.put('first_asserted_at', incoming.first_asserted_at);
-      created.put('last_asserted_at', incoming.last_asserted_at);
-      created.put('assert_count', incoming.assert_count);
-      created.put('confidence', incoming.confidence);
-      created.put('work_id', incoming.work_id);
-      assertions.add(created);
-    } else {
-      boolean isNewer = current.last_asserted_at == null || incoming.last_asserted_at.compareTo(current.last_asserted_at) >= 0;
-      if (current.first_asserted_at == null || incoming.first_asserted_at.compareTo(current.first_asserted_at) < 0) {
-        current.first_asserted_at = incoming.first_asserted_at;
-      }
-      if (isNewer) {
-        current.last_asserted_at = incoming.last_asserted_at;
-        current.source_kind = incoming.source_kind;
-        current.source_name = incoming.source_name;
-        current.confidence = incoming.confidence;
-        if (incoming.work_id != null) { current.work_id = incoming.work_id; }
-      }
-      def currentCount = current.assert_count == null ? 0 : current.assert_count;
-      if (params.count_mode == 'max') {
-        current.assert_count = incoming.assert_count > currentCount ? incoming.assert_count : currentCount;
+  if (params.assertions.size() > 0 || assertions != null) {
+    if (assertions == null) { assertions = new ArrayList(); ctx._source.${ATTRIBUTE_ASSERTIONS} = assertions; }
+    for (def incoming : params.assertions) {
+      def current = null;
+      for (def item : assertions) { if (item.source_id == incoming.source_id) { current = item; break; } }
+      if (current == null) {
+        Map created = new HashMap();
+        created.put('source_id', incoming.source_id);
+        created.put('source_kind', incoming.source_kind);
+        created.put('source_name', incoming.source_name);
+        created.put('first_asserted_at', incoming.first_asserted_at);
+        created.put('last_asserted_at', incoming.last_asserted_at);
+        created.put('assert_count', incoming.assert_count);
+        created.put('confidence', incoming.confidence);
+        created.put('work_id', incoming.work_id);
+        assertions.add(created);
       } else {
-        current.assert_count = currentCount + incoming.assert_count;
+        boolean isNewer = current.last_asserted_at == null || incoming.last_asserted_at.compareTo(current.last_asserted_at) >= 0;
+        if (current.first_asserted_at == null || incoming.first_asserted_at.compareTo(current.first_asserted_at) < 0) {
+          current.first_asserted_at = incoming.first_asserted_at;
+        }
+        if (isNewer) {
+          current.last_asserted_at = incoming.last_asserted_at;
+          current.source_kind = incoming.source_kind;
+          current.source_name = incoming.source_name;
+          current.confidence = incoming.confidence;
+          if (incoming.work_id != null) { current.work_id = incoming.work_id; }
+        }
+        def currentCount = current.assert_count == null ? 0 : current.assert_count;
+        if (params.count_mode == 'max') {
+          current.assert_count = incoming.assert_count > currentCount ? incoming.assert_count : currentCount;
+        } else {
+          current.assert_count = currentCount + incoming.assert_count;
+        }
       }
     }
-  }
-  while (assertions.size() > params.max_assertions) {
-    int oldest = 0;
-    for (int i = 1; i < assertions.size(); ++i) {
-      if (assertions.get(i).last_asserted_at.compareTo(assertions.get(oldest).last_asserted_at) < 0) { oldest = i; }
+    while (assertions.size() > params.max_assertions) {
+      int oldest = 0;
+      for (int i = 1; i < assertions.size(); ++i) {
+        if (assertions.get(i).last_asserted_at.compareTo(assertions.get(oldest).last_asserted_at) < 0) { oldest = i; }
+      }
+      assertions.remove(oldest);
     }
-    assertions.remove(oldest);
+    String last = null;
+    for (def item : assertions) {
+      def date = item.last_asserted_at;
+      if (date != null && (last == null || date.compareTo(last) > 0)) { last = date; }
+    }
+    ctx._source.${ATTRIBUTE_CORROBORATION_COUNT} = assertions.size();
+    ctx._source.${ATTRIBUTE_SINGLE_SOURCED} = assertions.size() == 1;
+    if (last != null) { ctx._source.${ATTRIBUTE_LAST_ASSERTED_AT} = last; }
   }
-  String last = null;
-  for (def item : assertions) {
-    def date = item.last_asserted_at;
-    if (date != null && (last == null || date.compareTo(last) > 0)) { last = date; }
-  }
-  ctx._source.${ATTRIBUTE_CORROBORATION_COUNT} = assertions.size();
-  ctx._source.${ATTRIBUTE_SINGLE_SOURCED} = assertions.size() == 1;
-  if (last != null) { ctx._source.${ATTRIBUTE_LAST_ASSERTED_AT} = last; }
   if (params.reset_freshness && ctx._source.freshness_stale == true) {
     ctx._source.freshness_stale = false;
     ctx._source.remove('freshness_stale_at');
     ctx._source.remove('freshness_rule_id');
   }
+  if (params.freshness_flag != null) {
+    ctx._source.freshness_stale = true;
+    ctx._source.freshness_stale_at = params.freshness_flag.at;
+    ctx._source.freshness_rule_id = params.freshness_flag.rule_id;
+  }
+  if (params.procedures_add.size() > 0) {
+    List procedures = ctx._source.${ATTRIBUTE_PROCEDURES};
+    if (procedures == null) { procedures = new ArrayList(); ctx._source.${ATTRIBUTE_PROCEDURES} = procedures; }
+    for (def procedure : params.procedures_add) {
+      String key = procedure.text.trim().toLowerCase();
+      def existing = null;
+      for (def item : procedures) { if (item.text != null && item.text.trim().toLowerCase() == key) { existing = item; break; } }
+      if (existing == null) {
+        procedures.add(new HashMap(procedure));
+      } else if (existing.last_asserted_at == null || procedure.last_asserted_at.compareTo(existing.last_asserted_at) > 0) {
+        existing.last_asserted_at = procedure.last_asserted_at;
+        existing.source_id = procedure.source_id;
+      }
+    }
+    while (procedures.size() > params.max_procedures) {
+      int oldestProcedure = 0;
+      for (int i = 1; i < procedures.size(); ++i) {
+        if (procedures.get(i).last_asserted_at.compareTo(procedures.get(oldestProcedure).last_asserted_at) < 0) { oldestProcedure = i; }
+      }
+      procedures.remove(oldestProcedure);
+    }
+  }
   List conflicts = ctx._source.x_opencti_conflicts;
-  if (conflicts == null) { conflicts = new ArrayList(); }
-  for (def removal : params.conflicts_remove) {
-    String removedHash = removal.value_hash;
-    for (def entry : conflicts) {
-      if (entry.field == removal.field && entry.values != null) {
-        Iterator valuesIterator = entry.values.iterator();
-        while (valuesIterator.hasNext()) { if (valuesIterator.next().value_hash == removedHash) { valuesIterator.remove(); } }
+  boolean conflictsTouched = params.conflicts_add.size() > 0 || params.conflicts_remove.size() > 0 || params.conflicts_purge_before != null;
+  if (conflictsTouched) {
+    if (conflicts == null) { conflicts = new ArrayList(); }
+    for (def removal : params.conflicts_remove) {
+      String removedHash = removal.value_hash;
+      for (def entry : conflicts) {
+        if (entry.field == removal.field && entry.values != null) {
+          Iterator valuesIterator = entry.values.iterator();
+          while (valuesIterator.hasNext()) { if (valuesIterator.next().value_hash == removedHash) { valuesIterator.remove(); } }
+        }
       }
     }
-  }
-  for (def addition : params.conflicts_add) {
-    def entry = null;
-    for (def candidate : conflicts) { if (candidate.field == addition.field) { entry = candidate; break; } }
-    if (entry == null) {
-      if (conflicts.size() >= params.max_conflict_fields) { continue; }
-      entry = new HashMap();
-      entry.put('field', addition.field);
-      entry.put('values', new ArrayList());
-      conflicts.add(entry);
-    }
-    if (entry.values == null) { entry.values = new ArrayList(); }
-    def existing = null;
-    for (def value : entry.values) { if (value.value_hash == addition.value.value_hash) { existing = value; break; } }
-    if (existing == null) {
-      entry.values.add(new HashMap(addition.value));
-    } else if (existing.last_asserted_at == null || addition.value.last_asserted_at.compareTo(existing.last_asserted_at) >= 0) {
-      existing.putAll(addition.value);
-    }
-    while (entry.values.size() > params.max_conflict_values) {
-      int oldestValue = 0;
-      for (int i = 1; i < entry.values.size(); ++i) {
-        if (entry.values.get(i).last_asserted_at.compareTo(entry.values.get(oldestValue).last_asserted_at) < 0) { oldestValue = i; }
+    if (params.conflicts_purge_before != null) {
+      String purgeBefore = params.conflicts_purge_before;
+      for (def entry : conflicts) {
+        if (entry.values != null) {
+          Iterator purgeIterator = entry.values.iterator();
+          while (purgeIterator.hasNext()) {
+            def purged = purgeIterator.next();
+            if (purged.last_asserted_at == null || purged.last_asserted_at.compareTo(purgeBefore) < 0) { purgeIterator.remove(); }
+          }
+        }
       }
-      entry.values.remove(oldestValue);
     }
+    for (def addition : params.conflicts_add) {
+      def entry = null;
+      for (def candidate : conflicts) { if (candidate.field == addition.field) { entry = candidate; break; } }
+      if (entry == null) {
+        if (conflicts.size() >= params.max_conflict_fields) { continue; }
+        entry = new HashMap();
+        entry.put('field', addition.field);
+        entry.put('values', new ArrayList());
+        conflicts.add(entry);
+      }
+      if (entry.values == null) { entry.values = new ArrayList(); }
+      def existing = null;
+      for (def value : entry.values) { if (value.value_hash == addition.value.value_hash) { existing = value; break; } }
+      if (existing == null) {
+        entry.values.add(new HashMap(addition.value));
+      } else if (existing.last_asserted_at == null || addition.value.last_asserted_at.compareTo(existing.last_asserted_at) >= 0) {
+        existing.putAll(addition.value);
+      }
+      while (entry.values.size() > params.max_conflict_values) {
+        int oldestValue = 0;
+        for (int i = 1; i < entry.values.size(); ++i) {
+          if (entry.values.get(i).last_asserted_at.compareTo(entry.values.get(oldestValue).last_asserted_at) < 0) { oldestValue = i; }
+        }
+        entry.values.remove(oldestValue);
+      }
+    }
+    Iterator conflictsIterator = conflicts.iterator();
+    while (conflictsIterator.hasNext()) {
+      def entry = conflictsIterator.next();
+      if (entry.values == null || entry.values.size() == 0) { conflictsIterator.remove(); }
+    }
+    if (conflicts.size() > 0) { ctx._source.x_opencti_conflicts = conflicts; } else { ctx._source.remove('x_opencti_conflicts'); }
   }
-  Iterator conflictsIterator = conflicts.iterator();
-  while (conflictsIterator.hasNext()) {
-    def entry = conflictsIterator.next();
-    if (entry.values == null || entry.values.size() == 0) { conflictsIterator.remove(); }
-  }
-  if (conflicts.size() > 0) { ctx._source.x_opencti_conflicts = conflicts; } else { ctx._source.remove('x_opencti_conflicts'); }
-  ctx._source.${ATTRIBUTE_HAS_CONFLICTS} = conflicts.size() > 0;
+  ctx._source.${ATTRIBUTE_HAS_CONFLICTS} = conflicts != null && conflicts.size() > 0;
 `;
 
 export const isProvenanceTrackedType = (type: string) => {
@@ -160,7 +206,7 @@ export const isProvenanceTrackedType = (type: string) => {
 /**
  * Provenance is owned by the platform: clients can never inject assertions, conflicts or procedures.
  */
-export const removeProvenanceInputs = (input: Record<string, unknown>) => {
+export const removeProvenanceInputs = <T extends Record<string, unknown>>(input: T): T => {
   for (let index = 0; index < PROVENANCE_PROTECTED_INPUT_FIELDS.length; index += 1) {
     delete input[PROVENANCE_PROTECTED_INPUT_FIELDS[index]];
   }
@@ -190,22 +236,39 @@ export const buildCreationProvenance = (source: AssertionSource, confidence: num
   [ATTRIBUTE_HAS_CONFLICTS]: false,
 });
 
+export const buildProvenanceScriptParams = (update: ProvenanceUpdate) => ({
+  assertions: update.assertions ?? [],
+  count_mode: update.countMode ?? 'sum',
+  conflicts_add: update.conflictsAdd ?? [],
+  conflicts_remove: update.conflictsRemove ?? [],
+  conflicts_purge_before: update.conflictsPurgeBefore ?? null,
+  procedures_add: update.proceduresAdd ?? [],
+  reset_freshness: update.resetFreshness === true,
+  freshness_flag: update.freshnessFlag ?? null,
+  max_assertions: MAX_ASSERTIONS_PER_ELEMENT,
+  max_conflict_fields: MAX_CONFLICT_FIELDS_PER_ELEMENT,
+  max_conflict_values: MAX_CONFLICT_VALUES_PER_FIELD,
+  max_procedures: MAX_PROCEDURES_PER_RELATIONSHIP,
+});
+
+export const buildProvenanceScript = (update: ProvenanceUpdate) => ({
+  source: PROVENANCE_UPDATE_SCRIPT,
+  lang: 'painless',
+  params: buildProvenanceScriptParams(update),
+});
+
 /**
  * Side-channel update: no stream event, no history, no updated_at change.
  */
-export const applyProvenanceUpdate = async (context: AuthContext, target: ProvenanceTarget, update: ProvenanceUpdate) => {
-  const params = {
-    assertions: update.assertions ?? [],
-    count_mode: update.countMode ?? 'sum',
-    conflicts_add: update.conflictsAdd ?? [],
-    conflicts_remove: update.conflictsRemove ?? [],
-    reset_freshness: update.resetFreshness === true,
-    max_assertions: MAX_ASSERTIONS_PER_ELEMENT,
-    max_conflict_fields: MAX_CONFLICT_FIELDS_PER_ELEMENT,
-    max_conflict_values: MAX_CONFLICT_VALUES_PER_FIELD,
-  };
-  const body = { script: { source: PROVENANCE_UPDATE_SCRIPT, lang: 'painless', params } };
-  return elUpdate(context, target._index, target._id ?? target.internal_id, body, undefined, { refresh: PROVENANCE_REFRESH_ON_WRITE });
+export const applyProvenanceUpdate = async (
+  context: AuthContext,
+  target: ProvenanceTarget,
+  update: ProvenanceUpdate,
+  opts: { refresh?: boolean } = {},
+) => {
+  const body = { script: buildProvenanceScript(update) };
+  const refresh = opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE;
+  return elUpdate(context, target._index, target._id ?? target.internal_id, body, undefined, { refresh });
 };
 
 /**
@@ -217,7 +280,7 @@ export const computeCreationProvenance = async (
   user: AuthUser,
   type: string,
   input: Record<string, any>,
-  opts: { fromRule?: string; restore?: boolean } = {},
+  opts: { fromRule?: string; restore?: boolean; procedures?: (source: AssertionSource, at: string) => StoreProcedure[] } = {},
 ): Promise<StoreProvenanceFields | null> => {
   if (!isProvenanceRecordable(context, user, type)) {
     return null;
@@ -233,30 +296,43 @@ export const computeCreationProvenance = async (
     return restored as StoreProvenanceFields;
   }
   const source = await resolveAssertionSource(context, user, input, { fromRule: opts.fromRule });
-  return buildCreationProvenance(source, input.confidence, now());
+  const at = now();
+  const provenance = buildCreationProvenance(source, input.confidence, at);
+  const procedures = opts.procedures?.(source, at) ?? [];
+  if (procedures.length > 0) {
+    provenance[ATTRIBUTE_PROCEDURES] = procedures;
+  }
+  return provenance;
 };
+
+export interface UpsertProvenanceRecord {
+  source?: AssertionSource;
+  input: Record<string, any>;
+  confidence?: number | null;
+  fromRule?: string;
+  at?: string;
+  conflictsAdd?: ConflictAddition[];
+  conflictsRemove?: ConflictRemoval[];
+  proceduresAdd?: StoreProcedure[];
+}
 
 /**
  * Refresh the assertion of the writing source on an existing element after upsert resolution.
  * A provenance failure never fails the knowledge write itself.
  */
-export const recordUpsertProvenance = async (
-  context: AuthContext,
-  user: AuthUser,
-  element: ProvenanceTarget,
-  opts: { input: Record<string, any>; confidence?: number | null; fromRule?: string; conflictsAdd?: ConflictAddition[]; conflictsRemove?: ConflictRemoval[] },
-) => {
+export const recordUpsertProvenance = async (context: AuthContext, user: AuthUser, element: ProvenanceTarget, record: UpsertProvenanceRecord) => {
   if (!isProvenanceRecordable(context, user, element.entity_type)) {
     return null;
   }
   try {
-    const source = await resolveAssertionSource(context, user, opts.input, { fromRule: opts.fromRule });
-    const assertion = buildStoreAssertion(source, opts.confidence, now());
+    const source = record.source ?? await resolveAssertionSource(context, user, record.input, { fromRule: record.fromRule });
+    const assertion = buildStoreAssertion(source, record.confidence, record.at ?? now());
     await applyProvenanceUpdate(context, element, {
       assertions: [assertion],
       countMode: 'sum',
-      conflictsAdd: opts.conflictsAdd,
-      conflictsRemove: opts.conflictsRemove,
+      conflictsAdd: record.conflictsAdd,
+      conflictsRemove: record.conflictsRemove,
+      proceduresAdd: record.proceduresAdd,
       resetFreshness: true,
     });
     return { source, assertion };

@@ -2,11 +2,11 @@ import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import type { BasicStoreEntity } from '../../types/store';
-import { getEntitiesListFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { OPENCTI_NAMESPACE, RULE_PREFIX } from '../../schema/general';
-import { RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
+import { INTERNAL_USERS, RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { rule_definitions } from '../../rules/rules-definition';
 import {
   ENTITY_TYPE_INGESTION_CSV,
@@ -89,6 +89,11 @@ const resolveFeedOfConnector = async (context: AuthContext, connectorId: string)
   return feedIndex.byConnectorId.get(connectorId);
 };
 
+const uniqueConnectorOfUser = (connectors: BasicStoreEntityConnector[], userId: string) => {
+  const userConnectors = connectors.filter((c) => c.connector_user_id === userId);
+  return userConnectors.length === 1 ? userConnectors[0] : undefined;
+};
+
 /**
  * Connector responsible for the write: the one of the work being processed if any,
  * otherwise the unique connector running with this user.
@@ -102,8 +107,45 @@ const resolveWritingConnector = async (context: AuthContext, user: AuthUser) => 
       return workConnector;
     }
   }
-  const userConnectors = connectors.filter((c) => c.connector_user_id === user.id);
-  return userConnectors.length === 1 ? userConnectors[0] : undefined;
+  return uniqueConnectorOfUser(connectors, user.id);
+};
+
+const sourceFromConnector = async (context: AuthContext, connector: BasicStoreEntityConnector, workId: string | null): Promise<AssertionSource> => {
+  if (isOpenAevCoverageConnector(connector)) {
+    return { source_id: connector.internal_id, source_kind: SOURCE_KIND_EMULATION, source_name: connector.name, work_id: workId };
+  }
+  if (connector.built_in) {
+    const feed = await resolveFeedOfConnector(context, connector.internal_id);
+    const feedName = feed?.name ?? connector.name.replace(BUILT_IN_FEED_NAME_PREFIX, '');
+    return { source_id: feed?.id ?? connector.internal_id, source_kind: SOURCE_KIND_FEED, source_name: feedName, work_id: workId };
+  }
+  return { source_id: connector.internal_id, source_kind: SOURCE_KIND_CONNECTOR, source_name: connector.name, work_id: workId };
+};
+
+const sourceFromRule = (fromRule: string | undefined): AssertionSource => {
+  const ruleId = fromRule?.startsWith(RULE_PREFIX) ? fromRule.substring(RULE_PREFIX.length) : (fromRule ?? RULE_MANAGER_USER.id);
+  const definition = rule_definitions.find((rule) => rule.id === ruleId);
+  return { source_id: ruleId, source_kind: SOURCE_KIND_INFERENCE, source_name: definition?.name ?? ruleId, work_id: null };
+};
+
+/**
+ * Source behind a past write known only by its user id (attribute modifier, creator).
+ */
+export const resolveSourceOfUser = async (context: AuthContext, userId: string): Promise<AssertionSource> => {
+  if (userId === RULE_MANAGER_USER.id) {
+    return sourceFromRule(undefined);
+  }
+  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+  const connector = uniqueConnectorOfUser(connectors, userId);
+  if (connector) {
+    return sourceFromConnector(context, connector, null);
+  }
+  const internalUser = INTERNAL_USERS[userId];
+  if (internalUser) {
+    return { source_id: userId, source_kind: SOURCE_KIND_USER, source_name: internalUser.name, work_id: null };
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  return { source_id: userId, source_kind: SOURCE_KIND_USER, source_name: platformUsers.get(userId)?.name ?? userId, work_id: null };
 };
 
 type ResolvableInput = { createdBy?: { internal_id?: string; name?: string } | null } | null | undefined;
@@ -121,21 +163,11 @@ export const resolveAssertionSource = async (
 ): Promise<AssertionSource> => {
   const workId = context.workId ?? null;
   if (opts.fromRule || user.id === RULE_MANAGER_USER.id) {
-    const ruleId = opts.fromRule?.startsWith(RULE_PREFIX) ? opts.fromRule.substring(RULE_PREFIX.length) : (opts.fromRule ?? RULE_MANAGER_USER.id);
-    const definition = rule_definitions.find((rule) => rule.id === ruleId);
-    return { source_id: ruleId, source_kind: SOURCE_KIND_INFERENCE, source_name: definition?.name ?? ruleId, work_id: null };
+    return sourceFromRule(opts.fromRule);
   }
   const connector = await resolveWritingConnector(context, user);
   if (connector) {
-    if (isOpenAevCoverageConnector(connector)) {
-      return { source_id: connector.internal_id, source_kind: SOURCE_KIND_EMULATION, source_name: connector.name, work_id: workId };
-    }
-    if (connector.built_in) {
-      const feed = await resolveFeedOfConnector(context, connector.internal_id);
-      const feedName = feed?.name ?? connector.name.replace(BUILT_IN_FEED_NAME_PREFIX, '');
-      return { source_id: feed?.id ?? connector.internal_id, source_kind: SOURCE_KIND_FEED, source_name: feedName, work_id: workId };
-    }
-    return { source_id: connector.internal_id, source_kind: SOURCE_KIND_CONNECTOR, source_name: connector.name, work_id: workId };
+    return sourceFromConnector(context, connector, workId);
   }
   const author = input?.createdBy;
   if (author?.internal_id) {

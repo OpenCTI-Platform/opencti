@@ -18,7 +18,8 @@ export const ATTRIBUTE_FRESHNESS_RULE_ID = 'freshness_rule_id';
 // so that it never needs a daily rewrite of every document.
 export const VIRTUAL_FRESHNESS_DAYS = 'freshness_days';
 
-// Fields owned by the provenance side channel. Regular element updates never overwrite them.
+// Fields owned by the provenance side channel. Regular element updates never overwrite them
+// and clients can never set them through creation, upsert or update inputs.
 export const PROVENANCE_SIDE_CHANNEL_FIELDS = [
   ATTRIBUTE_ASSERTIONS,
   ATTRIBUTE_CORROBORATION_COUNT,
@@ -26,16 +27,13 @@ export const PROVENANCE_SIDE_CHANNEL_FIELDS = [
   ATTRIBUTE_SINGLE_SOURCED,
   ATTRIBUTE_HAS_CONFLICTS,
   ATTRIBUTE_CONFLICTS,
+  ATTRIBUTE_PROCEDURES,
   ATTRIBUTE_FRESHNESS_STALE,
   ATTRIBUTE_FRESHNESS_STALE_AT,
   ATTRIBUTE_FRESHNESS_RULE_ID,
 ];
 
-// Fields that clients can never set through creation or upsert inputs.
-export const PROVENANCE_PROTECTED_INPUT_FIELDS = [
-  ...PROVENANCE_SIDE_CHANNEL_FIELDS,
-  ATTRIBUTE_PROCEDURES,
-];
+export const PROVENANCE_PROTECTED_INPUT_FIELDS = PROVENANCE_SIDE_CHANNEL_FIELDS;
 
 export const SOURCE_KIND_CONNECTOR = 'connector';
 export const SOURCE_KIND_FEED = 'feed';
