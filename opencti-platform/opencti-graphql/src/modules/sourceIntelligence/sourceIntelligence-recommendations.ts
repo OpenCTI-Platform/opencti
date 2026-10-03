@@ -465,7 +465,11 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
         await updateConnectorRequestedStatus(context, user, { id: revert.connector_id, status });
         return status === ConnectorRequestStatus.Starting ? 'Managed connector restarted' : 'Managed connector left stopped as before';
       }
-      if (revert.source_id) await patchAttribute(context, user, revert.source_id, ENTITY_TYPE_SOURCE, { enabled: true });
+      if (revert.source_id) {
+        await patchAttribute(context, user, revert.source_id, ENTITY_TYPE_SOURCE, { enabled: true });
+        // Stream increments read the cached sources: the re-enabled source is scored again without waiting for a reset
+        await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
+      }
       return 'Source enabled again';
     case RECOMMENDATION_CHANGE_SCHEDULE:
       if (revert.target === 'ingestion_feed') {
