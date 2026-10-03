@@ -38,13 +38,14 @@ const pulseSettingsAttributes: Array<AttributeDefinition> = [
 ];
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_SETTINGS, pulseSettingsAttributes);
 
+// Network data written by the read path only: never updated through the API, an import or an upsert.
 const pulseEntityAttributes: Array<AttributeDefinition> = [
-  { name: PULSE_ATTRIBUTE_KEYS, label: 'Threat Pulse keys', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-  { name: PULSE_ATTRIBUTE_PREVALENCE, label: 'Community prevalence', type: 'string', format: 'enum', values: PULSE_PREVALENCE_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: PULSE_ATTRIBUTE_TREND, label: 'Community trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: PULSE_ATTRIBUTE_SECTOR_TREND, label: 'Sector trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: PULSE_ATTRIBUTE_FIRST_SEEN, label: 'Network first seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: PULSE_ATTRIBUTE_UNIQUENESS, label: 'Community uniqueness', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: PULSE_ATTRIBUTE_KEYS, label: 'Threat Pulse keys', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, update: false, isFilterable: false },
+  { name: PULSE_ATTRIBUTE_PREVALENCE, label: 'Community prevalence', type: 'string', format: 'enum', values: PULSE_PREVALENCE_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+  { name: PULSE_ATTRIBUTE_TREND, label: 'Community trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+  { name: PULSE_ATTRIBUTE_SECTOR_TREND, label: 'Sector trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+  { name: PULSE_ATTRIBUTE_FIRST_SEEN, label: 'Network first seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+  { name: PULSE_ATTRIBUTE_UNIQUENESS, label: 'Community uniqueness', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   {
     name: PULSE_ATTRIBUTE_INFORMATION,
     label: 'Threat Pulse information',
@@ -54,6 +55,7 @@ const pulseEntityAttributes: Array<AttributeDefinition> = [
     editDefault: false,
     multiple: false,
     upsert: false,
+    update: false,
     isFilterable: false,
     mappings: [
       { name: 'published', label: 'Published on Threat Pulse', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

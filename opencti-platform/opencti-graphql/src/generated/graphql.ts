@@ -33332,6 +33332,8 @@ export enum StixDomainObjectsOrdering {
   Priority = 'priority',
   Product = 'product',
   Published = 'published',
+  PulseCommunityUniqueness = 'pulse_community_uniqueness',
+  PulseFirstSeenNetwork = 'pulse_first_seen_network',
   Rating = 'rating',
   RefreshedAt = 'refreshed_at',
   ReportTypes = 'report_types',
