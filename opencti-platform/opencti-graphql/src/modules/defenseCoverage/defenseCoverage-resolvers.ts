@@ -1,7 +1,4 @@
 import type { Resolvers } from '../../generated/graphql';
-import { fullEntitiesList } from '../../database/middleware-loader';
-import { ENTITY_TYPE_DATA_COMPONENT } from '../../schema/stixDomainObject';
-import type { BasicStoreEntity } from '../../types/store';
 import {
   addPlatformProvidesFromLogsources,
   buildDefenseMatrix,
@@ -20,6 +17,7 @@ import {
   findDefenseTechnique,
   getDefenseCoverageStatus,
   requestDefenseCoverageRecompute,
+  resolveMappingDataComponents,
   validateDefenseGaps,
 } from './defenseCoverage-domain';
 import {
@@ -72,11 +70,7 @@ const defenseCoverageResolvers: Resolvers = {
     securityCoverage: (request, _, context) => defenseGapValidationCoverage(context, context.user, request),
   },
   DefenseLogsourceMapping: {
-    resolvedDataComponents: async (mapping, _, context) => {
-      const names = new Set(mapping.data_components.map((n) => n.toLowerCase()));
-      const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, context.user, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name'] });
-      return dataComponents.filter((dc) => names.has((dc.name ?? '').toLowerCase()));
-    },
+    resolvedDataComponents: (mapping, _, context) => resolveMappingDataComponents(context, context.user, mapping.data_components),
   },
   Mutation: {
     defenseGapsValidate: (_, { input }, context) => validateDefenseGaps(context, context.user, input),

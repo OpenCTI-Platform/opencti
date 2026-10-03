@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseProvidedDataComponentsQuery } from './__generated__/DefenseProvidedDataComponentsQuery.graphql';
 import { DefenseProvidedDataComponentsDeleteMutation } from './__generated__/DefenseProvidedDataComponentsDeleteMutation.graphql';
 import { DefenseProvidedDataComponentsLogsourcesMutation } from './__generated__/DefenseProvidedDataComponentsLogsourcesMutation.graphql';
@@ -97,8 +98,9 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
         id: entityId,
         logsources: logsources.map((l) => ({ category: l.category || null, product: l.product || null, service: l.service || null })),
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         const payload = response.defensePlatformProvidesFromLogsources;
+        if (notifyPayloadErrors(errors) || !payload) return;
         setResult({ created: payload?.created_count ?? 0, unmatched: payload?.unmatched_data_components ?? [] });
         setLogsources([]);
         onDone();
@@ -180,7 +182,12 @@ const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<Defens
                 priority="tertiary"
                 aria-label={t_i18n('Remove {name}', { values: { name: relation.to?.name ?? '' } })}
                 icon={<DeleteOutlined fontSize="small" />}
-                onClick={() => commitDelete({ variables: { id: relation.id }, onCompleted: onDeleted })}
+                onClick={() => commitDelete({
+                  variables: { id: relation.id },
+                  onCompleted: (_, errors) => {
+                    if (!notifyPayloadErrors(errors)) onDeleted();
+                  },
+                })}
               />
             </Security>
           )}

@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { notifyPayloadErrors } from '../../defense/matrix/defenseMutation-utils';
 import { DefenseLogsourceMappingsLinesPaginationQuery } from './__generated__/DefenseLogsourceMappingsLinesPaginationQuery.graphql';
 import { DefenseLogsourceMappingsLines_data$key } from './__generated__/DefenseLogsourceMappingsLines_data.graphql';
 import { DefenseLogsourceMappingsLinesRefetchQuery } from './__generated__/DefenseLogsourceMappingsLinesRefetchQuery.graphql';
@@ -100,9 +101,7 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
     queryData,
   );
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [commitDelete, deleting] = useApiMutation<DefenseLogsourceMappingsDeleteMutation>(defenseLogsourceMappingsDeleteMutation, undefined, {
-    successMessage: t_i18n('Telemetry mapping deleted'),
-  });
+  const [commitDelete, deleting] = useApiMutation<DefenseLogsourceMappingsDeleteMutation>(defenseLogsourceMappingsDeleteMutation);
   const [commitActive] = useApiMutation<DefenseLogsourceMappingsActiveMutation>(defenseLogsourceMappingsActiveMutation);
   React.useEffect(() => {
     if (refreshKey > 0) refetch({}, { fetchPolicy: 'network-only' });
@@ -152,7 +151,10 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
                       <Switch
                         aria-label={t_i18n('Active')}
                         checked={mapping.active}
-                        onCheckedChange={(checked) => commitActive({ variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] } })}
+                        onCheckedChange={(checked) => commitActive({
+                          variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] },
+                          onCompleted: (_, errors) => notifyPayloadErrors(errors),
+                        })}
                       />
                     </TableCell>
                     <TableCell align="right">
@@ -196,7 +198,9 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
             disabled={deleting}
             onClick={() => toDelete && commitDelete({
               variables: { id: toDelete.id },
-              onCompleted: () => {
+              onCompleted: (_, errors) => {
+                if (notifyPayloadErrors(errors)) return;
+                MESSAGING$.notifySuccess(t_i18n('Telemetry mapping deleted'));
                 setToDelete(null);
                 refetch({}, { fetchPolicy: 'network-only' });
               },
@@ -276,7 +280,8 @@ const DefenseLogsourceMappings = () => {
             data-testid="defense-logsource-mappings-reset-confirm"
             onClick={() => commitReset({
               variables: {},
-              onCompleted: (response) => {
+              onCompleted: (response, errors) => {
+                if (notifyPayloadErrors(errors) || response.defenseLogsourceMappingsReset == null) return;
                 setResetOpen(false);
                 refresh();
                 MESSAGING$.notifySuccess(t_i18n('{count} built-in mappings restored', { values: { count: response.defenseLogsourceMappingsReset ?? 0 } }));

@@ -628,18 +628,29 @@ const computeGapViews = async (context: AuthContext, user: AuthUser, args: GapsA
   return { gaps: sortGaps(gaps, args.orderBy, args.orderMode), evaluation };
 };
 
-const attachGapRecords = async (context: AuthContext, gaps: DefenseGapView[]) => {
+const attachGapRecords = async (context: AuthContext, user: AuthUser, gaps: DefenseGapView[]) => {
   if (gaps.length === 0) return gaps;
   const records = await findByIdsChunked<BasicStoreEntityDefenseGap>(context, SYSTEM_USER, gaps.map((g) => g.internal_id), { type: ENTITY_TYPE_DEFENSE_GAP });
   const recordsById = new Map(records.map((r) => [r.internal_id, r]));
+  // Gap records are shared: a request is only shown when the reader can access what it references
+  const referencedIds = records.flatMap((r) => (r.validation_requests ?? []).flatMap((request) => [
+    request.security_coverage_id,
+    request.grouping_id,
+    ...(request.threat_id ? [request.threat_id] : []),
+  ]));
+  const accessible = await findByIdsChunked<BasicStoreEntity>(context, user, referencedIds, { baseData: true });
+  const accessibleIds = new Set(accessible.map((element) => element.internal_id));
   return gaps.map((gap) => {
     const record = recordsById.get(gap.internal_id);
     if (!record) return gap;
+    const requests = (record.validation_requests ?? [])
+      .filter((request) => accessibleIds.has(request.security_coverage_id) && accessibleIds.has(request.grouping_id))
+      .map((request) => ({ ...request, threat_id: request.threat_id && accessibleIds.has(request.threat_id) ? request.threat_id : undefined }));
     return {
       ...gap,
       opened_at: record.opened_at,
-      validation_requests: record.validation_requests ?? [],
-      last_validation_requested_at: record.last_validation_requested_at,
+      validation_requests: requests,
+      last_validation_requested_at: requests.length > 0 ? record.last_validation_requested_at : undefined,
     };
   });
 };
@@ -659,7 +670,7 @@ export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args
   const first = Math.min(Math.max(args.first ?? DEFAULT_GAPS_PAGE_SIZE, 1), MAX_GAPS_PAGE_SIZE);
   const start = decodeOffset(args.after);
   const { gaps } = await computeGapViews(context, user, args);
-  const page = await attachGapRecords(context, gaps.slice(start, start + first));
+  const page = await attachGapRecords(context, user, gaps.slice(start, start + first));
   const edges = page.map((node, index) => ({ cursor: encodeOffset(start + index), node }));
   return {
     edges,
@@ -677,11 +688,40 @@ export const defenseTechniqueGaps = async (context: AuthContext, view: DefenseTe
   const { evaluation, technique, evaluated } = view;
   const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...(evaluation.selected ?? evaluation.platforms.map((p) => p.id))];
   const gaps = platformKeys.map((platformId) => buildGapView(technique, evaluated, platformId, evaluation));
-  return attachGapRecords(context, gaps);
+  return attachGapRecords(context, user, gaps);
 };
 
 export const defenseGapRequiredDataComponents = async (context: AuthContext, user: AuthUser, gap: DefenseGapView) => {
   return findByIdsChunked<BasicStoreEntityDataComponent>(context, user, gap.required_data_component_ids, { type: ENTITY_TYPE_DATA_COMPONENT });
+};
+
+// Field resolvers run once per node: share the full lists they need for the duration of one request
+const requestCaches = new WeakMap<AuthContext, Map<string, Promise<unknown>>>();
+const cachedForRequest = <T>(context: AuthContext, key: string, loader: () => Promise<T>): Promise<T> => {
+  let cache = requestCaches.get(context);
+  if (!cache) {
+    cache = new Map();
+    requestCaches.set(context, cache);
+  }
+  if (!cache.has(key)) {
+    const promise = loader();
+    promise.catch(() => cache?.delete(key));
+    cache.set(key, promise);
+  }
+  return cache.get(key) as Promise<T>;
+};
+
+export const listDataComponentNames = (context: AuthContext, user: AuthUser) => {
+  return cachedForRequest(context, `data-components:${user.id}`, () => fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], {
+    baseData: true,
+    baseFields: ['name'],
+  }));
+};
+
+export const resolveMappingDataComponents = async (context: AuthContext, user: AuthUser, dataComponentNames: ReadonlyArray<string>) => {
+  const names = new Set(dataComponentNames.map((n) => n.toLowerCase()));
+  const dataComponents = await listDataComponentNames(context, user);
+  return dataComponents.filter((dc) => names.has((dc.name ?? '').toLowerCase()));
 };
 
 const loadRuleCandidates = async (
@@ -692,8 +732,8 @@ const loadRuleCandidates = async (
   const candidateIds = uniq(gaps.flatMap((g) => g.available_rule_ids.filter((id) => !g.deployed_rule_ids.includes(id))));
   const [indicators, mappings, dataComponents] = await Promise.all([
     findByIdsChunked<BasicStoreEntityIndicator>(context, user, candidateIds, { type: ENTITY_TYPE_INDICATOR }),
-    listAllDefenseLogsourceMappings(context, SYSTEM_USER),
-    fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name'] }),
+    cachedForRequest(context, 'mappings', () => listAllDefenseLogsourceMappings(context, SYSTEM_USER)),
+    listDataComponentNames(context, SYSTEM_USER),
   ]);
   const activeMappings = mappings.filter((m) => m.active);
   const dataComponentIdsByName = new Map<string, string[]>();
@@ -749,7 +789,7 @@ const EXPORT_HEADERS = [
 
 export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs) => {
   const { gaps } = await computeGapViews(context, user, args);
-  const rows = await attachGapRecords(context, gaps.slice(0, MAX_EXPORT_ROWS));
+  const rows = await attachGapRecords(context, user, gaps.slice(0, MAX_EXPORT_ROWS));
   const candidates = await loadRuleCandidates(context, user, rows);
   const csv = buildCsv(EXPORT_HEADERS, rows.map((gap) => [
     gap.x_mitre_id ?? '',

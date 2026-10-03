@@ -364,8 +364,8 @@ const storeGaps = async (
     const { attackPattern, platformId, cellPlatform, standardId, internalId } = wanted[index];
     const previous = existingById.get(internalId);
     const isClosed = cellPlatform.level >= DEFENSE_LEVEL_VALIDATED;
-    const wasClosed = previous?.status === DEFENSE_GAP_STATUS_CLOSED;
-    if (isClosed && !wasClosed) closed += 1;
+    // Only an actual open -> closed transition counts, not a technique already validated at its first computation
+    if (isClosed && previous?.status === DEFENSE_GAP_STATUS_OPEN) closed += 1;
     const platformName = platformId === DEFENSE_AGGREGATE_PLATFORM ? 'All platforms' : (platformNames.get(platformId) ?? platformId);
     const input = {
       internal_id: internalId,

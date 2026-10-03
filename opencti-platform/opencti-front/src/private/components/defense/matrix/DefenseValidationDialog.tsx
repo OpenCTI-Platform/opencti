@@ -13,7 +13,9 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { MESSAGING$ } from '../../../../relay/environment';
 import type { DefenseThreatOption } from './defenseMatrix-utils';
+import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseValidationDialogMutation } from './__generated__/DefenseValidationDialogMutation.graphql';
 
 const defenseValidationDialogMutation = graphql`
@@ -60,11 +62,12 @@ interface DefenseValidationDialogProps {
 const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platformIds, threats }: DefenseValidationDialogProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commit] = useApiMutation<DefenseValidationDialogMutation>(defenseValidationDialogMutation, undefined, {
-    successMessage: t_i18n('Validation requested in OpenAEV'),
-  });
+  const [commit] = useApiMutation<DefenseValidationDialogMutation>(defenseValidationDialogMutation);
   const validationSchema = Yup.object().shape({
-    name: Yup.string().trim().max(250),
+    // Optional: an empty name lets the platform generate one
+    name: Yup.string().trim().transform((value) => (value === '' ? undefined : value))
+      .min(2, t_i18n('Name must be at least 2 characters'))
+      .max(250),
     periodicity: Yup.string().required(t_i18n('This field is required')),
     duration: Yup.string().required(t_i18n('This field is required')),
   });
@@ -92,11 +95,13 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
           platforms_affinity: values.platforms_affinity,
         },
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors) || !response.defenseGapsValidate) return;
+        MESSAGING$.notifySuccess(t_i18n('Validation requested in OpenAEV'));
         onValidated?.();
         onClose();
-        const coverageId = response.defenseGapsValidate?.securityCoverage.id;
+        const coverageId = response.defenseGapsValidate.securityCoverage.id;
         if (coverageId) {
           navigate(`/dashboard/analyses/security_coverages/${coverageId}`);
         }

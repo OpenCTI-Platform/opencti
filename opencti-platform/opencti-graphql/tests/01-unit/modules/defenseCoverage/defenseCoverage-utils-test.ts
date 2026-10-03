@@ -90,7 +90,7 @@ describe('Defense coverage detection status and levels', () => {
   });
   it('should compute every platform level', () => {
     expect(computePlatformLevel(false, 'none', 'none')).toEqual(0);
-    expect(computePlatformLevel(false, 'available', 'none')).toEqual(0);
+    expect(computePlatformLevel(false, 'available', 'none')).toEqual(2);
     expect(computePlatformLevel(true, 'none', 'none')).toEqual(1);
     expect(computePlatformLevel(true, 'available', 'none')).toEqual(2);
     expect(computePlatformLevel(false, 'deployed', 'none')).toEqual(3);
@@ -166,10 +166,29 @@ describe('Defense coverage evaluation for a reader', () => {
     expect(evaluateCoverage('ap-1', coverage, () => true).level).toEqual(4);
     expect(evaluateCoverage('ap-1', coverage, () => true, [PLATFORM]).level).toEqual(2);
   });
+  it('should cap the technique at 2 when its latest validation failed', () => {
+    const base = buildCoverage();
+    const coverage: DefenseCoverage = {
+      ...base,
+      validations: [{ id: 'scr-3', rel: 'covered-3', status: 'failed', last_result_at: '2026-09-03T00:00:00.000Z', scores: [] }],
+      platforms: [{ ...base.platforms[0], validations: [], level: 3 }],
+    };
+    const cell = evaluateCoverage('ap-1', coverage, () => true);
+    expect(cell.validated).toEqual('failed');
+    expect(cellForPlatform(cell, PLATFORM).level).toEqual(3);
+    expect(cell.level).toEqual(2);
+  });
+  it('should keep a platform validation when another result failed later', () => {
+    const coverage: DefenseCoverage = {
+      ...buildCoverage(),
+      validations: [{ id: 'scr-3', rel: 'covered-3', status: 'failed', last_result_at: '2026-09-03T00:00:00.000Z', scores: [] }],
+    };
+    expect(evaluateCoverage('ap-1', coverage, () => true).level).toEqual(4);
+  });
   it('should default the cell of a platform without any evidence', () => {
     const cell = evaluateCoverage('ap-1', buildCoverage(), () => true);
     const missing = cellForPlatform(cell, 'platform-unknown');
-    expect(missing.level).toEqual(0);
+    expect(missing.level).toEqual(2);
     expect(missing.detection).toEqual('available');
     expect(missing.recommended_action).toEqual('add_telemetry');
   });

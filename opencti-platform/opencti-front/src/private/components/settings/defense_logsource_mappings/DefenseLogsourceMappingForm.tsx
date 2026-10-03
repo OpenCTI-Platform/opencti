@@ -19,7 +19,8 @@ import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { notifyPayloadErrors } from '../../defense/matrix/defenseMutation-utils';
 import { DefenseLogsourceMappingFormSearchQuery$data } from './__generated__/DefenseLogsourceMappingFormSearchQuery.graphql';
 import { DefenseLogsourceMappingFormAddMutation } from './__generated__/DefenseLogsourceMappingFormAddMutation.graphql';
 import { DefenseLogsourceMappingFormPatchMutation } from './__generated__/DefenseLogsourceMappingFormPatchMutation.graphql';
@@ -94,12 +95,8 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
   const [active, setActive] = useState(true);
   const [options, setOptions] = useState<NameOption[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [commitAdd, adding] = useApiMutation<DefenseLogsourceMappingFormAddMutation>(defenseLogsourceMappingFormAddMutation, undefined, {
-    successMessage: t_i18n('Telemetry mapping created'),
-  });
-  const [commitPatch, patching] = useApiMutation<DefenseLogsourceMappingFormPatchMutation>(defenseLogsourceMappingFormPatchMutation, undefined, {
-    successMessage: t_i18n('Telemetry mapping updated'),
-  });
+  const [commitAdd, adding] = useApiMutation<DefenseLogsourceMappingFormAddMutation>(defenseLogsourceMappingFormAddMutation);
+  const [commitPatch, patching] = useApiMutation<DefenseLogsourceMappingFormPatchMutation>(defenseLogsourceMappingFormPatchMutation);
 
   useEffect(() => {
     if (!open) return;
@@ -143,7 +140,9 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
             { key: 'active', value: [active] },
           ],
         },
-        onCompleted: () => {
+        onCompleted: (response, errors) => {
+          if (notifyPayloadErrors(errors) || !response.defenseLogsourceMappingFieldPatch) return;
+          MESSAGING$.notifySuccess(t_i18n('Telemetry mapping updated'));
           onSaved();
           onClose();
         },
@@ -161,7 +160,9 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
           active,
         },
       },
-      onCompleted: () => {
+      onCompleted: (response, errors) => {
+        if (notifyPayloadErrors(errors) || !response.defenseLogsourceMappingAdd) return;
+        MESSAGING$.notifySuccess(t_i18n('Telemetry mapping created'));
         onSaved();
         onClose();
       },

@@ -59,3 +59,25 @@ export const normalizeIndicatorRuleMetadata = (input: IndicatorRuleMetadataInput
   if (logsource) metadata.x_opencti_rule_logsource = logsource;
   return metadata;
 };
+
+/**
+ * Same normalization for field patches, so an edited rule keeps matching the telemetry mappings
+ * and the status / level rankings. A value normalized to nothing clears the field.
+ */
+export const normalizeIndicatorRuleEditInputs = <T extends { key: string; value: unknown[] }>(inputs: T[]): T[] => {
+  return inputs.map((input) => {
+    if (input.key === 'x_opencti_rule_status' || input.key === 'x_opencti_rule_level') {
+      const value = input.value
+        .map((v) => (typeof v === 'string' ? normalizeRuleValue(v) : v))
+        .filter((v) => v !== undefined && v !== null);
+      return { ...input, value };
+    }
+    if (input.key === 'x_opencti_rule_logsource') {
+      const value = input.value
+        .map((v) => (v && typeof v === 'object' ? normalizeIndicatorRuleLogsource(v as IndicatorRuleMetadataInput['x_opencti_rule_logsource']) : v))
+        .filter((v) => v !== undefined && v !== null);
+      return { ...input, value };
+    }
+    return input;
+  });
+};

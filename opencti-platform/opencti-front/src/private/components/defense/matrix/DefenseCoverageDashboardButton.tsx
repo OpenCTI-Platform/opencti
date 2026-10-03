@@ -9,6 +9,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import { resolveLink } from '../../../../utils/Entity';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseCoverageDashboardButtonMutation } from './__generated__/DefenseCoverageDashboardButtonMutation.graphql';
 import { buildDefenseCoverageDashboard } from './defenseCoverageDashboardTemplate';
 
@@ -26,9 +28,7 @@ const defenseCoverageDashboardButtonMutation = graphql`
 const DefenseCoverageDashboardButton = () => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commit, creating] = useApiMutation<DefenseCoverageDashboardButtonMutation>(defenseCoverageDashboardButtonMutation, undefined, {
-    successMessage: t_i18n('Defense coverage dashboard created'),
-  });
+  const [commit, creating] = useApiMutation<DefenseCoverageDashboardButtonMutation>(defenseCoverageDashboardButtonMutation);
   const create = () => {
     commit({
       variables: {
@@ -39,8 +39,10 @@ const DefenseCoverageDashboardButton = () => {
           manifest: serializeDashboardManifestForBackend(buildDefenseCoverageDashboard(t_i18n)),
         },
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (notifyPayloadErrors(errors)) return;
         if (response.workspaceDuplicate?.id) {
+          MESSAGING$.notifySuccess(t_i18n('Defense coverage dashboard created'));
           navigate(`${resolveLink('Dashboard')}/${response.workspaceDuplicate.id}`);
         }
       },
