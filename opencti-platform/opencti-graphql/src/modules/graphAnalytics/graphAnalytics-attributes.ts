@@ -1,18 +1,10 @@
 import type { AttributeDefinition, MappingDefinition, ObjectAttribute } from '../../schema/attribute-definition';
 import { GRAPH_CLUSTER_ID_FILTER, GRAPH_DEGREE_FILTER } from '../../utils/filtering/filtering-constants';
-import { ENTITY_TYPE_GRAPH_CLUSTER, GRAPH_CLUSTER_KINDS, GRAPH_CLUSTER_SOURCES, GRAPH_FEATURE_FAMILIES, GRAPH_METRICS_ATTRIBUTE } from './graphAnalytics-types';
+import { ENTITY_TYPE_GRAPH_CLUSTER, GRAPH_CLUSTER_KINDS, GRAPH_CLUSTER_SOURCES, GRAPH_METRICS_ATTRIBUTE } from './graphAnalytics-types';
 
-const featureFamilyMappings: MappingDefinition[] = GRAPH_FEATURE_FAMILIES.map((family) => ({
-  name: family,
-  label: family,
-  type: 'string',
-  format: 'short',
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: true,
-  upsert: false,
-  isFilterable: false,
-}));
+// Every indexed sub-field counts against the fields limit of every index (one mapping is shared by all indices).
+// Details only read back from the stored document are 'raw' (not indexed); staged copies only matched on a key are
+// 'flat' (one field): nothing filters, sorts or aggregates on their content.
 
 const pendingRunMappings: MappingDefinition[] = [
   { name: 'pending_cluster_id', label: 'Pending graph cluster', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -48,21 +40,8 @@ export const graphMetricsAttribute: ObjectAttribute = {
       isFilterable: true,
       associatedFilterKeys: [{ key: GRAPH_DEGREE_FILTER, label: 'Graph degree' }],
     },
-    {
-      name: 'degree_by_type',
-      label: 'Graph degree by relationship type',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: false,
-      isFilterable: false,
-      mappings: [
-        { name: 'relationship_type', label: 'Relationship type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-        { name: 'count', label: 'Count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      ],
-    },
+    // [{ relationship_type, count }]
+    { name: 'degree_by_type', label: 'Graph degree by relationship type', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'betweenness_approx', label: 'Approximate betweenness', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     {
       name: 'cluster_id',
@@ -89,44 +68,19 @@ export const graphMetricsAttribute: ObjectAttribute = {
   ],
 };
 
-const clusterFeaturesMappings: MappingDefinition[] = [
-  { name: 'family', label: 'Feature family', type: 'string', format: 'enum', values: [...GRAPH_FEATURE_FAMILIES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'ids', label: 'Feature entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-];
-
-// Cluster fields staged by a clustering run in progress, published when the run completes
-const pendingClusterAttribute: ObjectAttribute = {
+// Cluster fields staged by a clustering run in progress ({ run_id, name, cluster_kind, cluster_source, members_count,
+// representative_ids, cluster_features, computed_at }), published when the run completes; matched on run_id only
+const pendingClusterAttribute: AttributeDefinition = {
   name: 'pending_cluster',
   label: 'Pending cluster publication',
   type: 'object',
-  format: 'standard',
+  format: 'flat',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
   upsert: false,
   update: false,
   isFilterable: false,
-  mappings: [
-    { name: 'run_id', label: 'Last computation run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'cluster_kind', label: 'Cluster kind', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_KINDS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'cluster_source', label: 'Cluster source', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_SOURCES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'members_count', label: 'Members count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'representative_ids', label: 'Representative entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    {
-      name: 'cluster_features',
-      label: 'Cluster shared features',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: false,
-      isFilterable: false,
-      mappings: clusterFeaturesMappings,
-    },
-    { name: 'computed_at', label: 'Last computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  ],
 };
 
 export const graphClusterAttributes: AttributeDefinition[] = [
@@ -136,18 +90,8 @@ export const graphClusterAttributes: AttributeDefinition[] = [
   { name: 'cluster_source', label: 'Cluster source', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_SOURCES], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'members_count', label: 'Members count', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'representative_ids', label: 'Representative entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: false },
-  {
-    name: 'cluster_features',
-    label: 'Cluster shared features',
-    type: 'object',
-    format: 'standard',
-    mandatoryType: 'no',
-    editDefault: false,
-    multiple: true,
-    upsert: true,
-    isFilterable: false,
-    mappings: clusterFeaturesMappings,
-  },
+  // [{ family, ids }]
+  { name: 'cluster_features', label: 'Cluster shared features', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: false },
   { name: 'promoted_to_ids', label: 'Promoted to', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   { name: 'last_run_id', label: 'Last computation run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'last_computed_at', label: 'Last computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -162,17 +106,7 @@ export const graphSimilarityAttributes: AttributeDefinition[] = [
   { name: 'similarity_score', label: 'Similarity score', type: 'numeric', precision: 'float', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'similarity_jaccard', label: 'Similarity weighted Jaccard', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'similarity_structural', label: 'Similarity structural cosine', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  {
-    name: 'similarity_shared',
-    label: 'Similarity shared evidence',
-    type: 'object',
-    format: 'standard',
-    mandatoryType: 'no',
-    editDefault: false,
-    multiple: false,
-    upsert: false,
-    isFilterable: false,
-    mappings: featureFamilyMappings,
-  },
+  // { <feature family>: [entity ids] }
+  { name: 'similarity_shared', label: 'Similarity shared evidence', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'similarity_computed_at', label: 'Similarity computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 ];

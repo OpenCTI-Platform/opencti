@@ -644,11 +644,11 @@ const reconcileRunClusterIdentities = async (context: AuthContext, runId: string
 };
 
 const publishRunClusters = async (runId: string) => {
-  await updateRunClusters(CLUSTER_PUBLISH_SCRIPT, { term: { 'pending_cluster.run_id.keyword': runId } }, 'Graph analytics clusters publication fail');
+  await updateRunClusters(CLUSTER_PUBLISH_SCRIPT, { term: { 'pending_cluster.run_id': runId } }, 'Graph analytics clusters publication fail');
   await updateRunClusters(CLUSTER_DROP_PENDING_SCRIPT, {
     bool: {
-      must: [{ exists: { field: 'pending_cluster.run_id' } }],
-      must_not: [{ term: { 'pending_cluster.run_id.keyword': runId } }],
+      must: [{ exists: { field: 'pending_cluster' } }],
+      must_not: [{ term: { 'pending_cluster.run_id': runId } }],
     },
   }, 'Graph analytics pending clusters cleanup fail');
 };
