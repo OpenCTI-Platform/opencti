@@ -6,6 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import IocValidationRequestDialog from './IocValidationRequestDialog';
 import { buildValidationCandidateFilters, IOC_VALIDATION_MAX_INDICATORS, selectValidationCandidates } from './disseminationAssuranceUtils';
 import type { LiveDeploymentsValidationButtonQuery } from './__generated__/LiveDeploymentsValidationButtonQuery.graphql';
@@ -67,8 +68,8 @@ const LiveDeploymentsDialog = ({ side, entityId, onClose }: LiveDeploymentsValid
     liveDeploymentsQuery,
     {
       count: IOC_VALIDATION_MAX_INDICATORS,
-      unprovenFilters: buildValidationCandidateFilters(side, entityId, false),
-      provenFilters: buildValidationCandidateFilters(side, entityId, true),
+      unprovenFilters: normalizeFilterGroupForBackend(buildValidationCandidateFilters(side, entityId, false)),
+      provenFilters: normalizeFilterGroupForBackend(buildValidationCandidateFilters(side, entityId, true)),
     },
     { fetchPolicy: 'network-only' },
   );
