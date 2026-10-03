@@ -118,6 +118,8 @@ Two widgets are dedicated to graph analytics (see [widget creation](widgets.md))
 
 Both are available in public dashboards.
 
+To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the cluster size over time, the similarity of the most connected threats, and two lists ranked by graph degree: the threat and malware hubs and the infrastructure hubs. Like any dashboard, it can then be edited, shared or made public.
+
 ## What's next?
 
 - [Pivot and investigate](pivoting.md) in investigations.
