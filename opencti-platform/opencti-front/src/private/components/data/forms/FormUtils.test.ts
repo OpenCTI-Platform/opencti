@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { convertFormBuilderDataToSchema, getAttributesForEntityType, getInitialMandatoryFields, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
-import type { FormBuilderData } from './Form.d';
+import {
+  convertFormBuilderDataToSchema,
+  formatFormSchemaMappingError,
+  getAttributesForEntityType,
+  getInitialMandatoryFields,
+  normalizeDraftAuthorizedMembersDefaults,
+  removeFieldsSupersededByParsedMapping,
+  validateFormSchemaMappings,
+} from './FormUtils';
+import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 const baseBuilderData: FormBuilderData = {
@@ -21,6 +29,117 @@ const baseBuilderData: FormBuilderData = {
   relationships: [],
   active: true,
 };
+
+describe('validateFormSchemaMappings', () => {
+  it('returns null when mainEntityFieldMode is not parsed and no additional entities use parsed mode', () => {
+    const data: FormBuilderData = { ...baseBuilderData, mainEntityFieldMode: 'multiple', additionalEntities: [] };
+
+    expect(validateFormSchemaMappings(data)).toBeNull();
+  });
+
+  it('returns a main-entity-mapping error when mainEntityFieldMode is parsed but mainEntityParseFieldMapping is missing', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: undefined,
+      additionalEntities: [],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({ type: 'main-entity-mapping' });
+  });
+
+  it('returns null when mainEntityFieldMode is parsed and mainEntityParseFieldMapping is set', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: 'pattern',
+      additionalEntities: [],
+    };
+
+    expect(validateFormSchemaMappings(data)).toBeNull();
+  });
+
+  it('returns an additional-entity-mappings error listing labels of additional entities missing parseFieldMapping', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'multiple',
+      additionalEntities: [
+        {
+          id: 'a1',
+          entityType: 'IPv4-Addr',
+          label: 'IP Address',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: undefined,
+        },
+        {
+          id: 'a2',
+          entityType: 'Domain-Name',
+          label: 'Domain',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: 'value',
+        },
+        {
+          id: 'a3',
+          entityType: 'Url',
+          label: 'URL',
+          multiple: false,
+          fieldMode: 'multiple',
+          parseFieldMapping: undefined,
+        },
+      ],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address'],
+    });
+  });
+
+  it('prioritizes the main-entity-mapping error over additional-entity-mappings errors', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: undefined,
+      additionalEntities: [
+        {
+          id: 'a1',
+          entityType: 'IPv4-Addr',
+          label: 'IP Address',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: undefined,
+        },
+      ],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({ type: 'main-entity-mapping' });
+  });
+});
+
+describe('formatFormSchemaMappingError', () => {
+  const t_i18n = (message: string) => `translated:${message}`;
+
+  it('formats a main-entity-mapping error with the translated message', () => {
+    expect(formatFormSchemaMappingError({ type: 'main-entity-mapping' }, t_i18n))
+      .toBe('translated:Map parsed values to attribute is required when using parsed mode');
+  });
+
+  it('translates the additional-entity prefix and appends one raw label', () => {
+    expect(formatFormSchemaMappingError({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address'],
+    }, t_i18n)).toBe('translated:Map parsed values to attribute is required for: IP Address');
+  });
+
+  it('translates the additional-entity prefix and appends multiple raw labels', () => {
+    expect(formatFormSchemaMappingError({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address', 'Domain'],
+    }, t_i18n)).toBe('translated:Map parsed values to attribute is required for: IP Address, Domain');
+  });
+});
 
 describe('normalizeDraftAuthorizedMembersDefaults', () => {
   it('should migrate legacy rules to normalized authorized member options', () => {
@@ -296,5 +415,56 @@ describe('container content attribute mapping', () => {
     expect(mandatoryFields).toHaveLength(1);
     expect(mandatoryFields[0].attributeMapping.attributeName).toBe('content');
     expect(mandatoryFields[0].type).toBe('textarea');
+  });
+});
+
+describe('removeFieldsSupersededByParsedMapping', () => {
+  const makeField = (entity: string, attributeName: string): FormFieldAttribute => ({
+    id: `field-${entity}-${attributeName}`,
+    name: attributeName,
+    label: attributeName,
+    type: 'text',
+    required: false,
+    attributeMapping: { entity, attributeName },
+  });
+
+  it('returns the fields unchanged when no mapping is selected', () => {
+    const fields = [makeField('main_entity', 'name')];
+
+    expect(removeFieldsSupersededByParsedMapping(fields, 'main_entity', undefined, '')).toBe(fields);
+  });
+
+  it('removes every pre-provisioned field for the entity on the first selection', () => {
+    const fields = [
+      makeField('main_entity', 'name'),
+      makeField('main_entity', 'description'),
+      makeField('entity-1', 'name'),
+    ];
+
+    const result = removeFieldsSupersededByParsedMapping(fields, 'main_entity', undefined, 'content');
+
+    expect(result).toEqual([makeField('entity-1', 'name')]);
+  });
+
+  it('only removes the field matching the newly selected attribute on a later change', () => {
+    const fields = [
+      makeField('main_entity', 'name'),
+      makeField('main_entity', 'description'),
+    ];
+
+    const result = removeFieldsSupersededByParsedMapping(fields, 'main_entity', 'name', 'description');
+
+    expect(result).toEqual([makeField('main_entity', 'name')]);
+  });
+
+  it('scopes removal to the given entity attribute id, leaving other entities untouched', () => {
+    const fields = [
+      makeField('main_entity', 'content'),
+      makeField('entity-1', 'content'),
+    ];
+
+    const result = removeFieldsSupersededByParsedMapping(fields, 'entity-1', undefined, 'content');
+
+    expect(result).toEqual([makeField('main_entity', 'content')]);
   });
 });

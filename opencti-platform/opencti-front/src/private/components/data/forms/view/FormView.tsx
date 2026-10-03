@@ -10,7 +10,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
@@ -35,7 +35,7 @@ import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import { FormSchemaDefinition } from '../Form.d';
 import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
-import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
+import { computeDraftPolicy, convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import TextareaField from '../../../../../components/TextareaField';
 import { Checkbox } from '@filigran/design-system';
@@ -178,8 +178,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   }
 
   const { form_schema } = form;
-  const { schema, initialValues, mainEntityFields } = React.useMemo(() => {
-    const parsedSchema: FormSchemaDefinition = JSON.parse(form_schema);
+  const schema = React.useMemo(() => JSON.parse(form_schema) as FormSchemaDefinition, [form_schema]);
+  const draftPolicy = useMemo(
+    () => computeDraftPolicy(schema.draftDefaults, isBypass),
+    [schema.draftDefaults, isBypass],
+  );
+  const { initialValues, mainEntityFields } = React.useMemo(() => {
+    const parsedSchema = schema;
     const inits: FormInitialValues = {};
 
     // Initialize values for main entity fields
@@ -189,22 +194,22 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     // A field should be registered in Formik if:
     // - the user can see and fill it (isEditable, or bypass who sees all fields), OR
     // - it has a default value to pre-populate silently on submission.
-    if (parsedSchema.draftDefaults?.name && (parsedSchema.draftDefaults.name.isEditable || isBypass || parsedSchema.draftDefaults.name.defaultValue)) {
-      inits.draftName = parsedSchema.draftDefaults.name.defaultValue || '';
+    if (draftPolicy.name.initialized) {
+      inits.draftName = parsedSchema.draftDefaults?.name?.defaultValue || '';
     }
 
-    if (parsedSchema.draftDefaults?.description && (parsedSchema.draftDefaults.description.isEditable || isBypass || parsedSchema.draftDefaults.description.defaultValue)) {
-      inits.draftDescription = parsedSchema.draftDefaults.description.defaultValue || '';
+    if (draftPolicy.description.initialized) {
+      inits.draftDescription = parsedSchema.draftDefaults?.description?.defaultValue || '';
     }
 
     const assigneeDef = parsedSchema.draftDefaults?.objectAssignee;
-    if (assigneeDef && (assigneeDef.isEditable || isBypass || (assigneeDef.defaults?.length ?? 0) > 0)) {
-      inits.draftObjectAssignee = assigneeDef.defaults || [];
+    if (draftPolicy.objectAssignee.initialized) {
+      inits.draftObjectAssignee = assigneeDef?.defaults || [];
     }
 
     const participantDef = parsedSchema.draftDefaults?.objectParticipant;
-    if (participantDef && (participantDef.isEditable || isBypass || (participantDef.defaults?.length ?? 0) > 0)) {
-      inits.draftObjectParticipant = participantDef.defaults || [];
+    if (draftPolicy.objectParticipant.initialized) {
+      inits.draftObjectParticipant = participantDef?.defaults || [];
     }
 
     if (parsedSchema.draftDefaults?.author?.type === 'static' && parsedSchema.draftDefaults.author.defaultValue) {
@@ -213,12 +218,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         label: parsedSchema.draftDefaults.author.defaultValueLabel || parsedSchema.draftDefaults.author.defaultValue,
         type: parsedSchema.draftDefaults.author.defaultValueType,
       };
-    } else if (parsedSchema.draftDefaults?.author && (parsedSchema.draftDefaults.author.isEditable || isBypass)) {
+    } else if (draftPolicy.author.initialized) {
       inits.draftAuthor = null;
     }
 
-    if (parsedSchema.draftDefaults?.authorizedMembers?.enabled) {
-      inits.draftAuthorizedMembers = parsedSchema.draftDefaults.authorizedMembers.defaults || [];
+    if (draftPolicy.authorizedMembers.initialized) {
+      inits.draftAuthorizedMembers = parsedSchema.draftDefaults?.authorizedMembers?.defaults || [];
     }
 
     // If main entity lookup is enabled, initialize the lookup field
@@ -393,8 +398,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       });
     }
 
-    return { schema: parsedSchema, initialValues: inits, mainEntityFields: mFields };
-  }, [form_schema, isBypass]);
+    return { initialValues: inits, mainEntityFields: mFields };
+  }, [schema, isBypass, draftPolicy]);
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
@@ -404,26 +409,25 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const extraShapes: Record<string, Yup.AnySchema> = {};
     // Validate only when the user can see the field (isEditable) AND is not a bypass user.
     // Bypass users are never blocked by required validation.
-    if (!isBypass && isDraft && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
+    if (isDraft && draftPolicy.name.validationRequired) {
       extraShapes.draftName = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
+    if (isDraft && draftPolicy.description.validationRequired) {
       extraShapes.draftDescription = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
+    if (isDraft && draftPolicy.objectAssignee.validationRequired) {
       extraShapes.draftObjectAssignee = Yup.array().min(1, t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
+    if (isDraft && draftPolicy.objectParticipant.validationRequired) {
       extraShapes.draftObjectParticipant = Yup.array().min(1, t_i18n('This field is required'));
     }
     // main_entity_author: empty is always valid (backend inherits from main entity)
-    const authorRequiresExplicitValue = schema.draftDefaults?.author?.type === 'none';
-    if (!isBypass && isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
+    if (isDraft && draftPolicy.author.validationRequired) {
       extraShapes.draftAuthor = Yup.object()
         .nullable()
         .required(t_i18n('This field is required'));
     }
-    if (!isBypass && isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
+    if (isDraft && draftPolicy.authorizedMembers.validationRequired) {
       extraShapes.draftAuthorizedMembers = Yup.array()
         .min(1, t_i18n('This field is required'));
     }
@@ -578,17 +582,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
-            const showDraftName = isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
-            const showDraftDescription = isDraft && !!(schema.draftDefaults?.description
-              && (isBypass || schema.draftDefaults.description.isEditable));
-            const showDraftObjectAssignee = isDraft && !!(schema.draftDefaults?.objectAssignee
-              && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
-            const showDraftObjectParticipant = isDraft && !!(schema.draftDefaults?.objectParticipant
-              && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
-            const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
-            const showDraftAuthorizedMembers = isDraft
-              && schema.draftDefaults?.authorizedMembers?.enabled
-              && (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
+            const showDraftName = isDraft && draftPolicy.name.visible;
+            const showDraftDescription = isDraft && draftPolicy.description.visible;
+            const showDraftObjectAssignee = isDraft && draftPolicy.objectAssignee.visible;
+            const showDraftObjectParticipant = isDraft && draftPolicy.objectParticipant.visible;
+            const showDraftAuthor = isDraft && draftPolicy.author.visible;
+            const showDraftAuthorizedMembers = isDraft && draftPolicy.authorizedMembers.visible;
             const showDraftSection = showDraftName
               || showDraftDescription
               || showDraftObjectAssignee
@@ -989,7 +988,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           component={TextField}
                           name="draftName"
                           label={t_i18n('Draft name')}
-                          required={schema.draftDefaults?.name?.isRequired}
+                          required={draftPolicy.name.required}
                           fullWidth
                         />
                       </div>
@@ -1000,7 +999,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           component={MarkdownField}
                           name="draftDescription"
                           label={t_i18n('Draft description')}
-                          required={schema.draftDefaults?.description?.isRequired}
+                          required={draftPolicy.description.required}
                           fullWidth={true}
                           multiline={true}
                           rows="4"
@@ -1011,7 +1010,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       <div style={{ marginTop: 20 }}>
                         <ObjectAssigneeField
                           name="draftObjectAssignee"
-                          required={schema.draftDefaults?.objectAssignee?.isRequired}
+                          required={draftPolicy.objectAssignee.required}
                           style={{ width: '100%', marginBottom: 20 }}
                         />
                       </div>
@@ -1020,7 +1019,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       <div style={{ marginTop: 20 }}>
                         <ObjectParticipantField
                           name="draftObjectParticipant"
-                          required={schema.draftDefaults?.objectParticipant?.isRequired}
+                          required={draftPolicy.objectParticipant.required}
                           style={{ width: '100%', marginBottom: 20 }}
                         />
                       </div>
@@ -1032,8 +1031,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           label={t_i18n('Draft author')}
                           style={{ width: '100%', marginBottom: 20 }}
                           setFieldValue={setFieldValue}
-                          required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type !== 'main_entity_author'}
-                          clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
+                          required={draftPolicy.author.required}
+                          clearable={draftPolicy.author.clearable}
                         />
                         {schema.draftDefaults?.author?.type === 'main_entity_author' && (
                           <FormHelperText style={{ marginTop: -16, marginBottom: 20 }}>

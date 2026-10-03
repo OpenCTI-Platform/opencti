@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatFormDataForSubmission } from './FormViewUtils';
+import { computeDraftPolicy, formatFormDataForSubmission } from './FormViewUtils';
 import { FormSchemaDefinition } from '../Form.d';
 
 type SubmissionValues = Parameters<typeof formatFormDataForSubmission>[0];
@@ -353,5 +353,81 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
 
     expect(formatted['additional_threat_lookup']).toEqual(['malware-id-1']);
     expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
+  });
+});
+
+describe('computeDraftPolicy', () => {
+  it('keeps non-editable default fields initialized but hidden', () => {
+    const policy = computeDraftPolicy({
+      name: { isEditable: false, isRequired: false, defaultValue: 'Default' },
+    }, false);
+
+    expect(policy.name.initialized).toBe(true);
+    expect(policy.name.visible).toBe(false);
+  });
+
+  it('marks an editable field visible and initialized', () => {
+    const policy = computeDraftPolicy({
+      name: { isEditable: true, isRequired: false },
+    }, false);
+
+    expect(policy.name.initialized).toBe(true);
+    expect(policy.name.visible).toBe(true);
+  });
+
+  it('marks a field visible and initialized for bypass users', () => {
+    const policy = computeDraftPolicy({
+      name: { isEditable: false, isRequired: false },
+    }, true);
+
+    expect(policy.name.initialized).toBe(true);
+    expect(policy.name.visible).toBe(true);
+  });
+
+  it('tracks required validation separately from the rendered required prop', () => {
+    const policy = computeDraftPolicy({
+      name: { isEditable: true, isRequired: true },
+    }, false);
+
+    expect(policy.name.required).toBe(true);
+    expect(policy.name.validationRequired).toBe(true);
+    expect(computeDraftPolicy({
+      name: { isEditable: true, isRequired: true },
+    }, true).name.validationRequired).toBe(false);
+  });
+
+  it('preserves the author inheritance clearable and required rules', () => {
+    const inherited = computeDraftPolicy({
+      author: { isEditable: true, isRequired: true, type: 'main_entity_author' },
+    }, false);
+    expect(inherited.author.clearable).toBe(true);
+    expect(inherited.author.required).toBe(false);
+    expect(inherited.author.validationRequired).toBe(false);
+
+    const staticAuthor = computeDraftPolicy({
+      author: { isEditable: true, isRequired: true, type: 'static', defaultValue: 'org-1' },
+    }, false);
+    expect(staticAuthor.author.clearable).toBe(false);
+    expect(staticAuthor.author.required).toBe(true);
+    expect(staticAuthor.author.validationRequired).toBe(false);
+
+    const explicitAuthor = computeDraftPolicy({
+      author: { isEditable: true, isRequired: true, type: 'none' },
+    }, false);
+    expect(explicitAuthor.author.validationRequired).toBe(true);
+  });
+
+  it('initializes authorized members when enabled and validates only for non-bypass required fields', () => {
+    const policy = computeDraftPolicy({
+      authorizedMembers: { enabled: true, isEditable: false, isRequired: true, defaults: [] },
+    }, false);
+
+    expect(policy.authorizedMembers.initialized).toBe(true);
+    expect(policy.authorizedMembers.visible).toBe(false);
+    expect(policy.authorizedMembers.required).toBe(true);
+    expect(policy.authorizedMembers.validationRequired).toBe(true);
+    expect(computeDraftPolicy({
+      authorizedMembers: { enabled: true, isEditable: false, isRequired: true, defaults: [] },
+    }, true).authorizedMembers.validationRequired).toBe(false);
   });
 });
