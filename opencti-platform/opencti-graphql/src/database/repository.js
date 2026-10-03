@@ -13,7 +13,7 @@ import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '.
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf } from '../config/conf';
+import conf, { booleanConf, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -23,6 +23,8 @@ import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/use
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
+import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -211,6 +213,28 @@ export const connectorsForManagers = async (context, user) => {
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
+};
+
+const NO_UPDATE_STATUS = {
+  update_available: false,
+  latest_compatible_version: null,
+  has_newer_incompatible_version: false,
+};
+
+// Batched for connector lists: the catalog contracts of all the connectors are loaded at once, by slug.
+// Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
+export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
+  const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
+  const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
+  const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
+  const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
+  return connectorsToCheck.map((cn, index) => {
+    const slug = slugs[index];
+    if (!slug) {
+      return NO_UPDATE_STATUS;
+    }
+    return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
+  });
 };
 
 export const connectorsForWorker = async (context, user) => {

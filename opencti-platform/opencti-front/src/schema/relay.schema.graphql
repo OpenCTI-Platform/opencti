@@ -2127,6 +2127,9 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_image: String
   manager_contract_definition: String
   manager_contract_excerpt: ManagerContractExcerpt
+  update_available: Boolean
+  latest_compatible_version: String
+  has_newer_incompatible_version: Boolean
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String

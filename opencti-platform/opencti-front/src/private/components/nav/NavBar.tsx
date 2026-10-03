@@ -1,7 +1,7 @@
 import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
-import { graphql, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -21,7 +21,10 @@ import { NavBarQuery } from './__generated__/NavBarQuery.graphql';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import MadeByFiligran from './MadeByFiligran';
 import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from './navBarConstants';
-import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
+import useNavMenuWithBadges from './useNavMenuWithBadges';
+import { NavGroup, NavItem, NavSubItem } from './useNavMenu';
+import { useIntegrationsNavBadgeQueryRef } from './useIntegrationsNavBadge';
+import { useIntegrationsNavBadgeQuery } from './__generated__/useIntegrationsNavBadgeQuery.graphql';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
@@ -113,14 +116,30 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
 
   const renderItem = (item: NavItem) => {
     if (!item.subItems || item.subItems.length === 0) {
+      const rowBody = (
+        <Link
+          to={item.link}
+          aria-label={item.label}
+          aria-current={isRouteSelected(pathname, item.link, item.exact) ? 'page' : undefined}
+        >
+          {renderRowBody(item.icon, item.label)}
+        </Link>
+      );
+
+      if (item.badge) {
+        return (
+          <div key={item.id} className="relative">
+            <NavbarItem asChild tooltipLabel={item.label}>{rowBody}</NavbarItem>
+            <div className="absolute inset-y-0 right-2 flex items-center">
+              {item.badge}
+            </div>
+          </div>
+        );
+      }
+
       return (
         <NavbarItem key={item.id} asChild tooltipLabel={item.label}>
-          <Link
-            to={item.link}
-            aria-current={isRouteSelected(pathname, item.link, item.exact) ? 'page' : undefined}
-          >
-            {renderRowBody(item.icon, item.label)}
-          </Link>
+          {rowBody}
         </NavbarItem>
       );
     }
@@ -166,9 +185,10 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
 
 interface NavBarComponentProps {
   queryRef: NonNullable<ReturnType<typeof useQueryLoading<NavBarQuery>>>;
+  integrationsBadgeQueryRef: PreloadedQuery<useIntegrationsNavBadgeQuery> | null | undefined;
 }
 
-const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
+const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef, integrationsBadgeQueryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const location = useLocation();
@@ -194,10 +214,9 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   const flowOffset = `${settingsMessagesBannerHeight}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
-  const groups = useNavMenu();
-
   const [navOpen, setNavOpen] = useState(readNavOpen());
   const [openSubmenus, setOpenSubmenus] = useState<string[]>(readSelectedMenu());
+  const groups = useNavMenuWithBadges(integrationsBadgeQueryRef, !navOpen);
 
   const handleCollapsedChange = (collapsed: boolean) => {
     setOpenSubmenus([]);
@@ -294,9 +313,11 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
 
 const NavBar = () => {
   const queryRef = useQueryLoading<NavBarQuery>(navBarQuery, {});
+  // Requested together with navBarQuery, read behind the badge's own Suspense boundary
+  const integrationsBadgeQueryRef = useIntegrationsNavBadgeQueryRef();
   return queryRef ? (
     <React.Suspense>
-      <NavBarComponent queryRef={queryRef} />
+      <NavBarComponent queryRef={queryRef} integrationsBadgeQueryRef={integrationsBadgeQueryRef} />
     </React.Suspense>
   ) : null;
 };

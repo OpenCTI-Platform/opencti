@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import {
   buildCatalogContractCompatibility,
+  buildConnectorUpdateStatus,
   compareContractVersionDesc,
   compareContractVersions,
   filterAndSortLatestCompatibleContracts,
@@ -325,5 +326,37 @@ describe('catalog-version-utils', () => {
 
     expect(getLatestCompatibleVersion(versions, options)).toBe(selected.contract_version);
     expect(getLatestCompatibleVersion(versions, options)).toBe('rolling');
+  });
+
+  it('should expose connector update information from compatible and incompatible contract versions', () => {
+    const status = buildConnectorUpdateStatus('1.0.0', [
+      { version: '2.0.0', min_version: '9999.0.0' },
+      { version: '1.5.0', min_version: '7.0.0' },
+      { version: '1.0.0', min_version: '7.0.0' },
+    ], { platformVersion: '7.2.0' });
+
+    expect(status).toEqual({
+      update_available: true,
+      latest_compatible_version: '1.5.0',
+      has_newer_incompatible_version: true,
+    });
+  });
+
+  it('should compare connector versions like the auto-upgrade does', () => {
+    const options = { platformVersion: '7.2.0' };
+
+    expect(buildConnectorUpdateStatus('1.0.0', [{ version: 'rolling' }, { version: '1.0.0' }], options)).toEqual({
+      update_available: true,
+      latest_compatible_version: 'rolling',
+      has_newer_incompatible_version: false,
+    });
+    expect(buildConnectorUpdateStatus('rolling', [{ version: 'rolling' }, { version: '2.0.0' }], options).update_available).toBe(false);
+    // A rolling version that needs a newer platform is the newer incompatible version
+    expect(buildConnectorUpdateStatus('1.0.0', [{ version: 'rolling', min_version: '9999.0.0' }, { version: '2.0.0' }], options)).toEqual({
+      update_available: true,
+      latest_compatible_version: '2.0.0',
+      has_newer_incompatible_version: true,
+    });
+    expect(buildConnectorUpdateStatus(null, [{ version: '2.0.0' }], options).update_available).toBe(false);
   });
 });
