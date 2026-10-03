@@ -6732,6 +6732,7 @@ export type CurationSettings = {
   adjudication_available: Scalars['Boolean']['output'];
   adjudication_daily_limit: Scalars['Int']['output'];
   adjudication_enabled: Scalars['Boolean']['output'];
+  adjudication_run_as?: Maybe<Member>;
   adjudication_run_as_id?: Maybe<Scalars['String']['output']>;
   ambiguous_band_max: Scalars['Float']['output'];
   ambiguous_band_min: Scalars['Float']['output'];
@@ -6744,6 +6745,7 @@ export type CurationSettings = {
   digest_day: Scalars['Int']['output'];
   digest_enabled: Scalars['Boolean']['output'];
   digest_recipient_ids: Array<Scalars['String']['output']>;
+  digest_recipients: Array<Member>;
   enabled_detectors: Array<Scalars['String']['output']>;
   field_authority_enabled: Scalars['Boolean']['output'];
   field_authority_rules: Array<CurationFieldAuthorityRule>;
@@ -41456,7 +41458,7 @@ export type ResolversTypes = ResolversObject<{
   CurationProposalStatus: CurationProposalStatus;
   CurationRelationshipConflictMode: CurationRelationshipConflictMode;
   CurationResolution: ResolverTypeWrapper<Omit<CurationResolution, 'entity'> & { entity?: Maybe<ResolversTypes['StixCoreObject']> }>;
-  CurationSettings: ResolverTypeWrapper<CurationSettings>;
+  CurationSettings: ResolverTypeWrapper<Omit<CurationSettings, 'adjudication_run_as' | 'digest_recipients'> & { adjudication_run_as?: Maybe<ResolversTypes['Member']>, digest_recipients: Array<ResolversTypes['Member']> }>;
   CurationSettingsInput: CurationSettingsInput;
   CurationStalenessOverride: ResolverTypeWrapper<CurationStalenessOverride>;
   CurationStalenessOverrideInput: CurationStalenessOverrideInput;
@@ -42654,7 +42656,7 @@ export type ResolversParentTypes = ResolversObject<{
   CurationProposalDecideInput: CurationProposalDecideInput;
   CurationProposalEdge: Omit<CurationProposalEdge, 'node'> & { node: ResolversParentTypes['CurationProposal'] };
   CurationResolution: Omit<CurationResolution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
-  CurationSettings: CurationSettings;
+  CurationSettings: Omit<CurationSettings, 'adjudication_run_as' | 'digest_recipients'> & { adjudication_run_as?: Maybe<ResolversParentTypes['Member']>, digest_recipients: Array<ResolversParentTypes['Member']> };
   CurationSettingsInput: CurationSettingsInput;
   CurationStalenessOverride: CurationStalenessOverride;
   CurationStalenessOverrideInput: CurationStalenessOverrideInput;
@@ -45766,6 +45768,7 @@ export type CurationSettingsResolvers<ContextType = any, ParentType extends Reso
   adjudication_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   adjudication_daily_limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   adjudication_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  adjudication_run_as?: Resolver<Maybe<ResolversTypes['Member']>, ParentType, ContextType>;
   adjudication_run_as_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ambiguous_band_max?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   ambiguous_band_min?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -45778,6 +45781,7 @@ export type CurationSettingsResolvers<ContextType = any, ParentType extends Reso
   digest_day?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   digest_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   digest_recipient_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  digest_recipients?: Resolver<Array<ResolversTypes['Member']>, ParentType, ContextType>;
   enabled_detectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   field_authority_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   field_authority_rules?: Resolver<Array<ResolversTypes['CurationFieldAuthorityRule']>, ParentType, ContextType>;

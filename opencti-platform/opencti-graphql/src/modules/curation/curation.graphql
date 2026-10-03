@@ -364,6 +364,7 @@ type CurationSettings {
   adjudication_available: Boolean!
   adjudication_agent_slug: String
   adjudication_run_as_id: String
+  adjudication_run_as: Member
   adjudication_daily_limit: Int!
   stale_default_months: Int!
   stale_overrides: [CurationStalenessOverride!]!
@@ -373,6 +374,7 @@ type CurationSettings {
   digest_enabled: Boolean!
   digest_day: Int!
   digest_recipient_ids: [String!]!
+  digest_recipients: [Member!]!
   field_authority_enabled: Boolean!
   field_authority_rules: [CurationFieldAuthorityRule!]!
   scan_max_entities_per_type: Int!

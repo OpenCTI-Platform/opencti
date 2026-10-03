@@ -249,6 +249,7 @@ export const editCurationPolicy = async (context: AuthContext, user: AuthUser, i
 };
 
 export const deleteCurationPolicy = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
   return deleteInternalObject(context, user, id, ENTITY_TYPE_CURATION_POLICY);
 };
 // endregion

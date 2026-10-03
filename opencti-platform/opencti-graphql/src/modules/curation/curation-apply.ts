@@ -6,7 +6,7 @@ import { createEntity, deleteElementById, mergeEntities, storeLoadByIdWithRefs, 
 import { fullEntitiesList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
-import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE } from '../../schema/stixDomainObject';
+import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../deleteOperation/deleteOperation-types';
@@ -86,6 +86,10 @@ const replaceInputs = (changes: Record<string, unknown>) => Object.entries(chang
 }));
 
 export const isProceduresAttributeAvailable = (relationshipType = 'uses') => schemaAttributesDefinition.getAttribute(relationshipType, PROCEDURES_ATTRIBUTE) !== undefined;
+
+// Per-source assertions are owned by the provenance module: their source agreement evidence is used only when registered.
+const ASSERTIONS_ATTRIBUTE = 'x_opencti_assertions';
+export const isProvenanceAvailable = () => schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INTRUSION_SET, ASSERTIONS_ATTRIBUTE) !== undefined;
 
 const findLatestMergeRecordForProposal = async (context: AuthContext, proposalId: string) => {
   const records = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {

@@ -176,6 +176,14 @@ export const loadNeighborSets = async (context: AuthContext, entityIds: string[]
   return neighbors;
 };
 
+export const isGraphSimilarityAvailable = async () => {
+  try {
+    return await elIndexExists(GRAPH_SIMILARITY_INDEX);
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Soft integration with the knowledge graph analytics (structural similarity cache): used when present, ignored
  * otherwise. The cache shape is read defensively.
@@ -283,7 +291,12 @@ export const detectDuplicateDrafts = async (
   const graphSimilarity = await loadGraphSimilarity(context, R.uniq(relevantPairs.flatMap((signals) => [signals.left.internal_id, signals.right.internal_id])));
   const entitiesById = new Map(entities.map((entity) => [entity.internal_id, entity]));
   for (let index = 0; index < relevantPairs.length; index += 1) {
-    const draft = buildPairDraft(relevantPairs[index], { neighbors: behaviorEnabled ? neighbors : undefined, graphSimilarity, minConfidence: settings.proposal_min_confidence });
+    const draft = buildPairDraft(relevantPairs[index], {
+      neighbors: behaviorEnabled ? neighbors : undefined,
+      graphSimilarity,
+      minConfidence: settings.proposal_min_confidence,
+      behaviorThreshold: settings.behavior_threshold,
+    });
     if (draft) {
       if (draft.kind === PROPOSAL_KIND_MERGE) {
         draft.target_id = await chooseMergeTarget(context, draft, entitiesById);

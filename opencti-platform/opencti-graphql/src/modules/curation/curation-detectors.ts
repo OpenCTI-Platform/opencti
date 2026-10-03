@@ -489,6 +489,8 @@ export interface PairContext {
   neighbors?: Map<string, NeighborSets>;
   graphSimilarity?: Map<string, { score: number; shared?: unknown }>;
   minConfidence: number;
+  /** ATT&CK overlap a pair without any name signal must reach to be proposed. */
+  behaviorThreshold: number;
 }
 
 const sourcesOf = (entity: CuratedEntity): Set<string> => {
@@ -538,7 +540,7 @@ export const buildPairDraft = (signals: PairSignals, context: PairContext): Prop
   }
   const hasNameSignal = isNameBased({ ...signals, evidence: items });
   const behaviorScore = items.find((item) => item.evidence_type === EVIDENCE_ATTACK_OVERLAP)?.score ?? 0;
-  if (!hasNameSignal && behaviorScore < 0.6) {
+  if (!hasNameSignal && behaviorScore < context.behaviorThreshold) {
     return null;
   }
   const confidence = combineEvidence(items);

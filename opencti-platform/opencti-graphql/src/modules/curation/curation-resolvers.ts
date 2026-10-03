@@ -1,7 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { loadCreator } from '../../database/members';
+import { internalFindByIds } from '../../database/middleware-loader';
+import { getEntitiesListFromCache } from '../../database/cache';
+import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+import { isUserHasCapability, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../../utils/access';
+import { AUTHORITY_SOURCE_CONNECTOR } from './curation-types';
 import {
   acceptProposal,
   adjudicateProposalNow,
@@ -43,6 +48,15 @@ const toJsonString = (value: unknown) => {
 const resolveSampleProposals = async (context: AuthContext, dryRun: CurationPolicyDryRunResult) => {
   const proposals = await Promise.all((dryRun.sample_proposal_ids ?? []).map((id) => findProposalById(context, context.user!, id)));
   return proposals.filter((proposal) => proposal !== undefined && proposal !== null);
+};
+
+const resolveAuthoritySourceName = async (context: AuthContext, sourceType: string, sourceId: string) => {
+  if (sourceType === AUTHORITY_SOURCE_CONNECTOR) {
+    const connectors = await getEntitiesListFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+    return connectors.find((connector) => connector.internal_id === sourceId)?.name ?? null;
+  }
+  const [author] = await internalFindByIds<BasicStoreEntity>(context, context.user!, [sourceId]) as BasicStoreEntity[];
+  return author?.name ?? null;
 };
 
 const loadSubjects = async (context: AuthContext, proposal: BasicStoreEntityCurationProposal) => {
@@ -128,6 +142,21 @@ const curationResolvers: Resolvers = {
   },
   CurationPolicy: {
     last_dry_run: (policy) => ((policy as unknown as BasicStoreEntityCurationPolicy).last_dry_run ?? null) as any,
+  },
+  CurationSettings: {
+    adjudication_run_as: async (settings, _, context) => {
+      const id = settings.adjudication_run_as_id;
+      if (!id || !isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return null;
+      const [member] = await internalFindByIds(context, context.user!, [id]) as BasicStoreEntity[];
+      return (member ?? null) as any;
+    },
+    digest_recipients: async (settings, _, context) => {
+      if (settings.digest_recipient_ids.length === 0 || !isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return [];
+      return internalFindByIds(context, context.user!, settings.digest_recipient_ids) as any;
+    },
+  },
+  CurationAuthoritySource: {
+    source_name: (source, _, context) => resolveAuthoritySourceName(context, source.source_type, source.source_id),
   },
   CurationPolicyDryRun: {
     sample_proposals: (dryRun, _, context) => resolveSampleProposals(context, dryRun as unknown as CurationPolicyDryRunResult) as any,

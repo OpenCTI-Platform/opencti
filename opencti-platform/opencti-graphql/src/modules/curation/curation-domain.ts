@@ -41,12 +41,13 @@ import {
   PROPOSAL_STATUS_REVERTED,
   CURATION_DETECTORS,
 } from './curation-types';
-import { executeProposalAction, isProceduresAttributeAvailable, revertAppliedPatch } from './curation-apply';
+import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvailable, revertAppliedPatch } from './curation-apply';
 import { unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
 import { adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
+import { isGraphSimilarityAvailable } from './curation-scan';
 import { getTaxonomyMetadata } from './curation-taxonomy';
 
 const MAX_BULK = 500;
@@ -411,14 +412,18 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
 export const curationSettingsForApi = async (context: AuthContext) => {
   const settings = await getCurationSettings(context);
   const taxonomy = getTaxonomyMetadata();
-  const [adjudicationAvailable, id] = await Promise.all([isAdjudicationAvailable(context), getCurationSettingsId(context)]);
+  const [adjudicationAvailable, id, graphSimilarityAvailable] = await Promise.all([
+    isAdjudicationAvailable(context),
+    getCurationSettingsId(context),
+    isGraphSimilarityAvailable(),
+  ]);
   return {
     id,
     ...settings,
     available_detectors: [...CURATION_DETECTORS],
     adjudication_available: adjudicationAvailable,
-    graph_similarity_available: true,
-    provenance_available: isProceduresAttributeAvailable(),
+    graph_similarity_available: graphSimilarityAvailable,
+    provenance_available: isProvenanceAvailable(),
     procedures_attribute_available: isProceduresAttributeAvailable(),
     taxonomy_version: taxonomy.version,
     taxonomy_clusters_count: taxonomy.clusters,
