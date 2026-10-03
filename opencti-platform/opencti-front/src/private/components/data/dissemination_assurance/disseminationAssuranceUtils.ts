@@ -150,7 +150,7 @@ export const SAVED_LISTS: SavedListDefinition[] = [
   {
     id: 'disseminated_not_deployed',
     label: 'Disseminated but not deployed',
-    description: 'Detection indicators that no security platform reports as deployed.',
+    description: 'Indicators recorded by a stream connector that no security platform reports as live.',
   },
   {
     id: 'deployed_never_validated',
@@ -160,7 +160,7 @@ export const SAVED_LISTS: SavedListDefinition[] = [
   {
     id: 'expired_still_deployed',
     label: 'Expired but still deployed',
-    description: 'Revoked or expired indicators that are still live on at least one security platform.',
+    description: 'Revoked or expired indicators still live on a security platform, or whose removal was never confirmed.',
   },
 ];
 
@@ -175,14 +175,15 @@ const hasLiveDeployment = () => filter('deployment_platforms_count', ['0'], 'gt'
 
 /**
  * Filters of the saved lists, aligned with the lifecycle funnel of disseminationAssuranceMetrics:
- * disseminated = detection flag or any deployment, expired = revoked or past valid_until.
+ * disseminated = recorded on a security platform by a stream connector, whatever the outcome;
+ * expired still deployed = revoked or past valid_until while live, or removal never confirmed (flagged expired).
  */
 export const buildSavedListFilters = (id: SavedListId, now: Date = new Date()): FilterGroup => {
   switch (id) {
     case 'disseminated_not_deployed':
       return {
         mode: 'and',
-        filters: [filter('x_opencti_detection', ['true']), filter('revoked', ['false'])],
+        filters: [filter('deployments_count', ['0'], 'gt'), filter('revoked', ['false'])],
         filterGroups: [noLiveDeployment()],
       } as FilterGroup;
     case 'deployed_never_validated':
@@ -198,12 +199,16 @@ export const buildSavedListFilters = (id: SavedListId, now: Date = new Date()): 
     case 'expired_still_deployed':
     default:
       return {
-        mode: 'and',
-        filters: [hasLiveDeployment()],
+        mode: 'or',
+        filters: [filter('deployment_expired_count', ['0'], 'gt')],
         filterGroups: [{
-          mode: 'or',
-          filters: [filter('revoked', ['true']), filter('valid_until', [now.toISOString()], 'lt')],
-          filterGroups: [],
+          mode: 'and',
+          filters: [hasLiveDeployment()],
+          filterGroups: [{
+            mode: 'or',
+            filters: [filter('revoked', ['true']), filter('valid_until', [now.toISOString()], 'lt')],
+            filterGroups: [],
+          }],
         }],
       } as FilterGroup;
   }
@@ -222,6 +227,29 @@ export interface DeploymentCandidate {
   deploymentStatus?: string | null;
   validationStatus?: string | null;
 }
+
+// Outcomes a new request can (re)validate; `requested` deployments are awaiting another request.
+export const RETRYABLE_VALIDATION_STATUSES: ValidationStatus[] = ['not_requested', 'missed', 'error'];
+
+/**
+ * Live deployments of an indicator or a security platform that a new validation request can include,
+ * validations in flight excluded: the unproven ones (retryable or never set), or the proven ones.
+ * Applied by the API before pagination, so the request limit is filled with unproven deployments first.
+ */
+export const buildValidationCandidateFilters = (side: 'indicator' | 'platform', entityId: string, proven: boolean): FilterGroup => ({
+  mode: 'and',
+  filters: [
+    filter('relationship_type', [RELATION_DEPLOYED_ON]),
+    filter(side === 'indicator' ? 'fromId' : 'toId', [entityId]),
+    filter('deployment_status', LIVE_DEPLOYMENT_STATUSES),
+    ...(proven ? [filter('validation_status', PROVEN_VALIDATION_STATUSES)] : []),
+  ],
+  filterGroups: proven ? [] : [{
+    mode: 'or',
+    filters: [filter('validation_status', RETRYABLE_VALIDATION_STATUSES), filter('validation_status', [], 'nil')],
+    filterGroups: [],
+  }],
+}) as FilterGroup;
 
 /**
  * Indicators to validate on a platform: live deployments first, never proven first, bounded by the request limit.

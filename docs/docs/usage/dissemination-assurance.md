@@ -57,10 +57,16 @@ filters, lists and dashboards:
 
 | Counter                    | Description                                                     |
 |:---------------------------|:----------------------------------------------------------------|
+| Deployments count          | The number of platforms where a stream connector recorded the indicator, whatever the status: the evidence that the indicator was disseminated. |
 | Deployment platforms count | The number of platforms where the indicator is deployed or active. |
 | Deployment failed count    | The number of platforms where the deployment failed.            |
+| Expired deployments count  | The number of platforms where the deployment was flagged expired because its removal was never confirmed. |
 | Validated platforms count  | The number of platforms where a validation proved a detection or a prevention. |
 | Hit platforms count        | The number of platforms that reported at least one hit.         |
+
+The counters are kept up to date from the deployment events. Deleting or merging a security platform removes its
+deployments without individual events, so the platform manager then recomputes the counters of every indicator
+with deployments; it also rechecks them continuously in bounded batches.
 
 ## Viewing deployments
 
@@ -83,18 +89,23 @@ Go to **Defense > Dissemination assurance**.
 
 - **Overview** shows the funnel from created to disseminated, deployed, validated and hit indicators, the
   deployment and validation statuses, and the indicators that expired but are still deployed. The period can be
-  changed.
-- **Lists** gives ready-made lists of the indicators that need attention: disseminated but not deployed, deployed
-  but never validated, and expired but still deployed.
+  changed. An indicator counts as disseminated once a stream connector recorded it on a security platform, whatever
+  the outcome (pending, deployed, failed, removed or expired): the detection flag of an indicator is not evidence of
+  dissemination.
+- **Lists** gives ready-made lists of the indicators that need attention: disseminated but not deployed (recorded
+  by a connector but live on no platform), deployed but never validated, and expired but still deployed (revoked or
+  past their validity while still live on a platform, or flagged expired because their removal was never confirmed).
 - **Validation requests** lists the IOC validation requests sent to OpenAEV and their results.
 
 ## Validating deployments with OpenAEV
 
 An IOC validation request asks OpenAEV to prove that deployed indicators are detected or prevented by the
 security platforms. Use the **Request validation** button on the deployments of an indicator or a platform: the
-request covers the live deployments, never validated first. Choose the benign test kinds, then send the request.
-It is delivered to OpenAEV by the IOC validation connector. A deployment already waiting for the results of another
-request is skipped, and listed with the reason in the new request.
+request covers the live deployments, up to 200 indicators, never validated first (deployments without proof, or
+whose last validation missed or failed, then the proven ones). Deployments already waiting for the results of
+another request are left out. Choose the benign test kinds, then send the request. It is delivered to OpenAEV by
+the IOC validation connector. A deployment that starts waiting for another request in the meantime is skipped, and
+listed with the reason in the new request.
 
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
 kinds allowed in its settings. By default, the validation never contacts adversary infrastructure: DNS resolution
@@ -110,8 +121,9 @@ When OpenAEV sends the results, the validation status of each deployment is upda
 To build a dashboard of the dissemination assurance metrics, go to **Dashboards > Custom dashboards**, click
 **Create from template** and choose **Dissemination assurance**. The dashboard shows the deployments by status,
 the validations by outcome, the live deployments and missed validations by security platform, the latest failed
-deployments, and the indicators that are deployed but never validated, disseminated but not deployed, or revoked
-but still deployed. It is a regular custom dashboard: its widgets can be edited, moved and shared.
+deployments, and the indicators that are deployed but never validated, disseminated but not deployed, or expired
+but still deployed (revoked while live, or flagged expired). It is a regular custom dashboard: its widgets can be
+edited, moved and shared.
 
 ## Notifications
 
@@ -121,7 +133,11 @@ Create live triggers in **Notifications** to be told when a deployment needs att
 |:----------------------------|:----------------|:---------------------------------------------------------------|
 | Deployment failed           | Deployed on     | Deployment status = `failed`                                   |
 | Validation missed           | Deployed on     | Validation status = `missed`                                   |
+| Removal never confirmed     | Deployed on     | Deployment status = `expired`                                  |
 | Expired but still deployed  | Indicator       | Revoked = `true` and Deployment platforms count greater than 0 |
+
+The **Removal never confirmed** trigger fires when the platform manager flags a deployment as expired, once the
+removal grace period has passed without confirmation from the connector.
 
 ## Configuration
 
@@ -133,6 +149,7 @@ following parameters:
 | indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager.                        |
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
+| indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |
 | indicator_deployment:report_rate_limit              | INDICATOR_DEPLOYMENT__REPORT_RATE_LIMIT              | 200           | Maximum deployment reports per second.                          |
 | indicator_deployment:batch_rate_limit               | INDICATOR_DEPLOYMENT__BATCH_RATE_LIMIT               | 20            | Maximum batch deployment reports per second.                    |
 | indicator_deployment:hits_rate_limit                | INDICATOR_DEPLOYMENT__HITS_RATE_LIMIT                | 200           | Maximum hit reports per second.                                 |
