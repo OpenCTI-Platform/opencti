@@ -371,15 +371,15 @@ export const refreshTimelineContributions = async (
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
   const isClosed = await isContainerClosed(context, container);
+  const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
   const anchors = computeTimelineAnchors(events.map((e) => ({
     lane: e.lane,
     kind: e.kind,
     rule_id: e.rule_id,
     event_time: e.event_time,
     hidden: e.hidden,
-  })), { isClosed, computedAt: now() });
+  })), { isClosed, computedAt: now(), previous: previousAnchors });
   const exchange = await buildExchange(context, container.internal_id, events);
-  const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
   const changedAnchors = diffTimelineAnchors(previousAnchors, anchors);
   await elUpdate(context, container._index, container.internal_id, {
     doc: { [ATTRIBUTE_TIMELINE_ANCHORS]: anchors, [ATTRIBUTE_TIMELINE_EXCHANGE]: exchange },

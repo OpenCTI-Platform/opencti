@@ -5746,6 +5746,8 @@ enum IncidentsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   first_seen
   last_seen
@@ -12349,6 +12351,8 @@ enum CaseIncidentsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -12504,6 +12508,8 @@ enum CaseRfisOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -12650,6 +12656,8 @@ enum CaseRftsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -17622,6 +17630,7 @@ type TimelineAnchors {
   containment: DateTime
   closure: DateTime
   computed_at: DateTime
+  changed_at: DateTime
 }
 
 type TimelineEvent implements InternalObject & BasicObject {

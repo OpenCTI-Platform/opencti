@@ -127,7 +127,8 @@ export const timelineAnchorsAttribute: ObjectAttribute = {
     { name: 'first_response', label: 'First response', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'containment', label: 'Containment', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'closure', label: 'Closure', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'computed_at', label: 'Timeline anchors computed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'computed_at', label: 'Timeline anchors computed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'changed_at', label: 'Timeline anchors changed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   sortBy: { path: `${ATTRIBUTE_TIMELINE_ANCHORS}.first_adversary_activity`, type: 'date' },
 };

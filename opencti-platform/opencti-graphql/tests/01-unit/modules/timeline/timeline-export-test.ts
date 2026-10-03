@@ -20,6 +20,7 @@ const input: TimelineExportInput = {
     containment: '2026-03-05T00:00:00.000Z',
     closure: null,
     computed_at: '2026-04-01T00:00:00.000Z',
+    changed_at: '2026-04-01T00:00:00.000Z',
   },
   events: [
     { id: 'e1', lane: 'adversary', kind: 'technique_used', event_time: '2026-03-01T00:00:00.000Z', event_end_time: '2026-03-02T00:00:00.000Z', precision: 'exact', title: 'Phishing, "spear"', source: 'derived', pinned: false, hidden: false, element_name: 'Phishing', element_type: 'Attack-Pattern' },

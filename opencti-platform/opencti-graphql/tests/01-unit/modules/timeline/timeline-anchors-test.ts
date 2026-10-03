@@ -26,7 +26,23 @@ describe('Timeline anchors', () => {
       containment: '2026-03-05T00:00:00.000Z',
       closure: '2026-03-10T00:00:00.000Z',
       computed_at: computedAt,
+      changed_at: computedAt,
     });
+  });
+
+  it('should keep the change date while no anchor value moves', () => {
+    const first = computeTimelineAnchors(events, { isClosed: false, computedAt });
+    const recomputed = computeTimelineAnchors(events, { isClosed: false, computedAt: '2026-04-02T00:00:00.000Z', previous: first });
+    expect(recomputed.computed_at).toEqual('2026-04-02T00:00:00.000Z');
+    expect(recomputed.changed_at).toEqual(computedAt);
+    const closed = computeTimelineAnchors(events, { isClosed: true, computedAt: '2026-04-03T00:00:00.000Z', previous: recomputed });
+    expect(closed.changed_at).toEqual('2026-04-03T00:00:00.000Z');
+  });
+
+  it('should date the change of anchors stored before the change date existed', () => {
+    const legacy = { first_adversary_activity: '2026-03-01T00:00:00.000Z', computed_at: computedAt };
+    const anchors = computeTimelineAnchors(events, { isClosed: false, computedAt: '2026-04-02T00:00:00.000Z', previous: legacy });
+    expect(anchors.changed_at).toEqual('2026-04-02T00:00:00.000Z');
   });
 
   it('should not expose a closure while the container is open', () => {

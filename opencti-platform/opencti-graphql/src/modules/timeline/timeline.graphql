@@ -89,6 +89,7 @@ type TimelineAnchors {
   containment: DateTime
   closure: DateTime
   computed_at: DateTime
+  changed_at: DateTime
 }
 
 type TimelineEvent implements InternalObject & BasicObject {
@@ -284,6 +285,8 @@ extend enum IncidentsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
 }
 extend enum CaseIncidentsOrdering {
   timeline_first_adversary_activity
@@ -291,6 +294,8 @@ extend enum CaseIncidentsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
 }
 extend enum CaseRfisOrdering {
   timeline_first_adversary_activity
@@ -298,6 +303,8 @@ extend enum CaseRfisOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
 }
 extend enum CaseRftsOrdering {
   timeline_first_adversary_activity
@@ -305,6 +312,8 @@ extend enum CaseRftsOrdering {
   timeline_first_response
   timeline_containment
   timeline_closure
+  timeline_computed_at
+  timeline_changed_at
 }
 
 # Trigger event types fed by the timeline (Community Edition triggers and digests)

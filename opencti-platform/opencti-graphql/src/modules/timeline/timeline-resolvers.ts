@@ -25,7 +25,7 @@ import {
 } from './timeline-domain';
 
 // Ordering values exposed on the lists of the timeline containers, resolved to the anchors attribute paths
-const anchorOrdering = Object.fromEntries(TIMELINE_ANCHOR_KEYS.map((key) => [`timeline_${key}`, `${ATTRIBUTE_TIMELINE_ANCHORS}.${key}`]));
+const anchorOrdering = Object.fromEntries([...TIMELINE_ANCHOR_KEYS, 'computed_at', 'changed_at'].map((key) => [`timeline_${key}`, `${ATTRIBUTE_TIMELINE_ANCHORS}.${key}`]));
 
 const timelineResolvers: Resolvers = {
   Query: {

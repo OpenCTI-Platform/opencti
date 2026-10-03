@@ -3143,7 +3143,9 @@ export enum CaseIncidentsOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
   TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
@@ -3478,7 +3480,9 @@ export enum CaseRfisOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
   TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
@@ -3810,7 +3814,9 @@ export enum CaseRftsOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
   TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
@@ -12877,7 +12883,9 @@ export enum IncidentsOrdering {
   ObjectMarking = 'objectMarking',
   Severity = 'severity',
   Source = 'source',
+  TimelineChangedAt = 'timeline_changed_at',
   TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
@@ -36433,6 +36441,7 @@ export type TimeSeries = {
 
 export type TimelineAnchors = {
   __typename?: 'TimelineAnchors';
+  changed_at?: Maybe<Scalars['DateTime']['output']>;
   closure?: Maybe<Scalars['DateTime']['output']>;
   computed_at?: Maybe<Scalars['DateTime']['output']>;
   containment?: Maybe<Scalars['DateTime']['output']>;
@@ -54146,6 +54155,7 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type TimelineAnchorsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineAnchors'] = ResolversParentTypes['TimelineAnchors']> = ResolversObject<{
+  changed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   closure?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   containment?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

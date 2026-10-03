@@ -162,7 +162,7 @@ const TIMELINE_EVENT = gql`
 `;
 const TIMELINE_ANCHORS = gql`
   query TimelineAnchors($containerId: String!) {
-    timelineAnchors(containerId: $containerId) { first_adversary_activity first_detection first_response containment closure computed_at }
+    timelineAnchors(containerId: $containerId) { first_adversary_activity first_detection first_response containment closure computed_at changed_at }
   }
 `;
 const TIMELINE_RULES = gql`
@@ -382,9 +382,13 @@ describe('Incident and case timeline', () => {
 
     it('should be idempotent: a second regeneration rewrites nothing and keeps the ids', async () => {
       const before = await storedSignatures(caseIncident.id);
+      const anchorsBefore = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
       const result = await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
       expect(await storedSignatures(caseIncident.id)).toEqual(before);
       expect(result.data.timelineRegenerate).toMatchObject({ created_count: 0, updated_count: 0, deleted_count: 0 });
+      const anchorsAfter = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
+      expect(anchorsAfter.data.timelineAnchors.changed_at).toBeDefined();
+      expect(anchorsAfter.data.timelineAnchors.changed_at).toEqual(anchorsBefore.data.timelineAnchors.changed_at);
     });
 
     it('should compute the anchors and expose them on the container', async () => {
@@ -569,6 +573,29 @@ describe('Incident and case timeline', () => {
       expect(filtered.data.caseIncidents.edges.map((edge: { node: { id: string } }) => edge.node.id)).toEqual([caseIncident.id]);
       const ordered = await queryAsAdminWithSuccess({ query: CASE_INCIDENTS_BY_ANCHOR, variables: { orderBy: 'timeline_containment', orderMode: 'desc' } });
       expect(ordered.data.caseIncidents.edges[0].node.id).toEqual(caseIncident.id);
+    });
+
+    it('should page the containers whose anchors changed since a cursor', async () => {
+      const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
+      const { changed_at: changedAt, computed_at: computedAt } = anchors.data.timelineAnchors;
+      const since = (key: string, operator: string, value: string) => ({
+        mode: 'and',
+        filters: [{ key: [`x_opencti_timeline_anchors.${key}`], values: [value], operator }],
+        filterGroups: [],
+      });
+      const ids = (result: { data: Record<string, any> }): string[] => result.data.caseIncidents.edges.map((edge: { node: { id: string } }) => edge.node.id);
+      const fromCursor = await queryAsAdminWithSuccess({
+        query: CASE_INCIDENTS_BY_ANCHOR,
+        variables: { filters: since('changed_at', 'gte', changedAt), orderBy: 'timeline_changed_at', orderMode: 'asc' },
+      });
+      expect(ids(fromCursor)).toContain(caseIncident.id);
+      const afterCursor = await queryAsAdminWithSuccess({ query: CASE_INCIDENTS_BY_ANCHOR, variables: { filters: since('changed_at', 'gt', changedAt) } });
+      expect(ids(afterCursor)).not.toContain(caseIncident.id);
+      const computedSince = await queryAsAdminWithSuccess({
+        query: CASE_INCIDENTS_BY_ANCHOR,
+        variables: { filters: since('computed_at', 'gte', computedAt), orderBy: 'timeline_computed_at', orderMode: 'desc' },
+      });
+      expect(ids(computedSince)).toContain(caseIncident.id);
     });
   });
 

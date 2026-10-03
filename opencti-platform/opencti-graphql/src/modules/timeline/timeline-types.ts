@@ -92,6 +92,7 @@ export interface TimelineAnchors {
   containment: string | null;
   closure: string | null;
   computed_at: string;
+  changed_at: string;
 }
 
 // region store
