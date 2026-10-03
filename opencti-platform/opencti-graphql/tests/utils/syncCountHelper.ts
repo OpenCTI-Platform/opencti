@@ -158,7 +158,8 @@ testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 4;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.relationship = 5;
 // + 1 deleted by timeMachine-test
 testDeletedCounter.report = 44;
 testDeletedCounter.sighting = 1;
