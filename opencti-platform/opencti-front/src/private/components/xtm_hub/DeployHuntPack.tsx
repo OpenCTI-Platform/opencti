@@ -6,6 +6,7 @@ import { PATH_HUNT, PATH_HUNTS } from '@components/common/routes/paths';
 import { useNavigate, useParams } from 'react-router';
 import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from '../hunts/hunt-mutation-utils';
 import Loader from '../../../components/Loader';
 import useXtmHubDownloadDocument from '../../../utils/hooks/useXtmHubDownloadDocument';
 import { useFormatter } from '../../../components/i18n';
@@ -29,7 +30,11 @@ const DeployHuntPack = () => {
   const sendImportToBack = (importedFile: File) => {
     commitImportMutation({
       variables: { file: importedFile },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
+        if (notifyPayloadErrors(errors)) {
+          navigate(PATH_HUNTS);
+          return;
+        }
         notifyHuntPackImport(t_i18n, data.huntPackImport);
         const hunts = data.huntPackImport?.hunts ?? [];
         navigate(hunts.length === 1 ? PATH_HUNT(hunts[0].id) : PATH_HUNTS);

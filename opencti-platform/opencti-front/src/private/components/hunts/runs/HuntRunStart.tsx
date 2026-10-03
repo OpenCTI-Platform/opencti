@@ -25,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { canStartHuntRun, HUNT_MAX_TIME_WINDOW_HOURS } from '../hunt-utils';
 import { PATH_HUNT } from '../../common/routes/paths';
@@ -148,8 +149,11 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
           insertStartedHuntRuns(store, store.getPluralRootField('huntRunStart') ?? [], paginationOptions);
         }
       },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors) || !data.huntRunStart) {
+          return;
+        }
         setOpen(false);
         const count = data.huntRunStart.length;
         MESSAGING$.notifySuccess(t_i18n('{count} runs started', { values: { count } }));

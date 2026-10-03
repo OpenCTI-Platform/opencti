@@ -9,6 +9,7 @@ import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../utils/utils';
 import { useDataTableContext } from '../../../components/dataGrid/components/DataTableContext';
@@ -166,7 +167,11 @@ export const HuntPackImportButton = ({ paginationOptions }: HuntPackImportButton
       commitImport({
         variables: { file: importedFile },
         updater: (store) => insertImportedHunts(store, paginationOptions),
-        onCompleted: (data) => notifyHuntPackImport(t_i18n, data.huntPackImport),
+        onCompleted: (data, errors) => {
+          if (!notifyPayloadErrors(errors)) {
+            notifyHuntPackImport(t_i18n, data.huntPackImport);
+          }
+        },
       });
     }
     if (inputRef.current) {

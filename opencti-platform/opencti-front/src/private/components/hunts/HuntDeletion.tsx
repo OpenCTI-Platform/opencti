@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import useDeletion from '../../../utils/hooks/useDeletion';
 import { PATH_HUNTS } from '../common/routes/paths';
 
@@ -29,8 +30,11 @@ const HuntDeletion = ({ huntId, isOpen, handleClose }: HuntDeletionProps) => {
     setDeleting(true);
     commit({
       variables: { id: huntId },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setDeleting(false);
+        if (notifyPayloadErrors(errors)) {
+          return;
+        }
         handleClose();
         navigate(PATH_HUNTS);
       },

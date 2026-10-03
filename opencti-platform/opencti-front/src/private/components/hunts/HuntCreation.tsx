@@ -22,6 +22,7 @@ import type { Theme } from '../../../components/Theme';
 import { handleErrorInForm } from '../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import useDefaultValues from '../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
@@ -181,8 +182,11 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors)) {
+          return;
+        }
         resetForm();
         onCompleted?.((response as HuntCreationMutation$data).huntAdd);
       },

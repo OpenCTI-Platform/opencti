@@ -22,6 +22,7 @@ import CodeBlock from '@components/common/CodeBlock';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import { HUNT_PLANNER_INTENT, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
@@ -82,7 +83,11 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
           agent_slug: agentSlug === DEFAULT_AGENT ? null : agentSlug,
         },
       },
-      onCompleted: (data) => setProposal(data.huntPlan ?? null),
+      onCompleted: (data, errors) => {
+        if (!notifyPayloadErrors(errors)) {
+          setProposal(data.huntPlan ?? null);
+        }
+      },
     });
   };
 

@@ -24,6 +24,7 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { resolveLink } from '../../../../utils/Entity';
 import { PATH_HUNT, PATH_INCIDENT, PATH_SECURITY_COVERAGE } from '../../common/routes/paths';
@@ -312,9 +313,11 @@ const RunVerdict = ({ run }: { run: Run }) => {
   const onSubmit = (values: VerdictValues, { setSubmitting }: { setSubmitting: (submitting: boolean) => void }) => {
     commit({
       variables: { id: run.id, input: { verdict: values.verdict as 'true_positive', analyst_feedback: values.analyst_feedback || null, source: 'analyst' } },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
-        MESSAGING$.notifySuccess(t_i18n('The verdict has been saved'));
+        if (!notifyPayloadErrors(errors)) {
+          MESSAGING$.notifySuccess(t_i18n('The verdict has been saved'));
+        }
       },
       onError: () => setSubmitting(false),
     });
@@ -385,7 +388,11 @@ const RunTriage = ({ run }: { run: Run }) => {
     if (!run.verdict_proposal) return;
     commitVerdict({
       variables: { id: run.id, input: { verdict: run.verdict_proposal, source: 'agent' } },
-      onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The proposed verdict has been applied')),
+      onCompleted: (_, errors) => {
+        if (!notifyPayloadErrors(errors)) {
+          MESSAGING$.notifySuccess(t_i18n('The proposed verdict has been applied'));
+        }
+      },
     });
   };
   let unavailableReason: string | null = null;
@@ -527,8 +534,8 @@ const HuntRunDrawerContent = ({ data, huntId, paginationOptions }: { data: HuntR
           insertStartedHuntRuns(store, [store.getRootField('huntRunRetry')], paginationOptions);
         }
       },
-      onCompleted: (response) => {
-        if (response.huntRunRetry) {
+      onCompleted: (response, errors) => {
+        if (!notifyPayloadErrors(errors) && response.huntRunRetry) {
           navigate(`${PATH_HUNT(huntId)}/runs/${response.huntRunRetry.id}`);
         }
       },

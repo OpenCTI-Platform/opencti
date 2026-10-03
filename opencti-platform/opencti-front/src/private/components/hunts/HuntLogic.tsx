@@ -16,6 +16,7 @@ import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { HuntCodeEditorField, prismLanguageOf } from './HuntCodeEditor';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
@@ -149,8 +150,8 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
     setPreview({ status: 'waiting' });
     commitTest({
       variables: { id: huntId, securityPlatformId: platformId === ANY_PLATFORM ? null : platformId },
-      onCompleted: (data) => {
-        if (data.huntTestQuery) {
+      onCompleted: (data, errors) => {
+        if (!notifyPayloadErrors(errors) && data.huntTestQuery) {
           poll(data.huntTestQuery.id, Date.now());
         } else {
           setPreview({ status: 'idle' });
@@ -256,8 +257,11 @@ const HuntLogic = ({ data }: HuntLogicProps) => {
     ];
     commit({
       variables: { id: hunt.id, input },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors)) {
+          return;
+        }
         resetForm({ values });
         MESSAGING$.notifySuccess(t_i18n('The hunt logic has been saved'));
       },

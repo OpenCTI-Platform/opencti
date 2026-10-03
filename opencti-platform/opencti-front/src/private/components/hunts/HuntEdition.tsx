@@ -22,6 +22,7 @@ import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useIsMandatoryAttribute } from '../../../utils/hooks/useEntitySettings';
@@ -222,8 +223,11 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
     }
     commit({
       variables: { id: hunt.id, input },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (notifyPayloadErrors(errors)) {
+          return;
+        }
         onClose();
       },
       onError: (error) => {
