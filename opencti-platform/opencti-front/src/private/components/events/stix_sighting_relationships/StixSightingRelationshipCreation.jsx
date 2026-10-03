@@ -18,6 +18,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -401,9 +403,10 @@ class StixSightingRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a sighting')}</Typography>
         </div>
-        <div className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingSightings.map((sighting) => (
-            <div
+            <ListItemButton
+              focusVisibleClassName="focus-visible"
               key={sighting.node.id}
               className={classes.relation}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
@@ -508,9 +511,10 @@ class StixSightingRelationshipCreation extends Component {
                 </div>
               </div>
               <div className="clearfix" />
-            </div>
+            </ListItemButton>
           ))}
-          <div
+          <ListItemButton
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >
@@ -600,8 +604,8 @@ class StixSightingRelationshipCreation extends Component {
               </div>
             </div>
             <div className="clearfix" />
-          </div>
-        </div>
+          </ListItemButton>
+        </List>
       </div>
     );
   }
@@ -630,6 +634,9 @@ class StixSightingRelationshipCreation extends Component {
         open={open}
         anchor="right"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the shared one, so it has to declare its
+        // own layer: a drawer is a layer-2 surface and its fields read the layer from the paper.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}

@@ -1,6 +1,6 @@
 import React, { UIEvent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';

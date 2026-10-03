@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import math
 import mimetypes
 import os
 import random
@@ -33,6 +34,7 @@ from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
+    NOT_PROVIDED,
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
@@ -56,6 +58,16 @@ ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
+#: Platform "doc_code" are a stable contract.
+EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
+    "INCORRECT_OBSERVABLE_FORMAT",
+    "INCORRECT_INDICATOR_FORMAT",
+    "INDICATOR_PATTERN_EXCLUDED",
+]
+
+#: Maximum size of the item payload reported as bundle too large
+MAX_REPORTED_SOURCE_LENGTH = 50000
+
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
@@ -64,8 +76,91 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 
 #: STIX Extension ID for MITRE ATT&CK framework objects
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+
+#: STIX Extension ID for the OpenCTI provenance summary (read-only)
+STIX_EXT_OCTI_PROVENANCE: str = (
+    "extension-definition--283daa2f-7739-5345-a110-19d73676f670"
+)
+
+#: Provenance fields computed by the platform, never sent back as STIX properties
+PROVENANCE_READ_ONLY_FIELDS = [
+    "x_opencti_assertions",
+    "x_opencti_conflicts",
+    "corroboration_count",
+    "last_asserted_at",
+    "freshness_days",
+    "single_sourced",
+    "has_conflicts",
+    "freshness_stale",
+    "freshness_stale_at",
+    "procedures",
+]
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Read a boolean flag from the environment; unknown values fall back to the default."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    value = raw.strip().lower()
+    if value in ("1", "true", "yes", "on"):
+        return True
+    if value in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def _env_float(name: str, default: float, minimum: float) -> float:
+    """Read a float tuning knob from the environment, tolerant to misconfiguration.
+
+    A malformed value falls back to the default (no crash at import time), and the result is
+    clamped to `minimum` so a bad value cannot produce negative sleeps.
+    """
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    if not math.isfinite(value):
+        return default
+    return max(value, minimum)
+
+
+# Missing-reference retry schedule.
+# Default (flag off): legacy flat wait, random.uniform(1, 3) s before each retry.
+# Opt-in (OPENCTI_MISSING_REF_RETRY_EXPONENTIAL=true): fast-first exponential with +-50%
+# jitter. Most missing references are a short race (the referenced entity lands well under a
+# second later), so the first retry comes quickly; later steps grow so the total wait budget
+# stays ~7.5s and slow dependencies keep their chances. Delays (mean): 0.5s, 1s, 2s, 4s.
+# Initial delay >= 0 (0 disables the wait); factor >= 1 (1 = constant delay).
+MISSING_REF_RETRY_EXPONENTIAL: bool = _env_bool(
+    "OPENCTI_MISSING_REF_RETRY_EXPONENTIAL", default=False
+)
+MISSING_REF_RETRY_INITIAL_DELAY: float = _env_float(
+    "OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY", default=0.5, minimum=0.0
+)
+MISSING_REF_RETRY_FACTOR: float = _env_float(
+    "OPENCTI_MISSING_REF_RETRY_FACTOR", default=2.0, minimum=1.0
+)
+
+
+def missing_ref_retry_delay(attempt_index: int) -> float:
+    """Seconds to wait before missing-reference retry number `attempt_index` (0-based).
+
+    Legacy schedule unless MISSING_REF_RETRY_EXPONENTIAL is on, see the module constants.
+    """
+    if not MISSING_REF_RETRY_EXPONENTIAL:
+        return round(random.uniform(1, 3), 2)
+    base_delay = MISSING_REF_RETRY_INITIAL_DELAY * (
+        MISSING_REF_RETRY_FACTOR**attempt_index
+    )
+    return round(random.uniform(base_delay * 0.5, base_delay * 1.5), 2)
+
+
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -84,6 +179,10 @@ bundles_lock_error_counter = meter.create_counter(
 bundles_missing_reference_error_counter = meter.create_counter(
     name="opencti_bundles_missing_reference_error_counter",
     description="number of bundles in missing reference error",
+)
+bundles_missing_reference_retry_attempt_counter = meter.create_counter(
+    name="opencti_bundles_missing_reference_retry_attempt_counter",
+    description="number of missing reference retries, by 1-based attempt number",
 )
 bundles_bad_gateway_error_counter = meter.create_counter(
     name="opencti_bundles_bad_gateway_error_counter",
@@ -379,7 +478,10 @@ class OpenCTIStix2:
 
         :param file_path: Valid path to the file
         :type file_path: str
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -405,7 +507,10 @@ class OpenCTIStix2:
 
         :param json_data: JSON data as string or bytes
         :type json_data: str or bytes
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -501,7 +606,7 @@ class OpenCTIStix2:
         """
 
         # Created By Ref
-        created_by_id = None
+        created_by_id = NOT_PROVIDED
         if "created_by_ref" in stix_object:
             created_by_id = stix_object["created_by_ref"]
         elif "x_opencti_created_by_ref" in stix_object:
@@ -1141,6 +1246,7 @@ class OpenCTIStix2:
             "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Security-Coverage": self.opencti.security_coverage.read,
+            "Security-Coverage-Result": self.opencti.security_coverage_result.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -1219,6 +1325,7 @@ class OpenCTIStix2:
             "task": self.opencti.task,
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
+            "security-coverage-result": self.opencti.security_coverage_result,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
@@ -1268,7 +1375,10 @@ class OpenCTIStix2:
 
         :param stix_object: Valid STIX2 object to import
         :type stix_object: Dict
-        :param update: Whether to update data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1287,6 +1397,7 @@ class OpenCTIStix2:
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
         open_vocabs = embedded_relationships["open_vocabs"]
+        granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -1329,6 +1440,7 @@ class OpenCTIStix2:
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
             "open_vocabs": open_vocabs,
+            "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -1398,7 +1510,10 @@ class OpenCTIStix2:
 
         :param stix_object: Valid STIX2 cyber observable object
         :type stix_object: Dict
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1610,7 +1725,10 @@ class OpenCTIStix2:
 
         :param stix_relation: Valid STIX2 relationship object
         :type stix_relation: Dict
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -1723,7 +1841,10 @@ class OpenCTIStix2:
         :type from_id: str
         :param to_id: ID of the target entity (where_sighted_ref)
         :type to_id: str
-        :param update: Whether to update existing data in the database, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
@@ -2059,6 +2180,8 @@ class OpenCTIStix2:
             del entity["created_at"]
         if "updated_at" in entity:
             del entity["updated_at"]
+        for field in PROVENANCE_READ_ONLY_FIELDS:
+            entity.pop(field, None)
 
         return {k: v for k, v in entity.items() if self.opencti.not_empty(v)}
 
@@ -2112,6 +2235,14 @@ class OpenCTIStix2:
                 ],
             }
 
+    @staticmethod
+    def _is_restricted_identity(identity: Dict) -> bool:
+        """Detect the platform's restricted-access placeholder identity."""
+        return (
+            identity.get("name") == "Restricted"
+            and identity.get("identity_class") == "Restricted"
+        )
+
     def prepare_export(
         self,
         entity: Dict,
@@ -2141,6 +2272,7 @@ class OpenCTIStix2:
             not no_custom_attributes
             and "createdBy" in entity
             and entity["createdBy"] is not None
+            and not self._is_restricted_identity(entity["createdBy"])
         ):
             created_by = self.generate_export(entity=entity["createdBy"])
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
@@ -2174,6 +2306,19 @@ class OpenCTIStix2:
         if "dataSource" in entity:
             del entity["dataSource"]
             del entity["dataSourceId"]
+
+        security_coverage_results = []
+        security_coverage_result_of = None
+        if entity["type"] == "security-coverage":
+            security_coverage_results = entity.get("results") or []
+            if "results" in entity:
+                del entity["results"]
+            if "objectCovered" in entity:
+                del entity["objectCovered"]
+        if entity["type"] == "security-coverage-result":
+            security_coverage_result_of = entity.get("resultOf")
+            if "resultOf" in entity:
+                del entity["resultOf"]
 
         # Dates
         if "first_seen" in entity and entity["first_seen"].startswith("1970"):
@@ -2488,6 +2633,25 @@ class OpenCTIStix2:
             uuids = [entity["id"]]
             for y in result:
                 uuids.append(y["id"])
+            # Get security coverage neighbours, with their explicit type so the right reader is
+            # used. Declared before the generic refs loop, which would resolve the coverage as a
+            # plain Stix-Domain-Object and win the deduplication.
+            for security_coverage_result in security_coverage_results:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result["id"],
+                        "entity_type": "Security-Coverage-Result",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
+            if security_coverage_result_of is not None:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result_of["id"],
+                        "entity_type": "Security-Coverage",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
@@ -3271,6 +3435,8 @@ class OpenCTIStix2:
             self.opencti.external_reference.delete(item["id"])
         elif item["type"] == "sighting":
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
+        elif item["type"] == "security-coverage":
+            self.opencti.security_coverage.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
         elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):
@@ -3352,6 +3518,15 @@ class OpenCTIStix2:
             self.opencti.stix_core_object.clear_access_restriction(
                 element_id=item["id"]
             )
+        elif operation == "add_related_covered_entities":
+            security_coverage_result_id = self.opencti.get_attribute_in_extension(
+                "security_coverage_result_id", item
+            )
+            self.opencti.stix_core_relationship.create(
+                fromId=security_coverage_result_id,
+                toId=item["id"],
+                relationship_type="has-covered",
+            )
         elif operation == "enrichment":
             connector_ids = self.opencti.get_attribute_in_extension(
                 "connector_ids", item
@@ -3389,7 +3564,10 @@ class OpenCTIStix2:
 
         :param item: STIX2 item to import
         :type item: dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional
@@ -3525,6 +3703,31 @@ class OpenCTIStix2:
         bundles_success_counter.add(1)
         return True
 
+    def _report_expectation_item_error(self, work_id: Optional[str], item, error: str):
+        """Report an item-level import error as a work expectation.
+
+        :param work_id: Work ID for tracking import progress, no-op when None
+        :type work_id: str, optional
+        :param item: STIX2 item that failed to be imported
+        :type item: dict
+        :param error: error message to report in the work status
+        :type error: str
+        """
+        if work_id is None:
+            return
+        item_str = json.dumps(item)
+        self.opencti.work.report_expectation(
+            work_id,
+            {
+                "error": error,
+                "source": (
+                    item_str
+                    if len(item_str) < MAX_REPORTED_SOURCE_LENGTH
+                    else "Bundle too large"
+                ),
+            },
+        )
+
     def import_item_with_retries(
         self,
         item,
@@ -3540,7 +3743,10 @@ class OpenCTIStix2:
 
         :param item: STIX2 item to import
         :type item: dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional
@@ -3578,8 +3784,11 @@ class OpenCTIStix2:
                 # Platform detects a missing reference and have to retry
                 elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
                     bundles_missing_reference_error_counter.add(1)
-                    sleep_jitter = round(random.uniform(1, 3), 2)
-                    time.sleep(sleep_jitter)
+                    # attempt is 1-based: 1 = first retry, PROCESSING_COUNT = last one
+                    bundles_missing_reference_retry_attempt_counter.add(
+                        1, {"attempt": processing_count + 1}
+                    )
+                    time.sleep(missing_ref_retry_delay(processing_count))
                     processing_count += 1
                 # A bad gateway error occurs
                 elif ERROR_TYPE_BAD_GATEWAY in error_msg:
@@ -3622,37 +3831,31 @@ class OpenCTIStix2:
                 # That also works for missing reference with too much execution
                 else:
                     bundles_technical_error_counter.add(1)
-                    worker_logger.error(
-                        "Unrecognized error during bundle import", {"error": error}
+                    # Some functional errors are caused by the data itself
+                    # (malformed observable, invalid indicator pattern, ...):
+                    # retrying would fail the same way and nothing can be done at
+                    # platform level, so they are logged as warnings.
+                    is_expected_functional_error = any(
+                        doc_code in error_msg
+                        for doc_code in EXPECTED_FUNCTIONAL_ERROR_DOC_CODES
                     )
-                    if work_id is not None:
-                        item_str = json.dumps(item)
-                        self.opencti.work.report_expectation(
-                            work_id,
-                            {
-                                "error": error,
-                                "source": (
-                                    item_str
-                                    if len(item_str) < 50000
-                                    else "Bundle too large"
-                                ),
-                            },
+                    if is_expected_functional_error:
+                        worker_logger.warning(
+                            "Functional error during bundle import",
+                            {"error": error},
                         )
+                    else:
+                        worker_logger.error(
+                            "Unrecognized error during bundle import",
+                            {"error": error},
+                        )
+                    # In both cases the item is rejected and must appear in the work status
+                    self._report_expectation_item_error(work_id, item, error)
                     return None
 
         max_retry_error_message = "Max number of retries reached, please see error logs of workers for more details. Bundle will be sent to dead letter queue."
         worker_logger.error(max_retry_error_message)
-        if work_id is not None:
-            item_str = json.dumps(item)
-            self.opencti.work.report_expectation(
-                work_id,
-                {
-                    "error": max_retry_error_message,
-                    "source": (
-                        item_str if len(item_str) < 50000 else "Bundle too large"
-                    ),
-                },
-            )
+        self._report_expectation_item_error(work_id, item, max_retry_error_message)
         item["rejection_info"] = {
             "reject_reason": "MAX_RETRY",
             "last_error_msg": error_msg,
@@ -3671,7 +3874,10 @@ class OpenCTIStix2:
 
         :param stix_bundle: STIX2 bundle dictionary to import
         :type stix_bundle: Dict
-        :param update: Whether to update existing data, defaults to False
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation, defaults to False. OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: List, optional

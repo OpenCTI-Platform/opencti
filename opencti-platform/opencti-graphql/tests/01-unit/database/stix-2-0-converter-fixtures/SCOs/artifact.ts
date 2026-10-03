@@ -27,4 +27,3 @@ export const EXPECTED_ARTIFACT = {
   hashes: { 'SHA-256': 'abcdef1234567890' },
   x_opencti_additional_names: ['report.pdf'],
 };
-

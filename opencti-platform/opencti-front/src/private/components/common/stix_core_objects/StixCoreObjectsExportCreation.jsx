@@ -1,15 +1,12 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -18,6 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import GenerateExportTitle from '../GenerateExportTitle';
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
@@ -132,14 +130,7 @@ const StixCoreObjectsExportCreation = ({
                     setOpen(false);
                   }}
                   data-testid="StixCoreObjectsExportCreationDialog"
-                  title={(
-                    <>
-                      {t_i18n('Generate an export')}
-                      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                      </Tooltip>
-                    </>
-                  )}
+                  title={<GenerateExportTitle />}
                 >
                   <QueryRenderer
                     query={markingDefinitionsLinesSearchQuery}
@@ -149,21 +140,21 @@ const StixCoreObjectsExportCreation = ({
                         return (
                           <>
                             <Field
-                              component={SelectField}
-                              variant="standard"
+                              component={SelectFieldFds}
+                              variant="outlined"
                               name="format"
                               label={t_i18n('Export format')}
                               fullWidth={true}
                               containerstyle={{ width: '100%' }}
                             >
                               {exportScopes.map((value, i) => (
-                                <MenuItem
+                                <SelectItem
                                   key={i}
                                   value={value}
                                   disabled={!isExportActive(value)}
                                 >
                                   {value}
-                                </MenuItem>
+                                </SelectItem>
                               ))}
                             </Field>
                             <ObjectMarkingField
@@ -185,19 +176,19 @@ const StixCoreObjectsExportCreation = ({
                             {visibleColumnExportEnabledFormats.includes(values.format)
                               ? (
                                   <Field
-                                    component={SelectField}
-                                    variant="standard"
+                                    component={SelectFieldFds}
+                                    variant="outlined"
                                     name="columns"
                                     label={t_i18n('Choose column to export')}
                                     fullWidth={true}
                                     containerstyle={fieldSpacingContainerStyle}
                                   >
-                                    <MenuItem value="all">
+                                    <SelectItem value="all">
                                       {t_i18n('All attributes')}
-                                    </MenuItem>
-                                    <MenuItem value="view">
+                                    </SelectItem>
+                                    <SelectItem value="view">
                                       {t_i18n('Current view')}
-                                    </MenuItem>
+                                    </SelectItem>
                                   </Field>
                                 ) : undefined}
                           </>

@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import OtpInput from 'react-otp-input';
 import makeStyles from '@mui/styles/makeStyles';
 import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
 
 export const OTP_CODE_SIZE = 6;
 
@@ -38,8 +39,10 @@ const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
   isDisabled,
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   return (
     <OtpInput
+      aria-label={t_i18n('one-time password')}
       value={value}
       onChange={onChange}
       numInputs={OTP_CODE_SIZE}

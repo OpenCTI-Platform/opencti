@@ -18,7 +18,6 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import ItemIcon from '../../../../components/ItemIcon';
 import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated__/StixCyberObservableNestedEntitiesTable_node.graphql';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import stopEvent from '../../../../utils/domEvent';
 import { useComputeLink, ComputeLinkNode } from '../../../../utils/hooks/useAppData';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
@@ -64,6 +63,134 @@ const stixCyberObservableNestedEntitiesLineFragment = graphql`
         draftVersion {
           draft_id
           draft_operation
+        }
+        creators {
+          id
+          name
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+        ... on Report {
+          name
+        }
+        ... on Grouping {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on ObservedData {
+          name
         }
       }
     }
@@ -290,6 +417,13 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCyberObservableNestedEntitiesTablePaginationQuery>;
 
+  // The current observable can be on either side of the nested ref relationship
+  // (from or to), so the opposite object to display/link to must be resolved
+  // dynamically instead of always assuming it is `to`.
+  const getOppositeObject = (data: StixCyberObservableNestedEntitiesTable_node$data) => (
+    data.from?.id === stixCyberObservableId ? data.to : data.from
+  );
+
   const dataColumns = {
     relationship_type: {
       label: 'Attribute',
@@ -304,7 +438,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       percentWidth: isInLine ? 20 : 10,
       isSortable: false,
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => (
-        <ItemEntityType entityType={data.to?.entity_type || ''} />
+        <ItemEntityType entityType={getOppositeObject(data)?.entity_type || ''} />
       ),
     },
     name: {
@@ -312,10 +446,11 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       percentWidth: isInLine ? 35 : 22,
       isSortable: false,
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => {
+        const oppositeObject = getOppositeObject(data);
         return (
           <>
-            {data.to?.name || data.to?.observable_value || data.to?.attribute_abstract || data.to?.content}
-            {data.to?.draftVersion && <DraftChip />}
+            {oppositeObject?.name || oppositeObject?.observable_value || oppositeObject?.attribute_abstract || oppositeObject?.content}
+            {oppositeObject?.draftVersion && <DraftChip />}
           </>
         );
       },
@@ -340,7 +475,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
   };
 
   const getRedirectionLink = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => {
-    const targetObject = stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
+    const targetObject = getOppositeObject(stixObject);
     if (targetObject) {
       return computeLink(targetObject as ComputeLinkNode);
     }
@@ -366,10 +501,10 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           hideHeaders={isInLine}
           disableLineSelection
           getComputeLink={getRedirectionLink}
-          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
+          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={getOppositeObject(data)?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
-              <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>
+              <div style={{ marginLeft: -10 }}>
                 <StixNestedRefRelationshipPopover
                   stixNestedRefRelationshipId={data.id}
                   paginationOptions={{

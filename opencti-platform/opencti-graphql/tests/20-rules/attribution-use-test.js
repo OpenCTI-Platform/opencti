@@ -81,6 +81,6 @@ describe('Attribute use rule', () => {
       await internalDeleteElementById(testContext, SYSTEM_USER, aptUseSpelevo.internal_id, RELATION_USES);
       await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

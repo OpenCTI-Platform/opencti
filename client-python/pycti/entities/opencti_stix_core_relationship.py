@@ -29,6 +29,11 @@ class StixCoreRelationship:
             spec_version
             created_at
             updated_at
+            corroboration_count
+            last_asserted_at
+            freshness_days
+            has_conflicts
+            freshness_stale
             standard_id
             relationship_type
             description
@@ -50,6 +55,10 @@ class StixCoreRelationship:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -716,6 +725,8 @@ class StixCoreRelationship:
         :type x_opencti_stix_ids: list
         :param x_opencti_modified_at: (optional) custom modification date
         :type x_opencti_modified_at: str
+        :param external_uri: (optional) coverage external URI
+        :type external_uri: str
         :param coverage_information: (optional) coverage information
         :type coverage_information: list
         :param update: (optional) whether to update if exists (default: False)
@@ -744,6 +755,7 @@ class StixCoreRelationship:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
+        external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
@@ -791,6 +803,7 @@ class StixCoreRelationship:
                     "x_opencti_workflow_id": x_opencti_workflow_id,
                     "x_opencti_stix_ids": x_opencti_stix_ids,
                     "x_opencti_modified_at": x_opencti_modified_at,
+                    "external_uri": external_uri,
                     "coverage_information": coverage_information,
                     "update": update,
                     "upsertOperations": upsert_operations,
@@ -1387,15 +1400,16 @@ class StixCoreRelationship:
             raw_coverages = (
                 stix_relation["coverage"] if "coverage" in stix_relation else []
             )
-            coverage_information = list(
-                map(
-                    lambda cov: {
-                        "coverage_name": cov["name"],
-                        "coverage_score": cov["score"],
-                    },
-                    raw_coverages,
-                )
+            external_uri = (
+                stix_relation["external_uri"]
+                if "external_uri" in stix_relation
+                else None
             )
+            coverage_information = [
+                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
+                for cov in raw_coverages
+                if "score" in cov
+            ]
 
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
@@ -1419,6 +1433,7 @@ class StixCoreRelationship:
                     if "stop_time" in stix_relation
                     else default_date
                 ),
+                external_uri=external_uri,
                 coverage_information=coverage_information,
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None

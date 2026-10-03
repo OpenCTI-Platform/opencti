@@ -30,6 +30,13 @@ class Campaign:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -37,6 +44,10 @@ class Campaign:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -124,6 +135,13 @@ class Campaign:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -131,6 +149,10 @@ class Campaign:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

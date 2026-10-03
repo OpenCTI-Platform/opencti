@@ -5,13 +5,13 @@ import * as ipaddr from 'ipaddr.js';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { DialogActions } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { groupSetDefaultGroupForIngestionUsersQuery } from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import SwitchField from '../../../../components/fields/SwitchField';
-import TextField from '../../../../components/TextField';
+
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -22,6 +22,8 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
 import { IpWhitelistSettingsQuery } from './__generated__/IpWhitelistSettingsQuery.graphql';
 import type { GroupSetDefaultGroupForIngestionUsersQuery$data } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
+import { OPENCTI_ADMIN_UUID } from 'src/utils/hooks/useGranted';
+import TextareaField from '../../../../components/TextareaField';
 
 const ipWhitelistSettingsQuery = graphql`
   query IpWhitelistSettingsQuery {
@@ -211,6 +213,10 @@ const IpWhitelistSettingsContent = () => {
                             if (!newExclusions.some((e) => e.id === me.id)) {
                               newExclusions.push({ id: me.id, name: me.name, entity_type: 'User' });
                             }
+                            // Add admin user
+                            if (!newExclusions.some((e) => e.id === OPENCTI_ADMIN_UUID)) {
+                              newExclusions.push({ id: OPENCTI_ADMIN_UUID, name: 'admin', entity_type: 'User' });
+                            }
                             // Fetch and add default group for service accounts
                             fetchQuery(groupSetDefaultGroupForIngestionUsersQuery, {
                               filters: {
@@ -249,13 +255,10 @@ const IpWhitelistSettingsContent = () => {
                           {' '}{t_i18n('Excluded users, groups, or organizations bypass the IP check.')}
                         </Alert>
                         <Field
-                          component={TextField}
-                          variant="standard"
-                          style={{ marginTop: 20 }}
+                          component={TextareaField}
+                          className="mt-5"
                           name="platform_ip_whitelist"
                           label={t_i18n('Allowed IP addresses (one per line, e.g. 192.168.1.0/24)')}
-                          fullWidth={true}
-                          multiline={true}
                           rows={6}
                         />
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFormatter } from '../../../../../components/i18n';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import { FormikHelpers, useFormikContext } from 'formik';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
@@ -36,12 +37,12 @@ const ActionMenuButton = ({ onAddObject, type }: ActionMenuButtonProps) => {
   return (
     <div>
       <IconButton
-        color="secondary"
+        variant="default"
+        priority="tertiary"
         aria-label="Add"
         onClick={handleClick}
-      >
-        <Add fontSize="small" />
-      </IconButton>
+        icon={<Add fontSize="small" />}
+      />
       <Menu
         anchorEl={anchorEl}
         open={open}

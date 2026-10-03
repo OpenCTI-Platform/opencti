@@ -51,6 +51,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'pageSize'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
+  | 'searchTerm'
 >;
 
 const DataTableComponent = ({
@@ -82,6 +83,7 @@ const DataTableComponent = ({
   onLineClick,
   onSort,
   emptyStateMessage,
+  searchTerm,
   pageSize,
   actionsColumnWidth,
   enableInfiniteScroll = false,
@@ -293,6 +295,7 @@ const DataTableComponent = ({
     >
       {filtersComponent && <div>{filtersComponent}</div>}
       <div
+        role="grid"
         className="datatable-container"
         style={{ width: '100%', overflow: 'auto hidden' }}
         ref={tableRef}
@@ -313,6 +316,7 @@ const DataTableComponent = ({
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
             emptyStateMessage={emptyStateMessage}
+            searchTerm={searchTerm}
           />
         </React.Suspense>
       </div>

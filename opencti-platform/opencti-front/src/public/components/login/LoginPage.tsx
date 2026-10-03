@@ -104,7 +104,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
                 flexDirection: 'column',
               }}
             >
-              <div style={{ minHeight: 170 }}>
+              <div>
                 {!!resetPwdStep && (
                   <ResetPassword
                     policies={{

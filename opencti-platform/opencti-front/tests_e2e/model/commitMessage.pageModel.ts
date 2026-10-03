@@ -1,15 +1,23 @@
 import { Page } from '@playwright/test';
+import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
 
 export default class CommitMessagePage {
+  private readonly externalReferencesField: AutocompleteFieldPageModel;
+
   constructor(private page: Page) {
+    this.externalReferencesField = new AutocompleteFieldPageModel(page, 'External references', true);
   }
 
   getPage() {
     return this.page.getByTestId('commit-message-page');
   }
 
-  getAddNewReferenceButton() {
-    return this.page.getByRole('button', { name: 'Add', exact: true });
+  /**
+   * Opens the reference creation form through the panel row. The row OPENS the
+   * form without prefilling it, so callers still fill the source name.
+   */
+  async openNewReferenceForm(sourceName: string) {
+    return this.externalReferencesField.createOption(sourceName);
   }
 
   getNewReferenceSourceNameInput() {

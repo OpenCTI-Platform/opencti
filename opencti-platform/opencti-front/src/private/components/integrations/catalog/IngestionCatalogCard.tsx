@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 import IngestionCatalogCardDeployButton from '@components/integrations/catalog/components/card/IngestionCatalogCardDeployButton';
 import ConnectorUseCases from '@components/integrations/catalog/components/card/usecases/ConnectorUseCases';
 import Tooltip from '@mui/material/Tooltip';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -16,6 +18,7 @@ import Card from '../../../../components/common/card/Card';
 import stopEvent from '../../../../utils/domEvent';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
+import { paperBorder } from '../paperSurface';
 
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
@@ -97,6 +100,12 @@ const ConnectorActions = ({
   deploymentCount,
   onClickDeploy,
 }: ConnectorActionsProps) => {
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  const shouldRenderDeploy = connector.manager_supported === true;
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
+
   return (
     <CardActions
       sx={{
@@ -109,29 +118,33 @@ const ConnectorActions = ({
       }}
     >
       <ConnectorUseCases useCases={connector.use_cases} />
-      <Stack
-        sx={{ marginLeft: '0!important' }}
-        direction="row"
-        gap={1}
-        // The actions live inside the card link: block both the click
-        // bubbling and the native anchor navigation.
-        onClick={stopEvent}
-      >
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {isEnterpriseEdition ? (
-            <IngestionCatalogCardDeployButton
-              deploymentCount={deploymentCount}
-              deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
-              onClick={onClickDeploy}
-            />
-          ) : (
-            <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-              {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-            </Box>
-          )}
-        </Security>
-      </Stack>
+      {shouldRenderDeploy && (
+        <Stack
+          sx={{ marginLeft: '0!important' }}
+          direction="row"
+          gap={1}
+          // The actions live inside the card link: block both the click
+          // bubbling and the native anchor navigation.
+          onClick={stopEvent}
+        >
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {showEnterpriseUpsell ? (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            ) : (
+              <IngestionCatalogCardDeployButton
+                deploymentCount={deploymentCount}
+                deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
+                disabled={!canDeploy}
+                disabledReason={compatibilityMessage}
+                onClick={onClickDeploy}
+              />
+            )}
+          </Security>
+        </Stack>
+      )}
     </CardActions>
   );
 };
@@ -158,7 +171,7 @@ const IngestionCatalogCard = ({
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
@@ -169,7 +182,7 @@ const IngestionCatalogCard = ({
       }}
     >
       <Card
-        // A real link so ctrl/cmd/middle click opens the connector in a new tab.
+        // A real link, so ctrl/cmd and middle click open the connector in a new tab.
         to={link}
         sx={{
           height: 280,

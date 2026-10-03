@@ -50,9 +50,14 @@ vi.mock('../../../src/config/conf', () => ({
 
 // Mock heavy I/O modules that get pulled in transitively. vi.hoisted is
 // required so the mock fns are available when vi.mock is hoisted above imports.
-const { mockRedisGetXtmAgentResponse, mockRedisSetXtmAgentResponse } = vi.hoisted(() => ({
+const {
+  mockRedisGetXtmAgentResponse,
+  mockRedisSetXtmAgentResponse,
+  mockRedisDeleteXtmAgentResponse,
+} = vi.hoisted(() => ({
   mockRedisGetXtmAgentResponse: vi.fn(() => Promise.resolve(null)),
   mockRedisSetXtmAgentResponse: vi.fn(() => Promise.resolve()),
+  mockRedisDeleteXtmAgentResponse: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('../../../src/database/redis', () => ({
   getClientBase: vi.fn(() => ({ set: vi.fn(), get: vi.fn(), del: vi.fn() })),
@@ -62,6 +67,7 @@ vi.mock('../../../src/database/redis', () => ({
   redisGetXtmRegistrationResult: vi.fn(() => null),
   redisGetXtmAgentResponse: mockRedisGetXtmAgentResponse,
   redisSetXtmAgentResponse: mockRedisSetXtmAgentResponse,
+  redisDeleteXtmAgentResponse: mockRedisDeleteXtmAgentResponse,
 }));
 
 vi.mock('../../../src/lock/master-lock', () => ({
@@ -95,15 +101,20 @@ vi.mock('../../../src/modules/settings/licensing', () => ({
   getEnterpriseEditionInfo: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   issueAuthenticationJWT: vi.fn(),
 }));
 
 vi.mock('../../../src/domain/xtm-auth', () => ({
   issueXtmJwt: vi.fn(() => Promise.resolve('jwt-token-123')),
+  getXtmOneIdentity: vi.fn(),
 }));
 
-vi.mock('../../../src/http/httpUtils', () => ({
+// Only `setCookieError` is stubbed here. `isBrowserSessionRequest` must stay
+// the real implementation — the approval tests below exercise that guard's
+// actual logic, and a stub would assert nothing.
+vi.mock('../../../src/http/httpUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/http/httpUtils')>()),
   setCookieError: vi.fn(),
 }));
 
@@ -147,12 +158,37 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { deleteChatbotSession, getChatbotFileDownload, getChatbotSessions, postAgentMessageStream, postChatbotMessageSteer } from '../../../src/http/httpChatbotProxy';
+import { getXtmOneIdentity } from '../../../src/domain/xtm-auth';
+import xtmOneClient from '../../../src/modules/xtm/one/xtm-one-client';
+import {
+  deleteChatbotMessageFeedback,
+  deleteChatbotSession,
+  getChatbotConfig,
+  getChatbotFileDownload,
+  getChatbotPendingApprovals,
+  getChatbotPrompts,
+  getChatbotQuota,
+  getChatbotSessions,
+  postAgentMessageStream,
+  postChatbotMessageApprove,
+  postChatbotMessageFeedback,
+  postChatbotMessageSteer,
+} from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const buildReq = (body?: Record<string, unknown>) => ({ body, headers: {} } as any);
+
+// A request as it arrives from a signed-in browser: session cookie resolved to
+// the same identity `setupAuthenticatedContext` authenticates, and no bearer
+// token. The approval routes accept nothing else.
+const buildSessionReq = (body?: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
+  body,
+  headers: {},
+  session: { user: { id: 'user-1' } },
+  ...overrides,
+} as any);
 
 const buildRes = () => {
   const res: any = {};
@@ -175,6 +211,12 @@ const setupAuthenticatedContext = (overrides: Record<string, unknown> = {}) => {
   vi.mocked(getEntityFromCache).mockResolvedValue({ filigran_chatbot_ai_cgu_status: 'enabled' } as any);
   vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'pem-data' } as any);
   vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: true } as any);
+};
+
+/** OpenCTI has no Enterprise Edition license of its own. */
+const withoutOwnLicense = () => {
+  vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: undefined } as any);
+  vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: false, license_source: 'OPENCTI_LICENSE' } as any);
 };
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -214,6 +256,31 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+  });
+
+  it('should return 400 when the platform is not in Enterprise Edition', async () => {
+    withoutOwnLicense();
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    await postAgentMessageStream(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should accept the Enterprise Edition granted by a verified XTM license, without an OpenCTI license', async () => {
+    withoutOwnLicense();
+    vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: true, license_source: 'XTM_ONE_LICENSE' } as any);
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+    await postAgentMessageStream(req, res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
   });
 
   it('should return 400 when agent_slug is missing', async () => {
@@ -299,6 +366,26 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     );
     expect(res.write).toHaveBeenCalledWith(
       expect.stringContaining('Invalid agent'),
+    );
+    expect(res.end).toHaveBeenCalled();
+  });
+
+  it('should extract the message when the upstream detail is an object', async () => {
+    // XTM One refuses with `{detail: {code, message}}`; interpolating that
+    // object reached the chat bubble as "[object Object]".
+    const httpError = new Error('Request failed with status code 403') as any;
+    httpError.response = { status: 403, data: { detail: { code: 'ai_disabled', message: 'AI is disabled on this deployment.' } } };
+    mockPost.mockRejectedValue(httpError);
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+
+    await postAgentMessageStream(req, res);
+
+    expect(res.write).toHaveBeenCalledWith(
+      expect.stringContaining('AI is disabled on this deployment.'),
+    );
+    expect(res.write).not.toHaveBeenCalledWith(
+      expect.stringContaining('[object Object]'),
     );
     expect(res.end).toHaveBeenCalled();
   });
@@ -404,6 +491,88 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(cacheKey).toHaveLength(64); // sha256 hex length
     expect(storedContent).toBe('Hello world');
     expect(ttlSeconds).toBeGreaterThan(0);
+  });
+
+  it('should not cache a turn that stopped for human approval', async () => {
+    // AI Insights never declares `supports_tool_approval`, so a gated tool ends
+    // its turn with this prose. Caching it would pin "I need approval before
+    // running X" to the entity for the whole TTL (24h by default) and replay it
+    // to every user, long after an administrator whitelists the tool.
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    const approvalMessage = 'I need approval before running: opencti_delete_entity.\n\nThis chat can\'t collect that approval, so I\'ve stopped rather than acting without it.';
+    dataHandlers.forEach((h) => h(Buffer.from(`data: ${JSON.stringify({ type: 'done', content: approvalMessage })}\n\n`)));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should not cache an answer that stops for approval only after some prose', async () => {
+    // The agent can answer part of the question and then stop. A prefix-only test
+    // would let this half-answer be cached with a stale approval request attached.
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    const mixed = 'Here is what I found so far about this entity.\n\nI need approval before running: opencti_delete_entity.';
+    dataHandlers.forEach((h) => h(Buffer.from(`data: ${JSON.stringify({ type: 'done', content: mixed })}\n\n`)));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should evict an approval notice cached by an earlier build instead of replaying it', async () => {
+    // Redis outlives the deployment that wrote the entry, so the write guard alone
+    // cannot clear one. It must be dropped on read.
+    mockRedisGetXtmAgentResponse.mockResolvedValue({
+      content: 'I need approval before running: opencti_delete_entity.',
+      cached_at: '2026-08-20T10:00:00.000Z',
+    } as any);
+    const fakeStream = { pipe: vi.fn(), destroy: vi.fn(), on: vi.fn().mockReturnThis() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    expect(mockRedisDeleteXtmAgentResponse).toHaveBeenCalledTimes(1);
+    // Not replayed to the client...
+    expect(res.write).not.toHaveBeenCalled();
+    // ...and the turn falls through to a live agent run.
+    expect(mockPost).toHaveBeenCalled();
   });
 
   it('should not cache the response when the stream emits an error event', async () => {
@@ -1016,5 +1185,575 @@ describe('httpChatbotProxy: postChatbotMessageSteer', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessageApprove', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  const APPROVAL_BODY = {
+    conversation_id: '33333333-3333-3333-3333-333333333333',
+    decisions: [
+      { tool_call_id: 'call_abc123', decision: 'approve' },
+      { tool_call_id: 'call_ghi789', decision: 'reject', rejection_reason: 'Wrong target environment.' },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // The widget always reaches this route from a browser session.
+    setupAuthenticatedContext({ user_with_session: true });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await postChatbotMessageApprove(buildReq(APPROVAL_BODY), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a token-authenticated identity without a session', async () => {
+    // An agent or service account must never be able to approve a tool call —
+    // least of all one it proposed itself.
+    setupAuthenticatedContext({ user_with_session: false });
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a bearer token presented alongside a session cookie', async () => {
+    // `authenticateUserFromRequest` returns on the bearer branch before it looks
+    // at the session, so a service token plus any user's cookie authenticates as
+    // the token identity while `user_with_session` still reports true. That
+    // combination must not be able to approve a call the token identity proposed.
+    await postChatbotMessageApprove(
+      buildSessionReq(APPROVAL_BODY, { headers: { authorization: 'Bearer service-token' } }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a session belonging to a different identity than the authenticated one', async () => {
+    await postChatbotMessageApprove(
+      buildSessionReq(APPROVAL_BODY, { session: { user: { id: 'someone-else' } } }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await postChatbotMessageApprove(buildSessionReq(undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should forward the decisions body whole and pass the upstream status through', async () => {
+    mockPost.mockResolvedValue({ status: 200, data: { status: 'accepted', decided: 2 } });
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/messages/approve');
+    // Forwarded untouched — a rebuilt body would drop `rejection_reason`, which
+    // is the only thing the agent has to adapt to a declined call.
+    expect(sentBody).toEqual(APPROVAL_BODY);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ status: 'accepted', decided: 2 });
+  });
+
+  it('should forward an upstream 409 so the widget knows nothing is waiting any more', async () => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = { status: 409, data: { detail: 'No turn is currently awaiting approval for this conversation' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.send).toHaveBeenCalledWith({
+      status: 'error',
+      error: 'No turn is currently awaiting approval for this conversation',
+    });
+  });
+
+  it('should forward an upstream 422 for a partial decision set', async () => {
+    const httpError = new Error('Request failed with status code 422') as any;
+    httpError.response = { status: 422, data: { detail: 'Missing decisions for: call_ghi789' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Missing decisions for: call_ghi789' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotPendingApprovals', () => {
+  const VALID_CONVERSATION_ID = '44444444-4444-4444-4444-444444444444';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildPendingReq = (conversationId: string, overrides: Record<string, unknown> = {}) => ({
+    params: { conversationId },
+    headers: {},
+    session: { user: { id: 'user-1' } },
+    ...overrides,
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext({ user_with_session: true });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a token-authenticated identity without a session', async () => {
+    // The proposals payload spells out the tool, its arguments and its schema, and
+    // reaching this route also keeps a displayed prompt from being treated as
+    // abandoned. Neither is an API token's business.
+    setupAuthenticatedContext({ user_with_session: false });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID, { session: undefined }), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await getChatbotPendingApprovals(buildPendingReq('../other-tenant/conversations'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the recovered proposals and the turn state', async () => {
+    const upstream = {
+      conversation_id: VALID_CONVERSATION_ID,
+      proposals: [{
+        tool_call_id: 'call_abc123',
+        tool_name: 'opencti_delete_entity',
+        arguments: { entity_id: 'e-123', cascade: true },
+        input_schema: { type: 'object', properties: { cascade: { type: 'boolean', description: 'Also delete linked entities' } } },
+      }],
+      turn: 'running',
+    };
+    mockGet.mockResolvedValue({ status: 200, data: upstream });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url] = mockGet.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/conversations/${VALID_CONVERSATION_ID}/pending-approvals`);
+    expect(res.status).toHaveBeenCalledWith(200);
+    // `input_schema` must survive the hop: without each argument's description
+    // the prompt is a rubber stamp.
+    expect(res.json).toHaveBeenCalledWith(upstream);
+  });
+
+  it('should forward an empty proposals list as the ordinary answer', async () => {
+    mockGet.mockResolvedValue({ status: 200, data: { conversation_id: VALID_CONVERSATION_ID, proposals: [], turn: 'idle' } });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ conversation_id: VALID_CONVERSATION_ID, proposals: [], turn: 'idle' });
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Conversation not found' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Conversation not found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotPrompts', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotPrompts(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the upstream status and body on success', async () => {
+    const prompts = {
+      prompts: [{ id: 'p-1', title: 'Weekly recap', content: 'Summarize this week in threat intel', description: null }],
+    };
+    mockGet.mockResolvedValue({ status: 200, data: prompts });
+
+    await getChatbotPrompts(buildReq(), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/prompts');
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(prompts);
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Not Found' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotPrompts(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Not Found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotPrompts(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotQuota', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotQuota(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the upstream status and body on success', async () => {
+    const quota = { used: 12, limit: 100, period: 'day', scope: 'user' };
+    mockGet.mockResolvedValue({ status: 200, data: quota });
+
+    await getChatbotQuota(buildReq(), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/quota');
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(quota);
+  });
+
+  it('should forward a null quota as is so the widget hides the indicator', async () => {
+    mockGet.mockResolvedValue({ status: 200, data: null });
+
+    await getChatbotQuota(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(null);
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, data: { detail: 'Quota unavailable' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotQuota(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Quota unavailable' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotQuota(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessageFeedback', () => {
+  const VALID_CONVERSATION_ID = '55555555-5555-5555-5555-555555555555';
+  const VALID_MESSAGE_ID = '66666666-6666-6666-6666-666666666666';
+  const FEEDBACK_URL = `/api/v1/platform/chat/conversations/${VALID_CONVERSATION_ID}/messages/${VALID_MESSAGE_ID}/feedback`;
+  let res: ReturnType<typeof buildRes>;
+
+  const buildFeedbackReq = (conversationId: string, messageId: string, body?: Record<string, unknown>) => ({
+    params: { conversationId, messageId },
+    body,
+    headers: {},
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, { rating: 'positive' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await postChatbotMessageFeedback(buildFeedbackReq('../other-tenant', VALID_MESSAGE_ID, { rating: 'positive' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID message id without calling XTM One', async () => {
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, 'm-1/../../admin', { rating: 'positive' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid message id' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should forward the body and the upstream status on success', async () => {
+    const body = { rating: 'negative', comment: 'Cited the wrong intrusion set' };
+    mockPost.mockResolvedValue({ status: 200, data: body });
+
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, body), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPost.mock.calls[0];
+    expect(url).toBe(FEEDBACK_URL);
+    expect(sentBody).toEqual(body);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(body);
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Message not found' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, { rating: 'positive' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Message not found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
+
+    await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, { rating: 'positive' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: deleteChatbotMessageFeedback', () => {
+  const VALID_CONVERSATION_ID = '77777777-7777-7777-7777-777777777777';
+  const VALID_MESSAGE_ID = '88888888-8888-8888-8888-888888888888';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildFeedbackReq = (conversationId: string, messageId: string) => ({
+    params: { conversationId, messageId },
+    headers: {},
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await deleteChatbotMessageFeedback(buildFeedbackReq('not-a-uuid', VALID_MESSAGE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID message id without calling XTM One', async () => {
+    await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, ''), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid message id' });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should forward an upstream 204 with an empty body', async () => {
+    mockDelete.mockResolvedValue({ status: 204, data: '' });
+
+    await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID), res);
+
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockDelete.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/conversations/${VALID_CONVERSATION_ID}/messages/${VALID_MESSAGE_ID}/feedback`);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.sendStatus).not.toHaveBeenCalled();
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Message not found' } };
+    mockDelete.mockRejectedValue(httpError);
+
+    await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Message not found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockDelete.mockRejectedValue(new Error('Network failure'));
+
+    await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotConfig', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should hand the browser the identity XTM One publishes, not the URL OpenCTI reaches it on', async () => {
+    vi.mocked(getXtmOneIdentity).mockResolvedValue('http://localhost:8090');
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: 'http://localhost:8090', xtm_one_configured: true });
+  });
+
+  it('should serve no URL, without reading XTM One, when XTM One is not configured', async () => {
+    vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: null, xtm_one_configured: false });
+    expect(getXtmOneIdentity).not.toHaveBeenCalled();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(getXtmOneIdentity).not.toHaveBeenCalled();
   });
 });

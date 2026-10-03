@@ -206,4 +206,3 @@ describe('Workflow Engine', () => {
     expect(context.pendingAsyncSlots).toHaveLength(1);
   });
 });
-

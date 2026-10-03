@@ -1,7 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -20,9 +20,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -69,32 +66,32 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
 
   return (
     <div style={{ width: '100%' }}>
-      <Field<AutocompleteFieldProps>
-        component={AutocompleteField}
+      <Field<ComboboxFieldProps>
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         name="caseTemplates"
         multiple
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n(label ?? 'Default case templates'),
-          helperText: helpertext,
-        }}
+        label={t_i18n(label ?? 'Default case templates')}
+        helperText={helpertext}
         onChange={(name, value) => {
-          onChange?.(name, value);
-          onSubmit?.(name, value);
+          const templates = (value ?? []) as FieldOption[];
+          onChange?.(name, templates);
+          onSubmit?.(name, templates);
         }}
         style={containerStyle}
         disabled={isDisabled}
         noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
-        renderOption={(props, option) => (
-          <li {...props}>
+        renderOption={(option) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Case-Template" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

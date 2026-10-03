@@ -9,7 +9,8 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { CheckCircle, ExpandMore } from '@mui/icons-material';
+import { ExpandMore } from '@mui/icons-material';
+import { Checkbox } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../../relay/environment';
@@ -41,9 +42,6 @@ const useStyles = makeStyles((theme) => ({
   },
   list: {
     width: '100%',
-  },
-  icon: {
-    color: theme.palette.primary.main,
   },
 }));
 
@@ -105,7 +103,9 @@ const IndicatorAddObservablesLinesContainer = (props) => {
     if (alreadyAdded) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 25 }),
+        // The fragment reads `observables(first: 100)`; any other argument set
+        // addresses a record that does not exist, so the removal never showed.
+        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 100 }),
       });
       // Add with references
     } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
@@ -202,7 +202,10 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                       key={type}
                       expanded={expanded}
                       onChange={() => handleChangePanel(type, expanded)}
-                      elevation={3}
+                      // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+                      elevation={0}
+                      disableGutters
+                      sx={{ backgroundColor: 'var(--bg-input-default)' }}
                     >
                       <AccordionSummary expandIcon={<ExpandMore />}>
                         <Typography className={classes.heading}>
@@ -227,15 +230,25 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                                 divider={true}
                                 onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
                               >
+                                {/* The check no longer replaces the type icon: a
+                                    row used to lose the only thing that said WHAT
+                                    it was as soon as it was selected. Slot width
+                                    matches AddExternalReferencesLines. */}
+                                <ListItemIcon style={{ minWidth: 40 }}>
+                                  <Checkbox checked={alreadyAdded} />
+                                </ListItemIcon>
                                 <ListItemIcon>
-                                  {alreadyAdded ? (
-                                    <CheckCircle classes={{ root: classes.icon }} />
-                                  ) : (
-                                    <ItemIcon type={type} />
-                                  )}
+                                  <ItemIcon type={type} />
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={stixCyberObservable.observable_value}
+                                  // Unbroken values (hashes) overflowed the drawer, spaced ones (AS names) wrapped to three lines.
+                                  slotProps={{
+                                    primary: {
+                                      noWrap: true,
+                                      title: stixCyberObservable.observable_value,
+                                    },
+                                  }}
                                 />
                               </ListItemButton>
                             );

@@ -60,7 +60,7 @@ export const isWorkAlive = async (_context, _user, workId) => {
 
 export const findWorkPaginated = (context, user, args = {}) => {
   const finalArgs = R.pipe(
-    R.assoc('type', ENTITY_TYPE_WORK),
+    R.assoc('types', [ENTITY_TYPE_WORK]),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc'),
   )(args);
@@ -71,7 +71,7 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
   const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null } = args;
   const finalFilters = addFilter(filters, 'connector_id', connectorId);
   return elPaginate(context, user, READ_INDEX_HISTORY, {
-    type: ENTITY_TYPE_WORK,
+    types: [ENTITY_TYPE_WORK],
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
@@ -95,7 +95,7 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
     filterGroups: [],
   };
   return elPaginate(context, user, READ_INDEX_HISTORY, {
-    type: ENTITY_TYPE_WORK,
+    types: [ENTITY_TYPE_WORK],
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
@@ -111,7 +111,7 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
     finalFilters = addFilter(finalFilters, 'event_type', type);
   }
   return elPaginate(context, user, READ_INDEX_HISTORY, {
-    type: ENTITY_TYPE_WORK,
+    types: [ENTITY_TYPE_WORK],
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',

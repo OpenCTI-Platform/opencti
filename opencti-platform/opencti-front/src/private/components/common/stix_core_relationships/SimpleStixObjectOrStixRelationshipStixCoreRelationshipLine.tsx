@@ -10,7 +10,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { AutoFix } from 'mdi-material-ui';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import ItemIcon from '../../../../components/ItemIcon';

@@ -29,6 +29,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
+import Box from '@mui/material/Box';
 import FilterIconButton from '../../../components/FilterIconButton';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
@@ -161,15 +162,26 @@ const Pirs = () => {
       id: 'filters',
       label: 'Filters',
       percentWidth: 13,
+      // Scoped to this cell: filter chips label at 13px, the Tag chips beside them at 14px.
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
-        <div style={{ marginLeft: theme.spacing(-0.5) }}>
+        <Box
+          sx={{
+            marginLeft: theme.spacing(-0.5),
+            // Same surface as the Tag chips beside them, which take the library's neutral chip fill.
+            '& .MuiChip-root': {
+              height: 24,
+              backgroundColor: 'var(--color-feedback-neutral-secondary-transparency-30)',
+            },
+            '& .MuiChip-label': { fontSize: 14, fontWeight: 400 },
+          }}
+        >
           <FilterIconButton
             key={pir_filters}
             filters={JSON.parse(pir_filters)}
             entityTypes={['Stix-Core-Object']}
             variant="small"
           />
-        </div>
+        </Box>
       ),
     },
     criteria: {

@@ -20,6 +20,8 @@ import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_KILLCHAIN } from '../schema/general';
 
+const hasArguments = (args) => Object.values(args ?? {}).some((value) => value !== undefined && value !== null);
+
 const attackPatternResolvers = {
   Query: {
     attackPattern: (_, { id }, context) => findById(context, context.user, id),
@@ -28,9 +30,15 @@ const attackPatternResolvers = {
   },
   AttackPattern: {
     killChainPhases: (attackPattern, _, context) => loadThroughDenormalized(context, context.user, attackPattern, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    coursesOfAction: (attackPattern, args, context) => coursesOfActionPaginated(context, context.user, attackPattern.id, args),
+    coursesOfAction: (attackPattern, args, context) => {
+      if (hasArguments(args)) return coursesOfActionPaginated(context, context.user, attackPattern.id, args);
+      return context.batch.coursesOfActionBatchLoader.load(attackPattern.id);
+    },
+    subAttackPatterns: (attackPattern, args, context) => {
+      if (hasArguments(args)) return childAttackPatternsPaginated(context, context.user, attackPattern.id, args);
+      return context.batch.subAttackPatternsBatchLoader.load(attackPattern.id);
+    },
     parentAttackPatterns: (attackPattern, args, context) => parentAttackPatternsPaginated(context, context.user, attackPattern.id, args),
-    subAttackPatterns: (attackPattern, args, context) => childAttackPatternsPaginated(context, context.user, attackPattern.id, args),
     dataComponents: (attackPattern, args, context) => dataComponentsPaginated(context, context.user, attackPattern.id, args),
     isSubAttackPattern: (attackPattern, _, context) => context.batch.isSubAttachPatternBatchLoader.load(attackPattern.id),
   },

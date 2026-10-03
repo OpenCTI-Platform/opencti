@@ -30,6 +30,13 @@ class IntrusionSet:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -37,6 +44,10 @@ class IntrusionSet:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -118,6 +129,7 @@ class IntrusionSet:
             resource_level
             primary_motivation
             secondary_motivations
+            x_opencti_score
         """
         self.properties_with_files = """
             id
@@ -127,6 +139,13 @@ class IntrusionSet:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -134,6 +153,10 @@ class IntrusionSet:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -228,6 +251,7 @@ class IntrusionSet:
             resource_level
             primary_motivation
             secondary_motivations
+            x_opencti_score
             importFiles {
                 edges {
                     node {
@@ -455,6 +479,8 @@ class IntrusionSet:
         :type primary_motivation: str
         :param secondary_motivations: secondary motivations
         :type secondary_motivations: list
+        :param x_opencti_score: score (0-100)
+        :type x_opencti_score: int
         :param createdBy: creator identity ID
         :type createdBy: str
         :param objectMarking: marking definition IDs
@@ -509,6 +535,7 @@ class IntrusionSet:
         resource_level = kwargs.get("resource_level", None)
         primary_motivation = kwargs.get("primary_motivation", None)
         secondary_motivations = kwargs.get("secondary_motivations", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
@@ -556,6 +583,7 @@ class IntrusionSet:
                         "resource_level": resource_level,
                         "primary_motivation": primary_motivation,
                         "secondary_motivations": secondary_motivations,
+                        "x_opencti_score": x_opencti_score,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
@@ -668,6 +696,11 @@ class IntrusionSet:
                 secondary_motivations=(
                     stix_object["secondary_motivations"]
                     if "secondary_motivations" in stix_object
+                    else None
+                ),
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
                     else None
                 ),
                 x_opencti_stix_ids=(

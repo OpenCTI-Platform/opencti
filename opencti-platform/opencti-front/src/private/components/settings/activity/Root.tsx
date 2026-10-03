@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import ActivityMenu from '../ActivityMenu';
 import { SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';

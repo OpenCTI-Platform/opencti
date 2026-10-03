@@ -12,6 +12,8 @@ import themeDark, {
 } from './ThemeDark';
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
+import { isLightThemeName } from '../utils/themeName';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
@@ -47,7 +49,7 @@ const themeBuilder = (
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
   const platformThemeTextColor = theme?.theme_text_color ?? 'rgba(255, 255, 255, 0.7)';
-  if (theme?.name === 'Light') {
+  if (isLightThemeName(theme?.name)) {
     // needed until everything is customizable, like text colors
     return themeLight(
       platformThemeLogo,
@@ -75,7 +77,7 @@ const themeBuilder = (
 };
 
 const defaultTheme: AppThemeType = {
-  name: 'Dark',
+  name: 'Filigran Dark',
   theme_accent: THEME_DARK_DEFAULT_ACCENT,
   theme_background: THEME_DARK_DEFAULT_BACKGROUND,
   theme_logo: '',
@@ -115,11 +117,16 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
 
-  // Compute the lowercase palette mode used by the body `data-theme`
-  // attribute. This must match `theme.palette.mode` so that CSS files
-  // targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
-  // apply on the very first render.
-  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Light' ? 'light' : 'dark';
+  const resolvedName = themeToUse?.name ?? defaultTheme.name;
+  const themeMode = useFdsThemeScope(resolvedName, {
+    background: themeToUse?.theme_background ?? defaultTheme.theme_background,
+    paper: themeToUse?.theme_paper ?? defaultTheme.theme_paper,
+    nav: themeToUse?.theme_nav ?? defaultTheme.theme_nav,
+    primary: themeToUse?.theme_primary ?? defaultTheme.theme_primary,
+    secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
+    accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
+    text: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
+  });
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

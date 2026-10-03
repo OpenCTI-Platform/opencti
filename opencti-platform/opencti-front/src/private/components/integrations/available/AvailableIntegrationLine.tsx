@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -9,6 +9,9 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import FiligranIcon from '@components/common/FiligranIcon';
 import { CatalogItem } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { LogoFiligranIcon } from 'filigran-icon';
@@ -17,6 +20,7 @@ import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/use
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import stopEvent from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, mirroring the
 // deployed tab lines view: the name column absorbs the remaining space and
@@ -56,7 +60,7 @@ export const AvailableIntegrationLinesHeader = () => {
         paddingInline: 1.5,
         paddingBlock: 1,
         backgroundColor: alpha(theme.palette.text.primary, 0.02),
-        borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+        borderBottom: `1px solid ${paperBorder(theme)}`,
       }}
     >
       <Typography component="div" sx={{ ...headerCellSx, flex: 1, minWidth: 0 }}>
@@ -96,6 +100,11 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
 
   const connector = item.connector?.connector;
   const BuiltInIcon = item.builtIn?.icon;
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
+  const shouldRenderDeploy = connector?.manager_supported === true;
 
   const typeLabel = connector
     ? getConnectorMetadata(connector.container_type, t_i18n).label
@@ -244,8 +253,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
       </Box>
       {/* Actions column: lives inside the row link, block navigation. */}
       <Box onClick={stopEvent} sx={cellSx('actions')}>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {item.builtIn ? (
+        {item.builtIn ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
             <Stack direction="row" alignItems="center">
               {isImportableBuiltInKind(item.builtIn.kind) && (
                 <>
@@ -253,24 +262,26 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
                   <BuiltInIntegrationHubButton kind={item.builtIn.kind} />
                 </>
               )}
-              <Button size="small" onClick={onClickCreate} sx={{ marginLeft: 1 }}>
+              <Button size="default" onClick={onClickCreate} sx={{ marginLeft: 1 }}>
                 {t_i18n('Create')}
               </Button>
             </Stack>
-          ) : (
-            <>
-              {isEnterpriseEdition ? (
-                <Button size="small" onClick={onClickDeploy}>
+          </Security>
+        ) : shouldRenderDeploy ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {showEnterpriseUpsell ? (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            ) : (
+              <DisabledReasonTooltip reason={compatibilityMessage}>
+                <Button size="small" disabled={!canDeploy} onClick={onClickDeploy}>
                   {t_i18n('Deploy')}
                 </Button>
-              ) : (
-                <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                  <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-                </Box>
-              )}
-            </>
-          )}
-        </Security>
+              </DisabledReasonTooltip>
+            )}
+          </Security>
+        ) : null}
       </Box>
     </Box>
   );

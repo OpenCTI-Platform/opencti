@@ -40,7 +40,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue(mockSettings);
     vi.spyOn(streamHandler, 'storeNotificationEvent').mockResolvedValue(undefined);
     vi.spyOn(utils, 'isUserInPlatformOrganization').mockReturnValue(true);
-    vi.spyOn(utils, 'isUserCanAccessStixElement').mockResolvedValue(true);
+    vi.spyOn(utils, 'checkUserCanAccessStixElement').mockReturnValue(true);
   });
 
   describe('executor', () => {
@@ -363,6 +363,62 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         expect(notificationEventFirstCall.target.user_id).toEqual(MAIN_CREATOR_ID);
         expect(notificationEventSecondCall.target.user_id).toEqual(MALWARE_CREATOR_ID);
         expect(notificationEventThirdCall.target.user_id).toEqual(CAMPAIGN_CREATOR_ID);
+      });
+    });
+
+    describe('access-based STIX filtering', () => {
+      const bundleWithTwoObjects = {
+        objects: [
+          { id: 'indicator--1', type: 'indicator' } as unknown as StixObject,
+          { id: 'malware--1', type: 'malware' } as unknown as StixObject,
+        ],
+      } as unknown as StixBundle;
+
+      const mockUser = {
+        id: 'user-1',
+        name: 'Alice',
+        groups: [{ internal_id: 'group-1' }],
+        organizations: [],
+      } as unknown as AuthUser;
+
+      beforeEach(() => {
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([mockUser]);
+        vi.spyOn(notificationManager, 'convertToNotificationUser').mockReturnValue({ id: 'notif-user' } as unknown as notificationManager.NotificationUser);
+        vi.spyOn(playbookUtils, 'extractBundleBaseElement').mockReturnValue(bundleWithTwoObjects.objects[0]);
+        vi.spyOn(generateMessage, 'generateCreateMessage').mockReturnValue('generated create message');
+      });
+
+      it('should include only accessible elements in notification data', async () => {
+        vi.spyOn(utils, 'checkUserCanAccessStixElement')
+          .mockReturnValueOnce(true)
+          .mockReturnValueOnce(false);
+
+        await PLAYBOOK_NOTIFIER_COMPONENT.executor({
+          dataInstanceId: 'instance-id',
+          playbookId: 'playbook-id',
+          playbookNode,
+          bundle: bundleWithTwoObjects,
+          event: undefined,
+        } as unknown as ExecutorParameters<NotifierConfiguration>);
+
+        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(1);
+        const notificationEvent = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
+        expect(notificationEvent.data).toHaveLength(1);
+        expect(notificationEvent.data[0].instance.id).toEqual('indicator--1');
+      });
+
+      it('should skip notification when user cannot access any bundle object', async () => {
+        vi.spyOn(utils, 'checkUserCanAccessStixElement').mockReturnValue(false);
+
+        await PLAYBOOK_NOTIFIER_COMPONENT.executor({
+          dataInstanceId: 'instance-id',
+          playbookId: 'playbook-id',
+          playbookNode,
+          bundle: bundleWithTwoObjects,
+          event: undefined,
+        } as unknown as ExecutorParameters<NotifierConfiguration>);
+
+        expect(streamHandler.storeNotificationEvent).not.toHaveBeenCalled();
       });
     });
   });

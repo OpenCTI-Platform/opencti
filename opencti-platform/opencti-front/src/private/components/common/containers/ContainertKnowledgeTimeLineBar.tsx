@@ -13,8 +13,9 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { Stack } from '@mui/material';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,6 +88,10 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
             paper: {
               variant: 'elevation',
               elevation: 1,
+              // Layer 1, like every other tab-scoped bar; on the same node as
+              // the input aliases so the search field inside resolves here.
+              className: fdsLayerClass(RIGHT_BAR_LAYER),
+              sx: { ...layerInputVars },
               style: {
                 paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
@@ -120,6 +125,8 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineDisplayRelationships()}
+                  keepMui
+                  aria-label={t_i18n('Display relationships')}
                 >
                   <RelationManyToMany />
                 </IconButton>
@@ -134,6 +141,8 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineFunctionalDate ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineFunctionalDate()}
+                  keepMui
+                  aria-label={t_i18n('Display functional dates')}
                 >
                   <CalendarMultiselectOutline />
                 </IconButton>

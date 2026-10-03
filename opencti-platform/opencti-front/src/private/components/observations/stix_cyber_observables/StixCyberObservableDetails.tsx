@@ -342,7 +342,7 @@ const DownloadFileButtonMenu = ({
       <Button
         variant="secondary"
         size="small"
-        startIcon={<GetAppOutlined />}
+        startIcon={<GetAppOutlined fontSize="small" />}
         onClick={handleOpen}
       >
         {t_i18n('Download')} ({(fileSize)})

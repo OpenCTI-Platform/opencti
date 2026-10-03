@@ -671,6 +671,7 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  to_be_deleted_at: DateTime
 }
 
 type StatusConnection {
@@ -713,6 +714,9 @@ type Synchronizer {
   user: Creator
   running: Boolean!
   current_state_date: DateTime
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -833,6 +837,7 @@ type FileMetadata {
   analysis_content_source: String
   analysis_content_type: String
   analysis_type: String
+  fintel_template_id: String
 }
 
 enum FileOrdering {
@@ -1016,6 +1021,7 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
 }
 
 enum BackgroundTaskContextType {
@@ -1232,6 +1238,12 @@ type PlatformEE {
   license_global: Boolean!
   license_extra_expiration: Boolean!
   license_extra_expiration_days: Int
+  license_source: PlatformEESource
+}
+
+enum PlatformEESource {
+  OPENCTI_LICENSE
+  XTM_ONE_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -1299,8 +1311,8 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1411,8 +1423,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1472,12 +1484,20 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
   platform_notifier_auto_trigger_assignee: Boolean!
+  platform_procedures_preservation: Boolean!
+  platform_procedures_description_policy: ProceduresDescriptionPolicy!
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
   platform_ai_has_token: Boolean!
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  platform_map_custom_file: MapCustomFile
+}
+
+type MapCustomFile {
+  name: String!
+  size: Float!
 }
 
 enum GroupsOrdering {
@@ -1559,23 +1579,6 @@ enum UnitSystem {
   Imperial
 }
 
-enum UsersOrdering {
-  name
-  user_email
-  firstname
-  lastname
-  language
-  external
-  created_at
-  updated_at
-  _score
-}
-
-type UserConnection {
-  pageInfo: PageInfo!
-  edges: [UserEdge!]!
-}
-
 type CreatorConnection {
   pageInfo: PageInfo!
   edges: [CreatorEdge]
@@ -1594,11 +1597,6 @@ type ParticipantConnection {
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
-}
-
-type UserEdge {
-  cursor: String!
-  node: User!
 }
 
 type CreatorEdge {
@@ -1661,11 +1659,6 @@ input MemberAccessInput {
   groups_restriction_ids: [ID!]
 }
 
-type OtpElement {
-  secret: String!
-  uri: String!
-}
-
 type Creator {
   id: ID!
   name: String!
@@ -1708,171 +1701,6 @@ enum EffectiveConfidenceLevelSourceType {
 
 union EffectiveConfidenceLevelSourceObject = Group | User
 
-type ApiToken {
-  id: ID!
-  name: String
-  created_at: DateTime
-  expires_at: DateTime
-  masked_token: String
-  last_used_at: DateTime
-}
-
-type TokenGenerated {
-  token_id: String!
-  plaintext_token: String!
-  expires_at: DateTime
-  masked_token: String!
-}
-
-input UserTokenAddInput {
-  name: String!
-  duration: TokenDuration!
-}
-
-type User implements BasicObject & InternalObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics: [Metric]
-  user_email: String!
-  api_tokens: [ApiToken!]!
-  personal_notifiers: [Notifier!]
-  individual_id: String
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  otp_mandatory: Boolean
-  password_valid_until: DateTime
-  user_service_account: Boolean
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role!]!
-  capabilities: [Capability]!
-  capabilitiesInDraft: [Capability]!
-  default_hidden_types: [String!]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
-  objectOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
-  objectAssignedOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  sessions: [SessionDetail]
-  default_time_field: String
-  account_status: String!
-  account_lock_after_date: DateTime
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  editContext: [EditUserContext!]
-  creator: Creator
-}
-
-type MeUser implements BasicObject & InternalObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics: [Metric]
-  user_email: String!
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  password_valid_until: DateTime
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  individual_id: String
-  api_tokens: [ApiToken!]!
-  personal_notifiers: [Notifier!]
-  objectOrganization: MeOrganizationConnection
-  capabilities: [Capability!]!
-  capabilitiesInDraft: [Capability!]!
-  default_hidden_types: [String]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  allowed_marking: [MarkingDefinition!]
-  default_marking: [DefaultMarking!]
-  max_shareable_marking: [MarkingDefinition!]
-  otp_mandatory: Boolean
-  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
-  default_dashboards: [Workspace!]!
-  default_dashboard: Workspace
-  default_time_field: String
-  account_status: String!
-  account_lock_after_date: DateTime
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  can_manage_sensitive_config: Boolean
-  draftContext: DraftWorkspace
-}
-
-type SessionDetail {
-  id: ID!
-  created: DateTime
-  ttl: Int
-  originalMaxAge: Int
-}
-
-type UserSession {
-  user: Creator
-  sessions: [SessionDetail]
-}
-
-input UserAddInput {
-  "*Constraints:*\n* Minimal length: `5`\n* Must match format: `email`\n"
-  user_email: String
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  password: String
-  firstname: String
-  lastname: String
-  description: String
-  language: String
-  theme: String
-  objectOrganization: [ID!]
-  account_status: String
-  account_lock_after_date: DateTime
-  unit_system: String
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  groups: [ID!]
-  user_confidence_level: ConfidenceLevelInput
-  prevent_default_groups: Boolean
-  user_service_account: Boolean
-  email_template_id: String
-}
-
-input SendUserMailInput {
-  target_user_id: ID!
-  email_template_id: ID!
-}
-
 input ConfidenceLevelInput {
   max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
@@ -1883,25 +1711,11 @@ input ConfidenceLevelOverrideInput {
   max_confidence: Int!
 }
 
-input UserLoginInput {
-  email: String!
-  password: String!
-}
-
-input UserOTPLoginInput {
-  code: String!
-}
-
 input LicenseActivationInput {
   settingId: ID!
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   license: String!
-}
-
-input UserOTPActivationInput {
-  secret: String!
-  code: String!
 }
 
 enum RolesOrdering {
@@ -2060,6 +1874,8 @@ input RegisterConnectorInput {
   playbook_compatible: Boolean
   listen_callback_uri: String
   xtm_one_intent: String
+  version: String
+  slug: String
 }
 
 input EditManagedConnectorInput {
@@ -2321,6 +2137,8 @@ type Connector implements BasicObject & InternalObject {
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
   xtm_one_intent: String
+  version: String
+  slug: String
   jwks: String!
 }
 
@@ -2794,6 +2612,9 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_total
   _score
   authorized_members_activation_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCoreObjectConnection {
@@ -2824,6 +2645,15 @@ interface StixCoreObject {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2877,6 +2707,8 @@ enum StixDomainObjectsOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   incident_type
   severity
   priority
@@ -2898,6 +2730,9 @@ enum StixDomainObjectsOrdering {
   x_opencti_cvss_base_severity
   pir_score
   last_pir_score_date
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixDomainObjectConnection {
@@ -2926,6 +2761,15 @@ interface StixDomainObject {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2965,6 +2809,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3005,6 +2850,9 @@ enum AttackPatternsOrdering {
   objectMarking
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type AttackPatternConnection {
@@ -3034,6 +2882,15 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3086,6 +2943,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3166,6 +3024,9 @@ enum CampaignsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CampaignConnection {
@@ -3195,6 +3056,15 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3240,6 +3110,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -3292,6 +3163,9 @@ enum ContainersOrdering {
   creator
   entity_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ContainerConnection {
@@ -3355,6 +3229,7 @@ interface Container {
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
+  workflowInstance: WorkflowInstance
 }
 
 enum NotesOrdering {
@@ -3369,6 +3244,9 @@ enum NotesOrdering {
   note_types
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type NoteConnection {
@@ -3398,6 +3276,15 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3446,6 +3333,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3510,6 +3398,8 @@ enum ObservedDatasOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   created
   modified
   created_at
@@ -3519,6 +3409,9 @@ enum ObservedDatasOrdering {
   objectMarking
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ObservedDataConnection {
@@ -3548,6 +3441,15 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3584,6 +3486,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   name: String!
   creators: [Creator!]
   toStix(version: Version): String
@@ -3595,6 +3499,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3604,6 +3509,8 @@ input ObservedDataAddInput {
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -3640,6 +3547,9 @@ enum OpinionsOrdering {
   confidence
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type OpinionConnection {
@@ -3669,6 +3579,15 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3715,6 +3634,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3783,6 +3703,9 @@ enum ReportsOrdering {
   report_types
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ReportConnection {
@@ -3812,6 +3735,15 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -3862,6 +3794,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
@@ -3916,6 +3849,9 @@ enum CoursesOfActionOrdering {
   objectMarking
   x_mitre_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CourseOfActionConnection {
@@ -3945,6 +3881,15 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3991,6 +3936,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4034,6 +3980,9 @@ enum IdentitiesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IdentityConnection {
@@ -4114,6 +4063,7 @@ interface Identity {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input IdentityAddInput {
@@ -4158,6 +4108,9 @@ enum IndividualsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IndividualConnection {
@@ -4187,6 +4140,15 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4236,6 +4198,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   isUser: Boolean
   pirInformation(pirId: ID!): PirInformation
 }
@@ -4285,6 +4248,9 @@ enum SectorsOrdering {
   x_opencti_workflow_id
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SectorConnection {
@@ -4315,6 +4281,15 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4365,6 +4340,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4409,6 +4385,9 @@ enum SystemsOrdering {
   modified
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SystemConnection {
@@ -4438,6 +4417,15 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4487,6 +4475,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4541,6 +4530,9 @@ enum InfrastructuresOrdering {
   objectMarking
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type InfrastructureConnection {
@@ -4570,6 +4562,15 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4616,6 +4617,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4663,9 +4665,13 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IntrusionSetConnection {
@@ -4695,6 +4701,15 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4733,6 +4748,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   creators: [Creator!]
   toStix(version: Version): String
@@ -4744,6 +4760,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -4762,6 +4779,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -4796,6 +4814,9 @@ enum LocationsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type LocationConnection {
@@ -4869,6 +4890,7 @@ interface Location {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input LocationAddInput {
@@ -4915,6 +4937,9 @@ enum PositionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type PositionConnection {
@@ -4944,6 +4969,15 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4992,6 +5026,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5041,6 +5076,9 @@ enum CitiesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CityConnection {
@@ -5070,6 +5108,15 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5117,6 +5164,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5162,6 +5210,9 @@ enum CountriesOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CountryConnection {
@@ -5191,6 +5242,15 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5237,6 +5297,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5281,6 +5342,9 @@ enum RegionsOrdering {
   updated_at
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type RegionConnection {
@@ -5310,6 +5374,15 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5358,6 +5431,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5407,8 +5481,12 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type MalwareConnection {
@@ -5443,6 +5521,15 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5482,6 +5569,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   creators: [Creator!]
@@ -5494,6 +5582,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5512,6 +5601,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -5546,11 +5636,15 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
   threat_actor_types
   objectMarking
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ThreatActorGroupConnection {
@@ -5580,6 +5674,15 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5634,6 +5737,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5655,6 +5759,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5664,6 +5769,15 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5718,12 +5832,14 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -5772,6 +5888,9 @@ enum ToolsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ToolConnection {
@@ -5801,6 +5920,15 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5846,6 +5974,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5883,221 +6012,6 @@ input ToolAddInput {
   upsertOperations: [EditInput!]
 }
 
-enum VulnerabilitiesOrdering {
-  name
-  x_opencti_cvss_base_score
-  x_opencti_cvss_base_severity
-  x_opencti_cvss_attack_vector
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  creator
-  confidence
-  _score
-}
-
-type VulnerabilityConnection {
-  pageInfo: PageInfo!
-  edges: [VulnerabilityEdge]
-}
-
-type VulnerabilityEdge {
-  cursor: String!
-  node: Vulnerability!
-}
-
-type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  currentUserAccessRight: String
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
-  opinions_metrics: OpinionsMetrics
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  avatar: OpenCtiFile
-  fintelTemplates: [FintelTemplate!]
-  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-  pirInformation(pirId: ID!): PirInformation
-}
-
-input VulnerabilityAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  x_opencti_modified_at: DateTime
-  x_opencti_workflow_id: String
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-  fileMarkings: [String]
-  files: [Upload]
-  filesMarkings: [[String]]
-  noTriggerImport: [Boolean]
-  embedded: [Boolean]
-  upsertOperations: [EditInput!]
-}
-
 enum IncidentsOrdering {
   name
   first_seen
@@ -6105,6 +6019,7 @@ enum IncidentsOrdering {
   incident_type
   severity
   source
+  x_opencti_score
   created
   modified
   created_at
@@ -6115,6 +6030,9 @@ enum IncidentsOrdering {
   objectAssignee
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IncidentConnection {
@@ -6144,6 +6062,15 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6181,6 +6108,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   objectParticipant: [Participant!]
   creators: [Creator!]
   toStix(version: Version): String
@@ -6192,6 +6120,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -6213,6 +6142,7 @@ input IncidentAddInput {
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
@@ -6244,6 +6174,9 @@ enum StixCyberObservablesOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCyberObservableConnection {
@@ -6272,6 +6205,15 @@ interface StixCyberObservable {
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6321,6 +6263,15 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6386,6 +6337,15 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6455,6 +6415,15 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6516,6 +6485,15 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6579,6 +6557,15 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6652,6 +6639,15 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6790,6 +6786,15 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6863,6 +6868,15 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -6945,6 +6959,15 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7060,6 +7083,15 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7124,6 +7156,15 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7186,6 +7227,15 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7247,6 +7297,15 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7308,6 +7367,15 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7392,6 +7460,15 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7495,6 +7572,15 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7579,6 +7665,15 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7640,6 +7735,15 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7728,6 +7832,15 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7793,6 +7906,15 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7858,6 +7980,15 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7919,6 +8050,15 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -7980,6 +8120,15 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8041,6 +8190,15 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8102,6 +8260,15 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8163,6 +8330,15 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8228,6 +8404,15 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8289,6 +8474,15 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8350,6 +8544,15 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8411,6 +8614,15 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8478,6 +8690,15 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8548,6 +8769,15 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8612,6 +8842,15 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8691,6 +8930,15 @@ type AIPrompt implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8751,6 +8999,15 @@ type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8806,6 +9063,15 @@ type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8861,6 +9127,15 @@ type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -8950,6 +9225,9 @@ enum StixObjectOrStixRelationshipsOrdering {
   relationship_type
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixObjectOrStixRelationshipConnection {
@@ -8973,9 +9251,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -9001,6 +9279,9 @@ enum StixRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixRelationshipConnection {
@@ -9079,6 +9360,9 @@ enum StixCoreRelationshipsOrdering {
   createdBy
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixCoreRelationshipConnection {
@@ -9119,6 +9403,16 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
+  procedures: [Procedure!]
   objectMarking: [MarkingDefinition!]
   draftVersion: DraftVersion
   description: String
@@ -9144,6 +9438,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input SecurityCoverageExpectation {
@@ -9173,6 +9468,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
@@ -9198,6 +9494,9 @@ enum StixSightingRelationshipsOrdering {
   attribute_count
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type StixSightingRelationshipConnection {
@@ -9238,6 +9537,15 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   objectMarking: [MarkingDefinition!]
   draftVersion: DraftVersion
   description: String
@@ -9260,6 +9568,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input StixSightingRelationshipAddInput {
@@ -9433,16 +9742,11 @@ type Query {
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-  me: MeUser!
-  otpGeneration: OtpElement
-  user(id: String!): User
   creators(entityTypes: [String!]): CreatorConnection
   assignees(entityTypes: [String!]): AssigneeConnection
   participants(entityTypes: [String!]): ParticipantConnection
   members(first: Int, search: String, filters: FilterGroup, filterMode: FilterMode, entityTypes: [MemberType!]): MemberConnection
   systemMembers: MemberConnection
-  users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): UserConnection
-  sessions: [UserSession]
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
   capabilitiesInDraft(first: Int): CapabilityConnection
@@ -9474,6 +9778,7 @@ type Query {
   rules: [Rule]
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
+  synchronizerLogs(id: String!): [IngestionEntry]
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport!
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
@@ -9508,7 +9813,6 @@ type Query {
   filtersRepresentatives(filters: FilterGroup!, isMeValueForbidden: Boolean): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
-  bookmarks(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
   stixDomainObjectsNumber(dateAttribute: String, types: [String], endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
@@ -9582,8 +9886,6 @@ type Query {
   threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorGroupConnection
   tool(id: String): Tool
   tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ToolConnection
-  vulnerability(id: String): Vulnerability
-  vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   incident(id: String): Incident
   incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IncidentConnection
   incidentsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, relationship_type: [String]): [TimeSeries]
@@ -9625,6 +9927,7 @@ type Query {
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
@@ -9632,6 +9935,7 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
+  catalogsRevisions: [CatalogRevision!]!
   contract(slug: String!): ExtendedContract
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
@@ -9710,6 +10014,7 @@ type Query {
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
+  ingestionRssLogs(id: String!): [IngestionEntry]
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
@@ -9722,13 +10027,17 @@ type Query {
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   defaultIngestionGroupCount: Int
   userAlreadyExists(name: String!): Boolean
+  ingestionCsvLogs(id: String!): [IngestionEntry]
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
+  ingestionJsonLogs(id: String!): [IngestionEntry]
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  vulnerability(id: String): Vulnerability
+  vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   decayRule(id: String!): DecayRule
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   decayExclusionRule(id: String!): DecayExclusionRule
@@ -9789,12 +10098,19 @@ type Query {
   pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics!
+  provenanceFreshnessDistribution(types: [String!], filters: FilterGroup): [ProvenanceDistributionEntry!]!
+  provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]!
+  provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]!
+  provenanceBackfill: ProvenanceBackfill!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
   securityCoverage(id: String!): SecurityCoverage
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
+  securityCoverageResult(id: String!): SecurityCoverageResult
+  securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -9824,14 +10140,24 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  me: MeUser!
+  otpGeneration: OtpElement
+  user(id: String!): User
+  users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): UserConnection
+  sessions: [UserSession]
+  bookmarks(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixDomainObjectConnection
+  userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
+  userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage!
+  userMergeSourceDeletionReadiness(sourceId: ID!, targetId: ID!): UserMergeSourceDeletionReadiness!
+  customFieldDefinition(id: String!): CustomFieldDefinition
+  customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
 }
 
 type Subscription {
-  me: MeUser
   settings(id: ID!): Settings
   settingsMessages(id: ID!): Settings
   group(id: ID!): Group
-  user(id: ID!): User
   label(id: ID!): Label
   statusTemplate(id: ID!): StatusTemplate
   markingDefinition(id: ID!): MarkingDefinition
@@ -9855,6 +10181,8 @@ type Subscription {
   newsFeedItem: NewsFeedItem
   newsFeedItemDeleted: ID
   newsFeedsNumber: NewsFeedCount
+  me: MeUser
+  user(id: ID!): User
 }
 
 type WorkEditMutations {
@@ -9876,6 +10204,8 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings
   updateCertAuth(input: CertAuthConfigInput!): Settings
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings
+  uploadMapCustomFile(file: Upload!): Settings
+  deleteMapCustomFile: Settings
 }
 
 type SubTypeEditMutations {
@@ -9892,17 +10222,6 @@ type GroupEditMutations {
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
   editDefaultMarking(input: DefaultMarkingInput!): Group
-}
-
-type UserEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): User
-  contextPatch(input: EditContext): User
-  contextClean: User
-  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): User
-  organizationAdd(organizationId: ID!): User
-  organizationDelete(organizationId: ID!): User
 }
 
 type RoleEditMutations {
@@ -10011,7 +10330,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
@@ -10035,7 +10354,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -10243,15 +10562,6 @@ type ToolEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Tool
 }
 
-type VulnerabilityEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
-  contextPatch(input: EditContext): Vulnerability
-  contextClean: Vulnerability
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
-}
-
 type IncidentEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
@@ -10345,12 +10655,7 @@ type Mutation {
   rulesRescan(elementId: ID!): Boolean
   rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
-  token(input: UserLoginInput): String
   connectorJWT: String!
-  otpActivation(input: UserOTPActivationInput): MeUser
-  otpDeactivation: MeUser
-  otpUserDeactivation(id: ID!): MeUser
-  otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings
   subTypeEdit(id: ID!): SubTypeEditMutations
@@ -10361,20 +10666,7 @@ type Mutation {
   statusTemplateContextClean(id: ID!): StatusTemplate!
   groupAdd(input: GroupAddInput!): Group
   groupEdit(id: ID!): GroupEditMutations
-  userAdd(input: UserAddInput!): User
-  userEdit(id: ID!): UserEditMutations
-  userTokenAdd(input: UserTokenAddInput!): TokenGenerated!
-  userTokenRevoke(id: ID!): ID
-  userAdminTokenRevoke(userId: ID!, id: ID!): ID
-  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated!
-  meEdit(input: [EditInput]!, password: String): MeUser
-  bookmarkAdd(id: ID!, type: String!): StixDomainObject
-  bookmarkDelete(id: ID!): ID
-  sendUserMail(input: SendUserMailInput!): Boolean
-  logout: ID
   roleAdd(input: RoleAddInput!): Role
-  sessionKill(id: ID!): ID
-  userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
@@ -10453,8 +10745,6 @@ type Mutation {
   threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations
   toolAdd(input: ToolAddInput!): Tool
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
   stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput, AIPrompt: AIPromptAddInput, IMEI: IMEIAddInput, ICCID: ICCIDAddInput, IMSI: IMSIAddInput): StixCyberObservable
@@ -10579,6 +10869,7 @@ type Mutation {
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
+  investigationDuplicate(input: InvestigationDuplicateInput!): Workspace
   workspaceDelete(id: ID!): ID
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
@@ -10622,6 +10913,7 @@ type Mutation {
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
   ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss
+  ingestionRssResetState(id: ID!): IngestionRss
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
@@ -10650,7 +10942,10 @@ type Mutation {
   indicatorContextClean(id: ID!): Indicator
   indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
+  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
+  knowledgeDecayRuleAdd(input: KnowledgeDecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
   decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
@@ -10734,6 +11029,11 @@ type Mutation {
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
+  provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
+  provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
+  provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship
+  provenanceAssert(id: ID!): StixObjectOrStixRelationship
+  provenanceBackfillRestart: ProvenanceBackfill!
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -10752,6 +11052,10 @@ type Mutation {
   securityCoverageContextClean(id: ID!): SecurityCoverage
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult
+  securityCoverageResultDelete(id: ID!): ID
+  securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -10796,6 +11100,32 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityOperationStop(operation_name: String!): ID
+  token(input: UserLoginInput): String
+  otpActivation(input: UserOTPActivationInput): MeUser
+  otpDeactivation: MeUser
+  otpUserDeactivation(id: ID!): MeUser
+  otpLogin(input: UserOTPLoginInput): Boolean
+  userAdd(input: UserAddInput!): User
+  userEdit(id: ID!): UserEditMutations
+  userTokenAdd(input: UserTokenAddInput!): TokenGenerated!
+  userTokenRevoke(id: ID!): ID
+  userAdminTokenRevoke(userId: ID!, id: ID!): ID
+  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated!
+  meEdit(input: [EditInput]!, password: String): MeUser
+  bookmarkAdd(id: ID!, type: String!): StixDomainObject
+  bookmarkDelete(id: ID!): ID
+  sendUserMail(input: SendUserMailInput!): Boolean
+  logout: ID
+  sessionKill(id: ID!): ID
+  userSessionsKill(id: ID!): [ID]
+  userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
+  customFieldDefinitionDelete(id: ID!): ID
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
 enum WorkflowExecutionStatus {
@@ -10811,6 +11141,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
   statusId: String!
+  order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
@@ -10861,6 +11192,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
   enforce_reference: Boolean
+  sync_workflow_status_by_name: Boolean
   attributes_configuration: String
   attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
@@ -10947,6 +11279,7 @@ type WorkflowInstance {
   pendingStatus: WorkflowExecutionStatus
   pendingError: String
   pendingTransition: WorkflowPendingTransition
+  scope: String
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
@@ -10991,6 +11324,15 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11034,6 +11376,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11049,6 +11392,9 @@ enum ChannelsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ChannelConnection {
@@ -11110,6 +11456,11 @@ type ExtendedContract {
   contract: String!
 }
 
+type CatalogRevision {
+  catalog_id: String!
+  revision: String
+}
+
 enum CatalogsOrdering {
   name
   _score
@@ -11142,6 +11493,15 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11183,6 +11543,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11196,6 +11557,9 @@ enum LanguagesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type LanguageConnection {
@@ -11255,6 +11619,15 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11290,6 +11663,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   start_time: DateTime
   stop_time: DateTime
   aliases: [String]
+  x_opencti_score: Int
   creators: [Creator!]
   toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11300,6 +11674,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11312,10 +11687,14 @@ enum EventsOrdering {
   updated_at
   objectMarking
   objectLabel
+  x_opencti_score
   x_opencti_workflow_id
   start_time
   stop_time
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type EventConnection {
@@ -11339,6 +11718,7 @@ input EventAddInput {
   start_time: DateTime
   stop_time: DateTime
   aliases: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -11378,6 +11758,15 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -11427,6 +11816,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -11443,6 +11833,9 @@ enum GroupingsOrdering {
   x_opencti_workflow_id
   creator
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type GroupingConnection {
@@ -11510,6 +11903,15 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11556,6 +11958,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11570,6 +11973,9 @@ enum NarrativesOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type NarrativeConnection {
@@ -11645,6 +12051,8 @@ enum TriggerEventType {
   create
   update
   delete
+  corroboration
+  conflict
 }
 
 input TriggerLiveAddInput {
@@ -11656,6 +12064,9 @@ input TriggerLiveAddInput {
   instance_trigger: Boolean!
   filters: String
   recipients: [String!]
+
+  "*Constraints:*\n* Minimal value: `2`\n* Maximal value: `200`\n"
+  corroboration_threshold: Int
 }
 
 input TriggerDigestAddInput {
@@ -11695,6 +12106,7 @@ type Trigger implements InternalObject & BasicObject {
   isDirectAdministrator: Boolean
   currentUserAccessRight: String
   instance_trigger: Boolean
+  corroboration_threshold: Int
 }
 
 type TriggerConnection {
@@ -11803,6 +12215,15 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11842,6 +12263,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11859,6 +12281,9 @@ enum DataComponentsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type DataComponentConnection {
@@ -11920,6 +12345,15 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -11959,6 +12393,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11977,6 +12412,9 @@ enum DataSourcesOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type DataSourceConnection {
@@ -12165,6 +12603,15 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -12211,6 +12658,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -12224,6 +12672,9 @@ enum AdministrativeAreasOrdering {
   objectLabel
   x_opencti_workflow_id
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type AdministrativeAreaConnection {
@@ -12286,6 +12737,15 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12329,6 +12789,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12351,6 +12812,9 @@ enum TasksOrdering {
   due_date
   objectAssignee
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type TaskEdge {
@@ -12445,6 +12909,15 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12488,6 +12961,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12509,6 +12983,9 @@ enum CasesOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseConnection {
@@ -12577,6 +13054,15 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12620,6 +13106,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
   name: String!
@@ -12631,6 +13118,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum CaseIncidentsOrdering {
@@ -12649,6 +13137,9 @@ enum CaseIncidentsOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseIncidentConnection {
@@ -12699,6 +13190,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -12723,6 +13215,15 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12767,6 +13268,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -12795,6 +13297,9 @@ enum CaseRfisOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseRfiConnection {
@@ -12865,6 +13370,15 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -12909,6 +13423,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -12935,6 +13450,9 @@ enum CaseRftsOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type CaseRftConnection {
@@ -13004,6 +13522,15 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -13047,6 +13574,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -13070,6 +13598,9 @@ enum FeedbacksOrdering {
   confidence
   objectMarking
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type FeedbackConnection {
@@ -13236,6 +13767,13 @@ input WorkspaceDuplicateInput {
   tags: [String!]
 }
 
+input InvestigationDuplicateInput {
+  id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+}
+
 input ImportConfigurationInput {
   importType: String!
   file: Upload!
@@ -13264,6 +13802,15 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   x_opencti_inferences: [Inference]
   draftVersion: DraftVersion
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -13303,6 +13850,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
@@ -13336,6 +13884,9 @@ enum MalwareAnalysesOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type MalwareAnalysisConnection {
@@ -13439,7 +13990,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 
@@ -13496,6 +14047,15 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -13560,6 +14120,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -13577,6 +14138,9 @@ enum ThreatActorsIndividualOrdering {
   _score
   objectMarking
   threat_actor_types
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type ThreatActorIndividualConnection {
@@ -13782,6 +14346,8 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -14040,6 +14606,8 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
@@ -14152,6 +14720,8 @@ type IngestionJson implements InternalObject & BasicObject {
   user: Creator
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -14258,6 +14828,9 @@ enum IndicatorsOrdering {
   creator
   createdBy
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type IndicatorConnection {
@@ -14323,6 +14896,15 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -14385,6 +14967,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14434,6 +15017,277 @@ input IndicatorAddInput {
   upsertOperations: [EditInput!]
 }
 
+enum VulnerabilitiesOrdering {
+  name
+  x_opencti_cvss_base_score
+  x_opencti_cvss_base_severity
+  x_opencti_cvss_attack_vector
+  created
+  modified
+  created_at
+  updated_at
+  x_opencti_workflow_id
+  creator
+  confidence
+  _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
+}
+
+type VulnerabilityConnection {
+  pageInfo: PageInfo!
+  edges: [VulnerabilityEdge]
+}
+
+type VulnerabilityEdge {
+  cursor: String!
+  node: Vulnerability!
+}
+
+enum SsvcExploitation {
+  none
+  proof_of_concept
+  active
+}
+
+enum SsvcAutomatable {
+  no
+  yes
+}
+
+enum SsvcTechnicalImpact {
+  partial
+  total
+}
+
+type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  name: String!
+  description: String
+  x_opencti_aliases: [String]
+  x_opencti_cvss_vector_string: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector_string: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: Float
+  x_opencti_cvss_v4_vector_string: String
+  x_opencti_cvss_v4_base_score: Float
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirements: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
+  x_opencti_cwe: [String]
+  x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
+  x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
+  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+}
+
+input VulnerabilityAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  x_opencti_aliases: [String]
+  x_opencti_cvss_vector_string: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector_string: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: Float
+  x_opencti_cvss_v4_vector_string: String
+  x_opencti_cvss_v4_base_score: Float
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirements: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
+  x_opencti_cwe: [String]
+  x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
+  x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  upsertOperations: [EditInput!]
+}
+
+type VulnerabilityEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
+  contextPatch(input: EditContext): Vulnerability
+  contextClean: Vulnerability
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
+}
+
+enum DecayRuleTargetScope {
+  indicator
+  relationship
+  entity
+}
+
+enum KnowledgeFreshnessPolicy {
+  flag
+  lower_confidence
+  revoke
+}
+
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -14456,6 +15310,12 @@ type DecayRule implements InternalObject & BasicObject {
   decay_revoke_score: Int!
   decaySettingsChartData: DecayData
   decay_filters: String
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  freshness_policy: KnowledgeFreshnessPolicy
+  stale_after_days: Int
+  freshness_confidence_step: Int
+  staleElementsCount: Int!
 }
 
 type DecayData {
@@ -14489,6 +15349,24 @@ input DecayRuleAddInput {
   decay_points: [Int!]
   decay_revoke_score: Int!
   decay_filters: String
+}
+
+input KnowledgeDecayRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  order: Int!
+  active: Boolean!
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  decay_filters: String
+  freshness_policy: KnowledgeFreshnessPolicy!
+
+  "*Constraints:*\n* Minimal value: `1`\n"
+  stale_after_days: Int!
+
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `100`\n"
+  freshness_confidence_step: Int
 }
 
 type DecayExclusionRule implements InternalObject & BasicObject {
@@ -14546,6 +15424,15 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -14605,6 +15492,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14619,6 +15507,9 @@ enum OrganizationsOrdering {
   x_opencti_workflow_id
   x_opencti_score
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type OrganizationConnection {
@@ -15441,6 +16332,8 @@ type FintelTemplate implements BasicObject & InternalObject {
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
   default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15459,6 +16352,8 @@ input FintelTemplateAddInput {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
   default: Boolean
+  include_cover_page_by_default: Boolean
+  include_back_page_by_default: Boolean
 }
 
 type FintelTemplateEdge {
@@ -15763,6 +16658,95 @@ input PirRelationshipsTimeSeriesParameters {
   dynamicFrom: FilterGroup
 }
 
+enum AssertionSourceKind {
+  connector
+  feed
+  author
+  user
+  inference
+  emulation
+}
+
+enum ProceduresDescriptionPolicy {
+  longest
+  most_recent
+}
+
+type Assertion {
+  source_id: String!
+  source_kind: AssertionSourceKind!
+  source_name: String!
+  first_asserted_at: DateTime!
+  last_asserted_at: DateTime!
+  assert_count: Int!
+  confidence: Int
+  work_id: String
+}
+
+type SourceConflictValue {
+  value_hash: String!
+  display: String!
+  value: String
+  adoptable: Boolean!
+  source_id: String!
+  source_kind: AssertionSourceKind
+  source_name: String
+  confidence: Int
+  last_asserted_at: DateTime!
+}
+
+type SourceConflict {
+  field: String!
+  values: [SourceConflictValue!]!
+}
+
+type Procedure {
+  text: String!
+  source_id: String
+  last_asserted_at: DateTime
+}
+
+type ProvenanceSourceKindCount {
+  source_kind: AssertionSourceKind!
+  count: Int!
+}
+
+type ProvenanceStatistics {
+  total: Int!
+  with_provenance: Int!
+  single_sourced: Int!
+  corroborated: Int!
+  with_conflicts: Int!
+  stale: Int!
+}
+
+type ProvenanceDistributionEntry {
+  label: String!
+  value: Int!
+}
+
+type ProvenanceSingleSourcedEntry {
+  entity_type: String!
+  total: Int!
+  single_sourced: Int!
+}
+
+enum ProvenanceBackfillStatus {
+  pending
+  running
+  completed
+}
+
+type ProvenanceBackfill {
+  status: ProvenanceBackfillStatus!
+  processed: Int!
+  expected: Int!
+  updated: Int!
+  errors: Int!
+  started_at: DateTime
+  completed_at: DateTime
+}
+
 type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -15776,6 +16760,7 @@ type FintelDesign implements BasicObject & InternalObject {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
 }
 
 input FintelDesignAddInput {
@@ -15785,6 +16770,7 @@ input FintelDesignAddInput {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
   file: Upload
 }
 
@@ -15801,6 +16787,7 @@ type FintelDesignConnection {
 enum FintelDesignOrdering {
   _score
   name
+  default
   created_at
 }
 
@@ -15821,6 +16808,15 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -15868,6 +16864,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15880,6 +16877,9 @@ enum SecurityPlatformOrdering {
   updated_at
   security_platform_type
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 type SecurityPlatformConnection {
@@ -15919,11 +16919,6 @@ input SecurityPlatformAddInput {
   upsertOperations: [EditInput!]
 }
 
-type CoverageResult {
-  coverage_name: String!
-  coverage_score: Int!
-}
-
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -15941,6 +16936,208 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreRelationshipsFromResults(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  coveredAttackPatterns(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): AttackPatternCoverages
+  coveredVulnerabilities(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): VulnerabilityCoverages
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  coveredEntitiesDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String!], fromRole: String, fromTypes: [String], toId: [String!], toRole: String, toTypes: [String], relationship_type: [String!]!, confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [CoverageResult!]
+  external_uri: String
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
+  auto_enrichment_disable: Boolean
+  objectCovered: StixDomainObject
+  toStixBundle: String
+  security_platform_type: String
+  results: [SecurityCoverageResult!]
+}
+
+enum SecurityCoverageOrdering {
+  name
+  confidence
+  created
+  created_at
+  creator
+  modified
+  updated_at
+  objectMarking
+  coverage_last_result
+  _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
+}
+
+type AttackPatternCoverages {
+  count: Int!
+  entities: [AttackPatternCoverage!]!
+}
+
+type AttackPatternCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: AttackPattern
+}
+
+type VulnerabilityCoverages {
+  count: Int!
+  entities: [VulnerabilityCoverage!]!
+}
+
+type VulnerabilityCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: Vulnerability
+}
+
+type SecurityCoverageConnection {
+  pageInfo: PageInfo!
+  edges: [SecurityCoverageEdge!]!
+}
+
+type SecurityCoverageEdge {
+  cursor: String!
+  node: SecurityCoverage!
+}
+
+input SecurityCoverageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  objectCovered: String!
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  update: Boolean
+  external_uri: String
+  auto_enrichment_disable: Boolean!
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
+  tenant_id: String
+  tenant_name: String
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
+}
+
+input SecurityCoverageSelectedEntitiesInput {
+  selected_ids: [String!]
+  filters: String
+  excluded_ids: [String!]
+  search: String
+}
+
+type CoverageResult {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  draftVersion: DraftVersion
+  refreshed_at: DateTime
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -15977,7 +17174,6 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   roles: [String]
   x_opencti_aliases: [String]
   x_opencti_reliability: String
-  security_platform_type: String
   creators: [Creator!]
   toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -15988,22 +17184,17 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   external_uri: String
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String!]
-  auto_enrichment_disable: Boolean
-  objectCovered: StixDomainObject
-  toStixBundle: String
+  resultOf: SecurityCoverage
 }
 
-enum SecurityCoverageOrdering {
+enum SecurityCoverageResultOrdering {
   name
   confidence
   created
@@ -16012,29 +17203,29 @@ enum SecurityCoverageOrdering {
   modified
   updated_at
   objectMarking
-  coverage_last_result
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
-type SecurityCoverageConnection {
+type SecurityCoverageResultConnection {
   pageInfo: PageInfo!
-  edges: [SecurityCoverageEdge!]!
+  edges: [SecurityCoverageResultEdge!]!
 }
 
-type SecurityCoverageEdge {
+type SecurityCoverageResultEdge {
   cursor: String!
-  node: SecurityCoverage!
+  node: SecurityCoverageResult!
 }
 
-input SecurityCoverageAddInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
+input SecurityCoverageResultAddInput {
+  name: String
   description: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  objectCovered: String!
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -16042,7 +17233,6 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
-  external_uri: String
   externalReferences: [String]
   file: Upload
   fileMarkings: [String]
@@ -16051,15 +17241,12 @@ input SecurityCoverageAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   update: Boolean
-  auto_enrichment_disable: Boolean!
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String]
+  external_uri: String
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
+  resultOf: String!
 }
 
 input AskSendOtpInput {
@@ -16276,6 +17463,7 @@ type GroupsMapping {
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean
 }
 
 input GroupsMappingInput {
@@ -16285,6 +17473,7 @@ input GroupsMappingInput {
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -16884,6 +18073,7 @@ enum RetentionRuleScope {
   workbench
   history
   activity
+  conflicts
 }
 
 enum RetentionUnit {
@@ -16954,4 +18144,411 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum UsersOrdering {
+  name
+  user_email
+  firstname
+  lastname
+  language
+  external
+  created_at
+  updated_at
+  _score
+}
+
+type UserConnection {
+  pageInfo: PageInfo!
+  edges: [UserEdge!]!
+}
+
+type UserEdge {
+  cursor: String!
+  node: User!
+}
+
+type OtpElement {
+  secret: String!
+  uri: String!
+}
+
+type ApiToken {
+  id: ID!
+  name: String
+  created_at: DateTime
+  expires_at: DateTime
+  masked_token: String
+  last_used_at: DateTime
+}
+
+type TokenGenerated {
+  token_id: String!
+  plaintext_token: String!
+  expires_at: DateTime
+  masked_token: String!
+}
+
+input UserTokenAddInput {
+  name: String!
+  duration: TokenDuration!
+}
+
+type User implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  user_email: String!
+  api_tokens: [ApiToken!]!
+  personal_notifiers: [Notifier!]
+  individual_id: String
+  name: String!
+  description: String
+  firstname: String
+  otp_activated: Boolean
+  otp_qr: String
+  otp_mandatory: Boolean
+  password_valid_until: DateTime
+  user_service_account: Boolean
+  lastname: String
+  theme: String
+  language: String
+  external: Boolean
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role!]!
+  capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
+  default_hidden_types: [String!]!
+  user_confidence_level: ConfidenceLevel
+  effective_confidence_level: EffectiveConfidenceLevel
+  no_creators: Boolean
+  restrict_delete: Boolean
+  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
+  objectOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
+  objectAssignedOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  sessions: [SessionDetail]
+  default_time_field: String
+  account_status: String!
+  account_lock_after_date: DateTime
+  administrated_organizations: [Organization!]!
+  unit_system: UnitSystem
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
+  editContext: [EditUserContext!]
+  creator: Creator
+}
+
+type MeUser implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  user_email: String!
+  name: String!
+  description: String
+  firstname: String
+  otp_activated: Boolean
+  otp_qr: String
+  password_valid_until: DateTime
+  lastname: String
+  theme: String
+  language: String
+  external: Boolean
+  individual_id: String
+  api_tokens: [ApiToken!]!
+  personal_notifiers: [Notifier!]
+  objectOrganization: MeOrganizationConnection
+  capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability!]!
+  default_hidden_types: [String]!
+  user_confidence_level: ConfidenceLevel
+  effective_confidence_level: EffectiveConfidenceLevel
+  no_creators: Boolean
+  restrict_delete: Boolean
+  allowed_marking: [MarkingDefinition!]
+  default_marking: [DefaultMarking!]
+  max_shareable_marking: [MarkingDefinition!]
+  otp_mandatory: Boolean
+  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
+  default_dashboards: [Workspace!]!
+  default_dashboard: Workspace
+  default_time_field: String
+  account_status: String!
+  account_lock_after_date: DateTime
+  administrated_organizations: [Organization!]!
+  unit_system: UnitSystem
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
+  can_manage_sensitive_config: Boolean
+  draftContext: DraftWorkspace
+}
+
+type SessionDetail {
+  id: ID!
+  created: DateTime
+  ttl: Int
+  originalMaxAge: Int
+}
+
+type UserSession {
+  user: Creator
+  sessions: [SessionDetail]
+}
+
+input UserAddInput {
+  "*Constraints:*\n* Minimal length: `5`\n* Must match format: `email`\n"
+  user_email: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  password: String
+  firstname: String
+  lastname: String
+  description: String
+  language: String
+  theme: String
+  objectOrganization: [ID!]
+  account_status: String
+  account_lock_after_date: DateTime
+  unit_system: String
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
+  groups: [ID!]
+  user_confidence_level: ConfidenceLevelInput
+  prevent_default_groups: Boolean
+  user_service_account: Boolean
+  email_template_id: String
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
+}
+
+input UserLoginInput {
+  email: String!
+  password: String!
+}
+
+input UserOTPLoginInput {
+  code: String!
+}
+
+input UserOTPActivationInput {
+  secret: String!
+  code: String!
+}
+
+type UserEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): User
+  contextPatch(input: EditContext): User
+  contextClean: User
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): User
+  organizationAdd(organizationId: ID!): User
+  organizationDelete(organizationId: ID!): User
+}
+
+enum UserMergeRightsStrategy {
+  STRICT
+  UNION
+}
+
+enum UserMergeStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+input UserMergeOptions {
+  dryRun: Boolean = true
+  rightsStrategy: UserMergeRightsStrategy = STRICT
+  acknowledgeExposureChange: Boolean = false
+}
+
+enum UserMergeDisposition {
+  TRANSFER
+  INVALIDATE
+  CONDITIONAL
+  RETAIN
+  OUT_OF_SCOPE
+}
+
+type UserMergePlannedChange {
+  register_row_id: String!
+  entity_type: String!
+  count: Int!
+  exact: Boolean!
+  detail: String
+}
+
+type UserMergeRightsAlert {
+  register_row_id: String!
+  kind: String!
+  message: String!
+  blocking: Boolean
+}
+
+type UserMergeHandlerOutcome {
+  handler: String!
+  changes: [UserMergePlannedChange!]!
+  alerts: [UserMergeRightsAlert!]!
+  updated: Int!
+}
+
+type UserMergeExecutionReport {
+  merge_id: ID!
+  handlers: [UserMergeHandlerOutcome!]!
+  total_updated: Int!
+  coverage: UserMergeCoverage!
+}
+
+type UserMergeCoverageRow {
+  row_id: String!
+  label: String!
+  path: String!
+  disposition: UserMergeDisposition!
+  covered: Boolean!
+  handler: String
+}
+
+type UserMergeCoverage {
+  total: Int!
+  covered_count: Int!
+  uncovered_count: Int!
+  gating_uncovered_count: Int!
+  is_complete: Boolean!
+  rows: [UserMergeCoverageRow!]!
+}
+
+type UserMergeResult {
+  id: ID!
+  source_id: ID!
+  target_id: ID!
+  dry_run: Boolean!
+  rights_strategy: UserMergeRightsStrategy!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
+  report: UserMergeExecutionReport
+}
+
+type UserMergeJournalEntry {
+  id: ID!
+  merge_id: ID!
+  source_id: ID!
+  target_id: ID!
+  handler: String!
+  dry_run: Boolean!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
+  updated_count: Int
+  outcome: UserMergeHandlerOutcome
+}
+
+type UserMergeSourceDeletionReadiness {
+  allowed: Boolean!
+  coverage_complete: Boolean!
+  pending_change_count: Int!
+  blockers: [String!]!
+}
+
+type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+input CustomFieldValueAddInput {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  name: String!
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
+  multiple: Boolean!
+  description: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
+}
+
+enum CustomFieldDefinitionsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+type CustomFieldDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldDefinitionEdge!]!
+}
+
+type CustomFieldDefinitionEdge {
+  cursor: String!
+  node: CustomFieldDefinition!
+}
+
+input CustomFieldDefinitionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  multiple: Boolean
+  description: String
+  created: DateTime
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
 }

@@ -10,7 +10,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import { buildDate, parse } from '../../../../utils/Time';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import TextField from '../../../../components/TextField';
+
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -204,7 +205,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen" />
@@ -218,7 +219,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -263,13 +264,11 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             editContext={context}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="goals"
             label={t_i18n('Goals (1 / line)')}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

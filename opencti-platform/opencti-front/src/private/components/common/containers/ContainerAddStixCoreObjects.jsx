@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import IconButton from '@common/button/IconButton';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -30,12 +29,6 @@ const useStyles = makeStyles((theme) => ({
     right: 30,
     zIndex: 1100,
   },
-  createButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 280,
-    zIndex: 1100,
-  },
   speedDial: {
     position: 'fixed',
     bottom: 30,
@@ -60,8 +53,6 @@ const ContainerAddStixCoreObjects = (props) => {
     knowledgeGraph,
     containerStixCoreObjects,
     confidence,
-    withPadding,
-    simple,
     paginationOptions,
     onAdd,
     onDelete,
@@ -141,7 +132,6 @@ const ContainerAddStixCoreObjects = (props) => {
   } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
-  const containerRef = useRef(null);
   const [mappingSearch, setMappingSearch] = useState(null);
   const [currentSelectedText, setCurrentSelectedText] = useState(selectedText);
   if (currentSelectedText !== selectedText) {
@@ -350,7 +340,7 @@ const ContainerAddStixCoreObjects = (props) => {
       >
         <QueryRenderer
           query={containerAddStixCoreObjectsLinesQuery}
-          variables={{ count: 100, ...searchPaginationOptions }}
+          variables={{ count: 25, ...searchPaginationOptions }}
           render={({ props: renderProps }) => (
             <ContainerAddStixCoreObjectsLines
               data={renderProps}
@@ -364,7 +354,6 @@ const ContainerAddStixCoreObjects = (props) => {
               onDelete={onDelete}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               mapping={mapping}
-              containerRef={containerRef}
               enableReferences={enableReferences}
               onLabelClick={helpers.handleAddFilter}
             />
@@ -388,33 +377,22 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"
+            aria-label={t_i18n('Add an entity to this container')}
           >
             <Add />
           </IconButton>
         </Tooltip>
       );
     }
-    if (simple) {
-      return (
-        <IconButton
-          aria-label="Add"
-          onClick={() => setOpen(true)}
-          variant="tertiary"
-          size="small"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      );
-    }
     return (
-      <Fab
-        onClick={() => setOpen(true)}
-        color="primary"
+      <IconButton
         aria-label="Add"
-        className={withPadding ? classes.createButtonWithPadding : classes.createButton}
+        onClick={() => setOpen(true)}
+        variant="tertiary"
+        size="small"
       >
-        <Add />
-      </Fab>
+        <Add fontSize="small" />
+      </IconButton>
     );
   };
   return (
@@ -430,7 +408,6 @@ const ContainerAddStixCoreObjects = (props) => {
           }
         }}
         title={t_i18n('Add entities')}
-        containerRef={containerRef}
       >
         <>
           {renderSearchResults(searchPaginationOptions)}

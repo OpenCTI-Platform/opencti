@@ -7,7 +7,6 @@ import IngestionTaxiiCollectionCreation from '@components/data/ingestionTaxiiCol
 import { IngestionTaxiiCollectionImportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionImportQuery.graphql';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import { PaginationOptions } from '../../../../components/list_lines';
 
 export const taxiiCollectionImportQuery = graphql`
@@ -46,8 +45,7 @@ const IngestionTaxiiCollectionImport: FunctionComponent<IngestionTaxiiCollection
         inputFileRef.current.value = '';
       }
     } catch (e) {
-      const { errors } = (e as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
+      MESSAGING$.notifyRelayError(e);
     }
   };
 

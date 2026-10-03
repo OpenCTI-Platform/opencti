@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, SyntheticEvent, useCallback, useState } from 
 import { v4 as uuid } from 'uuid';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, useFetchFilterKeysSchema } from '../filters/filtersUtils';
+import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, removeEmptyFiltersFromList, useFetchFilterKeysSchema } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -777,13 +777,12 @@ export const usePaginationLocalStorage = <U>(
     },
   };
 
-  const removeEmptyFilter = paginationOptions.filters?.filters
-    ?.filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0) ?? [];
+  const notEmptyFiltersList = removeEmptyFiltersFromList(paginationOptions.filters?.filters ?? []);
   let filters;
-  if (removeEmptyFilter.length > 0) {
+  if (notEmptyFiltersList.length > 0) {
     filters = {
       ...paginationOptions.filters,
-      filters: removeEmptyFilter.map((filter: Filter) => {
+      filters: notEmptyFiltersList.map((filter: Filter) => {
         const removeIdFromFilter = { ...filter };
         delete removeIdFromFilter.id;
         return removeIdFromFilter;
@@ -793,7 +792,7 @@ export const usePaginationLocalStorage = <U>(
     // In case where filter is empty but filterGroup exist
     const newFilters = {
       ...paginationOptions.filters,
-      filters: removeEmptyFilter,
+      filters: notEmptyFiltersList,
     } as FilterGroup;
     filters = isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
   }

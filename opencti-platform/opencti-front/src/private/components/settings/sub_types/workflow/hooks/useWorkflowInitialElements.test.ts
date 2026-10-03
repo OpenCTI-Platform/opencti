@@ -52,6 +52,7 @@ describe('useWorkflowInitialElements', () => {
     states: [
       {
         statusId: 'status-open',
+        order: 0,
         onEnter: [
           {
             type: 'updateAuthorizedMembers',
@@ -156,6 +157,7 @@ describe('useWorkflowInitialElements', () => {
       states: [
         {
           statusId: 'status-open',
+          order: 0,
           onEnter: [
             {
               type: 'updateAuthorizedMembers',

@@ -3,7 +3,7 @@ import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import HeaderMainEntityLayout from '../../../../components/common/header/HeaderMainEntityLayout';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -62,8 +62,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('CaseTemplate') },
   });
   const [commitDeleteMutation] = useApiMutation(

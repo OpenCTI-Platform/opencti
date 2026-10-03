@@ -9,6 +9,7 @@ import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 import {
+  batchEntitiesThroughRelations,
   type EntityOptions,
   findEntitiesIdsWithRelations,
   fullEntitiesList,
@@ -18,7 +19,7 @@ import {
   storeLoadById,
 } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreRelation } from '../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import { type AttackPatternAddInput, FilterMode } from '../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, attackPatternId: string) => {
@@ -59,8 +60,16 @@ export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUs
   });
 };
 
+export const batchSubAttackPatterns = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
+  return batchEntitiesThroughRelations<BasicStoreEntity>(context, user, attackPatternsIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+};
+
 export const coursesOfActionPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
   return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, args);
+};
+
+export const batchCoursesOfAction = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
+  return batchEntitiesThroughRelations<BasicStoreEntity>(context, user, attackPatternsIds, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
 export const dataComponentsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {

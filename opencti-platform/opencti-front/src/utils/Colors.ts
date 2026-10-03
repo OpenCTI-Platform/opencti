@@ -269,6 +269,68 @@ export const itemColor = (
   return stringToColour(normalizedType, reversed);
 };
 
+export type ChipEntityValue
+  = | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
+    | 'arsenal' | 'techniques' | 'victimology' | 'location';
+
+const FAMILY_TO_CHIP_ENTITY: Partial<Record<keyof typeof COLOR_FAMILIES, ChipEntityValue>> = {
+  analyse: 'analyses',
+  cases: 'cases',
+  events: 'events',
+  observations: 'observations',
+  observables: 'observations',
+  allThreats: 'all-threats',
+  arsenal: 'arsenal',
+  techniques: 'techniques',
+  victimology: 'victimology',
+  locations: 'location',
+};
+
+export const itemEntity = (type: string | null | undefined): ChipEntityValue | undefined => {
+  if (!type) return undefined;
+  const family = ENTITY_TYPE_TO_FAMILY[type];
+  return family ? FAMILY_TO_CHIP_ENTITY[family] : undefined;
+};
+
+const toLab = (rgb: [number, number, number]): [number, number, number] => {
+  const inv = (v: number) => {
+    const x = v / 255;
+    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = rgb.map(inv);
+  const f = (t: number) => (t > 0.008856 ? t ** (1 / 3) : 7.787 * t + 16 / 116);
+  const fx = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
+  const fy = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
+  const fz = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+};
+
+const parseHex = (hex: string): [number, number, number] | null => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+export const MARKING_MIN_DELTA_E = 10;
+
+export const isWashVisibleOn = (
+  color: string | null | undefined,
+  surface: string | null | undefined,
+  alpha = 0.2,
+): boolean => {
+  if (!color || !surface) return true;
+  const c = parseHex(color);
+  const s = parseHex(surface);
+  // Anything this cannot read is left exactly as it renders today.
+  if (!c || !s) return true;
+  const washed = c.map((v, i) => Math.round(v * alpha + s[i] * (1 - alpha))) as [number, number, number];
+  const a = toLab(washed);
+  const b = toLab(s);
+  const dE = Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+  return dE >= MARKING_MIN_DELTA_E;
+};
+
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
   if (!hex) return `rgb(${50}, ${50}, ${50}, ${transp})`;
   const r = parseInt(hex.slice(1, 3), 16);

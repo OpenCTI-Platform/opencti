@@ -124,13 +124,20 @@ class StixNestedRefRelationshipPopover extends Component {
         <IconButton
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
+          aria-haspopup={disabled ? undefined : true}
           disabled={disabled}
           color="primary"
         >
           <MoreVertOutlined />
         </IconButton>
         <Menu
+          slotProps={{
+            list: {
+              onClick: (e) => {
+                e.stopPropagation();
+              },
+            },
+          }}
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}

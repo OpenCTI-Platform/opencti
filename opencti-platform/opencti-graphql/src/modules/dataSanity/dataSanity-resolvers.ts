@@ -1,4 +1,4 @@
-import { executeDryRun, findAllDataSanityExecutions, listAllSanityOperations, setForceRun } from './dataSanity-domain';
+import { executeDryRun, findAllDataSanityExecutions, listAllSanityOperations, setForceRun, stopOperation } from './dataSanity-domain';
 
 const dataSanityResolvers = {
   Query: {
@@ -8,6 +8,7 @@ const dataSanityResolvers = {
   },
   Mutation: {
     dataSanityOperationRequestRun: (_: any, { operation_name }: { operation_name: string }, context: any) => setForceRun(context, context.user, operation_name),
+    dataSanityOperationStop: (_: any, { operation_name }: { operation_name: string }, context: any) => stopOperation(context, context.user, operation_name),
   },
 };
 

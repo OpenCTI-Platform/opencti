@@ -28,4 +28,3 @@ export const EXPECTED_CREDENTIAL = {
   score: 50,
   external_references: [],
 };
-

@@ -6,9 +6,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import { Add, ArrowRightAlt, ChevronRightOutlined } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -21,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { minutesBefore, now, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';
@@ -297,7 +295,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   entityId,
   entityType,
   paginationOptions,
-  variant,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -761,8 +758,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 </div>
               </div>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="relationship_type"
                 label={t_i18n('Relationship type')}
                 fullWidth={true}
@@ -770,9 +767,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               >
                 {R.map(
                   (type) => (
-                    <MenuItem key={type} value={type}>
+                    <SelectItem key={type} value={type}>
                       {t_i18n(`relationship_${type}`)}
-                    </MenuItem>
+                    </SelectItem>
                   ),
                   relationshipTypes,
                 )}
@@ -782,7 +779,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 name="start_time"
                 textFieldProps={{
                   label: t_i18n('Start time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -792,7 +789,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 name="stop_time"
                 textFieldProps={{
                   label: t_i18n('Stop time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -848,25 +845,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
 
   return (
     <>
-      {variant === 'inLine' ? (
-        <IconButton
-          color="primary"
-          aria-label="Label"
-          onClick={handleOpen}
-          size="small"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      ) : (
-        <Fab
-          onClick={handleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-      )}
+      <IconButton
+        color="primary"
+        aria-label="Label"
+        onClick={handleOpen}
+        size="small"
+      >
+        <Add fontSize="small" />
+      </IconButton>
 
       <Drawer
         open={open}

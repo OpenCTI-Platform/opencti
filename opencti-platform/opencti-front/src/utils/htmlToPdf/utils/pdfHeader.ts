@@ -1,7 +1,12 @@
 import { DynamicContent } from 'pdfmake/interfaces';
 
-const pdfHeader = (linearGradiant: string[] | undefined): DynamicContent => (currentPage, pageCount, pageSize) => {
-  if (currentPage === 1 || currentPage === pageCount) return [];
+const pdfHeader = (
+  linearGradiant: string[] | undefined,
+  options?: { hasCoverPage?: boolean; hasBackPage?: boolean },
+): DynamicContent => (currentPage, pageCount, pageSize) => {
+  const hasCoverPage = options?.hasCoverPage ?? true;
+  const hasBackPage = options?.hasBackPage ?? true;
+  if ((hasCoverPage && currentPage === 1) || (hasBackPage && currentPage === pageCount)) return [];
   return [{
     canvas: [{
       type: 'rect',

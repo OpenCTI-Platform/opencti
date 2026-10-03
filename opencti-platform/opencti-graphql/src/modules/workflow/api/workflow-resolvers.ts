@@ -8,6 +8,7 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
@@ -20,6 +21,9 @@ const workflowResolvers = {
   Query: {
     workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
       return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    },
+    workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return hasPublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
@@ -80,6 +84,7 @@ const workflowResolvers = {
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
     pendingError: (instance: any) => instance.pendingError ?? null,
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
+    scope: (instance: any) => instance.scope ?? null,
   },
   WorkflowSerializedTransition: {
     from: (transition: any) => {
@@ -121,13 +126,37 @@ const workflowResolvers = {
   },
   EntitySetting: {
     workflow_published_version_id: (entitySetting: any, _: any, context: AuthContext) => {
-      return getWorkflowPublishedVersionId(context, entitySetting);
+      return getWorkflowPublishedVersionId(context, context.user!, entitySetting);
     },
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
       const draftId = draft.id || draft.internal_id;
       return getWorkflowInstance(context, context.user!, draftId);
+    },
+  },
+  StixDomainObject: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  Container: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixCoreRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixSightingRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
     },
   },
   WorkflowDefinitionMutationResult: {

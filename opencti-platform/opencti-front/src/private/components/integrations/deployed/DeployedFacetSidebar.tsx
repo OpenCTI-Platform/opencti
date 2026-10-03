@@ -15,6 +15,7 @@ import {
   DeployedStatusFacet,
 } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { useFormatter } from '../../../../components/i18n';
+import { paperBg, paperBorder } from '../paperSurface';
 
 const STATUS_FACET_ICONS: Record<DeployedStatusFacet, SvgIconComponent> = {
   active: PlayCircleOutlined,
@@ -111,8 +112,8 @@ const DeployedFacetSidebar = ({
           gap: 2,
           padding: 2,
           borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${paperBorder(theme)}`,
+          backgroundColor: paperBg(theme),
           maxHeight: { xs: 'none', md: `calc(100vh - ${theme.spacing(20)})` },
           overflowY: { xs: 'visible', md: 'auto' },
         }}

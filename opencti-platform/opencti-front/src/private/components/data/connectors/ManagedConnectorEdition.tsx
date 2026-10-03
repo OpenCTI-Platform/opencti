@@ -15,6 +15,9 @@ import { Validator } from '@cfworker/json-schema';
 import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import JsonFormInputRenderer, { jsonFormInputTester } from '@components/integrations/catalog/utils/JsonFormInputRenderer';
+import JsonFormEnumRenderer, { jsonFormEnumTester } from '@components/integrations/catalog/utils/JsonFormEnumRenderer';
+import JsonFormBooleanRenderer, { jsonFormBooleanTester } from '@components/integrations/catalog/utils/JsonFormBooleanRenderer';
 import reconcileManagedConnectorContractDataWithSchema, { ManagerContractProperty } from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
@@ -58,6 +61,9 @@ const customRenderers = [
   { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormInputTester, renderer: JsonFormInputRenderer },
+  { tester: jsonFormEnumTester, renderer: JsonFormEnumRenderer },
+  { tester: jsonFormBooleanTester, renderer: JsonFormBooleanRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
@@ -222,8 +228,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
               <Field
                 component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
+                className="mt-5"
+                variant="outlined"
                 name="display_name"
                 label={t_i18n('Display name')}
                 required
@@ -232,8 +238,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
               <Field
                 component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
+                className="mt-5"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Instance name')}
                 required

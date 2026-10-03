@@ -8,6 +8,7 @@ import {
   stixCoreRelationshipCreationFromEntityToMutation,
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
+import { KnowledgeBarRefreshEvent } from '../bulk/useForceUpdate';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
@@ -113,7 +114,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             }
           },
           onError: (error: Error) => {
-            handleErrorInForm(error);
+            handleErrorInForm(error, setErrors);
           },
           onCompleted: () => {
             setSubmitting(false);
@@ -122,11 +123,13 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             if (typeof onCreate === 'function') {
               onCreate();
             }
+            // Update the knowledge bar counters
+            dispatchEvent(new CustomEvent(KnowledgeBarRefreshEvent));
           },
         });
       } catch (error) {
         setSubmitting(false);
-        handleErrorInForm(error, setErrors);
+        handleErrorInForm(error as Error, setErrors);
       }
     }
   };

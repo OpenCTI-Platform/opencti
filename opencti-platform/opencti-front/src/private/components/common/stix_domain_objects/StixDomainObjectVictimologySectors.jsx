@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
@@ -396,7 +396,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <IconButton
                       aria-label={this.state.expandedLines[sector.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(this, sector.id)}
-                      aria-haspopup="true"
+                      aria-expanded={this.state.expandedLines[sector.id]}
                     >
                       {this.state.expandedLines[sector.id] === true ? (
                         <ExpandLess />
@@ -506,7 +506,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                   this,
                                   subsector.id,
                                 )}
-                                aria-haspopup="true"
+                                aria-expanded={this.state.expandedLines[subsector.id]}
                               >
                                 {this.state.expandedLines[subsector.id]
                                   === true ? (

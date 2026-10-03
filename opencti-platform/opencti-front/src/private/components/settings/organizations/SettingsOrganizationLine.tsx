@@ -4,7 +4,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined, MoreVertOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
@@ -13,6 +13,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { SettingsOrganizationLine_node$key } from './__generated__/SettingsOrganizationLine_node.graphql';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,15 +25,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

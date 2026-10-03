@@ -11,8 +11,8 @@ export default class TopMenuProfilePage {
     return this.page.getByRole('menuitem', { name: 'Logout' });
   }
 
-  async logout() {
-    await this.getMenuProfile().click();
-    return this.getLogoutButton().click();
+  async logout(timeout?: number) {
+    await this.getMenuProfile().click({ timeout });
+    return this.getLogoutButton().click({ timeout });
   }
 }

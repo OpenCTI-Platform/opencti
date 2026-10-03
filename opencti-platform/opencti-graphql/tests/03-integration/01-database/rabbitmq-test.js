@@ -5,6 +5,7 @@ import {
   metrics,
   purgeConnectorQueues,
   pushToConnector,
+  rabbitMQInit,
   rabbitMQIsAlive,
   registerConnectorQueues,
   unregisterConnector,
@@ -39,6 +40,10 @@ describe('Rabbit connector management', () => {
 
   it('should rabbitMQIsAlive check without error', async () => {
     await expect(rabbitMQIsAlive()).resolves.not.toThrow();
+  });
+
+  it('should rabbitMQInit check without error', async () => {
+    await expect(rabbitMQInit()).resolves.not.toThrow();
   });
 
   it('should register the connector', async () => {

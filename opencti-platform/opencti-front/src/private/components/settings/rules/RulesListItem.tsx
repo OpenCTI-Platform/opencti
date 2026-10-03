@@ -67,6 +67,8 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
             <Card
               title={title}
               sx={style}
+              // `titleSx` lands on the row; the inner text is the flex item to unpin.
+              titleSx={{ minWidth: 0, '& > .MuiTypography-root': { minWidth: 0 } }}
             >
               <Stack gap={2}>
                 <div>

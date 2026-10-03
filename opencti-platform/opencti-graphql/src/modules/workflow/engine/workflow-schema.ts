@@ -14,6 +14,8 @@ export interface ActionConfig {
  */
 export interface SerializedState {
   statusId: string; // Refers to the internal ID of a StatusTemplate entity
+  /** Legacy manual order, kept for backward-compatible round-tripping; the order actually applied is always derived from the transition graph (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
 }

@@ -87,7 +87,12 @@
       }
     },
     "health_access_key": "ChangeMe",
+    "health_monitoring": {
+      "dependency_check_interval": 30000,
+      "usage_metrics_interval": 300000
+    },
     "request_timeout": 1200000,
+    "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
     "session_cookie": false,
     "child_locking_process": {
@@ -119,8 +124,7 @@
       "file_max_size": 10000000
     },
     "performance_logger": false,
-    "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark3/{z}/{x}/{y}.png",
-    "map_tile_server_light": "https://map.opencti.io/styles/filigran-light3/{z}/{x}/{y}.png",
+    "map_bundled_file_path": "./static/maps/world.pmtiles",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
@@ -161,6 +165,11 @@
     "past_days": 30,
     "next_days": 30,
     "created_by_based": false
+  },
+  "provenance": {
+    "enabled": true,
+    "refresh_on_write": false,
+    "max_conflict_values_per_field": 10
   },
   "protected_sensitive_config": {
     "enabled": true,
@@ -302,6 +311,22 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "knowledge_freshness_manager": {
+    "enabled": true,
+    "lock_key": "knowledge_freshness_manager_lock",
+    "batch_size": 1000,
+    "interval": 3600000
+  },
+  "provenance_backfill_manager": {
+    "enabled": true,
+    "lock_key": "provenance_backfill_manager_lock",
+    "batch_size": 500,
+    "interval": 30000
+  },
+  "platform_usage_metrics_manager": {
+    "enabled": false,
+    "lock_key": "platform_usage_metrics_manager_lock"
+  },
   "garbage_collection_manager": {
     "enabled": true,
     "lock_key": "garbage_collection_manager_lock",
@@ -326,7 +351,7 @@
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 30000,   
+    "interval": 30000,
     "feed": {
       "request_timeout": 300000
     },
@@ -373,15 +398,25 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "catalog_manager": {
+    "enabled": true,
+    "lock_key": "catalog_manager_lock",
+    "interval": 60000,
+    "custom_catalog_refresh_endpoint_uri": null,
+    "catalog_sync_remote_timeout": 30000
+  },
   "redis": {
     "mode": "single",
     "namespace": "",
     "hostname": "localhost",
+    "tls_servername": "",
+    "tls_cluster_node_mode": false,
     "use_ssl": false,
     "ca": [],
     "port": 6379,
     "host_ip_family": 4,
-    "trimming": 2000000
+    "trimming": 2000000,
+    "max_event_length": 0
   },
   "elasticsearch": {
     "index_prefix": "opencti",
@@ -389,8 +424,6 @@
     "engine_selector": "auto",
     "engine_check": true,
     "index_creation_pattern": "-000001",
-    "search_wildcard_prefix": false,
-    "search_fuzzy": false,
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
     "max_bulk_operations": 5000,
@@ -430,7 +463,9 @@
     "username": "",
     "password": "",
     "forced_sender_email": "",
-    "email_max_cc_size": 500
+    "email_max_cc_size": 500,
+    "connection_timeout": 10000,
+    "greeting_timeout": 10000
   },
   "aws": {
     "proxy_enabled": false

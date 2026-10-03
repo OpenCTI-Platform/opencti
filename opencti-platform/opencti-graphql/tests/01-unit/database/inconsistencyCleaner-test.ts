@@ -11,6 +11,9 @@ vi.mock('../../../src/database/engine', () => ({
   elRawSearch: (...args: any[]) => mockElRawSearch(...args),
   elRawUpdateByQuery: (...args: any[]) => mockElRawUpdateByQuery(...args),
   ES_MAX_PAGINATION: 5000,
+  // Mirrors the real wrapEngineError's non-abort branch (a plain Error is not
+  // a client abort, so it still surfaces as a database failure).
+  wrapEngineError: (reason: string, err: any, data: any) => new Error(`${reason}: ${JSON.stringify({ cause: err?.message, ...data })}`),
 }));
 
 vi.mock('../../../src/database/utils', () => ({

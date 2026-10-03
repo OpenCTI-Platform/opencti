@@ -17,6 +17,7 @@ import { EntitySettingAttributeLine_attribute$key } from './__generated__/Entity
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,15 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },

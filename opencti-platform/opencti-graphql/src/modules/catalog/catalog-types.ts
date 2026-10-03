@@ -1,4 +1,7 @@
-export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+
+// region DTO types
+export type IngestionConnectorType = string;
 
 type TypeMap = {
   string: string;
@@ -8,29 +11,47 @@ type TypeMap = {
   boolean: boolean;
 };
 
-type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
+export type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   type: K;
-  default: TypeMap[K];
-  description: string;
+  default?: TypeMap[K];
+  description?: string;
   format?: string;
 };
+
+export interface CatalogContractVersion {
+  version: string;
+  support_version?: string | null;
+  min_version?: string | null;
+  max_version?: string | null;
+}
+
+export interface CatalogContractCompatibility {
+  is_compatible: boolean;
+  latest_compatible_version: string | null;
+  // Set only when no version is compatible: the platform version to upgrade to
+  minimum_platform_version: string | null;
+  // Set only when no version is compatible because the platform is newer than all of them
+  maximum_platform_version: string | null;
+}
 
 export interface CatalogContract {
   title: string;
   slug: string;
   description: string;
   short_description: string;
-  logo: string;
+  logo: string | null;
   use_cases: string[];
   verified: boolean;
-  last_verified_date: string;
+  last_verified_date: string | null;
   playbook_supported: boolean;
   max_confidence_level: number;
-  support_version: string;
-  subscription_link: string;
+  support_version: string | null;
+  subscription_link: string | null;
   source_code: string;
   manager_supported: boolean;
   container_version: string;
+  versions?: CatalogContractVersion[] | null;
+  compatibility?: CatalogContractCompatibility | null;
   container_image: string;
   container_type: IngestionConnectorType;
   config_schema: {
@@ -43,21 +64,30 @@ export interface CatalogContract {
     required: string[];
     additionalProperties: boolean;
   };
+  license_type: 'Free' | 'Commercial' | null;
+  solution_categories: string[];
+  contact: string | null;
 }
 
 export interface CatalogDefinition {
   id: string;
   name: string;
   description: string;
+  version: string;
   contracts: Array<CatalogContract>;
 }
+// endregion
 
 export interface CatalogType {
   definition: CatalogDefinition;
   graphql: GraphqlCatalog;
 }
 
-// region Database types
+// region Api types
+export type GraphqlCatalogContract = CatalogContract & {
+  min_version: string | null;
+  max_version: string | null;
+};
 export interface GraphqlCatalog {
   id: string;
   entity_type: string;
@@ -65,5 +95,90 @@ export interface GraphqlCatalog {
   parent_types: string[];
   name: string;
   description: string;
-  contracts: string[];
+  contracts: string[]; // JSON.Stringified GraphqlCatalogContract items
 }
+
+export interface GraphqlCatalogRevision {
+  catalog_id: string;
+  revision: string | null;
+}
+// endregion
+
+// region Database types
+
+export const ENTITY_TYPE_CATALOG_CONTRACT = 'CatalogContract';
+export const ENTITY_TYPE_CATALOG = 'Catalog';
+
+/**
+ * Fields specific to the `CatalogContract` entity.
+ * Also reused to embed the contract in `Connector` entities.
+ */
+export interface CatalogContractEntityFields {
+  catalog_id: string;
+  contract_id: string;
+  content_hash: string;
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo_uri?: string;
+  use_cases?: string[];
+  verified: boolean;
+  last_verified_date?: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version?: string;
+  min_version?: string;
+  max_version?: string;
+  subscription_link?: string;
+  source_code?: string;
+  manager_supported: boolean;
+  contract_version: string;
+  image: string;
+  connector_type: IngestionConnectorType;
+  config_schema: {
+    $schema: string;
+    $id: string;
+    type: string;
+    properties: {
+      [key: string]: TypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
+  license_type?: 'Free' | 'Commercial';
+  solution_categories: string[];
+  contact?: string;
+};
+
+export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, CatalogContractEntityFields {}
+
+export interface StoreEntityCatalogContract extends StoreEntity, CatalogContractEntityFields {}
+
+interface CatalogEntityFields {
+  revision: string;
+  source_uri: string;
+  catalog_id: string;
+  name: string;
+  description: string;
+  product_version: string;
+  manifest_version: string | null;
+  manifest_schema_version: '0' | '1';
+}
+
+export interface BasicStoreEntityCatalog extends BasicStoreEntity, CatalogEntityFields {}
+
+export interface StoreEntityCatalog extends StoreEntity, CatalogEntityFields {}
+
+export interface CatalogContractDeletion {
+  idToDelete: string;
+}
+
+export type CatalogContractUpdate = Required<{
+  [TKey in keyof CatalogContractEntityFields]: CatalogContractEntityFields[TKey] | null;
+}> & { internal_id: string; standard_id: string };
+
+export type CatalogContractCreation = CatalogContractEntityFields & { internal_id: string; standard_id: string };
+
+export type CatalogUpsert = CatalogEntityFields & { internal_id: string; standard_id: string; _index?: string };
+// endregion

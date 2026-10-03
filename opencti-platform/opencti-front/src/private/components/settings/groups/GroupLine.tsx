@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import { CheckCircleOutlined, DoNotDisturbOnOutlined, KeyboardArrowRightOutlined, ReportGmailerrorred } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import makeStyles from '@mui/styles/makeStyles';
 import { GroupLine_node$data } from '@components/settings/groups/__generated__/GroupLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,15 +25,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     paddingLeft: 10,
     height: 50,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

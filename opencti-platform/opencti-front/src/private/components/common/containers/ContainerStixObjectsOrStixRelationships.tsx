@@ -119,7 +119,6 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
                 containerId={container.id}
                 containerStixCoreObjects={container.objects?.edges ?? []}
                 paginationOptions={paginationOptions}
-                simple={true}
                 targetStixCoreObjectTypes={
                   types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
                 }

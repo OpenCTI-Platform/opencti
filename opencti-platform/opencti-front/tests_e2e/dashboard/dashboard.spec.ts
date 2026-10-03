@@ -6,6 +6,7 @@ import DashboardFormPage from '../model/form/dashboardForm.pageModel';
 import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import MalwareDetailsPage from '../model/malwareDetails.pageModel';
+import type DateFieldPageModel from '../model/field/DateField.pageModel';
 
 // Because of login/logout stuff in access restriction test below, running
 // both in parallel make conflicts.
@@ -139,7 +140,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   // -------------------------
 
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getPageTitle()).toBeVisible();
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeHidden();
@@ -169,7 +171,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
 
   // Import dashboard with exhaustive list of widgets
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -206,7 +209,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
 
   // Delete imported dashboard
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
   // ---------
   // endregion
 
@@ -224,7 +228,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await widgetsPage.getActionsWidgetsPopover().click();
   await widgetsPage.getActionButton('Delete').click();
   await widgetsPage.getConfirmButton().click();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // The widget disappearing proves the delete mutation completed
+  await expect(widgetsPage.getItemFromWidgetList(malwareName)).toBeHidden();
 
   await widgetsPage.createTimelineOfMalwaresWidget();
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
@@ -260,31 +265,38 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await widgetsPage.createNumberOfEntities();
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '46')).toBeVisible();
 
+  // The field is reset when a saved value comes back from the server: the next date is typed
+  // only once the clear is saved, which puts the widget back on its unfiltered count.
+  const clearDate = async (field: DateFieldPageModel) => {
+    await field.clear();
+    await expect(widgetsPage.getWidgetNumberValue('Number of entities', '46')).toBeVisible();
+  };
+
   // Manipulating field "Start date"
   await dashboardDetailsPage.startDateField.fill('05/19/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '22')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('05/12/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '29')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('04/17/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '36')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('12/17/2023');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '43')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
 
   // Manipulating field "End date"
   await dashboardDetailsPage.endDateField.fill('12/20/2023');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '10')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.endDateField.fill('04/19/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '17')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   // ----> Comment this part for now as the number "24" is making a conflict with 24 hours
   // await dashboardDetailsPage.endDateField.fill('05/20/2024');
@@ -293,7 +305,7 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.endDateField.fill('05/21/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '31')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
 
   // ---------
   // endregion
@@ -301,5 +313,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Wait for the redirect to the list before ending the test: closing the page
+  // right after the click could abort the in-flight delete mutation
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
+  await expect(dashboardPage.getItemFromList(updateDashboardName)).toBeHidden();
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import stopEvent from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -54,7 +55,7 @@ export const DeployedIntegrationLinesHeader = () => {
         paddingInline: 1.5,
         paddingBlock: 1,
         backgroundColor: alpha(theme.palette.text.primary, 0.02),
-        borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+        borderBottom: `1px solid ${paperBorder(theme)}`,
       }}
     >
       <Typography component="div" sx={{ ...headerCellSx, flex: 1, minWidth: 0 }}>
@@ -114,7 +115,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   return (
     <Box
       data-testid="integration-line"
-      // A real link so ctrl/cmd/middle click opens the detail in a new tab.
+      // A real link, so ctrl/cmd and middle click open the detail in a new tab.
       component={Link}
       to={item.detailUrl}
       sx={{
@@ -232,7 +233,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
                   : {
                       color: theme.palette.text.secondary,
                       backgroundColor: alpha(theme.palette.text.primary, 0.04),
-                      border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+                      border: `1px solid ${paperBorder(theme)}`,
                     }),
               }}
             >

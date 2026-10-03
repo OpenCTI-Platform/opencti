@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import Axios from 'axios';
 import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -27,6 +26,7 @@ import { RichTextEditor } from '@filigran/rich-text-editor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
 
 import '../../../../utils/pdfWorker-setup';
 
@@ -120,6 +120,12 @@ const styles = (theme) => ({
   editorContainerPreview: {
     overflowY: 'scroll',
     overflowX: 'hidden',
+  },
+  htmlEditorContainer: {
+    '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
+      // reduce gap between buttons in the toolbar to let space for the AI button
+      gap: 0,
+    },
   },
 });
 
@@ -247,6 +253,7 @@ class StixCoreObjectContentComponent extends Component {
       changed: false,
       isLoading,
       onProgressExportFileName,
+      blockedPdfPreviewFileId: null,
     };
   }
 
@@ -267,7 +274,7 @@ class StixCoreObjectContentComponent extends Component {
       ...getExportFiles(stixCoreObject),
       ...getFilesFromTemplate(stixCoreObject),
     ];
-    this.setState({ isLoading: true }, () => {
+    this.setState({ isLoading: true }, async () => {
       const { currentFileId } = this.state;
       if (!currentFileId) {
         return this.setState({ isLoading: false });
@@ -283,13 +290,13 @@ class StixCoreObjectContentComponent extends Component {
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
-      return Axios.get(url).then((res) => {
-        const content = res.data;
-        return this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+      const content = await res.text();
+      return this.setState({
+        initialContent: content,
+        currentContent: content,
+        isLoading: false,
       });
     });
   }
@@ -346,6 +353,7 @@ class StixCoreObjectContentComponent extends Component {
       currentFileId: null,
       changed: false,
       contentSelected: true,
+      blockedPdfPreviewFileId: null,
       currentContent: stixCoreObject.contentField ?? t('Write something awesome...'),
     }, () => {
       this.props.setMappingHeaderDisabled(false);
@@ -355,7 +363,12 @@ class StixCoreObjectContentComponent extends Component {
   }
 
   handleSelectFile(fileId) {
-    this.setState({ currentFileId: fileId, changed: false, contentSelected: false }, () => {
+    this.setState({
+      currentFileId: fileId,
+      changed: false,
+      contentSelected: false,
+      blockedPdfPreviewFileId: null,
+    }, () => {
       this.props.setMappingHeaderDisabled(true);
       this.loadFileContent();
       this.saveView();
@@ -371,14 +384,36 @@ class StixCoreObjectContentComponent extends Component {
       this.setState({
         currentFileId: null,
         contentSelected: isContainerWithContent(stixCoreObject.entity_type),
+        blockedPdfPreviewFileId: null,
         currentContent: isContainerWithContent(stixCoreObject.entity_type) ? stixCoreObject.contentField ?? t('Write something awesome...') : '',
       }, () => this.saveView());
     } else if (fileName && !isDelete) {
-      this.setState({ currentFileId: fileName, contentSelected: false }, () => {
+      this.setState({
+        currentFileId: fileName,
+        contentSelected: false,
+        blockedPdfPreviewFileId: null,
+      }, () => {
         this.loadFileContent();
         this.saveView();
       });
     }
+  }
+
+  handlePdfLoadError(error) {
+    if (!isPdfPasswordError(error)) {
+      return;
+    }
+    this.setState({ blockedPdfPreviewFileId: this.state.currentFileId });
+  }
+
+  handlePdfPasswordRequest(updatePassword) {
+    const { t } = this.props;
+    const password = window.prompt(t('This PDF is password protected. Enter password to preview it.'));
+    if (password === null) {
+      this.setState({ blockedPdfPreviewFileId: this.state.currentFileId });
+      return;
+    }
+    updatePassword(password);
   }
 
   // PDF SECTION
@@ -475,6 +510,7 @@ class StixCoreObjectContentComponent extends Component {
       navOpen,
       changed,
       contentSelected,
+      blockedPdfPreviewFileId,
     } = this.state;
     const files = getFiles(stixCoreObject);
     const exportFiles = getExportFiles(stixCoreObject);
@@ -484,6 +520,7 @@ class StixCoreObjectContentComponent extends Component {
     const currentFile = currentFileId
       && [...files, ...exportFiles, ...filesFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
+    const isBlockedPdfPreview = currentFileType === 'application/pdf' && currentFileId === blockedPdfPreviewFileId;
     const { innerHeight } = window;
     const height = innerHeight - 320;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
@@ -587,7 +624,7 @@ class StixCoreObjectContentComponent extends Component {
                   navOpen={navOpen}
                 />
                 <div
-                  className={classes.editorContainer}
+                  className={`${classes.editorContainer} ${classes.htmlEditorContainer}`}
                   style={{ minHeight: height, height }}
                 >
                   <RichTextEditor
@@ -606,7 +643,7 @@ class StixCoreObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
-                    style={{ position: 'absolute', top: 0, right: 10 }}
+                    style={{ position: 'absolute', top: 10, right: 0 }}
                   />
                 </div>
               </>
@@ -672,7 +709,7 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {currentFileType === 'application/pdf' && (
+            {currentFileType === 'application/pdf' && !isBlockedPdfPreview && (
               <>
                 <StixCoreObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
@@ -688,7 +725,10 @@ class StixCoreObjectContentComponent extends Component {
                   }
                 >
                   <Document
+                    suspense={false}
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                    onLoadError={this.handlePdfLoadError.bind(this)}
+                    onPassword={this.handlePdfPasswordRequest.bind(this)}
                     loading={<Loader variant="inElement" />}
                     file={currentUrl}
                   >
@@ -703,6 +743,33 @@ class StixCoreObjectContentComponent extends Component {
                   </Document>
                 </div>
               </>
+            )}
+            {isBlockedPdfPreview && (
+              <div
+                className={
+                  navOpen
+                    ? classes.adjustedContainerNavOpen
+                    : classes.adjustedContainer
+                }
+              >
+                <div
+                  style={{
+                    display: 'table',
+                    height: '100%',
+                    width: '100%',
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('Unable to preview this PDF. It may be password protected. Select another file to continue.')}
+                  </span>
+                </div>
+              </div>
             )}
             {!currentFile && !contentSelected && (
               <div
@@ -890,6 +957,7 @@ const StixCoreObjectContent = createRefetchContainer(
           fintelTemplates {
             id
             name
+            default
             template_content
           }
         }

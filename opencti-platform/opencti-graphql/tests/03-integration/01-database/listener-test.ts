@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { completeContextDataForEntity } from '../../../src/listener/UserActionListener';
 import type { UserReadActionContextData } from '../../../src/listener/UserActionListener';
-import type {BasicStoreCommon} from "../../../src/types/store";
+import type { BasicStoreCommon } from '../../../src/types/store';
 
 describe('User Action listening', () => {
   it('should complete context data for entity', async () => {

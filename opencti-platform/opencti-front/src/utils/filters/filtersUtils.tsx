@@ -41,6 +41,9 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 export const ME_FILTER_VALUE = '@me';
 
+// Filter operators that do not require any values in filter.values
+export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
@@ -154,6 +157,9 @@ export const stixFilters = [
   'note_types',
   'incident_type',
   'description',
+  'x_opencti_ssvc_exploitation',
+  'x_opencti_ssvc_automatable',
+  'x_opencti_ssvc_technical_impact',
 ];
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -220,7 +226,16 @@ export const isNumericFilter = (
   return filterType === 'integer' || filterType === 'float';
 };
 
-// return the values of the filters of a specific key among a filters list
+/**
+ * Remove filters that have no values, except those whose operators are valid without values
+ */
+export const removeEmptyFiltersFromList = (filtersList: Filter[]) => {
+  return filtersList.filter((f) => NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') || f.values.length > 0);
+};
+
+/**
+ * Return the values of the filters of a specific key among a filters list
+ */
 export const findFilterFromKey = (
   filters: Filter[],
   key: string,
@@ -237,6 +252,9 @@ export const findFilterFromKey = (
   return null;
 };
 
+/**
+ * Return all filters whose key is in `keys` and whose operator matches.
+ */
 export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
@@ -322,7 +340,7 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type', 'relationship_type'], 'eq')
     .map(({ values }) => values)
     .flat();
   if (filters.filterGroups.length > 0) {
@@ -331,7 +349,7 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
       .map((fg) => fg.filters)
       .flat();
     if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type', 'relationship_type'], 'eq')
         .map(({ values }) => values)
         .flat();
       if (secondLevelValues.length > 0) {
@@ -499,7 +517,13 @@ export const filterValue = (
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
   }
-  return value;
+
+  if (value === undefined || value === null) {
+    return value;
+  }
+
+  // Defensive check to prevent errors on string manipulation after this call
+  return typeof value === 'string' ? value : String(value);
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
@@ -562,12 +586,32 @@ export const normalizeFilterGroupForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.map((f) => ({
-      ...f,
-      id: uuid(),
-      key: Array.isArray(f.key) ? f.key[0] : f.key,
-      values: f.values.map((v) => v || 'todo: delete this'),
-    })),
+    filters: filterGroup?.filters?.map((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      // build values
+      let values: FilterValue[];
+      if (key === 'dynamicRegardingOf') { // add id in dynamic regarding of subfilter for React rendering purposes
+        values = f.values.map((dynamicRegardingOfValue) => {
+          if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
+            return {
+              ...dynamicRegardingOfValue,
+              values: dynamicRegardingOfValue.values.map((filterValue: GqlFilterGroup) => normalizeFilterGroupForFrontend(filterValue)),
+            };
+          } else {
+            return dynamicRegardingOfValue;
+          }
+        });
+      } else {
+        values = f.values.map((v) => v || 'todo: delete this');
+      }
+      // return the filter with normalized key and values, and add an id
+      return {
+        ...f,
+        id: uuid(),
+        key,
+        values,
+      };
+    }),
     filterGroups: filterGroup?.filterGroups?.map((fg) => normalizeFilterGroupForFrontend(fg)),
   } as FilterGroup;
 };
@@ -588,7 +632,7 @@ export const serializeFilterGroupForBackend = (
 
 /**
  * Parse a filterGroup as given by the backend (backend format, i.e. with array keys),
- * And turns it into the frontend format (single key).²
+ * And turns it into the frontend format (single key).
  * @param filterGroup
  */
 export const deserializeFilterGroupForFrontend = (
@@ -906,9 +950,7 @@ const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[])
     return newFilter;
   };
 
-  return filtersArray
-    .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
-    .map((f) => removeFrontendIdFromFilter(f));
+  return removeEmptyFiltersFromList(filtersArray).map((f) => removeFrontendIdFromFilter(f));
 };
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function

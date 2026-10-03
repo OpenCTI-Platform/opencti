@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
@@ -22,6 +22,7 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,25 +34,9 @@ const useStyles = makeStyles((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -148,12 +133,11 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 style={{ width: dataColumns.mapping.width }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList }}
-                  label={
+                  label={String(
                     (mappedString && contentMappingCount[mappedString])
                       ? contentMappingCount[mappedString]
-                      : '0'
-                  }
+                      : '0',
+                  )}
                 />
               </div>
             </>
@@ -215,7 +199,6 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
           aria-label={t_i18n('Open menu')}
           classes={classes.itemIconDisabled}
           disabled={true}
-          aria-haspopup="true"
         >
           <MoreVert />
         </IconButton>

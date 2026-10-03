@@ -9,13 +9,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { interval } from 'rxjs';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -25,7 +23,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
-import { fetchQuery, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import {
   computeConnectorStatus,
@@ -37,14 +35,12 @@ import {
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
-import { ConnectorTaxiiIngestionLookupQuery } from './__generated__/ConnectorTaxiiIngestionLookupQuery.graphql';
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
 import Card from '../../../../components/common/card/Card';
@@ -52,13 +48,13 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
-import IngestionTaxiiLogsDrawer from '../ingestionTaxii/IngestionTaxiiLogsDrawer';
 import { graphql } from 'relay-runtime';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -104,19 +100,6 @@ const updateRequestedStatus = graphql`
   }
 `;
 
-const connectorTaxiiIngestionLookupQuery = graphql`
-  query ConnectorTaxiiIngestionLookupQuery($search: String!) {
-    ingestionTaxiis(first: 25, search: $search) {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
 // Component for ConnectorWorks sections
 interface ConnectorWorksSectionProps {
   connectorId: string;
@@ -151,12 +134,12 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} className="mb-5">
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
         variables={optionsInProgress}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />;
@@ -169,7 +152,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
         key="connector-works-finished"
         query={connectorWorksQuery}
         variables={optionsFinished}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsFinished]} />;
@@ -227,8 +210,6 @@ interface ConnectorComponentProps {
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const canManageModules = useGranted([MODULES_MODMANAGE]);
 
   const handleRefreshData = useCallback(() => {
     // Need to force refetch with network-only to bypass cache
@@ -263,45 +244,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState('overview');
   const [editionOpen, setEditionOpen] = useState(false);
-  const [displayIngestionLogs, setDisplayIngestionLogs] = useState(false);
-  const [taxiiIngestionId, setTaxiiIngestionId] = useState<string | null>(null);
-
-  const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
-  const isTaxiiFeed = Boolean(
-    connector.manager_contract_excerpt?.slug?.toLowerCase().includes('taxii')
-    || connector.manager_contract_excerpt?.title?.toLowerCase().includes('taxii')
-    || connector.title?.toLowerCase().includes('taxii'),
-  );
-  const canShowTaxiiLogsButton = isIngestionFeedLogsEnabled && isTaxiiFeed && canManageModules;
-  const normalizedFeedName = (connector.title || connector.name || '')
-    .replace(/^\[FEED\s*-\s*TAXII\]\s*/i, '')
-    .trim();
-
-  const handleOpenIngestionLogs = async () => {
-    if (taxiiIngestionId) {
-      setDisplayIngestionLogs(true);
-      return;
-    }
-    try {
-      const data = await fetchQuery(
-        connectorTaxiiIngestionLookupQuery,
-        { search: normalizedFeedName || connector.title || connector.name },
-      ).toPromise() as ConnectorTaxiiIngestionLookupQuery['response'] | null;
-      const edges = data?.ingestionTaxiis?.edges ?? [];
-      const exactMatch = edges.find((edge) => edge?.node?.name?.toLowerCase() === normalizedFeedName.toLowerCase());
-      const ingestionId = exactMatch?.node?.id ?? null;
-      if (!ingestionId) {
-        MESSAGING$.notifyError(t_i18n('No TAXII feed found for this connector.'));
-        return;
-      }
-      setTaxiiIngestionId(ingestionId);
-      setDisplayIngestionLogs(true);
-    } catch {
-      MESSAGING$.notifyError(t_i18n('Failed to load TAXII feed logs.'));
-    }
-  };
 
   // API mutations - defined early to avoid use-before-define errors
   const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
@@ -351,10 +295,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const isBuffering = () => {
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   // Component for Overview content (without ConnectorWorks)
@@ -613,6 +553,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
               <Grid item={true} xs={12}>
                 <Label>
+                  {t_i18n('Version')}
+                </Label>
+                <FieldOrEmpty source={connector.version}>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {connector.version}
+                  </Typography>
+                </FieldOrEmpty>
+              </Grid>
+
+              <Grid item={true} xs={12}>
+                <Label>
                   {t_i18n('State')}
                 </Label>
                 <FieldOrEmpty source={connector.connector_state}>
@@ -737,18 +688,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )
                 }
               </Grid>
-              {canShowTaxiiLogsButton && (
-                <Grid item xs={12}>
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    color="primary"
-                    onClick={handleOpenIngestionLogs}
-                  >
-                    {t_i18n('View logs')}
-                  </Button>
-                </Grid>
-              )}
               {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
                 <Grid item xs={6}>
                   <Label>
@@ -779,8 +718,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunExistingInState,
     checkLastRunIsNumber,
     lastRunConverted,
-    canShowTaxiiLogsButton,
-    handleOpenIngestionLogs,
     theme,
     t_i18n,
     nsdt,
@@ -1057,6 +994,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       },
                     },
                   })}
+                  keepMui
                 >
                   {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
                 </Button>
@@ -1066,32 +1004,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </div>
       </div>
 
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
-      >
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={t_i18n('Overview')} />
-          <Tab label={t_i18n('Works')} />
-          {connector.is_managed && <Tab label={t_i18n('Logs')} />}
-        </Tabs>
-      </Box>
-      <Box>
-        {tabValue === 0 && overviewTabContent}
-        {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
-        {tabValue === 2 && connector.is_managed && connectorLogsContent}
-      </Box>
-      {canShowTaxiiLogsButton && (
-        <IngestionTaxiiLogsDrawer
-          isOpen={displayIngestionLogs}
-          onClose={() => setDisplayIngestionLogs(false)}
-          feedId={taxiiIngestionId}
-          feedName={normalizedFeedName || managedConnectorDisplayName}
-        />
-      )}
+      <Tabs value={tabValue} onValueChange={setTabValue}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+          <TabsTrigger value="works">{t_i18n('Works')}</TabsTrigger>
+          {connector.is_managed && <TabsTrigger value="logs">{t_i18n('Logs')}</TabsTrigger>}
+        </TabsList>
+        <Box>
+          <TabsContent value="overview">{overviewTabContent}</TabsContent>
+          <TabsContent value="works">
+            <ConnectorWorksSection connectorId={connector.id} />
+          </TabsContent>
+          <TabsContent value="logs">{connector.is_managed && connectorLogsContent}</TabsContent>
+        </Box>
+      </Tabs>
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition
@@ -1130,6 +1056,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        version
         connector_user_id
         is_managed
         manager_contract_configuration {

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties, MouseEventHandler } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Box } from '@mui/material';
 import type { Theme } from '../../../../../components/Theme';
 import { PirThreatMapMarker } from './pirThreatMapUtils';

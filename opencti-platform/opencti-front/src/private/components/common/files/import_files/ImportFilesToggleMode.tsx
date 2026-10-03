@@ -57,12 +57,14 @@ const ImportFilesToggleMode = () => {
       {modes.map(({ mode, title, description, icon }) => (
         <Card
           aria-label={title}
-          variant="outlined"
           onClick={() => onSelectMode(mode)}
           key={mode}
           sx={{
             minWidth: 0,
             textAlign: 'center',
+            // The action area's hover overlay washed the token out.
+            '&:hover': { backgroundColor: 'var(--bg-elevation-default-layer-0)' },
+            '&:hover .MuiCardActionArea-focusHighlight': { opacity: 0 },
             ...(importMode === mode
               ? { borderColor: theme.palette.primary.main }
               : {}),

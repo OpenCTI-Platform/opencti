@@ -1,5 +1,5 @@
 import Tag from '@common/tag/Tag';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { resolveLink } from '../utils/Entity';
 import { EMPTY_VALUE } from '../utils/String';
 

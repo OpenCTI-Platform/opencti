@@ -2,8 +2,8 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
+import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
@@ -12,7 +12,7 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -169,12 +169,12 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               onClose();
                             }}
                             title={(
-                              <>
+                              <Stack direction="row" alignItems="center" gap={1}>
                                 {t('Generate an export')}
                                 <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                                  <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                                  <InfoOutlined sx={{ display: 'block' }} fontSize="medium" color="primary" />
                                 </Tooltip>
-                              </>
+                              </Stack>
                             )}
                           >
                             <QueryRenderer
@@ -185,21 +185,21 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                   return (
                                     <>
                                       <Field
-                                        component={SelectField}
-                                        variant="standard"
+                                        component={SelectFieldFds}
+                                        variant="outlined"
                                         name="format"
                                         label={t('Export format')}
                                         fullWidth={true}
                                         containerstyle={{ width: '100%' }}
                                       >
                                         {exportScopes.map((value, i) => (
-                                          <MenuItem
+                                          <SelectItem
                                             key={i}
                                             value={value}
                                             disabled={!isExportActive(value)}
                                           >
                                             {value}
-                                          </MenuItem>
+                                          </SelectItem>
                                         ))}
                                       </Field>
                                       <ObjectMarkingField
@@ -221,19 +221,19 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                       {visibleColumnExportEnabledFormats.includes(values.format)
                                         ? (
                                             <Field
-                                              component={SelectField}
-                                              variant="standard"
+                                              component={SelectFieldFds}
+                                              variant="outlined"
                                               name="columns"
                                               label={t('Choose column to export')}
                                               fullWidth={true}
                                               containerstyle={fieldSpacingContainerStyle}
                                             >
-                                              <MenuItem value="all">
+                                              <SelectItem value="all">
                                                 {t('All attributes')}
-                                              </MenuItem>
-                                              <MenuItem value="view">
+                                              </SelectItem>
+                                              <SelectItem value="view">
                                                 {t('Current view')}
-                                              </MenuItem>
+                                              </SelectItem>
                                             </Field>
                                           )
                                         : undefined}

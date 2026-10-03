@@ -15,12 +15,12 @@ interface ThemeType {
   theme_login_aside_gradient_end?: string | null;
   theme_login_aside_gradient_start?: string | null;
   theme_login_aside_image?: string | null;
-  system_default?: boolean | null;
+  built_in?: boolean | null;
   // UI only, but single source of truth for formik
   theme_login_aside_type: LoginAsideType;
 }
 
-export type ThemeCreationInput = Omit<ThemeType, 'id' | 'system_default'>;
+export type ThemeCreationInput = Omit<ThemeType, 'id' | 'built_in'>;
 
 export type LoginAsideType = '' | 'color' | 'gradient' | 'image';
 

@@ -60,6 +60,7 @@ const Entities = () => {
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
     objectLabel: {},
+    corroboration_count: { percentWidth: 9 },
     created_at: {},
     objectMarking: { isSortable: isRuntimeSort },
   };

@@ -1,14 +1,16 @@
 {
   "name": "opencti",
-  "private": true,
   "type": "module",
-  "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
-  "devDependencies": {
-    "nx": "23.1.0"
+  "private": true,
+  "packageManager": "yarn@4.18.1+sha512.b2e1e7524f654f2749d32b4ebcb4622473cb5bcbc485df2007e12a154e50162a4d795526768bc5f5b8f81717bfd79deb2472813d86fb5ae2eb551fa9c872b08f",
+  "engines": {
+    "node": ">= 22.18.0"
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
     "dev": "nx run-many --target dev",
+    "dev:watch": "nx run-many --target dev:watch",
+    "dev:watch-with-graphql": "nx run-many --tuiAutoExit --target dev:watch-with-graphql",
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
@@ -17,13 +19,18 @@
     "deps:venv": "yarn with-python-venv yarn deps",
     "build:venv": "yarn with-python-venv yarn build",
     "dev:venv": "yarn with-python-venv yarn dev",
+    "dev:watch:venv": "yarn with-python-venv yarn dev:watch",
+    "dev:watch-with-graphql:venv": "yarn with-python-venv yarn dev:watch-with-graphql",
     "test:venv": "yarn with-python-venv yarn test",
     "build:ubi9": "nx run-many --tuiAutoExit --target build-ubi9",
     "push:ubi9": "nx run-many --tuiAutoExit --target push-ubi9",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
+  "devDependencies": {
+    "nx": "23.2.1"
+  },
   "resolutions": {
-    "axios": "1.18.1"
+    "axios": "1.20.0"
   },
   "dependenciesMeta": {
     "nx": {

@@ -35,8 +35,25 @@ const styles = (theme) => ({
   list: {
     width: '100%',
   },
-  listItem: {
-    width: '100M',
+  item: {
+    minHeight: 48,
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
+  },
+  // The icon keeps the summary title's left edge; only the name track moves in.
+  itemIcon: {
+    minWidth: 'auto',
+    marginRight: theme.spacing(2),
+  },
+  itemText: {
+    flex: '0 1 auto',
+    minWidth: 0,
+    margin: 0,
+    '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
   },
   icon: {
     color: theme.palette.primary.main,
@@ -88,7 +105,10 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
               stixCyberObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            elevation={3}
+            // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+            elevation={0}
+            disableGutters
+            sx={{ backgroundColor: 'var(--bg-input-default)' }}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
@@ -103,14 +123,15 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
                 {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItemButton
                     key={stixCyberObservable.id}
-                    classes={{ root: classes.menuItem }}
+                    classes={{ root: classes.item }}
                     divider={true}
                     onClick={handleSelect.bind(this, stixCyberObservable)}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon classes={{ root: classes.itemIcon }}>
                       <ItemIcon type={type} />
                     </ListItemIcon>
                     <ListItemText
+                      classes={{ root: classes.itemText }}
                       primary={stixCyberObservable.observable_value}
                       secondary={truncate(stixCyberObservable.description, 100)}
                     />

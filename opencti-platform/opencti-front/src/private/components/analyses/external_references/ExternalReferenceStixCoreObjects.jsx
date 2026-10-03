@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';

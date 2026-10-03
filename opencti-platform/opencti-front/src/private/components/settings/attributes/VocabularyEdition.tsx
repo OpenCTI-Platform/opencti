@@ -118,7 +118,7 @@ const VocabularyEdition = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -126,11 +126,11 @@ const VocabularyEdition = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={AutocompleteFreeSoloField}
@@ -138,30 +138,24 @@ const VocabularyEdition = ({
             name="aliases"
             multiple={true}
             createLabel={t_i18n('Add')}
-            textfieldprops={{ variant: 'standard', label: t_i18n('Aliases') }}
+            textfieldprops={{ variant: 'outlined', label: t_i18n('Aliases') }}
             options={(vocab.aliases ?? []).map((n) => ({
               id: n,
               value: n,
               label: n,
             }))}
-            renderOption={(
-              props: Record<string, unknown>,
-              option: FieldOption,
-            ) => (
-              <li {...props}>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+            renderOption={(option: FieldOption) => (
+              <div className={classes.text}>{option.label}</div>
             )}
-            classes={{ clearIndicator: classes.autoCompleteIndicator }}
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order')}
             fullWidth={true}
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={SwitchField}

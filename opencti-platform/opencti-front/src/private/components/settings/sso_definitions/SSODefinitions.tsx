@@ -26,7 +26,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import ListOutlined from '@mui/icons-material/ListOutlined';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
 import { SSODefinitionEditionFragment$data, SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
@@ -368,18 +368,23 @@ const SSODefinitions = () => {
                 actions={(node: SSODefinitionEditionFragment$data) => (
                   <>
                     <Tooltip title={t_i18n('Update')}>
-                      <IconButton size="small" aria-label={t_i18n('Update')}>
-                        <EditOutlined fontSize="small" />
-                      </IconButton>
+                      <IconButton
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
+                        aria-label={t_i18n('Update')}
+                        icon={<EditOutlined fontSize="small" />}
+                      />
                     </Tooltip>
                     <Tooltip title={t_i18n('Logs')}>
                       <IconButton
-                        size="small"
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
                         onClick={(e) => handleOpenLogs(e, node)}
                         aria-label={t_i18n('Logs')}
-                      >
-                        <ListOutlined fontSize="small" />
-                      </IconButton>
+                        icon={<ListOutlined fontSize="small" />}
+                      />
                     </Tooltip>
                   </>
                 )}

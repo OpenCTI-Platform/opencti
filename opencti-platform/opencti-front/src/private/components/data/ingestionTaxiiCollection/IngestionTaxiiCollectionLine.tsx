@@ -21,6 +21,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -30,15 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },

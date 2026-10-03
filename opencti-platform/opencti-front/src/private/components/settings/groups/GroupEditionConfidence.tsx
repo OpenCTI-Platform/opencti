@@ -12,6 +12,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Box from '@mui/material/Box';
 
 export const groupConfidenceMutationFieldPatch = graphql`
   mutation GroupEditionConfidenceFieldPatchMutation(
@@ -168,19 +169,21 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
             <FieldArray
               name="overrides"
               render={(arrayHelpers) => (
-                <div>
-                  <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
-                    {t_i18n('Add a specific max confidence level for an entity type')}
-                  </Typography>
-                  <IconButton
-                    color="primary"
-                    aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: group.group_confidence_level?.max_confidence })}
-                    style={{ marginTop: '5px' }}
-                    disabled={values.overrides.some((o) => o.entity_type === '')}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
+                <Box sx={{ marginTop: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 2 }}>
+                    <Typography variant="h4">
+                      {t_i18n('Add a specific max confidence level for an entity type')}
+                    </Typography>
+                    <IconButton
+                      color="primary"
+                      aria-label="Add"
+                      onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: group.group_confidence_level?.max_confidence })}
+                      disabled={values.overrides.some((o) => o.entity_type === '')}
+                      style={{ marginTop: -8 }}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </Box>
                   {values.overrides.map((_, idx) => (
                     <Field
                       // Field props
@@ -194,7 +197,7 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
                       currentOverrides={values.overrides}
                     />
                   ))}
-                </div>
+                </Box>
               )}
             />
           </Form>

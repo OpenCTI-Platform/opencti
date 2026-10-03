@@ -5,7 +5,7 @@ import { ParsedWorkMessage, ResolvedEntity } from '@components/data/connectors/p
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
@@ -77,6 +77,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
               onClick={handleToggleModalError}
               aria-haspopup="true"
               color="primary"
+              aria-label={t_i18n('Details')}
             >
               <InfoOutlined />
             </IconButton>
@@ -94,8 +95,8 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             <>
               <Typography variant="h4" gutterBottom={true}>{t_i18n('Source')}</Typography>
               <Paper
-                style={{ padding: '15px', borderRadius: 4, marginBottom: '15px' }}
-                variant="outlined"
+                padding={16}
+                style={{ marginBottom: '15px' }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
                   <div>
@@ -119,10 +120,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             </>
           )}
           <Typography variant="h4" gutterBottom={true}>{t_i18n('Error')}</Typography>
-          <Paper
-            style={{ padding: '15px', borderRadius: 4 }}
-            variant="outlined"
-          >
+          <Paper padding={16}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
               <div>
                 <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>

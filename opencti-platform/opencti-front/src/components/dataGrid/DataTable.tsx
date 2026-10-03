@@ -296,6 +296,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         dataQueryArgs={{ ...dataQueryArgs }}
         useLineData={useLineData(lineFragment)}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+        searchTerm={globalSearch}
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}

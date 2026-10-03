@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import { useFormatter } from '../../../components/i18n';

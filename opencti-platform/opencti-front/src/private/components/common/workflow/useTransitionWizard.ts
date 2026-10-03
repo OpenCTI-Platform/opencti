@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';

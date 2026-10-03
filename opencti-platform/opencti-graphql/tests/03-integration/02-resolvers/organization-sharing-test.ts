@@ -125,7 +125,7 @@ describe('oganization-sharing-test', () => {
         return queryResult.data?.report !== null && queryResult.data?.report.objects.edges.length === 8;
       };
       // wait for task manager & worker to handle organization sharing
-      await awaitUntilCondition(condition, 1000, 10, true, 'Please check that you have a test worker running');
+      await awaitUntilCondition(condition, 5000, { message: 'Please check that you have a test worker running' });
       const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },

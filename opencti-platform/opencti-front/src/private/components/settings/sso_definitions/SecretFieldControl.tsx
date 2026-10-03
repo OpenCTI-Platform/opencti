@@ -1,11 +1,9 @@
 import React from 'react';
 import { Field, useFormikContext } from 'formik';
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
+
 import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../components/TextField';
 import Tag from '../../../../components/common/tag/Tag';
@@ -62,9 +60,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
   if (isExternal && !isEditing) {
     return (
       <Box sx={style}>
-        <InputLabel shrink sx={{ position: 'relative', mb: 0.5, display: 'block' }}>
-          {label}
-        </InputLabel>
+        <SelectLabel>{label}</SelectLabel>
         <Tag
           label={displayLabel ? `${t_i18n('External secret')}: ${displayLabel}` : t_i18n('Externally managed')}
           color={theme.palette.primary.main}
@@ -77,6 +73,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
 
   return (
     <Box sx={style}>
+      <SelectLabel>{label}</SelectLabel>
       <Box
         sx={{
           display: 'flex',
@@ -85,34 +82,35 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           flexWrap: (action === 'store' && multiline) || action === 'use_external_secret' ? 'wrap' : 'nowrap',
         }}
       >
-        <FormControl variant="standard" sx={{ minWidth: 200, flexShrink: 0 }}>
-          <InputLabel shrink>{label}</InputLabel>
-          <Select
-            value={isExternal && action === 'keep' ? 'use_external_secret' : action}
-            onChange={(e) => {
-              const v = e.target.value as SecretAction;
-              setFieldValue(`${namePrefix}_action`, v);
-              if (v !== 'store') setFieldValue(`${namePrefix}_new_value`, '');
-              if (v !== 'use_external_secret') {
-                setFieldValue(`${namePrefix}_secret_name`, '');
-              } else if (availableSecrets.length > 0 && !secretName) {
-                setFieldValue(`${namePrefix}_secret_name`, availableSecrets[0].secret_name);
-              }
-            }}
-            label={label}
-          >
+        <Select
+          value={isExternal && action === 'keep' ? 'use_external_secret' : action}
+          onValueChange={(value) => {
+            const v = value as SecretAction;
+            setFieldValue(`${namePrefix}_action`, v);
+            if (v !== 'store') setFieldValue(`${namePrefix}_new_value`, '');
+            if (v !== 'use_external_secret') {
+              setFieldValue(`${namePrefix}_secret_name`, '');
+            } else if (availableSecrets.length > 0 && !secretName) {
+              setFieldValue(`${namePrefix}_secret_name`, availableSecrets[0].secret_name);
+            }
+          }}
+        >
+          <SelectTrigger aria-label={label}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={label}>
             {showKeepOption && (
-              <MenuItem value="keep">{t_i18n('Keep existing secret')}</MenuItem>
+              <SelectItem value="keep">{t_i18n('Keep existing secret')}</SelectItem>
             )}
-            <MenuItem value="store">{t_i18n('Set a new secret')}</MenuItem>
-            <MenuItem value="use_external_secret">{t_i18n('Use external secret')}</MenuItem>
-          </Select>
-        </FormControl>
+            <SelectItem value="store">{t_i18n('Set a new secret')}</SelectItem>
+            <SelectItem value="use_external_secret">{t_i18n('Use external secret')}</SelectItem>
+          </SelectContent>
+        </Select>
         {action === 'store' && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name={`${namePrefix}_new_value`}
               label={isEditing ? t_i18n('New value (leave empty to remove)') : t_i18n('Value')}
               fullWidth
@@ -127,25 +125,27 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           </Box>
         )}
         {action === 'use_external_secret' && (
-          <FormControl variant="standard" sx={{ minWidth: 260 }}>
-            <InputLabel shrink>{t_i18n('External secret')}</InputLabel>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Select
               value={secretName || (availableSecrets[0]?.secret_name ?? '')}
-              onChange={(e) => setFieldValue(`${namePrefix}_secret_name`, e.target.value)}
-              label={t_i18n('External secret')}
-              displayEmpty
+              onValueChange={(value) => setFieldValue(`${namePrefix}_secret_name`, value)}
             >
-              {availableSecrets.length === 0 ? (
-                <MenuItem value="" disabled>{t_i18n('No external secrets configured')}</MenuItem>
-              ) : (
-                availableSecrets.map((s) => (
-                  <MenuItem key={s.secret_name} value={s.secret_name}>
-                    {s.secret_name} ({s.provider_name})
-                  </MenuItem>
-                ))
-              )}
+              <SelectTrigger className="w-full" aria-label={t_i18n('External secret')}>
+                <SelectValue placeholder={t_i18n('External secret')} />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('External secret')}>
+                {availableSecrets.length === 0 ? (
+                  <SelectItem value="" disabled>{t_i18n('No external secrets configured')}</SelectItem>
+                ) : (
+                  availableSecrets.map((s) => (
+                    <SelectItem key={s.secret_name} value={s.secret_name}>
+                      {s.secret_name} ({s.provider_name})
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
             </Select>
-          </FormControl>
+          </Box>
         )}
       </Box>
     </Box>

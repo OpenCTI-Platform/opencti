@@ -20,19 +20,14 @@ import {
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import { Box, DialogActions } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { useMemo, useState } from 'react';
 import { graphql, UseMutationConfig } from 'react-relay';
-import { Link } from 'react-router-dom';
-import { Theme } from '../../../../../components/Theme';
-import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
-import { THEME_LIGHT_DIALOG_BACKGROUND } from '../../../../../components/ThemeLight';
+import { Link } from 'react-router';
 import Button from '../../../../../components/common/button/Button';
 import Dialog from '../../../../../components/common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
-import { RelayError } from '../../../../../relay/relayTypes';
 import { resolveLink } from '../../../../../utils/Entity';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
@@ -40,7 +35,6 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
-import { hasCustomColor } from '../../../../../utils/theme';
 import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
@@ -131,8 +125,6 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
 
-  const theme = useTheme<Theme>();
-
   const draftContext = useDraftContext();
   const {
     activeStep,
@@ -199,8 +191,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           handleClose();
         },
         onError: (error) => {
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(error);
         },
       });
     }
@@ -460,18 +451,6 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     t_i18n,
   ]);
 
-  const getStepperBackgroundColor = () => {
-    if (hasCustomColor(theme, 'theme_paper')) {
-      return theme.palette.background.paper;
-    }
-
-    return theme.palette.mode === 'dark'
-      ? THEME_DARK_DIALOG_BACKGROUND
-      : THEME_LIGHT_DIALOG_BACKGROUND;
-  };
-
-  const stepperBackgroundColor = getStepperBackgroundColor();
-
   return (
     <Dialog
       open={open}
@@ -485,7 +464,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             sx={{
               position: 'sticky',
               top: 0,
-              backgroundColor: stepperBackgroundColor,
+              backgroundColor: 'var(--bg-elevation-default)',
               zIndex: 1,
               pt: 1,
               pb: 3,

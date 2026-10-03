@@ -21,6 +21,11 @@ jobs:
         with:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
+          # app-sbom (below) always bind-mounts the checkout over this image's build path and
+          # runs its own fresh "yarn install --immutable && yarn build:prod" regardless of what
+          # this image contains, so building builder-back here would only add a redundant
+          # backend install/build with no benefit. Keep this toolchain-only.
+          target: builder
 
   app-sbom:
     name: Build and generate app SBOM
@@ -40,13 +45,18 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
+      - name: Use client-python in OpenCTI from same branch
+        env:
+          CHECKOUT_REF: ${{ github.sha }}
+        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
+
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
             -w /opt/opencti/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
         run: |
@@ -57,7 +67,7 @@ jobs:
             sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 #v0.24.0
+        uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
 
       - name: Generate graphql SBOM
         working-directory: opencti-platform/opencti-graphql

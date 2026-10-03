@@ -1,7 +1,7 @@
 import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/lab/Alert';
-import { Select, Stack } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
+import { Stack } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -16,7 +16,7 @@ import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/Mal
 import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
 import { OpinionCreationFormKnowledgeEditor, OpinionCreationFormKnowledgeParticipant } from '../../analyses/opinions/OpinionCreation';
 import { ReportCreationForm } from '../../analyses/reports/ReportCreation';
-import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
+import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
 import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
@@ -24,12 +24,13 @@ import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/Vulnera
 import { CaseIncidentCreationForm } from '../../cases/case_incidents/CaseIncidentCreation';
 import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
-import { TaskCreationForm } from '../../cases/tasks/TaskCreation';
+import { TaskCreationForm } from '../../cases/tasks/TaskCreationForm';
 import { EventCreationForm } from '../../entities/events/EventCreation';
 import { IndividualCreationForm } from '../../entities/individuals/IndividualCreation';
 import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';
 import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
 import { SystemCreationForm } from '../../entities/systems/SystemCreation';
+import SecurityPlatformCreationForm from '../../entities/securityPlatforms/SecurityPlatformCreationForm';
 import { IncidentCreationForm } from '../../events/incidents/IncidentCreation';
 import { ObservedDataCreationForm } from '../../events/observed_data/ObservedDataCreation';
 import { AdministrativeAreaCreationForm } from '../../locations/administrative_areas/AdministrativeAreaCreation';
@@ -658,6 +659,21 @@ const StixDomainPanel = ({
         />
       );
     }
+    if (type === 'SecurityPlatform') {
+      // Security Platform
+      return (
+        <SecurityPlatformCreationForm
+          inputValue={inputValue}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
+          onCompleted={onCompleted ?? onClose}
+        />
+      );
+    }
     if (type === 'Threat-Actor-Group') {
       return (
         <ThreatActorGroupCreationForm
@@ -793,17 +809,17 @@ const StixDomainPanel = ({
       )}
     >
       {renderUnavailableBulkMessage()}
-      <Select
-        value={type}
-        onChange={(event) => setType(event.target.value)}
-        fullWidth={true}
-        size="small"
-      >
-        {availableEntityTypes.map((availableType) => (
-          <MenuItem key={availableType.value} value={availableType.value}>
-            {availableType.label}
-          </MenuItem>
-        ))}
+      <Select value={type} onValueChange={setType}>
+        <SelectTrigger aria-label={t_i18n('Entity type')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent aria-label={t_i18n('Entity type')}>
+          {availableEntityTypes.map((availableType) => (
+            <SelectItem key={availableType.value} value={availableType.value}>
+              {availableType.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
       <div style={{ marginTop: '20px' }}>
         {renderEntityCreationInterface()}

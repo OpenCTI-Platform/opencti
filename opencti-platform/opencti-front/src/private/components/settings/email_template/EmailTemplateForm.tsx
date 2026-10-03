@@ -99,7 +99,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             fullWidth={true}
             onSubmit={onUpdate}
             required
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
           />
           <Field
             component={TextField}
@@ -108,7 +108,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             fullWidth={true}
             onSubmit={onUpdate}
             required
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
           />
           {!isEdition && (
             <FormButtonContainer>

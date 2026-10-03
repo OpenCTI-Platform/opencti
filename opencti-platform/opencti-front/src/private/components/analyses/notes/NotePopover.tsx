@@ -126,6 +126,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     <>
       <IconButton
         aria-label={t_i18n('Open menu')}
+        aria-haspopup="true"
         onClick={(e) => setAnchorEl(e.currentTarget)}
       >
         <MoreVert fontSize="small" color="primary" />

@@ -18,7 +18,7 @@ import { findAllAuthenticationProvider, resolveProviderIdentifier } from './auth
 import { registerLocalStrategy } from './provider-local';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { registerHeadersStrategy } from './provider-headers';
-import { loginFromProvider } from '../../domain/user';
+import { loginFromProvider } from '../user/user-domain';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import conf, { logApp } from '../../config/conf';
@@ -39,9 +39,11 @@ export interface ProviderAuthInfo {
     provider_metadata?: unknown;
   };
   groupsMapping: {
+    groupMappingEntries: { provider: string; platform: string }[];
     groups: string[];
     autoCreateGroup: boolean;
     preventDefaultGroups: boolean;
+    extendPlatformGroups: boolean;
   };
   organizationsMapping: {
     organizations: string[];
@@ -63,9 +65,11 @@ export const handleProviderLogin = async (logger: AuthenticationProviderLogger, 
   const user = await loginFromProvider(
     info.userMapping,
     {
+      providerGroupsMapping: info.groupsMapping.groupMappingEntries,
       providerGroups: info.groupsMapping.groups,
       autoCreateGroup: info.groupsMapping.autoCreateGroup,
       preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+      extendPlatformGroups: info.groupsMapping.extendPlatformGroups,
       providerOrganizations: info.organizationsMapping.organizations,
       autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
     },

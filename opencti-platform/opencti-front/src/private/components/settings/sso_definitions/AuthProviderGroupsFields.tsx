@@ -1,7 +1,7 @@
 import React from 'react';
+import { Paper } from '@filigran/design-system';
 import { Field, FieldArray } from 'formik';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { Add, Delete } from '@mui/icons-material';
 import TextField from '../../../../components/TextField';
@@ -38,12 +38,22 @@ const AuthProviderGroupsFields = () => {
         label={t_i18n('Auto create groups')}
       />
 
+      {/* extend platform groups */}
+      <Field
+        component={SwitchField}
+        type="checkbox"
+        name="groups_mapping.extend_platform_groups"
+        label={t_i18n('Extend platform groups')}
+      />
+
       {/* Default groups */}
       <FieldArray name="groups_mapping.default_groups">
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.default_groups ?? [];
+          // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+          // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default groups')}</Typography>
                 <IconButton
@@ -60,7 +70,7 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.default_groups[${index}]`}
                       label={t_i18n('Group name')}
                       fullWidth
@@ -86,7 +96,7 @@ const AuthProviderGroupsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_expr ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups expressions')}</Typography>
                 <IconButton
@@ -103,7 +113,7 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_expr[${index}]`}
                       label={t_i18n('Expression')}
                       fullWidth
@@ -126,12 +136,12 @@ const AuthProviderGroupsFields = () => {
 
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         name="groups_mapping.group_splitter"
         label={t_i18n('Groups splitter')}
         placeholder=","
         fullWidth
-        style={{ marginTop: 20 }}
+        className="mt-5"
       />
 
       {/* Groups mapping (provider -> platform) */}
@@ -139,7 +149,7 @@ const AuthProviderGroupsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_mapping ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
                 <IconButton
@@ -156,14 +166,14 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_mapping[${index}].provider`}
                       label={t_i18n('Provider group')}
                       fullWidth
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_mapping[${index}].platform`}
                       label={t_i18n('Platform group')}
                       fullWidth

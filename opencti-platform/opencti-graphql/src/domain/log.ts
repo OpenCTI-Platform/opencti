@@ -34,8 +34,10 @@ export const findById = async (context: AuthContext, user: AuthUser, logId: stri
   return storeLoadById<StoreHistory>(context, user, logId, ENTITY_TYPE_HISTORY, { historyFiltering: true });
 };
 
-export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
-  let types = args.types ? args.types : isUserHasCapability(user, SETTINGS_SECURITYACTIVITY) ? [ENTITY_TYPE_ACTIVITY] : [ENTITY_TYPE_HISTORY];
+export const computeAuditTypes = (user: AuthUser, requestedTypes?: string[] | null): string[] => {
+  let types = requestedTypes && requestedTypes.length > 0
+    ? requestedTypes
+    : (isUserHasCapability(user, SETTINGS_SECURITYACTIVITY) ? [ENTITY_TYPE_ACTIVITY] : [ENTITY_TYPE_HISTORY]);
   if (!isUserHasCapability(user, KNOWLEDGE)) {
     types = types.filter((t) => t !== ENTITY_TYPE_HISTORY);
   }
@@ -45,26 +47,23 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
   if (types.length === 0) {
     throw ForbiddenAccess();
   }
+  return types;
+};
+
+export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
+  const types = computeAuditTypes(user, args.types);
   const finalArgs = { ...args, types, historyFiltering: true };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts);
 };
 
 export const findAuditById = async (context: AuthContext, user: AuthUser, auditId: string) => {
-  const types = [];
-  if (isUserHasCapability(user, KNOWLEDGE)) {
-    types.push(ENTITY_TYPE_HISTORY);
-  }
-  if (isUserHasCapability(user, SETTINGS_SECURITYACTIVITY)) {
-    types.push(ENTITY_TYPE_ACTIVITY);
-  }
-  if (types.length === 0) {
-    throw ForbiddenAccess();
-  }
+  const types = computeAuditTypes(user, [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY]);
   return storeLoadById(context, user, auditId, types, { historyFiltering: true });
 };
 
 export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) => {
-  const finalArgs = { ...args, historyFiltering: true };
+  const types = computeAuditTypes(user, args.types);
+  const finalArgs = { ...args, types, historyFiltering: true };
   if (args.unique) {
     return {
       count: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, finalArgs),
@@ -79,16 +78,19 @@ export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) =>
 };
 
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  const types = computeAuditTypes(user, args.types);
   const filters = args.userId ? addFilter(args.filters, '*_id', args.userId) : args.filters;
-  return timeSeriesHistory(context, user, { ...args, historyFiltering: true, filters });
+  return timeSeriesHistory(context, user, { ...args, types, historyFiltering: true, filters });
 };
 
 export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter: any) => {
-    return { data: timeSeriesHistory(context, user, { ...args, historyFiltering: true, ...timeSeriesParameter }) };
+    const types = computeAuditTypes(user, timeSeriesParameter.types);
+    return { data: timeSeriesHistory(context, user, { ...args, historyFiltering: true, ...timeSeriesParameter, types }) };
   }));
 };
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
-  return distributionHistory(context, user, { ...args, historyFiltering: true });
+  const types = computeAuditTypes(user, args.types);
+  return distributionHistory(context, user, { ...args, types, historyFiltering: true });
 };

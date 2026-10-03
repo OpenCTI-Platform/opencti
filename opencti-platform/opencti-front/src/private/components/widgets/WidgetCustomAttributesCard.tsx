@@ -14,6 +14,7 @@ import ItemAssignees from '../../../components/ItemAssignees';
 import ItemParticipants from '../../../components/ItemParticipants';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
+import RawTag from '@common/tag/RawTag';
 import Tag from '@common/tag/Tag';
 import TextList from '@common/text/TextList';
 import ItemScore from '../../../components/ItemScore';
@@ -217,7 +218,7 @@ const renderAttributeValue = (
         <FieldOrEmpty source={labels}>
           <Stack direction="row" flexWrap="wrap" gap={1}>
             {labels?.map((label) => (
-              <Tag key={label.id} label={label.value} color={label.color} />
+              <RawTag key={label.id} label={label.value} color={label.color} />
             ))}
           </Stack>
         </FieldOrEmpty>

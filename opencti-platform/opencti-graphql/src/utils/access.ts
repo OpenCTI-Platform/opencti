@@ -33,6 +33,9 @@ import { pushAll } from './arrayUtil';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
+// Used in publicDashboard-utils.ts to construct a fake user to be able to call private API
+export const PUBLIC_DASHBOARD_REFERER = 'public-dashboard';
+
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 export const BYPASS = 'BYPASS';
@@ -59,6 +62,7 @@ export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
+export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
@@ -426,8 +430,8 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   id: EXPIRATION_MANAGER_USER_UUID,
   internal_id: EXPIRATION_MANAGER_USER_UUID,
   individual_id: undefined,
-  name: 'EXPIRATION MANAGER',
-  user_email: 'EXPIRATION MANAGER',
+  name: 'EXPIRATION SCHEDULER',
+  user_email: 'EXPIRATION SCHEDULER',
   origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -638,6 +642,40 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
+export enum OTPValidationStatus {
+  VALID,
+  AUTHENTICATION_REQUIRED,
+  ACTIVATION_REQUIRED,
+  VALIDATION_REQUIRED,
+}
+export const checkOTPValidationStatus = (context: AuthContext, allowUnprotectedOTP?: boolean): OTPValidationStatus => {
+  // Get user from the session
+  const { user, otp_mandatory, user_otp_validated } = context;
+  // User must be authenticated.
+  if (!user) {
+    return OTPValidationStatus.AUTHENTICATION_REQUIRED;
+  }
+  if (!allowUnprotectedOTP) {
+    // If the platform enforce OTP
+    if (otp_mandatory) {
+      // If user have not validated is OTP in session
+      // by default user_otp_validated is true for direct api usage
+      if (!user_otp_validated) {
+        // If OTP is not setup, return a specific error
+        if (!user.otp_activated) {
+          return OTPValidationStatus.ACTIVATION_REQUIRED;
+        }
+        // If already setup but not validated, return the validation screen
+        return OTPValidationStatus.VALIDATION_REQUIRED;
+      }
+    } else if (user.otp_activated && !user_otp_validated) {
+      // If user self activate OTP, session must be validated
+      return OTPValidationStatus.VALIDATION_REQUIRED;
+    }
+  }
+  return OTPValidationStatus.VALID;
+};
+
 export const isInternalUser = (user: AuthUser): boolean => {
   return INTERNAL_USERS[user.id] !== undefined;
 };
@@ -653,7 +691,7 @@ export const isServiceAccountUser = (user: AuthUser): boolean => {
 export const isUserHasCapability = (user: AuthUser, capability: string, options?: { forceCapabilityInDraft?: boolean }): boolean => {
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
-  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const checkCapabilitiesInDraft = !!options?.forceCapabilityInDraft || isInDraftContext;
   return isBypassUser(user) || isIncludedInCapabilities || (checkCapabilitiesInDraft && isIncludedInDraftCapabilities);
 };
@@ -670,7 +708,7 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
  * Construct a filter to restrict users visibility
  * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
  */
-export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup | null) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
@@ -864,6 +902,12 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
+/**
+ * Check whether a user can access a STIX element using already-resolved platform settings.
+ *
+ * This is the synchronous variant intended for batch usage (for example in loops over
+ * multiple STIX objects) to avoid refetching settings for each element.
+ */
 export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
@@ -897,6 +941,13 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
 
+/**
+ * Asynchronous convenience wrapper around checkUserCanAccessStixElement.
+ *
+ * This variant resolves platform settings from cache before
+ * delegating to the synchronous checker. Do not pass this async function directly
+ * to Array.filter; resolve results first (for example with Promise.all).
+ */
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
@@ -1040,7 +1091,7 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-type ParticipantWithOrgIds = Participant & Creator & {
+export type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
     main: string;
     secondary: string;
@@ -1124,7 +1175,7 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup | null) => {
   return {
     mode: FilterMode.And,
     filters: [

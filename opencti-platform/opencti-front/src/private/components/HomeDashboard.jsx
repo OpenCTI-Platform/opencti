@@ -114,9 +114,8 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   return (
     <LocationMiniMapTargets
       title={t_i18n('Targeted countries (Last 3 months)')}
-      center={[48.8566969, 2.3514616]}
-      countries={countries}
       zoom={2}
+      countries={countries}
     />
   );
 };
@@ -169,6 +168,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Intrusion-Set"
             config={config}
             parameters={{
@@ -191,6 +191,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Malware"
             config={config}
             parameters={{
@@ -213,6 +214,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Report"
             config={config}
             parameters={{
@@ -235,6 +237,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Indicator"
             config={config}
             parameters={{
@@ -416,7 +419,6 @@ const DefaultDashboard = ({ timeField }) => {
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
-                center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
             )}

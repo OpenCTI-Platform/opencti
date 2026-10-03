@@ -31,6 +31,13 @@ class Incident:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -38,6 +45,10 @@ class Incident:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -119,6 +130,7 @@ class Incident:
             incident_type
             severity
             source
+            x_opencti_score
         """
         self.properties_with_files = """
             id
@@ -128,6 +140,13 @@ class Incident:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             status {
                 id
                 template {
@@ -135,6 +154,10 @@ class Incident:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -229,6 +252,7 @@ class Incident:
             incident_type
             severity
             source
+            x_opencti_score
             importFiles {
                 edges {
                     node {
@@ -478,6 +502,8 @@ class Incident:
         :type severity: str
         :param source: (optional) source of the incident
         :type source: str
+        :param x_opencti_score: (optional) score of the incident (0-100)
+        :type x_opencti_score: int
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
         :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
@@ -514,6 +540,7 @@ class Incident:
         incident_type = kwargs.get("incident_type", None)
         severity = kwargs.get("severity", None)
         source = kwargs.get("source", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
@@ -561,6 +588,7 @@ class Incident:
                         "objective": objective,
                         "severity": severity,
                         "source": source,
+                        "x_opencti_score": x_opencti_score,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
@@ -610,6 +638,10 @@ class Incident:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "x_opencti_score" not in stix_object:
+                stix_object["x_opencti_score"] = (
+                    self.opencti.get_attribute_in_extension("score", stix_object)
                 )
             if "opencti_upsert_operations" not in stix_object:
                 stix_object["opencti_upsert_operations"] = (
@@ -665,6 +697,11 @@ class Incident:
                 ),
                 severity=stix_object["severity"] if "severity" in stix_object else None,
                 source=stix_object["source"] if "source" in stix_object else None,
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
+                    else None
+                ),
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object

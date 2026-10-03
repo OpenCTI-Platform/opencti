@@ -151,7 +151,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <NotifierConnectorField
             name="notifier_connector_id"

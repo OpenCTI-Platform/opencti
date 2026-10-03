@@ -90,6 +90,11 @@ input WorkspaceDuplicateInput {
     tags: [String!]
 }
 
+input InvestigationDuplicateInput {
+    id: ID!
+    name: String! @constraint(minLength: 2, format: "not-blank")
+}
+
 input ImportConfigurationInput {
     importType: String!
     file: Upload!
@@ -104,6 +109,7 @@ input ImportWidgetInput {
 type Mutation {
     workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    investigationDuplicate(input: InvestigationDuplicateInput!): Workspace @auth(for: [INVESTIGATION_INUPDATE])
     workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE])
     workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])

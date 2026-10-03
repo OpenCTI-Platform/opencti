@@ -485,7 +485,7 @@ describe('Verify csv ingestion', () => {
     // We don't really send bundle to worker for tests it's hardly predictive
     vi.spyOn(ingestWorkMock, 'createWorkForIngestion').mockResolvedValue({ id: 'work-id-csv-ingestion-lines' } as any);
     vi.spyOn(ingestWorkMock, 'updateBuiltInConnectorInfo').mockResolvedValue(undefined);
-    vi.spyOn(rabbitMock, 'pushToWorkerForConnector').mockResolvedValue(undefined);
+    vi.spyOn(rabbitMock, 'pushBundleToWorker').mockResolvedValue(undefined);
 
     const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
     expect(isUnchangedData).toBeFalsy();

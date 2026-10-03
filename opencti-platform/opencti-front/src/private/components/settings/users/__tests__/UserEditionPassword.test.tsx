@@ -34,6 +34,13 @@ vi.mock('../../../common/form/PasswordPolicies', () => ({
   default: () => <div>PasswordPolicies</div>,
 }));
 
+vi.mock('../../../../../utils/hooks/useGranted', () => ({
+  default: () => true,
+  isBypassUser: () => true,
+  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT: 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
+}));
+
 describe('UserEditionPassword', () => {
   const baseUser = {
     id: 'user-1',

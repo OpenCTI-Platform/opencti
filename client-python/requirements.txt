@@ -1,9 +1,7 @@
 # Filigran
 boto3>=1.38.27,<1.44
 datefinder~=0.7.3
-pika~=1.3.0
-python-magic~=0.4.27; sys_platform == 'linux' or sys_platform == 'darwin'
-python-magic-bin~=0.4.14; sys_platform == 'win32'
+pika~=1.4.4
 python_json_logger~=4.0.0
 PyYAML~=6.0
 pyjwt[crypto]>=2.12.0, <3
@@ -11,7 +9,7 @@ pydantic>=2.8.2, <3
 requests~=2.33.0
 setuptools~=82.0.0
 cachetools~=7.0.1
-prometheus-client~=0.25.0
+prometheus-client~=0.26.0
 opentelemetry-api~=1.35.0
 opentelemetry-sdk~=1.35.0
 deprecation~=2.1.0

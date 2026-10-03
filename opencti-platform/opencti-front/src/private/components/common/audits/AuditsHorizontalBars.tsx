@@ -18,7 +18,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { ApexOptions } from 'apexcharts';
 import ApexCharts from 'apexcharts';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AuditsHorizontalBarsDistributionQuery } from '@components/common/audits/__generated__/AuditsHorizontalBarsDistributionQuery.graphql';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';

@@ -4,7 +4,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemIcon from '../ItemIcon';
 import type { Theme } from '../Theme';

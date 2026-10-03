@@ -12,7 +12,7 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
@@ -485,6 +485,7 @@ export const initializeData = async (context, withMarkings = true) => {
         groups_mapping: [],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       },
       organizations_mapping: {
         default_organizations: [],
@@ -512,6 +513,7 @@ export const initializeData = async (context, withMarkings = true) => {
         groups_mapping: [],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       },
       organizations_mapping: {
         default_organizations: [],

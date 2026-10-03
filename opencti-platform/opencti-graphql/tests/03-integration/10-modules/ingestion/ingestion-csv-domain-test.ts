@@ -13,7 +13,7 @@ import { getFakeAuthUser, getOrganizationEntity } from '../../../utils/domainQue
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { findDefaultIngestionGroups, groupEditField } from '../../../../src/domain/group';
 import type { BasicGroupEntity } from '../../../../src/types/store';
-import { findById as findUserById, userDelete } from '../../../../src/domain/user';
+import { findById as findUserById, userDelete } from '../../../../src/modules/user/user-domain';
 import { executionContext, SYSTEM_USER } from '../../../../src/utils/access';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import type { BasicStoreEntityIngestionCsv } from '../../../../src/modules/ingestion/ingestion-types';

@@ -1,4 +1,4 @@
-import moment, { Moment } from 'moment-timezone';
+import moment, { Moment } from 'moment';
 import { subDays } from 'date-fns';
 import { isNone } from '../components/i18n';
 

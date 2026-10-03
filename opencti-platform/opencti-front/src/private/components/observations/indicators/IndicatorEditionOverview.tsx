@@ -27,6 +27,7 @@ import { GenericContext } from '@components/common/model/GenericContextModel';
 import { IndicatorEditionOverview_indicator$data } from '@components/observations/indicators/__generated__/IndicatorEditionOverview_indicator.graphql';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { FormikConfig } from 'formik/dist/types';
+import TextareaField from '../../../../components/TextareaField';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -267,7 +268,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
           <AlertConfidenceForEntity entity={indicator} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -300,15 +301,12 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             variant="edit"
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="pattern"
             label={t_i18n('Indicator pattern')}
             required={(mandatoryAttributes.includes('pattern'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -336,7 +334,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             textFieldProps={{
               label: t_i18n('Valid from'),
               required: (mandatoryAttributes.includes('valid_from')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -352,7 +350,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             textFieldProps={{
               label: t_i18n('Valid until'),
               required: (mandatoryAttributes.includes('valid_until')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -374,13 +372,13 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="x_opencti_score"
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={(

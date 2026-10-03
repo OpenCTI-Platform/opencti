@@ -104,6 +104,9 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of data sharing surfaces, broken down by type (`live_stream`, `feed`, `taxii_collection`, `public_dashboard`) and public (anonymous access) state
 - The number of playbooks, broken down by running state
 - The number of playbook executions started
+- The number of security coverages 
+- The number of security coverages results
+- The number of 'has covered' relationships
 - The number of activated inference rules
 - The number of notification triggers, broken down by type (`live`, `digest`)
 - The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)
@@ -117,6 +120,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - Whether the file indexing manager is running
 - The number of indexed files
 - Whether the platform is registered on XTM Hub
+- The number of OpenAEV connectors linked to OpenCTI
 
 ### Email and notifications
 
@@ -135,6 +139,20 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of security coverages
 - The number of PIRs
 - The number of decay rules created
+
+### Provenance and corroboration
+
+- The number of active knowledge decay rules
+- The number of knowledge decay rules created
+- The number of relationships with provenance
+- The number of corroborated relationships (asserted by 2 or more sources)
+- The number of stale knowledge elements
+- The number of elements flagged as stale by the knowledge decay rules
+- The number of knowledge elements with source conflicts
+- The number of source conflicts detected
+- The number of conflicting values adopted
+
+No source and no knowledge content is ever collected, only counts.
 
 ### Retention and activity
 

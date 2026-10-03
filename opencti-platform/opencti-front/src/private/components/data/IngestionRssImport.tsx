@@ -3,10 +3,9 @@ import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../utils/hooks/useXtmHubDownloadDocument';
 import IngestionRssCreation from '@components/data/ingestionRss/IngestionRssCreation';
 import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
@@ -56,8 +55,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
         inputFileRef.current.value = '';
       }
     } catch (e) {
-      const { errors } = (e as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
+      MESSAGING$.notifyRelayError(e);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type MouseEvent } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
@@ -6,7 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -99,7 +99,7 @@ const TaskPopover = ({
   };
 
   return (
-    <div className={classes.container} onClick={(e) => e.stopPropagation()}>
+    <div className={classes.container}>
       {variant === 'inLine' ? (
         <IconButton
           onClick={handleOpen}
@@ -119,7 +119,18 @@ const TaskPopover = ({
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
       )}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+      <Menu
+        slotProps={{
+          list: {
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation();
+            },
+          },
+        }}
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>

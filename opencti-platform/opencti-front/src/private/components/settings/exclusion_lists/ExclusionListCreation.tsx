@@ -15,7 +15,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
@@ -151,22 +151,18 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             style={{ marginTop: 20 }}
           />
           <Field
-            component={AutocompleteField}
+            component={ComboboxField}
             name="exclusion_list_entity_types"
-            fullWidth={true}
             multiple
             style={fieldSpacingContainerStyle}
             options={entityTypesOptions}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: FieldOption,
-            ) => (
-              <li key={option.value} {...props}>
+            renderOption={(option: FieldOption) => (
+              <>
                 <ItemIcon type={option.type} />
                 <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
-              </li>
+              </>
             )}
-            textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+            label={t_i18n('Apply on indicator observable types')}
             required
           />
           <FormControlLabel

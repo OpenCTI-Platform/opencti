@@ -130,17 +130,23 @@ export const addReport = async (context, user, report) => {
 const buildReportDeleteElementsFilter = (reportId) => {
   const refKey = buildRefRelationKey(RELATION_OBJECT);
   return {
-    mode: 'and',
-    filters: [
-      { key: [refKey], values: [reportId] },
-      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'internal_script' },
-    ],
-    filterGroups: [],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: [refKey], values: [reportId] },
+      ],
+      filterGroups: [],
+    },
+    /**
+     * Trusted, internal-only raw Painless clause: only referenced by this single report.
+     * Must go through internalScriptFilters, never through the generic filter grammar.
+     */
+    internalScriptFilters: [`doc['${refKey}.keyword'].length == 1`],
   };
 };
 export const reportDeleteWithElements = async (context, user, reportId) => {
   // Load all entities & relationships contained only in this report (orphans)
-  const args = { filters: buildReportDeleteElementsFilter(reportId) };
+  const args = buildReportDeleteElementsFilter(reportId);
   const reportOrphanObjects = await fullEntitiesOrRelationsList(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
   // Filter out relationships that will already be deleted with the deletion of the source or target element
   const objectsToDelete = reportOrphanObjects.filter((fo) => !reportOrphanObjects.some((o) => fo.fromId === o.internal_id || fo.toId === o.internal_id));
@@ -153,7 +159,7 @@ export const reportDeleteWithElements = async (context, user, reportId) => {
   return reportId;
 };
 export const reportDeleteElementsCount = async (context, user, reportId) => {
-  const filters = buildReportDeleteElementsFilter(reportId);
-  return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
+  const { filters, internalScriptFilters } = buildReportDeleteElementsFilter(reportId);
+  return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters, internalScriptFilters });
 };
 // endregion

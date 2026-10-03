@@ -112,13 +112,8 @@ const CountryComponent = ({
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
-            center={
-              country.latitude && country.longitude
-                ? [country.latitude, country.longitude]
-                : [48.8566969, 2.3514616]
-            }
-            countries={[country]}
             zoom={4}
+            countries={[country]}
           />
         </Grid>
         <Grid item xs={4}>

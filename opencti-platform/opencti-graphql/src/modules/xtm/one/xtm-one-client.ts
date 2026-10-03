@@ -38,6 +38,14 @@ export interface XtmOneRegistrationInput {
   enterprise_license_pem: string | undefined;
   license_type: string | undefined;
   business_vertical: string;
+  // Whether OpenCTI's own assistant can display a tool-approval prompt and
+  // collect a verdict. XTM One gates the tools OpenCTI contributes only when
+  // there is somebody to ask; declaring `false` leaves the decision to an
+  // XTM One administrator (Settings → Parameters → "Approval for connected
+  // platforms"). Deliberately not named `supports_tool_approval`, which is
+  // the per-message flag a single client sends to promise it will answer a
+  // given prompt.
+  supports_approval_prompts?: boolean;
   intents: IntentInput[];
 }
 
@@ -45,7 +53,12 @@ export interface XtmOneRegistrationResponse {
   status: string;
   version: string;
   platform_identifier: string;
+  // Advisory, like ee_sources: only a verified xtm_license_pem grants the XTM One entitlement.
   ee_enabled: boolean;
+  // Absent from an XTM One that predates the license proof.
+  ee_sources?: string[];
+  // The Filigran-signed XTM license, present when XTM One reports that its XTM license sub-licenses this platform.
+  xtm_license_pem?: string | null;
   user_integrations: number;
   chat_web_token: string | null;
   intent_catalog: IntentCatalogEntry[];

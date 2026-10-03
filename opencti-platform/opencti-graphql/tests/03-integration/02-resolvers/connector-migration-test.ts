@@ -3,7 +3,10 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
-import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
+import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
+import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
+import conf from '../../../src/config/conf';
+import { connector as loadConnector } from '../../../src/database/repository';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
@@ -86,10 +89,10 @@ const READ_CONNECTOR_QUERY = gql`
   }
 `;
 
-const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
-const TEST_CN_NAME = 'TestConnector';
+const TEST_CN_MIGRATION_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1696';
+const TEST_CN_MIGRATION_NAME = 'TestConnectorMigration';
 
-describe.todo('Check connector migration', () => {
+describe('Check connector migration', () => {
   let userId: string;
 
   /**
@@ -98,6 +101,14 @@ describe.todo('Check connector migration', () => {
    * - Get catalogId
    */
   beforeAll(async () => {
+    const previousXtmHubUrl = conf.get('xtm:xtmhub_url');
+    conf.set('xtm:xtmhub_url', '');
+    try {
+      await synchronizeCatalogs(testContext, ADMIN_USER);
+    } finally {
+      conf.set('xtm:xtmhub_url', previousXtmHubUrl);
+    }
+
     const user = await queryAsAdminWithSuccess({
       query: CREATE_USER_QUERY,
       variables: { input: {
@@ -113,8 +124,8 @@ describe.todo('Check connector migration', () => {
     userId = user.data.userAdd.id;
 
     const connectorData = {
-      id: TEST_CN_ID,
-      name: TEST_CN_NAME,
+      id: TEST_CN_MIGRATION_ID,
+      name: TEST_CN_MIGRATION_NAME,
       type: ConnectorType.ExternalImport,
       scope: ['Observable'],
       auto: true,
@@ -136,8 +147,8 @@ describe.todo('Check connector migration', () => {
     );
 
     expect(connector).not.toBeNull();
-    expect(connector.name).toEqual(TEST_CN_NAME);
-    expect(connector.id).toEqual(TEST_CN_ID);
+    expect(connector.name).toEqual(TEST_CN_MIGRATION_NAME);
+    expect(connector.id).toEqual(TEST_CN_MIGRATION_ID);
   });
 
   /**
@@ -146,9 +157,9 @@ describe.todo('Check connector migration', () => {
    */
   afterAll(async () => {
     // Delete the connector
-    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
 
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.connector).toBeNull();
@@ -159,7 +170,7 @@ describe.todo('Check connector migration', () => {
   describe('migrate connector to managed', () => {
     describe('when migration is successful', () => {
       it('should migrate a standalone connector to managed, and user is now service account', async () => {
-        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
         const standaloneConnector = queryConnectorRegistered.data?.connector;
         expect(standaloneConnector).not.toBeNull();
 
@@ -188,32 +199,40 @@ describe.todo('Check connector migration', () => {
           },
         });
 
-        const contractFound = await catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
-        if (!contractFound?.contract) {
+        const contractFound = await catalogRepository.findLatestCompatibleCatalogContractByImageName(testContext, ADMIN_USER, 'opencti/connector-cve');
+        if (!contractFound) {
           throw new Error('Connector nist-nvd-cve container-image not found in catalog');
         }
 
-        let contractParsed;
-        try {
-          contractParsed = JSON.parse(contractFound?.contract);
-        } catch {
-          throw new Error('Cannot parse nist-nvd-cve catalog');
-        }
-
-        if (!contractParsed) {
-          throw new Error('Contract nist-nvd-cve catalog is undefined');
-        }
-
-        // same values excluded from catalog-domain
-        const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
+        const storedManagedConnector = await loadConnector(testContext, ADMIN_USER, managedConnector.id);
+        expect(storedManagedConnector?.manager_upgrade_strategy).toEqual('latest');
         const rawConfig = managedConnector.manager_contract_configuration;
-        rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
-        const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
-        const schemaProperties = contractParsed.config_schema.properties;
+        // ManagedConnector.manager_contract_configuration injects these keys dynamically at read time
+        // (see computeManagerConnectorConfiguration / injectProxyConfiguration), they are not part of the
+        // persisted/schema-driven config. Proxy vars are injected because config/test.json configures
+        // http_proxy, https_proxy and no_proxy, and https_proxy_reject_unauthorized is always injected.
+        const INJECTED_KEYS = ['CONNECTOR_ID', 'CONNECTOR_NAME', 'CONNECTOR_TYPE', 'OPENCTI_TOKEN', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
+        INJECTED_KEYS.forEach((injectedKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === injectedKey);
+          expect(found).toBeDefined();
+        });
 
-        const expectedKeys = Object.keys(schemaProperties);
+        // These runtime keys are never persisted/returned in manager_contract_configuration:
+        // OPENCTI_URL and CONNECTOR_RUN_AND_TERMINATE are excluded from the contract's config
+        // (same exclusion as catalog-domain) and never re-injected by this resolver.
+        const EXCLUDED_RUNTIME_KEYS = ['OPENCTI_URL', 'CONNECTOR_RUN_AND_TERMINATE'];
+        EXCLUDED_RUNTIME_KEYS.forEach((runtimeKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === runtimeKey);
+          expect(found).toBeUndefined();
+        });
+
+        const actualConfig = rawConfig.filter((c: { key: string }) => !INJECTED_KEYS.includes(c.key));
+        const schemaProperties = contractFound.config_schema.properties;
+
+        const expectedKeys = Object.keys(schemaProperties)
+          .filter((key) => !INJECTED_KEYS.includes(key) && !EXCLUDED_RUNTIME_KEYS.includes(key));
         const actualKeys = actualConfig.map((c: { key: string }) => c.key);
 
         // Assert all expected keys are present and no extra keys
@@ -224,6 +243,81 @@ describe.todo('Check connector migration', () => {
         expect(managedConnector.id).toMatch(standaloneConnector.id);
         // user should be a service account
         expect(managedConnector.connector_user.user_service_account).toBeTruthy();
+      });
+    });
+
+    describe('when name collides with an existing connector', () => {
+      // Regression test: migrateConnectorToManaged must not create two connectors sharing
+      // the same name (which makes the composer fail to reconciliate and redeploy forever).
+      // On collision, the migrated connector name must be prefixed to stay unique.
+      const COLLISION_NAME = 'CollisionConnector';
+      const OCCUPYING_CN_ID = 'a1b2c3d4-0000-4aaa-bbbb-000000000001';
+      const MIGRATING_CN_ID = 'a1b2c3d4-0000-4aaa-bbbb-000000000002';
+
+      it('should rename the migrated connector with a prefix instead of duplicating the name', async () => {
+        // An existing connector already occupies COLLISION_NAME
+        const occupyingConnector = await registerConnector(
+          testContext,
+          ADMIN_USER,
+          {
+            id: OCCUPYING_CN_ID,
+            name: COLLISION_NAME,
+            type: ConnectorType.ExternalImport,
+            scope: ['Observable'],
+            auto: true,
+            only_contextual: true,
+          },
+          { connector_user_id: userId },
+        );
+        expect(occupyingConnector.name).toEqual(COLLISION_NAME);
+
+        // A standalone connector to migrate uses the exact same name
+        const connectorToMigrate = await registerConnector(
+          testContext,
+          ADMIN_USER,
+          {
+            id: MIGRATING_CN_ID,
+            name: COLLISION_NAME,
+            type: ConnectorType.ExternalImport,
+            scope: ['Observable'],
+            auto: true,
+            only_contextual: true,
+          },
+          { connector_user_id: userId },
+        );
+        expect(connectorToMigrate.name).toEqual(COLLISION_NAME);
+
+        try {
+          const migrationResult = await queryAsAdminWithSuccess({
+            query: MIGRATE_CONNECTOR_TO_MANAGED,
+            variables: {
+              input: {
+                connectorId: MIGRATING_CN_ID,
+                containerImage: 'opencti/connector-cve',
+                resetConnectorState: false,
+                convertUserToServiceAccount: true,
+                configuration: [
+                  { key: 'CVE_API_KEY', value: 'cve_api_key' },
+                ],
+              },
+            },
+          });
+
+          const managedConnector = migrationResult.data.connectorMigrateToManaged;
+          // The migrated connector keeps its id
+          expect(managedConnector.id).toEqual(MIGRATING_CN_ID);
+          // But its name must NOT collide with the existing connector anymore
+          expect(managedConnector.name).not.toEqual(COLLISION_NAME);
+          // The collision is resolved by prefixing with 'migrated-'
+          expect(managedConnector.name).toEqual(`migrated-${COLLISION_NAME}`);
+          // The occupying connector still owns the original name
+          const occupyingQuery = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: OCCUPYING_CN_ID } });
+          expect(occupyingQuery.data?.connector?.name).toEqual(COLLISION_NAME);
+        } finally {
+          // Cleanup both connectors
+          await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: MIGRATING_CN_ID } });
+          await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: OCCUPYING_CN_ID } });
+        }
       });
     });
   });

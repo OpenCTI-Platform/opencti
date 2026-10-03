@@ -1,20 +1,16 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add, InfoOutlined } from '@mui/icons-material';
-import { Stack } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
+import { Stack } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -22,30 +18,13 @@ import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import GenerateExportTitle from '../../common/GenerateExportTitle';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = () => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-});
 
 export const StixCyberObservablesExportCreationMutation = graphql`
   mutation StixCyberObservablesExportCreationMutation($input: StixCyberObservablesExportAskInput!) {
@@ -135,7 +114,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
   }
 
   render() {
-    const { classes, t, data } = this.props;
+    const { t, data } = this.props;
     const connectorsExport = propOr([], 'connectorsForExport', data);
     const exportScopes = uniq(
       flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -149,25 +128,29 @@ class StixCyberObservablesExportCreationComponent extends Component {
         {({ selectedIds }) => {
           return (
             <>
-              <Tooltip
-                title={
-                  isExportPossible
-                    ? t('Generate an export')
-                    : t('No export connector available to generate an export')
-                }
-                aria-label="generate-export"
+              <Stack
+                direction="row"
+                justifyContent="flex-end"
+                gap={1}
               >
-                <Fab
-                  onClick={this.handleOpen.bind(this)}
-                  color="primary"
-                  aria-label="Add"
-                  className={classes.createButton}
-                  disabled={!isExportPossible}
-                  data-testid="StixCyberObservablesExportCreationAddButton"
+                <Tooltip
+                  title={
+                    isExportPossible
+                      ? t('Generate an export')
+                      : t('No export connector available to generate an export')
+                  }
+                  aria-label="generate-export"
                 >
-                  <Add />
-                </Fab>
-              </Tooltip>
+                  <Button
+                    onClick={this.handleOpen.bind(this)}
+                    color="secondary"
+                    disabled={!isExportPossible}
+                    data-testid="StixCyberObservablesExportCreationGenerateExportButton"
+                  >
+                    {t('Generate an export')}
+                  </Button>
+                </Tooltip>
+              </Stack>
               <Formik
                 enableReinitialize={true}
                 initialValues={{
@@ -190,14 +173,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         this.handleClose();
                       }}
                       data-testid="StixCyberObservablesExportCreationDialog"
-                      title={(
-                        <Stack direction="row" alignItems="center" gap={1}>
-                          {t('Generate an export')}
-                          <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                            <InfoOutlined fontSize="small" color="primary" />
-                          </Tooltip>
-                        </Stack>
-                      )}
+                      title={<GenerateExportTitle />}
                     >
                       <QueryRenderer
                         query={markingDefinitionsLinesSearchQuery}
@@ -207,39 +183,39 @@ class StixCyberObservablesExportCreationComponent extends Component {
                             return (
                               <>
                                 <Field
-                                  component={SelectField}
-                                  variant="standard"
+                                  component={SelectFieldFds}
+                                  variant="outlined"
                                   name="format"
                                   label={t('Export format')}
                                   fullWidth={true}
                                   containerstyle={{ width: '100%' }}
                                 >
                                   {exportScopes.map((value, i) => (
-                                    <MenuItem
+                                    <SelectItem
                                       key={i}
                                       value={value}
                                       disabled={!isExportActive(value)}
                                     >
                                       {value}
-                                    </MenuItem>
+                                    </SelectItem>
                                   ))}
                                 </Field>
                                 <Field
-                                  component={SelectField}
-                                  variant="standard"
+                                  component={SelectFieldFds}
+                                  variant="outlined"
                                   name="type"
                                   label={t('Export type')}
                                   fullWidth={true}
                                   containerstyle={fieldSpacingContainerStyle}
                                 >
-                                  <MenuItem value="simple">
+                                  <SelectItem value="simple">
                                     {t('Simple export (just the entity)')}
-                                  </MenuItem>
-                                  <MenuItem value="full">
+                                  </SelectItem>
+                                  <SelectItem value="full">
                                     {t(
                                       'Full export (entity and first neighbours)',
                                     )}
-                                  </MenuItem>
+                                  </SelectItem>
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
@@ -258,19 +234,19 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                 {visibleColumnExportEnabledFormats.includes(values.format)
                                   ? (
                                       <Field
-                                        component={SelectField}
-                                        variant="standard"
+                                        component={SelectFieldFds}
+                                        variant="outlined"
                                         name="columns"
                                         label={t('Choose column to export')}
                                         fullWidth={true}
                                         containerstyle={fieldSpacingContainerStyle}
                                       >
-                                        <MenuItem value="all">
+                                        <SelectItem value="all">
                                           {t('All attributes')}
-                                        </MenuItem>
-                                        <MenuItem value="view">
+                                        </SelectItem>
+                                        <SelectItem value="view">
                                           {t('Current view')}
-                                        </MenuItem>
+                                        </SelectItem>
                                       </Field>
                                     ) : undefined}
                               </>
@@ -320,7 +296,6 @@ const StixCyberObservablesExportCreations = createFragmentContainer(
 );
 
 StixCyberObservablesExportCreations.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
@@ -328,7 +303,4 @@ StixCyberObservablesExportCreations.propTypes = {
   onExportAsk: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExportCreations);
+export default inject18n(StixCyberObservablesExportCreations);

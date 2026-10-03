@@ -2,7 +2,6 @@ import React, { ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
@@ -11,7 +10,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -33,6 +32,24 @@ export const stixCoreObjectsListQuery = graphql`
           id
           entity_type
           created_at
+          createdBy {
+            ... on Identity {
+              id
+              name
+            }
+          }
+          objectLabel {
+            id
+            value
+            color
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
           representative {
             main
             secondary
@@ -50,6 +67,15 @@ export const stixCoreObjectsListQuery = graphql`
           ... on StixDomainObject {
             created
             modified
+            revoked
+            confidence
+            status {
+              id
+              template {
+                id
+                name
+              }
+            }
           }
           ... on AttackPattern {
             name
@@ -243,8 +269,49 @@ export const stixCoreObjectsListQuery = graphql`
             description
             modified
             x_opencti_aliases
+            x_opencti_score
+            x_opencti_cwe
+            x_opencti_first_seen_active
+            x_opencti_cvss_v2_base_score
+            x_opencti_cvss_v2_vector_string
+            x_opencti_cvss_v2_access_vector
+            x_opencti_cvss_v2_access_complexity
+            x_opencti_cvss_v2_authentication
+            x_opencti_cvss_v2_confidentiality_impact
+            x_opencti_cvss_v2_integrity_impact
+            x_opencti_cvss_v2_availability_impact
+            x_opencti_cvss_v2_exploitability
+            x_opencti_cvss_v2_remediation_level
+            x_opencti_cvss_v2_report_confidence
+            x_opencti_cvss_v2_temporal_score
+            x_opencti_cvss_vector_string
+            x_opencti_cvss_attack_vector
+            x_opencti_cvss_attack_complexity
+            x_opencti_cvss_privileges_required
+            x_opencti_cvss_user_interaction
+            x_opencti_cvss_scope
+            x_opencti_cvss_confidentiality_impact
+            x_opencti_cvss_integrity_impact
+            x_opencti_cvss_availability_impact
+            x_opencti_cvss_exploit_code_maturity
+            x_opencti_cvss_remediation_level
+            x_opencti_cvss_report_confidence
+            x_opencti_cvss_temporal_score
             x_opencti_cvss_base_score
             x_opencti_cvss_base_severity
+            x_opencti_cvss_v4_vector_string
+            x_opencti_cvss_v4_attack_vector
+            x_opencti_cvss_v4_attack_complexity
+            x_opencti_cvss_v4_attack_requirements
+            x_opencti_cvss_v4_privileges_required
+            x_opencti_cvss_v4_user_interaction
+            x_opencti_cvss_v4_confidentiality_impact_v
+            x_opencti_cvss_v4_confidentiality_impact_s
+            x_opencti_cvss_v4_integrity_impact_v
+            x_opencti_cvss_v4_integrity_impact_s
+            x_opencti_cvss_v4_availability_impact_v
+            x_opencti_cvss_v4_availability_impact_s
+            x_opencti_cvss_v4_exploit_maturity
             x_opencti_cvss_v4_base_score
             x_opencti_cvss_v4_base_severity
             x_opencti_cisa_kev
@@ -468,22 +535,15 @@ const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], confi
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at') as StixCoreObjectsOrdering | null | undefined;
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
   const first = selection.number ?? 10;
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     types: DATA_SELECTION_TYPES,
     first,
     orderBy,
     orderMode,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
   };
 };
 

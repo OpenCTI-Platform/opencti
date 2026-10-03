@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
@@ -18,8 +18,8 @@ import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
-import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -29,22 +29,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 100,
-    textTransform: 'uppercase',
   },
 }));
 
@@ -75,20 +62,23 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
 
   const isActive = data.active;
   const filters = deserializeFilterGroupForFrontend(data.filters);
-  let scopeColor = 'success';
+  let scopeSeverity: 'low' | 'info' | 'high' | 'critical' = 'low';
   let appliedOnContent = t_i18n('Everything');
   if (data.scope === 'file') {
-    scopeColor = 'secondary';
+    scopeSeverity = 'critical';
     appliedOnContent = t_i18n('Global files');
   } else if (data.scope === 'workbench') {
-    scopeColor = 'primary';
+    scopeSeverity = 'info';
     appliedOnContent = t_i18n('All workbenches');
   } else if (data.scope === 'history') {
-    scopeColor = 'error';
+    scopeSeverity = 'critical';
     appliedOnContent = t_i18n('Knowledge history logs');
   } else if (data.scope === 'activity') {
-    scopeColor = 'warning';
+    scopeSeverity = 'high';
     appliedOnContent = t_i18n('Activity logs');
+  } else if (data.scope === 'conflicts') {
+    scopeSeverity = 'info';
+    appliedOnContent = t_i18n('Conflicting values of all knowledge');
   }
   return (
     <ListItem
@@ -133,10 +123,8 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'success' | 'secondary' | 'primary' | 'error' | 'warning'}
-                classes={{ root: classes.chipInList }}
-                label={t_i18n(data.scope)}
-                variant="outlined"
+                severity={scopeSeverity}
+                label={data.scope === 'conflicts' ? t_i18n('Source conflicts') : t_i18n(data.scope)}
               />
             </div>
             {dataColumns.active && (
@@ -160,7 +148,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
+                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity' && data.scope !== 'conflicts'
                   && (
                     <Tooltip
                       title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
@@ -168,7 +156,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                       <InformationOutline
                         fontSize="small"
                         color="primary"
-                        style={{ position: 'absolute', marginLeft: 10 }}
+                        sx={{ ml: 1 }}
                       />
                     </Tooltip>
                   )

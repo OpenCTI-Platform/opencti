@@ -89,6 +89,7 @@ const investigationGraphObjectsFragment = graphql`
             ... on StixCoreObject {
               created_at
               numberOfConnectedElement
+              corroboration_count
               createdBy {
                 ... on Identity {
                   id
@@ -139,6 +140,14 @@ const investigationGraphObjectsFragment = graphql`
               name
               description
             }
+            ... on SecurityCoverage {
+              name
+              description
+            }
+            ... on SecurityCoverageResult {
+              name
+              description
+            }
             ... on Individual {
               name
             }
@@ -149,6 +158,12 @@ const investigationGraphObjectsFragment = graphql`
               name
             }
             ... on System {
+              name
+            }
+            ... on SecurityPlatform {
+              name
+            }
+            ... on SecurityCoverage {
               name
             }
             ... on Indicator {
@@ -303,6 +318,7 @@ const investigationGraphObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              corroboration_count
               created
               created_at
               createdBy {

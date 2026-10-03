@@ -1,10 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import MuiTextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { Field, FieldProps } from 'formik';
 import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { useCsvMapperContext } from '@components/data/csvMapper/CsvMapperContext';
 import { useTheme } from '@mui/styles';
@@ -60,10 +57,10 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
     <div style={{
       width: '100%',
       display: 'grid',
-      gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
-      alignItems: 'center',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'end',
       marginTop: `${theme.spacing(3)} 0 `,
-      gap: theme.spacing(1),
+      gap: '10px',
     }}
     >
       <div style={{
@@ -77,93 +74,66 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
           name={`${representationName}.column_based.enabled`}
           onChange={(_: string, val: string) => onToggleDynamicMapping(val)}
           label={t_i18n('Entity dynamic mapping')}
+          tooltip="If this option is selected, we will dynamically map the column value that you provide to the entity."
         />
-        <Tooltip
-          title={t_i18n(
-            'If this option is selected, we will dynamically map the column value that you provide to the entity.',
-          )}
-        >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
-        </Tooltip>
       </div>
-      <MUIAutocomplete
-        selectOnFocus
-        openOnFocus
-        autoSelect={false}
-        autoHighlight
-        options={columnOptions}
-        disabled={!columnBased?.enabled}
-        value={columnBased?.column_reference ?? null}
-        onChange={(_, val) => handleColumnSelect(val)}
-        sx={{ width: '100%' }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={t_i18n('Column index')}
+      <div style={{
+        gridColumn: '2 / span 2',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        alignItems: 'end',
+        gap: '10px',
+      }}
+      >
+        <Combobox
+          selectOnFocus
+          openOnFocus
+          options={columnOptions}
+          disabled={!columnBased?.enabled}
+          value={columnBased?.column_reference ?? null}
+          onValueChange={(val) => handleColumnSelect(val as string | null)}
+          error={!columnBased?.column_reference}
+        >
+          <ComboboxLabel>{t_i18n('Column index')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Column index')} />
+        </Combobox>
+        <Combobox<FieldOption>
+          selectOnFocus
+          openOnFocus
+          options={operatorOptions}
+          disabled={!columnBased?.enabled}
+          value={operatorOptions.find((opt) => opt.value === columnBased?.operator) ?? null}
+          onValueChange={(val) => handleOperatorSelect(val as FieldOption | null)}
+          error={!columnBased?.operator}
+          getOptionLabel={(option) => option?.label ?? ''}
+        >
+          <ComboboxLabel>{t_i18n('Operator')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Operator')} />
+        </Combobox>
+        <div>
+          <Field
+            component={TextField}
+            label={t_i18n('Value')}
+            name={`${representationName}.column_based.value`}
+            value={columnBased?.enabled ? columnBased.value : ''}
             variant="outlined"
-            size="small"
-            slotProps={{
-              input: {
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!columnBased?.column_reference)
-                      ? theme.palette.designSystem.tertiary.red[400]
-                      : '',
-                  },
-                },
-              },
-            }}
+            style={{ width: '100%' }}
+            disabled={!representation.column_based?.enabled}
+            error={!columnBased?.value && columnBased?.enabled}
           />
-        )}
-      />
-      <MUIAutocomplete<FieldOption>
-        selectOnFocus
-        openOnFocus
-        autoComplete
-        autoSelect={false}
-        autoHighlight
-        options={operatorOptions}
-        disabled={!columnBased?.enabled}
-        value={operatorOptions.find((opt) => opt.value === columnBased?.operator) ?? null}
-        onChange={(_, val) => handleOperatorSelect(val)}
-        sx={{ width: '100%' }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={t_i18n('Operator')}
-            variant="outlined"
-            size="small"
-            slotProps={{
-              input: {
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!columnBased?.operator)
-                      ? theme.palette.designSystem.tertiary.red[400]
-                      : '',
-                  },
-                },
-              },
-            }}
-          />
-        )}
-      />
-      <div style={{ marginBottom: '10px', marginRight: '10px' }}>
-        <Field
-          component={TextField}
-          label={t_i18n('Value')}
-          name={`${representationName}.column_based.value`}
-          value={columnBased?.enabled ? columnBased.value : ''}
-          variant="standard"
-          style={{ width: '100%' }}
-          disabled={!representation.column_based?.enabled}
-          error={!columnBased?.value && columnBased?.enabled}
-        />
+        </div>
       </div>
     </div>
   );

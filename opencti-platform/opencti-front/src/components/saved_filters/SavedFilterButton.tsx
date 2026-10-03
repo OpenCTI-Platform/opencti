@@ -97,8 +97,12 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
         <IconButton
           color="primary"
           onClick={handleSaveButtonClick}
-          size="small"
+          size="default"
+          // A fixed-size control in a full flex row: without this it is the one
+          // item that shrinks, and a 36px button renders 24px wide.
+          className="shrink-0"
           disabled={isDisabled}
+          aria-label={t_i18n('Save the filter')}
         >
           {!hasSameFilters && currentSavedFilter
             ? renderBadge()

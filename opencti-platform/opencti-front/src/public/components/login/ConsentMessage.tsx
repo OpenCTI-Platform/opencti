@@ -1,9 +1,10 @@
-import { Box, Checkbox } from '@mui/material';
+import { Box } from '@mui/material';
 import Card from '../../../components/common/card/Card';
 import { ConsentMessageFragment$key } from './__generated__/ConsentMessageFragment.graphql';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import LoginMarkdown from './LoginMarkdown';
+import { Checkbox } from '@filigran/design-system';
 
 const fragment = graphql`
   fragment ConsentMessageFragment on PublicSettings {
@@ -50,13 +51,11 @@ const ConsentMessage = ({
       >
         <Checkbox
           name="consent"
-          edge="start"
-          size="small"
+          aria-label={t_i18n('I accept the terms')}
           checked={value}
-          onChange={onToggle}
-          style={{ margin: 0, padding: 0 }}
-        >
-        </Checkbox>
+          onCheckedChange={() => onToggle()}
+          onClick={(event) => event.stopPropagation()}
+        />
         <LoginMarkdown>
           {consentConfirmText}
         </LoginMarkdown>

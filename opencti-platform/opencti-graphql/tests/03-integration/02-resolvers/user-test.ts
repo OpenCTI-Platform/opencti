@@ -21,6 +21,7 @@ import {
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
@@ -37,7 +38,7 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
+import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
 import { getSettingsFromDatabase } from '../../../src/domain/settings';
 import { updateLocalAuth } from '../../../src/domain/setting-auth';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -370,6 +371,12 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should not update api_tokens field', async () => {
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'api_tokens', value: [] } },
+    }, undefined, FORBIDDEN_ACCESS);
   });
   it('should update language only if the value is valid', async () => {
     const validQueryResult = await queryAsAdmin({
@@ -870,6 +877,25 @@ describe('User has no settings capability and is organization admin query behavi
             }
         }
     `;
+  const USER_RELATION_ADD_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationAddParticipateTo($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "participate-to" }) {
+          id
+          entity_type
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationDeleteParticipateTo($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "participate-to") {
+          id
+        }
+      }
+    }
+  `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
@@ -936,7 +962,7 @@ describe('User has no settings capability and is organization admin query behavi
       },
     };
 
-    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const queryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -954,6 +980,38 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
   });
+  it('should not create user in an organization the org admin does not administrate', async () => {
+    const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const USER_TO_CREATE_WRONG_ORG = {
+      input: {
+        name: 'User wrong org',
+        password: 'user',
+        user_email: 'user.wrongorg@mail.com',
+        objectOrganization: [notAdministratedOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_ORG,
+    });
+  });
+  it('should not create user with a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    const USER_TO_CREATE_WRONG_GROUP = {
+      input: {
+        name: 'User wrong group',
+        password: 'user',
+        user_email: 'user.wronggroup@mail.com',
+        objectOrganization: [testOrganizationId],
+        groups: [notGrantableGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_GROUP,
+    });
+  });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_QUERY,
@@ -963,6 +1021,18 @@ describe('User has no settings capability and is organization admin query behavi
     expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data?.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
   });
+  it('Org admins should NOT update password for other users', async () => {
+    const variables = {
+      id: userInternalId,
+      input: [
+        { key: 'password', value: 'new_password' },
+      ],
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables,
+    });
+  });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: UPDATE_QUERY,
@@ -970,10 +1040,26 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data?.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
+  it('Org admins should NOT update user_service_account without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_service_account must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_service_account', value: [true] }] },
+    });
+  });
   it('should not update user with no organization', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('Org admins should NOT update user_email without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_email must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_email', value: ['test_email@org.com'] }] },
     });
   });
   it('should not update user from an other organization', async () => {
@@ -1001,8 +1087,26 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
   });
+  it('should not add participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+  });
+  it('should not delete participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+  });
   it('should administrate more than 1 organization', async () => {
-    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const grantableGroupQueryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -1051,6 +1155,26 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
+  });
+  it('should add participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationAdd.entity_type).toEqual('participate-to');
+  });
+  it('should delete participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
   });
   it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
     const queryResult = await queryAsAdminWithSuccess({

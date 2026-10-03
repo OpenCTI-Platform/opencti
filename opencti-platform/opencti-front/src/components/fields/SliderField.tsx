@@ -1,70 +1,90 @@
-import React, { FocusEvent } from 'react';
+import React, { ReactNode, useCallback } from 'react';
+import { Slider, SliderProps } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
-import Slider, { SliderProps } from '@mui/material/Slider';
-import InputLabel from '@mui/material/InputLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import * as R from 'ramda';
+import { isNilField } from '../../utils/utils';
 
-export type SliderFieldProps = FieldProps<string> & Omit<SliderProps, 'onChange' | 'onFocus'> & {
-  required: boolean;
+export type SliderFieldProps = FieldProps<string> & SliderProps & {
+  label?: ReactNode;
+  ariaLabel?: string;
+  required?: boolean;
+  disabled?: boolean;
+  containerstyle?: React.CSSProperties;
+  className?: string;
+  minLabel?: number;
+  maxLabel?: number;
+  step?: number;
+  showBounds?: boolean;
+  /** Paints the filled range and thumb, used to reflect the value's scale level */
+  color?: string;
   onChange?: (name: string, value: string) => void;
-  onFocus?: (name: string) => void;
   onSubmit?: (name: string, value: string) => void;
-  label?: string;
+  onFocus?: (name: string) => void;
 };
 
-const SliderField = (muiProps: SliderFieldProps) => {
-  const {
-    form: { setFieldValue, setFieldTouched },
-    field: { name },
-    onFocus,
-    onSubmit,
-    label,
-    style,
-    disabled,
-    required = false,
-  } = muiProps;
-  const [field, meta] = useField(name);
-  const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
-    const related = event.relatedTarget;
-    const nodeName = related?.nodeName;
-    if (nodeName === 'INPUT' || nodeName === undefined) {
-      if (typeof onFocus === 'function') {
-        onFocus(name);
-      }
-    }
-  };
-  const internalOnBlur = (event: FocusEvent<HTMLDivElement>) => {
-    const related = event.relatedTarget as HTMLElement | null;
-    const nodeName = related?.nodeName;
-    if (nodeName === 'INPUT' || nodeName === 'DIV' || nodeName === undefined) {
-      setFieldTouched(name, true);
-      if (typeof onSubmit === 'function') {
-        onSubmit(name, field.value || '');
-      }
-    }
-  };
+const SliderField = ({
+  form: { setFieldValue, setFieldTouched, submitCount },
+  field: { name, value },
+  label,
+  ariaLabel,
+  helperText,
+  required = false,
+  disabled,
+  containerstyle,
+  className,
+  minLabel = 0,
+  maxLabel = 100,
+  step = 1,
+  showBounds = false,
+  color,
+  onChange,
+  onSubmit,
+  onFocus,
+}: SliderFieldProps) => {
+  const [, meta] = useField(name);
+  const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
+  const currentValue = value === null || value === undefined || value === '' ? minLabel : Number(value);
+  // The asterisk is carried on the label like the other form fields.
+  const finalLabel = label != null && required ? <>{label} *</> : label;
+  // The track colour tracks the value's scale level.
+  const wrapperStyle = {
+    marginBottom: 16,
+    ...containerstyle,
+    ...(color ? { '--icon-highlight': color } : {}),
+  } as React.CSSProperties;
+
+  // Radix reports the whole thumb array; likelihood is a single thumb, so read entry 0.
+  const handleValueChange = useCallback(([next]: number[]) => {
+    const nextValue = String(next);
+    onChange?.(name, nextValue);
+    setFieldValue(name, nextValue);
+  }, [name, onChange, setFieldValue]);
+
+  // A Radix Slider commits on pointer release / keyboard change, mirroring the blur-commit MUI used.
+  const handleValueCommit = useCallback(([next]: number[]) => {
+    setFieldTouched(name, true);
+    onSubmit?.(name, String(next));
+  }, [name, onSubmit, setFieldTouched]);
 
   return (
     <div
-      style={style}
-      className={!R.isNil(meta.error) ? 'error' : 'main'}
-      onBlur={internalOnBlur}
-      onFocus={internalOnFocus}
+      style={wrapperStyle}
+      className={className}
+      onFocusCapture={() => onFocus?.(name)}
     >
-      <InputLabel id="input-slider" shrink={true} required={required}>
-        {label}
-      </InputLabel>
       <Slider
-        value={parseInt(field.value, 10)}
-        onChange={(_, value) => setFieldValue(name, String(value))}
-        aria-labelledby="input-slider"
-        marks={true}
+        value={[currentValue]}
+        onValueChange={handleValueChange}
+        onValueCommit={handleValueCommit}
+        min={minLabel}
+        max={maxLabel}
+        step={step}
         disabled={disabled}
+        name={name}
+        label={finalLabel}
+        showBounds={showBounds}
+        aria-label={ariaLabel ?? (typeof label === 'string' ? label : 'slider input')}
+        helperText={showError ? meta.error : helperText}
       />
-      {!R.isNil(meta.error) && (
-        <FormHelperText error={true}>{meta.error}</FormHelperText>
-      )}
     </div>
   );
 };

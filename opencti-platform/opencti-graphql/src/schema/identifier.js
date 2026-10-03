@@ -32,6 +32,9 @@ const SHA_512 = 'SHA-512';
 const SHA3_256 = 'SHA3-256';
 const SHA3_512 = 'SHA3-512';
 const SSDEEP = 'SSDEEP';
+const SDHASH = 'SDHASH';
+const TLSH = 'TLSH';
+const LZJD = 'LZJD';
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
@@ -162,6 +165,9 @@ const stixBaseCyberObservableContribution = {
       if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256] };
       if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512] };
       if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
+      if (hashes[SDHASH]) return { [SDHASH]: hashes[SDHASH] };
+      if (hashes[TLSH]) return { [TLSH]: hashes[TLSH] };
+      if (hashes[LZJD]) return { [LZJD]: hashes[LZJD] };
       return undefined;
     },
     name(value, data) {
@@ -182,7 +188,6 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_MIGRATION_STATUS]: () => uuidv4(),
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [{ src: 'title' }, { src: 'timestamp' }],
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),
@@ -222,7 +227,6 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE, dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],

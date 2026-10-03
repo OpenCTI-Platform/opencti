@@ -1,6 +1,24 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { loadEntity } from '../../../src/database/middleware';
+import { findHistory } from '../../../src/domain/log';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { FilterMode, LogsOrdering, OrderingMode } from '../../../src/generated/graphql';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { findByType } from '../../../src/domain/status';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { wait } from '../../../src/database/utils';
+
+// Directly query the store for the WorkflowInstance attached to an entity,
+// mirroring the lookup used internally by workflow-domain.ts.
+const findWorkflowInstance = async (entityId: string) => loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+  filters: {
+    mode: FilterMode.And,
+    filters: [{ key: ['entity_id'], values: [entityId] }],
+    filterGroups: [],
+  },
+});
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
@@ -597,5 +615,474 @@ describe('Workflow Resolver', () => {
       expect(publishResult.errors).toBeDefined();
       expect(publishResult.errors?.[0].message).toContain('validation errors');
     });
+  });
+
+  describe('Workflow Instance eager creation', () => {
+    const simpleWorkflowDefinition = JSON.stringify({
+      id: 'eager-creation-workflow',
+      name: 'Eager Creation Workflow',
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'validated' }],
+      transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
+    });
+
+    describe('on entity creation (createEntity)', () => {
+      let eagerWorkspaceId: string;
+
+      beforeAll(async () => {
+        // Configure and publish the workflow *before* creating the entity so that
+        // initializeEntityWorkflow (invoked from within createEntity) has a real
+        // definition to eagerly materialize an instance from.
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'DraftWorkspace', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'DraftWorkspace' },
+        });
+
+        const result = await queryAsAdmin({
+          query: CREATE_DRAFT_WORKSPACE_QUERY,
+          variables: { input: { name: 'Eager Creation Test Workspace' } },
+        });
+        eagerWorkspaceId = result.data?.draftWorkspaceAdd.id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: DELETE_DRAFT_WORKSPACE_QUERY,
+          variables: { id: eagerWorkspaceId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'DraftWorkspace' },
+        });
+      });
+
+      it('should eagerly materialize a real WorkflowInstance as soon as the entity is created', async () => {
+        // No transition was ever triggered: if a WorkflowInstance is found here,
+        // it can only have come from createEntity's eager initializeEntityWorkflow call.
+        const instance = await findWorkflowInstance(eagerWorkspaceId);
+        expect(instance).not.toBeNull();
+      });
+    });
+
+    describe('on relationship creation (createRelation)', () => {
+      const CREATE_OBSERVABLE_MUTATION = gql`
+        mutation StixCyberObservableAdd($type: String!, $imei: IMEIAddInput, $iccid: ICCIDAddInput) {
+          stixCyberObservableAdd(type: $type, IMEI: $imei, ICCID: $iccid) {
+            id
+          }
+        }
+      `;
+      const DELETE_OBSERVABLE_MUTATION = gql`
+        mutation stixCyberObservableDelete($id: ID!) {
+          stixCyberObservableEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const CREATE_RELATION_MUTATION = gql`
+        mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+          stixCoreRelationshipAdd(input: $input) {
+            id
+            fromType
+            toType
+          }
+        }
+      `;
+
+      let fromId: string;
+      let toId: string;
+      let eagerRelationId: string;
+
+      beforeAll(async () => {
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'uses', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'uses' },
+        });
+
+        const fromResult = await queryAsAdmin({
+          query: CREATE_OBSERVABLE_MUTATION,
+          variables: { type: 'IMEI', imei: { value: '112222229999991' } },
+        });
+        fromId = fromResult.data?.stixCyberObservableAdd.id;
+        const toResult = await queryAsAdmin({
+          query: CREATE_OBSERVABLE_MUTATION,
+          variables: { type: 'ICCID', iccid: { value: '123456789012399991' } },
+        });
+        toId = toResult.data?.stixCyberObservableAdd.id;
+
+        const relationResult = await queryAsAdmin({
+          query: CREATE_RELATION_MUTATION,
+          variables: { input: { fromId, toId, relationship_type: 'uses' } },
+        });
+        eagerRelationId = relationResult.data?.stixCoreRelationshipAdd.id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: DELETE_OBSERVABLE_MUTATION,
+          variables: { id: fromId },
+        });
+        await queryAsAdmin({
+          query: DELETE_OBSERVABLE_MUTATION,
+          variables: { id: toId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'uses' },
+        });
+      });
+
+      it('should eagerly materialize a real WorkflowInstance as soon as the relationship is created', async () => {
+        const instance = await findWorkflowInstance(eagerRelationId);
+        expect(instance).not.toBeNull();
+      });
+    });
+
+    describe('on legacy status field patch (updateAttribute)', () => {
+      const STIX_DOMAIN_OBJECT_ADD_MUTATION = gql`
+        mutation StixDomainObjectAdd($input: StixDomainObjectAddInput!) {
+          stixDomainObjectAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION = gql`
+        mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) {
+          stixDomainObjectEdit(id: $id) {
+            fieldPatch(input: $input) {
+              id
+            }
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_DELETE_MUTATION = gql`
+        mutation StixDomainObjectDelete($id: ID!) {
+          stixDomainObjectEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_STATUS_QUERY = gql`
+        query StixDomainObjectStatus($id: String!) {
+          stixDomainObject(id: $id) {
+            status {
+              id
+            }
+          }
+        }
+      `;
+
+      let reportId: string;
+      let secondStatusId: string;
+
+      beforeAll(async () => {
+        // Create the Report *before* any workflow is configured for this type, so
+        // createEntity's eager initializeEntityWorkflow call is a no-op (no instance yet).
+        const createResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_ADD_MUTATION,
+          variables: { input: { name: 'Legacy Status Patch Test Report', type: 'Report' } },
+        });
+        reportId = createResult.data?.stixDomainObjectAdd.id;
+
+        // Configure and publish the workflow *after* creation so that the entity
+        // currently has no WorkflowInstance, letting us exercise the lazy path.
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'Report', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+
+        // Patching to the current status writes nothing, and emits no stream event.
+        const currentStatusResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+          variables: { id: reportId },
+        });
+        const currentStatusId = currentStatusResult.data?.stixDomainObject?.status?.id;
+        const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
+        const otherStatus = statuses.find((status) => status.id !== currentStatusId);
+        if (!otherStatus) throw new Error('No Report status different from the current one');
+        secondStatusId = otherStatus.id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_DELETE_MUTATION,
+          variables: { id: reportId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+      });
+
+      it('should lazily materialize a real WorkflowInstance when the legacy x_opencti_workflow_id is patched', async () => {
+        // No instance should exist yet: the workflow was configured after entity creation.
+        const beforePatch = await findWorkflowInstance(reportId);
+        expect(beforePatch).toBeUndefined();
+
+        let statusAfterPatch: string | undefined;
+        for (let attempt = 0; attempt < 20 && statusAfterPatch !== secondStatusId; attempt += 1) {
+          if (attempt > 0) {
+            await wait(500);
+          }
+          await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
+            variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
+          });
+          const statusResult = await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+            variables: { id: reportId },
+          });
+          statusAfterPatch = statusResult.data?.stixDomainObject?.status?.id;
+        }
+        expect(statusAfterPatch).toBe(secondStatusId);
+
+        // Patching the legacy status field should have lazily triggered initializeEntityWorkflow,
+        // which in turn calls ensureWorkflowInstance since no instance existed for this entity yet.
+        const afterPatch = await findWorkflowInstance(reportId);
+        expect(afterPatch).not.toBeNull();
+      });
+    });
+  });
+
+  describe('Workflow Instance deletion cleanup', () => {
+    let cleanupWorkspaceId: string;
+
+    beforeAll(async () => {
+      const result = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'Cleanup Test Workspace' } },
+      });
+      cleanupWorkspaceId = result.data?.draftWorkspaceAdd.id;
+
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_ADD_MUTATION,
+        variables: { entityType: 'DraftWorkspace', definition: workflowDefinition },
+      });
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+        variables: { entityType: 'DraftWorkspace' },
+      });
+      // The WorkflowInstance is materialized lazily on the first transition.
+      await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: { entityId: cleanupWorkspaceId, eventName: 'validate_event' },
+      });
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+        variables: { entityType: 'DraftWorkspace' },
+      });
+    });
+
+    it('should remove the WorkflowInstance when its parent entity is deleted', async () => {
+      const before = await findWorkflowInstance(cleanupWorkspaceId);
+      expect(before).not.toBeNull();
+
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: cleanupWorkspaceId },
+      });
+
+      const after = await findWorkflowInstance(cleanupWorkspaceId);
+      expect(after).toBeUndefined();
+    });
+  });
+});
+
+// Unlike the DraftWorkspace-only tests above, `Report` is a legacy-Status entity type with no
+// built-in WorkflowInstance support until a WorkflowDefinition is published for it. Exercising
+// this path proves the generalized StixDomainObject-level `workflowInstance` field and the legacy
+// `x_opencti_workflow_id`/`status` projection both work end-to-end for an arbitrary SDO, not just
+// the one type built directly on the new engine from day one.
+describe('Workflow projection onto legacy Status field (Report)', () => {
+  let reportInternalId: string;
+  const reportWorkflowDefinition = JSON.stringify({
+    id: 'report-workflow',
+    name: 'Report Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'validated' }],
+    transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
+  });
+
+  const REPORT_ADD_MUTATION = gql`
+    mutation ReportAddForWorkflowTest($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+      }
+    }
+  `;
+
+  const REPORT_STATUS_QUERY = gql`
+    query ReportStatusForWorkflowTest($id: String!) {
+      report(id: $id) {
+        status {
+          id
+        }
+        workflowInstance {
+          currentState
+        }
+      }
+    }
+  `;
+
+  const REPORT_WORKFLOW_INSTANCE_AUTH_QUERY = gql`
+    query ReportWorkflowInstanceAuth($id: String!) {
+      report(id: $id) {
+        workflowInstance {
+          currentState
+        }
+      }
+    }
+  `;
+
+  beforeAll(async () => {
+    // Reports are content-addressed (standard_id derived from name + published), so a unique
+    // name/published pair per test run avoids colliding with any entity left over by a prior,
+    // interrupted local run of this suite.
+    const reportResult = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_MUTATION,
+      variables: {
+        input: { name: `Workflow Projection Test Report ${Date.now()}`, published: new Date().toISOString() },
+      },
+    });
+    reportInternalId = reportResult.data.reportAdd.id;
+
+    // Defensive cleanup: remove any WorkflowDefinition left over on 'Report' by a prior,
+    // interrupted local run, so `workflowDefinitionSet` below cannot silently no-op.
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'Report', definition: reportWorkflowDefinition },
+    });
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+    await queryAsAdmin({
+      query: gql`
+        mutation ReportDeleteForWorkflowTest($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `,
+      variables: { id: reportInternalId },
+    });
+  });
+
+  it('should eagerly create a WorkflowInstance and project the initial state onto the legacy status field', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_QUERY,
+      variables: { id: reportInternalId },
+    });
+    expect(result.data.report.workflowInstance.currentState).toBe('open');
+    expect(result.data.report.status.id).toBeDefined();
+  });
+
+  it('should allow workflowInstance read access to a user without KNOWLEDGE_KNUPDATE, like the legacy status field', async () => {
+    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+      query: REPORT_WORKFLOW_INSTANCE_AUTH_QUERY,
+      variables: { id: reportInternalId },
+    });
+    expect(result.data.report.workflowInstance.currentState).toBe('open');
+  });
+
+  it('should deny triggerWorkflowEvent to a user without KNOWLEDGE_KNUPDATE', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: reportInternalId, eventName: 'validate_event' },
+    });
+  });
+
+  it('should update both the WorkflowInstance state and the projected legacy status on transition, emitting a normal update event', async () => {
+    const before = await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_QUERY,
+      variables: { id: reportInternalId },
+    });
+    const initialStatusId = before.data.report.status.id;
+
+    const triggerResult = await queryAsAdminWithSuccess({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: reportInternalId, eventName: 'validate_event' },
+    });
+    expect(triggerResult.data.triggerWorkflowEvent.success).toBe(true);
+    expect(triggerResult.data.triggerWorkflowEvent.newState).toBe('validated');
+
+    // The 'validated' Status was just created moments ago by the workflow publish above, so the
+    // legacy `x_opencti_workflow_id` projection write below can race with the server's in-memory
+    // Status cache (invalidated asynchronously via redis pub/sub — see local-env-issues.md's
+    // "legacy Status cache race" note) and get silently dropped on the first attempt. The
+    // getWorkflowInstance read-repair mechanism self-heals this on a subsequent read, so poll
+    // instead of asserting on a single query.
+    let projectedStatusId: string | undefined;
+    for (let attempt = 0; attempt < 15 && projectedStatusId === undefined; attempt += 1) {
+      if (attempt > 0) {
+        await wait(1000);
+      }
+      const after = await queryAsAdminWithSuccess({
+        query: REPORT_STATUS_QUERY,
+        variables: { id: reportInternalId },
+      });
+      expect(after.data.report.workflowInstance.currentState).toBe('validated');
+      if (after.data.report.status.id !== initialStatusId) {
+        projectedStatusId = after.data.report.status.id;
+      }
+    }
+    expect(projectedStatusId).toBeDefined();
+    expect(projectedStatusId).not.toBe(initialStatusId);
+
+    // The legacy `x_opencti_workflow_id` projection write must go through the standard
+    // event/history pipeline (the same one feeding the live stream), not a silent internal-only
+    // write. The history manager consumes the event stream asynchronously (and, on a freshly
+    // started platform, may not even be subscribed yet by the time this assertion runs) - poll
+    // with retries instead of a single fixed wait.
+    const findWorkflowHistoryLogs = () => findHistory(testContext, ADMIN_USER, {
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['context_data.id'], values: [reportInternalId] },
+          { key: ['event_type'], values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+          { key: ['event_scope'], values: ['update'] },
+        ],
+      },
+      orderBy: LogsOrdering.CreatedAt,
+      orderMode: OrderingMode.Desc,
+    });
+    let logs = await findWorkflowHistoryLogs();
+    for (let attempt = 0; attempt < 15 && logs.edges.length === 0; attempt += 1) {
+      await wait(1000);
+      logs = await findWorkflowHistoryLogs();
+    }
+    expect(logs.edges.length).toBeGreaterThan(0);
+    const workflowFieldChange = logs.edges
+      .flatMap((edge) => edge.node.context_data.history_changes)
+      .find((change) => change.field?.includes('x_opencti_workflow_id'));
+    expect(workflowFieldChange).toBeDefined();
   });
 });

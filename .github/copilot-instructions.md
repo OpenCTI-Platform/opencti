@@ -1,5 +1,9 @@
 # OpenCTI Project Instructions
 
+> **Design system** — before writing or changing any UI, read [`AGENTS.md`](../AGENTS.md)
+> at the repository root. It carries the rule on when the Filigran Design System
+> is mandatory and MUI is not, and names the CI gates that enforce it.
+
 > **Deep-dive references** — read the relevant doc before touching the related code:
 > - [Backend Architecture (opencti-graphql)](instructions/backend.instructions.md)
 > - [Frontend Architecture (opencti-front)](instructions/frontend.instructions.md)
@@ -75,7 +79,7 @@ yarn graphql
 The `:venv` variants wrap the command with a Python virtual environment — use them when working on `client-python` or `opencti-worker` and running the backend app.
 
 ### 4. Local Development Stack
-Start the necessary infrastructure (Elastic, Redis, RabbitMQ, MinIO):
+Start the necessary infrastructure (Elastic, Redis, RabbitMQ, Silo):
 ```bash
 cd opencti-platform/opencti-dev
 docker compose up -d

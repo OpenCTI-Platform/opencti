@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -34,10 +34,7 @@ const SectorKnowledgeComponent = ({
         <Route
           path="/relations/:relationId/*"
           element={(
-            <StixCoreRelationship
-              entityId={sector.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

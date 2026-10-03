@@ -161,8 +161,8 @@ export const READ_RELATIONSHIPS_INDICES = [
   READ_INDEX_INFERRED_RELATIONSHIPS,
 ];
 
-export const isNotEmptyField = (field: any): boolean => !R.isEmpty(field) && !R.isNil(field);
-export const isEmptyField = (field: any): boolean => !isNotEmptyField(field);
+export const isNotEmptyField = <T>(field: T | undefined | null): field is T => !R.isEmpty(field) && !R.isNil(field);
+export const isEmptyField = <T>(field: T | undefined | null): field is undefined | null => !isNotEmptyField(field);
 
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
   const draftContext = getDraftContext(context, user);

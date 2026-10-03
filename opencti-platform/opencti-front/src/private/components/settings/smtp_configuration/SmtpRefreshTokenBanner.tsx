@@ -1,13 +1,12 @@
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import TopBanner from '../../../../components/TopBanner';
 import { useFormatter } from '../../../../components/i18n';
 import { getSmtpRefreshTokenBannerState } from '../../../../utils/bannerUtils';
 import { dispatch } from '../../../../utils/hooks/useBus';
 import { SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS } from '../../../../utils/bannerConstants';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { SmtpRefreshTokenBannerQuery } from './__generated__/SmtpRefreshTokenBannerQuery.graphql';
 
 const smtpRefreshTokenBannerQuery = graphql`
@@ -60,21 +59,18 @@ const SmtpRefreshTokenBannerContent = ({ queryRef }: SmtpRefreshTokenBannerConte
 
 // Not capability-gated at the query level (backend already gates smtpConfiguration
 // with @auth(for: [SETTINGS_SETACCESSES])) — the frontend check below simply avoids
-// firing an unnecessary (and error-producing) request for users without the capability
-// or when the SMTP_CONFIGURATION feature flag is disabled (backend then rejects the query).
+// firing an unnecessary (and error-producing) request for users without the capability.
 const SmtpRefreshTokenBanner = () => {
   const isGranted = useGranted([SETTINGS_SETACCESSES]);
-  const { isFeatureEnable } = useHelper();
-  const isSmtpConfigurationEnabled = isFeatureEnable('SMTP_CONFIGURATION');
   const [queryRef, loadQuery] = useQueryLoader<SmtpRefreshTokenBannerQuery>(smtpRefreshTokenBannerQuery);
 
   useEffect(() => {
-    if (isGranted && isSmtpConfigurationEnabled) {
+    if (isGranted) {
       loadQuery({}, { fetchPolicy: 'store-and-network' });
     }
-  }, [isGranted, isSmtpConfigurationEnabled]);
+  }, [isGranted]);
 
-  if (!isGranted || !isSmtpConfigurationEnabled || !queryRef) return null;
+  if (!isGranted || !queryRef) return null;
 
   return (
     <Suspense fallback={null}>

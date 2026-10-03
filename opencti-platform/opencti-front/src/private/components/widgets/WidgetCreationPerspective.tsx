@@ -131,6 +131,7 @@ const WidgetCreationPerspective = () => {
       {getCurrentIsEntities() && (
         <Grid item xs={xs}>
           <Card
+            data-testid="entities-widget-perspective"
             padding="none"
             aria-label={t_i18n('Entities')}
             onClick={() => handleSelectPerspective('entities')}
@@ -159,6 +160,7 @@ const WidgetCreationPerspective = () => {
       {getCurrentIsRelationships() && (
         <Grid item xs={xs}>
           <Card
+            data-testid="relationships-widget-perspective"
             padding="none"
             aria-label={t_i18n('Knowledge graph')}
             onClick={() => handleSelectPerspective('relationships')}
@@ -189,6 +191,7 @@ const WidgetCreationPerspective = () => {
       {getCurrentIsAudits() && (
         <Grid item xs={xs}>
           <Card
+            data-testid="audits-widget-perspective"
             padding="none"
             aria-label={t_i18n('Activity & history')}
             onClick={() => handleSelectPerspective('audits')}

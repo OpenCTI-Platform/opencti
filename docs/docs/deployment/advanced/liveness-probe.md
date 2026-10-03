@@ -20,6 +20,10 @@ Container orchestrators like **Kubernetes** need to distinguish between two stat
 | Liveness  | `{base_path}/health/liveness` | `app:liveness_port` (default disabled) | Immediately on process start       | Process is running                 |
 | Readiness | `{base_path}/health`          | `app:port` (default `4000`)            | After full platform initialization | ElasticSearch, Redis, RabbitMQ, S3 |
 
+!!! note "Keep-alive behind a load balancer"
+
+    The liveness server uses the same `app:keep_alive_timeout` as the main platform server, so a probe exposed through a load balancer or reverse proxy behaves consistently with the rest of the platform. See [Configuration](../configuration.md).
+
 ## What's next?
 
 - [Configuration](../configuration.md) — Full list of platform configuration parameters.

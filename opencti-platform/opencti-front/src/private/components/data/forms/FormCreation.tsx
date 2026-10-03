@@ -16,6 +16,7 @@ import { insertNode } from '../../../../utils/store';
 import { FormAddInput, FormBuilderData, FormFieldAttribute } from './Form.d';
 import FormSchemaEditor from './FormSchemaEditor';
 import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import TextareaField from '../../../../components/TextareaField';
 
 const formCreationMutation = graphql`
   mutation FormCreationMutation($input: FormAddInput!) {
@@ -232,20 +233,17 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
             />
             <Field
-              component={TextField}
-              variant="standard"
+              component={TextareaField}
               name="description"
               label={t_i18n('Description')}
-              fullWidth={true}
-              multiline={true}
               rows={3}
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <Field
               component={SwitchField}

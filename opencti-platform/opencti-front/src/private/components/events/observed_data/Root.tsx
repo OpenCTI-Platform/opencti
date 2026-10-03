@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, useParams } from 'react-router-dom';
+import { Route, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootObservedDataSubscription } from './__generated__/RootObservedDataSubscription.graphql';
@@ -140,9 +140,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
             <Route
               path="/knowledge/relations/:relationId/"
               element={(
-                <StixCoreRelationship
-                  entityId={observedData.id}
-                />
+                <StixCoreRelationship />
               )}
             />
           )}

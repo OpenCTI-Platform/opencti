@@ -42,4 +42,3 @@ export const EXPECTED_PROCESS = {
   owner_sid: 'S-1-5-21-123456789',
   service_dll_refs: [],
 };
-

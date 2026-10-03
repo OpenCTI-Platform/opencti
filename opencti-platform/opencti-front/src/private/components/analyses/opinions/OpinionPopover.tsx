@@ -11,7 +11,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { Formik } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { CollaborativeSecurity } from '../../../../utils/Security';
@@ -104,6 +104,7 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
       ) : (
         <ToggleButton
           aria-label={t_i18n('Open menu')}
+          aria-haspopup="true"
           value="popover"
           size="small"
           onClick={handleOpen}

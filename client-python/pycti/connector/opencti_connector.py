@@ -5,6 +5,7 @@ used to register and configure connectors with the OpenCTI platform.
 """
 
 from enum import Enum
+from typing import List, Union
 
 
 class ConnectorType(Enum):
@@ -47,8 +48,10 @@ class OpenCTIConnector:
     :type connector_name: str
     :param connector_type: Type of connector (see :class:`ConnectorType`)
     :type connector_type: str
-    :param scope: Connector scope as a comma-separated string (e.g., "Report,Indicator")
-    :type scope: str
+    :param scope: Connector scope, either as a comma-separated string
+    (e.g. ``"Artifact,Url"``) or as a list of strings
+    (e.g. ``["Artifact", "Url"]``. Both forms are normalized to a list.
+    :type scope: str or list[str]
     :param auto: Whether the connector runs automatically on matching entities
     :type auto: bool
     :param only_contextual: Whether the connector only processes contextual data
@@ -83,7 +86,7 @@ class OpenCTIConnector:
         connector_id: str,
         connector_name: str,
         connector_type: str,
-        scope: str,
+        scope: Union[str, List[str]],
         auto: bool,
         only_contextual: bool,
         playbook_compatible: bool,
@@ -91,6 +94,8 @@ class OpenCTIConnector:
         enrichment_resolution: str,
         listen_callback_uri=None,
         xtm_one_intent=None,
+        version=None,
+        slug=None,
     ):
         """Initialize the OpenCTIConnector instance.
 
@@ -100,8 +105,10 @@ class OpenCTIConnector:
         :type connector_name: str
         :param connector_type: Type of connector (see :class:`ConnectorType`)
         :type connector_type: str
-        :param scope: Connector scope as a comma-separated string
-        :type scope: str
+        :param scope: Connector scope, either as a comma-separated string
+        (e.g. ``"Artifact,Url"``) or as a list of strings
+        (e.g. ``["Artifact", "Url"]``. Both forms are normalized to a list.
+        :type scope: str or list[str]
         :param auto: Whether the connector runs automatically
         :type auto: bool
         :param only_contextual: Whether to process only contextual data
@@ -114,16 +121,25 @@ class OpenCTIConnector:
         :type enrichment_resolution: str
         :param listen_callback_uri: Optional callback URI for API listening
         :type listen_callback_uri: str or None
+        :param version: Optional connector version reported to the platform
+        :type version: str or None
+        :param slug: Optional catalog slug identifying the connector
+        :type slug: str or None
 
         :raises ValueError: If connector_type is not a valid ConnectorType
         """
         self.id = connector_id
         self.name = connector_name
         self.type = ConnectorType(connector_type)
-        if scope:
-            self.scope = scope.split(",")
-        else:
+        if not scope:
             self.scope = []
+        else:
+            if isinstance(scope, str):
+                raw = scope.split(",")
+            else:
+                # already a list/tuple
+                raw = list(scope)
+            self.scope = [s.strip() for s in raw]
         self.auto = auto
         self.auto_update = auto_update
         self.enrichment_resolution = enrichment_resolution
@@ -131,6 +147,8 @@ class OpenCTIConnector:
         self.playbook_compatible = playbook_compatible
         self.listen_callback_uri = listen_callback_uri
         self.xtm_one_intent = xtm_one_intent
+        self.version = version
+        self.slug = slug
 
     def to_input(self) -> dict:
         """Convert connector configuration to API input format.
@@ -157,6 +175,8 @@ class OpenCTIConnector:
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
                 "listen_callback_uri": self.listen_callback_uri,
+                "version": self.version,
+                "slug": self.slug,
                 **(
                     {"xtm_one_intent": self.xtm_one_intent}
                     if self.xtm_one_intent

@@ -16,6 +16,7 @@ const caseIncidentResolvers: Resolvers = {
   },
   CaseIncident: {
     securityCoverage: (caseIncident, _, context) => findSecurityCoverageByCoveredId(context, context.user, caseIncident.id),
+    customFieldValues: (caseIncident) => caseIncident.custom_field_values ?? [],
   },
   CaseIncidentsOrdering: {
     creator: 'creator_id',

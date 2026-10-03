@@ -112,7 +112,6 @@ autoapi_ignore = ["*/pycti/__init__.py"]
 
 # Mock imports for modules that can't be installed on ReadTheDocs
 autodoc_mock_imports = [
-    "magic",
     "pika",
     "stix2",
     "pydantic",

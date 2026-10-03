@@ -1,6 +1,6 @@
 import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
 import type { Request, Response } from 'express';
-import { loginFromProvider, sessionAuthenticateUser } from '../../domain/user';
+import { loginFromProvider, sessionAuthenticateUser } from '../user/user-domain';
 import { executionContext } from '../../utils/access';
 import { getSettings } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -37,9 +37,11 @@ export const registerCertStrategy = async () => {
         logger.info('User info resolved', info);
 
         const opts = {
+          providerGroupsMapping: info.groupsMapping.groupMappingEntries,
           providerGroups: info.groupsMapping.groups,
           autoCreateGroup: cert_auth.groups_mapping.auto_create_groups,
           preventDefaultGroups: cert_auth.groups_mapping.prevent_default_groups,
+          extendPlatformGroups: cert_auth.groups_mapping.extend_platform_groups,
           providerOrganizations: info.organizationsMapping.organizations,
           autoCreateOrganization: cert_auth?.organizations_mapping.auto_create_organizations,
         };

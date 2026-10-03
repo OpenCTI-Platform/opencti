@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
@@ -11,12 +11,11 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { AutoFix } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Checkbox from '@mui/material/Checkbox';
 import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -24,6 +23,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 const styles = (theme) => ({
   item: {
@@ -123,12 +123,10 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             }
           >
             <Checkbox
-              edge="start"
               checked={
                 (selectAll && !(node.id in (deSelectedElements || {})))
                 || node.id in (selectedElements || {})
               }
-              disableRipple={true}
             />
           </ListItemIcon>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -604,7 +602,9 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
           classes={{ root: classes.itemIconDisabled }}
           style={{ minWidth: 40 }}
         >
-          <Checkbox edge="start" disabled={true} disableRipple={true} />
+          <Checkbox
+            disabled={true}
+          />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton

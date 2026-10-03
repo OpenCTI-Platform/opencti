@@ -13,7 +13,7 @@ import { elDeleteElements, elIndexElements } from '../../../../src/database/engi
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import type { BasicStoreEntityAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-types';
-import { sessionLogin } from '../../../../src/domain/user';
+import { sessionLogin } from '../../../../src/modules/user/user-domain';
 import type { AuthContext } from '../../../../src/types/user';
 import type Express from 'express';
 
@@ -224,6 +224,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -246,6 +247,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -285,6 +287,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -307,6 +310,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -346,6 +350,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -368,6 +373,7 @@ describe('Provider coverage', () => {
             groups_mapping: [],
             auto_create_groups: false,
             prevent_default_groups: false,
+            extend_platform_groups: false,
           },
           organizations_mapping: {
             default_organizations: [],
@@ -422,6 +428,7 @@ describe('Provider coverage', () => {
           groups_expr: ['test.group'],
           groups_mapping: [{ provider: 'Admin', platform: 'Administrator' }],
           prevent_default_groups: false,
+          extend_platform_groups: false,
         },
         organizations_mapping: {
           auto_create_organizations: false,
@@ -456,6 +463,7 @@ describe('Provider coverage', () => {
             },
           ],
           prevent_default_groups: false,
+          extend_platform_groups: false,
         },
         organizations_mapping: {
           auto_create_organizations: false,
@@ -488,6 +496,7 @@ describe('Provider coverage', () => {
           groups_expr: ['header.group'],
           groups_mapping: [{ provider: 'Admin', platform: 'Administrator' }],
           prevent_default_groups: false,
+          extend_platform_groups: false,
         },
         organizations_mapping: {
           auto_create_organizations: false,
@@ -522,6 +531,7 @@ describe('Provider coverage', () => {
             },
           ],
           prevent_default_groups: false,
+          extend_platform_groups: false,
         },
         organizations_mapping: {
           auto_create_organizations: false,

@@ -1,7 +1,6 @@
 import React, { CSSProperties, ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
@@ -10,7 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { StixCoreObjectsTreeMapDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsTreeMapDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { OpenCTIChartProps } from '@components/common/charts/Chart';
 
 const stixCoreObjectsTreeMapDistributionQuery = graphql`
@@ -114,17 +113,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsTreeMapDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = computeStartEndDates(config);
-  const dateAttribute
-    = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-  const {
-    filters,
-  } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -133,7 +122,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

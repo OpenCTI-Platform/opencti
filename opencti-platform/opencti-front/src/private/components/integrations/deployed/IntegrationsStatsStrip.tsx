@@ -2,7 +2,7 @@ import React, { Fragment, Suspense, useEffect, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { DnsOutlined, DownloadOutlined, EngineeringOutlined, RocketLaunchOutlined, SpeedOutlined, StorageOutlined, SwapVertOutlined, UploadOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { interval } from 'rxjs';

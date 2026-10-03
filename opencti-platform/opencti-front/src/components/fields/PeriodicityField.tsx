@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
 import { Field, FieldProps } from 'formik';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
+import { Input } from '@filigran/design-system';
 
 interface PeriodicityFieldProps {
   name: string;
@@ -46,6 +49,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   setFieldValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   return (
     <Box style={style}>
@@ -94,22 +98,22 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
 
           return (
             <>
-              <InputLabel variant="standard" shrink>
+              <InputLabel variant="outlined" shrink>
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
-                <TextField
-                  type="number"
-                  variant="standard"
-                  value={value}
-                  onChange={handleValueChange}
-                  inputProps={{ min: 0 }}
-                  style={{ flex: 1 }}
-                  fullWidth
-                />
+                <Box style={{ flex: 1 }}>
+                  <Input
+                    type="number"
+                    isTypeNumber
+                    min={0}
+                    value={String(value ?? '')}
+                    onChange={handleValueChange}
+                  />
+                </Box>
                 <TextField
                   select
-                  variant="standard"
+                  variant="outlined"
                   value={unit}
                   onChange={handleUnitChange}
                   style={{ flex: 1 }}
@@ -132,7 +136,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
               </Box>
               {helperText && (
                 <Box mt={1}>
-                  <small style={{ color: 'rgba(255, 255, 255, 0.5)' }}>{helperText}</small>
+                  <small style={{ color: theme.palette.common.lightGrey }}>{helperText}</small>
                 </Box>
               )}
             </>

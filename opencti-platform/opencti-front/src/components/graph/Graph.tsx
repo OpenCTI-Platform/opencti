@@ -1,7 +1,6 @@
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import React, { type MutableRefObject, ReactNode, useEffect, useRef } from 'react';
-import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
 import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
@@ -27,7 +26,6 @@ const Graph = ({
   onPositionsChanged,
   children,
 }: GraphProps) => {
-  const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
   const { width, height } = useResizeObserver(parentRef);
   const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
@@ -137,11 +135,10 @@ const Graph = ({
 
   return (
     <RectangleSelection
-      graphId={graphId}
       disabled={!selectFreeRectangle}
       onSelection={selectFromFreeRectangle}
     >
-      <div style={{ position: 'relative' }} id={graphId}>
+      <div style={{ position: 'relative' }}>
         <GraphLoadingAlert />
         {selectedEntities.length > 0 && <EntitiesDetailsRightsBar />}
         {mode3D ? (

@@ -1,7 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
@@ -12,6 +11,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { ReactNode } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
+import { buildRelationshipSingleWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsNumberNumberQuery = graphql`
     query StixRelationshipsNumberNumberSeriesQuery(
@@ -96,26 +96,17 @@ const StixRelationshipsNumberComponent = ({
 
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
 ): StixRelationshipsNumberNumberSeriesQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    {
-      dateAttribute,
-      isKnowledgeRelationshipWidget: true,
-    },
-  );
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     dateAttribute,
     endDate: dayAgo(),
-    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    dynamicFrom,
+    dynamicTo,
   };
 };
 

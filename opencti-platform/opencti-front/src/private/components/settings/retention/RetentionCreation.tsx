@@ -7,11 +7,11 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -22,7 +22,7 @@ import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } 
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -58,6 +58,7 @@ interface RetentionFormValues {
   name: string;
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
+  scope: 'knowledge' | 'conflicts';
   filters: string;
 }
 
@@ -74,7 +75,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
       filters: jsonFilters,
     };
     commitMutation({
@@ -106,7 +106,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
       filters: jsonFilters,
     };
     commitMutation({
@@ -117,7 +116,9 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       onCompleted: (data: RetentionCreationCheckMutation$data) => {
         setVerified(true);
         MESSAGING$.notifySuccess(
-          t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+          values.scope === 'conflicts'
+            ? t_i18n('Retention policy will purge outdated conflicting values on {count} elements', { values: { count: data.retentionRuleCheck } })
+            : t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
         );
       },
       onError: () => {
@@ -147,27 +148,27 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
                 mandatory
               />
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="retention_unit"
                 label={t_i18n('Unit')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
-                <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
-                <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
-                <MenuItem value="days">{t_i18n('days')}</MenuItem>
+                <SelectItem value="minutes">{t_i18n('minutes')}</SelectItem>
+                <SelectItem value="hours">{t_i18n('hours')}</SelectItem>
+                <SelectItem value="days">{t_i18n('days')}</SelectItem>
               </Field>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="max_retention"
                 label={t_i18n('Maximum retention')}
                 fullWidth={true}
@@ -194,16 +195,22 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 }}
               />
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="scope"
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-                disabled={true}
+                onChange={() => setVerified(false)}
               >
-                <MenuItem value="knowledge">{t_i18n('Knowledge')}</MenuItem>
+                <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
+                <SelectItem value="conflicts">{t_i18n('Source conflicts')}</SelectItem>
               </Field>
+              {formValues.scope === 'conflicts' && (
+                <Alert severity="info" style={{ marginTop: 15 }}>
+                  {t_i18n('Elements are kept: only the conflicting values that no source re-asserted during the retention period are purged.')}
+                </Alert>
+              )}
               <Box sx={{
                 paddingTop: 4,
                 display: 'flex',

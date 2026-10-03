@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import stopEvent from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 interface StatusDotProps {
   item: DeployedIntegrationItem;
@@ -100,7 +101,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
@@ -111,7 +112,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
       }}
     >
       <Card
-        // A real link so ctrl/cmd/middle click opens the detail in a new tab.
+        // A real link, so ctrl/cmd and middle click open the detail in a new tab.
         to={item.detailUrl}
         sx={{
           height: 220,

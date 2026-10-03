@@ -1,18 +1,24 @@
 import { DynamicContent } from 'pdfmake/interfaces';
 
-const pdfFooter = (markingNames: string[]) => {
+const pdfFooter = (
+  markingNames: string[],
+  options?: { hasCoverPage?: boolean; hasBackPage?: boolean },
+) => {
+  const hasCoverPage = options?.hasCoverPage ?? true;
+  const hasBackPage = options?.hasBackPage ?? true;
   const footer: DynamicContent = (currentPage, pageCount) => {
-    if (currentPage === pageCount) return [];
+    if (hasBackPage && currentPage === pageCount) return [];
+    const displayedPageCount = pageCount - (hasBackPage ? 1 : 0);
     return {
       margin: [20, 4, 20, 0],
-      style: [currentPage === 1 ? 'colorWhite' : 'colorLight'],
+      style: [hasCoverPage && currentPage === 1 ? 'colorWhite' : 'colorLight'],
       columns: [
         {
           text: markingNames.join(', '),
           alignment: 'left',
         },
         {
-          text: `${currentPage} / ${pageCount - 1}`,
+          text: `${currentPage} / ${displayedPageCount}`,
           alignment: 'right',
         },
       ],

@@ -160,6 +160,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                     )
                 else:
                     # As bundle is received as complete, split and requeue
+                    self.logger.warning(
+                        "Received a multi-object bundle without no_split, splitting in worker",
+                        {
+                            "connector_id": self.connector_id,
+                            "work_id": work_id,
+                            "object_count": len(content["objects"]),
+                        },
+                    )
                     # Create a specific channel to push the split bundles
                     with pika.BlockingConnection(
                         self.pika_parameters
@@ -240,6 +248,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         | "rules_rescan"  # Rescan a rule (massive operation in UI)
                         | "enrichment"  # Ask for enrichment (massive operation in UI)
                         | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "add_related_covered_entities"  # Create has-covered relationships
                         | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = content["data"]
@@ -265,6 +274,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             # Nack message and discard
             return "nack"
         finally:
-            self.bundles_global_counter.add(len(imported_items))
-            processing_delta = datetime.datetime.now() - start_processing
-            self.bundles_processing_time_gauge.record(processing_delta.seconds)
+            try:
+                self.bundles_global_counter.add(len(imported_items))
+                processing_delta = datetime.datetime.now() - start_processing
+                self.bundles_processing_time_gauge.record(processing_delta.seconds)
+            except Exception as telemetry_ex:  # pylint: disable=broad-except
+                self.logger.error(
+                    "Failed to record bundle processing telemetry",
+                    {"reason": str(telemetry_ex)},
+                )

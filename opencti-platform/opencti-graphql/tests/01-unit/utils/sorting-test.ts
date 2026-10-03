@@ -30,6 +30,14 @@ describe('Sorting utilities', () => {
       },
     });
 
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'support_version', 'asc');
+    expect(sorting).toEqual({
+      'support_version.keyword': {
+        missing: '_last',
+        order: 'asc',
+      },
+    });
+
     // complex object with sortBy
     sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'group_confidence_level', 'asc');
     expect(sorting).toEqual({

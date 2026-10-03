@@ -6,8 +6,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
@@ -118,21 +117,14 @@ interface DraftsDistributionListProps {
 
 const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig): DraftsDistributionListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count' as DraftsDistributionListQuery['variables']['operation'],
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

@@ -24,7 +24,7 @@ const indicatorFilterKeys: string[] = [
   'regardingOf',
   'computed_reliability',
   'objects',
-  'workflow_id'
+  'workflow_id',
 ];
 
-export  default indicatorFilterKeys;
+export default indicatorFilterKeys;

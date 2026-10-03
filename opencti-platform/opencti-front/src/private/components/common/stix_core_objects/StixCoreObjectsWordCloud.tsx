@@ -9,8 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { StixCoreObjectsWordCloudDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsWordCloudDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsWordCloudDistributionQuery = graphql`
   query StixCoreObjectsWordCloudDistributionQuery(
@@ -125,15 +124,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsWordCloudDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = computeStartEndDates(config);
-  const dateAttribute
-    = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -142,7 +133,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

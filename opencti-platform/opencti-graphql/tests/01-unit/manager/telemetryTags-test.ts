@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeActiveConnectorsByIdentity, normalizeTelemetryTags, stripImageToRepositoryPath, type ConnectorIdentitySource } from '../../../src/telemetry/TelemetryMeterManager';
+import type { CatalogContractEntityFields } from '../../../src/modules/catalog/catalog-types';
 
 describe('Telemetry tags normalization', () => {
   it('should return an empty string when no tags are configured', () => {
@@ -67,6 +68,9 @@ describe('Active connectors by catalog identity', () => {
   const managed = (image: string, type = 'EXTERNAL_IMPORT'): ConnectorIdentitySource => ({
     catalog_id: 'catalog-1',
     manager_contract_image: image,
+    manager_contract: CONTRACTS.has(image) ? {
+      slug: CONTRACTS.get(image)?.slug,
+    } as CatalogContractEntityFields : undefined,
     name: 'User Renamed Me',
     connector_type: type,
   });
@@ -77,11 +81,11 @@ describe('Active connectors by catalog identity', () => {
   });
 
   it('should return no datapoint for an empty connector list', () => {
-    expect(computeActiveConnectorsByIdentity([], CONTRACTS)).toEqual([]);
+    expect(computeActiveConnectorsByIdentity([])).toEqual([]);
   });
 
   it('should resolve managed connectors to the catalog contract slug, ignoring the user-set name', () => {
-    const items = computeActiveConnectorsByIdentity([managed('opencti/connector-mitre')], CONTRACTS);
+    const items = computeActiveConnectorsByIdentity([managed('opencti/connector-mitre')]);
     expect(items).toEqual([
       { value: 1, attributes: { slug: 'mitre-att-ck', managed: 'true', type: 'EXTERNAL_IMPORT' } },
     ]);
@@ -90,7 +94,6 @@ describe('Active connectors by catalog identity', () => {
   it('should export the registry-stripped repository path for managed connectors whose image is not in the catalog', () => {
     const items = computeActiveConnectorsByIdentity(
       [managed('registry.private.corp:5000/team/custom-connector:1.2.3'), managed('opencti/connector-misp')],
-      CONTRACTS,
     );
     expect(items).toHaveLength(2);
     // The datapoint stays visible, but the private registry hostname is stripped.
@@ -104,25 +107,24 @@ describe('Active connectors by catalog identity', () => {
   });
 
   it('should still skip managed connectors without any usable image reference', () => {
-    expect(computeActiveConnectorsByIdentity([managed(''), managed('   ')], CONTRACTS)).toEqual([]);
+    expect(computeActiveConnectorsByIdentity([managed(''), managed('   ')])).toEqual([]);
   });
 
   it('should fall back to the trimmed/lowercased registered name for manual connectors', () => {
-    const items = computeActiveConnectorsByIdentity([manual('  My Custom Feed ')], CONTRACTS);
+    const items = computeActiveConnectorsByIdentity([manual('  My Custom Feed ')]);
     expect(items).toEqual([
       { value: 1, attributes: { slug: 'my custom feed', managed: 'false', type: 'EXTERNAL_IMPORT' } },
     ]);
   });
 
   it('should skip manual connectors without a usable name', () => {
-    expect(computeActiveConnectorsByIdentity([manual(''), manual('   '), manual(null), manual(undefined)], CONTRACTS)).toEqual([]);
+    expect(computeActiveConnectorsByIdentity([manual(''), manual('   '), manual(null), manual(undefined)])).toEqual([]);
   });
 
   it('should not collide identities when a freeform manual name contains separator-like characters', () => {
     // Under a naive 'slug|managed|type' string key these two would merge.
     const items = computeActiveConnectorsByIdentity(
       [manual('a|false', 't'), manual('a', 'false|t')],
-      CONTRACTS,
     );
     expect(items).toHaveLength(2);
     expect(items).toContainEqual({ value: 1, attributes: { slug: 'a|false', managed: 'false', type: 't' } });
@@ -137,7 +139,6 @@ describe('Active connectors by catalog identity', () => {
         managed('opencti/connector-mitre', 'INTERNAL_ENRICHMENT'),
         manual('mitre-att-ck'),
       ],
-      CONTRACTS,
     );
     expect(items).toContainEqual({ value: 2, attributes: { slug: 'mitre-att-ck', managed: 'true', type: 'EXTERNAL_IMPORT' } });
     expect(items).toContainEqual({ value: 1, attributes: { slug: 'mitre-att-ck', managed: 'true', type: 'INTERNAL_ENRICHMENT' } });

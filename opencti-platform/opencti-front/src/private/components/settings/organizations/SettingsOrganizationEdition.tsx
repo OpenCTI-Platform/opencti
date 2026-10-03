@@ -22,6 +22,7 @@ import { SettingsOrganization_organization$data } from './__generated__/Settings
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import TextareaField from '../../../../components/TextareaField';
 
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
@@ -217,7 +218,7 @@ const SettingsOrganizationEdition = ({
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
@@ -257,14 +258,11 @@ const SettingsOrganizationEdition = ({
                 containerStyle={fieldSpacingContainerStyle}
               />
               <Field
-                component={TextField}
-                variant="standard"
+                component={TextareaField}
                 name="contact_information"
                 label={t_i18n('Contact information')}
-                fullWidth={true}
-                multiline={true}
                 rows="4"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
                 helperText={(

@@ -8,11 +8,9 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { computeWidgetFiltersForMultiSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import ApexCharts from 'apexcharts';
 import { StixCoreObjectsMultiHeatMapTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHeatMapTimeSeriesQuery.graphql';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
@@ -103,23 +101,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixCoreObjectsMultiHeatMapTimeSeriesQuery['variables'] => {
-  const { startDate, endDate } = computeStartEndDates(config);
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute
-      = selection.date_attribute?.length
-        ? selection.date_attribute
-        : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
-    return {
-      field: dateAttribute,
-      types: DATA_SELECTION_TYPES,
-      filters: normalizeFilterGroupForBackend(filters),
-    };
-  });
-
+  const { startDate, endDate, timeSeriesParameters } = computeWidgetFiltersForMultiSelection(resolvedDataSelection, config, DATA_SELECTION_TYPES, { fallbackToDefaultDates: true });
   return {
-    startDate: startDate ?? monthsAgo(12),
-    endDate: endDate ?? now(),
+    startDate,
+    endDate,
     interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };

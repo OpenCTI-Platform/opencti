@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
+import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import ItemIcon from 'src/components/ItemIcon';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
@@ -98,17 +98,19 @@ const AddIndividualsThreatActorIndividualLine = ({
   currentTargets: string[];
   handleClick: () => void;
 }) => {
-  const theme = useTheme();
   return (
     <ListItemButton
       divider={true}
       onClick={handleClick}
     >
+      {/* The check no longer replaces the type icon: a row used to lose the
+          only thing that said WHAT it was as soon as it was selected. Slot
+          width matches AddExternalReferencesLines. */}
+      <ListItemIcon style={{ minWidth: 40 }}>
+        <Checkbox checked={currentTargets.includes(id)} />
+      </ListItemIcon>
       <ListItemIcon>
-        {currentTargets.includes(id)
-          ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type="Individual" />
-        }
+        <ItemIcon type="Individual" />
       </ListItemIcon>
       <ListItemText
         primary={name}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { and, ControlProps, isStringControl, RankedTester, rankWith, schemaMatches } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import Box from '@mui/material/Box';
 import PasswordTextField from '../../../../../components/PasswordTextField';
 
 export const JsonFormPasswordRenderer = ({ uischema, schema }: ControlProps) => {
@@ -13,23 +12,7 @@ export const JsonFormPasswordRenderer = ({ uischema, schema }: ControlProps) => 
     fieldLabel = schema.properties[fieldName].description ?? '';
   }
 
-  return (
-    <Box
-      sx={{
-        // override the PasswordTextField position icon button
-        '& button[aria-label*="Show"], & button[aria-label*="Hide"]': {
-          top: '50% !important',
-          transform: 'translateY(-50%)',
-        },
-        // override the PasswordTextField container style
-        '& > div > div': {
-          margin: '0 !important',
-        },
-      }}
-    >
-      <PasswordTextField name={fieldName} label={fieldLabel} />
-    </Box>
-  );
+  return <PasswordTextField name={fieldName} label={fieldLabel} />;
 };
 
 export const jsonFormPasswordTester: RankedTester = rankWith(

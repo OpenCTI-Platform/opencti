@@ -20,9 +20,10 @@ interface WorkflowEditionDrawerProps {
   open: boolean;
   selectedElement: Node | Edge;
   onClose: () => void;
+  entityType: string;
 }
 
-const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditionDrawerProps) => {
+const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const {
     drawerTitle,
@@ -44,7 +45,7 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {isStatus ? (<StatusForm />) : (<TransitionForm />)}
+              {isStatus ? (<StatusForm entityType={entityType} />) : (<TransitionForm entityType={entityType} />)}
               <FormButtonContainer>
                 {isNewStatus ? (
                   <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>

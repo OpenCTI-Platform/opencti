@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import EventSource from 'eventsource';
+import { EventSource } from 'eventsource';
 import * as R from 'ramda';
 import { validate as isUuid } from 'uuid';
 import { ADMIN_USER, generateBasicAuth, testContext } from './testQuery';
@@ -10,13 +10,12 @@ import { EVENT_TYPE_UPDATE } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 
 export const fetchStreamEvents = (uri, { from } = {}) => {
-  const opts = {
-    headers: { authorization: generateBasicAuth(), 'last-event-id': from },
-  };
+  const extraHeaders = { authorization: generateBasicAuth(), 'last-event-id': from };
+  const fetchWithHeaders = (url, init) => fetch(url, { ...init, headers: { ...init.headers, ...extraHeaders } });
   return new Promise((resolve, reject) => {
     let eventNumber = 0;
     const events = [];
-    const es = new EventSource(uri, opts);
+    const es = new EventSource(uri, { fetch: fetchWithHeaders });
     const closeEventSource = () => {
       es.close();
       resolve(events);
@@ -37,7 +36,7 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
     es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.onerror = (err) => reject(err);
+    es.addEventListener('error', (err) => reject(err));
   });
 };
 

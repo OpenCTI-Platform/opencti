@@ -157,6 +157,8 @@ export interface WorkflowConditionConfig {
 
 export interface WorkflowSerializedState {
   statusId: string;
+  /** Legacy manual order, kept for backward-compatible round-tripping; the order actually applied is always derived from the transition graph (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
 }

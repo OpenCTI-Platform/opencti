@@ -42,7 +42,15 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
-  computeStartEndDates: () => ({ startDate: null, endDate: null }),
+  computeWidgetFiltersForSelection: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _selection: any, _config: any,
+    opts: { fallbackToDefaultDates?: boolean } = {},
+  ) => ({
+    startDate: opts.fallbackToDefaultDates ? '2024-01-01T00:00:00.000Z' : null,
+    endDate: opts.fallbackToDefaultDates ? '2025-01-01T00:00:00.000Z' : null,
+    timeSeriesParameters: [],
+  }),
 }));
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({

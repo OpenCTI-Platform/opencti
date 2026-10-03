@@ -1,6 +1,8 @@
 import { FunctionComponent } from 'react';
+import { useFormatter } from './i18n';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import Tooltip from '@mui/material/Tooltip';
+import Stack from '@mui/material/Stack';
 import { truncate } from '../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import FieldOrEmpty from './FieldOrEmpty';
@@ -22,6 +24,7 @@ type Props = {
 };
 
 const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId, removeMutation = stixDomainObjectMutation, readOnly }) => {
+  const { t_i18n } = useFormatter();
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveAssignee = (removedId: string) => {
     const values = assignees.filter((assignee) => assignee.id !== removedId);
@@ -40,15 +43,18 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
   };
   return (
     <FieldOrEmpty source={assignees}>
-      {assignees.map((assignee) => (
-        <Tooltip key={assignee.id} title={assignee.name}>
-          <Tag
-            key={assignee.id}
-            label={truncate(assignee.name, 25)}
-            onDelete={!readOnly && canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
-          />
-        </Tooltip>
-      ))}
+      <Stack direction="row" gap={1} flexWrap="wrap">
+        {assignees.map((assignee) => (
+          <Tooltip key={assignee.id} title={assignee.name}>
+            <Tag
+              key={assignee.id}
+              label={truncate(assignee.name, 25)}
+              deleteLabel={`${t_i18n('Remove')} ${assignee.name}`}
+              onDelete={!readOnly && canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
+            />
+          </Tooltip>
+        ))}
+      </Stack>
     </FieldOrEmpty>
   );
 };

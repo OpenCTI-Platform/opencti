@@ -1,9 +1,8 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -17,8 +16,7 @@ const ThreatActorIndividualDeletionDeleteMutation = graphql`
 const ThreatActorIndividualDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Threat-Actor-Individual') },
   });
   const [commit] = useApiMutation(
@@ -40,8 +38,7 @@ const ThreatActorIndividualDeletion = ({ id, isOpen, handleClose }: { id: string
         navigate('/dashboard/threats/threat_actors_individual');
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
       },
     });
   };

@@ -2,7 +2,7 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
 import {
@@ -41,6 +41,7 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../database/utils';
 import type { BasicStoreEntity } from '../types/store';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
@@ -57,18 +58,21 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
-import { FilterMode } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
+import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -106,6 +110,7 @@ const booleanTrueFilter = (key: string) => ({
 });
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
+const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -148,6 +153,10 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION = 'knowledgeDecayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED = 'knowledgeStaleFlaggedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED = 'provenanceConflictDetectedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION = 'provenanceConflictAdoptionCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
@@ -257,6 +266,26 @@ export const addFormIntakeSubmittedCount = async () => {
 
 export const addDecayRuleCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeDecayRuleCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeStaleFlaggedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED, count);
+  }
+};
+
+export const addProvenanceConflictDetectedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED, count);
+  }
+};
+
+export const addProvenanceConflictAdoptionCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -485,13 +514,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
+    const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));
     manager.setActiveConnectorsCount(activeConnectors.length);
+    manager.setOaevConnectorsCount(oaevConnectors.length);
     // Breakdown by catalog identity (see computeActiveConnectorsByIdentity):
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
     // fall back to their registered name, flagged managed=false.
-    const contractsByImage = await getSupportedContractsByImage();
-    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors, contractsByImage));
+    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors));
     // endregion
 
     // region Roles with draft capability information
@@ -517,6 +547,27 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    // endregion
+
+    // region Provenance and knowledge freshness information
+    const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DECAY_RULE);
+    manager.setActiveKnowledgeDecayRulesCount(decayRules.filter((rule) => rule.active && (rule.target_scope ?? 'indicator') !== 'indicator').length);
+    const provenanceFilter = (key: string, values: string[], operator = FilterOperator.Eq) => ({
+      mode: FilterMode.And,
+      filters: [{ key: [key], values, operator }],
+      filterGroups: [],
+    });
+    const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+    const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),
+      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('freshness_stale', ['true']) }),
+      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('has_conflicts', ['true']) }),
+    ]);
+    manager.setProvenanceTrackedRelationshipsCount(trackedRelationships);
+    manager.setProvenanceCorroboratedRelationshipsCount(corroboratedRelationships);
+    manager.setProvenanceStaleKnowledgeCount(staleKnowledge);
+    manager.setProvenanceConflictingKnowledgeCount(conflictingKnowledge);
     // endregion
 
     // region History retention rule status
@@ -546,10 +597,18 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion SSO providers
 
     // region Security Coverages
-    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE],
-    });
+    const [
+      securityCoveragesCount,
+      securityCoverageResultsCount,
+      relationshipsHasCoveredCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_HAS_COVERED] }),
+    ]);
     manager.setSecurityCoveragesCount(securityCoveragesCount);
+    manager.setSecurityCoverageResultsCount(securityCoverageResultsCount);
+    manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
     // region Shared saved filters
@@ -693,6 +752,22 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIndexedFilesCount(indexedFilesCount);
     // endregion
 
+    try {
+      const streamInfo = await rawFetchStreamInfo();
+      manager.setRedisStreamEventsCount(streamInfo.streamSize ?? 0);
+    } catch (streamErr) {
+      logApp.debug('[TELEMETRY] Could not fetch redis stream info, skipping redis stream events count', { cause: streamErr });
+      manager.setRedisStreamEventsCount(-1);
+    }
+    try {
+      const offloadedStreamEventsCount = await countOffloadedStreamEvents();
+      manager.setOffloadedStreamEventsCount(offloadedStreamEventsCount);
+    } catch (offloadErr) {
+      logApp.debug('[TELEMETRY] Could not count offloaded stream events, skipping offloaded stream events count', { cause: offloadErr });
+      manager.setOffloadedStreamEventsCount(-1);
+    }
+    // endregion
+
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
@@ -738,6 +813,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
+    manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
+    const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
+    manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
+    const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
+    manager.setProvenanceConflictDetectedCount(provenanceConflictDetectedCountInRedis);
+    const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
+    manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
@@ -803,7 +886,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
   },
-  enabledByConfig: true,
+  enabledByConfig: TELEMETRY_MANAGER_ENABLED,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },

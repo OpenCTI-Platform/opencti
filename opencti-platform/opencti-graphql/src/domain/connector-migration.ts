@@ -1,19 +1,25 @@
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
-import { completeConnector, connector } from '../database/repository';
+import { completeConnector, connector, connectors } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract,
+  mapContractEntityFieldsToGraphqlCatalogContract,
+} from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
-import { resolveUserByIdFromCache, userEditField } from './user';
+import { resolveUserByIdFromCache, userEditField } from '../modules/user/user-domain';
+import { now } from '../utils/format';
+import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 type ConfigInput = {
   key: string;
@@ -22,6 +28,7 @@ type ConfigInput = {
 
 type MappedKey = {
   key: string;
+  sourceKey: string;
   value: string;
   type: string;
   required: boolean;
@@ -89,6 +96,7 @@ const categorizeKeys = (
     if (value !== null && value !== undefined) {
       mapped.push({
         key: schemaKey,
+        sourceKey: keyUpper,
         value: String(value),
         type: propSchema.type,
         required: requiredKeys.includes(schemaKey),
@@ -139,17 +147,12 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Connector is already managed', { id: connectorId });
   }
 
-  const contractData = await findContractByContainerImage(context, user, containerImage);
+  const contractData = await findLatestCompatibleCatalogContractByImageName(context, user, containerImage);
   if (!contractData) {
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  let contract;
-  try {
-    contract = JSON.parse(contractData.contract);
-  } catch {
-    throw FunctionalError('Cannot parse contract found');
-  }
+  const contract = mapContractEntityFieldsToGraphqlCatalogContract(contractData, { excludeRuntimeConfigVars: true });
 
   // Check type are correct
   if (existingConnector.connector_type !== contract.container_type) {
@@ -185,7 +188,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     connector_id: connectorId,
     connector_name: existingConnector.name,
     connector_type: existingConnector.connector_type,
-    contract_slug: contract.contract_slug,
+    contract_slug: contract.slug,
     contract_title: contract.title,
     contract_image: contract.container_image,
     summary: {
@@ -193,6 +196,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
       mapped_keys: mapped.length,
       ignored_keys: ignored.length,
       missing_mandatory_keys: missingMandatory.length,
+      assessment_date: now(),
       missing_optional_keys: missing.length - missingMandatory.length,
       can_migrate: missingMandatory.length === 0,
       configuration_provided: configuration !== null,
@@ -206,6 +210,42 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   };
 };
 
+// Resolve a unique connector name to avoid collision with existing (managed) connectors.
+// The name collision is checked (and rejected) on managedConnectorAdd; during migration we
+// cannot simply reject, so on collision we prefix the name to keep it unique. Two managed
+// connectors sharing the same name make the composer fail to reconciliate and redeploy forever.
+const resolveUniqueConnectorName = async (
+  context: AuthContext,
+  user: AuthUser,
+  desiredName: string,
+  currentConnectorId: string,
+): Promise<string> => {
+  const existingConnectors = await connectors(context, user);
+  const usedNames = new Set(
+    existingConnectors
+      .filter((c) => c.internal_id !== currentConnectorId)
+      .map((c) => c.name),
+  );
+
+  if (!usedNames.has(desiredName)) {
+    return desiredName;
+  }
+
+  // First try a simple 'migrated-' prefix, then fall back to appending a timestamp.
+  const candidates = [
+    `migrated-${desiredName}`,
+    `migrated-${Date.now()}-${desiredName}`,
+  ];
+  const uniqueName = candidates.find((candidate) => !usedNames.has(candidate))
+    ?? `migrated-${Date.now()}-${Math.floor(Math.random() * 1e6)}-${desiredName}`;
+
+  logApp.info(
+    `[CONNECTOR] Name collision detected during migration: connector name '${desiredName}' already exists, renaming to '${uniqueName}'`,
+    { connector_id: currentConnectorId },
+  );
+  return uniqueName;
+};
+
 export const migrateConnectorToManaged = async (
   context: AuthContext,
   user: AuthUser,
@@ -215,17 +255,12 @@ export const migrateConnectorToManaged = async (
   convertUserToServiceAccount: boolean = true,
   resetConnectorState: boolean = false,
 ) => {
-  const contractData = await findContractByContainerImage(context, user, containerImage);
+  const contractData = await findLatestCompatibleCatalogContractByImageName(context, user, containerImage);
   if (!contractData) {
     throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
-  let contract;
-  try {
-    contract = JSON.parse(contractData.contract);
-  } catch {
-    throw FunctionalError('Cannot parse contract');
-  }
+  const contract = mapContractEntityFieldsToGraphqlCatalogContract(contractData, { excludeRuntimeConfigVars: true });
 
   if (!contract.manager_supported) {
     throw FunctionalError('Connector is not managed by composer');
@@ -268,7 +303,7 @@ export const migrateConnectorToManaged = async (
   );
 
   const invalidKeys: string[] = [];
-  userConfig.forEach((value: string, key: string) => {
+  userConfig.forEach((_value: string, key: string) => {
     if (!schemaKeysUpper.has(key)) {
       invalidKeys.push(key);
     }
@@ -326,9 +361,19 @@ export const migrateConnectorToManaged = async (
     title: existingConnector.name,
     catalog_id: contractData.catalog_id,
     manager_contract_image: contract.container_image,
+    manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(contractData),
     manager_contract_configuration: filteredConfigurations,
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
   };
+
+  // Ensure the migrated connector name does not collide with an existing (managed) connector.
+  // Name collision is rejected on managedConnectorAdd; here we resolve it by prefixing the name.
+  const uniqueName = await resolveUniqueConnectorName(context, user, existingConnector.name, existingConnector.internal_id);
+  if (uniqueName !== existingConnector.name) {
+    managedConnectorData.name = uniqueName;
+    managedConnectorData.title = uniqueName;
+  }
 
   // Reset connector state if requested
   if (resetConnectorState && existingConnector.connector_state) {
