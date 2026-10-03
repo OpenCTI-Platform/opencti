@@ -1,0 +1,252 @@
+import moment from 'moment';
+import { type ManagerDefinition, registerManager } from './managerModule';
+import conf, { booleanConf, logApp } from '../config/conf';
+import { elRawSearch } from '../database/engine';
+import { fullRelationsList, internalFindByIds } from '../database/middleware-loader';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
+import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
+import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { DatabaseError } from '../config/errors';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { now, utcDate } from '../utils/format';
+import { doYield } from '../utils/eventloop-utils';
+import type { AuthContext } from '../types/user';
+import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
+import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
+import { listRules } from '../modules/retentionRules/retentionRules-domain';
+import { ENTITY_TYPE_USER_VISIT, type CompactDocument } from '../modules/timeMachine/timeMachine-types';
+import { extractAttributeValues } from '../modules/timeMachine/timeMachine-replay';
+import { deleteSnapshotsBefore, deleteUserVisits, deleteVisitsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
+import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+
+const SNAPSHOT_MANAGER_ID = 'SNAPSHOT_MANAGER';
+const SNAPSHOT_MANAGER_CONTEXT = 'snapshot_manager';
+const SNAPSHOT_MANAGER_STATE = 'snapshot_manager';
+const SNAPSHOT_MANAGER_ENABLED = booleanConf('snapshot_manager:enabled', true);
+const SNAPSHOT_MANAGER_KEY = conf.get('snapshot_manager:lock_key') || 'snapshot_manager_lock';
+const SCHEDULE_TIME = conf.get('snapshot_manager:interval') || 3600000;
+const PERIOD_DAYS: number = conf.get('snapshot_manager:period_days') || 7;
+const MAX_ENTITIES_PER_RUN: number = conf.get('snapshot_manager:max_entities_per_run') || 10000;
+const BATCH_SIZE: number = conf.get('snapshot_manager:batch_size') || 100;
+const MAX_RELATIONSHIP_IDS_PER_TYPE: number = conf.get('snapshot_manager:max_relationship_ids_per_type') || 500;
+const RETENTION_DAYS: number = conf.get('snapshot_manager:retention_days') || 0;
+const VISIT_RETENTION_DAYS: number = conf.get('time_machine:visit_retention_days') || 365;
+// Maximum number of relationships read per batch of entities to build relationship id lists
+const MAX_RELATIONSHIPS_PER_BATCH = 20000;
+const COMPOSITE_PAGE_SIZE = 1000;
+
+export interface SnapshotManagerState {
+  // End of the last completed snapshot window (history cursor)
+  cursor?: string;
+  // Window currently being processed, and the position in it when a run hit the per-run limit
+  window_end?: string;
+  after_key?: Record<string, string> | null;
+}
+
+const readState = async (): Promise<SnapshotManagerState> => {
+  const raw = await redisGetManagerEventState(SNAPSHOT_MANAGER_STATE);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as SnapshotManagerState;
+  } catch {
+    return {};
+  }
+};
+
+const writeState = async (state: SnapshotManagerState) => {
+  await redisSetManagerEventState(SNAPSHOT_MANAGER_STATE, JSON.stringify(state));
+};
+
+// Ids of the elements with history events (creation, update, merge) in the window, paginated with a composite aggregation
+export const findChangedElementIds = async (
+  context: AuthContext,
+  from: string,
+  to: string,
+  afterKey: Record<string, string> | null | undefined,
+  max: number,
+) => {
+  const ids: string[] = [];
+  let currentAfter = afterKey ?? null;
+  let hasMore = true;
+  while (hasMore && ids.length < max) {
+    const body: any = {
+      size: 0,
+      query: {
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } },
+            { terms: { 'event_scope.keyword': ['create', 'update', 'merge'] } },
+            { range: { timestamp: { gt: from, lte: to } } },
+          ],
+          must_not: [{ terms: { 'context_data.entity_type.keyword': TIME_MACHINE_RELATIONSHIP_TYPES } }],
+        },
+      },
+      aggs: {
+        elements: {
+          composite: {
+            size: Math.min(COMPOSITE_PAGE_SIZE, max - ids.length),
+            sources: [{ id: { terms: { field: 'context_data.id.keyword' } } }],
+            ...(currentAfter ? { after: currentAfter } : {}),
+          },
+        },
+      },
+    };
+    const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, { index: READ_INDEX_HISTORY, body }).catch((err: unknown) => {
+      throw DatabaseError('Snapshot manager history aggregation fail', { cause: err });
+    });
+    const buckets: Array<{ key: { id: string } }> = data.aggregations?.elements?.buckets ?? [];
+    buckets.forEach((bucket) => ids.push(bucket.key.id));
+    currentAfter = data.aggregations?.elements?.after_key ?? null;
+    hasMore = buckets.length > 0 && !!currentAfter;
+  }
+  return { ids, afterKey: hasMore ? currentAfter : null };
+};
+
+// Compact documents: raw attribute values and relationship ids by type (capped), exact counts by type
+export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[]): Promise<Map<string, CompactDocument>> => {
+  const documents = new Map<string, CompactDocument>();
+  entities.forEach((entity) => {
+    documents.set(entity.internal_id, { attributes: extractAttributeValues(entity as any), relationships: {}, relationships_count: {} });
+  });
+  const ids = entities.map((entity) => entity.internal_id);
+  const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
+    fromOrToId: ids,
+    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+    baseData: true,
+    maxSize: MAX_RELATIONSHIPS_PER_BATCH,
+  } as any);
+  const register = (entityId: string, relation: BasicStoreRelation) => {
+    const document = documents.get(entityId);
+    if (!document) return;
+    const type = relation.entity_type;
+    document.relationships_count[type] = (document.relationships_count[type] ?? 0) + 1;
+    const typeIds = document.relationships[type] ?? [];
+    if (typeIds.length < MAX_RELATIONSHIP_IDS_PER_TYPE) {
+      typeIds.push(relation.internal_id);
+      document.relationships[type] = typeIds;
+    }
+  };
+  relations.forEach((relation) => {
+    register(relation.fromId, relation);
+    if (relation.toId !== relation.fromId) register(relation.toId, relation);
+  });
+  return documents;
+};
+
+// Snapshots follow the history retention: the shortest active history retention rule applying to all the history
+export const computeSnapshotRetentionDate = (rules: BasicStoreEntityRetentionRule[], currentDate: string, retentionDays: number): string | null => {
+  const horizons: moment.Moment[] = [];
+  rules
+    .filter((rule) => rule.scope === 'history' && rule.active !== false)
+    .filter((rule) => {
+      if (!rule.filters) return true;
+      try {
+        return !isFilterGroupNotEmpty(JSON.parse(rule.filters));
+      } catch {
+        return false;
+      }
+    })
+    .forEach((rule) => {
+      horizons.push(utcDate(currentDate).subtract(rule.max_retention, (rule.retention_unit ?? 'days') as moment.unitOfTime.DurationConstructor));
+    });
+  if (retentionDays > 0) {
+    horizons.push(utcDate(currentDate).subtract(retentionDays, 'days'));
+  }
+  if (horizons.length === 0) return null;
+  return moment.max(horizons).toISOString();
+};
+
+const purgeVisitsOfDeletedUsers = async (context: AuthContext) => {
+  const users = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const body = {
+    size: 0,
+    query: { bool: { must: [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_USER_VISIT] } }] } },
+    aggs: { users: { terms: { field: 'user_id.keyword', size: 10000 } } },
+  };
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_USER_VISIT, { index: READ_INDEX_INTERNAL_OBJECTS, body }).catch((err: unknown) => {
+    throw DatabaseError('Snapshot manager visits aggregation fail', { cause: err });
+  });
+  const buckets: Array<{ key: string }> = data.aggregations?.users?.buckets ?? [];
+  let deleted = 0;
+  for (let index = 0; index < buckets.length; index += 1) {
+    const userId = buckets[index].key;
+    if (!users.has(userId)) {
+      deleted += await deleteUserVisits(userId);
+    }
+  }
+  return deleted;
+};
+
+export const applyTimeMachineRetention = async (context: AuthContext, currentDate: string) => {
+  const rules = await listRules(context, SYSTEM_USER) as BasicStoreEntityRetentionRule[];
+  const retentionDate = computeSnapshotRetentionDate(rules, currentDate, RETENTION_DAYS);
+  const deletedSnapshots = retentionDate ? await deleteSnapshotsBefore(retentionDate) : 0;
+  const deletedVisits = await deleteVisitsBefore(utcDate(currentDate).subtract(VISIT_RETENTION_DAYS, 'days').toISOString());
+  const deletedOrphanVisits = await purgeVisitsOfDeletedUsers(context);
+  return { deletedSnapshots, deletedVisits: deletedVisits + deletedOrphanVisits };
+};
+
+export const snapshotHandler = async () => {
+  const context = executionContext(SNAPSHOT_MANAGER_CONTEXT);
+  const state = await readState();
+  const currentDate = now();
+  const isWindowInProgress = !!state.window_end && !!state.after_key;
+  const cursor = state.cursor ?? utcDate(currentDate).subtract(PERIOD_DAYS, 'days').toISOString();
+  if (!isWindowInProgress && state.cursor && utcDate(currentDate).diff(utcDate(state.cursor), 'days', true) < PERIOD_DAYS) {
+    // Next snapshot window not reached yet
+    return;
+  }
+  const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
+  logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, resume: isWindowInProgress });
+  const { ids, afterKey } = await findChangedElementIds(context, cursor, windowEnd, state.after_key, MAX_ENTITIES_PER_RUN);
+  let snapshotsCount = 0;
+  for (let index = 0; index < ids.length; index += BATCH_SIZE) {
+    await doYield();
+    const batchIds = ids.slice(index, index + BATCH_SIZE);
+    // References are read from the denormalized fields (ids only)
+    const entities = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, batchIds, { type: ABSTRACT_STIX_CORE_OBJECT, withoutRels: false }) as BasicStoreEntity[];
+    if (entities.length > 0) {
+      const documents = await buildCompactDocuments(context, entities);
+      const inputs: SnapshotInput[] = entities.map((entity) => ({
+        entityId: entity.internal_id,
+        entityType: entity.entity_type,
+        snapshotDate: windowEnd,
+        historyCursor: windowEnd,
+        document: documents.get(entity.internal_id) as CompactDocument,
+      }));
+      snapshotsCount += await indexSnapshots(inputs);
+    }
+  }
+  if (afterKey) {
+    // Per run limit reached, the same window is resumed at the next run
+    await writeState({ cursor: state.cursor, window_end: windowEnd, after_key: afterKey });
+  } else {
+    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null });
+  }
+  const retention = await applyTimeMachineRetention(context, currentDate);
+  logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, ...retention, complete: !afterKey });
+};
+
+const SNAPSHOT_MANAGER_DEFINITION: ManagerDefinition = {
+  id: SNAPSHOT_MANAGER_ID,
+  label: 'Knowledge snapshot manager',
+  executionContext: SNAPSHOT_MANAGER_CONTEXT,
+  cronSchedulerHandler: {
+    handler: snapshotHandler,
+    interval: SCHEDULE_TIME,
+    lockKey: SNAPSHOT_MANAGER_KEY,
+  },
+  enabledByConfig: SNAPSHOT_MANAGER_ENABLED,
+  enabledToStart(): boolean {
+    return this.enabledByConfig;
+  },
+  enabled(): boolean {
+    return this.enabledByConfig;
+  },
+};
+
+registerManager(SNAPSHOT_MANAGER_DEFINITION);
