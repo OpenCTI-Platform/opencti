@@ -281,6 +281,11 @@ describe('Graph analytics resolvers', () => {
     expect(metrics.data.stixCoreObject.x_opencti_graph_metrics.cluster_id).toBe(cluster.id);
     expect(metrics.data.stixCoreObject.x_opencti_graph_metrics.cluster_size).toBe(3);
     expect(metrics.data.stixCoreObject.x_opencti_graph_metrics.cluster_kind).toBe('infrastructure');
+    // a population above the limit is never clustered partially: the run is skipped and the cluster kept
+    const capped = await runInfrastructureClustering(context, user, { ...config, clusteringMinSize: 3, clusteringMaxEntities: 1 });
+    expect(capped.skipped).toBe(true);
+    const kept = await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.d2 } });
+    expect(kept.data.stixCoreObject.x_opencti_graph_metrics.cluster_id).toBe(cluster.id);
     // filter on the cluster
     const query = gql`
       query members($filters: FilterGroup) { stixCoreObjects(filters: $filters, first: 10) { edges { node { id } } } }

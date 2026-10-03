@@ -52,7 +52,8 @@ test('Graph analytics: similar entities, paths and investigation tools', { tag: 
     }, 10000, 30);
     const similarItem = graphPage.getSimilarItem(nameB);
     await expect(similarItem).toBeVisible();
-    await expect(similarItem.getByText(techniqueName, { exact: true })).toBeVisible();
+    // attack patterns are represented with their MITRE identifier
+    await expect(similarItem.getByText(`[T9${suffix.slice(0, 3)}] ${techniqueName}`, { exact: true })).toBeVisible();
     await graphPage.getCompareButton().click();
     await expect(graphPage.getCompareColumns()).toHaveCount(2);
     await expect(graphPage.getCompareColumns().nth(0)).toContainText(nameA);
