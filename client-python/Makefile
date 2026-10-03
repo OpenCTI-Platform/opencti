@@ -1,8 +1,8 @@
 build:
-	SOURCE_DATE_EPOCH=$(shell git log -1 --pretty=%ct) python3 -m build
+	SOURCE_DATE_EPOCH=$(shell git log -1 --pretty=%ct) uv build --no-sources
 
 clean:
-	rm -rf *.egg-info/ build/ dist/
+	rm -rf dist/
 
 clean.all: clean
 	find .  -type d -name .mypy_cache -o -name __pycache__ -exec rm -rf "{}" \+

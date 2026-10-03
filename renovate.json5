@@ -122,6 +122,9 @@
       matchDepTypes: [
         'devDependencies',
         'action',
+        // Python: PEP 735 dependency groups and build backend are development tooling
+        'dependency-groups',
+        'build-system.requires',
       ],
       matchUpdateTypes: [
         'minor',
@@ -132,6 +135,11 @@
       // use 'auto' here so grouped PRs stay up-to-date automatically,
       // since we batch them and want them merge-ready on Monday
       rebaseWhen: 'auto',
+    },
+    // Python: in-range updates of direct dependencies get a dedicated lockfile-only PR, out-of-range updates replace the constraint
+    {
+      matchManagers: ['pep621'],
+      rangeStrategy: 'update-lockfile',
     },
   ],
   // do lock file maintenance once a week on Sunday
