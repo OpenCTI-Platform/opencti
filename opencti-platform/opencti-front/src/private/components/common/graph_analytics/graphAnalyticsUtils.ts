@@ -58,12 +58,17 @@ export const formatSimilarityScore = (score: number | null | undefined): string 
   return `${Math.round(value * 100)}%`;
 };
 
-/** Chip severity for a similarity score: stronger similarity, stronger color. */
-export const similarityScoreSeverity = (score: number): 'critical' | 'high' | 'medium' | 'low' => {
-  if (score >= 0.75) return 'critical';
-  if (score >= 0.5) return 'high';
-  if (score >= 0.25) return 'medium';
-  return 'low';
+/** Chip tone for a similarity score: a strong match stands out, without the risk colors a similarity does not mean. */
+export const similarityScoreSeverity = (score: number): 'info' | 'neutral' => (score >= 0.5 ? 'info' : 'neutral');
+
+/**
+ * Growth series start one period before the first member of any of them: the empty months before the clusters
+ * existed carry no information and drown the growth in a flat line.
+ */
+export const trimLeadingEmptyPeriods = <T extends { value: number }>(series: ReadonlyArray<ReadonlyArray<T>>): T[][] => {
+  const firstIndexes = series.map((points) => points.findIndex((point) => point.value > 0)).filter((index) => index >= 0);
+  const start = firstIndexes.length > 0 ? Math.max(0, Math.min(...firstIndexes) - 1) : 0;
+  return series.map((points) => points.slice(start));
 };
 
 const recordPivotMutation = graphql`

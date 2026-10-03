@@ -37,9 +37,9 @@ const StatusComponent = ({ queryRef }: { queryRef: PreloadedQuery<GraphAnalytics
         severity={status.manager_enabled ? 'info' : 'medium'}
       />
       <Chip label={`${t_i18n('Clustering by')} ${engine}`} />
-      <Chip label={`${n(status.clusters_count)} ${t_i18n('clusters')}`} />
-      <Chip label={`${n(status.similarity_documents)} ${t_i18n('similarity links')}`} />
-      {status.pending_entities > 0 && <Chip label={`${n(status.pending_entities)} ${t_i18n('entities waiting for a recompute')}`} />}
+      <Chip label={`${t_i18n('Clusters')}: ${n(status.clusters_count)}`} />
+      <Chip label={`${t_i18n('Similarity links')}: ${n(status.similarity_documents)}`} />
+      {status.pending_entities > 0 && <Chip label={`${t_i18n('Entities waiting for a recompute')}: ${n(status.pending_entities)}`} />}
       {status.full_pass_in_progress && <Chip label={t_i18n('Full pass in progress')} severity="info" />}
       <Text variant="content-caption">
         {[

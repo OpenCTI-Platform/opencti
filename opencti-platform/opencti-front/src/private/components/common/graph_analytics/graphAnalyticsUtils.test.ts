@@ -7,6 +7,7 @@ import {
   isGraphSimilarEntityType,
   reportPayloadErrors,
   similarityScoreSeverity,
+  trimLeadingEmptyPeriods,
 } from './graphAnalyticsUtils';
 
 const { notifyError } = vi.hoisted(() => ({ notifyError: vi.fn() }));
@@ -26,11 +27,24 @@ describe('graphAnalyticsUtils', () => {
     expect(formatSimilarityScore(Number.NaN)).toBe('0%');
   });
 
-  it('maps scores to a severity that grows with the similarity', () => {
-    expect(similarityScoreSeverity(0.1)).toBe('low');
-    expect(similarityScoreSeverity(0.25)).toBe('medium');
-    expect(similarityScoreSeverity(0.5)).toBe('high');
-    expect(similarityScoreSeverity(0.9)).toBe('critical');
+  it('highlights strong matches without using risk colors', () => {
+    expect(similarityScoreSeverity(0.1)).toBe('neutral');
+    expect(similarityScoreSeverity(0.49)).toBe('neutral');
+    expect(similarityScoreSeverity(0.5)).toBe('info');
+    expect(similarityScoreSeverity(0.9)).toBe('info');
+  });
+
+  it('starts growth series one period before the first member of any series', () => {
+    const point = (value: number) => ({ date: `d${value}`, value });
+    const [first, second] = trimLeadingEmptyPeriods([
+      [point(0), point(0), point(0), point(2), point(3)],
+      [point(0), point(0), point(1), point(1), point(1)],
+    ]);
+    expect(first.map((p) => p.value)).toEqual([0, 0, 2, 3]);
+    expect(second.map((p) => p.value)).toEqual([0, 1, 1, 1]);
+    expect(trimLeadingEmptyPeriods([[point(4), point(5)]])[0].map((p) => p.value)).toEqual([4, 5]);
+    expect(trimLeadingEmptyPeriods([[point(0), point(0)]])[0]).toHaveLength(2);
+    expect(trimLeadingEmptyPeriods([])).toEqual([]);
   });
 
   it('knows which entity types carry a similarity profile', () => {

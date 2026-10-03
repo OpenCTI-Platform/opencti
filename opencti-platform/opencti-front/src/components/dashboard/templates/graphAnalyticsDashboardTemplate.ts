@@ -39,7 +39,7 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Cluster size over time', interval: 'month' },
       dataSelection: [{ label: 'Cluster members', perspective: 'entities', filters: ofTypes([]), number: 10 }],
-      layout: { x: 0, y: 0, w: 6, h: 4 },
+      layout: { x: 0, y: 0, w: 6, h: 6 },
     },
     {
       id: '0a07d150-0001-4d1a-9a07-000000000002',
@@ -47,7 +47,7 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Similarity of the most connected threats' },
       dataSelection: [{ label: 'Threats', perspective: 'entities', filters: ofTypes(THREAT_TYPES), number: 15 }],
-      layout: { x: 6, y: 0, w: 6, h: 4 },
+      layout: { x: 6, y: 0, w: 6, h: 6 },
     },
     {
       id: '0a07d150-0001-4d1a-9a07-000000000003',
@@ -55,7 +55,7 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Threat and malware hubs' },
       dataSelection: [hubs('Threats and malware', HUB_THREAT_TYPES)],
-      layout: { x: 0, y: 4, w: 6, h: 4 },
+      layout: { x: 0, y: 6, w: 6, h: 4 },
     },
     {
       id: '0a07d150-0001-4d1a-9a07-000000000004',
@@ -63,7 +63,7 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Infrastructure hubs' },
       dataSelection: [hubs('Infrastructure and observables', INFRASTRUCTURE_TYPES)],
-      layout: { x: 6, y: 4, w: 6, h: 4 },
+      layout: { x: 6, y: 6, w: 6, h: 4 },
     },
     {
       id: '0a07d150-0001-4d1a-9a07-000000000005',
@@ -71,7 +71,7 @@ export const graphAnalyticsDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Top hubs' },
       dataSelection: [{ label: 'All entities', perspective: 'entities', filters: ofTypes([]), number: 15 }],
-      layout: { x: 0, y: 8, w: 12, h: 4 },
+      layout: { x: 0, y: 10, w: 12, h: 4 },
     },
   ],
 };
