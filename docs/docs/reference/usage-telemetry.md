@@ -124,7 +124,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of incident and case timeline events derived from the knowledge
 - The number of analyst milestones added to incident and case timelines
 - The number of incident and case timeline exports
-- The number of incident and case timelines opened
+- The number of times the Timeline tab of an incident or case is opened
 
 ### Email and notifications
 

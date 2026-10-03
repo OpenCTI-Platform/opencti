@@ -117,7 +117,13 @@ Milestones can be edited and deleted by the users who can update the case.
 - From the toolbar of the Timeline tab, **Export the timeline** downloads the current view as **CSV**, **PDF**, **SVG** or **PNG**.
 - From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the files of the entity, like the other exports (see [Manual export](export.md)).
 
-The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events. An export only contains the events the exporting user can see.
+The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events.
+
+What an export contains and how it is marked:
+
+- An export only contains the events the exporting user can see, and leaves out the events marked above the user's max shareable markings, like every export of the platform.
+- In the export menu of the container, the **Content max marking definitions** field sets a ceiling: the events marked above it are left out of the file.
+- A file stored in the entity is never marked less strictly than the events it contains: when the selected file markings are weaker than the markings of the exported events, the platform raises them (highest marking per marking type) and the confirmation message names the markings added.
 
 ## Dashboards and custom views
 
@@ -139,15 +145,15 @@ The trigger filters apply to the incident or case, and only users who can access
 
 ## Access and security
 
-- Timeline events inherit the markings and authorized members of the container, and the markings of the element they come from. Users only see the events of the elements they can access, in the timeline, the widget and the exports.
-- Reading the timeline requires access to the container. Adding milestones, pinning, hiding, annotating, changing the settings and regenerating require the capability to update knowledge and edit access to the container.
+- Timeline events inherit the markings and authorized members of the container, and the markings of the element they come from or point to (a milestone linked to a marked element carries its markings). Users only see the events of the elements they can access, in the timeline, the widget and the exports.
+- Reading the timeline requires access to the container. Adding milestones, pinning, hiding, annotating, changing the settings and regenerating require the capability to update knowledge and edit access to the container; milestones can only be edited or deleted by these users, and never inside a draft.
 
 ## Exchange and API
 
 - **STIX**: the analyst contributions (milestones, pins, hidden flags, annotations) travel with the container in the `extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb` extension. Derived events are not exported: the receiving platform computes them from its own knowledge, and imports the contributions idempotently.
-- **GraphQL API**: `containerTimeline`, `containerTimelineSummary`, `containerTimelineExport`, `timelineEvent`, `timelineAnchors`, the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, and the subscription `containerTimelineUpdated`.
+- **GraphQL API**: `containerTimeline`, `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFileMarkings` (the markings a stored export must carry), `timelineEvent`, `timelineAnchors`, the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, and the subscription `containerTimelineUpdated`.
 - **Python client (pycti)**: `OpenCTIApiClient.timeline_event` with `create`, `update`, `delete`, `list`, `read`, `pin`, `hide`, `anchors` and `regenerate`, so that connectors and incident importers can push milestones.
 
 ## Large cases
 
-To protect the platform, the timeline of a case is built from a bounded number of objects, related elements and history entries, and keeps a bounded number of events. When a case reaches these limits, the Timeline tab displays a message and the derived events are kept by lane (adversary, detection, response, evidence, knowledge) then by time; analyst milestones are always kept. The limits and the timeline manager can be tuned in the [configuration](../deployment/configuration.md) (`timeline_manager` section).
+To protect the platform, the timeline of a case is built from a bounded number of objects, related elements and history entries, and keeps a bounded number of events. When a case reaches these limits, the Timeline tab displays a message and the derived events are kept by lane (adversary, detection, response, evidence, knowledge) then by time; analyst milestones are always kept. A case holds at most 1,000 analyst milestones by default: beyond it, adding a milestone is refused and imported milestones are skipped (updates of existing milestones always apply). The limits and the timeline manager can be tuned in the [configuration](../deployment/configuration.md) (`timeline_manager` section).

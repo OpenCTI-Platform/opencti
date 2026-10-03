@@ -398,7 +398,8 @@
     "max_objects": 5000,
     "max_related_elements": 1000,
     "max_history_entries": 5000,
-    "max_events": 10000
+    "max_events": 10000,
+    "max_manual_events": 1000
   },
   "data_sanity_manager": {
     "enabled": true,

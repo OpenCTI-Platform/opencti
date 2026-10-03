@@ -3,7 +3,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreators } from '../../database/members';
 import { loadThroughDenormalized } from '../../resolvers/stix';
-import { INPUT_CREATED_BY } from '../../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_CREATED_BY } from '../../schema/general';
 import { isStixObject } from '../../schema/stixCoreObject';
 import { isStixRelationship } from '../../schema/stixRelationship';
 import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
@@ -49,7 +49,8 @@ const timelineResolvers: Resolvers = {
     analyst_fields: (event) => event.analyst_fields ?? [],
     editable: async (event, _, context) => {
       if (event.event_source !== 'manual') return false;
-      const container = await context.batch.idsBatchLoader.load({ id: event.container_id, type: undefined });
+      // Incidents and cases share the Stix-Domain-Object parent type
+      const container = await context.batch.idsBatchLoader.load({ id: event.container_id, type: ABSTRACT_STIX_DOMAIN_OBJECT });
       return canContributeToTimeline(context, context.user, container);
     },
     element: (event, _, context) => {

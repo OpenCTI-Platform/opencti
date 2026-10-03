@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { MARKING_TLP_AMBER } from '../../../src/schema/identifier';
+import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
 import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
@@ -96,7 +96,7 @@ const TIMELINE_EVENT_FIELDS = `
   external_id
   analyst_fields
   editable
-  objectMarking { id }
+  objectMarking { id standard_id }
   createdBy { id }
 `;
 
@@ -153,8 +153,39 @@ const CONTAINER_TIMELINE_SUMMARY = gql`
   }
 `;
 const CONTAINER_TIMELINE_EXPORT = gql`
-  query ContainerTimelineExport($id: String!, $format: TimelineExportFormat!, $labels: [TimelineExportLabelInput!], $search: String, $sources: [TimelineEventSource!], $pinnedOnly: Boolean) {
-    containerTimelineExport(id: $id, format: $format, labels: $labels, search: $search, sources: $sources, pinnedOnly: $pinnedOnly)
+  query ContainerTimelineExport(
+    $id: String!
+    $format: TimelineExportFormat!
+    $labels: [TimelineExportLabelInput!]
+    $search: String
+    $sources: [TimelineEventSource!]
+    $pinnedOnly: Boolean
+    $contentMaxMarkings: [String!]
+  ) {
+    containerTimelineExport(
+      id: $id
+      format: $format
+      labels: $labels
+      search: $search
+      sources: $sources
+      pinnedOnly: $pinnedOnly
+      contentMaxMarkings: $contentMaxMarkings
+    )
+  }
+`;
+const CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS = gql`
+  query ContainerTimelineExportFileMarkings($id: String!, $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
+    containerTimelineExportFileMarkings(id: $id, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) { id standard_id }
+  }
+`;
+const TIMELINE_VIEWED = gql`
+  mutation TimelineViewed($containerId: ID!) {
+    timelineViewed(containerId: $containerId)
+  }
+`;
+const MARKING_DEFINITION = gql`
+  query TimelineMarkingDefinition($id: String!) {
+    markingDefinition(id: $id) { id }
   }
 `;
 const TIMELINE_EVENT = gql`
@@ -241,6 +272,7 @@ interface TimelineEventNode {
   external_id: string | null;
   analyst_fields: string[];
   editable: boolean;
+  objectMarking: { id: string; standard_id: string }[];
   createdBy: { id: string } | null;
 }
 
@@ -472,6 +504,21 @@ describe('Incident and case timeline', () => {
       );
     });
 
+    it('should mark a manual event at least as strictly as the element it points to', async () => {
+      const added = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T11:00:00.000Z', title: 'Amber indicator blocked', element_id: indicatorId } },
+      });
+      const event = added.data.timelineEventAdd as TimelineEventNode;
+      expect(event.objectMarking.map((marking) => marking.standard_id)).toContain(MARKING_TLP_AMBER);
+      // Replacing the markings of the event never drops the markings of its element
+      const edited = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: event.id, input: { objectMarking: [] } } });
+      expect((edited.data.timelineEventEdit as TimelineEventNode).objectMarking.map((marking) => marking.standard_id)).toContain(MARKING_TLP_AMBER);
+      const participate = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500, sources: ['manual'] } });
+      expect(participate.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node.id)).not.toContain(event.id);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: event.id } });
+    });
+
     it('should pin, hide and annotate a derived event, never change its content', async () => {
       const malwareEvents = await listTimeline(caseIncident.id, { kinds: ['malware_seen'] });
       derivedMalwareEventId = malwareEvents[0].id;
@@ -580,6 +627,59 @@ describe('Incident and case timeline', () => {
     it('should only export what the exporting user can see', async () => {
       const csv = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       expect(csv.data.containerTimelineExport).not.toContain('Timeline amber indicator');
+    });
+
+    it('should apply the content ceiling and the max shareable markings to exports', async () => {
+      const green = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_GREEN } });
+      const greenId = green.data.markingDefinition.id;
+      const full = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
+      expect(full.data.containerTimelineExport).toContain('Timeline amber indicator');
+      const ceiled = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv', contentMaxMarkings: [greenId] } });
+      expect(ceiled.data.containerTimelineExport).not.toContain('Timeline amber indicator');
+      expect(ceiled.data.containerTimelineExport).toContain('Hosts isolated by the SOC');
+      // The editor sees the amber indicator, but can only share up to TLP:GREEN
+      const editorList = await queryAsUserWithSuccess(USER_EDITOR, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500 } });
+      expect(editorList.data.containerTimeline.edges.some((edge: { node: TimelineEventNode }) => edge.node.element_id === indicatorId)).toBe(true);
+      const editorCsv = await queryAsUserWithSuccess(USER_EDITOR, { query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
+      expect(editorCsv.data.containerTimelineExport).not.toContain('Timeline amber indicator');
+      await queryAsAdminWithError(
+        { query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv', contentMaxMarkings: ['marking-definition--00000000-0000-4000-8000-000000000000'] } },
+        'Marking definition cannot be found',
+      );
+    });
+
+    it('should mark a stored export at least as strictly as the events it contains', async () => {
+      const green = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_GREEN } });
+      const greenId = green.data.markingDefinition.id;
+      const raised = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS, variables: { id: caseIncident.id, fileMarkings: [greenId] } });
+      const raisedIds = raised.data.containerTimelineExportFileMarkings.map((marking: { standard_id: string }) => marking.standard_id);
+      // TLP:AMBER (amber indicator events) replaces the weaker TLP:GREEN selected for the file
+      expect(raisedIds).toContain(MARKING_TLP_AMBER);
+      expect(raisedIds).not.toContain(MARKING_TLP_GREEN);
+      const ceiled = await queryAsAdminWithSuccess({
+        query: CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS,
+        variables: { id: caseIncident.id, contentMaxMarkings: [greenId], fileMarkings: [greenId] },
+      });
+      expect(ceiled.data.containerTimelineExportFileMarkings.map((marking: { standard_id: string }) => marking.standard_id)).toEqual([MARKING_TLP_GREEN]);
+    });
+
+    it('should only mark as editable the manual events of users who can update the container', async () => {
+      const editor = await queryAsUserWithSuccess(USER_EDITOR, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500 } });
+      const editorEvents: TimelineEventNode[] = editor.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node);
+      const editorManual = editorEvents.filter((event) => event.source === 'manual');
+      expect(editorManual.length).toBeGreaterThan(0);
+      expect(editorManual.every((event) => event.editable)).toBe(true);
+      expect(editorEvents.filter((event) => event.source === 'derived').some((event) => event.editable)).toBe(false);
+      const participate = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500, sources: ['manual'] } });
+      const participateManual: TimelineEventNode[] = participate.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node);
+      expect(participateManual.length).toBeGreaterThan(0);
+      expect(participateManual.some((event) => event.editable)).toBe(false);
+    });
+
+    it('should count the openings of the timeline tab', async () => {
+      const viewed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_VIEWED, variables: { containerId: caseIncident.id } });
+      expect(viewed.data.timelineViewed).toBe(true);
+      await queryAsAdminWithError({ query: TIMELINE_VIEWED, variables: { containerId: 'unknown-container' } }, 'Timeline container cannot be found');
     });
 
     it('should update the settings of the timeline', async () => {

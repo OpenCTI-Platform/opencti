@@ -68,9 +68,13 @@ export interface SanitizedTimelineExtension {
  * mapped to the manual-event defaults ("custom", "milestone") and to "approximate" (a time whose
  * precision is unknown is never presented as exact); malformed optional values are removed.
  * Events without an identifier, a title or a valid start time, and annotations that cannot target
- * a derived event, are dropped.
+ * a derived event, are dropped. Only the first `limits.maxEvents` events and `limits.maxAnnotations`
+ * annotations are read, the others are dropped.
  */
-export const sanitizeTimelineExtension = (extension: unknown): SanitizedTimelineExtension => {
+export const sanitizeTimelineExtension = (
+  extension: unknown,
+  limits: { maxEvents: number; maxAnnotations: number },
+): SanitizedTimelineExtension => {
   let dropped = 0;
   let normalized = 0;
   const pick = <T extends string>(value: unknown, allowed: Set<string>, whenAbsent: T, whenUnknown: T): T => {
@@ -80,8 +84,11 @@ export const sanitizeTimelineExtension = (extension: unknown): SanitizedTimeline
     return whenUnknown;
   };
   const source = isObject(extension) ? extension : {};
-  const rawEvents = Array.isArray(source.events) ? source.events : [];
-  const rawAnnotations = Array.isArray(source.annotations) ? source.annotations : [];
+  const allEvents = Array.isArray(source.events) ? source.events : [];
+  const allAnnotations = Array.isArray(source.annotations) ? source.annotations : [];
+  const rawEvents = allEvents.slice(0, Math.max(0, limits.maxEvents));
+  const rawAnnotations = allAnnotations.slice(0, Math.max(0, limits.maxAnnotations));
+  dropped += (allEvents.length - rawEvents.length) + (allAnnotations.length - rawAnnotations.length);
   const events: StixTimelineExtensionEvent[] = [];
   rawEvents.forEach((raw) => {
     const id = isObject(raw) ? asString(raw.id) : undefined;

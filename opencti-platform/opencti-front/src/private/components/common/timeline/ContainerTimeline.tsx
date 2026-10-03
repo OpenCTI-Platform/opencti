@@ -398,9 +398,10 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   // Only the event of the opening link is searched in earlier pages, never a later selection
   const [linkedEventId, setLinkedEventId] = useState<string | null>(state.event);
 
+  // Patches apply to the URL as it is when they land: a delayed domain update never reverts a later change (view, filters)
   const updateState = useCallback((patch: Partial<TimelineViewState>) => {
-    setSearchParams(serializeTimelineViewState({ ...state, ...patch }, defaults), { replace: true });
-  }, [state, defaults, setSearchParams]);
+    setSearchParams((current) => serializeTimelineViewState({ ...parseTimelineViewState(current, defaults), ...patch }, defaults), { replace: true });
+  }, [defaults, setSearchParams]);
 
   useEffect(() => () => clearTimeout(urlTimer.current), []);
   // A new zoom window (or a URL change from the outside) resets the visible domain
@@ -542,9 +543,10 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
       <ContainerTimelineAnchors
         anchors={summary.anchors}
         onAnchorClick={(time) => {
-          updateState({ view: 'lanes' });
-          const current = domain ?? computeVisibleDomain(null, state.zoom);
-          onDomainChange(centerDomain(current, time));
+          const centered = centerDomain(domain ?? computeVisibleDomain(null, state.zoom), time);
+          clearTimeout(urlTimer.current);
+          setDomain(centered);
+          updateState({ view: 'lanes', domain: centered });
         }}
       />
       {summary.truncated && (

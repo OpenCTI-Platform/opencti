@@ -58,12 +58,14 @@ import {
   type StoredTimelineEvent,
   type StoredTimelineSettings,
   TIMELINE_MAX_EVENTS,
+  TIMELINE_MAX_MANUAL_EVENTS,
   type TimelineRegenerationResult,
   upsertTimelineSettings,
+  withTimelineLock,
 } from './timeline-engine';
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { notifyTimelineMilestoneAdded } from './timeline-notification';
-import { sanitizeTimelineExtension } from './timeline-extension';
+import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
 import { logApp } from '../../config/conf';
 
@@ -479,6 +481,31 @@ const reloadEvent = async (context: AuthContext, user: AuthUser, id: string) => 
   return elLoadById<StoredTimelineEvent>(context, user, id, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent;
 };
 
+const countManualTimelineEvents = (context: AuthContext, containerId: string): Promise<number> => {
+  return elCount(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_TIMELINE_EVENT],
+    noFiltersChecking: true,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['container_id'], values: [containerId] }, { key: ['event_source'], values: ['manual'] }],
+      filterGroups: [],
+    },
+  } as any);
+};
+
+type LoadedTimelineEvent = Awaited<ReturnType<typeof loadEditableTimelineEvent>>;
+
+/** Write an event under the lock of its container, from the event as stored once the lock is held. */
+const writeTimelineEvent = async <T>(
+  context: AuthContext,
+  user: AuthUser,
+  eventId: string,
+  write: (loaded: LoadedTimelineEvent) => Promise<T>,
+): Promise<T> => {
+  const { container } = await loadEditableTimelineEvent(context, user, eventId);
+  return withTimelineLock(container.internal_id, async () => write(await loadEditableTimelineEvent(context, user, eventId)));
+};
+
 const creatorIdsOf = (event: StoredTimelineEvent): string[] => {
   if (Array.isArray(event.creator_id)) return event.creator_id;
   return event.creator_id ? [event.creator_id] : [];
@@ -524,16 +551,9 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   const element = await resolveElement(context, user, input.element_id);
   const author = await resolveAuthor(context, user, input.createdBy);
   const internalId = input.external_id ? computeManualEventId(container.internal_id, input.external_id) : uuidv4();
-  const existing = input.external_id
-    ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
-    : null;
-  // The idempotent upsert never lets a user overwrite (and unmark) an event he cannot read
-  if (existing && !(await findTimelineEvent(context, user, internalId))) {
-    throw ForbiddenAccess('A timeline event you cannot access already uses this external id');
-  }
   const access = containerAccessFields(container);
   const kind = input.kind ?? 'milestone';
-  const doc = buildTimelineEventDoc({
+  const buildManualEventDoc = (previous: StoredTimelineEvent | null) => buildTimelineEventDoc({
     internal_id: internalId,
     container_id: container.internal_id,
     name: input.title.trim(),
@@ -547,9 +567,9 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     rule_id: null,
     element_id: element?.internal_id ?? null,
     element_type: element?.entity_type ?? null,
-    pinned: input.pinned ?? existing?.pinned ?? false,
-    hidden: existing?.hidden ?? false,
-    annotation: input.annotation ?? existing?.annotation ?? null,
+    pinned: input.pinned ?? previous?.pinned ?? false,
+    hidden: previous?.hidden ?? false,
+    annotation: input.annotation ?? previous?.annotation ?? null,
     confidence: input.confidence ?? null,
     ordering_hint: input.ordering_hint ?? null,
     analyst_fields: [],
@@ -557,12 +577,24 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     // An event is never less marked than the element it points to, nor than its container
     markings: Array.from(new Set([...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
     created_by_id: author?.internal_id ?? null,
-    creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
+    creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
     restricted_members: access.restricted_members,
-  }, existing);
-  await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [doc]);
-  await afterTimelineChange(context, user, container, 'manual', [internalId]);
-  const stored = await reloadEvent(context, user, internalId);
+  }, previous);
+  const { stored, existing } = await withTimelineLock(container.internal_id, async () => {
+    const current = input.external_id
+      ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
+      : null;
+    // The idempotent upsert never lets a user overwrite (and unmark) an event he cannot read
+    if (current && !(await findTimelineEvent(context, user, internalId))) {
+      throw ForbiddenAccess('A timeline event you cannot access already uses this external id');
+    }
+    if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
+      throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
+    }
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current)]);
+    await afterTimelineChange(context, user, container, 'manual', [internalId]);
+    return { stored: await reloadEvent(context, user, internalId), existing: current };
+  });
   if (!existing) {
     addTimelineManualEventCount();
     if (stored && (TIMELINE_MILESTONE_KINDS as readonly string[]).includes(kind)) {
@@ -575,8 +607,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
 
 const DERIVED_EDITABLE_FIELDS = ['annotation', 'ordering_hint'];
 
-export const editTimelineEvent = async (context: AuthContext, user: AuthUser, id: string, input: TimelineEventEditInput) => {
-  const { event, container } = await loadEditableTimelineEvent(context, user, id);
+const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, loaded: LoadedTimelineEvent, input: TimelineEventEditInput) => {
+  const { event, container } = loaded;
   const providedFields = Object.entries(input).filter(([, value]) => value !== undefined).map(([key]) => key);
   if (event.event_source === 'derived') {
     const forbidden = providedFields.filter((field) => !DERIVED_EDITABLE_FIELDS.includes(field));
@@ -642,24 +674,30 @@ export const editTimelineEvent = async (context: AuthContext, user: AuthUser, id
   return reloadEvent(context, user, event.internal_id);
 };
 
+export const editTimelineEvent = async (context: AuthContext, user: AuthUser, id: string, input: TimelineEventEditInput) => {
+  return writeTimelineEvent(context, user, id, (loaded) => applyTimelineEventEdit(context, user, loaded, input));
+};
+
 export const deleteTimelineEvent = async (context: AuthContext, user: AuthUser, id: string) => {
-  const { event, container } = await loadEditableTimelineEvent(context, user, id);
-  if (event.event_source !== 'manual') {
-    throw FunctionalError('A derived event cannot be deleted, hide it instead', { id });
-  }
-  await deleteTimelineDocuments([event.internal_id]);
-  await afterTimelineChange(context, user, container, 'manual', [event.internal_id]);
-  return event.internal_id;
+  return writeTimelineEvent(context, user, id, async ({ event, container }) => {
+    if (event.event_source !== 'manual') {
+      throw FunctionalError('A derived event cannot be deleted, hide it instead', { id });
+    }
+    await deleteTimelineDocuments([event.internal_id]);
+    await afterTimelineChange(context, user, container, 'manual', [event.internal_id]);
+    return event.internal_id;
+  });
 };
 
 const setAnalystFlag = async (context: AuthContext, user: AuthUser, id: string, field: 'pinned' | 'hidden', value: boolean) => {
-  const { event, container } = await loadEditableTimelineEvent(context, user, id);
-  const analystFields = new Set<TimelineAnalystField>(event.analyst_fields ?? []);
-  if (event.event_source === 'derived') analystFields.add(field);
-  const doc = docFromStored(event, container, { [field]: value, analyst_fields: Array.from(analystFields) });
-  await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [doc]);
-  await afterTimelineChange(context, user, container, 'annotation', [event.internal_id]);
-  return reloadEvent(context, user, event.internal_id);
+  return writeTimelineEvent(context, user, id, async ({ event, container }) => {
+    const analystFields = new Set<TimelineAnalystField>(event.analyst_fields ?? []);
+    if (event.event_source === 'derived') analystFields.add(field);
+    const doc = docFromStored(event, container, { [field]: value, analyst_fields: Array.from(analystFields) });
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [doc]);
+    await afterTimelineChange(context, user, container, 'annotation', [event.internal_id]);
+    return reloadEvent(context, user, event.internal_id);
+  });
 };
 
 export const pinTimelineEvent = async (context: AuthContext, user: AuthUser, id: string, pinned: boolean) => {
@@ -680,7 +718,7 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
   if (input.default_grouping) patch.default_grouping = input.default_grouping;
   if (input.default_zoom_window) patch.default_zoom_window = input.default_zoom_window;
   if (input.hidden_kinds) patch.hidden_kinds = Array.from(new Set(input.hidden_kinds));
-  const settings = await upsertTimelineSettings(context, container, patch);
+  const settings = await withTimelineLock(container.internal_id, () => upsertTimelineSettings(context, container, patch));
   await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'settings', changed_event_ids: [], anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null }, user);
   return settingsWithDefaults(container.internal_id, settings);
 };
@@ -690,30 +728,15 @@ export const regenerateTimeline = async (context: AuthContext, user: AuthUser, c
   return regenerateContainerTimeline(context, container.internal_id, { wait: true });
 };
 
-/**
- * Import the analyst contributions of a timeline STIX extension: manual events are created
- * (idempotent on their STIX id), annotations are applied to the derived events they target or kept
- * pending until the derivation produces them.
- */
-export const importTimelineExtension = async (context: AuthContext, user: AuthUser, containerId: string, rawExtension: string) => {
-  const container = await loadEditableTimelineContainer(context, user, containerId);
-  let extension: unknown;
-  try {
-    extension = JSON.parse(rawExtension);
-  } catch {
-    throw FunctionalError('Invalid timeline extension');
-  }
-  const { events, annotations, dropped, normalized } = sanitizeTimelineExtension(extension);
-  if (dropped > 0 || normalized > 0) {
-    logApp.warn('[TIMELINE] Timeline extension values dropped or normalized on import', { containerId: container.internal_id, dropped, normalized });
-  }
-  const refs = Array.from(new Set([
-    ...events.flatMap((e) => [e.element_ref, e.created_by_ref, ...(e.object_marking_refs ?? [])]),
-    ...annotations.map((a) => a.element_ref),
-  ].filter((ref): ref is string => !!ref)));
-  const resolved = refs.length > 0
-    ? await internalFindByIds(context, user, refs, { toMap: true, mapWithAllIds: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
-    : {};
+/** Write the imported contributions; runs under the timeline lock of the container. */
+const writeImportedContributions = async (
+  context: AuthContext,
+  user: AuthUser,
+  container: AnyStoreElement,
+  contributions: SanitizedTimelineExtension,
+  resolved: Record<string, AnyStoreElement>,
+) => {
+  const { events, annotations } = contributions;
   const access = containerAccessFields(container);
   const allowedMarkings = new Set(user.allowed_marking.map((m) => m.internal_id));
   // A manual event travelling back to a platform that already knows it (same STIX id, or the id it
@@ -752,8 +775,23 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
   if (skipped > 0) {
     logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, or event not readable', { containerId: container.internal_id, skipped });
   }
+  // New milestones stay within the cap of the case, updates of known events always apply
+  const accepted = candidates.filter((candidate) => candidate.markings !== null);
+  let capacity = Math.max(0, TIMELINE_MAX_MANUAL_EVENTS - storedManual.length);
+  const importable = accepted.filter((candidate) => {
+    if (candidate.existing || storedIds.has(candidate.internalId)) return true;
+    if (capacity === 0) return false;
+    capacity -= 1;
+    return true;
+  });
+  if (importable.length < accepted.length) {
+    logApp.warn('[TIMELINE] Imported milestones beyond the cap of the case were skipped', {
+      containerId: container.internal_id,
+      skipped: accepted.length - importable.length,
+      max: TIMELINE_MAX_MANUAL_EVENTS,
+    });
+  }
   // The references were resolved without their markings: the markings of the elements are read in full
-  const importable = candidates.filter((candidate) => candidate.markings !== null);
   const elementIds = Array.from(new Set(importable.map(({ event }) => (event.element_ref ? resolved[event.element_ref]?.internal_id : null))
     .filter((id): id is string => !!id)));
   const elementsWithMarkings = elementIds.length > 0
@@ -811,6 +849,34 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
     pending.forEach((annotation) => byId.set(annotation.event_id, annotation));
     await upsertTimelineSettings(context, container, { pending_annotations: Array.from(byId.values()) }, settings ?? null);
   }
+};
+
+/**
+ * Import the analyst contributions of a timeline STIX extension: manual events are created
+ * (idempotent on their STIX id), annotations are applied to the derived events they target or kept
+ * pending until the derivation produces them.
+ */
+export const importTimelineExtension = async (context: AuthContext, user: AuthUser, containerId: string, rawExtension: string) => {
+  const container = await loadEditableTimelineContainer(context, user, containerId);
+  let extension: unknown;
+  try {
+    extension = JSON.parse(rawExtension);
+  } catch {
+    throw FunctionalError('Invalid timeline extension');
+  }
+  const contributions = sanitizeTimelineExtension(extension, { maxEvents: TIMELINE_MAX_MANUAL_EVENTS, maxAnnotations: TIMELINE_MAX_EVENTS });
+  const { events, annotations, dropped, normalized } = contributions;
+  if (dropped > 0 || normalized > 0) {
+    logApp.warn('[TIMELINE] Timeline extension values dropped or normalized on import', { containerId: container.internal_id, dropped, normalized });
+  }
+  const refs = Array.from(new Set([
+    ...events.flatMap((e) => [e.element_ref, e.created_by_ref, ...(e.object_marking_refs ?? [])]),
+    ...annotations.map((a) => a.element_ref),
+  ].filter((ref): ref is string => !!ref)));
+  const resolved = refs.length > 0
+    ? await internalFindByIds(context, user, refs, { toMap: true, mapWithAllIds: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  await withTimelineLock(container.internal_id, () => writeImportedContributions(context, user, container, contributions, resolved));
   return regenerateContainerTimeline(context, container.internal_id, { wait: true });
 };
 // endregion

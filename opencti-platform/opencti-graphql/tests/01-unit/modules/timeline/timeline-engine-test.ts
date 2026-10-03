@@ -130,6 +130,8 @@ describe('Timeline schema registration', () => {
 });
 
 describe('Timeline STIX extension', () => {
+  const IMPORT_LIMITS = { maxEvents: 100, maxAnnotations: 100 };
+
   it('should only exist when there are analyst contributions', () => {
     expect(buildStixTimelineExtension(undefined)).toBeUndefined();
     expect(buildStixTimelineExtension({ events: [], annotations: [] })).toBeUndefined();
@@ -163,7 +165,7 @@ describe('Timeline STIX extension', () => {
       created_by_ref: 'identity--1',
     };
     const annotation = { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--1', pinned: true, ordering_hint: 1 };
-    const result = sanitizeTimelineExtension({ extension_type: 'property-extension', events: [event], annotations: [annotation] });
+    const result = sanitizeTimelineExtension({ extension_type: 'property-extension', events: [event], annotations: [annotation] }, IMPORT_LIMITS);
     expect(result).toEqual({ events: [event], annotations: [annotation], dropped: 0, normalized: 0 });
   });
 
@@ -186,7 +188,7 @@ describe('Timeline STIX extension', () => {
         },
       ],
       annotations: [],
-    });
+    }, IMPORT_LIMITS);
     expect(result.dropped).toEqual(0);
     expect(result.events[0]).toMatchObject({ precision: 'exact', lane: 'custom', kind: 'milestone' });
     const normalized = result.events[1];
@@ -214,10 +216,19 @@ describe('Timeline STIX extension', () => {
         { rule_id: 'technique-kill-chain', kind: 'technique_used' },
         null,
       ],
-    });
+    }, IMPORT_LIMITS);
     expect(result.events.map((e) => e.id)).toEqual(['splunk:2']);
     expect(result.annotations).toEqual([]);
     expect(result.dropped).toEqual(7);
-    expect(sanitizeTimelineExtension('garbage')).toEqual({ events: [], annotations: [], dropped: 0, normalized: 0 });
+    expect(sanitizeTimelineExtension('garbage', IMPORT_LIMITS)).toEqual({ events: [], annotations: [], dropped: 0, normalized: 0 });
+  });
+
+  it('should only read a bounded number of contributions', () => {
+    const events = Array.from({ length: 5 }, (_, index) => ({ id: `timeline-event--${index}`, event_time: '2026-03-05T00:00:00.000Z', title: `Event ${index}` }));
+    const annotations = Array.from({ length: 4 }, (_, index) => ({ rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: `attack-pattern--${index}` }));
+    const result = sanitizeTimelineExtension({ events, annotations }, { maxEvents: 3, maxAnnotations: 2 });
+    expect(result.events.map((e) => e.id)).toEqual(['timeline-event--0', 'timeline-event--1', 'timeline-event--2']);
+    expect(result.annotations.map((a) => a.element_ref)).toEqual(['attack-pattern--0', 'attack-pattern--1']);
+    expect(result.dropped).toEqual(4);
   });
 });

@@ -59,6 +59,8 @@ import { notifyTimelineAnchorsChanged } from './timeline-notification';
 import { addTimelineDerivedEventCount } from '../../manager/telemetryManager';
 
 export const TIMELINE_MAX_EVENTS: number = conf.get('timeline_manager:max_events') ?? 10000;
+// Analyst milestones per case, added through the API or imported: kept apart from the derived events cap
+export const TIMELINE_MAX_MANUAL_EVENTS: number = conf.get('timeline_manager:max_manual_events') ?? 1000;
 
 type AnyStoreElement = BasicStoreBase & Record<string, any>;
 export type StoredTimelineEvent = BasicStoreEntityTimelineEvent & { _index: string } & Record<string, any>;
@@ -591,6 +593,23 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   };
 };
 
+const timelineLockKey = (containerId: string) => `timeline_regeneration_${containerId}`;
+
+/**
+ * Every write to the timeline of a container (regeneration, analyst contributions, settings) runs under one
+ * per-container lock, so that a regeneration never rebuilds events or settings from a snapshot older than a
+ * contribution, and contributions never interleave with each other.
+ */
+export const withTimelineLock = async <T>(containerId: string, write: () => Promise<T>): Promise<T> => {
+  let lock;
+  try {
+    lock = await lockResources([timelineLockKey(containerId)]);
+    return await write();
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
 /**
  * Regenerate the derived events of a container. Idempotent: derived events have deterministic ids,
  * unchanged events are not rewritten and analyst fields survive. Returns null when another
@@ -611,7 +630,7 @@ export const regenerateContainerTimeline = async (
   let lock;
   try {
     // Background regenerations skip a container being regenerated, explicit ones wait for it
-    lock = await lockResources([`timeline_regeneration_${container.internal_id}`], opts.wait ? {} : { retryCount: 0 });
+    lock = await lockResources([timelineLockKey(container.internal_id)], opts.wait ? {} : { retryCount: 0 });
     if (opts.skipIfGenerated) {
       const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
       if (!current) return null;
