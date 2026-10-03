@@ -247,4 +247,34 @@ describe('paintLinkLabels', () => {
     expect(ctx.texts()).toEqual(['targets', 'indicates']);
     expect(ctx.callsOf('strokeText')).toHaveLength(2);
   });
+
+  it('slides a label along its link when the middle covers a node, and leaves it out when no place is free', () => {
+    const node = { x: 0, y: 0, halfWidth: 9, halfHeight: 9 };
+    const alternatives = [{ x: -40, y: 0, angle: 0 }, { x: 40, y: 0, angle: 0 }];
+    const ctx = createRecordingContext();
+    paintLinkLabels(ctx, [{ text: 'uses', x: 0, y: 0, angle: 0, priority: 0, emphasised: false, alternatives }], { palette, globalScale: 4, obstacles: [node] });
+    expect(ctx.callsOf('translate')[0].args).toEqual([-40, 0]);
+
+    const blocked = createRecordingContext();
+    const walls = [node, { ...node, x: -40 }, { ...node, x: 40 }];
+    paintLinkLabels(blocked, [{ text: 'uses', x: 0, y: 0, angle: 0, priority: 0, emphasised: false, alternatives }], { palette, globalScale: 4, obstacles: walls });
+    expect(blocked.texts()).toEqual([]);
+    paintLinkLabels(blocked, [{ text: 'uses', x: 0, y: 0, angle: 0, priority: 3, emphasised: true, alternatives }], { palette, globalScale: 4, obstacles: walls });
+    expect(blocked.texts()).toEqual(['uses']);
+  });
+
+  it('gives every link label two other places along the link, and nodes report what they cover', () => {
+    const a = graphNode({ id: 'a', x: 0, y: 0 });
+    const b = graphNode({ id: 'b', x: 100, y: 0 });
+    const label = paintGraphLink(createRecordingContext(), graphLink(a, b), {
+      palette, globalScale: 4, detail: fullDetail, visual: { selected: false, hovered: false, faded: false, onPath: false }, color: palette.link, curvature: 0, rotation: 0,
+    });
+    expect(label?.alternatives?.map(({ x }) => Math.round(x))).toEqual([expect.any(Number), expect.any(Number)]);
+    const [before, after] = label?.alternatives ?? [];
+    expect(before.x).toBeLessThan(50);
+    expect(after.x).toBeGreaterThan(50);
+    const covered = paintGraphNode(createRecordingContext(), graphNode(), { palette, globalScale: 4, detail: fullDetail, visual: plain, badges: [{ key: 'b', tone: 'info', label: 'B' }] });
+    expect(covered).toHaveLength(3);
+    expect(covered[0]).toMatchObject({ x: graphNode().x, y: graphNode().y });
+  });
 });

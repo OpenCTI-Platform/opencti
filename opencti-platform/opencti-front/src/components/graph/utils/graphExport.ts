@@ -25,6 +25,8 @@ export interface GraphExportInput {
     lineStyles: { label: string; kind: 'asserted' | 'inferred' | 'lowConfidence' }[];
   };
   showConnectedCount?: boolean;
+  /** Curvature of each link as drawn on screen; the parallel-link fan-out when not given. */
+  curvatureOf?: (link: GraphLink) => { curvature: number; rotation: number };
   /** Image pixels per graph unit; lowered when the image would exceed the maximum size. */
   pixelsPerUnit?: number;
 }
@@ -103,7 +105,7 @@ export const renderGraphImage = (
   ctx.scale(scale, scale);
   const labels: LinkLabel[] = [];
   links.forEach((link) => {
-    const { curvature, rotation } = curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+    const { curvature, rotation } = input.curvatureOf?.(link) ?? curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
     const label = paintGraphLink(ctx, link, {
       palette,
       globalScale: scale,
@@ -116,18 +118,16 @@ export const renderGraphImage = (
     });
     if (label) labels.push(label);
   });
-  nodes.forEach((node) => {
-    paintGraphNode(ctx, node, {
-      palette,
-      globalScale: scale,
-      detail,
-      visual: { selected: false, preview: false, hovered: false, faded: false, onPath: false },
-      badges: input.badgesOf(node),
-      showConnectedCount: input.showConnectedCount,
-      typeLabel: input.typeLabel(node),
-    });
-  });
-  paintLinkLabels(ctx, labels, { palette, globalScale: scale });
+  const covered = nodes.flatMap((node) => paintGraphNode(ctx, node, {
+    palette,
+    globalScale: scale,
+    detail,
+    visual: { selected: false, preview: false, hovered: false, faded: false, onPath: false },
+    badges: input.badgesOf(node),
+    showConnectedCount: input.showConnectedCount,
+    typeLabel: input.typeLabel(node),
+  }));
+  paintLinkLabels(ctx, labels, { palette, globalScale: scale, obstacles: covered });
   ctx.restore();
 
   // Legend.

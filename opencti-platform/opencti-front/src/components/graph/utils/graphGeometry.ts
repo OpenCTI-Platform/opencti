@@ -204,16 +204,118 @@ export const computeLinkCurvatures = (links: readonly LinkEnds[]): Map<string, {
   return result;
 };
 
-const boxesOverlap = (first: Box, second: Box): boolean => Math.abs(first.x - second.x) < first.halfWidth + second.halfWidth
+/** A bend never exceeds this curvature: past it a link reads as a loop. */
+const MAX_BEND = 0.6;
+/** Obstacles this close to an end of the link are hidden by the end node itself. */
+const END_ZONE = 0.08;
+
+/**
+ * Curvatures that make straight links bend around the nodes lying on their way, for layouts
+ * that line nodes up (layers, tiers): a link from the first to the third node of a row would
+ * otherwise run through the second one and read as two links. Only links drawn straight (no
+ * parallel link) are bent, away from the obstacle closest to their line and just enough to clear
+ * every obstacle on that side by `clearance`. Nodes are indexed in a grid so that long links
+ * across large graphs stay cheap; deterministic.
+ */
+export const computeObstacleBends = (
+  links: readonly LinkEnds[],
+  positions: ReadonlyMap<string, Point>,
+  clearance: number,
+  curvatures?: ReadonlyMap<string, { curvature: number }>,
+): Map<string, number> => {
+  const cell = clearance * 3;
+  const grid = new Map<string, string[]>();
+  const cellKey = (cx: number, cy: number) => `${cx}:${cy}`;
+  positions.forEach((point, id) => {
+    if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+    const key = cellKey(Math.floor(point.x / cell), Math.floor(point.y / cell));
+    const members = grid.get(key);
+    if (members) members.push(id);
+    else grid.set(key, [id]);
+  });
+  const bends = new Map<string, number>();
+  links.forEach((link) => {
+    if (link.sourceId === link.targetId || (curvatures?.get(link.id)?.curvature ?? 0) !== 0) return;
+    const start = positions.get(link.sourceId);
+    const end = positions.get(link.targetId);
+    if (!start || !end) return;
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    if (length < clearance * 2) return;
+    const u = { x: (end.x - start.x) / length, y: (end.y - start.y) / length };
+    // Positive curvature moves the curve towards this side (see `linkPath`).
+    const normal = { x: u.y, y: -u.x };
+    const seen = new Set<string>([link.sourceId, link.targetId]);
+    const obstacles: { t: number; offset: number }[] = [];
+    const steps = Math.ceil(length / cell);
+    for (let step = 0; step <= steps; step += 1) {
+      const along = Math.min(length, step * cell);
+      const cx = Math.floor((start.x + u.x * along) / cell);
+      const cy = Math.floor((start.y + u.y * along) / cell);
+      for (let dx = -1; dx <= 1; dx += 1) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          (grid.get(cellKey(cx + dx, cy + dy)) ?? []).forEach((id) => {
+            if (seen.has(id)) return;
+            seen.add(id);
+            const point = positions.get(id) as Point;
+            const t = ((point.x - start.x) * u.x + (point.y - start.y) * u.y) / length;
+            const offset = (point.x - start.x) * normal.x + (point.y - start.y) * normal.y;
+            if (t > END_ZONE && t < 1 - END_ZONE && Math.abs(offset) < clearance) obstacles.push({ t, offset });
+          });
+        }
+      }
+    }
+    if (obstacles.length === 0) return;
+    // A quadratic curve of curvature c rises 2 t (1 - t) c times the length at t. Bending away from
+    // an obstacle clears it sooner than bending towards it, which must pass beyond it.
+    const neededTowards = (side: number) => obstacles.reduce((most, obstacle) => {
+      const height = obstacle.offset * side > 0 ? Math.abs(obstacle.offset) + clearance : clearance - Math.abs(obstacle.offset);
+      return Math.max(most, height / (2 * obstacle.t * (1 - obstacle.t) * length));
+    }, 0);
+    const positive = neededTowards(1);
+    const negative = neededTowards(-1);
+    // An obstacle right on the line is passed on the positive side.
+    bends.set(link.id, negative < positive ? -Math.min(MAX_BEND, negative) : Math.min(MAX_BEND, positive));
+  });
+  return bends;
+};
+
+export const boxesOverlap = (first: Box, second: Box): boolean => Math.abs(first.x - second.x) < first.halfWidth + second.halfWidth
   && Math.abs(first.y - second.y) < first.halfHeight + second.halfHeight;
 
-/** Kept in the order given, each one dropped when it would overlap one kept before it. */
-export const keepNonOverlapping = <T extends { box: Box }>(items: readonly T[]): T[] => {
-  const kept: T[] = [];
-  items.forEach((item) => {
-    if (!kept.some((other) => boxesOverlap(other.box, item.box))) kept.push(item);
-  });
-  return kept;
+export interface BoxIndex {
+  add: (box: Box) => void;
+  overlaps: (box: Box) => boolean;
+}
+
+/**
+ * Boxes indexed in a grid of `cellSize`, so that checking a box against thousands of others only
+ * looks at its neighbours: what a frame needs to place labels among every node it drew.
+ */
+export const createBoxIndex = (cellSize: number): BoxIndex => {
+  const cells = new Map<string, Box[]>();
+  const cellsOf = (box: Box, visit: (key: string) => void) => {
+    const minX = Math.floor((box.x - box.halfWidth) / cellSize);
+    const maxX = Math.floor((box.x + box.halfWidth) / cellSize);
+    const minY = Math.floor((box.y - box.halfHeight) / cellSize);
+    const maxY = Math.floor((box.y + box.halfHeight) / cellSize);
+    for (let cx = minX; cx <= maxX; cx += 1) {
+      for (let cy = minY; cy <= maxY; cy += 1) visit(`${cx}:${cy}`);
+    }
+  };
+  return {
+    add: (box) => cellsOf(box, (key) => {
+      const members = cells.get(key);
+      if (members) members.push(box);
+      else cells.set(key, [box]);
+    }),
+    overlaps: (box) => {
+      let found = false;
+      cellsOf(box, (key) => {
+        if (!found) found = (cells.get(key) ?? []).some((other) => boxesOverlap(other, box));
+      });
+      return found;
+    },
+  };
 };
 
 /**

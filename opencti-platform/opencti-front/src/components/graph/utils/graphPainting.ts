@@ -2,7 +2,7 @@ import type { GraphLink, GraphNode } from '../graph.types';
 import type { GraphPalette } from './graphPalette';
 import type { GraphBadge } from '../badges/graphBadgeRegistry';
 import { entityGlyph, iconGlyph, paintGlyph } from './graphIcons';
-import { type Box, fitText, keepNonOverlapping, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
+import { type Box, createBoxIndex, fitText, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
 
 /*
  * Sizes are graph units: the view is fitted to the drawing, so they only fix proportions. Sizes
@@ -126,7 +126,8 @@ const paintHalo = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: numbe
   ctx.globalAlpha = opacity;
 };
 
-const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions) => {
+/** Draws the badge row above a node; returns the box it covers. */
+const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions): Box => {
   const { palette, globalScale } = options;
   const size = Math.max(BADGE_SIZE, BADGE_MIN_PX / globalScale);
   const gap = BADGE_GAP * (size / BADGE_SIZE);
@@ -163,9 +164,11 @@ const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
     }
     left += width + gap;
   });
+  return { x: node.x, y: centreY, halfWidth: total / 2, halfHeight: size / 2 };
 };
 
-const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, options: NodePaintOptions, emphasised: boolean) => {
+/** Draws the name (and the type close up) under a node; returns the box the text covers. */
+const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, options: NodePaintOptions, emphasised: boolean): Box => {
   const { palette, globalScale, visual, detail, typeLabel } = options;
   const base = emphasised ? Math.max(LABEL_SIZE, EMPHASIS_LABEL_PX / globalScale) : LABEL_SIZE;
   const size = Math.min(base, MAX_LABEL_PX / globalScale);
@@ -185,22 +188,30 @@ const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
     ctx.fillStyle = node.disabled ? palette.textSecondary : palette.text;
   }
   ctx.fillText(text, node.x, top);
+  let halfWidth = ctx.measureText(text).width / 2 + PILL_PADDING;
+  let height = size * 1.4;
   if (typeLabel && detail.secondaryLabels && !node.disabled) {
     const subSize = Math.min(SUBLABEL_SIZE, (MAX_LABEL_PX * 0.8) / globalScale);
     ctx.font = font(400, subSize);
     ctx.fillStyle = palette.textSecondary;
-    ctx.fillText(fitText((value) => ctx.measureText(value).width, typeLabel, LABEL_MAX_WIDTH * (subSize / LABEL_SIZE)), node.x, top + size * 1.3);
+    const subText = fitText((value) => ctx.measureText(value).width, typeLabel, LABEL_MAX_WIDTH * (subSize / LABEL_SIZE));
+    ctx.fillText(subText, node.x, top + size * 1.3);
+    halfWidth = Math.max(halfWidth, ctx.measureText(subText).width / 2 + PILL_PADDING);
+    height = size * 1.3 + subSize * 1.3;
   }
+  return { x: node.x, y: top + height / 2 - size * 0.2, halfWidth, halfHeight: height / 2 };
 };
 
 /**
  * Draws one node: a disc tinted with the entity colour, its ring and icon, the selection halo,
- * the badges above and the label below, each according to the level of detail.
+ * the badges above and the label below, each according to the level of detail. Returns the boxes
+ * the disc and the label cover, which link labels keep clear of.
  */
-export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, options: NodePaintOptions) => {
+export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, options: NodePaintOptions): Box[] => {
   const { palette, detail, visual, badges = [], showConnectedCount = false } = options;
-  if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+  if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return [];
   const radius = nodeRadius(node);
+  const covered: Box[] = [{ x: node.x, y: node.y, halfWidth: radius + HALO_GAP, halfHeight: radius + HALO_GAP }];
   const color = node.disabled ? palette.textSecondary : (node.color || palette.textSecondary);
   ctx.save();
   let alpha = 1;
@@ -266,14 +277,15 @@ export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, o
   }
 
   if (badges.length > 0 && detail.badges && !node.disabled) {
-    paintBadges(ctx, node, radius, badges, options);
+    covered.push(paintBadges(ctx, node, radius, badges, options));
   }
 
   const emphasised = visual.selected || visual.preview || visual.hovered || visual.onPath;
   if (detail.labels || emphasised) {
-    paintLabels(ctx, node, radius, options, emphasised);
+    covered.push(paintLabels(ctx, node, radius, options, emphasised));
   }
   ctx.restore();
+  return covered;
 };
 
 /** The area a pointer hits for a node: its disc with a little margin, and its label when drawn. */
@@ -315,7 +327,19 @@ export interface LinkLabel {
   /** Selected and focused labels are kept first when labels overlap. */
   priority: number;
   emphasised: boolean;
+  /** Other places along the link, tried in order when the middle is taken. */
+  alternatives?: { x: number; y: number; angle: number }[];
 }
+
+/** Where along a link its label may go: the middle first, then a little towards each end. */
+const LABEL_SPOTS = [0.5, 0.33, 0.67];
+
+const readableAngle = (tangent: { x: number; y: number }) => {
+  let angle = Math.atan2(tangent.y, tangent.x);
+  if (angle > Math.PI / 2) angle -= Math.PI;
+  if (angle < -Math.PI / 2) angle += Math.PI;
+  return angle;
+};
 
 const endOf = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end : null);
 
@@ -386,53 +410,57 @@ export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, o
   ctx.restore();
 
   if (!link.label || link.disabled || !(detail.linkLabels || emphasis)) return null;
-  const middle = pointAt(trimmed, 0.5);
-  const tangent = tangentAt(trimmed, 0.5);
-  let angle = Math.atan2(tangent.y, tangent.x);
-  if (angle > Math.PI / 2) angle -= Math.PI;
-  if (angle < -Math.PI / 2) angle += Math.PI;
+  const [middle, ...alternatives] = LABEL_SPOTS.map((t) => ({ ...pointAt(trimmed, t), angle: readableAngle(tangentAt(trimmed, t)) }));
   let priority = 0;
   if (visual.selected) priority = 3;
   else if (visual.onPath) priority = 2;
   else if (visual.hovered) priority = 1;
-  return { text: linkLabelText(link), x: middle.x, y: middle.y, angle, priority, emphasised: emphasis && !visual.faded };
+  return { text: linkLabelText(link), ...middle, priority, emphasised: emphasis && !visual.faded, alternatives };
 };
 
-const rotatedBox = (label: LinkLabel, width: number, height: number): Box => {
-  const cos = Math.abs(Math.cos(label.angle));
-  const sin = Math.abs(Math.sin(label.angle));
+const rotatedBox = (spot: { x: number; y: number; angle: number }, width: number, height: number): Box => {
+  const cos = Math.abs(Math.cos(spot.angle));
+  const sin = Math.abs(Math.sin(spot.angle));
   return {
-    x: label.x,
-    y: label.y,
+    x: spot.x,
+    y: spot.y,
     halfWidth: (width * cos + height * sin) / 2,
     halfHeight: (width * sin + height * cos) / 2,
   };
 };
 
 /**
- * Draws the link labels over everything else, most important first, dropping a label that
- * would overlap one already drawn: half-hidden labels name nothing.
+ * Draws the link labels over everything else, most important first. A label goes to the middle
+ * of its link, or a little towards an end when the middle would cover a node (`obstacles`, what
+ * the nodes drew) or a label already placed; a label with no free place is left out, since a
+ * half-hidden label names nothing, unless it is emphasised (selected, hovered, on a path).
  */
 export const paintLinkLabels = (
   ctx: CanvasRenderingContext2D,
   labels: readonly LinkLabel[],
-  options: { palette: GraphPalette; globalScale: number },
+  options: { palette: GraphPalette; globalScale: number; obstacles?: readonly Box[] },
 ) => {
   if (labels.length === 0) return;
-  const { palette, globalScale } = options;
+  const { palette, globalScale, obstacles = [] } = options;
   const size = Math.min(LINK_LABEL_SIZE, LINK_LABEL_MAX_PX / globalScale);
   ctx.save();
   ctx.font = font(500, size);
-  const measured = [...labels]
-    .sort((a, b) => b.priority - a.priority)
-    .map((label) => {
-      const width = ctx.measureText(label.text).width;
-      return { label, width, box: rotatedBox(label, width + size, size * 1.5) };
-    });
-  keepNonOverlapping(measured).forEach(({ label }) => {
+  const taken = createBoxIndex(Math.max(size * 8, 4));
+  obstacles.forEach(taken.add);
+  const placed: { label: LinkLabel; spot: { x: number; y: number; angle: number } }[] = [];
+  [...labels].sort((a, b) => b.priority - a.priority).forEach((label) => {
+    const width = ctx.measureText(label.text).width + size;
+    const spots = [label, ...(label.alternatives ?? [])];
+    const free = spots.map((spot) => ({ spot, box: rotatedBox(spot, width, size * 1.5) })).find(({ box }) => !taken.overlaps(box));
+    const chosen = free ?? (label.priority > 0 ? { spot: label, box: rotatedBox(label, width, size * 1.5) } : null);
+    if (!chosen) return;
+    taken.add(chosen.box);
+    placed.push({ label, spot: chosen.spot });
+  });
+  placed.forEach(({ label, spot }) => {
     ctx.save();
-    ctx.translate(label.x, label.y);
-    ctx.rotate(label.angle);
+    ctx.translate(spot.x, spot.y);
+    ctx.rotate(spot.angle);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';

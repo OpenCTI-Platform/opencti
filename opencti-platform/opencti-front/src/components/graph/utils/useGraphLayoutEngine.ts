@@ -39,6 +39,7 @@ interface UseGraphLayoutEngineArgs {
  */
 const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled, savedPositions, frameView }: UseGraphLayoutEngineArgs) => {
   const [animating, setAnimating] = useState(false);
+  const [targets, setTargets] = useState<LayoutPositions | null>(null);
   const frame = useRef(0);
   const appliedKey = useRef<string | null>(null);
   const latestNodes = useRef(nodes);
@@ -47,6 +48,7 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
   useEffect(() => {
     if (!enabled) return undefined;
     if (!layout) {
+      setTargets(null);
       if (appliedKey.current !== null) {
         appliedKey.current = null;
         latestNodes.current.forEach((node) => {
@@ -58,12 +60,13 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
       }
       return undefined;
     }
-    const targets = layout.compute();
+    const computed = layout.compute();
+    setTargets(computed);
     const isNewArrangement = appliedKey.current !== layout.key;
     appliedKey.current = layout.key;
     const starts = new Map(latestNodes.current.map((node) => [node.id, {
-      x: Number.isFinite(node.x) ? node.x : targets.get(node.id)?.x ?? 0,
-      y: Number.isFinite(node.y) ? node.y : targets.get(node.id)?.y ?? 0,
+      x: Number.isFinite(node.x) ? node.x : computed.get(node.id)?.x ?? 0,
+      y: Number.isFinite(node.y) ? node.y : computed.get(node.id)?.y ?? 0,
     }]));
     const duration = prefersReducedMotion() ? 0 : TRANSITION_MS;
     const startTime = performance.now();
@@ -73,7 +76,7 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
       const progress = duration === 0 ? 1 : Math.min(1, (performance.now() - startTime) / duration);
       const eased = easeInOutCubic(progress);
       latestNodes.current.forEach((node: GraphNode & { vx?: number; vy?: number }) => {
-        const target = targets.get(node.id);
+        const target = computed.get(node.id);
         const start = starts.get(node.id);
         if (!target || !start) return;
         node.x = start.x + (target.x - start.x) * eased;
@@ -94,7 +97,8 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
     return () => cancelAnimationFrame(frame.current);
   }, [enabled, layout?.key, shapeSignature]);
 
-  return { animating };
+  /** `targets`: where the applied layout puts the nodes, `null` without one. */
+  return { animating, targets };
 };
 
 export default useGraphLayoutEngine;

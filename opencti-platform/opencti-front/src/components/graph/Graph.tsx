@@ -189,29 +189,6 @@ const Graph = ({
     clearTimeout(closeTimer.current);
   }, []);
 
-  const {
-    palette,
-    nodePaint,
-    nodePointerAreaPaint,
-    nodeThreePaint,
-    linkColorPaint,
-    linkPaint,
-    linkCurvature,
-    framePrePaint,
-    framePostPaint,
-    linkThreePaint,
-    linkThreeLabelPosition,
-  } = useGraphPainter({
-    selectedLinks,
-    selectedNodes,
-    search,
-    detailsPreviewSelected,
-    links: shownLinks,
-    hovered,
-    highlightedPath,
-    nodeCount: shownNodes.length,
-  });
-
   // --- Deterministic layouts (2D): tree modes by relationship direction, tiers, radial.
   const layoutEnds = () => shownLinks.map((link) => ({
     id: link.id,
@@ -226,7 +203,7 @@ const Graph = ({
   } else if (layoutMode === 'radial') {
     layout = { key: `radial-${layoutCentreId ?? ''}`, compute: () => radialLayout(shownNodes, layoutEnds(), layoutCentreId ?? null) };
   }
-  const { animating } = useGraphLayoutEngine({
+  const { animating, targets: layoutTargets } = useGraphLayoutEngine({
     graphRef: graphRef2D,
     nodes: shownNodes,
     shapeSignature,
@@ -234,6 +211,31 @@ const Graph = ({
     enabled: !mode3D && !isLoadingData && shownNodes.length > 0,
     savedPositions: rawPositions,
     frameView: (padding, duration) => frameNodes(padding, duration),
+  });
+
+  const {
+    palette,
+    nodePaint,
+    nodePointerAreaPaint,
+    nodeThreePaint,
+    linkColorPaint,
+    linkPaint,
+    linkCurvature,
+    curvatureOf,
+    framePrePaint,
+    framePostPaint,
+    linkThreePaint,
+    linkThreeLabelPosition,
+  } = useGraphPainter({
+    selectedLinks,
+    selectedNodes,
+    search,
+    detailsPreviewSelected,
+    links: shownLinks,
+    hovered,
+    highlightedPath,
+    nodeCount: shownNodes.length,
+    layoutTargets: mode3D ? null : layoutTargets,
   });
 
   useEffect(() => {
@@ -338,6 +340,7 @@ const Graph = ({
       nodes: shownNodes,
       links: shownLinks,
       palette,
+      curvatureOf,
       title: imageTitle,
       subtitle: `${t_i18n('{count} entities', { values: { count: shownNodes.length } })}, ${t_i18n('{count} relationships', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),

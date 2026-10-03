@@ -6,9 +6,20 @@ import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { useFormatter } from '../../i18n';
 import { buildGraphPalette } from './graphPalette';
-import { computeLinkCurvatures } from './graphGeometry';
+import { type Box, computeLinkCurvatures, computeObstacleBends } from './graphGeometry';
+import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, neighbourhood } from './graphFocus';
-import { type LevelOfDetail, levelOfDetail, type LinkLabel, linkLabelText, paintGraphLink, paintGraphNode, paintGraphNodeHitArea, paintLinkLabels } from './graphPainting';
+import {
+  type LevelOfDetail,
+  levelOfDetail,
+  type LinkLabel,
+  linkLabelText,
+  NODE_RADIUS,
+  paintGraphLink,
+  paintGraphNode,
+  paintGraphNodeHitArea,
+  paintLinkLabels,
+} from './graphPainting';
 import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
 
 export { corroborationRingWidth } from './graphPainting';
@@ -34,7 +45,12 @@ interface UseGraphPainterArgs {
   hovered?: GraphHoverTarget | null;
   highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;
   nodeCount?: number;
+  /** Where a deterministic layout puts the nodes: straight links then bend around the nodes on their way. */
+  layoutTargets?: LayoutPositions | null;
 }
+
+/** Room kept between a bent link and a node it passes: the ring, its halo and a little air. */
+const OBSTACLE_CLEARANCE = NODE_RADIUS + 5;
 
 /** A zoom where every detail shows, for callers that do not hand one. */
 const DEFAULT_SCALE = 3;
@@ -54,6 +70,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     hovered = null,
     highlightedPath = null,
     nodeCount = 0,
+    layoutTargets = null,
   } = args ?? {};
 
   const palette = useMemo(() => buildGraphPalette(theme), [theme]);
@@ -69,6 +86,10 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     targetId: endpointId(link.target) ?? link.target_id,
   })), [links]);
   const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
+  const bends = useMemo(
+    () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
+    [layoutTargets, linkEnds, curvatures],
+  );
 
   const selectedNodeIds = useMemo(() => new Set(selectedNodes.map((n) => n.id)), [selectedNodes]);
   const selectedLinkIds = useMemo(() => new Set(selectedLinks.map((l) => l.id)), [selectedLinks]);
@@ -139,10 +160,11 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     opts: PaintOptions = {},
   ) => {
     const globalScale = opts.globalScale ?? DEFAULT_SCALE;
-    paintGraphNode(ctx, data, {
+    const detail = detailOf(globalScale);
+    const covered = paintGraphNode(ctx, data, {
       palette,
       globalScale,
-      detail: detailOf(globalScale),
+      detail,
       visual: {
         selected: selectedNodeIds.has(data.id),
         preview: detailsPreviewSelected?.id === data.id,
@@ -154,6 +176,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       showConnectedCount: opts.showNbConnectedElements,
       typeLabel: typeLabel(data),
     });
+    // Link labels are placed clear of the nodes only at zooms where they are all drawn.
+    if (detail.linkLabels) frameNodeBoxes.current.push(...covered);
   };
 
   /**
@@ -189,11 +213,17 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     return palette.link;
   };
 
-  const curvatureOf = (link: GraphLink) => curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+  const curvatureOf = (link: GraphLink) => {
+    const bend = bends?.get(link.id);
+    if (bend !== undefined) return { curvature: bend, rotation: 0 };
+    return curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+  };
   const linkCurvature = (link: GraphLink) => curvatureOf(link).curvature;
 
   /** Labels collected while the links are drawn, painted over the nodes at the end of the frame. */
   const frameLabels = useRef<LinkLabel[]>([]);
+  /** What the nodes of the frame cover, which the link labels keep clear of. */
+  const frameNodeBoxes = useRef<Box[]>([]);
 
   /**
    * Draws a link: curve, arrowhead and dash; its label is drawn at the end of the frame.
@@ -226,12 +256,14 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   /** To call before a frame: forgets the labels of the previous one. */
   const framePrePaint = () => {
     frameLabels.current = [];
+    frameNodeBoxes.current = [];
   };
 
   /** To call after a frame: draws the link labels that do not overlap. */
   const framePostPaint = (ctx: CanvasRenderingContext2D, globalScale: number) => {
-    paintLinkLabels(ctx, frameLabels.current, { palette, globalScale });
+    paintLinkLabels(ctx, frameLabels.current, { palette, globalScale, obstacles: frameNodeBoxes.current });
     frameLabels.current = [];
+    frameNodeBoxes.current = [];
   };
 
   /**
@@ -313,6 +345,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     linkColorPaint,
     linkPaint,
     linkCurvature,
+    curvatureOf,
     framePrePaint,
     framePostPaint,
     nodeThreePaint,

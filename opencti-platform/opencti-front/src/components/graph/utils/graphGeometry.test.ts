@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boundsOf, computeLinkCurvatures, fitText, keepNonOverlapping, linkPath, pointAt, subPath, tangentAt, trimToNodes } from './graphGeometry';
+import { boundsOf, computeLinkCurvatures, computeObstacleBends, createBoxIndex, fitText, linkPath, pointAt, subPath, tangentAt, trimToNodes } from './graphGeometry';
 
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -124,14 +124,63 @@ describe('computeLinkCurvatures', () => {
   });
 });
 
-describe('keepNonOverlapping', () => {
-  it('keeps the first of two overlapping boxes and every separate one', () => {
-    const kept = keepNonOverlapping([
-      { id: 1, box: { x: 0, y: 0, halfWidth: 5, halfHeight: 5 } },
-      { id: 2, box: { x: 4, y: 0, halfWidth: 5, halfHeight: 5 } },
-      { id: 3, box: { x: 20, y: 0, halfWidth: 5, halfHeight: 5 } },
-    ]);
-    expect(kept.map(({ id }) => id)).toEqual([1, 3]);
+describe('computeObstacleBends', () => {
+  const clearance = 11;
+  const row = new Map([['a', { x: 0, y: 0 }], ['b', { x: 60, y: 0 }], ['c', { x: 120, y: 0 }]]);
+  const ends = (id: string, sourceId: string, targetId: string) => ({ id, sourceId, targetId });
+  /** Closest distance between a node and the drawn curve of a link. */
+  const gap = (start: { x: number; y: number }, end: { x: number; y: number }, curvature: number, node: { x: number; y: number }) => {
+    const path = linkPath(start, end, curvature);
+    return Math.min(...Array.from({ length: 201 }, (_, i) => distance(pointAt(path, i / 200), node)));
+  };
+
+  it('bends a link running through a node of the same row, and only that one', () => {
+    const bends = computeObstacleBends([ends('ab', 'a', 'b'), ends('bc', 'b', 'c'), ends('ac', 'a', 'c')], row, clearance);
+    expect([...bends.keys()]).toEqual(['ac']);
+    expect(gap(row.get('a')!, row.get('c')!, bends.get('ac')!, row.get('b')!)).toBeGreaterThanOrEqual(clearance - 0.01);
+  });
+
+  it('bends away from an obstacle off the line, and is deterministic', () => {
+    const above = new Map(row);
+    above.set('b', { x: 60, y: -4 });
+    const links = [ends('ac', 'a', 'c')];
+    const bend = computeObstacleBends(links, above, clearance).get('ac')!;
+    expect(gap(above.get('a')!, above.get('c')!, bend, above.get('b')!)).toBeGreaterThanOrEqual(clearance - 0.01);
+    // The curve passes below the obstacle (positive y here), the shorter way round.
+    const middle = pointAt(linkPath(above.get('a')!, above.get('c')!, bend), 0.5);
+    expect(middle.y).toBeGreaterThan(0);
+    expect(computeObstacleBends(links, above, clearance).get('ac')).toBe(bend);
+  });
+
+  it('leaves alone parallel links, loops, links too short to bend and clear links', () => {
+    const fanned = new Map([['ac', { curvature: 0.24 }]]);
+    expect(computeObstacleBends([ends('ac', 'a', 'c')], row, clearance, fanned).size).toBe(0);
+    expect(computeObstacleBends([ends('aa', 'a', 'a')], row, clearance).size).toBe(0);
+    const far = new Map([['a', { x: 0, y: 0 }], ['b', { x: 60, y: 40 }], ['c', { x: 120, y: 0 }]]);
+    expect(computeObstacleBends([ends('ac', 'a', 'c')], far, clearance).size).toBe(0);
+    const close = new Map([['a', { x: 0, y: 0 }], ['c', { x: 15, y: 0 }]]);
+    expect(computeObstacleBends([ends('ac', 'a', 'c')], close, clearance).size).toBe(0);
+  });
+
+  it('stays fast on 2,000 nodes in rows and 4,000 links', () => {
+    const positions = new Map<string, { x: number; y: number }>();
+    for (let i = 0; i < 2000; i += 1) positions.set(`n${i}`, { x: (i % 50) * 40, y: Math.floor(i / 50) * 60 });
+    const links = Array.from({ length: 4000 }, (_, i) => ends(`l${i}`, `n${(i * 7) % 2000}`, `n${(i * 13 + 5) % 2000}`));
+    const started = performance.now();
+    computeObstacleBends(links, positions, clearance);
+    expect(performance.now() - started).toBeLessThan(1500);
+  });
+});
+
+describe('createBoxIndex', () => {
+  it('finds an overlap with any box added, across cells, and none with separate boxes', () => {
+    const index = createBoxIndex(10);
+    index.add({ x: 0, y: 0, halfWidth: 5, halfHeight: 5 });
+    index.add({ x: 100, y: 100, halfWidth: 30, halfHeight: 2 });
+    expect(index.overlaps({ x: 4, y: 0, halfWidth: 5, halfHeight: 5 })).toBe(true);
+    expect(index.overlaps({ x: 125, y: 101, halfWidth: 1, halfHeight: 1 })).toBe(true);
+    expect(index.overlaps({ x: 20, y: 0, halfWidth: 5, halfHeight: 5 })).toBe(false);
+    expect(index.overlaps({ x: 100, y: 110, halfWidth: 40, halfHeight: 2 })).toBe(false);
   });
 });
 
