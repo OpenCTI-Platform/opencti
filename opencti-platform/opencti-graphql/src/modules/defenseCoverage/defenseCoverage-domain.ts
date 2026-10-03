@@ -839,6 +839,7 @@ const trackValidationRequest = async (
       const { element } = await buildEntityData(context, SYSTEM_USER, {
         internal_id: internalId,
         standard_id: standardId,
+        entity_type: ENTITY_TYPE_DEFENSE_GAP,
         name: `${(attackPattern as unknown as { x_mitre_id?: string }).x_mitre_id ?? ''} ${attackPattern.name}`.trim(),
         attack_pattern_id: attackPattern.internal_id,
         platform_id: platformId,
