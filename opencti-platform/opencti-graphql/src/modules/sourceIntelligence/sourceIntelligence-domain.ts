@@ -70,6 +70,7 @@ const INGESTION_FEED_TYPES = [
 ];
 // Connectors that never write knowledge are not intelligence sources
 const NON_PRODUCING_CONNECTOR_TYPES: string[] = [ConnectorType.InternalExportFile];
+type ConnectorWithOrigin = BasicStoreEntityConnector & { built_in?: boolean };
 
 // region settings and state
 export interface SourceIntelligenceState {
@@ -568,10 +569,14 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
   const serviceUserIds = new Set<string>();
   connectors
     .filter((connector) => !feedTwinConnectorIds.has(connector.internal_id))
-    .filter((connector) => !NON_PRODUCING_CONNECTOR_TYPES.includes(connector.connector_type))
     .forEach((connector) => {
       const userIds = connector.connector_user_id ? [connector.connector_user_id] : [];
       userIds.forEach((userId) => serviceUserIds.add(userId));
+      // Built-in connectors run platform work on behalf of analysts (background tasks, playbooks, synchronization,
+      // draft validation, file mapping): the knowledge they write is attributed to its authors and analysts
+      if ((connector as ConnectorWithOrigin).built_in === true || NON_PRODUCING_CONNECTOR_TYPES.includes(connector.connector_type)) {
+        return;
+      }
       candidates.push({
         source_kind: SOURCE_KIND_CONNECTOR,
         ref_id: connector.internal_id,
@@ -641,7 +646,7 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
       }
     }
   }
-  // Connectors and feeds deleted from the platform: their sources and scorecards are removed
+  // Connectors and feeds deleted from the platform or no longer sources: their sources and scorecards are removed
   const orphans = existing.filter((source) => {
     const key = `${source.source_kind}|${source.ref_id}`;
     return !candidateKeys.has(key) && (source.source_kind === SOURCE_KIND_CONNECTOR || source.source_kind === SOURCE_KIND_INGESTION_FEED);

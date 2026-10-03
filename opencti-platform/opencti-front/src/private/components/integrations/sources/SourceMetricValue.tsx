@@ -75,7 +75,10 @@ const SourceMetricValue = ({ value, reason }: SourceMetricValueProps) => {
       <TooltipTrigger asChild>
         <Box component="span" sx={{ color: 'text.disabled' }}>{t_i18n('Not measured')}</Box>
       </TooltipTrigger>
-      <TooltipContent>{reason ?? t_i18n('No sample for this measure in the period.')}</TooltipContent>
+      <TooltipContent>
+        <Box component="span" sx={{ display: 'block', fontWeight: 'fontWeightMedium' }}>{t_i18n('Not measured')}</Box>
+        <Box component="span" sx={{ display: 'block' }}>{reason ?? t_i18n('No sample for this measure in the period.')}</Box>
+      </TooltipContent>
     </Tooltip>
   );
 };
