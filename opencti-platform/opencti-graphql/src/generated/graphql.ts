@@ -1007,7 +1007,6 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   dataComponents?: Maybe<DataComponentConnection>;
-  defense_level?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -1387,7 +1386,6 @@ export enum AttackPatternsOrdering {
   CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
-  DefenseLevel = 'defense_level',
   FreshnessDays = 'freshness_days',
   LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
@@ -45210,7 +45208,6 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
-  defense_level?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;

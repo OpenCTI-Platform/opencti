@@ -16,6 +16,7 @@ import {
   Radar,
   ShieldAlertOutline,
   ShieldCheckOutline,
+  ShieldHalfFull,
   StarSettingsOutline,
   TagTextOutline,
   ViewListOutline,
@@ -248,6 +249,16 @@ const widgetVisualizationTypes = [
     isEntities: false,
     isAudits: false,
   },
+  {
+    key: 'defense-levels',
+    name: 'Techniques by defense level',
+    dataSelectionLimit: undefined,
+    category: 'defense',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -373,6 +384,8 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <ShieldCheckOutline fontSize={fontSize} color="primary" />;
     case 'defense-top-gaps':
       return <ShieldAlertOutline fontSize={fontSize} color="primary" />;
+    case 'defense-levels':
+      return <ShieldHalfFull fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

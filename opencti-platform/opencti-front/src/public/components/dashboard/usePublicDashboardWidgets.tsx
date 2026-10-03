@@ -372,6 +372,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
         );
       case 'defense-tactic-coverage':
       case 'defense-top-gaps':
+      case 'defense-levels':
         return (
           <Card>{t_i18n('Defense matrix widgets are not supported in public dashboards')}</Card>
         );

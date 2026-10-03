@@ -74,9 +74,9 @@ import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { RELATION_DEPLOYED_ON, RELATION_HAS_COVERED, RELATION_PROVIDES } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../modules/iocValidation/iocValidation-types';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
-import { DEFENSE_AGGREGATE_PLATFORM } from '../modules/defenseCoverage/defenseCoverage-types';
+import { DEFENSE_AGGREGATE_PLATFORM, DEFENSE_LEVEL_NONE, DEFENSE_LEVEL_TELEMETRY, DEFENSE_LEVEL_VALIDATED } from '../modules/defenseCoverage/defenseCoverage-types';
+import { getDefenseSnapshot } from '../modules/defenseCoverage/defenseCoverage-reader';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -664,19 +664,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Defense coverage
     const [
       relationshipsProvidesCount,
-      defenseCoveredTechniquesCount,
-      defenseValidatedTechniquesCount,
+      defenseSnapshot,
       defenseOpenGapsCount,
     ] = await Promise.all([
       elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_PROVIDES] }),
-      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-        types: [ENTITY_TYPE_ATTACK_PATTERN],
-        filters: { mode: FilterMode.And, filters: [{ key: ['defense_level'], values: ['1'], operator: 'gte' }], filterGroups: [] },
-      }),
-      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-        types: [ENTITY_TYPE_ATTACK_PATTERN],
-        filters: { mode: FilterMode.And, filters: [{ key: ['defense_level'], values: ['4'], operator: 'gte' }], filterGroups: [] },
-      }),
+      getDefenseSnapshot(context),
       elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
         types: [ENTITY_TYPE_DEFENSE_GAP],
         filters: {
@@ -686,9 +678,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
         },
       }),
     ]);
+    // Revoked techniques are not part of the snapshot
+    const defenseLevels = defenseSnapshot.techniques.map((technique) => technique.coverage?.level ?? DEFENSE_LEVEL_NONE);
     manager.setRelationshipsProvidesCount(relationshipsProvidesCount);
-    manager.setDefenseCoveredTechniquesCount(defenseCoveredTechniquesCount);
-    manager.setDefenseValidatedTechniquesCount(defenseValidatedTechniquesCount);
+    manager.setDefenseCoveredTechniquesCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_TELEMETRY).length);
+    manager.setDefenseValidatedTechniquesCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_VALIDATED).length);
     manager.setDefenseOpenGapsCount(defenseOpenGapsCount);
     // endregion
 

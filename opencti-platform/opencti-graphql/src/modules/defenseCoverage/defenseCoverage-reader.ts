@@ -1,11 +1,15 @@
+import { createHash } from 'node:crypto';
 import * as R from 'ramda';
 import { LRUCache } from 'lru-cache';
 import conf from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreSettings } from '../../types/settings';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
+import { getEntityFromCache } from '../../database/cache';
+import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../../schema/stixRefRelationship';
@@ -125,11 +129,42 @@ export const clearDefenseSnapshotCache = () => {
 // region access
 const accessCache = new LRUCache<string, Promise<Set<string>>>({ max: 500, ttl: READER_CACHE_TTL });
 
-export const findAccessibleIds = async (context: AuthContext, user: AuthUser, ids: string[]): Promise<Set<string>> => {
+const sortedIds = (elements: Array<{ internal_id: string }> | undefined) => (elements ?? []).map((e) => e.internal_id).sort();
+
+/**
+ * Fingerprint of everything deciding what a reader may access: identity, groups, roles, organizations, capabilities,
+ * allowed markings and the platform organization. Granting or revoking any of them changes the fingerprint, so a
+ * read cached under the previous grants is never served again.
+ */
+export const computeReaderAccessFingerprint = async (context: AuthContext, user: AuthUser): Promise<string> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const material = JSON.stringify([
+    user.id,
+    sortedIds(user.groups),
+    sortedIds(user.roles),
+    sortedIds(user.organizations),
+    (user.capabilities ?? []).map((c) => c.name).sort(),
+    sortedIds(user.allowed_marking),
+    settings?.platform_organization ?? null,
+  ]);
+  return createHash('sha256').update(material).digest('hex');
+};
+
+/**
+ * Ids among `ids` that the user can access. With `includeDeleted`, the elements kept in the trash are evaluated too,
+ * with the markings and organizations they had when they were deleted.
+ */
+export const findAccessibleIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  opts: { includeDeleted?: boolean } = {},
+): Promise<Set<string>> => {
   const accessible = new Set<string>();
+  const indices = opts.includeDeleted ? [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] : undefined;
   const chunks = R.splitEvery(IDS_CHUNK_SIZE, R.uniq(ids));
   for (let index = 0; index < chunks.length; index += 1) {
-    const found = await internalFindByIds<BasicStoreEntity>(context, user, chunks[index], { baseData: true }) as BasicStoreEntity[];
+    const found = await internalFindByIds<BasicStoreEntity>(context, user, chunks[index], { baseData: true, ...(indices ? { indices } : {}) }) as BasicStoreEntity[];
     found.forEach((f) => accessible.add(f.internal_id));
   }
   return accessible;
@@ -137,13 +172,13 @@ export const findAccessibleIds = async (context: AuthContext, user: AuthUser, id
 
 /**
  * Predicate telling if the reader can access an element or a relationship used as evidence.
- * Evaluated once per reader and snapshot version, then cached.
+ * Evaluated once per reader grants and snapshot version, then cached.
  */
 export const getAccessPredicate = async (context: AuthContext, user: AuthUser, snapshot: DefenseSnapshot): Promise<AccessPredicate> => {
   if (isBypassUser(user)) {
     return (id) => !!id;
   }
-  const key = `${user.id}|${snapshot.version}`;
+  const key = `${await computeReaderAccessFingerprint(context, user)}|${snapshot.version}`;
   let promise = accessCache.get(key);
   if (!promise) {
     promise = findAccessibleIds(context, user, snapshot.evidenceIds);
@@ -236,13 +271,13 @@ const computeOverlay = async (context: AuthContext, user: AuthUser, scope: Defen
 
 /**
  * Techniques used by the threats of the scope, restricted to the threats and relationships the reader can access.
- * Computed on demand and cached per reader, scope and version of the threat usages (a uses relationship or the access
- * to a threat changed), so that a reader never keeps a usage they can no longer see.
+ * Computed on demand and cached per reader grants, scope and version of the threat usages (a uses relationship or the
+ * access to a threat changed), so that a reader never keeps a usage they can no longer see.
  */
 export const getThreatOverlay = async (context: AuthContext, user: AuthUser, scope?: DefenseThreatScope | null): Promise<DefenseThreatOverlay> => {
   const normalized = normalizeScope(scope);
   const version = await getDefenseOverlayVersion();
-  const key = `${version}|${user.id}|${JSON.stringify(normalized)}`;
+  const key = `${version}|${await computeReaderAccessFingerprint(context, user)}|${JSON.stringify(normalized)}`;
   let promise = overlayCache.get(key);
   if (!promise) {
     promise = computeOverlay(context, user, normalized);

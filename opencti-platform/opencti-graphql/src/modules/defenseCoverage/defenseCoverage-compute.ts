@@ -32,7 +32,7 @@ import { capEvidences, cellForPlatform, computeValidationStatus, evaluateCoverag
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
 import { bumpDefenseCoverageVersion } from './defenseCoverage-state';
-import { collectDefenseLevelChanges, notifyDefenseLevelChanges } from './defenseCoverage-notification';
+import { collectDefenseCoverageChanges, notifyDefenseLevelChanges } from './defenseCoverage-notification';
 import { type DeploymentStatus, LIVE_DEPLOYMENT_STATUSES } from '../indicatorDeployment/indicatorDeployment-types';
 import { generateStandardId } from '../../schema/identifier';
 
@@ -41,7 +41,7 @@ const MAX_EVIDENCES = conf.get('defense_coverage_manager:max_evidences') ?? 250;
 const BULK_SIZE = 500;
 const IDS_CHUNK_SIZE = 5000;
 
-const AP_BASE_FIELDS = ['name', 'x_mitre_id', 'revoked', 'x_opencti_defense_coverage', 'defense_level'];
+const AP_BASE_FIELDS = ['name', 'x_mitre_id', 'revoked', 'x_opencti_defense_coverage'];
 const INDICATOR_BASE_FIELDS = ['name', 'pattern_type', 'revoked', 'x_opencti_rule_logsource', 'x_opencti_rule_status', 'x_opencti_rule_level'];
 
 export interface DefensePlatform {
@@ -55,6 +55,7 @@ export interface DefensePlatform {
 export interface DefenseComputationResult {
   techniques: number;
   updated: number;
+  cleared: number;
   level_changes: number;
   notified: number;
   gaps: number;
@@ -334,7 +335,8 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
 // endregion
 
 // region storage
-const COVERAGE_UPDATE_SCRIPT = 'ctx._source.x_opencti_defense_coverage = params.coverage; ctx._source.defense_level = params.level;';
+const COVERAGE_UPDATE_SCRIPT = 'ctx._source.x_opencti_defense_coverage = params.coverage;';
+const COVERAGE_CLEAR_SCRIPT = 'ctx._source.remove(\'x_opencti_defense_coverage\');';
 
 const coverageSignature = (coverage: DefenseCoverage | undefined | null) => {
   if (!coverage) return '';
@@ -347,8 +349,24 @@ const coverageSignature = (coverage: DefenseCoverage | undefined | null) => {
  */
 export const updateAttackPatternDefenseCoverage = async (context: AuthContext, attackPattern: BasicStoreEntity, coverage: DefenseCoverage) => {
   return elUpdate(context, attackPattern._index, attackPattern.internal_id, {
-    script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage, level: coverage.level } },
+    script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage } },
   });
+};
+
+/**
+ * Remove the stored coverage of revoked techniques: they leave the matrix, and nothing must keep reading them as covered.
+ */
+const clearRevokedCoverages = async (context: AuthContext, attackPatterns: BasicStoreEntity[]) => {
+  const stored = attackPatterns.filter((ap) => !!(ap as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage);
+  const groups = R.splitEvery(BULK_SIZE, stored);
+  for (let index = 0; index < groups.length; index += 1) {
+    const body = groups[index].flatMap((attackPattern) => [
+      { update: { _index: attackPattern._index, _id: attackPattern.internal_id, retry_on_conflict: 5 } },
+      { script: { source: COVERAGE_CLEAR_SCRIPT, lang: 'painless' } },
+    ]);
+    await elBulk(context, { refresh: true, body });
+  }
+  return stored.length;
 };
 
 const bulkUpdateCoverages = async (context: AuthContext, updates: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }>) => {
@@ -362,7 +380,7 @@ const bulkUpdateCoverages = async (context: AuthContext, updates: Array<{ attack
   for (let index = 0; index < groups.length; index += 1) {
     const body = groups[index].flatMap(({ attackPattern, coverage }) => [
       { update: { _index: attackPattern._index, _id: attackPattern.internal_id, retry_on_conflict: 5 } },
-      { script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage, level: coverage.level } } },
+      { script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage } } },
     ]);
     await elBulk(context, { refresh: true, body });
   }
@@ -491,7 +509,8 @@ export const computeDefenseCoverage = async (
   // 1. Techniques and platforms
   const attackPatterns = await loadAttackPatterns(context, user, targetIds);
   const activeAttackPatterns = attackPatterns.filter((ap) => !ap.revoked);
-  const revokedIds = attackPatterns.filter((ap) => ap.revoked).map((ap) => ap.internal_id);
+  const revokedAttackPatterns = attackPatterns.filter((ap) => ap.revoked);
+  const revokedIds = revokedAttackPatterns.map((ap) => ap.internal_id);
   const techniqueIds = activeAttackPatterns.map((ap) => ap.internal_id);
   const scopedIds = isFull ? undefined : techniqueIds;
   const platforms = await loadDefensePlatforms(context, user);
@@ -559,7 +578,8 @@ export const computeDefenseCoverage = async (
     }
   }
   await bulkUpdateCoverages(context, updates);
-  const levelChanges = collectDefenseLevelChanges(updates.map(({ attackPattern, coverage }) => ({
+  const cleared = await clearRevokedCoverages(context, revokedAttackPatterns);
+  const coverageChanges = collectDefenseCoverageChanges(updates.map(({ attackPattern, coverage }) => ({
     attackPatternId: attackPattern.internal_id,
     previous: (attackPattern as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage,
     coverage,
@@ -576,14 +596,15 @@ export const computeDefenseCoverage = async (
   // 7. Live triggers on level changes, once the new coverage is readable
   let notified = 0;
   try {
-    notified = await notifyDefenseLevelChanges(context, levelChanges);
+    notified = await notifyDefenseLevelChanges(context, coverageChanges);
   } catch (error) {
-    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified', { cause: error, changes: levelChanges.length });
+    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified', { cause: error, changes: coverageChanges.length });
   }
   const result = {
     techniques: activeAttackPatterns.length,
     updated: updates.length,
-    level_changes: levelChanges.length,
+    cleared,
+    level_changes: coverageChanges.filter((change) => change.previous.level !== change.coverage.level).length,
     notified,
     gaps,
     closed_gaps: closed,

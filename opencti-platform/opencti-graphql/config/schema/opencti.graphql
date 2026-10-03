@@ -2936,7 +2936,6 @@ input StixDomainObjectAddInput {
 enum AttackPatternsOrdering {
   x_mitre_id
   name
-  defense_level
   created
   modified
   created_at
@@ -3086,8 +3085,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
-  # Aggregate defense level (0 none, 1 telemetry, 2 detection available, 3 detection deployed, 4 validated)
-  defense_level: Int
   killChainPhases: [KillChainPhase!]
   coursesOfAction(
     first: Int
