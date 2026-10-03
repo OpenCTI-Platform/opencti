@@ -6,8 +6,10 @@ import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
 
 interface HubNoAccessProps {
-  /** The breadcrumb of the hub, in English source strings, the last one being the hub. */
-  trail: string[];
+  /** The English source label of the hub, the current entry of the breadcrumb. */
+  hub: string;
+  /** The English source labels of the breadcrumb entries above the hub, if any. */
+  parents?: string[];
   /** Where the reader goes back to, and its English source label. */
   back: { link: string; label: string };
 }
@@ -16,13 +18,13 @@ interface HubNoAccessProps {
  * Shown to a reader who reaches a hub, from a shared link or a notification, with none of its entries
  * available: says so and leads back, rather than redirecting without a word.
  */
-const HubNoAccess = ({ trail, back }: HubNoAccessProps) => {
+const HubNoAccess = ({ hub: hubLabel, parents = [], back }: HubNoAccessProps) => {
   const { t_i18n } = useFormatter();
-  const hub = t_i18n(trail[trail.length - 1]);
+  const hub = t_i18n(hubLabel);
   return (
     <PageContainer withRightMenu={false} withGap>
       <Breadcrumbs
-        elements={trail.map((label, index) => ({ label: t_i18n(label), current: index === trail.length - 1 }))}
+        elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: hub, current: true }]}
       />
       <Alert
         severity="info"
