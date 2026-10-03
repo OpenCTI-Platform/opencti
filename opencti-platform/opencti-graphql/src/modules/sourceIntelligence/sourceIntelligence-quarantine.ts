@@ -27,6 +27,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
+import { registerDraftClosureHandler } from '../draftWorkspace/draftWorkspace-closure';
 import { userEditField } from '../user/user-domain';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
 
@@ -50,7 +51,7 @@ const quarantinedConnectorUserId = (source: BasicStoreEntitySource) => {
  * Runs under a per-source lock and on the stored source (never the cache) so that concurrent callers share one draft.
  * Returns undefined when the source is not quarantined (anymore).
  */
-export const renewQuarantineDraft = async (context: AuthContext, sourceId: string): Promise<string | undefined> => {
+export const renewQuarantineDraft = async (context: AuthContext, sourceId: string, closingDraftId?: string): Promise<string | undefined> => {
   let lock;
   try {
     lock = await lockResources([`source-quarantine-draft:${sourceId}`]);
@@ -61,7 +62,8 @@ export const renewQuarantineDraft = async (context: AuthContext, sourceId: strin
     const current = source.quarantine_draft_id
       ? await storeLoadById<BasicStoreEntityDraftWorkspace>(context, SYSTEM_USER, source.quarantine_draft_id, ENTITY_TYPE_DRAFT_WORKSPACE)
       : undefined;
-    let draftId = isOpenDraft(current) ? current.internal_id : undefined;
+    // A draft being validated or deleted is still open in the store: it is replaced all the same
+    let draftId = isOpenDraft(current) && current.internal_id !== closingDraftId ? current.internal_id : undefined;
     if (!draftId) {
       const draft = await addDraftWorkspace(context, SOURCE_INTELLIGENCE_MANAGER_USER, {
         name: `Quarantine - ${source.name}`,
@@ -109,6 +111,22 @@ export const resolveFeedQuarantineDraftId = async (context: AuthContext, ingesti
   }
   return renewQuarantineDraft(context, source.internal_id);
 };
+
+/**
+ * Validating or deleting a quarantine draft renews it before its users are moved back to the live context, so the
+ * connector user of a quarantined source goes straight to the new draft and never writes in the live knowledge.
+ */
+export const renewQuarantinesOfClosingDraft = async (context: AuthContext, draftId: string) => {
+  // A draft can be validated from inside it: the renewal always works in the live knowledge
+  const liveContext: AuthContext = { ...context, draft_context: '' };
+  const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(liveContext, SYSTEM_USER, ENTITY_TYPE_SOURCE);
+  const quarantined = sources.filter((source) => source.quarantined === true && source.quarantine_draft_id === draftId);
+  for (let i = 0; i < quarantined.length; i += 1) {
+    await renewQuarantineDraft(liveContext, quarantined[i].internal_id, draftId);
+  }
+};
+
+registerDraftClosureHandler(renewQuarantinesOfClosingDraft);
 
 /**
  * Restores every quarantine whose draft was closed or deleted, or whose connector user left the draft context.

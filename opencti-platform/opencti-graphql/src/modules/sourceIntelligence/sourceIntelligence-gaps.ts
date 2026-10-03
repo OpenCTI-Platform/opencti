@@ -23,7 +23,7 @@ import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadB
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
-import { elCount, elPaginate } from '../../database/engine';
+import { elCount, elFilteredAggregations } from '../../database/engine';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { logApp } from '../../config/conf';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -50,6 +50,7 @@ import { getPirWithAccessCheck } from '../pir/pir-checkPirAccess';
 import { findPirPaginated } from '../pir/pir-domain';
 import { type FilterGroup, PirType } from '../../generated/graphql';
 import { type BasicStoreEntityCatalogContract, ENTITY_TYPE_CATALOG_CONTRACT } from '../catalog/catalog-types';
+import { compareContractVersions, isSupportVersionCompatible } from '../catalog/catalog-version-utils';
 import { type HubIntegrationCoverageMatch, xtmHubClient } from '../xtm/hub/xtm-hub-client';
 import type { SourceIntelligenceSettings } from './sourceIntelligence-settings';
 import {
@@ -62,7 +63,7 @@ import {
   RECOMMENDATION_STATUS_APPLIED,
 } from './sourceIntelligence-types';
 import { buildResolverFromSources } from './sourceIntelligence-domain';
-import { resolveDocumentAssertions } from './sourceIntelligence-provenance';
+import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, PROVENANCE_ATTRIBUTE, sourceRefKey } from './sourceIntelligence-provenance';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
 import {
@@ -74,7 +75,8 @@ import {
 } from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
-const COVERAGE_SAMPLE_SIZE = 2000;
+// Sources are bounded by the discovery settings: one bucket per source id is far below this bound
+const MAX_COVERAGE_SOURCE_BUCKETS = 2000;
 const MAX_COVERING_SOURCES = 10;
 const LOCAL_CATALOG_WEIGHT = 0.6;
 const RELATION_TO_FILTER_KEY = 'toId';
@@ -176,36 +178,71 @@ const countMatchingRelationships = async (context: AuthContext, filters: FilterG
   });
 };
 
-const sampleCoveringSources = async (context: AuthContext, filters: FilterGroup, sinceDays: number, sources: BasicStoreEntitySource[]) => {
+type TermsBuckets = { buckets?: Array<{ key: string; doc_count: number; ids?: TermsBuckets }> };
+
+/**
+ * Sources covering a criterion, over every matching relationship of the window (aggregations, no sampling), with the
+ * attribution of the scorecards: the provenance assertions, the creators of the relationships without assertions, and
+ * the authors. A relationship whose author is also one of its asserting sources counts once in the distinct sources
+ * but can count twice for that source, so shares are capped at 1.
+ */
+const aggregateCoveringSources = async (
+  context: AuthContext,
+  filters: FilterGroup,
+  sinceDays: number,
+  sources: BasicStoreEntitySource[],
+  total: number,
+) => {
   const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
-  const relationships = await elPaginate<BasicStoreEntity>(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
+  const withProvenance = isProvenanceAttributeAvailable();
+  const withoutAssertions = {
+    bool: { must_not: [{ nested: { path: PROVENANCE_ATTRIBUTE, ignore_unmapped: true, query: { exists: { field: `${PROVENANCE_ATTRIBUTE}.source_id` } } } }] },
+  };
+  const aggregations: Record<string, unknown> = {
+    creators: {
+      filter: withProvenance ? withoutAssertions : { match_all: {} },
+      aggs: { ids: { terms: { field: 'creator_id.keyword', size: MAX_COVERAGE_SOURCE_BUCKETS } } },
+    },
+    authors: { terms: { field: 'rel_created-by.internal_id.keyword', size: MAX_COVERAGE_SOURCE_BUCKETS } },
+    ...(withProvenance ? {
+      assertions: {
+        nested: { path: PROVENANCE_ATTRIBUTE },
+        aggs: {
+          kinds: {
+            terms: { field: `${PROVENANCE_ATTRIBUTE}.source_kind.keyword`, size: 20 },
+            aggs: { ids: { terms: { field: `${PROVENANCE_ATTRIBUTE}.source_id.keyword`, size: MAX_COVERAGE_SOURCE_BUCKETS } } },
+          },
+        },
+      },
+    } : {}),
+  };
+  const data = await elFilteredAggregations(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
     types: [ABSTRACT_STIX_CORE_RELATIONSHIP],
-    first: COVERAGE_SAMPLE_SIZE,
-    orderBy: 'updated_at',
-    orderMode: 'desc',
-    connectionFormat: false,
     filters: {
       mode: 'and',
       filters: [{ key: ['updated_at'], values: [since], operator: 'gte', mode: 'or' }],
       filterGroups: [filters],
     },
-  } as any) as unknown as Array<BasicStoreEntity & Record<string, any>>;
+  } as any, aggregations);
   const resolver = buildResolverFromSources(sources);
   const counts = new Map<string, number>();
-  relationships.forEach((relationship) => {
-    const assertions = resolveDocumentAssertions({
-      internal_id: relationship.internal_id,
-      created_at: relationship.created_at as unknown as string,
-      updated_at: relationship.updated_at as unknown as string,
-      creator_id: relationship.creator_id,
-      'rel_created-by.internal_id': relationship['created-by'] ? [relationship['created-by']] : [],
-      x_opencti_assertions: relationship.x_opencti_assertions,
-    }, resolver);
-    assertions.forEach((assertion) => counts.set(assertion.sourceId, (counts.get(assertion.sourceId) ?? 0) + 1));
+  const add = (sourceId: string | undefined, count: number) => {
+    if (sourceId) counts.set(sourceId, (counts.get(sourceId) ?? 0) + count);
+  };
+  ((data.assertions?.kinds as TermsBuckets | undefined)?.buckets ?? []).forEach((kindBucket) => {
+    const kind = ASSERTION_KIND_TO_SOURCE_KIND[kindBucket.key];
+    if (!kind) return;
+    (kindBucket.ids?.buckets ?? []).forEach((idBucket) => add(resolver.byRef.get(sourceRefKey(kind, idBucket.key)), idBucket.doc_count));
   });
-  const total = relationships.length;
+  ((data.creators?.ids as TermsBuckets | undefined)?.buckets ?? []).forEach((bucket) => {
+    (resolver.byUser.get(bucket.key) ?? []).forEach((sourceId) => add(sourceId, bucket.doc_count));
+  });
+  ((data.authors as TermsBuckets | undefined)?.buckets ?? []).forEach((bucket) => add(resolver.byAuthor.get(bucket.key), bucket.doc_count));
   const covering = Array.from(counts.entries())
-    .map(([source_id, matched_count]) => ({ source_id, matched_count, share: total > 0 ? round(matched_count / total) : 0 }))
+    .map(([source_id, count]) => {
+      const matched_count = Math.min(count, total);
+      return { source_id, matched_count, share: total > 0 ? round(matched_count / total) : 0 };
+    })
     .sort((a, b) => b.matched_count - a.matched_count);
   return { covering: covering.slice(0, MAX_COVERING_SOURCES), distinct: covering.length };
 };
@@ -232,10 +269,11 @@ export const scoreCoverageMatch = (facets: ResolvedFacets, matched: { objectType
 };
 
 export const matchLocalCatalog = (facets: ResolvedFacets, contracts: BasicStoreEntityCatalogContract[]): CollectionGapRecommendedConnector[] => {
+  // Latest version compatible with this platform, with the catalog's own version ordering (semver, rolling)
   const latestBySlug = new Map<string, BasicStoreEntityCatalogContract>();
-  contracts.forEach((contract) => {
+  contracts.filter((contract) => isSupportVersionCompatible(contract)).forEach((contract) => {
     const current = latestBySlug.get(contract.slug);
-    if (!current || (contract.contract_version ?? '') > (current.contract_version ?? '')) latestBySlug.set(contract.slug, contract);
+    if (!current || compareContractVersions(contract.contract_version ?? '', current.contract_version ?? '') > 0) latestBySlug.set(contract.slug, contract);
   });
   const results: CollectionGapRecommendedConnector[] = [];
   latestBySlug.forEach((contract) => {
@@ -387,11 +425,11 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
         filters: [],
         filterGroups: [criterion.filters, constructFinalPirFilters(pir.pir_type, parsed.pir_filters)],
       };
-      const [windowCount, recentCount, sample] = await Promise.all([
+      const [windowCount, recentCount] = await Promise.all([
         countMatchingRelationships(context, finalFilters, settings.gaps.window_days),
         countMatchingRelationships(context, finalFilters, settings.gaps.recent_days),
-        sampleCoveringSources(context, finalFilters, settings.gaps.window_days, sources),
       ]);
+      const sample = await aggregateCoveringSources(context, finalFilters, settings.gaps.window_days, sources, windowCount);
       const coverage = computeGapCoverageScore({ recent: recentCount, window: windowCount, distinctSources: sample.distinct }, settings.gaps);
       const isGap = coverage < settings.thresholds.gap_coverage;
       let hubStatus: HubCatalogStatus = hubPlatform ? (hubFailure ?? 'ok') : 'not_registered';
