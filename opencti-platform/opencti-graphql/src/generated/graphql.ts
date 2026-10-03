@@ -14930,8 +14930,8 @@ export type InvestigationHypothesis = {
   candidate_name?: Maybe<Scalars['String']['output']>;
   candidate_standard_id?: Maybe<Scalars['String']['output']>;
   candidate_type?: Maybe<Scalars['String']['output']>;
-  confidence: Scalars['Int']['output'];
-  confidence_label: InvestigationConfidenceLabel;
+  confidence?: Maybe<Scalars['Int']['output']>;
+  confidence_label?: Maybe<InvestigationConfidenceLabel>;
   evidence: Array<InvestigationEvidenceCell>;
   explanation: Scalars['String']['output'];
   inconsistency: Scalars['Float']['output'];
@@ -48612,8 +48612,8 @@ export type InvestigationHypothesisResolvers<ContextType = any, ParentType exten
   candidate_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   candidate_standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   candidate_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  confidence_label?: Resolver<ResolversTypes['InvestigationConfidenceLabel'], ParentType, ContextType>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  confidence_label?: Resolver<Maybe<ResolversTypes['InvestigationConfidenceLabel']>, ParentType, ContextType>;
   evidence?: Resolver<Array<ResolversTypes['InvestigationEvidenceCell']>, ParentType, ContextType>;
   explanation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   inconsistency?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;

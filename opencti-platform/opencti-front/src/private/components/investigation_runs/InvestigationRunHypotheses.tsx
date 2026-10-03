@@ -138,8 +138,10 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                         </span>
                         <Typography variant="h3" component="span">{formatProbability(hypothesis.probability)}</Typography>
                         <Chip
-                          label={`${t_i18n(CONFIDENCE_LABELS[hypothesis.confidence_label] ?? hypothesis.confidence_label)} (${hypothesis.confidence}%)`}
-                          severity={hypothesis.rank === 1 ? 'info' : 'neutral'}
+                          label={hypothesis.confidence_label && hypothesis.confidence !== null && hypothesis.confidence !== undefined
+                            ? `${t_i18n(CONFIDENCE_LABELS[hypothesis.confidence_label] ?? hypothesis.confidence_label)} (${hypothesis.confidence}%)`
+                            : t_i18n('Not assessed')}
+                          severity={hypothesis.rank === 1 && hypothesis.confidence !== null ? 'info' : 'neutral'}
                           size="sm"
                         />
                       </Stack>

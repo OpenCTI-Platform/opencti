@@ -198,8 +198,9 @@ type InvestigationHypothesis {
   score: Float!
   inconsistency: Float!
   probability: Float!
-  confidence: Int!
-  confidence_label: InvestigationConfidenceLabel!
+  # Integer 0-100, null when no evidence assessed the hypothesis (never defaulted).
+  confidence: Int
+  confidence_label: InvestigationConfidenceLabel
   explanation: String!
   candidate: StixCoreObject
 }

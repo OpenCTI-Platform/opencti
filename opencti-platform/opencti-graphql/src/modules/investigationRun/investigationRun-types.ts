@@ -172,8 +172,9 @@ export interface InvestigationHypothesis {
   score: number;
   inconsistency: number;
   probability: number;
-  confidence: number;
-  confidence_label: InvestigationConfidenceLabel;
+  // Null when no evidence assessed the hypothesis: a confidence is never defaulted.
+  confidence: number | null;
+  confidence_label: InvestigationConfidenceLabel | null;
   explanation: string;
 }
 

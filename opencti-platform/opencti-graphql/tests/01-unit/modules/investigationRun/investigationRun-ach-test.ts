@@ -60,6 +60,23 @@ describe('Case Autopilot ACH scoring', () => {
     expect(second.inconsistency).toBeGreaterThan(first.inconsistency);
   });
 
+  it('gives no confidence to a hypothesis no evidence assessed, never a defaulted one', () => {
+    const unassessed: AchHypothesisInput = {
+      candidate_id: 'fin7',
+      candidate_name: 'FIN7',
+      candidate_type: 'Intrusion-Set',
+      evidence: [{ evidence_id: 'timing', category: C.Temporal, consistency: 0 }],
+    };
+    const scored = scoreAchMatrix([apt28, unassessed], evidenceMeta);
+    const fin7 = scored.find((hypothesis) => hypothesis.candidate_id === 'fin7');
+    const leading = scored.find((hypothesis) => hypothesis.candidate_id === 'apt28');
+    expect(fin7?.confidence).toBeNull();
+    expect(fin7?.confidence_label).toBeNull();
+    expect(fin7?.probability).toBeGreaterThan(0);
+    expect(leading?.confidence).toBe(Math.round((leading?.probability ?? 0) * 100));
+    expect(leading?.confidence_label).not.toBeNull();
+  });
+
   it('is deterministic', () => {
     const once = scoreAchMatrix([apt28, apt29], evidenceMeta);
     const twice = scoreAchMatrix([apt28, apt29], evidenceMeta);

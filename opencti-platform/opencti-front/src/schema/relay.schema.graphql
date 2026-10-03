@@ -15934,8 +15934,8 @@ type InvestigationHypothesis {
   score: Float!
   inconsistency: Float!
   probability: Float!
-  confidence: Int!
-  confidence_label: InvestigationConfidenceLabel!
+  confidence: Int
+  confidence_label: InvestigationConfidenceLabel
   explanation: String!
   candidate: StixCoreObject
 }

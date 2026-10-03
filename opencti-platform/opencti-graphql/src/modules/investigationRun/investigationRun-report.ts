@@ -20,7 +20,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // front end renders them through marked + DOMPurify.
 
 import { confidenceLabelText, evidenceCategoryText } from './investigationRun-ach';
-import type { BasicStoreEntityInvestigationRun, InvestigationEvidence } from './investigationRun-types';
+import type { BasicStoreEntityInvestigationRun, InvestigationEvidence, InvestigationHypothesis } from './investigationRun-types';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
@@ -45,6 +45,11 @@ export const escapeMarkdown = (value: string | null | undefined): string => {
     .trim();
 };
 
+// A hypothesis no evidence assessed has no confidence: the report says so instead of inventing one.
+const confidenceText = (hypothesis: InvestigationHypothesis) => (hypothesis.confidence === null || !hypothesis.confidence_label
+  ? 'not assessed'
+  : `${confidenceLabelText(hypothesis.confidence_label)} (${hypothesis.confidence}%)`);
+
 const formatDate = (value: string) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? escapeMarkdown(value) : date.toISOString().replace('T', ' ').slice(0, 16);
@@ -66,8 +71,7 @@ const buildExecutiveSummary = (run: BasicStoreEntityInvestigationRun) => {
   if (leading) {
     lines.push('');
     lines.push(`**Leading hypothesis:** ${escapeMarkdown(leading.candidate_name ?? leading.candidate_id)} `
-      + `(${escapeMarkdown(leading.candidate_type ?? '')}), ${confidenceLabelText(leading.confidence_label)} `
-      + `(${leading.confidence}%).`);
+      + `(${escapeMarkdown(leading.candidate_type ?? '')}), ${confidenceText(leading)}.`);
   }
   lines.push('');
   lines.push(`Evidence items: ${run.evidence.length}. Enrichment jobs: ${run.budget.used_enrichment_jobs}. `
@@ -96,8 +100,8 @@ const buildHypotheses = (run: BasicStoreEntityInvestigationRun) => {
     ...[...run.hypotheses]
       .sort((a, b) => a.rank - b.rank)
       .map((hypothesis) => `| ${hypothesis.rank} | ${escapeMarkdown(hypothesis.candidate_name ?? hypothesis.candidate_id)} `
-        + `| ${escapeMarkdown(hypothesis.candidate_type ?? '')} | ${hypothesis.confidence}% `
-        + `| ${confidenceLabelText(hypothesis.confidence_label)} | ${hypothesis.evidence.length} |`),
+        + `| ${escapeMarkdown(hypothesis.candidate_type ?? '')} | ${Math.round(hypothesis.probability * 100)}% `
+        + `| ${confidenceText(hypothesis)} | ${hypothesis.evidence.length} |`),
   ];
   const details = [...run.hypotheses]
     .sort((a, b) => a.rank - b.rank)

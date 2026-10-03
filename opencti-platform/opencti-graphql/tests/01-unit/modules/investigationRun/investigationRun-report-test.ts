@@ -15,7 +15,8 @@ describe('Case Autopilot report', () => {
     expect(sections.executive_summary).toContain('The phishing wave is most likely APT28.');
     expect(sections.executive_summary).toContain('**Leading hypothesis:** APT28');
     expect(sections.timeline).toContain('| 2026-09-30 08:00 | Incident | Phishing wave | created |');
-    expect(sections.hypotheses).toContain('| 1 | APT28 | Intrusion-Set | 61% | likely | 1 |');
+    expect(sections.hypotheses).toContain('| 1 | APT28 | Intrusion-Set | 61% | likely (61%) | 1 |');
+    expect(sections.executive_summary).toContain('(Intrusion-Set), likely (61%).');
     expect(sections.hypotheses).toContain('Known C2 \\| reused');
     expect(sections.recommendations).toContain('| P1 | Block 185.12.4.2 at the proxy | task | proposed |');
     expect(sections.iocs).toContain('| IPv4-Addr | 185.12.4.2 | [1] |');
@@ -47,6 +48,14 @@ describe('Case Autopilot report', () => {
     expect(sections.iocs).toBe('No indicator or observable was collected.');
     expect(sections.report).toBe('No report was written.');
     expect(sections.executive_summary).toContain('Investigation of Incident');
+  });
+
+  it('says a hypothesis no evidence assessed has no confidence, never a defaulted one', () => {
+    const run = buildRun();
+    const unassessed = { ...run.hypotheses[0], confidence: null, confidence_label: null };
+    const sections = buildInvestigationReportSections(buildRun({ hypotheses: [unassessed] }));
+    expect(sections.hypotheses).toContain('| 1 | APT28 | Intrusion-Set | 61% | not assessed | 1 |');
+    expect(sections.executive_summary).toContain('(Intrusion-Set), not assessed.');
   });
 
   it('assembles the summary note', () => {

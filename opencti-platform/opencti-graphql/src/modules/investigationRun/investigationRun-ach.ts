@@ -319,6 +319,7 @@ export const scoreAchMatrix = (
   });
   return ordered.map((entry, position) => {
     const label = confidenceLabelFor(entry.probability);
+    const assessed = entry.cells.some((cell) => cell.consistency !== 0);
     return {
       candidate_id: entry.hypothesis.candidate_id,
       candidate_standard_id: entry.hypothesis.candidate_standard_id ?? null,
@@ -330,8 +331,8 @@ export const scoreAchMatrix = (
       score: round(entry.normalized),
       inconsistency: round(entry.inconsistency),
       probability: entry.probability,
-      confidence: Math.round(entry.probability * 100),
-      confidence_label: label,
+      confidence: assessed ? Math.round(entry.probability * 100) : null,
+      confidence_label: assessed ? label : null,
       explanation: buildExplanation(
         position + 1,
         ordered.length,

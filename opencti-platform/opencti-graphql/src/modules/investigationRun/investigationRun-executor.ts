@@ -917,7 +917,8 @@ const writeOutputs = async (exec: RunExecution, subject: BasicStoreEntity, engin
     }
   }
   // The attribution, written only above the policy threshold.
-  if (leading && allowedAction(InvestigationAutonomousAction.CreateRelationship) && leading.confidence >= policy.attribution_min_confidence
+  if (leading && leading.confidence !== null && allowedAction(InvestigationAutonomousAction.CreateRelationship)
+    && leading.confidence >= policy.attribution_min_confidence
     && !outputs.attributed_candidate_ids.includes(leading.candidate_id)) {
     const incidents = subject.entity_type === ENTITY_TYPE_INCIDENT
       ? [subject.internal_id]
