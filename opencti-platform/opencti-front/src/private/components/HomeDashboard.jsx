@@ -20,6 +20,7 @@ import { lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
 import CustomDashboard from './workspaces/dashboards/CustomDashboard';
+import KnowledgeHealthBadge from './data/curation/KnowledgeHealthBadge';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
@@ -592,6 +593,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
         <XtmHubPermissionRequiredDialog />
+        <KnowledgeHealthBadge />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
             dashboard={defaultDashboard}

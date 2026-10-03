@@ -79,6 +79,9 @@ vi.mock('./common/location/LocationMiniMapTargets', () => ({
 vi.mock('./common/stix_relationships/StixRelationshipsHorizontalBars', () => ({
   default: () => null,
 }));
+vi.mock('./data/curation/KnowledgeHealthBadge', () => ({
+  default: () => null,
+}));
 
 describe('HomeDashboard', () => {
   beforeEach(() => {
