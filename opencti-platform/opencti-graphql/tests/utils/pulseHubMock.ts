@@ -449,7 +449,13 @@ export class PulseHubMock {
       if (sums.size < this.k) return [];
       const own = sums.get(platformId) ?? 0;
       const sectorMedian = median(Array.from(sums.values()));
-      return [{ hash: aes(this.saltOf(input.day), key, false), object_type: objectType, platform_count: own, sector_median: sectorMedian, ratio: sectorMedian > 0 ? own / sectorMedian : 0 }];
+      return [{
+        hash: aes(this.saltOf(input.day), key, false),
+        object_type: objectType,
+        platform_count: own,
+        sector_median: sectorMedian,
+        ratio: sectorMedian > 0 ? own / sectorMedian : 0,
+      }];
     }).sort((a, b) => b.platform_count - a.platform_count).slice(0, 50);
     return {
       period: input.period,

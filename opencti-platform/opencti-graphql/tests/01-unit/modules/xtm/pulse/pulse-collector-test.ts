@@ -151,19 +151,45 @@ describe('Threat Pulse outbound payload schema', () => {
   });
 
   it.each([
-    ['a value field on a record', (batch: any) => { batch.records[0].value = '203.0.113.66'; }],
-    ['a name field on a record', (batch: any) => { batch.records[0].name = 'APT28'; }],
-    ['an organization field on the batch', (batch: any) => { batch.organization = 'ACME Bank'; }],
-    ['a platform identifier on the batch', (batch: any) => { batch.platform_id = 'abc'; }],
-    ['a non hexadecimal hash', (batch: any) => { batch.records[0].hash = 'apt28-not-a-hash-0000000000000000'; }],
-    ['an unknown object type', (batch: any) => { batch.records[0].object_type = 'report'; }],
-    ['an unknown event kind', (batch: any) => { batch.records[0].event_kind = 'shared'; }],
-    ['a zero count', (batch: any) => { batch.records[0].count = 0; }],
-    ['an excessive count', (batch: any) => { batch.records[0].count = 100001; }],
-    ['a duplicated record', (batch: any) => { batch.records.push({ ...batch.records[0] }); }],
-    ['an empty batch', (batch: any) => { batch.records = []; }],
-    ['a fine grained bucket', (batch: any) => { batch.sector_bucket = 'acme-bank'; }],
-    ['a malformed day', (batch: any) => { batch.day = '03/10/2026'; }],
+    ['a value field on a record', (batch: any) => {
+      batch.records[0].value = '203.0.113.66';
+    }],
+    ['a name field on a record', (batch: any) => {
+      batch.records[0].name = 'APT28';
+    }],
+    ['an organization field on the batch', (batch: any) => {
+      batch.organization = 'ACME Bank';
+    }],
+    ['a platform identifier on the batch', (batch: any) => {
+      batch.platform_id = 'abc';
+    }],
+    ['a non hexadecimal hash', (batch: any) => {
+      batch.records[0].hash = 'apt28-not-a-hash-0000000000000000';
+    }],
+    ['an unknown object type', (batch: any) => {
+      batch.records[0].object_type = 'report';
+    }],
+    ['an unknown event kind', (batch: any) => {
+      batch.records[0].event_kind = 'shared';
+    }],
+    ['a zero count', (batch: any) => {
+      batch.records[0].count = 0;
+    }],
+    ['an excessive count', (batch: any) => {
+      batch.records[0].count = 100001;
+    }],
+    ['a duplicated record', (batch: any) => {
+      batch.records.push({ ...batch.records[0] });
+    }],
+    ['an empty batch', (batch: any) => {
+      batch.records = [];
+    }],
+    ['a fine grained bucket', (batch: any) => {
+      batch.sector_bucket = 'acme-bank';
+    }],
+    ['a malformed day', (batch: any) => {
+      batch.day = '03/10/2026';
+    }],
   ])('should refuse %s', (_, mutate) => {
     const batch = validBatch();
     mutate(batch);
