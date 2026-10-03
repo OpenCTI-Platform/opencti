@@ -42,6 +42,8 @@ const MAX_REWIND_EVENTS_PER_BATCH = 20000;
 // Maximum number of relationships read per batch of entities to build relationship id lists
 const MAX_RELATIONSHIPS_PER_BATCH = 20000;
 const COMPOSITE_PAGE_SIZE = 1000;
+// Maximum number of entities kept in the state to retry a snapshot that could not be built exactly
+const MAX_RETRY_IDS = 1000;
 
 export interface SnapshotManagerState {
   // End of the last completed snapshot window (history cursor)
@@ -49,6 +51,8 @@ export interface SnapshotManagerState {
   // Window currently being processed, and the position in it when a run hit the per-run limit
   window_end?: string;
   after_key?: Record<string, string> | null;
+  // Entities whose snapshot could not be rewound exactly: their changes are behind the cursor, so they are retried explicitly
+  retry_ids?: string[];
 }
 
 const readState = async (): Promise<SnapshotManagerState> => {
@@ -248,7 +252,9 @@ export const snapshotHandler = async () => {
   }
   const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
   logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, resume: isWindowInProgress });
-  const { ids, afterKey } = await findChangedElementIds(context, cursor, windowEnd, state.after_key, MAX_ENTITIES_PER_RUN);
+  const { ids: changedIds, afterKey } = await findChangedElementIds(context, cursor, windowEnd, state.after_key, MAX_ENTITIES_PER_RUN);
+  const ids = [...new Set([...(state.retry_ids ?? []), ...changedIds])];
+  const skippedIds: string[] = [];
   let snapshotsCount = 0;
   for (let index = 0; index < ids.length; index += BATCH_SIZE) {
     await doYield();
@@ -257,6 +263,7 @@ export const snapshotHandler = async () => {
     const entities = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, batchIds, { type: ABSTRACT_STIX_CORE_OBJECT, withoutRels: false }) as BasicStoreEntity[];
     if (entities.length > 0) {
       const documents = await buildCompactDocuments(context, entities, windowEnd);
+      entities.filter((entity) => !documents.has(entity.internal_id)).forEach((entity) => skippedIds.push(entity.internal_id));
       const inputs: SnapshotInput[] = entities.filter((entity) => documents.has(entity.internal_id)).map((entity) => ({
         entityId: entity.internal_id,
         entityType: entity.entity_type,
@@ -267,14 +274,18 @@ export const snapshotHandler = async () => {
       snapshotsCount += await indexSnapshots(inputs);
     }
   }
+  if (skippedIds.length > MAX_RETRY_IDS) {
+    logApp.warn('[TIME MACHINE] Too many snapshots to retry, the others wait for the next change of their entity', { skipped: skippedIds.length, retried: MAX_RETRY_IDS });
+  }
+  const retryIds = skippedIds.slice(0, MAX_RETRY_IDS);
   if (afterKey) {
     // Per run limit reached, the same window (same lower bound) is resumed at the next run
-    await writeState({ cursor, window_end: windowEnd, after_key: afterKey });
+    await writeState({ cursor, window_end: windowEnd, after_key: afterKey, retry_ids: retryIds });
   } else {
-    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null });
+    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null, retry_ids: retryIds });
   }
   const retention = await applyTimeMachineRetention(context, currentDate);
-  logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, ...retention, complete: !afterKey });
+  logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, retry: retryIds.length, ...retention, complete: !afterKey });
 };
 
 const SNAPSHOT_MANAGER_DEFINITION: ManagerDefinition = {
