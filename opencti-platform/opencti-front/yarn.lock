@@ -8169,9 +8169,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"force-graph@npm:^1.51":
-  version: 1.51.4
-  resolution: "force-graph@npm:1.51.4"
+"force-graph@npm:^1.52":
+  version: 1.52.0
+  resolution: "force-graph@npm:1.52.0"
   dependencies:
     "@tweenjs/tween.js": "npm:18 - 25"
     accessor-fn: "npm:1"
@@ -8188,7 +8188,7 @@ __metadata:
     index-array-by: "npm:1"
     kapsule: "npm:^1.16"
     lodash-es: "npm:4"
-  checksum: 10c0/6e7db20aa3ebac45d06d203cb7c49465bdf62d342fdbdc4765aaba34bb681a1e0686055b98f915b69e46a8691c88eb805e7af62f0c6c33f8a84d5145780c768d
+  checksum: 10c0/1d423126549e51fb3020893f976de393673f7be9135a3be0b181bf4ade3dfb517582406696286031c9edb171ed65803a597e759fd9482cc22f8e7b741e80cf3a
   languageName: node
   linkType: hard
 
@@ -12038,7 +12038,7 @@ __metadata:
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.2.8"
     react-draggable: "npm:4.7.2"
-    react-force-graph-2d: "npm:1.29.1"
+    react-force-graph-2d: "npm:1.29.2"
     react-force-graph-3d: "npm:1.29.2"
     react-grid-layout: "npm:2.2.4"
     react-intl: "npm:12.1.3"
@@ -13124,16 +13124,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.29.1":
-  version: 1.29.1
-  resolution: "react-force-graph-2d@npm:1.29.1"
+"react-force-graph-2d@npm:1.29.2":
+  version: 1.29.2
+  resolution: "react-force-graph-2d@npm:1.29.2"
   dependencies:
-    force-graph: "npm:^1.51"
+    force-graph: "npm:^1.52"
     prop-types: "npm:15"
-    react-kapsule: "npm:^2.5"
+    react-kapsule: "npm:^2.6"
   peerDependencies:
     react: "*"
-  checksum: 10c0/c23e4fdb53c304dd45e4b88ee8d1994691dffd5b8e5e25783d85ab8ff69f7ace02e3cd550abf63004ea74859cce87e8b45b1b4bf0ceb30fa4ca50e73c9dde233
+  checksum: 10c0/00b872d3c94c8084a8218292e234f988b674c73885ee71036b34b3c217419031f688edee35b34a770bf3bff35e672a894bb936fa45b486cef623e1ccc41eace2
   languageName: node
   linkType: hard
 
@@ -13209,7 +13209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-kapsule@npm:^2.5, react-kapsule@npm:^2.6":
+"react-kapsule@npm:^2.6":
   version: 2.6.0
   resolution: "react-kapsule@npm:2.6.0"
   dependencies:
