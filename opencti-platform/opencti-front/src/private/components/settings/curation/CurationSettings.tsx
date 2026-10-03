@@ -12,7 +12,6 @@ import Card from '@common/card/Card';
 import Tag from '@common/tag/Tag';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import ObjectMembersField from '@components/common/form/ObjectMembersField';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ComboboxField from '../../../../components/ComboboxField';
@@ -21,12 +20,11 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { MESSAGING$ } from '../../../../relay/environment';
 import CurationAuthoritySourcesField, { AuthoritySourceOption, toAuthoritySourceOption } from './CurationAuthoritySourcesField';
-import useCurationLabels, { CURATION_RELATIONSHIP_CONFLICT_MODES, CURATION_WEEK_DAYS, notifyPayloadErrors } from './curationUtils';
+import useCurationLabels, { CURATION_RELATIONSHIP_CONFLICT_MODES, CURATION_WEEK_DAYS, notifyPayloadErrors } from '../../data/curation/curationUtils';
 import { CurationSettingsQuery, CurationSettingsQuery$data } from './__generated__/CurationSettingsQuery.graphql';
 import { CurationSettingsEditMutation } from './__generated__/CurationSettingsEditMutation.graphql';
 import { CurationSettingsScanMutation } from './__generated__/CurationSettingsScanMutation.graphql';
@@ -483,16 +481,9 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
 };
 
 const CurationSettings = () => {
-  const { t_i18n } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Settings | Curation | Data'));
   const { curationSettings } = useLazyLoadQuery<CurationSettingsQuery>(curationSettingsQuery, {}, { fetchPolicy: 'store-and-network' });
   return (
     <div data-testid="curation-settings-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Curation') }, { label: t_i18n('Settings'), current: true }]}
-        noMargin
-      />
       <CurationSettingsForm settings={curationSettings} />
     </div>
   );

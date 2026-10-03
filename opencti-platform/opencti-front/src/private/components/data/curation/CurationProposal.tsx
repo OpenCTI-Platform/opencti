@@ -7,7 +7,6 @@ import { useTheme } from '@mui/styles';
 import Card from '@common/card/Card';
 import Label from '@common/label/Label';
 import Tag from '@common/tag/Tag';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../components/Theme';
@@ -16,7 +15,7 @@ import CurationProposalActions from './CurationProposalActions';
 import CurationProposalCompare from './CurationProposalCompare';
 import CurationProposalEvidence from './CurationProposalEvidence';
 import CurationConfidence from './CurationConfidence';
-import useCurationLabels, { CURATION_MERGES_PATH, CURATION_PROPOSALS_PATH, parseJsonObject } from './curationUtils';
+import useCurationLabels, { CURATION_MERGES_PATH, parseJsonObject } from './curationUtils';
 import { CurationProposalQuery } from './__generated__/CurationProposalQuery.graphql';
 import { CurationProposal_proposal$key } from './__generated__/CurationProposal_proposal.graphql';
 
@@ -102,15 +101,6 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
 
   return (
     <>
-      <Breadcrumbs
-        elements={[
-          { label: t_i18n('Data') },
-          { label: t_i18n('Curation') },
-          { label: t_i18n('Inbox'), link: CURATION_PROPOSALS_PATH },
-          { label: proposal.name, current: true },
-        ]}
-        noMargin
-      />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2, flexWrap: 'wrap' }}>
         <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{proposal.name}</Typography>
         <Tag label={labels.kind(proposal.proposal_kind)} />

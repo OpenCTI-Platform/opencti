@@ -276,7 +276,7 @@ describe('Knowledge curation', () => {
     expect(Array.isArray(settings.authority_connector_sources)).toBe(true);
   });
 
-  it('should refuse curation settings changes to a user without the parameters capability', async () => {
+  it('should refuse curation settings changes to a user without the customization capability', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SETTINGS_EDIT_MUTATION, variables: { input: { merge_record_retention_days: 30 } } });
   });
 

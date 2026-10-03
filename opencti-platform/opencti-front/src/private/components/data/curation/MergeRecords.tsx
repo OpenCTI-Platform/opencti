@@ -2,7 +2,6 @@ import { graphql } from 'react-relay';
 import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Tag from '@common/tag/Tag';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
@@ -99,7 +98,7 @@ const MergeRecords = () => {
   const { t_i18n, fldt, n } = useFormatter();
   const labels = useCurationLabels();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Merge history | Curation | Data'));
+  setTitle(t_i18n('Merges | Curation | Data'));
   const [searchParams, setSearchParams] = useSearchParams();
   const recordId = searchParams.get('record');
 
@@ -191,10 +190,6 @@ const MergeRecords = () => {
 
   return (
     <div data-testid="curation-merge-records-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Curation') }, { label: t_i18n('Merge history'), current: true }]}
-        noMargin
-      />
       {queryRef && (
         <DataTable
           removeSelectAll

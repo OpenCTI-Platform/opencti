@@ -8,12 +8,11 @@ import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Tag from '@common/tag/Tag';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import type { Theme } from '../../../../components/Theme';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import KnowledgeHealthScore from './KnowledgeHealthScore';
@@ -97,7 +96,7 @@ const KnowledgeHealth = () => {
   const labels = useCurationLabels();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Knowledge Health | Curation | Data'));
-  const isGrantedToSettings = useGranted([SETTINGS_SETPARAMETERS]);
+  const isGrantedToSettings = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const [fetchKey, setFetchKey] = useState(0);
   const data = useLazyLoadQuery<KnowledgeHealthQuery>(knowledgeHealthQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
   const [commitRefresh, refreshing] = useApiMutation<KnowledgeHealthRefreshMutation>(knowledgeHealthRefreshMutation);
@@ -136,10 +135,6 @@ const KnowledgeHealth = () => {
 
   return (
     <div data-testid="knowledge-health-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Curation') }, { label: t_i18n('Knowledge Health'), current: true }]}
-        noMargin
-      />
       {header}
       {health && (
         <>

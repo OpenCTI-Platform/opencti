@@ -1,7 +1,6 @@
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tag from '@common/tag/Tag';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
@@ -188,10 +187,6 @@ const CurationProposals = () => {
 
   return (
     <div data-testid="curation-proposals-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Curation') }, { label: t_i18n('Inbox'), current: true }]}
-        noMargin
-      />
       <CurationStatisticsBar />
       {queryRef && (
         <DataTable

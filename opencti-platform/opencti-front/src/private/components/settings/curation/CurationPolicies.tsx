@@ -9,14 +9,12 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import Tag from '@common/tag/Tag';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -24,7 +22,7 @@ import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLo
 import { MESSAGING$ } from '../../../../relay/environment';
 import CurationPolicyDryRun from './CurationPolicyDryRun';
 import CurationPolicyForm, { CurationPolicyFormData } from './CurationPolicyForm';
-import useCurationLabels, { formatPercent, notifyPayloadErrors } from './curationUtils';
+import useCurationLabels, { formatPercent, notifyPayloadErrors } from '../../data/curation/curationUtils';
 import { CurationPoliciesListQuery, CurationPoliciesListQuery$variables } from './__generated__/CurationPoliciesListQuery.graphql';
 import { CurationPolicies_policies$data } from './__generated__/CurationPolicies_policies.graphql';
 import { CurationPolicies_policy$data } from './__generated__/CurationPolicies_policy.graphql';
@@ -132,7 +130,7 @@ const LOCAL_STORAGE_KEY = 'curation_policies';
 const CurationPoliciesComponent = () => {
   const { t_i18n, fldt, n } = useFormatter();
   const labels = useCurationLabels();
-  const isGrantedToSettings = useGranted([SETTINGS_SETPARAMETERS]);
+  const isGrantedToSettings = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const { curationSettings } = useLazyLoadQuery<CurationPoliciesSettingsQuery>(policiesSettingsQuery, {});
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CurationPolicyFormData | null>(null);
@@ -326,14 +324,8 @@ const CurationPoliciesComponent = () => {
 const CurationPolicies = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Policies | Curation | Data'));
   return (
     <div data-testid="curation-policies-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Curation') }, { label: t_i18n('Policies'), current: true }]}
-        noMargin
-      />
       {isEnterpriseEdition ? <CurationPoliciesComponent /> : <EnterpriseEdition feature={t_i18n('Curation policies')} />}
     </div>
   );

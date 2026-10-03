@@ -492,7 +492,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): CurationPolicyConnection @auth(for: [KNOWLEDGE])
-  curationPolicyDryRun(id: ID!): CurationPolicyDryRun @auth(for: [SETTINGS_SETPARAMETERS])
+  curationPolicyDryRun(id: ID!): CurationPolicyDryRun @auth(for: [SETTINGS_SETCUSTOMIZATION])
   knowledgeHealth: KnowledgeHealthSnapshot @auth(for: [KNOWLEDGE])
   knowledgeHealthSnapshots(
     first: Int
@@ -514,11 +514,11 @@ type Mutation {
   curationProposalsBulkReject(ids: [ID!]!, rationale: String): [ID!]! @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalRevert(id: ID!): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
   unmergeEntity(mergeRecordId: ID!, sourceIds: [ID!]): MergeRecord @auth(for: [KNOWLEDGE_KNUPDATE_KNMERGE])
-  curationPolicyAdd(input: CurationPolicyAddInput!): CurationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
-  curationPolicyFieldPatch(id: ID!, input: [EditInput!]!): CurationPolicy @auth(for: [SETTINGS_SETPARAMETERS])
-  curationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETPARAMETERS])
-  curationPolicyApply(id: ID!): ID @auth(for: [SETTINGS_SETPARAMETERS])
-  curationSettingsEdit(input: CurationSettingsInput!): CurationSettings @auth(for: [SETTINGS_SETPARAMETERS])
-  curationScanRequest: CurationSettings @auth(for: [SETTINGS_SETPARAMETERS])
-  knowledgeHealthRefresh: KnowledgeHealthSnapshot @auth(for: [SETTINGS_SETPARAMETERS])
+  curationPolicyAdd(input: CurationPolicyAddInput!): CurationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  curationPolicyFieldPatch(id: ID!, input: [EditInput!]!): CurationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  curationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  curationPolicyApply(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  curationSettingsEdit(input: CurationSettingsInput!): CurationSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  curationScanRequest: CurationSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  knowledgeHealthRefresh: KnowledgeHealthSnapshot @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

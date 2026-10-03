@@ -5,7 +5,7 @@ import { loadCreator } from '../../database/members';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
 import { AUTHORITY_SOURCE_CONNECTOR } from './curation-types';
 import {
   acceptProposal,
@@ -148,19 +148,19 @@ const curationResolvers: Resolvers = {
   CurationSettings: {
     adjudication_run_as: async (settings, _, context) => {
       const id = settings.adjudication_run_as_id;
-      if (!id || !isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return null;
+      if (!id || !isUserHasCapability(context.user!, SETTINGS_SETCUSTOMIZATION)) return null;
       const [member] = await internalFindByIds(context, context.user!, [id]) as BasicStoreEntity[];
       return (member ?? null) as any;
     },
     authority_connector_sources: async (_, __, context) => {
-      if (!isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return [];
+      if (!isUserHasCapability(context.user!, SETTINGS_SETCUSTOMIZATION)) return [];
       const connectors = await getEntitiesListFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
       return connectors
         .map((connector) => ({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id, source_name: connector.name }))
         .sort((left, right) => left.source_name.localeCompare(right.source_name)) as any;
     },
     digest_recipients: async (settings, _, context) => {
-      if (settings.digest_recipient_ids.length === 0 || !isUserHasCapability(context.user!, SETTINGS_SETPARAMETERS)) return [];
+      if (settings.digest_recipient_ids.length === 0 || !isUserHasCapability(context.user!, SETTINGS_SETCUSTOMIZATION)) return [];
       return internalFindByIds(context, context.user!, settings.digest_recipient_ids) as any;
     },
   },

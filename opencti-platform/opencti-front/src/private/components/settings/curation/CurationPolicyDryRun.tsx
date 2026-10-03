@@ -13,8 +13,8 @@ import Dialog from '@common/dialog/Dialog';
 import Label from '@common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CurationConfidence from './CurationConfidence';
-import useCurationLabels, { CURATION_PROPOSALS_PATH } from './curationUtils';
+import CurationConfidence from '../../data/curation/CurationConfidence';
+import useCurationLabels, { CURATION_PROPOSALS_PATH } from '../../data/curation/curationUtils';
 import { CurationPolicyDryRunQuery } from './__generated__/CurationPolicyDryRunQuery.graphql';
 
 const dryRunQuery = graphql`

@@ -17,6 +17,9 @@ export interface CurationTab {
  * OpenCTI-Platform/opencti#18685). The hub and its menu entry only exist while a tab is registered here.
  */
 export const CURATION_TABS: CurationTab[] = [
+  { path: 'inbox', label: 'Inbox', component: lazy(() => import('./CurationInbox')) },
   { path: 'conflicts', label: 'Conflicts', component: lazy(() => import('../provenance/SourceConflicts')) },
   { path: 'stale-knowledge', label: 'Stale knowledge', component: lazy(() => import('../provenance/StaleKnowledge')) },
+  { path: 'merges', label: 'Merges', component: lazy(() => import('./CurationMerges')) },
+  { path: 'health', label: 'Knowledge health', component: lazy(() => import('./CurationKnowledgeHealth')) },
 ];
