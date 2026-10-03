@@ -16,6 +16,7 @@ import {
   CREATOR_FILTER,
   CVSS_BASE_SCORE_FILTER,
   CVSS_BASE_SEVERITY_FILTER,
+  DEPLOYMENT_PLATFORMS_COUNT_FILTER,
   DEPLOYMENT_STATUS_FILTER,
   DETECTION_FILTER,
   EPSS_PERCENTILE_FILTER,
@@ -269,6 +270,15 @@ export const testDeploymentStatus = (stix: ReadonlyStix, filter: Filter, changeC
 export const testValidationStatus = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.validation_status);
   return testStringFilter(filter, stixValues, changeContext);
+};
+
+/**
+ * DEPLOYMENT PLATFORMS COUNT
+ * - number of platforms an indicator is live on, absent when none
+ */
+export const testDeploymentPlatformsCount = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValue: number | null = stix.extensions?.[STIX_EXT_OCTI]?.deployment_platforms_count ?? null;
+  return testNumericFilter(filter, stixValue, changeContext);
 };
 
 /**
@@ -541,6 +551,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [DETECTION_FILTER]: testDetection,
   [DEPLOYMENT_STATUS_FILTER]: testDeploymentStatus,
   [VALIDATION_STATUS_FILTER]: testValidationStatus,
+  [DEPLOYMENT_PLATFORMS_COUNT_FILTER]: testDeploymentPlatformsCount,
   [INDICATOR_FILTER]: testIndicatorTypes,
   [REPORT_TYPES_FILTER]: testReportTypes,
   [INCIDENT_RESPONSE_TYPES_FILTER]: testResponseTypes,

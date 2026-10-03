@@ -36,4 +36,17 @@ describe('Dissemination assurance stix filter testers (triggers)', () => {
     expect(testers.testValidationStatus(deployedOn('active', 'detected'), filter('validation_status', ['missed']))).toEqual(false);
     expect(testers.testValidationStatus(uses, filter('validation_status', [], 'nil'))).toEqual(true);
   });
+
+  it('should match revoked indicators still live on a platform', () => {
+    const indicator = (revoked: boolean, count?: number) => ({
+      id: 'indicator--4b1d3f5a-3333-4c4d-9e5f-fedcbafedcba',
+      type: 'indicator',
+      revoked,
+      extensions: { [EXT]: count === undefined ? {} : { deployment_platforms_count: count } },
+    }) as unknown as ReadonlyStix;
+    expect(FILTER_KEY_TESTERS_MAP.deployment_platforms_count).toBeDefined();
+    expect(testers.testDeploymentPlatformsCount(indicator(true, 2), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(true);
+    expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(false);
+    expect(testers.testRevoked(indicator(true, 2), filter('revoked', ['true']))).toEqual(true);
+  });
 });
