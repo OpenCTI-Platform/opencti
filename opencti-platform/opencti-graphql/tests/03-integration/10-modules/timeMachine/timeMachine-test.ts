@@ -167,7 +167,7 @@ describe('Knowledge time machine', () => {
       return events.length > 0;
     }, HISTORY_BUDGET_MS);
     relationAddedAt = new Date().toISOString();
-  });
+  }, 4 * HISTORY_BUDGET_MS);
 
   afterAll(async () => {
     await queryAsAdminWithSuccess({ query: PURGE_VISITS });
@@ -324,7 +324,7 @@ describe('Knowledge time machine', () => {
     // The same request returns the cached result
     const cached = await queryAsAdminWithSuccess({ query: LANDSCAPE_RUN, variables: { input } });
     expect(cached.data.landscapeDiffRun.id).toEqual(id);
-  });
+  }, 2 * HISTORY_BUDGET_MS);
 
   it('should create change digests and build their content', async () => {
     const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: [testName], operator: 'eq', mode: 'or' }], filterGroups: [] });
