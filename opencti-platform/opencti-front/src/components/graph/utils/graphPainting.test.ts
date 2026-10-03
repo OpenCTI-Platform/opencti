@@ -6,9 +6,11 @@ import { buildGraphPalette } from './graphPalette';
 import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import { graphLink, graphNode, installPath2DStub } from '../../../utils/tests/graphTestData';
 import {
+  corroborationRingWidth,
   levelOfDetail,
   LinkLabel,
   linkDash,
+  linkLabelText,
   LOW_CONFIDENCE_THRESHOLD,
   NODE_RADIUS,
   nodeRadius,
@@ -141,6 +143,21 @@ describe('paintGraphNode', () => {
     paintGraphNode(ctx, graphNode({ x: NaN }), { palette, globalScale: 4, detail: fullDetail, visual: plain });
     expect(ctx.calls).toHaveLength(0);
   });
+
+  it('rings corroborated knowledge in the success colour, thicker with every source', () => {
+    const ringsOf = (corroborationCount?: number, disabled = false) => {
+      const ctx = createRecordingContext();
+      paintGraphNode(ctx, graphNode({ corroborationCount, disabled }), { palette, globalScale: 4, detail: fullDetail, visual: plain });
+      return ctx.callsOf('stroke').filter((call) => call.strokeStyle === palette.tones.success);
+    };
+    expect(ringsOf(undefined)).toHaveLength(0);
+    expect(ringsOf(1)).toHaveLength(0);
+    expect(ringsOf(5, true)).toHaveLength(0);
+    expect(ringsOf(2)).toHaveLength(1);
+    expect(ringsOf(2)[0].lineWidth).toBeCloseTo(corroborationRingWidth(2));
+    expect(ringsOf(5)[0].lineWidth).toBeGreaterThan(ringsOf(2)[0].lineWidth);
+    expect(corroborationRingWidth(30)).toBe(corroborationRingWidth(8));
+  });
 });
 
 describe('paintGraphNodeHitArea', () => {
@@ -175,6 +192,12 @@ describe('paintGraphLink', () => {
     expect(Number(start.args[0])).toBeGreaterThan(NODE_RADIUS);
     expect(ctx.callsOf('closePath')).toHaveLength(1);
     expect(label).toMatchObject({ text: 'uses', x: 50, y: 0, angle: 0 });
+  });
+
+  it('adds the number of sources to the label of a corroborated relationship', () => {
+    expect(paintGraphLink(createRecordingContext(), graphLink(a, b, { corroborationCount: 1 }), options)?.text).toBe('uses');
+    expect(paintGraphLink(createRecordingContext(), graphLink(a, b, { corroborationCount: 3 }), options)?.text).toBe('uses (3)');
+    expect(linkLabelText({ label: 'targets', corroborationCount: undefined })).toBe('targets');
   });
 
   it('draws a curve for a curved link', () => {

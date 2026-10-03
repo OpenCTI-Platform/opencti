@@ -157,6 +157,12 @@ const GraphHoverCard = ({
             <span>{node.confidence}</span>
           </div>
         )}
+        {typeof node.corroborationCount === 'number' && node.corroborationCount > 0 && (
+          <div style={fact}>
+            <span style={factLabel}>{t_i18n('Sources')}</span>
+            <span>{t_i18n('{count} sources', { values: { count: node.corroborationCount } })}</span>
+          </div>
+        )}
         {nodeMarkings.length > 0 && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Markings')}</span>
@@ -262,6 +268,12 @@ const GraphHoverCard = ({
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Confidence level')}</span>
             <span>{link.confidence}</span>
+          </div>
+        )}
+        {typeof link.corroborationCount === 'number' && link.corroborationCount > 0 && (
+          <div style={fact}>
+            <span style={factLabel}>{t_i18n('Sources')}</span>
+            <span>{t_i18n('{count} sources', { values: { count: link.corroborationCount } })}</span>
           </div>
         )}
         {(link.inferred || link.isNestedInferred) && (
