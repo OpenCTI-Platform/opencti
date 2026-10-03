@@ -16,6 +16,7 @@ import {
   defenseTechniqueValidations,
   exportDefenseGaps,
   findDefenseGaps,
+  findDefensePlatforms,
   findDefenseTechnique,
   getDefenseCoverageStatus,
   requestDefenseCoverageRecompute,
@@ -33,6 +34,7 @@ import type { DefenseThreatScope } from './defenseCoverage-reader';
 
 const defenseCoverageResolvers: Resolvers = {
   Query: {
+    defensePlatforms: (_, __, context) => findDefensePlatforms(context, context.user),
     defenseMatrix: (_, args, context) => buildDefenseMatrix(context, context.user, {
       platformIds: args.platformIds,
       threatScope: args.threatScope as DefenseThreatScope | null | undefined,

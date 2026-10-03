@@ -291,6 +291,7 @@ input DefenseLogsourceMappingAddInput {
 }
 
 type Query {
+  defensePlatforms: [DefensePlatform!]! @auth(for: [KNOWLEDGE])
   defenseMatrix(platformIds: [String!], threatScope: DefenseThreatScope): DefenseMatrix @auth(for: [KNOWLEDGE])
   defenseTechnique(id: String!, platformIds: [String!], threatScope: DefenseThreatScope): DefenseTechnique @auth(for: [KNOWLEDGE])
   defenseGaps(
