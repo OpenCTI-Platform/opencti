@@ -10,7 +10,7 @@ import { isStixCoreRelationship, RELATION_RELATED_TO, RELATION_USES } from '../.
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { getParentTypes, isInternalId } from '../../schema/schemaUtils';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import {
   type FilterGroup,
   FilterMode,
@@ -23,7 +23,7 @@ import {
 } from '../../generated/graphql';
 import { GRAPH_CLUSTER_ID_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { GRAPH_ANALYTICS_MANAGER_USER } from '../../utils/access';
+import { GRAPH_ANALYTICS_MANAGER_USER, isBypassUser } from '../../utils/access';
 import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkPriority, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
 import { addGraphAnalyticsPivotCount, addGraphClusterPromotionCount, addGraphSimilarityQueryCount } from '../../manager/telemetryManager';
 import { addGrouping } from '../grouping/grouping-domain';
@@ -121,8 +121,9 @@ const matchesEntityTypes = (entityType: string, entityTypes: string[] | null | u
 };
 
 /**
- * Precomputed top-N similar entities, filtered for the caller: an inaccessible similar entity is never returned,
- * inaccessible evidence is never shown, and a similarity without any visible evidence is dropped.
+ * Top-N similar entities for the caller. The precomputed rows only select the candidates: every score is computed
+ * again from profiles restricted to what the caller can access, so a hidden relationship never raises a score,
+ * and a similarity without any visible evidence is dropped.
  */
 export const findSimilarEntities = async (context: AuthContext, user: AuthUser, args: SimilarEntitiesArgs) => {
   const entity = await storeLoadById<BasicStoreEntity>(context, user, args.id, ABSTRACT_STIX_CORE_OBJECT);
@@ -130,29 +131,48 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('Entity not found or not accessible', { id: args.id });
   }
   const first = clamp(args.first, 10, 1, SIMILARITY_MAX_RESULTS);
-  const rows = await listSimilarityRows(context, user, entity.internal_id, Math.min(first * 4 + 20, 500), args.minScore ?? 0);
+  const minScore = args.minScore ?? 0;
+  const rows = await listSimilarityRows(context, user, entity.internal_id, Math.min(first * 4 + 20, 500));
   const typedRows = rows.filter((row) => matchesEntityTypes(row.similarity_target_type, args.entityTypes));
   const targets = await accessibleMap<BasicStoreEntity>(context, user, typedRows.map((r) => r.similarity_target_id));
-  const evidenceIds = typedRows.flatMap((row) => Object.values(row.similarity_shared ?? {}).flat() as string[]);
+  const candidates = typedRows.flatMap((row) => (targets[row.similarity_target_id] ? [{ row, target: targets[row.similarity_target_id] }] : []));
+  const profiles = await loadFeatureProfilesBatched(
+    context,
+    user,
+    [entity, ...candidates.map((c) => c.target)].map((e) => ({ id: e.internal_id, entity_type: e.entity_type })),
+    getGraphAnalyticsComputeConfig(),
+    true,
+  );
+  const profilesById = new Map(profiles.map((p) => [p.id, p]));
+  const source = profilesById.get(entity.internal_id);
+  const scored = candidates.flatMap(({ row, target }) => {
+    const profile = profilesById.get(target.internal_id);
+    if (!source || !profile || profile.kind !== source.kind) return [];
+    const score = computeSimilarityScore(source, profile);
+    if (score.shared_count === 0 || score.score < minScore) return [];
+    return [{ row, target, score }];
+  });
+  scored.sort((x, y) => (y.score.score - x.score.score)
+    || (y.score.shared_count - x.score.shared_count)
+    || x.target.internal_id.localeCompare(y.target.internal_id));
+  const evidenceIds = scored.flatMap(({ score }) => Object.values(score.shared).flat() as string[]);
   const evidence = await accessibleMap<BasicStoreEntity>(context, user, evidenceIds);
-  const visibleRows = typedRows.flatMap((row) => {
-    const target = targets[row.similarity_target_id];
-    if (!target) return [];
+  const visibleRows = scored.flatMap(({ row, target, score }) => {
     const families = GRAPH_FEATURE_FAMILIES
-      .map((family) => ({ family, entities: (row.similarity_shared?.[family] ?? []).map((id) => evidence[id]).filter(Boolean) }))
+      .map((family) => ({ family, entities: (score.shared[family] ?? []).map((id) => evidence[id]).filter(Boolean) }))
       .filter((f) => f.entities.length > 0);
     if (families.length === 0) return [];
-    return [{ row, target, families }];
+    return [{ row, target, score, families }];
   });
   const coverages = await findSecurityCoverages(context, user, visibleRows.map((v) => v.target.internal_id));
   const nodes = visibleRows
     .filter((v) => !args.onlyWithSecurityCoverage || coverages.has(v.target.internal_id))
     .slice(0, first)
-    .map(({ row, target, families }) => ({
+    .map(({ row, target, score, families }) => ({
       id: `${row.similarity_entity_id}_${row.similarity_target_id}`,
-      score: row.similarity_score,
-      jaccard: row.similarity_jaccard ?? 0,
-      structural: row.similarity_structural ?? 0,
+      score: score.score,
+      jaccard: score.jaccard,
+      structural: score.structural,
       computed_at: row.similarity_computed_at,
       shared_count: families.reduce((acc, f) => acc + f.entities.length, 0),
       entity: target,
@@ -197,7 +217,8 @@ const loadMatrixEntities = async (context: AuthContext, user: AuthUser, args: Gr
 /** Pairwise scores computed live from the caller's view of the knowledge (no precomputed data involved). */
 export const graphSimilarityMatrix = async (context: AuthContext, user: AuthUser, args: GraphSimilarityMatrixArgs) => {
   const entities = await loadMatrixEntities(context, user, args);
-  const profiles = await loadFeatureProfilesBatched(context, user, entities.map((e) => ({ id: e.internal_id, entity_type: e.entity_type })), getGraphAnalyticsComputeConfig());
+  const profileEntities = entities.map((e) => ({ id: e.internal_id, entity_type: e.entity_type }));
+  const profiles = await loadFeatureProfilesBatched(context, user, profileEntities, getGraphAnalyticsComputeConfig(), true);
   const byId = new Map(profiles.map((p) => [p.id, p]));
   const cells: Array<{ source_id: string; target_id: string; score: number; shared_count: number }> = [];
   for (let i = 0; i < entities.length; i += 1) {
@@ -536,9 +557,13 @@ export const listGraphAnalyticsEdges = async (context: AuthContext, user: AuthUs
 /**
  * Write-back of the opencti-analytics process. Each metric entry carries all the run-owned metrics of an entity
  * (cluster assignment and centrality): an omitted cluster detaches the entity. Only entities the service account
- * can access are updated. `complete` finalizes the run: clusters and assignments of older runs are removed.
+ * can access are updated. `complete` finalizes the run: clusters and assignments of older runs are removed,
+ * platform-wide, so it is only accepted from an account that bypasses data restrictions and analyzed the whole graph.
  */
 export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: AuthUser, input: GraphAnalyticsUpsertMetricsInput) => {
+  if (input.complete && !isBypassUser(user)) {
+    throw ForbiddenAccess('Completing a graph analytics run requires an account that bypasses data restrictions');
+  }
   if (input.metrics.length > UPSERT_MAX_METRICS) {
     throw FunctionalError('Too many metrics in one call', { max: UPSERT_MAX_METRICS });
   }

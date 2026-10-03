@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreRelation } from '../../types/store';
-import { computeQueryIndices, elList } from '../../database/engine';
+import type { BasicStoreBase, BasicStoreRelation } from '../../types/store';
+import { computeQueryIndices, elFindByIds, elList } from '../../database/engine';
 import { buildRelationsFilter } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import {
@@ -33,7 +33,7 @@ import {
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
+import { READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import type { GraphFeatureFamily, GraphFeatureProfile, GraphFeatureProfileKind, GraphFeatureSets } from './graphAnalytics-types';
 
 export interface GraphProfileSpec {
@@ -117,7 +117,22 @@ export const classifyInfrastructureNeighbor = (sourceType: string, neighborType:
 export interface FeatureExtractionOptions {
   maxPerFamily: number;
   maxRelationships: number;
+  // A relationship can be visible while one of its endpoints is not: a caller other than the manager must check both
+  checkEndpointsAccess?: boolean;
 }
+
+const keepAccessibleEndpoints = async (
+  context: AuthContext,
+  user: AuthUser,
+  relations: BasicStoreRelation[],
+  checkEndpointsAccess: boolean | undefined,
+): Promise<BasicStoreRelation[]> => {
+  if (!checkEndpointsAccess || relations.length === 0) return relations;
+  const ids = Array.from(new Set(relations.flatMap((relation) => [relation.fromId, relation.toId])));
+  const accessible = await elFindByIds<BasicStoreBase>(context, user, ids, { indices: READ_ENTITIES_INDICES, baseData: true }) as BasicStoreBase[];
+  const accessibleIds = new Set(accessible.map((element) => element.internal_id));
+  return relations.filter((relation) => accessibleIds.has(relation.fromId) && accessibleIds.has(relation.toId));
+};
 
 const addFeature = (features: GraphFeatureSets, family: GraphFeatureFamily, id: string, maxPerFamily: number) => {
   const list = features[family] ?? [];
@@ -180,7 +195,8 @@ export const loadFeatureProfiles = async (
   });
   const relationalIds = [...byKind.threat, ...byKind.infrastructure];
   if (relationalIds.length > 0) {
-    const relations = await listAnalyticsRelations(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP], { fromOrToId: relationalIds }, opts.maxRelationships);
+    const listed = await listAnalyticsRelations(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP], { fromOrToId: relationalIds }, opts.maxRelationships);
+    const relations = await keepAccessibleEndpoints(context, user, listed, opts.checkEndpointsAccess);
     relations.forEach((relation) => {
       const sides: Array<{ self: string; neighbor: string; neighborType: string; direction: NeighborDirection }> = [
         { self: relation.fromId, neighbor: relation.toId, neighborType: relation.toType, direction: 'out' },
@@ -199,7 +215,8 @@ export const loadFeatureProfiles = async (
   }
   if (byKind.infrastructure.length > 0) {
     // report co-occurrence: containers referencing the element
-    const containment = await listAnalyticsRelations(context, user, [RELATION_OBJECT], { toId: byKind.infrastructure }, opts.maxRelationships);
+    const listed = await listAnalyticsRelations(context, user, [RELATION_OBJECT], { toId: byKind.infrastructure }, opts.maxRelationships);
+    const containment = await keepAccessibleEndpoints(context, user, listed, opts.checkEndpointsAccess);
     containment.forEach((relation) => {
       const profile = profiles.get(relation.toId);
       if (profile && relation.fromType === ENTITY_TYPE_CONTAINER_REPORT) {
@@ -208,7 +225,8 @@ export const loadFeatureProfiles = async (
     });
   }
   if (byKind.report.length > 0) {
-    const objects = await listAnalyticsRelations(context, user, [RELATION_OBJECT], { fromId: byKind.report }, opts.maxRelationships);
+    const listed = await listAnalyticsRelations(context, user, [RELATION_OBJECT], { fromId: byKind.report }, opts.maxRelationships);
+    const objects = await keepAccessibleEndpoints(context, user, listed, opts.checkEndpointsAccess);
     objects.forEach((relation) => {
       const profile = profiles.get(relation.fromId);
       if (!profile) return;

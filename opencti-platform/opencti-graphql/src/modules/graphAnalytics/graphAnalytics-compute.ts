@@ -92,11 +92,12 @@ export const loadFeatureProfilesBatched = async (
   user: AuthUser,
   entities: Array<{ id: string; entity_type: string }>,
   config: GraphAnalyticsComputeConfig,
+  checkEndpointsAccess = false,
 ): Promise<GraphFeatureProfile[]> => {
   const profiles: GraphFeatureProfile[] = [];
   for (let i = 0; i < entities.length; i += PROFILE_BATCH_SIZE) {
     const batch = entities.slice(i, i + PROFILE_BATCH_SIZE);
-    const loaded = await loadFeatureProfiles(context, user, batch, featureOptions(config));
+    const loaded = await loadFeatureProfiles(context, user, batch, { ...featureOptions(config), checkEndpointsAccess });
     profiles.push(...loaded.values());
     await doYield();
   }

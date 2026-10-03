@@ -27,8 +27,10 @@ manager keeps the clusters. When the process writes results, the platform stops 
    entities and removes the clusters of older runs.
 
 Every query runs with the service account: the process only sees, and only writes on, what this account
-can access. Give it a dedicated user with the `Access connectors` (`CONNECTORAPI`) and `Create / Update
-knowledge` (`KNOWLEDGE_KNUPDATE`) capabilities and access to the markings to analyze.
+can access. Completing a run replaces the clusters and run metrics of the whole platform, so the platform only
+accepts it from an account that bypasses data restrictions: give the process a dedicated user whose role grants
+`Bypass all capabilities` (`BYPASS`). A run whose edges export stops early (pagination without progress, or more
+than `max_edges` edges) fails without completing.
 
 ## Run with Docker
 

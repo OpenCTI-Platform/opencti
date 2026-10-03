@@ -1,7 +1,7 @@
 ---
 opencti:
   url: 'http://localhost:8080'
-  # API token of the service account (CONNECTORAPI + KNOWLEDGE_KNUPDATE capabilities)
+  # API token of the service account (BYPASS capability: completing a run requires unrestricted access)
   token: 'ChangeMe'
   json_logging: true
 
