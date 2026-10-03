@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Checklist, FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { Checklist, DifferenceOutlined, FormatShapesOutlined, MapOutlined, PieChartOutlined, TrendingUpOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -11,6 +11,7 @@ import {
   ChartTree,
   Counter,
   FormatListNumberedRtl,
+  LockPattern,
   Radar,
   StarSettingsOutline,
   TagTextOutline,
@@ -204,6 +205,36 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'landscape-relationships',
+    name: 'New relationships by type',
+    dataSelectionLimit: 1,
+    category: 'landscape',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
+    key: 'landscape-techniques',
+    name: 'New techniques by tactic',
+    dataSelectionLimit: 1,
+    category: 'landscape',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
+    key: 'landscape-top-entities',
+    name: 'Top changed entities',
+    dataSelectionLimit: 1,
+    category: 'landscape',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -311,6 +342,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'landscape-relationships':
+      return <DifferenceOutlined fontSize={fontSize} color="primary" />;
+    case 'landscape-techniques':
+      return <LockPattern fontSize={fontSize} color="primary" />;
+    case 'landscape-top-entities':
+      return <TrendingUpOutlined fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }
