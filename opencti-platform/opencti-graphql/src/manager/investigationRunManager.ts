@@ -113,7 +113,7 @@ const processCaseRfiHooks = async (context: AuthContext) => {
     // After a retryable failure the cursor stops on the last handled event, never past the failed one.
     const position = progress.retry ? progress.handledEventId : lastEventId;
     if (position && position !== policy.last_event_id) {
-      await updateInvestigationPolicyStreamPosition(context, policy.internal_id, position);
+      await updateInvestigationPolicyStreamPosition(context, policy.internal_id, policy.last_event_id ?? '', position);
     }
   }
 };

@@ -579,8 +579,9 @@ const createRecommendationTask = async (
     name: recommendation.text.slice(0, 250),
     description,
     objects: [anchor.internal_id],
-    // The recommendation may quote what the run cites: the task carries the run markings too.
+    // The recommendation may quote what the run cites: the task carries the run markings and sharing too.
     objectMarking: Array.from(new Set([...markingIdsOf(anchor), ...markingIdsOf(run)])),
+    objectOrganization: organizationIdsOf(anchor).filter((id) => organizationIdsOf(run).includes(id)),
   });
   return task.internal_id ?? task.id;
 };
@@ -690,7 +691,8 @@ const decideApprovalsOf = async (
   const decided: Array<{ approval: InvestigationApproval; approved: boolean; reason: string | null }> = [];
   decisions.forEach((decision) => {
     const approval = run.approvals.find((a) => a.id === decision.tool_call_id && a.status === InvestigationApprovalStatus.Pending);
-    if (!approval) return;
+    // An approval repeated in the same request is decided once, by its first decision.
+    if (!approval || decided.some((d) => d.approval.id === approval.id)) return;
     const approved = decision.decision === 'approve' || decision.decision === 'approve_always';
     decided.push({ approval, approved, reason: decision.rejection_reason?.slice(0, INVESTIGATION_LIMITS.textLength) ?? null });
     // "Approve always" extends the decision to the other pending requests of the same connector.
@@ -976,7 +978,9 @@ export const continueInvestigationRun = async (context: AuthContext, user: AuthU
     throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
   }
   const now = new Date();
-  const updated = await updateInvestigationRun(context, id, (current) => {
+  // Under the actions lock: a draft approval being decided finishes first, and
+  // then the run is no longer waiting for its draft, so it cannot be continued.
+  const updated = await withRunActions(context, run.internal_id, () => updateInvestigationRun(context, id, (current) => {
     if (!canContinueInvestigationRun(current)) return null;
     return {
       ...statusTransition(current, InvestigationRunStatus.Running, InvestigationRunPhase.Starting, now, null),
@@ -985,7 +989,10 @@ export const continueInvestigationRun = async (context: AuthContext, user: AuthU
         ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Investigation continued' }
         : approval)),
     };
-  });
+  }));
+  if (updated.run_status !== InvestigationRunStatus.Running || updated.run_phase !== InvestigationRunPhase.Starting) {
+    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

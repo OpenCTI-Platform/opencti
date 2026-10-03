@@ -1380,6 +1380,14 @@ describe('httpChatbotProxy: postChatbotMessageApprove for Case Autopilot runs', 
     await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, decisions: [] }), res);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'No decisions supplied' });
+
+    res = buildRes();
+    await postChatbotMessageApprove(buildSessionReq({
+      ...RUN_BODY,
+      decisions: [{ tool_call_id: APPROVAL_ID, decision: 'approve' }, { tool_call_id: APPROVAL_ID, decision: 'approve_always' }],
+    }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Each approval can be decided once per request' });
     expect(mockDecideInvestigationApprovals).not.toHaveBeenCalled();
   });
 

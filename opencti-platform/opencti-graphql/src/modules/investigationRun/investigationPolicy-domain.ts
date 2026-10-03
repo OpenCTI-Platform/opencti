@@ -43,6 +43,7 @@ import {
 
 const DEFAULT_POLICY_LOCK = 'investigation_policy_default_lock';
 const policyCountersLock = (policyId: string) => `investigation_policy_counters_${policyId}`;
+const policyHookLock = (policyId: string) => `investigation_policy_hook_${policyId}`;
 // Held by run creation and policy deletion: a policy is never deleted under a run being created.
 export const policyUsageLockKey = (policyId: string) => `investigation_policy_usage_${policyId}`;
 
@@ -247,12 +248,16 @@ export const editInvestigationPolicy = async (context: AuthContext, user: AuthUs
   }
   const finalInput = input.map((entry) => (entry.key === 'pack_options' ? { ...entry, value: [sanitizePackOptions(entry.value?.[0])] } : entry));
   const hookInput = input.find(({ key }) => key === 'trigger_on_case_rfi_creation');
-  if (hookInput && String(hookInput.value?.[0]) === 'true') {
-    // Enabling the hook starts from now, never replays the past.
-    finalInput.push({ key: 'last_event_id', value: [`${Date.now()}-0`] });
-  }
-  const lock = becomesDefault ? await lockResources([DEFAULT_POLICY_LOCK]) : null;
+  const enablesHook = hookInput && String(hookInput.value?.[0]) === 'true';
+  // The hook cursor and the default flag are changed under their locks, the
+  // cursor with the manager that advances it.
+  const lockKeys = [...(becomesDefault ? [DEFAULT_POLICY_LOCK] : []), ...(enablesHook ? [policyHookLock(id)] : [])];
+  const lock = lockKeys.length > 0 ? await lockResources(lockKeys) : null;
   try {
+    if (enablesHook && !(await loadInvestigationPolicy(context, id))?.trigger_on_case_rfi_creation) {
+      // Turning the hook on starts from now, never replays the past; a hook already on keeps its cursor.
+      finalInput.push({ key: 'last_event_id', value: [`${Date.now()}-0`] });
+    }
     const element = await editInternalObject<StoreEntityInvestigationPolicy>(context, user, id, ENTITY_TYPE_INVESTIGATION_POLICY, finalInput);
     if (becomesDefault) {
       await demoteOtherDefaults(context, id);
@@ -337,8 +342,23 @@ export const listCaseRfiTriggerPolicies = (context: AuthContext) => {
   });
 };
 
-export const updateInvestigationPolicyStreamPosition = async (context: AuthContext, id: string, lastEventId: string) => {
-  return patchAttribute(context, INVESTIGATION_MANAGER_USER, id, ENTITY_TYPE_INVESTIGATION_POLICY, { last_event_id: lastEventId });
+/**
+ * Move the request for information hook cursor from `fromEventId` to
+ * `lastEventId`, only if the hook is still on and nobody moved the cursor
+ * meanwhile (an analyst re-enabling the hook restarts it from that moment).
+ */
+export const updateInvestigationPolicyStreamPosition = async (context: AuthContext, id: string, fromEventId: string, lastEventId: string) => {
+  const lock = await lockResources([policyHookLock(id)]);
+  try {
+    const policy = await loadInvestigationPolicy(context, id);
+    if (!policy?.trigger_on_case_rfi_creation || (policy.last_event_id && policy.last_event_id !== fromEventId)) {
+      return false;
+    }
+    await patchAttribute(context, INVESTIGATION_MANAGER_USER, id, ENTITY_TYPE_INVESTIGATION_POLICY, { last_event_id: lastEventId });
+    return true;
+  } finally {
+    await lock.unlock();
+  }
 };
 
 // Apply an acceptance delta atomically, the counters back the acceptance rate of the policy.

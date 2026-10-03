@@ -357,6 +357,10 @@ const answerInvestigationApproval = async (context: AuthContext, req: Express.Re
       res.status(400).json({ error: 'Invalid decision' });
       return;
     }
+    if (decisions.some((decision) => decision.tool_call_id === raw.tool_call_id)) {
+      res.status(400).json({ error: 'Each approval can be decided once per request' });
+      return;
+    }
     decisions.push({
       tool_call_id: raw.tool_call_id,
       decision: raw.decision as InvestigationApprovalDecisionInput['decision'],
