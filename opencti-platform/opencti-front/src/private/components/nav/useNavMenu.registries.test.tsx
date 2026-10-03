@@ -1,0 +1,79 @@
+import React, { lazy } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { testRenderHook } from '../../../utils/tests/test-render';
+import { DEFENSE_AREAS, type DefenseArea } from '../defense/defenseAreas';
+import { CURATION_TABS, type CurationTab } from '../data/curation/curationTabs';
+import useNavMenu, { type NavGroup } from './useNavMenu';
+
+const hidden = vi.hoisted(() => ({ entities: [] as string[] }));
+
+vi.mock('../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/hooks/useGranted')>()),
+  default: () => true,
+}));
+vi.mock('../../../utils/hooks/useEntitySettings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/hooks/useEntitySettings')>()),
+  useHiddenEntities: () => hidden.entities,
+  useIsHiddenEntities: () => false,
+}));
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: () => false, isTrashEnable: () => false }),
+}));
+vi.mock('../../../utils/hooks/useImportAccess', () => ({
+  default: () => ({ hasOnlyAccessToImportDraftTab: false }),
+}));
+
+const lazyNothing = lazy(async () => ({ default: () => null }));
+const area = (path: string, label: string, entityType?: string): DefenseArea => ({
+  path, label, entityType, icon: <svg />, component: lazyNothing,
+});
+const tab = (path: string, label: string): CurationTab => ({ path, label, component: lazyNothing });
+
+const menu = (): NavGroup[] => testRenderHook(() => useNavMenu()).hook.result.current;
+const knowledgeIds = (groups: NavGroup[]) => groups.find((g) => g.id === 'knowledge')?.items.map((i) => i.id);
+const dataLinks = (groups: NavGroup[]) => groups
+  .find((g) => g.id === 'data')?.items.find((i) => i.id === 'data')?.subItems?.map((s) => s.link);
+
+// The registries are module-level arrays every innovation appends to, so the tests fill them in place.
+afterEach(() => {
+  DEFENSE_AREAS.length = 0;
+  CURATION_TABS.length = 0;
+  hidden.entities = [];
+});
+
+describe('useNavMenu - Defense hub', () => {
+  it('adds no Defense entry while no area is registered', () => {
+    expect(knowledgeIds(menu())).not.toContain('defense');
+  });
+
+  it('places Defense right after Observations, with its areas in registration order', () => {
+    DEFENSE_AREAS.push(area('hunts', 'Hunts', 'Hunt'), area('matrix', 'Defense matrix'));
+    const groups = menu();
+    expect(knowledgeIds(groups)).toEqual(['analyses', 'cases', 'events', 'observations', 'defense']);
+    const defense = groups.find((g) => g.id === 'knowledge')?.items.find((i) => i.id === 'defense');
+    expect(defense?.link).toEqual('/dashboard/defense');
+    expect(defense?.subItems?.map((s) => [s.link, s.label])).toEqual([
+      ['/dashboard/defense/hunts', 'Hunts'],
+      ['/dashboard/defense/matrix', 'Defense matrix'],
+    ]);
+  });
+
+  it('removes the entry, not just its rows, when every area is hidden', () => {
+    // A parent left with no rows would degrade to a plain link to an empty hub.
+    DEFENSE_AREAS.push(area('hunts', 'Hunts', 'Hunt'));
+    hidden.entities = ['Hunt'];
+    expect(knowledgeIds(menu())).not.toContain('defense');
+  });
+});
+
+describe('useNavMenu - Curation hub', () => {
+  it('adds no Curation row to Data while no tab is registered', () => {
+    expect(dataLinks(menu())).not.toContain('/dashboard/data/curation');
+  });
+
+  it('lists Curation right after Relationships once a tab is registered', () => {
+    CURATION_TABS.push(tab('inbox', 'Inbox'));
+    const links = dataLinks(menu()) ?? [];
+    expect(links.slice(0, 3)).toEqual(['/dashboard/data/entities', '/dashboard/data/relationships', '/dashboard/data/curation']);
+  });
+});

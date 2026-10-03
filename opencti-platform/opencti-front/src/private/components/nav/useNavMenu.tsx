@@ -57,10 +57,13 @@ import {
   LockPattern,
   ProgressWrench,
   ServerNetwork,
+  ShieldCheckOutline,
   ShieldSearch,
   Timetable,
 } from 'mdi-material-ui';
 import React from 'react';
+import { DEFENSE_AREAS, PATH_DEFENSE, visibleDefenseAreas } from '@components/defense/defenseAreas';
+import { CURATION_TABS, PATH_CURATION } from '@components/data/curation/curationTabs';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -195,6 +198,7 @@ const useNavMenu = (): NavGroup[] => {
   const hideLocations = useIsHiddenEntities('Region', 'Administrative-Area', 'Country', 'City', 'Position');
 
   const inDraft = !!draftContext;
+  const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, hiddenEntities.filter((e): e is string => !!e));
 
   const groups: (RawNavGroup | false)[] = [
     {
@@ -282,6 +286,18 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
           ],
         },
+        defenseAreas.length > 0 && {
+          id: 'defense',
+          label: t_i18n('Defense'),
+          icon: <ShieldCheckOutline />,
+          link: PATH_DEFENSE,
+          subItems: defenseAreas.map((area) => ({
+            type: area.entityType,
+            link: `${PATH_DEFENSE}/${area.path}`,
+            label: t_i18n(area.label),
+            icon: area.icon,
+          })),
+        },
       ] : [],
     },
     {
@@ -367,6 +383,7 @@ const useNavMenu = (): NavGroup[] => {
           subItems: [
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
+            { granted: CURATION_TABS.length > 0 && isGrantedToKnowledge && !inDraft, link: PATH_CURATION, label: t_i18n('Curation') },
             { granted: isGrantedToImport && !inDraft, link: '/dashboard/data/import', label: t_i18n('Import') },
             { granted: isGrantedToProcessing && !inDraft, link: '/dashboard/data/processing', label: t_i18n('Processing') },
             { granted: isGrantedToSharing && !inDraft, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
