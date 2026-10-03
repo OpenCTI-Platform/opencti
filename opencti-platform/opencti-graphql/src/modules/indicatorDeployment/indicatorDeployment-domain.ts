@@ -4,7 +4,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreRelation } from '../../types/store';
 import { createRelation, distributionRelations, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, fullRelationsList, internalLoadById, storeLoadById, topRelationsList } from '../../database/middleware-loader';
-import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elUpdate } from '../../database/engine';
+import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elRawUpdateByQuery, elUpdate } from '../../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
 import { notify } from '../../database/redis';
@@ -620,6 +620,33 @@ export const repairRecentDeploymentCounters = async (context: AuthContext, since
 // endregion
 
 // region derived counters
+const COUNTERS_BACKFILL_SOURCE = 'for (field in params.fields) { if (ctx._source[field] == null) { ctx._source[field] = 0; } }';
+const COUNTER_FIELDS = [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT, INDICATOR_DEPLOYMENT_FAILED_COUNT, INDICATOR_VALIDATED_PLATFORMS_COUNT, INDICATOR_HIT_PLATFORMS_COUNT];
+
+/**
+ * Indicators created before dissemination assurance have no counters (new ones get 0 by default value).
+ * They are backfilled with 0 in bounded batches by the deployment manager instead of a blocking startup migration.
+ * Idempotent: only documents without the counter are touched, no stream event, no history.
+ */
+export const backfillIndicatorDeploymentCounters = async (batchSize: number) => {
+  const result = await elRawUpdateByQuery({
+    index: READ_INDEX_STIX_DOMAIN_OBJECTS,
+    refresh: true,
+    conflicts: 'proceed',
+    max_docs: batchSize,
+    body: {
+      script: { source: COUNTERS_BACKFILL_SOURCE, lang: 'painless', params: { fields: COUNTER_FIELDS } },
+      query: {
+        bool: {
+          must: [{ term: { 'entity_type.keyword': { value: ENTITY_TYPE_INDICATOR } } }],
+          must_not: [{ exists: { field: INDICATOR_DEPLOYMENT_PLATFORMS_COUNT } }],
+        },
+      },
+    },
+  }) as { updated?: number };
+  return result?.updated ?? 0;
+};
+
 /**
  * Recompute the derived deployment counters of the given indicators from their deployed-on relationships.
  * Runs as system user: only numbers are stored on the indicator, never the restricted relationships.

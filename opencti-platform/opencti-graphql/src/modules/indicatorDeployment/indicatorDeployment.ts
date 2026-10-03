@@ -61,6 +61,7 @@ export const indicatorDeploymentCountersAttributes: Array<AttributeDefinition> =
     multiple: false,
     upsert: false,
     update: false,
+    defaultValue: 0,
     isFilterable: true,
   },
   {
@@ -73,6 +74,7 @@ export const indicatorDeploymentCountersAttributes: Array<AttributeDefinition> =
     multiple: false,
     upsert: false,
     update: false,
+    defaultValue: 0,
     isFilterable: true,
   },
   {
@@ -85,6 +87,7 @@ export const indicatorDeploymentCountersAttributes: Array<AttributeDefinition> =
     multiple: false,
     upsert: false,
     update: false,
+    defaultValue: 0,
     isFilterable: true,
   },
   {
@@ -97,6 +100,7 @@ export const indicatorDeploymentCountersAttributes: Array<AttributeDefinition> =
     multiple: false,
     upsert: false,
     update: false,
+    defaultValue: 0,
     isFilterable: true,
   },
 ];
