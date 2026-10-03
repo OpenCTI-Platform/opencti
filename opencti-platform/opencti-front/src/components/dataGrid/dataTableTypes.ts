@@ -100,6 +100,7 @@ export interface DataTableProps {
   additionalFilterKeys?: string[];
   entityTypes?: string[];
   container?: any;
+  knowledgeEntityId?: string;
   settingsMessagesBannerHeight?: number;
   storageHelpers?: UseLocalStorageHelpers;
   redirectionMode?: string | undefined;
