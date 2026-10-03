@@ -132,10 +132,18 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * OpenCTI's own license or a verified XTM license, never the ee_enabled of the
  * XTM One registration answer.
  */
-const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
+const authenticate = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
   if (!context.user) {
     res.sendStatus(403);
+    return null;
+  }
+  return context;
+};
+
+const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
+  const context = await authenticate(req, res);
+  if (!context?.user) {
     return null;
   }
 
@@ -400,7 +408,11 @@ const answerInvestigationApproval = async (context: AuthContext, req: Express.Re
 // screen with the controls re-armed on anything else.
 export const postChatbotMessageApprove = async (req: Express.Request, res: Express.Response) => {
   try {
-    const context = await authenticateAndVerify(req, res);
+    // Case Autopilot gates are held by OpenCTI and checked against the
+    // Enterprise Edition by the investigation itself: they do not depend on
+    // the chatbot being enabled.
+    const isInvestigationApproval = !!req.body?.investigation_run_id;
+    const context = isInvestigationApproval ? await authenticate(req, res) : await authenticateAndVerify(req, res);
     if (!context?.user) return;
     // An approval is a person's consent, so it must come from a real browser
     // session. Agent and service identities authenticate with an API token
@@ -417,7 +429,7 @@ export const postChatbotMessageApprove = async (req: Express.Request, res: Expre
     // Case Autopilot gates (paid enrichments, sensitive recommendations, the
     // investigation draft) are decided on the same route and with the same
     // payload, but held by OpenCTI: they never reach XTM One.
-    if (req.body.investigation_run_id) {
+    if (isInvestigationApproval) {
       await answerInvestigationApproval(context, req, res);
       return;
     }

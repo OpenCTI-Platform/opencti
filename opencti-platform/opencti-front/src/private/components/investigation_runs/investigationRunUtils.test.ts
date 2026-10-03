@@ -14,6 +14,7 @@ import {
   feedbackDecisionFor,
   formatProbability,
   goalObjective,
+  isEngineRunOver,
   isRunActive,
   rememberGraphAutoOpen,
   runStatusSeverity,
@@ -144,6 +145,18 @@ describe('Case Autopilot run helpers', () => {
     expect(buildGoalPlanView(null, []).actions).toEqual([]);
     expect(buildGoalPlanView({ reachable: false }, []).reachable).toBe(false);
     expect(goalObjective('Investigate {value}', 'APT28 phishing')).toBe('Investigate APT28 phishing');
+  });
+
+  it('shows what the engine never reached once its run is over', () => {
+    const plan = { actions: [{ slug: 'enrichment', label: 'Enrich' }, { slug: 'report', label: 'Write the report' }] };
+    const steps = [step('s1', 'enrichment', 'completed', 1), step('s2', 'enrichment', 'pending', 2)];
+    expect(buildGoalPlanView(plan, steps).actions.map((action) => action.status)).toEqual(['active', 'pending']);
+    expect(buildGoalPlanView(plan, steps, true).actions.map((action) => action.status)).toEqual(['completed', 'skipped']);
+    expect(isEngineRunOver({ run_status: 'running', run_phase: 'investigating' })).toBe(false);
+    expect(isEngineRunOver({ run_status: 'planned', run_phase: 'initializing' })).toBe(false);
+    expect(isEngineRunOver({ run_status: 'awaiting_approval', run_phase: 'awaiting_validation' })).toBe(true);
+    expect(isEngineRunOver({ run_status: 'running', run_phase: 'ingesting' })).toBe(true);
+    expect(isEngineRunOver({ run_status: 'cancelled', run_phase: 'investigating' })).toBe(true);
   });
 
   it('renders machine-readable step details and engine reasons', () => {

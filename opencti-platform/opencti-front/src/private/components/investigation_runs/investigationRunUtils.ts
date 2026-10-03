@@ -27,6 +27,12 @@ export const ACTIVE_RUN_STATUSES: readonly string[] = ['planned', 'running', 'aw
 
 export const isRunActive = (status: string | null | undefined) => !!status && ACTIVE_RUN_STATUSES.includes(status);
 
+// Phases during which the engine run is still planning or querying its sources.
+const ENGINE_PHASES: readonly string[] = ['initializing', 'starting', 'investigating'];
+
+/** Whether the latest engine run of an investigation is over: nothing it planned can still start. */
+export const isEngineRunOver = (run: { run_status: string; run_phase: string }) => !isRunActive(run.run_status) || !ENGINE_PHASES.includes(run.run_phase);
+
 export const RUN_STATUS_LABELS: Record<InvestigationRunStatusValue, string> = {
   planned: 'Planned',
   running: 'Running',
@@ -365,10 +371,11 @@ const text = (value: unknown): string | null => (typeof value === 'string' && va
 /**
  * The state of an action, derived from its steps the way the engine block
  * does: what holds is never sent, it is read from what the sources answered.
+ * Once the engine run is over, what is still planned was never reached.
  */
-export const actionStatus = (steps: readonly StepLike[]): InvestigationStepStatusValue => {
-  if (steps.length === 0) return 'pending';
-  const statuses = steps.map((step) => step.status);
+export const actionStatus = (steps: readonly StepLike[], engineOver = false): InvestigationStepStatusValue => {
+  if (steps.length === 0) return engineOver ? 'skipped' : 'pending';
+  const statuses = steps.map((step) => (engineOver && step.status === 'pending' ? 'skipped' : step.status));
   if (statuses.includes('active')) return 'active';
   if (statuses.includes('pending')) return statuses.some((status) => status !== 'pending') ? 'active' : 'pending';
   if (statuses.includes('completed')) return statuses.some((status) => status === 'error' || status === 'degraded') ? 'degraded' : 'completed';
@@ -383,7 +390,7 @@ export const actionStatus = (steps: readonly StepLike[]): InvestigationStepStatu
  * of the engine's GoalPlanResponse) with the steps that serve each action.
  * Steps of earlier engine runs (continuations) keep their own actions.
  */
-export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: readonly S[]): GoalPlanView<S> => {
+export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: readonly S[], engineOver = false): GoalPlanView<S> => {
   const plan = goalPlan && typeof goalPlan === 'object' && !Array.isArray(goalPlan) ? goalPlan as Record<string, unknown> : {};
   const rawActions = Array.isArray(plan.actions) ? plan.actions.slice(0, MAX_ACTIONS) : [];
   const ordered = [...steps].sort((a, b) => a.position - b.position);
@@ -419,7 +426,7 @@ export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: 
   return {
     objective: text(plan.objective),
     reachable: plan.reachable !== false,
-    actions: actions.map((action) => ({ ...action, status: actionStatus(action.steps) })),
+    actions: actions.map((action) => ({ ...action, status: actionStatus(action.steps, engineOver) })),
     otherSteps: ordered.filter((step) => !used.has(step.id)),
   };
 };

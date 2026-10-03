@@ -27,6 +27,7 @@ import {
   enrichmentStatusSeverity,
   goalObjective,
   type InvestigationStepStatusValue,
+  isEngineRunOver,
   isRunActive,
   stepDetail,
   stepStatusLabel,
@@ -96,7 +97,7 @@ interface InvestigationRunGoalPlanProps {
 const InvestigationRunGoalPlan = ({ run }: InvestigationRunGoalPlanProps) => {
   const { t_i18n } = useFormatter();
   const engineText = useEngineText();
-  const view = buildGoalPlanView(run.goal_plan, run.steps);
+  const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run));
   const done = view.actions.filter((action) => action.status === 'completed').length;
   const title = view.actions.length > 0 ? `${t_i18n('Goal plan')} (${done}/${view.actions.length})` : t_i18n('Goal plan');
   const jobs = run.enrichment_requests;
