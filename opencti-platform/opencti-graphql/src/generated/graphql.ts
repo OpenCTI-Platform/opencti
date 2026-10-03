@@ -25365,6 +25365,8 @@ export type Query = {
   publicDashboard?: Maybe<PublicDashboard>;
   publicDashboardByUriKey?: Maybe<PublicDashboard>;
   publicDashboards?: Maybe<PublicDashboardConnection>;
+  publicGraphClustersSizeTimeSeries?: Maybe<Array<GraphClusterTimeSeries>>;
+  publicGraphSimilarityMatrix?: Maybe<GraphSimilarityMatrix>;
   publicSettings: PublicSettings;
   publicStixCoreObjects?: Maybe<StixCoreObjectConnection>;
   publicStixCoreObjectsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
@@ -27420,6 +27422,22 @@ export type QueryPublicDashboardsArgs = {
   orderBy?: InputMaybe<PublicDashboardsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPublicGraphClustersSizeTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicGraphSimilarityMatrixArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
 };
 
 
@@ -51668,6 +51686,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
   publicDashboards?: Resolver<Maybe<ResolversTypes['PublicDashboardConnection']>, ParentType, ContextType, Partial<QueryPublicDashboardsArgs>>;
+  publicGraphClustersSizeTimeSeries?: Resolver<Maybe<Array<ResolversTypes['GraphClusterTimeSeries']>>, ParentType, ContextType, RequireFields<QueryPublicGraphClustersSizeTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
+  publicGraphSimilarityMatrix?: Resolver<Maybe<ResolversTypes['GraphSimilarityMatrix']>, ParentType, ContextType, RequireFields<QueryPublicGraphSimilarityMatrixArgs, 'uriKey' | 'widgetId'>>;
   publicSettings?: Resolver<ResolversTypes['PublicSettings'], ParentType, ContextType>;
   publicStixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionArgs, 'uriKey' | 'widgetId'>>;

@@ -768,6 +768,46 @@ describe('PublicDashboard resolver', () => {
           expect(malwaressData[0].value).toEqual(3);
         });
 
+        it('should return the data for API: graph similarity matrix', async () => {
+          const API_MATRIX_QUERY = gql`
+            query PublicGraphSimilarityMatrix($uriKey: String!, $widgetId: String!) {
+              publicGraphSimilarityMatrix(uriKey: $uriKey, widgetId: $widgetId) {
+                entities { id }
+                cells { source_id target_id score shared_count }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_MATRIX_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa101' },
+          });
+          const { entities, cells } = data.publicGraphSimilarityMatrix;
+          // pairwise scores computed live on the shared victims
+          expect(entities.map((e) => e.id).sort()).toEqual([vadorId, magnetoId, octopusId].sort());
+          expect(cells.length).toEqual(6);
+          const cell = (a, b) => cells.find((c) => c.source_id === a && c.target_id === b);
+          expect(cell(magnetoId, vadorId).score).toBeGreaterThan(0);
+          expect(cell(magnetoId, octopusId).score).toBeGreaterThan(0);
+          expect(cell(vadorId, octopusId).score).toEqual(0);
+        });
+
+        it('should return the data for API: graph clusters size', async () => {
+          const API_CLUSTERS_QUERY = gql`
+            query PublicGraphClustersSize($uriKey: String!, $widgetId: String!) {
+              publicGraphClustersSizeTimeSeries(uriKey: $uriKey, widgetId: $widgetId) {
+                cluster { id name }
+                data { date value }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_CLUSTERS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102' },
+          });
+          // none of the test malwares belongs to a cluster
+          expect(data.publicGraphClustersSizeTimeSeries).toEqual([]);
+        });
+
         it('should return the data for API: SCR Time series', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationshipsMultiTimeSeries(

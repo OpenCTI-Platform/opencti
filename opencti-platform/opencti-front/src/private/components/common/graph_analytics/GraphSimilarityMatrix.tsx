@@ -25,13 +25,15 @@ export interface MatrixCell {
 interface GraphSimilarityMatrixProps {
   entities: ReadonlyArray<MatrixEntity>;
   cells: ReadonlyArray<MatrixCell>;
+  // public dashboards have no access to the entity pages
+  disableLinks?: boolean;
 }
 
 const LABEL_WIDTH = 180;
 const CELL_SIZE = 44;
 
 /** Pairwise similarity heat map: the stronger the color, the more the two entities share. */
-const GraphSimilarityMatrix = ({ entities, cells }: GraphSimilarityMatrixProps) => {
+const GraphSimilarityMatrix = ({ entities, cells, disableLinks = false }: GraphSimilarityMatrixProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   if (entities.length < 2) {
@@ -61,9 +63,15 @@ const GraphSimilarityMatrix = ({ entities, cells }: GraphSimilarityMatrixProps) 
               <th scope="row" style={{ textAlign: 'left', fontWeight: 400 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: LABEL_WIDTH }}>
                   <ItemIcon type={row.entity_type} size="small" />
-                  <Link to={`${resolveLink(row.entity_type)}/${row.id}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
-                    {row.representative.main}
-                  </Link>
+                  {disableLinks ? (
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                      {row.representative.main}
+                    </span>
+                  ) : (
+                    <Link to={`${resolveLink(row.entity_type)}/${row.id}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                      {row.representative.main}
+                    </Link>
+                  )}
                 </Box>
               </th>
               {entities.map((column) => {
