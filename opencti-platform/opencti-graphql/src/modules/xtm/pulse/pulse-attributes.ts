@@ -59,6 +59,7 @@ const pulseEntityAttributes: Array<AttributeDefinition> = [
     isFilterable: false,
     mappings: [
       { name: 'published', label: 'Published on Threat Pulse', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      { name: 'preview', label: 'Threat Pulse preview signal', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'platforms_bucket', label: 'Contributing platforms', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'last_seen_network', label: 'Network last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'trend_series', label: 'Community trend series', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
