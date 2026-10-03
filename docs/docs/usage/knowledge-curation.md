@@ -195,7 +195,7 @@ To revert a merge, open its record and click **Unmerge**, for all the sources or
 3. moves back the relationships the source carried, recreates the relationships the merge had removed as duplicates, and moves back its files;
 4. marks the record (and the curation proposal that triggered the merge, if any) as reverted.
 
-Each of these changes is published in the stream like any other change, so platforms that consume this one through a [live stream](import/internal-streams.md) follow the unmerge: the restored entity is created again there too, and the merged entity loses the identifiers the restored entity takes back.
+Each of these changes is published in the stream like any other change, so platforms that consume this one through a [live stream](import/internal-streams.md) follow the unmerge: the restored entity is created again there too, and the merged entity loses the identifiers and aliases the restored entity takes back.
 
 !!! warning "What unmerge cannot restore"
 

@@ -9,11 +9,34 @@ from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
 
-def _stix_ids(stix_object):
-    return (
-        stix_object.get("extensions", {}).get(OPENCTI_EXTENSION, {}).get("stix_ids")
-        or []
-    )
+def _octi_extension(stix_object):
+    return stix_object.get("extensions", {}).get(OPENCTI_EXTENSION, {})
+
+
+# Multi-valued attributes binding an entity to its identity, by upsert key
+REMOVABLE_FIELDS = {
+    "x_opencti_stix_ids": lambda stix_object: _octi_extension(stix_object).get(
+        "stix_ids"
+    ),
+    "aliases": lambda stix_object: stix_object.get("aliases"),
+    "x_opencti_aliases": lambda stix_object: _octi_extension(stix_object).get(
+        "aliases"
+    ),
+}
+
+
+def _upsert_removals(previous, current):
+    removals = []
+    for upsert_key, read in REMOVABLE_FIELDS.items():
+        current_values = read(current) or []
+        removed_values = [
+            value for value in (read(previous) or []) if value not in current_values
+        ]
+        if removed_values:
+            removals.append(
+                {"key": upsert_key, "value": removed_values, "operation": "remove"}
+            )
+    return removals
 
 
 # pylint: disable-next=too-few-public-methods
@@ -88,23 +111,13 @@ class TestLocalSynchronizer:
                 current = data["data"]
                 # In case of update always apply operation to the previous id
                 current["id"] = previous["id"]
-                # An upsert only adds alternative ids: the ones the update removed are removed explicitly
-                removed_ids = [
-                    stix_id
-                    for stix_id in _stix_ids(previous)
-                    if stix_id not in _stix_ids(current)
-                ]
-                if removed_ids:
+                # An upsert only adds ids and aliases: the ones the update removed are removed explicitly
+                removals = _upsert_removals(previous, current)
+                if removals:
                     extension = current.setdefault("extensions", {}).setdefault(
                         OPENCTI_EXTENSION, {}
                     )
-                    extension["opencti_upsert_operations"] = [
-                        {
-                            "key": "x_opencti_stix_ids",
-                            "value": removed_ids,
-                            "operation": "remove",
-                        }
-                    ]
+                    extension["opencti_upsert_operations"] = removals
                 bundle = {
                     "type": "bundle",
                     "x_opencti_event_version": data["version"],
