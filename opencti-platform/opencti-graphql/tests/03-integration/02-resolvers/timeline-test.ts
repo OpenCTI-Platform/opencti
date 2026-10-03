@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsAuthUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, getAuthUser, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
 import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
@@ -290,6 +290,14 @@ const listTimeline = async (id: string, variables: Record<string, unknown> = {})
     event_time: iso(edge.node.event_time) as string,
     event_end_time: iso(edge.node.event_end_time),
   }));
+};
+
+// The static test admin carries no max shareable markings; the admin loaded from the store has them all, like a session
+const queryAsPlatformAdminWithSuccess = async (request: { query: unknown; variables: Record<string, unknown> }) => {
+  const admin = await getAuthUser(ADMIN_USER.id);
+  const result = await queryAsAuthUser(admin, request as Parameters<typeof queryAsAuthUser>[1]);
+  expect(result.errors, `This errors should not be there: ${JSON.stringify(result.errors)}`).toBeUndefined();
+  return { data: result.data as Record<string, any> };
 };
 
 const storedSignatures = async (containerId: string) => {
@@ -634,7 +642,7 @@ describe('Incident and case timeline', () => {
       const greenId = green.data.markingDefinition.id;
       const full = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       expect(full.data.containerTimelineExport).toContain('Timeline amber indicator');
-      const ceiled = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv', contentMaxMarkings: [greenId] } });
+      const ceiled = await queryAsPlatformAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv', contentMaxMarkings: [greenId] } });
       expect(ceiled.data.containerTimelineExport).not.toContain('Timeline amber indicator');
       expect(ceiled.data.containerTimelineExport).toContain('Hosts isolated by the SOC');
       // The editor sees the amber indicator, but can only share up to TLP:GREEN
@@ -656,7 +664,7 @@ describe('Incident and case timeline', () => {
       // TLP:AMBER (amber indicator events) replaces the weaker TLP:GREEN selected for the file
       expect(raisedIds).toContain(MARKING_TLP_AMBER);
       expect(raisedIds).not.toContain(MARKING_TLP_GREEN);
-      const ceiled = await queryAsAdminWithSuccess({
+      const ceiled = await queryAsPlatformAdminWithSuccess({
         query: CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS,
         variables: { id: caseIncident.id, contentMaxMarkings: [greenId], fileMarkings: [greenId] },
       });
