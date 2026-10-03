@@ -165,7 +165,7 @@ The time machine relies on the history of the knowledge:
 - The history is written by the [history manager](../deployment/advanced/managers.md#history-manager), which must be enabled.
 - When a **History** [retention rule](../administration/retentions.md) is active, history entries older than the retention duration are deleted. An entity can then only be rebuilt with the changes still available: older states only reflect the remaining history. The time slider and the **Reconstruction** panel show since when the history of the entity is available.
 
-To keep the reconstruction fast, the [knowledge snapshot manager](../deployment/advanced/managers.md#knowledge-snapshot-manager) takes a compact snapshot of every entity that changed during the week: its attribute values and the identifiers of its relationships by type. A reconstruction starts from the closest snapshot (or the current knowledge) and replays the history from there, within a bounded window. Snapshots follow the history retention: they are deleted with the shortest active History retention rule.
+To keep the reconstruction fast, the [knowledge snapshot manager](../deployment/advanced/managers.md#knowledge-snapshot-manager) takes a compact snapshot of every entity that changed during the week, including the entities whose only change is a new, updated or deleted relationship: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. A reconstruction starts from the closest snapshot (or the current knowledge) and replays the history from there, within a bounded window. Snapshots follow the history retention: they are deleted with the shortest active History retention rule.
 
 !!! warning "Retention and the time machine"
 
