@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { computeSnapshotRetentionDate } from '../../../../src/manager/snapshotManager';
+import { computeSnapshotRetentionDate, splitRunBudget } from '../../../../src/manager/snapshotManager';
 import { buildAggregatesMessage, buildChangeMessage, parseTriggerFilters } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
 import { landscapeResultReferencedIds, savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import type { BasicStoreEntityRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-types';
@@ -36,6 +36,28 @@ describe('Knowledge snapshot retention', () => {
   it('should apply the configured snapshot retention when it is shorter', () => {
     expect(computeSnapshotRetentionDate([rule({ max_retention: 90 })], NOW, 10)).toEqual('2026-09-21T00:00:00.000Z');
     expect(computeSnapshotRetentionDate([], NOW, 10)).toEqual('2026-09-21T00:00:00.000Z');
+  });
+});
+
+describe('Knowledge snapshot run budget', () => {
+  const retryIds = (count: number) => Array.from({ length: count }, (_, index) => `retry-${index}`);
+
+  it('should give the whole budget to the discovery when nothing waits for a retry', () => {
+    expect(splitRunBudget([], 10000)).toEqual({ retried: [], deferred: [], discoveryBudget: 10000 });
+  });
+
+  it('should count the retries in the budget of the run', () => {
+    const { retried, deferred, discoveryBudget } = splitRunBudget(retryIds(1000), 10000);
+    expect(retried).toHaveLength(1000);
+    expect(deferred).toEqual([]);
+    expect(retried.length + discoveryBudget).toEqual(10000);
+  });
+
+  it('should keep half of the budget for the discovery and defer the other retries', () => {
+    const { retried, deferred, discoveryBudget } = splitRunBudget(retryIds(1000), 101);
+    expect(retried).toEqual(retryIds(50));
+    expect(deferred).toEqual(retryIds(1000).slice(50));
+    expect(discoveryBudget).toEqual(51);
   });
 });
 
