@@ -111,7 +111,7 @@ export interface StixHunt extends StixDomainObject {
   expected_observables: string[];
   benign_patterns: string[];
   escalation_threshold: number;
-  hunt_max_results: number;
+  hunt_max_results?: number;
   [ATTRIBUTE_HUNT_TARGETS]: string[];
   [ATTRIBUTE_HUNT_TECHNIQUES]: string[];
   [ATTRIBUTE_HUNT_SOURCES]: string[];

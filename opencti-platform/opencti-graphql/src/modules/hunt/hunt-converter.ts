@@ -32,7 +32,7 @@ const convertHuntToStix = (instance: StoreEntityHunt): StixHunt => {
     expected_observables: instance.expected_observables ?? [],
     benign_patterns: instance.benign_patterns ?? [],
     escalation_threshold: instance.escalation_threshold,
-    hunt_max_results: instance.hunt_max_results ?? 0,
+    hunt_max_results: instance.hunt_max_results,
     [ATTRIBUTE_HUNT_TARGETS]: (instance[INPUT_HUNT_TARGETS] ?? []).map((target) => target.standard_id),
     [ATTRIBUTE_HUNT_TECHNIQUES]: (instance[INPUT_HUNT_TECHNIQUES] ?? []).map((technique) => technique.standard_id),
     [ATTRIBUTE_HUNT_SOURCES]: (instance[INPUT_HUNT_SOURCES] ?? []).map((source) => source.standard_id),
