@@ -507,12 +507,14 @@ describe('Knowledge time machine', () => {
     const { ids, cursor } = await findChangedElementIds(testContext, updatedAt, windowEnd, null, 10000);
     expect(cursor).toBeNull();
     expect(ids).toEqual(expect.arrayContaining([intrusionSetId, malwareId]));
-    // Read one element at a time, a run resumes the element events then the relationship events of the window
+    // Read the smallest budget at a time (the two sides of one relationship), a run resumes the element events then
+    // the relationship events of the window and never returns more ids than its budget
     const paged = new Set<string>();
     let pageCursor: ChangedElementsCursor | null = null;
     let pages = 0;
     do {
-      const page = await findChangedElementIds(testContext, updatedAt, windowEnd, pageCursor, 1);
+      const page = await findChangedElementIds(testContext, updatedAt, windowEnd, pageCursor, 2);
+      expect(page.ids.length).toBeLessThanOrEqual(2);
       page.ids.forEach((id) => paged.add(id));
       pageCursor = page.cursor;
       pages += 1;

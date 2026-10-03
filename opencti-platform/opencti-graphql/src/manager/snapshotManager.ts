@@ -32,7 +32,8 @@ const SNAPSHOT_MANAGER_ENABLED = booleanConf('snapshot_manager:enabled', true);
 const SNAPSHOT_MANAGER_KEY = conf.get('snapshot_manager:lock_key') || 'snapshot_manager_lock';
 const SCHEDULE_TIME = conf.get('snapshot_manager:interval') || 3600000;
 const PERIOD_DAYS: number = conf.get('snapshot_manager:period_days') || 7;
-const MAX_ENTITIES_PER_RUN: number = conf.get('snapshot_manager:max_entities_per_run') || 10000;
+const MIN_ENTITIES_PER_RUN = 100;
+const MAX_ENTITIES_PER_RUN: number = Math.max(MIN_ENTITIES_PER_RUN, conf.get('snapshot_manager:max_entities_per_run') || 10000);
 const BATCH_SIZE: number = conf.get('snapshot_manager:batch_size') || 100;
 const MAX_RELATIONSHIP_IDS_PER_TYPE: number = conf.get('snapshot_manager:max_relationship_ids_per_type') || 500;
 const RETENTION_DAYS: number = conf.get('snapshot_manager:retention_days') || 0;
@@ -42,6 +43,8 @@ const MAX_REWIND_EVENTS_PER_BATCH = 20000;
 // Maximum number of relationships read per batch of entities to build relationship id lists
 const MAX_RELATIONSHIPS_PER_BATCH = 20000;
 const COMPOSITE_PAGE_SIZE = 1000;
+// A relationship bucket holds both of its sides: a budget always fits at least one relationship
+const MIN_CHANGED_ELEMENTS_BUDGET = 2;
 // Maximum number of entities kept in the state to retry a snapshot that could not be built exactly
 const MAX_RETRY_IDS = 1000;
 
@@ -89,6 +92,8 @@ const changedElementsQuery = (from: string, to: string, relationships: boolean) 
  * Ids of the elements changed in the window, paginated with composite aggregations: first the elements with history
  * events (creation, update, merge), then both sides of the relationships created, updated or deleted, whose relationship
  * set changed. The returned cursor resumes the same window at the next run, null once both are read.
+ * At most `max` ids are returned (at least two, the sides of one relationship): a page is only read when all of its
+ * buckets fit in the budget left, so every bucket read is fully consumed and the cursor never skips an id.
  */
 export const findChangedElementIds = async (
   context: AuthContext,
@@ -97,11 +102,15 @@ export const findChangedElementIds = async (
   cursor: ChangedElementsCursor | null,
   max: number,
 ) => {
+  const budget = Math.max(MIN_CHANGED_ELEMENTS_BUDGET, max);
   const ids = new Set<string>();
   let relationships = cursor?.relationships ?? false;
   let currentAfter = cursor?.afterKey ?? null;
   let hasMore = true;
-  while (hasMore && ids.size < max) {
+  while (hasMore) {
+    const bucketWidth = relationships ? 2 : 1;
+    const bucketsLeft = Math.floor((budget - ids.size) / bucketWidth);
+    if (bucketsLeft === 0) break;
     const sources = relationships
       ? [{ from: { terms: { field: 'context_data.from_id.keyword' } } }, { to: { terms: { field: 'context_data.to_id.keyword' } } }]
       : [{ id: { terms: { field: 'context_data.id.keyword' } } }];
@@ -111,7 +120,7 @@ export const findChangedElementIds = async (
       aggs: {
         elements: {
           composite: {
-            size: Math.max(1, Math.min(COMPOSITE_PAGE_SIZE, max - ids.size)),
+            size: Math.min(COMPOSITE_PAGE_SIZE, bucketsLeft),
             sources,
             ...(currentAfter ? { after: currentAfter } : {}),
           },
@@ -299,6 +308,15 @@ export const applySnapshotRetention = async (context: AuthContext, currentDate: 
   return { deletedSnapshots };
 };
 
+/**
+ * Retries share the per-run budget with the discovery of the changed elements: they take at most half of it, so the
+ * window keeps progressing, and the ones left over wait for the next run.
+ */
+export const splitRunBudget = (retryIds: string[], maxPerRun: number) => {
+  const retried = retryIds.slice(0, Math.floor(maxPerRun / 2));
+  return { retried, deferred: retryIds.slice(retried.length), discoveryBudget: maxPerRun - retried.length };
+};
+
 export const snapshotHandler = async () => {
   const context = executionContext(SNAPSHOT_MANAGER_CONTEXT);
   const state = await readState();
@@ -312,8 +330,9 @@ export const snapshotHandler = async () => {
   const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
   logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, resume: isWindowInProgress });
   const resumeFrom = isWindowInProgress ? { relationships: !!state.relationships_phase, afterKey: state.after_key ?? null } : null;
-  const { ids: changedIds, cursor: nextCursor } = await findChangedElementIds(context, cursor, windowEnd, resumeFrom, MAX_ENTITIES_PER_RUN);
-  const ids = [...new Set([...(state.retry_ids ?? []), ...changedIds])];
+  const { retried, deferred, discoveryBudget } = splitRunBudget(state.retry_ids ?? [], MAX_ENTITIES_PER_RUN);
+  const { ids: changedIds, cursor: nextCursor } = await findChangedElementIds(context, cursor, windowEnd, resumeFrom, discoveryBudget);
+  const ids = [...new Set([...retried, ...changedIds])];
   const skippedIds: string[] = [];
   let snapshotsCount = 0;
   for (let index = 0; index < ids.length; index += BATCH_SIZE) {
@@ -334,10 +353,11 @@ export const snapshotHandler = async () => {
       snapshotsCount += await indexSnapshots(inputs);
     }
   }
-  if (skippedIds.length > MAX_RETRY_IDS) {
-    logApp.warn('[TIME MACHINE] Too many snapshots to retry, the others wait for the next change of their entity', { skipped: skippedIds.length, retried: MAX_RETRY_IDS });
+  const toRetry = [...new Set([...deferred, ...skippedIds])];
+  if (toRetry.length > MAX_RETRY_IDS) {
+    logApp.warn('[TIME MACHINE] Too many snapshots to retry, the others wait for the next change of their entity', { skipped: toRetry.length, retried: MAX_RETRY_IDS });
   }
-  const retryIds = skippedIds.slice(0, MAX_RETRY_IDS);
+  const retryIds = toRetry.slice(0, MAX_RETRY_IDS);
   if (nextCursor) {
     // Per run limit reached, the same window (same lower bound) is resumed at the next run
     await writeState({ cursor, window_end: windowEnd, after_key: nextCursor.afterKey, relationships_phase: nextCursor.relationships, retry_ids: retryIds });
