@@ -9,6 +9,7 @@ export const IMPORT_STORAGE_PATH = 'import';
 export const EMBEDDED_STORAGE_PATH = 'embedded';
 export const EXPORT_STORAGE_PATH = 'export';
 export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
+export const GLOBAL_EXPORT_STORAGE_PATH = 'export/platform_configuration';
 
 export type EntityFileReference = {
   id: string;

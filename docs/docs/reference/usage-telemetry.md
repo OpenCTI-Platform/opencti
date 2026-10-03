@@ -162,3 +162,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+
+### Global Export Platform
+
+- The number of global platform export requests
