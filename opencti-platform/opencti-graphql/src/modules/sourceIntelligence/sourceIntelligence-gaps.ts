@@ -50,7 +50,7 @@ import { getPirWithAccessCheck } from '../pir/pir-checkPirAccess';
 import { type FilterGroup, PirType } from '../../generated/graphql';
 import { type BasicStoreEntityCatalogContract, ENTITY_TYPE_CATALOG_CONTRACT } from '../catalog/catalog-types';
 import { compareContractVersions, isSupportVersionCompatible } from '../catalog/catalog-version-utils';
-import { type HubIntegrationCoverageMatch, xtmHubClient } from '../xtm/hub/xtm-hub-client';
+import { type HubIntegrationCoverageMatch, type HubIntegrationCoverageResult, xtmHubClient } from '../xtm/hub/xtm-hub-client';
 import type { SourceIntelligenceSettings } from './sourceIntelligence-settings';
 import {
   type BasicStoreEntityCollectionGap,
@@ -300,6 +300,11 @@ export const matchLocalCatalog = (facets: ResolvedFacets, contracts: BasicStoreE
   return results;
 };
 
+/** XTM Hub catalog status of a gap: a truncated ranking is reported as partial, never as complete. */
+export const hubCatalogStatusOf = (result: HubIntegrationCoverageResult): HubCatalogStatus => {
+  return result.status === 'ok' && result.truncated ? 'partial' : result.status;
+};
+
 export const mergeRecommendedConnectors = (
   hubMatches: HubIntegrationCoverageMatch[],
   localMatches: CollectionGapRecommendedConnector[],
@@ -437,7 +442,7 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
             integrationTypes: HUB_INTEGRATION_TYPES,
             first: settings.gaps.max_recommendations * 3,
           });
-          hubStatus = hubResult.status;
+          hubStatus = hubCatalogStatusOf(hubResult);
           hubMatches = hubResult.matches;
           if (hubResult.status === 'unreachable' || hubResult.status === 'error') {
             hubFailure = hubResult.status;

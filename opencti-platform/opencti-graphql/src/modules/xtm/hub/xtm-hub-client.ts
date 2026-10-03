@@ -51,6 +51,8 @@ export interface HubIntegrationCoverageMatch {
 export interface HubIntegrationCoverageResult {
   status: 'ok' | 'unreachable' | 'error';
   matches: HubIntegrationCoverageMatch[];
+  // More integrations matched than XTM Hub ranks: the matches are its first candidates, not a complete ranking
+  truncated: boolean;
 }
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
@@ -223,6 +225,7 @@ export const xtmHubClient = {
             matched_regions
             score
           }
+          truncated
         }
       }
     `;
@@ -237,12 +240,16 @@ export const xtmHubClient = {
       const { data, errors } = response.data;
       if ((errors?.length ?? 0) > 0) {
         logApp.warn('XTM Hub integrationsByCoverage error', { reason: errors?.[0] });
-        return { status: 'error', matches: [] };
+        return { status: 'error', matches: [], truncated: false };
       }
-      return { status: 'ok', matches: data?.integrationsByCoverage?.matches ?? [] };
+      return {
+        status: 'ok',
+        matches: data?.integrationsByCoverage?.matches ?? [],
+        truncated: data?.integrationsByCoverage?.truncated === true,
+      };
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
-      return { status: 'unreachable', matches: [] };
+      return { status: 'unreachable', matches: [], truncated: false };
     }
   },
   contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {

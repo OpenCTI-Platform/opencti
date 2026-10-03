@@ -5939,6 +5939,7 @@
   "XTM Hub News Feed": "XTM 허브 뉴스 피드",
   "XTM Hub News Feed settings": "XTM Hub 뉴스 피드 설정",
   "XTM Hub Registration": "XTM 허브 등록",
+  "XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.": "XTM Hub가 부분 순위를 반환했습니다. 상위 일치 항목이 로컬 카탈로그의 커넥터와 결합됩니다.",
   "XTM Hub returned an error: only the connectors of the local catalog are recommended.": "XTM Hub에서 오류를 반환했습니다. 로컬 카탈로그의 커넥터만 권장됩니다.",
   "XTM One (Agentic AI)": "XTM One(에이전트 AI)",
   "XTM One (Ask Ariane)": "XTM One(아리안에게 물어보세요)",

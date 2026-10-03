@@ -115,6 +115,7 @@ export const collectionGapsQuery = graphql`
 const PAGE_SIZE = 20;
 
 const HUB_STATUS_MESSAGES: Record<string, string> = {
+  partial: 'XTM Hub returned a partial ranking: its first matches are combined with the connectors of the local catalog.',
   unreachable: 'XTM Hub is unreachable: only the connectors of the local catalog are recommended.',
   not_registered: 'This platform is not registered on XTM Hub: only the connectors of the local catalog are recommended.',
   error: 'XTM Hub returned an error: only the connectors of the local catalog are recommended.',
