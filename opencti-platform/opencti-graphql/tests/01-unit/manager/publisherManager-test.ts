@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios, { type AxiosInstance } from 'axios';
-import { handleWebhookNotification } from '../../../src/manager/publisherManager';
+import { handleWebhookNotification, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import type { NotificationData } from '../../../src/utils/publisher-mock';
+import type { StoreMarkingDefinition } from '../../../src/types/store';
+import type { AuthUser } from '../../../src/types/user';
+import { BYPASS } from '../../../src/utils/access';
+import { sanitizeNotificationData } from '../../../src/utils/templateContextSanitizer';
+import { safeRender } from '../../../src/utils/safeEjs';
 
 describe('handleWebhookNotification', () => {
   const mockedAxiosInstance = vi.fn();
@@ -191,5 +197,115 @@ describe('handleWebhookNotification', () => {
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
     expect(axiosCallArgs.data).toHaveProperty('description');
     expect(axiosCallArgs.data.description).toBe('This is a path: /home/user/file.txt');
+  });
+});
+
+describe('resolveNotificationDataMarkings', () => {
+  const tlpAmber = {
+    id: 'tlp-amber-internal-id',
+    internal_id: 'tlp-amber-internal-id',
+    standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
+    definition_type: 'TLP',
+    definition: 'TLP:AMBER',
+    x_opencti_color: '#ffc000',
+    x_opencti_order: 3,
+    entity_type: 'Marking-Definition',
+  } as unknown as StoreMarkingDefinition;
+  const tlpRed = {
+    id: 'tlp-red-internal-id',
+    internal_id: 'tlp-red-internal-id',
+    standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
+    definition_type: 'TLP',
+    definition: 'TLP:RED',
+    x_opencti_color: '#c62828',
+    x_opencti_order: 4,
+    entity_type: 'Marking-Definition',
+  } as unknown as StoreMarkingDefinition;
+  const markingsMap = new Map<string, StoreMarkingDefinition>([
+    [tlpAmber.id, tlpAmber],
+    [tlpAmber.standard_id, tlpAmber],
+    [tlpRed.id, tlpRed],
+    [tlpRed.standard_id, tlpRed],
+  ]);
+  const amberUser = { id: 'amber-user', capabilities: [], allowed_marking: [tlpAmber] } as unknown as AuthUser;
+  const bypassUser = { id: 'bypass-user', capabilities: [{ name: BYPASS }], allowed_marking: [] } as unknown as AuthUser;
+  const buildData = (instance: Record<string, unknown>): NotificationData[] => [{
+    notification_id: 'trigger-id',
+    instance: instance as NotificationData['instance'],
+    type: 'create',
+    message: '[report] My report',
+  }];
+
+  it('should expose the resolved markings of the instance as objectMarking', () => {
+    const data = buildData({ id: 'report--1', name: 'My report', object_marking_refs: [tlpAmber.standard_id] });
+
+    const [resolved] = resolveNotificationDataMarkings(data, markingsMap, amberUser);
+
+    expect((resolved.instance as any).objectMarking).toEqual([{
+      id: tlpAmber.id,
+      standard_id: tlpAmber.standard_id,
+      definition_type: 'TLP',
+      definition: 'TLP:AMBER',
+      x_opencti_color: '#ffc000',
+      x_opencti_order: 3,
+    }]);
+  });
+
+  it('should ignore unknown marking refs and instances without markings', () => {
+    const data = [
+      ...buildData({ id: 'report--1', object_marking_refs: ['marking-definition--unknown'] }),
+      ...buildData({ id: 'report--2' }),
+    ];
+
+    const resolved = resolveNotificationDataMarkings(data, markingsMap, amberUser);
+
+    expect((resolved[0].instance as any).objectMarking).toEqual([]);
+    expect((resolved[1].instance as any).objectMarking).toEqual([]);
+  });
+
+  it('should not resolve the markings the recipient is not allowed to see', () => {
+    // ex: TLP:RED was just added, the user lost access to the report and is notified of its removal
+    const data = buildData({ id: 'report--1', object_marking_refs: [tlpAmber.standard_id, tlpRed.standard_id] });
+
+    const [resolved] = resolveNotificationDataMarkings(data, markingsMap, amberUser);
+
+    expect((resolved.instance as any).objectMarking.map((m: StoreMarkingDefinition) => m.definition)).toEqual(['TLP:AMBER']);
+  });
+
+  it('should resolve all the markings for a user with the BYPASS capability', () => {
+    const data = buildData({ id: 'report--1', object_marking_refs: [tlpAmber.standard_id, tlpRed.standard_id] });
+
+    const [resolved] = resolveNotificationDataMarkings(data, markingsMap, bypassUser);
+
+    expect((resolved.instance as any).objectMarking.map((m: StoreMarkingDefinition) => m.definition)).toEqual(['TLP:AMBER', 'TLP:RED']);
+  });
+
+  it('should not resolve any marking when the recipient is unknown', () => {
+    const data = buildData({ id: 'report--1', object_marking_refs: [tlpAmber.standard_id] });
+
+    const [resolved] = resolveNotificationDataMarkings(data, markingsMap, undefined);
+
+    expect((resolved.instance as any).objectMarking).toEqual([]);
+  });
+
+  it('should not mutate the original instance', () => {
+    const instance = { id: 'report--1', object_marking_refs: [tlpAmber.standard_id] };
+
+    resolveNotificationDataMarkings(buildData(instance), markingsMap, amberUser);
+
+    expect(instance).not.toHaveProperty('objectMarking');
+  });
+
+  it('should make the markings available in a custom email template', async () => {
+    const data = resolveNotificationDataMarkings(
+      buildData({ id: 'report--1', object_marking_refs: [tlpAmber.standard_id] }),
+      markingsMap,
+      amberUser,
+    );
+    const template = '<% data[0].instance.objectMarking.forEach(function(marking) { %><%= marking.definition %><% }) %>';
+
+    const rendered = await safeRender(template, sanitizeNotificationData({ data }));
+
+    expect(rendered).toBe('TLP:AMBER');
   });
 });
