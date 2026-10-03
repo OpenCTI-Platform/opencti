@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSavedListFilters,
   buildSavedListIndicatorsLink,
+  buildValidationCandidateFilters,
   canRemoveDeployment,
   canRetryDeployment,
   DEFAULT_TEST_KINDS,
@@ -79,11 +80,11 @@ describe('dissemination assurance saved lists', () => {
     expect(SAVED_LISTS.map((list) => list.id)).toEqual(['disseminated_not_deployed', 'deployed_never_validated', 'expired_still_deployed']);
   });
 
-  it('should match detection indicators without live deployment, including not yet backfilled ones', () => {
+  it('should match indicators recorded by a connector without live deployment, including not yet backfilled ones', () => {
     const filters = buildSavedListFilters('disseminated_not_deployed', now);
     expect(filters.mode).toEqual('and');
     expect(filters.filters).toEqual([
-      { key: 'x_opencti_detection', values: ['true'], operator: 'eq', mode: 'or' },
+      { key: 'deployments_count', values: ['0'], operator: 'gt', mode: 'or' },
       { key: 'revoked', values: ['false'], operator: 'eq', mode: 'or' },
     ]);
     expect(filters.filterGroups[0].mode).toEqual('or');
@@ -96,10 +97,14 @@ describe('dissemination assurance saved lists', () => {
     expect(filters.filterGroups[0].filters.map((f) => f.key)).toEqual(['validated_platforms_count', 'validated_platforms_count']);
   });
 
-  it('should match revoked or expired indicators still live', () => {
+  it('should match revoked or expired indicators still live, or flagged expired after an unconfirmed removal', () => {
     const filters = buildSavedListFilters('expired_still_deployed', now);
-    expect(filters.filters[0].operator).toEqual('gt');
-    expect(filters.filterGroups[0].filters).toEqual([
+    expect(filters.mode).toEqual('or');
+    expect(filters.filters).toEqual([{ key: 'deployment_expired_count', values: ['0'], operator: 'gt', mode: 'or' }]);
+    const stillLive = filters.filterGroups[0];
+    expect(stillLive.mode).toEqual('and');
+    expect(stillLive.filters).toEqual([{ key: 'deployment_platforms_count', values: ['0'], operator: 'gt', mode: 'or' }]);
+    expect(stillLive.filterGroups[0].filters).toEqual([
       { key: 'revoked', values: ['true'], operator: 'eq', mode: 'or' },
       { key: 'valid_until', values: ['2026-10-03T10:00:00.000Z'], operator: 'lt', mode: 'or' },
     ]);
@@ -110,6 +115,29 @@ describe('dissemination assurance saved lists', () => {
     expect(link.startsWith('/dashboard/observations/indicators?filters=')).toBe(true);
     const encoded = link.split('?filters=')[1];
     expect(JSON.parse(decodeURIComponent(encoded))).toEqual(buildSavedListFilters('expired_still_deployed', now));
+  });
+});
+
+describe('validation request candidate filters', () => {
+  it('should query the unproven live deployments of a platform, in-flight validations excluded', () => {
+    const filters = buildValidationCandidateFilters('platform', 'platform-id', false);
+    expect(filters.filters).toEqual([
+      { key: 'relationship_type', values: ['deployed-on'], operator: 'eq', mode: 'or' },
+      { key: 'toId', values: ['platform-id'], operator: 'eq', mode: 'or' },
+      { key: 'deployment_status', values: ['deployed', 'active'], operator: 'eq', mode: 'or' },
+    ]);
+    expect(filters.filterGroups[0].mode).toEqual('or');
+    expect(filters.filterGroups[0].filters).toEqual([
+      { key: 'validation_status', values: ['not_requested', 'missed', 'error'], operator: 'eq', mode: 'or' },
+      { key: 'validation_status', values: [], operator: 'nil', mode: 'or' },
+    ]);
+  });
+
+  it('should query the proven live deployments of an indicator separately', () => {
+    const filters = buildValidationCandidateFilters('indicator', 'indicator-id', true);
+    expect(filters.filters[1]).toEqual({ key: 'fromId', values: ['indicator-id'], operator: 'eq', mode: 'or' });
+    expect(filters.filters[3]).toEqual({ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' });
+    expect(filters.filterGroups).toEqual([]);
   });
 });
 
