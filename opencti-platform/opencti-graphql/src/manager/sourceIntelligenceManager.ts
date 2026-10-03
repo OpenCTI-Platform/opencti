@@ -7,7 +7,7 @@ import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-han
 import { publishCacheResetEvent, redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { internalFindByIds } from '../database/middleware-loader';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, READ_INDEX_DELETED_OBJECTS } from '../database/utils';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../types/stix-2-1-extensions';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -140,24 +140,43 @@ export const deletionDecrements = (resolver: SourceResolver, entityType: string,
   return decrements;
 };
 
+type StoredObject = BasicStoreBase & Record<string, any>;
+
+const toProvenanceDocument = (object: StoredObject): ProvenanceDocument => ({
+  internal_id: object.internal_id,
+  created_at: object.created_at ? new Date(object.created_at).toISOString() : undefined,
+  updated_at: object.updated_at ? new Date(object.updated_at).toISOString() : undefined,
+  creator_id: object.creator_id,
+  'rel_created-by.internal_id': object['created-by'] ? [object['created-by']] : [],
+  x_opencti_assertions: object.x_opencti_assertions,
+});
+
 const resolveStoredSources = async (context: AuthContext, resolver: SourceResolver, ids: string[]) => {
   const result = new Map<string, string[]>();
   const uniqueIds = [...new Set(ids)].slice(0, MAX_OBJECTS_LOOKUP);
   if (uniqueIds.length === 0) {
     return result;
   }
-  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds) as unknown as Array<BasicStoreBase & Record<string, any>>;
+  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds) as unknown as StoredObject[];
   objects.forEach((object) => {
-    const assertions = resolveDocumentAssertions({
-      internal_id: object.internal_id,
-      created_at: object.created_at ? new Date(object.created_at).toISOString() : undefined,
-      updated_at: object.updated_at ? new Date(object.updated_at).toISOString() : undefined,
-      creator_id: object.creator_id,
-      'rel_created-by.internal_id': object['created-by'] ? [object['created-by']] : [],
-      x_opencti_assertions: object.x_opencti_assertions,
-    }, resolver);
+    const assertions = resolveDocumentAssertions(toProvenanceDocument(object), resolver);
     result.set(object.internal_id, assertions.map((assertion) => assertion.sourceId));
   });
+  return result;
+};
+
+/**
+ * Deleted objects as the trash keeps them, with their stored provenance. Objects deleted permanently (trash disabled,
+ * forced or bulk deletion) are not in the trash.
+ */
+const loadTrashedDocuments = async (context: AuthContext, ids: string[]) => {
+  const result = new Map<string, ProvenanceDocument>();
+  const uniqueIds = [...new Set(ids)].slice(0, MAX_OBJECTS_LOOKUP);
+  if (uniqueIds.length === 0) {
+    return result;
+  }
+  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds, { indices: [READ_INDEX_DELETED_OBJECTS] }) as unknown as StoredObject[];
+  objects.forEach((object) => result.set(object.internal_id, toProvenanceDocument(object)));
   return result;
 };
 
@@ -165,12 +184,17 @@ export const computeEventIncrements = async (
   context: AuthContext,
   events: Array<SseEvent<DataEvent>>,
   resolver: SourceResolver,
-  options: { enterprise: boolean; huntRunType: string | null },
+  options: {
+    enterprise: boolean;
+    huntRunType: string | null;
+    loadDeletedDocuments?: (ids: string[]) => Promise<Map<string, ProvenanceDocument>>;
+  },
 ) => {
   // Applied to the live scorecards of every period
   const increments = new Map<string, LiveIncrement>();
-  // Deleted objects, removed only from the periods whose window contains their creation
+  // Deleted objects, removed only from the periods in which they were counted
   const deletions = new Map<ScorecardPeriodValue, Map<string, LiveIncrement>>();
+  const deleted: Array<{ entityType: string; time: number; eventDocument: ProvenanceDocument }> = [];
   const sightings: Array<{ objectId: string; platform: boolean; negative: boolean }> = [];
   const revoked: string[] = [];
   const pirFlagged: string[] = [];
@@ -218,23 +242,34 @@ export const computeEventIncrements = async (
         huntRuns.push(extension.id);
       }
     } else if (data.type === EVENT_TYPE_DELETE && isKnowledge && extension.is_inferred !== true) {
-      // Streams carry no source identifiers, only provenance dates: the sources are the creators and the author,
-      // active until the last update or assertion. The user deleting the object is not one of its sources.
+      // Streams carry no source identifiers, only provenance dates: without the trash copy, the sources are the
+      // creators and the author, active until the last update or assertion
       const provenance = stix.extensions?.[STIX_EXT_OCTI_PROVENANCE];
-      const decrements = deletionDecrements(resolver, entityType, {
-        internal_id: extension.id,
-        created_at: extension.created_at,
-        updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
-        creator_id: extension.creator_ids ?? [],
-        'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
-      }, time);
-      decrements.forEach((periodDecrements, period) => {
-        const periodIncrements = deletions.get(period) ?? new Map<string, LiveIncrement>();
-        periodDecrements.forEach((patch, sourceId) => addIncrement(periodIncrements, [sourceId], patch));
-        deletions.set(period, periodIncrements);
+      deleted.push({
+        entityType,
+        time,
+        eventDocument: {
+          internal_id: extension.id,
+          created_at: extension.created_at,
+          updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
+          creator_id: extension.creator_ids ?? [],
+          'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
+        },
       });
     }
   }
+  // The trash keeps the stored provenance of a deleted object: the same attribution as the full computation. The user
+  // deleting the object is never one of its sources.
+  const loadDeleted = options.loadDeletedDocuments ?? ((ids: string[]) => loadTrashedDocuments(context, ids));
+  const trashed = deleted.length > 0 ? await loadDeleted(deleted.map(({ eventDocument }) => eventDocument.internal_id)) : new Map();
+  deleted.forEach(({ entityType, time, eventDocument }) => {
+    const document = trashed.get(eventDocument.internal_id) ?? eventDocument;
+    deletionDecrements(resolver, entityType, document, time).forEach((periodDecrements, period) => {
+      const periodIncrements = deletions.get(period) ?? new Map<string, LiveIncrement>();
+      periodDecrements.forEach((patch, sourceId) => addIncrement(periodIncrements, [sourceId], patch));
+      deletions.set(period, periodIncrements);
+    });
+  });
   // Hunt runs (innovation 01) write sightings carrying their run id: each sighted object is a confirmed detection
   const huntSightedObjects = huntRuns.length > 0 ? await findHuntRunSightedObjects(context, huntRuns) : [];
   const sourcesByObject = await resolveStoredSources(context, resolver, [
