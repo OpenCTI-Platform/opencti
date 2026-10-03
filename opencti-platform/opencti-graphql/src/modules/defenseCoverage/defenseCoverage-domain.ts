@@ -684,7 +684,7 @@ export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args
   };
 };
 
-export const defenseTechniqueGaps = async (context: AuthContext, view: DefenseTechniqueView) => {
+export const defenseTechniqueGaps = async (context: AuthContext, user: AuthUser, view: DefenseTechniqueView) => {
   const { evaluation, technique, evaluated } = view;
   const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...(evaluation.selected ?? evaluation.platforms.map((p) => p.id))];
   const gaps = platformKeys.map((platformId) => buildGapView(technique, evaluated, platformId, evaluation));
