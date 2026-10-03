@@ -135,7 +135,7 @@ const LOCAL_STORAGE_KEY = 'GraphClusters';
 const GraphClusters = () => {
   const { t_i18n, fldt } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Graph clusters'));
+  setTitle(t_i18n('Clusters'));
 
   const initialValues = {
     searchTerm: '',
@@ -207,7 +207,7 @@ const GraphClusters = () => {
 
   return (
     <div data-testid="graph-clusters-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Graph clusters'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Clusters'), current: true }]} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
         <GraphAnalyticsStatus />
         <WidgetContainer height={260} title={t_i18n('Largest clusters over time')} variant="inLine">

@@ -111,4 +111,4 @@ The full list of parameters is available in the `opencti-analytics/README.md` fi
 
 ## Monitoring
 
-**Analyses > Graph clusters** shows whether the analytics are enabled, who computes the clusters, the number of clusters and similarity links, the entities waiting for a recompute and the date of the last full pass and of the last analytics process run.
+**Analyses > Clusters** shows whether the analytics are enabled, who computes the clusters, the number of clusters and similarity links, the entities waiting for a recompute and the date of the last full pass and of the last analytics process run.

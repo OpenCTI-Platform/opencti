@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import React from 'react';
 import { Box } from '@mui/material';
-import { RouteOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
@@ -10,38 +8,27 @@ import StixPathFinder from './StixPathFinder';
 import useGraphAnalyticsInvestigation from './useGraphAnalyticsInvestigation';
 import { collectPathElementIds } from './graphAnalyticsUtils';
 
-interface StixCoreObjectPathFinderButtonProps {
+interface StixCoreObjectConnectToDialogProps {
+  open: boolean;
+  onClose: () => void;
   stixCoreObjectId: string;
   stixCoreObjectName: string;
 }
 
-/** "Connect to..." action of the entity header: find how this entity is connected to another one. */
-const StixCoreObjectPathFinderButton = ({ stixCoreObjectId, stixCoreObjectName }: StixCoreObjectPathFinderButtonProps) => {
+/** "Connect to..." action of the entity more-actions menu: find how this entity is connected to another one. */
+const StixCoreObjectConnectToDialog = ({ open, onClose, stixCoreObjectId, stixCoreObjectName }: StixCoreObjectConnectToDialogProps) => {
   const { t_i18n } = useFormatter();
-  const [open, setOpen] = useState(false);
   const canInvestigate = useGranted([INVESTIGATION_INUPDATE]);
   const { startInvestigation, inFlight } = useGraphAnalyticsInvestigation();
   return (
-    <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <IconButton
-            aria-label={t_i18n('Connect to...')}
-            priority="secondary"
-            icon={<RouteOutlined fontSize="small" />}
-            onClick={() => setOpen(true)}
-            data-testid="graph-connect-to-button"
-          />
-        </TooltipTrigger>
-        <TooltipContent>{t_i18n('Connect to...')}</TooltipContent>
-      </Tooltip>
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        size="large"
-        title={t_i18n('Connect to...')}
-        showCloseButton
-      >
+    <Dialog
+      open={open}
+      onClose={onClose}
+      size="large"
+      title={t_i18n('Connect to...')}
+      showCloseButton
+    >
+      {open && (
         <StixPathFinder
           fromId={stixCoreObjectId}
           fromLabel={stixCoreObjectName}
@@ -60,9 +47,9 @@ const StixCoreObjectPathFinderButton = ({ stixCoreObjectId, stixCoreObjectName }
             </Box>
           )}
         />
-      </Dialog>
-    </>
+      )}
+    </Dialog>
   );
 };
 
-export default StixCoreObjectPathFinderButton;
+export default StixCoreObjectConnectToDialog;
