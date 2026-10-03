@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import { buildProvenanceStixExtension, withProvenanceStixExtension } from '../../../../src/modules/provenance/provenance-stix';
 import { adaptFilterToFreshnessDaysFilterKey, buildFreshnessDaysSorting } from '../../../../src/modules/provenance/provenance-filters';
-import { computeFreshnessDays } from '../../../../src/modules/provenance/provenance-domain';
+import { computeFreshnessDays, describeProposalSource } from '../../../../src/modules/provenance/provenance-domain';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import type { StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
 
@@ -90,5 +90,11 @@ describe('Provenance freshness', () => {
   it('should sort fresh first when ascending', () => {
     expect(buildFreshnessDaysSorting('asc')).toEqual({ last_asserted_at: { order: 'desc', missing: 0 } });
     expect(buildFreshnessDaysSorting('desc')).toEqual({ last_asserted_at: { order: 'asc', missing: 0 } });
+  });
+
+  it('should never write user or author names in history messages', () => {
+    expect(describeProposalSource({ source_kind: 'user', source_name: 'Jane Analyst', source_id: 'user-id' })).toEqual('a user source');
+    expect(describeProposalSource({ source_kind: 'author', source_name: 'ACME', source_id: 'identity-id' })).toEqual('an author source');
+    expect(describeProposalSource({ source_kind: 'feed', source_name: 'Abuse feed', source_id: 'feed-id' })).toEqual('`Abuse feed`');
   });
 });

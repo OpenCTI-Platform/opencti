@@ -256,6 +256,17 @@ const findConflictValue = (element: Record<string, any>, field: string, valueHas
   return value;
 };
 
+// History is read with the rights of each reader: user and author names are never written into it.
+export const describeProposalSource = (proposal: Pick<StoreConflictValue, 'source_kind' | 'source_name' | 'source_id'>) => {
+  if (proposal.source_kind === SOURCE_KIND_USER) {
+    return 'a user source';
+  }
+  if (proposal.source_kind === SOURCE_KIND_AUTHOR) {
+    return 'an author source';
+  }
+  return `\`${proposal.source_name ?? proposal.source_id}\``;
+};
+
 const publishProvenanceAction = async (user: AuthUser, element: BasicStoreObject, message: string, input: Record<string, unknown>) => {
   await publishUserAction({
     user,
@@ -291,7 +302,7 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
     conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
   }
   await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
-  await publishProvenanceAction(user, element, `adopts the value proposed by \`${proposal.source_name ?? proposal.source_id}\` for \`${field}\``, { field, value_hash: valueHash });
+  await publishProvenanceAction(user, element, `adopts the value proposed by ${describeProposalSource(proposal)} for \`${field}\``, { field, value_hash: valueHash });
   await addProvenanceConflictAdoptionCount();
   return loadTrackedElement(context, user, element.internal_id);
 };
@@ -315,7 +326,7 @@ export const dismissConflictValue = async (context: AuthContext, user: AuthUser,
   const element = await loadEditableTrackedElement(context, user, id);
   const proposal = findConflictValue(element, field, valueHash);
   await applyProvenanceUpdate(context, element, { conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
-  await publishProvenanceAction(user, element, `dismisses the value proposed by \`${proposal.source_name ?? proposal.source_id}\` for \`${field}\``, { field, value_hash: valueHash });
+  await publishProvenanceAction(user, element, `dismisses the value proposed by ${describeProposalSource(proposal)} for \`${field}\``, { field, value_hash: valueHash });
   return loadTrackedElement(context, user, element.internal_id);
 };
 

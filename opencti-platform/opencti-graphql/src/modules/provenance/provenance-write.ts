@@ -44,6 +44,8 @@ export type ProvenanceChange = ProvenanceTriggerChange & { newConflictValues?: n
 export interface FreshnessFlag {
   rule_id: string;
   at: string;
+  // The flag is only written if no source asserted the element since it was selected as stale
+  expected_last_asserted_at?: string | null;
 }
 
 export interface ProvenanceUpdate {
@@ -126,9 +128,14 @@ export const PROVENANCE_UPDATE_SCRIPT = `
     ctx._source.remove('freshness_rule_id');
   }
   if (params.freshness_flag != null) {
-    ctx._source.freshness_stale = true;
-    ctx._source.freshness_stale_at = params.freshness_flag.at;
-    ctx._source.freshness_rule_id = params.freshness_flag.rule_id;
+    def expected = params.freshness_flag.expected_last_asserted_at;
+    if (expected != null && ctx._source.${ATTRIBUTE_LAST_ASSERTED_AT} != expected) {
+      ctx.op = 'noop';
+    } else {
+      ctx._source.freshness_stale = true;
+      ctx._source.freshness_stale_at = params.freshness_flag.at;
+      ctx._source.freshness_rule_id = params.freshness_flag.rule_id;
+    }
   }
   if (params.procedures_add.size() > 0) {
     List procedures = ctx._source.${ATTRIBUTE_PROCEDURES};
@@ -293,6 +300,8 @@ export const applyProvenanceUpdate = async (
   const refresh = opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE;
   return elUpdate(context, target._index, target._id ?? target.internal_id, body, undefined, { refresh });
 };
+
+export const isNoopUpdate = (response: any) => (response?.result ?? response?.body?.result) === 'noop';
 
 /**
  * Provenance fields indexed together with a newly created element.

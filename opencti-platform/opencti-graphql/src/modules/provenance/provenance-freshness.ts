@@ -1,4 +1,4 @@
-import { elList, elPaginate } from '../../database/engine';
+import { elList, elLoadById, elPaginate } from '../../database/engine';
 import { patchAttribute } from '../../database/middleware';
 import { logApp } from '../../config/conf';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
@@ -21,14 +21,14 @@ import {
   FRESHNESS_POLICY_REVOKE,
 } from '../decayRule/decayRule-types';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
-import { applyProvenanceUpdate } from './provenance-write';
+import { applyProvenanceUpdate, isNoopUpdate } from './provenance-write';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const FRESHNESS_SCAN_PAGE_SIZE = 500;
 // Upper bound of scanned candidates per rule and run, so that shadowed candidates can never stall a run
 const FRESHNESS_SCAN_FACTOR = 10;
 
-type FreshnessCandidate = BasicStoreBase & { _index: string; confidence?: number | null; revoked?: boolean | null };
+type FreshnessCandidate = BasicStoreBase & { _index: string; confidence?: number | null; revoked?: boolean | null; last_asserted_at?: string | null };
 
 interface PreparedRule {
   rule: BasicStoreEntityDecayRule;
@@ -107,8 +107,30 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   const at = now();
   const isFlagOnly = policy === FRESHNESS_POLICY_FLAG;
   // The policy update must load the flagged element: refresh before it, flag only follows the default
-  await applyProvenanceUpdate(context, element, { freshnessFlag: { rule_id: rule.id, at } }, isFlagOnly ? {} : { refresh: true });
+  const flagged = await applyProvenanceUpdate(
+    context,
+    element,
+    { freshnessFlag: { rule_id: rule.id, at, expected_last_asserted_at: element[ATTRIBUTE_LAST_ASSERTED_AT] ?? null } },
+    isFlagOnly ? {} : { refresh: true },
+  );
+  if (isNoopUpdate(flagged)) {
+    // Re-asserted since its selection: the element is fresh, no policy applies
+    return false;
+  }
   result.flagged += 1;
+  if (isFlagOnly) {
+    return true;
+  }
+  // A re-assertion that landed after the flag cleared it: the policy no longer applies
+  const reloaded = await elLoadById<BasicStoreBase & { freshness_stale?: boolean; freshness_rule_id?: string }>(context, user, element.internal_id, {
+    type: element.entity_type,
+    baseData: true,
+    baseFields: [ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_RULE_ID],
+  });
+  if (reloaded?.freshness_stale !== true || reloaded.freshness_rule_id !== rule.id) {
+    result.flagged -= 1;
+    return false;
+  }
   try {
     if (policy === FRESHNESS_POLICY_LOWER_CONFIDENCE) {
       const current = element.confidence ?? 0;
@@ -128,6 +150,7 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
     result.flagged -= 1;
     throw err;
   }
+  return true;
 };
 
 const applyKnowledgeDecayRule = async (
@@ -149,7 +172,7 @@ const applyKnowledgeDecayRule = async (
     types,
     filters: buildStaleCandidatesFilters(cutoff, current.filters),
     baseData: true,
-    baseFields: ['confidence', 'revoked'],
+    baseFields: ['confidence', 'revoked', ATTRIBUTE_LAST_ASSERTED_AT],
     first: FRESHNESS_SCAN_PAGE_SIZE,
     maxSize: budget * FRESHNESS_SCAN_FACTOR,
     callback: async (candidates) => {
@@ -160,8 +183,9 @@ const applyKnowledgeDecayRule = async (
         const candidate = candidates[index];
         if (!shadowed.has(candidate.internal_id)) {
           try {
-            await applyFreshnessPolicy(context, user, rule, candidate, result);
-            applied += 1;
+            if (await applyFreshnessPolicy(context, user, rule, candidate, result)) {
+              applied += 1;
+            }
           } catch (err) {
             result.errors += 1;
             logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
