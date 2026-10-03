@@ -6615,6 +6615,7 @@ export enum CurationPolicySourceClass {
 export type CurationProposal = BasicObject & InternalObject & {
   __typename?: 'CurationProposal';
   action_payload?: Maybe<Scalars['String']['output']>;
+  adjudicable: Scalars['Boolean']['output'];
   adjudication?: Maybe<CurationAdjudication>;
   adjudication_requested_at?: Maybe<Scalars['DateTime']['output']>;
   applied_patch?: Maybe<Scalars['String']['output']>;
@@ -45709,6 +45710,7 @@ export type CurationPolicyEdgeResolvers<ContextType = any, ParentType extends Re
 
 export type CurationProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposal'] = ResolversParentTypes['CurationProposal']> = ResolversObject<{
   action_payload?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  adjudicable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   adjudication?: Resolver<Maybe<ResolversTypes['CurationAdjudication']>, ParentType, ContextType>;
   adjudication_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   applied_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

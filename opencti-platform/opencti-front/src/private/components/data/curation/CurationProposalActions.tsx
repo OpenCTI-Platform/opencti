@@ -63,7 +63,7 @@ interface CurationProposalActionsProps {
     recommended_action: string;
     can_apply: boolean;
     can_revert: boolean;
-    in_ambiguous_band: boolean;
+    adjudicable: boolean;
   };
   survivorId: string | null;
   survivorName: string | null;
@@ -144,7 +144,7 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, adjudicat
 
   return (
     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }} data-testid="curation-proposal-actions">
-      {isOpen && proposal.in_ambiguous_band && adjudicationAvailable && (
+      {isOpen && proposal.adjudicable && adjudicationAvailable && (
         <EETooltip title="Ask the OpenCTI Curator agent of XTM One to adjudicate this proposal">
           <span>
             <Button variant="secondary" intent="ai" onClick={adjudicate} disabled={busy || !isEnterpriseEdition}>

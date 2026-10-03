@@ -3719,6 +3719,7 @@
   "Only an administrator with access to Filigran Experience settings can accept the Terms of Services and activate them in Settings.": "フィリグラン・エクスペリエンスの設定にアクセスできる管理者のみが、利用規約に同意し、設定で有効にすることができます。",
   "Only available in EE": "EEのみ",
   "Only contextual": "条件に応じて起動",
+  "Only duplicate proposals (merge or alias) in the ambiguous band are adjudicated.": "裁定されるのは曖昧な帯域内の重複提案（マージまたはエイリアス）のみです。",
   "Only last modified entities after the last run": "最後に実行された後に最後に変更されたエンティティのみ",
   "Only letters, numbers and special chars _ - are allowed": "アルファベット、数字、特殊文字 _ - のみが使用可能です。",
   "Only letters, numbers and special chars _ and - are allowed": "アルファベット、数字、特殊文字 _ と - のみ使用可能",

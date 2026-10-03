@@ -56,6 +56,7 @@ const proposalDetailsFragment = graphql`
     applied_patch
     can_apply
     can_revert
+    adjudicable
     created_at
     updated_at
     ...CurationProposalCompare_proposal
@@ -195,9 +196,9 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
             </Box>
           ) : (
             <Typography variant="body2" color={theme.palette.text.light}>
-              {proposal.in_ambiguous_band
+              {proposal.adjudicable
                 ? t_i18n('This proposal is in the ambiguous band: the OpenCTI Curator can adjudicate it (Enterprise Edition).')
-                : t_i18n('Only proposals in the ambiguous band are adjudicated.')}
+                : t_i18n('Only duplicate proposals (merge or alias) in the ambiguous band are adjudicated.')}
               {proposal.adjudication_requested_at && ` ${t_i18n('Last request')}: ${fldt(proposal.adjudication_requested_at)}`}
             </Typography>
           )}

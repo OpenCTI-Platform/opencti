@@ -3719,6 +3719,7 @@
   "Only an administrator with access to Filigran Experience settings can accept the Terms of Services and activate them in Settings.": "Только администратор, имеющий доступ к настройкам Filigran Experience, может принять Условия предоставления услуг и активировать их в Настройках.",
   "Only available in EE": "Доступно только в EE",
   "Only contextual": "Только контекстная",
+  "Only duplicate proposals (merge or alias) in the ambiguous band are adjudicated.": "Арбитраж проводится только для предложений о дубликатах (слияние или псевдоним) в неоднозначном диапазоне.",
   "Only last modified entities after the last run": "Только последние измененные сущности после последнего запуска",
   "Only letters, numbers and special chars _ - are allowed": "Разрешены только буквы, цифры и специальные символы _ -.",
   "Only letters, numbers and special chars _ and - are allowed": "Разрешены только буквы, цифры и специальные символы _ и -.",

@@ -41,6 +41,7 @@ import {
   SOURCE_CLASS_MANUAL,
 } from './curation-types';
 import { isCuratableEntityType } from './curation-settings';
+import { ADJUDICATED_PROPOSAL_KINDS } from './curation-adjudication';
 
 // Split proposals (unmerge) always need a human decision.
 export const AUTO_APPLICABLE_KINDS: ProposalKind[] = [
@@ -105,7 +106,8 @@ export const evaluatePolicyEligibility = (
     if (!sameSets(facts.organizationSets)) return EXCLUSION_CROSS_ORGANIZATIONS;
   }
   if (policy.forbid_open_contradiction && hasOpenContradiction) return EXCLUSION_OPEN_CONTRADICTION;
-  if (policy.require_adjudication) {
+  // Agreement can only be required where the Curator adjudicates: the other kinds are never sent to it.
+  if (policy.require_adjudication && ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind)) {
     const decision = proposal.curation_adjudication?.decision;
     if (!decision || decision === DECISION_SKIP) return EXCLUSION_ADJUDICATION_MISSING;
     const agrees = proposal.proposal_kind === PROPOSAL_KIND_MERGE ? (decision === DECISION_MERGE || decision === DECISION_ALIAS) : decision !== DECISION_DISTINCT;

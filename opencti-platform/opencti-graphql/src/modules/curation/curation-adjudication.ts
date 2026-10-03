@@ -21,6 +21,8 @@ import {
   type CurationSettings,
   DECISION_SKIP,
   ENTITY_TYPE_CURATION_PROPOSAL,
+  PROPOSAL_KIND_ALIAS,
+  PROPOSAL_KIND_MERGE,
 } from './curation-types';
 
 const MAX_DESCRIPTION_LENGTH = 1500;
@@ -107,6 +109,14 @@ export const buildAdjudicationContent = (proposal: BasicStoreEntityCurationPropo
 };
 
 export const isAdjudicationAvailable = async (context: AuthContext) => isXtmOneConfigured() && isEnterpriseEdition(context);
+
+// The OpenCTI Curator resolves entities: it adjudicates duplicate proposals, the other kinds stay with the analysts.
+export const ADJUDICATED_PROPOSAL_KINDS: string[] = [PROPOSAL_KIND_MERGE, PROPOSAL_KIND_ALIAS];
+
+/** Adjudication is bounded to the duplicate proposals of the ambiguous band: confident ones are decided by analysts or policies. */
+export const isProposalAdjudicable = (proposal: Pick<BasicStoreEntityCurationProposal, 'proposal_kind' | 'in_ambiguous_band'>) => {
+  return proposal.in_ambiguous_band === true && ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind);
+};
 
 const selectAgentSlug = async (settings: CurationSettings, jwtUser: AgentJwtUser): Promise<string | null> => {
   const context: AuthContext = {

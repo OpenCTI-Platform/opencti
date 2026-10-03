@@ -19,7 +19,7 @@ import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getCurationSettings, saveCurationSettings } from '../modules/curation/curation-settings';
 import { runContradictionScan, runDuplicateScan, runIncrementalDuplicateDetection, runStalenessScan } from '../modules/curation/curation-scan';
 import { createHealthSnapshot, findLatestHealthSnapshot, sendKnowledgeHealthDigest, SOURCE_CONFLICTS_COUNTER } from '../modules/curation/curation-health';
-import { adjudicateProposal, isAdjudicationAvailable } from '../modules/curation/curation-adjudication';
+import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from '../modules/curation/curation-adjudication';
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { completePendingMergeRecords, expireMergeRecords } from '../modules/curation/curation-merge-record';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
@@ -102,6 +102,7 @@ const runAdjudicationQueue = async (context: AuthContext, settings: CurationSett
       filters: [
         { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
         { key: ['in_ambiguous_band'], values: ['true'], operator: FilterOperator.Eq },
+        { key: ['proposal_kind'], values: ADJUDICATED_PROPOSAL_KINDS, operator: FilterOperator.Eq },
       ],
       filterGroups: [{
         mode: FilterMode.Or,

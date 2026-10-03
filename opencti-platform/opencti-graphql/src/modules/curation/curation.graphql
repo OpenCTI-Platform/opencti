@@ -103,6 +103,7 @@ type CurationProposal implements InternalObject & BasicObject {
   applied_patch: String
   can_apply: Boolean!
   can_revert: Boolean!
+  adjudicable: Boolean!
 }
 
 enum CurationProposalOrdering {

@@ -45,7 +45,7 @@ import {
 import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvailable, revertAppliedPatch } from './curation-apply';
 import { unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
-import { adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
+import { adjudicateProposal, isAdjudicationAvailable, isProposalAdjudicable } from './curation-adjudication';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
 import { isGraphSimilarityAvailable } from './curation-scan';
@@ -352,9 +352,12 @@ export const adjudicateProposalNow = async (context: AuthContext, user: AuthUser
   if (!settings.adjudication_enabled) {
     throw FunctionalError('Curation adjudication is disabled in the curation settings');
   }
-  // Adjudication is bounded to the ambiguous band: confident proposals are decided by analysts or policies.
-  if (!proposal.in_ambiguous_band) {
-    throw FunctionalError('Only proposals in the ambiguous confidence band can be adjudicated', { id, confidence: proposal.confidence_score });
+  if (!isProposalAdjudicable(proposal)) {
+    throw FunctionalError('Only duplicate proposals (merge or alias) in the ambiguous confidence band can be adjudicated', {
+      id,
+      kind: proposal.proposal_kind,
+      confidence: proposal.confidence_score,
+    });
   }
   return adjudicateProposal(context, user, proposal, settings);
 };

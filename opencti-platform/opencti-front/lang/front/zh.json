@@ -3719,6 +3719,7 @@
   "Only an administrator with access to Filigran Experience settings can accept the Terms of Services and activate them in Settings.": "只有拥有 Filigran 体验设置权限的管理员才能接受服务条款并在设置中激活。",
   "Only available in EE": "仅适用于 EE",
   "Only contextual": "仅上下文",
+  "Only duplicate proposals (merge or alias) in the ambiguous band are adjudicated.": "仅对模糊区间内的重复提议（合并或别名）进行裁决。",
   "Only last modified entities after the last run": "仅上次运行后修改的实体",
   "Only letters, numbers and special chars _ - are allowed": "只允许使用字母、数字和特殊字符 _ -。",
   "Only letters, numbers and special chars _ and - are allowed": "只允许使用字母、数字和特殊字符 _ 和 -",

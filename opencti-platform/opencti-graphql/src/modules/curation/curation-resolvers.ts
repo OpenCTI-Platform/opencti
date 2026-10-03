@@ -39,6 +39,7 @@ import {
 } from './curation-policies';
 import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curation-health';
 import { curationResolve } from './curation-resolve';
+import { isProposalAdjudicable } from './curation-adjudication';
 import type { BasicStoreEntityCurationPolicy, BasicStoreEntityCurationProposal, BasicStoreEntityMergeRecord, CurationPolicyDryRunResult } from './curation-types';
 
 const toJsonString = (value: unknown) => {
@@ -108,6 +109,7 @@ const curationResolvers: Resolvers = {
     },
     can_apply: (proposal, _, context) => canUserApplyProposal(context.user!, proposal as unknown as BasicStoreEntityCurationProposal),
     can_revert: (proposal) => isProposalRevertible(proposal as unknown as BasicStoreEntityCurationProposal),
+    adjudicable: (proposal) => isProposalAdjudicable(proposal as unknown as BasicStoreEntityCurationProposal),
   },
   MergeRecord: {
     objectMarking: (record, _, context) => context.batch.markingsBatchLoader.load(record),

@@ -126,7 +126,7 @@ Proposals whose confidence falls in the **ambiguous band** (from 0.55 included t
 
     Adjudication requires the OpenCTI Enterprise Edition and a platform registered with XTM One (see [XTM Suite configuration](../deployment/configuration.md#xtm-suite)).
 
-When adjudication is enabled in the settings, the curation manager sends the open proposals of the ambiguous band that have no adjudication yet to the XTM One agent bound to the `cti.curation_adjudicate` intent: the **OpenCTI Curator** out of the box, or the agent selected in the settings. It sends up to 5 proposals per manager cycle, highest confidence first, within a daily limit (50 by default, counted per UTC day for automatic and manual requests together). A request that failed is retried after 24 hours.
+When adjudication is enabled in the settings, the curation manager sends the open duplicate proposals (`merge` and `alias` kinds) of the ambiguous band that have no adjudication yet to the XTM One agent bound to the `cti.curation_adjudicate` intent: the **OpenCTI Curator** out of the box, or the agent selected in the settings. It sends up to 5 proposals per manager cycle, highest confidence first, within a daily limit (50 by default, counted per UTC day for automatic and manual requests together). A request that failed is retried after 24 hours.
 
 The agent receives the proposal kind, confidence, detector and evidence, and for each subject its type, name, aliases, description (the first 1,500 characters), author, first and last seen dates and creation date. It answers with one JSON object:
 
@@ -147,7 +147,7 @@ The agent receives the proposal kind, confidence, detector and evidence, and for
 
 An answer that is not a valid decision is recorded as `skip`, and a `target_id` that is not a subject of the proposal is ignored. The adjudication is **advisory**: OpenCTI records the decision, the rationale, the agent, the model when the adjudicator provides it, and the date on the proposal, but does not apply it. A decision is applied by an analyst who accepts the proposal, by a curation policy that [requires adjudication agreement](#curation-policies-and-auto-apply), or by the XTM One `decide_opencti_curation_proposal` tool when its user approves the action.
 
-The **Ask the Curator** action of a proposal requests an adjudication on demand, for any open proposal. It requires the `Create / Update knowledge` capability and counts towards the daily limit.
+The **Ask the Curator** action of a proposal requests an adjudication on demand, for an open duplicate proposal (`merge` or `alias` kind) of the ambiguous band. The other kinds (contradictions, staleness, relationship conflicts) stay with the analysts: the Curator resolves entities. It requires the `Create / Update knowledge` capability and counts towards the daily limit.
 
 ## How do I curate the knowledge graph?
 
@@ -220,7 +220,7 @@ A curation policy applies eligible proposals automatically. Create policies in *
 | Source class                           | `Any`, `Connector` (every subject was created by connectors) or `Manual` (every subject was created by users).                                                                                        |
 | Auto-apply threshold                   | The minimum confidence, between 0.5 and 1.                                                                                                                                                           |
 | Never apply with an open contradiction | On by default: a proposal whose subjects are involved in an open contradiction proposal is excluded.                                                                                                  |
-| Require adjudication agreement         | Off by default. When on, the XTM One adjudication must agree with the proposal: `merge` or `alias` for a merge proposal, any decision but `distinct` for the other kinds. A proposal without adjudication, or adjudicated `skip`, is excluded. |
+| Require adjudication agreement         | Off by default. When on, the XTM One adjudication must agree with the proposal: `merge` or `alias` for a merge proposal, any decision but `distinct` for an alias proposal. The other kinds are never adjudicated, so the option does not apply to them. A proposal without adjudication, or adjudicated `skip`, is excluded. |
 | Max applies per run                    | The maximum number of proposals applied by one run, between 1 and 1,000 (100 by default).                                                                                                             |
 | Enabled                                | A new policy is disabled until you enable it.                                                                                                                                                        |
 
