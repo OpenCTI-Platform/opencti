@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCsv,
   buildLogsourceMappingKey,
+  capEvidences,
   cellForPlatform,
   collectCoverageIds,
   computeAggregateLevel,
@@ -269,5 +270,21 @@ describe('Defense rule candidates and export', () => {
   });
   it('should build a CSV document', () => {
     expect(buildCsv(['id', 'name'], [['T1059', 'Command and Scripting Interpreter']])).toEqual('id,name\r\nT1059,Command and Scripting Interpreter\r\n');
+  });
+});
+
+describe('Defense evidence cap', () => {
+  const restricted = Array.from({ length: 5 }, (_, index) => ({ id: `restricted-${index}`, key: 'secret' }));
+  const visible = { id: 'visible', key: 'public' };
+  it('should keep the first evidences without an access key', () => {
+    expect(capEvidences([...restricted, visible], 3).map((e) => e.id)).toEqual(['restricted-0', 'restricted-1', 'restricted-2']);
+  });
+  it('should keep an evidence of every access signature before filling the cap', () => {
+    const capped = capEvidences([...restricted, visible], 3, (e) => e.key);
+    expect(capped.map((e) => e.id)).toEqual(['restricted-0', 'visible', 'restricted-1']);
+  });
+  it('should leave a list under the cap untouched', () => {
+    const evidences = [...restricted, visible];
+    expect(capEvidences(evidences, 10, (e) => e.key)).toBe(evidences);
   });
 });

@@ -48,7 +48,7 @@ import {
 } from './defenseCoverage-utils';
 import { type DefensePlatform, defenseGapId, loadDefensePlatforms } from './defenseCoverage-compute';
 import { type DefenseSnapshot, type DefenseTechniqueEntry, type DefenseThreatScope, getAccessPredicate, getDefenseSnapshot, getThreatOverlay } from './defenseCoverage-reader';
-import { getLastFullComputation, isFullComputationRequested, requestFullDefenseCoverageComputation } from './defenseCoverage-state';
+import { getLastFullComputation, isFullComputationRequested, isFullComputationRunning, requestFullDefenseCoverageComputation } from './defenseCoverage-state';
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import {
   DEFENSE_GAP_STATUS_CLOSED,
@@ -277,7 +277,9 @@ const prepareEvaluation = async (
     getThreatOverlay(context, user, threatScope),
   ]);
   const platformById = new Map(platforms.map((p) => [p.id, p]));
-  const selected = platformIds && platformIds.length > 0 ? platformIds.filter((id) => platformById.has(id)) : undefined;
+  // A selection left empty by deleted or inaccessible platforms falls back to every platform, as the UI shows it
+  const validIds = (platformIds ?? []).filter((id) => platformById.has(id));
+  const selected = validIds.length > 0 ? validIds : undefined;
   return { snapshot, can, platforms, platformById, selected, overlay };
 };
 
@@ -971,7 +973,8 @@ export const getDefenseCoverageStatus = async (context: AuthContext) => {
   return {
     computed_at: computedAtOf(snapshot),
     last_full_computation: await getLastFullComputation(),
-    full_computation_requested: await isFullComputationRequested(),
+    // Pending until the requested computation is done, not only until the manager picks the request up
+    full_computation_requested: (await isFullComputationRequested()) || (await isFullComputationRunning()),
   };
 };
 // endregion

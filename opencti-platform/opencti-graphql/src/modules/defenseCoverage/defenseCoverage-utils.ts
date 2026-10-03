@@ -158,8 +158,28 @@ export const computeRecommendedAction = (input: {
 // endregion
 
 // region evidences
-export const capEvidences = <T>(evidences: T[], max: number): T[] => {
-  return evidences.length > max ? evidences.slice(0, max) : evidences;
+/**
+ * Bounds an evidence list. Levels are evaluated per reader after access filtering, so when an access key is given the
+ * cap first keeps one evidence of every access key (round robin): a reader who can see any evidence still sees one.
+ */
+export const capEvidences = <T>(evidences: T[], max: number, accessKeyOf?: (evidence: T) => string): T[] => {
+  if (evidences.length <= max) return evidences;
+  if (!accessKeyOf) return evidences.slice(0, max);
+  const groups = new Map<string, T[]>();
+  evidences.forEach((evidence) => {
+    const key = accessKeyOf(evidence);
+    const group = groups.get(key);
+    if (group) group.push(evidence);
+    else groups.set(key, [evidence]);
+  });
+  const capped: T[] = [];
+  const groupLists = Array.from(groups.values());
+  for (let round = 0; capped.length < max; round += 1) {
+    const picks = groupLists.filter((group) => round < group.length).map((group) => group[round]);
+    if (picks.length === 0) break;
+    capped.push(...picks.slice(0, max - capped.length));
+  }
+  return capped;
 };
 
 const uniq = (values: string[]) => Array.from(new Set(values));
