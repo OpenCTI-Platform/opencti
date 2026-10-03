@@ -330,6 +330,7 @@
     "lock_key": "indicator_deployment_manager_lock",
     "stream_lock_key": "indicator_deployment_manager_stream_lock",
     "batch_size": 1000,
+    "backfill_batch_size": 10000,
     "interval": 60000,
     "removal_grace_period": 86400000
   },

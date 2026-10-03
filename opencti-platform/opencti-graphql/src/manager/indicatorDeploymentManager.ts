@@ -4,7 +4,12 @@ import { EXPIRATION_MANAGER_USER, executionContext } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_DEPLOYED_ON } from '../schema/stixCoreRelationship';
-import { flagExpiredDeployments, refreshIndicatorDeploymentCounters, repairRecentDeploymentCounters } from '../modules/indicatorDeployment/indicatorDeployment-domain';
+import {
+  backfillIndicatorDeploymentCounters,
+  flagExpiredDeployments,
+  refreshIndicatorDeploymentCounters,
+  repairRecentDeploymentCounters,
+} from '../modules/indicatorDeployment/indicatorDeployment-domain';
 import { maintainIocValidationRequests } from '../modules/iocValidation/iocValidation-domain';
 
 const toPositiveNumber = (value: unknown, fallback: number) => {
@@ -17,6 +22,7 @@ const INDICATOR_DEPLOYMENT_MANAGER_KEY = conf.get('indicator_deployment_manager:
 const INDICATOR_DEPLOYMENT_MANAGER_STREAM_KEY = conf.get('indicator_deployment_manager:stream_lock_key') || 'indicator_deployment_manager_stream_lock';
 const SCHEDULE_TIME = toPositiveNumber(conf.get('indicator_deployment_manager:interval'), 60000);
 const BATCH_SIZE = toPositiveNumber(conf.get('indicator_deployment_manager:batch_size'), 1000);
+const BACKFILL_BATCH_SIZE = toPositiveNumber(conf.get('indicator_deployment_manager:backfill_batch_size'), 10000);
 // Time given to the connectors to confirm a removal before the deployment is flagged expired.
 const REMOVAL_GRACE_PERIOD = toPositiveNumber(conf.get('indicator_deployment_manager:removal_grace_period'), 24 * 3600 * 1000);
 
@@ -27,7 +33,8 @@ export const indicatorDeploymentCronHandler = async () => {
   const flagged = await flagExpiredDeployments(context, EXPIRATION_MANAGER_USER, REMOVAL_GRACE_PERIOD, BATCH_SIZE);
   const repaired = await repairRecentDeploymentCounters(context, SCHEDULE_TIME * 2, BATCH_SIZE);
   const requests = await maintainIocValidationRequests(context);
-  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, requests });
+  const backfilled = await backfillIndicatorDeploymentCounters(BACKFILL_BATCH_SIZE);
+  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, requests, backfilled });
 };
 
 // Indicators whose deployed-on relationships changed in this batch of events.

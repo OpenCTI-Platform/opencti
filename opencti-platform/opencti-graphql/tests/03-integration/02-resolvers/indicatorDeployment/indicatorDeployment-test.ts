@@ -1,0 +1,303 @@
+import gql from 'graphql-tag';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import {
+  flagExpiredDeployments,
+  refreshIndicatorDeploymentCounters,
+} from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import { stixLoadById } from '../../../../src/database/middleware';
+
+const INDICATOR_ADD = gql`
+  mutation IndicatorAdd($input: IndicatorAddInput!) {
+    indicatorAdd(input: $input) { id standard_id }
+  }
+`;
+const INDICATOR_READ = gql`
+  query IndicatorRead($id: String!) {
+    indicator(id: $id) {
+      id
+      deployment_platforms_count
+      deployment_failed_count
+      validated_platforms_count
+      hit_platforms_count
+    }
+  }
+`;
+const INDICATOR_DELETE = gql`
+  mutation IndicatorDelete($id: ID!) {
+    indicatorDelete(id: $id)
+  }
+`;
+const PLATFORM_ADD = gql`
+  mutation SecurityPlatformAdd($input: SecurityPlatformAddInput!) {
+    securityPlatformAdd(input: $input) { id standard_id name }
+  }
+`;
+const PLATFORM_DELETE = gql`
+  mutation SecurityPlatformDelete($id: ID!) {
+    securityPlatformDelete(id: $id)
+  }
+`;
+const DEPLOYMENT_FIELDS = `
+  id
+  relationship_type
+  revoked
+  deployment_status
+  external_id
+  deployed_at
+  last_sync_at
+  removed_at
+  hit_count
+  last_hit_at
+  validation_status
+  error_message
+`;
+const REPORT_DEPLOYMENT = gql`
+  mutation IndicatorReportDeployment($indicatorId: StixRef!, $platformId: StixRef!, $status: IndicatorDeploymentStatus!, $externalId: String, $metadata: IndicatorDeploymentMetadataInput) {
+    indicatorReportDeployment(indicatorId: $indicatorId, platformId: $platformId, status: $status, externalId: $externalId, metadata: $metadata) {
+      ${DEPLOYMENT_FIELDS}
+    }
+  }
+`;
+const REPORT_DEPLOYMENTS = gql`
+  mutation IndicatorReportDeployments($platformId: StixRef!, $reports: [IndicatorDeploymentReportInput!]!) {
+    indicatorReportDeployments(platformId: $platformId, reports: $reports) {
+      processed created updated unchanged
+      errors { indicatorId message }
+    }
+  }
+`;
+const REPORT_HITS = gql`
+  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime, $firstHit: DateTime) {
+    indicatorReportHits(indicatorId: $indicatorId, platformId: $platformId, count: $count, lastHit: $lastHit, firstHit: $firstHit) {
+      id
+      attribute_count
+      first_seen
+      last_seen
+      x_opencti_negative
+    }
+  }
+`;
+const DEPLOYMENT_RETRY = gql`
+  mutation IndicatorDeploymentRetry($id: ID!) {
+    indicatorDeploymentRetry(id: $id) { ${DEPLOYMENT_FIELDS} }
+  }
+`;
+const DEPLOYMENT_REMOVE = gql`
+  mutation IndicatorDeploymentRemove($id: ID!) {
+    indicatorDeploymentRemove(id: $id) { ${DEPLOYMENT_FIELDS} }
+  }
+`;
+const DEPLOYMENTS_LIST = gql`
+  query Deployments($toId: [String], $filters: FilterGroup) {
+    stixCoreRelationships(relationship_type: ["deployed-on"], toId: $toId, filters: $filters, first: 50) {
+      edges { node { ${DEPLOYMENT_FIELDS} } }
+    }
+  }
+`;
+const METRICS = gql`
+  query Metrics($platformId: String) {
+    disseminationAssuranceMetrics(platformId: $platformId) {
+      funnel { created disseminated deployed validated hit expired_still_deployed }
+      deployment_statuses { status count }
+      validation_statuses { status count }
+      failures_by_platform { platform { id name } count }
+      deployments_by_platform { platform { id name } count }
+      proven_share
+    }
+  }
+`;
+
+describe('Indicator deployment write-back (dissemination assurance)', () => {
+  let indicatorId: string;
+  let indicatorStandardId: string;
+  let secondIndicatorId: string;
+  let platformId: string;
+  let deploymentId: string;
+
+  beforeAll(async () => {
+    const indicator = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'deployment.evil.example', pattern: "[domain-name:value = 'deployment.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name', x_opencti_detection: true } },
+    });
+    indicatorId = indicator.data?.indicatorAdd.id;
+    indicatorStandardId = indicator.data?.indicatorAdd.standard_id;
+    const second = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: '198.51.100.77', pattern: "[ipv4-addr:value = '198.51.100.77']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } },
+    });
+    secondIndicatorId = second.data?.indicatorAdd.id;
+    const platform = await queryAsAdminWithSuccess({
+      query: PLATFORM_ADD,
+      variables: { input: { name: 'Deployment test SIEM', security_platform_type: 'SIEM' } },
+    });
+    platformId = platform.data?.securityPlatformAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: indicatorId } });
+    await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: secondIndicatorId } });
+    await queryAsAdminWithSuccess({ query: PLATFORM_DELETE, variables: { id: platformId } });
+  });
+
+  it('should create the deployed-on relationship on the first report', async () => {
+    const result = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId: indicatorStandardId, platformId, status: 'deployed', externalId: 'ti-1' },
+    });
+    const deployment = result.data?.indicatorReportDeployment;
+    deploymentId = deployment.id;
+    expect(deployment.relationship_type).toEqual('deployed-on');
+    expect(deployment.deployment_status).toEqual('deployed');
+    expect(deployment.external_id).toEqual('ti-1');
+    expect(deployment.deployed_at).toBeDefined();
+    expect(deployment.last_sync_at).toBeDefined();
+    expect(deployment.hit_count).toEqual(0);
+    expect(deployment.validation_status).toEqual('not_requested');
+  });
+
+  it('should be idempotent and never downgrade an active deployment', async () => {
+    const same = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'deployed', externalId: 'ti-1' },
+    });
+    expect(same.data?.indicatorReportDeployment.id).toEqual(deploymentId);
+    const active = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'active' },
+    });
+    expect(active.data?.indicatorReportDeployment.deployment_status).toEqual('active');
+    const repush = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'deployed' },
+    });
+    expect(repush.data?.indicatorReportDeployment.deployment_status).toEqual('active');
+  });
+
+  it('should record a vendor failure', async () => {
+    const failed = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'failed', metadata: { error_message: 'Indicator quota exceeded' } },
+    });
+    expect(failed.data?.indicatorReportDeployment.deployment_status).toEqual('failed');
+    expect(failed.data?.indicatorReportDeployment.error_message).toEqual('Indicator quota exceeded');
+  });
+
+  it('should reject the platform reserved expired status and unauthorized users', async () => {
+    const expired = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENTS,
+      variables: { platformId, reports: [{ indicatorId, status: 'expired' }] },
+    });
+    expect(expired.data?.indicatorReportDeployments.processed).toEqual(0);
+    expect(expired.data?.indicatorReportDeployments.errors.length).toEqual(1);
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'deployed' },
+    });
+  });
+
+  it('should process batches and report per indicator errors', async () => {
+    const result = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_DEPLOYMENTS,
+      variables: {
+        platformId,
+        reports: [
+          { indicatorId, status: 'active', externalId: 'ti-1' },
+          { indicatorId: secondIndicatorId, status: 'deployed', externalId: 'ti-2' },
+          { indicatorId: 'indicator--00000000-0000-4000-8000-000000000000', status: 'deployed' },
+        ],
+      },
+    });
+    const batch = result.data?.indicatorReportDeployments;
+    expect(batch.processed).toEqual(2);
+    expect(batch.created).toEqual(1);
+    expect(batch.updated).toEqual(1);
+    expect(batch.errors.length).toEqual(1);
+    expect(batch.errors[0].indicatorId).toEqual('indicator--00000000-0000-4000-8000-000000000000');
+  });
+
+  it('should count hits on a stable sighting and ignore replays', async () => {
+    const first = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 3, firstHit: '2026-09-30T10:00:00.000Z', lastHit: '2026-10-01T10:00:00.000Z' },
+    });
+    const sighting = first.data?.indicatorReportHits;
+    expect(sighting.attribute_count).toEqual(3);
+    expect(sighting.x_opencti_negative).toEqual(false);
+    const replay = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 3, lastHit: '2026-10-01T10:00:00.000Z' },
+    });
+    expect(replay.data?.indicatorReportHits.id).toEqual(sighting.id);
+    expect(replay.data?.indicatorReportHits.attribute_count).toEqual(3);
+    const next = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
+    });
+    expect(next.data?.indicatorReportHits.id).toEqual(sighting.id);
+    expect(next.data?.indicatorReportHits.attribute_count).toEqual(5);
+    const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
+    const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
+    expect(deployment.hit_count).toEqual(5);
+    expect(new Date(deployment.last_hit_at).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
+  });
+
+  it('should refresh the derived indicator counters', async () => {
+    await refreshIndicatorDeploymentCounters(testContext, [indicatorId, secondIndicatorId]);
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployment_platforms_count).toEqual(1);
+    expect(indicator.data?.indicator.deployment_failed_count).toEqual(0);
+    expect(indicator.data?.indicator.hit_platforms_count).toEqual(1);
+    expect(indicator.data?.indicator.validated_platforms_count).toEqual(0);
+  });
+
+  it('should export the lifecycle in the STIX extension', async () => {
+    const stix = await stixLoadById(testContext, ADMIN_USER, deploymentId) as unknown as { extensions: Record<string, Record<string, unknown>> };
+    const extension = stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'];
+    expect(extension.deployment_status).toEqual('active');
+    expect(extension.hit_count).toEqual(5);
+    expect(extension.external_id).toEqual('ti-1');
+  });
+
+  it('should support analyst retry and withdrawal', async () => {
+    const removed = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_REMOVE, variables: { id: deploymentId } });
+    expect(removed.data?.indicatorDeploymentRemove.revoked).toEqual(true);
+    const retried = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } });
+    expect(retried.data?.indicatorDeploymentRetry.revoked).toEqual(false);
+    expect(retried.data?.indicatorDeploymentRetry.deployment_status).toEqual('pending');
+    expect(retried.data?.indicatorDeploymentRetry.error_message).toBeNull();
+  });
+
+  it('should flag withdrawn deployments without removal confirmation as expired', async () => {
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId, platformId, status: 'active' } });
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_REMOVE, variables: { id: deploymentId } });
+    // Grace period of 0 ms: the withdrawal is already older than the threshold
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    const flagged = await flagExpiredDeployments(testContext, ADMIN_USER, 0, 100);
+    expect(flagged).toBeGreaterThanOrEqual(1);
+    const list = await queryAsAdminWithSuccess({
+      query: DEPLOYMENTS_LIST,
+      variables: { toId: [platformId], filters: { mode: 'and', filters: [{ key: 'deployment_status', values: ['expired'] }], filterGroups: [] } },
+    });
+    const ids = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(ids).toContain(deploymentId);
+  });
+
+  it('should compute the dissemination assurance metrics', async () => {
+    const global = await queryAsAdminWithSuccess({ query: METRICS, variables: {} });
+    const metrics = global.data?.disseminationAssuranceMetrics;
+    expect(metrics.funnel.created).toBeGreaterThanOrEqual(2);
+    expect(metrics.funnel.disseminated).toBeGreaterThanOrEqual(1);
+    const perPlatform = await queryAsAdminWithSuccess({ query: METRICS, variables: { platformId } });
+    const platformMetrics = perPlatform.data?.disseminationAssuranceMetrics;
+    expect(platformMetrics.funnel.disseminated).toEqual(2);
+    expect(platformMetrics.funnel.expired_still_deployed).toEqual(1);
+    expect(platformMetrics.funnel.hit).toEqual(1);
+    const statuses = Object.fromEntries(platformMetrics.deployment_statuses.map((s: { status: string; count: number }) => [s.status, s.count]));
+    expect(statuses.expired).toEqual(1);
+    expect(statuses.deployed).toEqual(1);
+    expect(platformMetrics.deployments_by_platform[0].platform.id).toEqual(platformId);
+    expect(platformMetrics.proven_share).toEqual(0);
+  });
+});
