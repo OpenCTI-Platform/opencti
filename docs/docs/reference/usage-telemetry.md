@@ -126,7 +126,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 
 - The number of 'deployed-on' relationships (indicator deployments on security platforms)
 - The number of indicator deployment reports received from connectors
-- The number of indicator hit reports received from connectors
+- The number of indicator hits reported by connectors (one report can carry many hits)
 - The number of IOC validation requests
 - The number of IOC validation requests created
 
