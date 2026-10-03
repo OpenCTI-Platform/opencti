@@ -52,6 +52,8 @@ To run a single analysis from a scheduler (cron, Kubernetes `CronJob`), override
 
 ## Run from the sources
 
+The process requires Python 3.12 or later, the version of its Docker images.
+
 ```bash
 cd opencti-analytics
 python3 -m venv .venv

@@ -15,7 +15,7 @@ This guide covers:
 ## Architecture
 
 ### Tech Stack
-- **Python**: 3.10 to 3.12 (Matrix tested)
+- **Python**: 3.10 to 3.12 (Matrix tested); `opencti-analytics` requires 3.12 or later
 - **Library**: `pycti`
 - **Linting**: flake8, black, isort
 - **Testing**: pytest
