@@ -26,8 +26,10 @@ carries the lifecycle of the indicator on that platform:
 | Last validation      | When the last validation result was received.                               |
 | Deployment error     | The error the platform returned, when the deployment failed.                |
 
-Reports are idempotent: a connector can report the same state again without creating a new relationship, and an
-active deployment is never downgraded by a late report. Only the platform manager sets the `expired` status.
+Reports are idempotent: a connector can report the same state again without creating a new relationship. A
+`deployed` report never downgrades an `active` deployment, and a `pending` report never downgrades a live
+(`deployed` or `active`) one. Reports are applied in the order they arrive, so a `failed` or `removed` report always
+takes effect. Only the platform manager sets the `expired` status.
 
 Hits reported by a security platform are also recorded as a sighting of the indicator by the platform, so they show
 up with the other sightings of the indicator.
