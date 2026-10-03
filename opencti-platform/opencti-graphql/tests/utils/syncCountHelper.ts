@@ -102,7 +102,8 @@ testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
-testUpdatedCounter.sighting = 6;
+// + 1 repair of a stale hits sighting in indicatorDeployment-test
+testUpdatedCounter.sighting = 7;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 5;
