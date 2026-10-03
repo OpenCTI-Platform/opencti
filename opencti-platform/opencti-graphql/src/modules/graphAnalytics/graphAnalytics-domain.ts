@@ -1,6 +1,6 @@
 import conf, { booleanConf } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreEntity } from '../../types/store';
 import { elAggregationSearch, elCount, elFindByIds, elHistogramCount, elList } from '../../database/engine';
 import { fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { createRelation } from '../../database/middleware';
@@ -22,6 +22,7 @@ import {
   OrderingMode,
 } from '../../generated/graphql';
 import { GRAPH_CLUSTER_ID_FILTER } from '../../utils/filtering/filtering-constants';
+import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { GRAPH_ANALYTICS_MANAGER_USER } from '../../utils/access';
 import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkDirty, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
 import { addGraphAnalyticsPivotCount, addGraphClusterPromotionCount, addGraphSimilarityQueryCount } from '../../manager/telemetryManager';
@@ -162,14 +163,40 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
   return buildConnection(nodes, nodes.length, visibleRows.length > nodes.length);
 };
 
-/** Pairwise scores computed live from the caller's view of the knowledge (no precomputed data involved). */
-export const graphSimilarityMatrix = async (context: AuthContext, user: AuthUser, ids: string[]) => {
-  const uniqueIds = Array.from(new Set(ids));
-  if (uniqueIds.length > MATRIX_MAX_ENTITIES) {
-    throw FunctionalError('Too many entities for a similarity matrix', { max: MATRIX_MAX_ENTITIES });
+export interface GraphSimilarityMatrixArgs {
+  ids?: string[] | null;
+  types?: string[] | null;
+  filters?: InputMaybe<FilterGroup>;
+  first?: number | null;
+}
+
+/** Explicit ids, or the most connected entities matching a data selection (dashboard widgets). */
+const loadMatrixEntities = async (context: AuthContext, user: AuthUser, args: GraphSimilarityMatrixArgs): Promise<BasicStoreEntity[]> => {
+  if (args.ids && args.ids.length > 0) {
+    const uniqueIds = Array.from(new Set(args.ids));
+    if (uniqueIds.length > MATRIX_MAX_ENTITIES) {
+      throw FunctionalError('Too many entities for a similarity matrix', { max: MATRIX_MAX_ENTITIES });
+    }
+    const loaded = await accessibleMap<BasicStoreEntity>(context, user, uniqueIds);
+    return uniqueIds.map((id) => loaded[id]).filter(Boolean);
   }
-  const loaded = await accessibleMap<BasicStoreEntity>(context, user, uniqueIds);
-  const entities = uniqueIds.map((id) => loaded[id]).filter(Boolean);
+  if (!args.filters && (!args.types || args.types.length === 0)) {
+    throw FunctionalError('A similarity matrix needs entity ids, types or filters');
+  }
+  const limit = clamp(args.first, 10, 2, MATRIX_MAX_ENTITIES);
+  return elList<BasicStoreEntity>(context, user, READ_ENTITIES_INDICES, {
+    types: args.types && args.types.length > 0 ? args.types : [ABSTRACT_STIX_CORE_OBJECT],
+    filters: args.filters ?? undefined,
+    orderBy: `${GRAPH_METRICS_ATTRIBUTE}.degree`,
+    orderMode: OrderingMode.Desc,
+    first: limit,
+    maxSize: limit,
+  });
+};
+
+/** Pairwise scores computed live from the caller's view of the knowledge (no precomputed data involved). */
+export const graphSimilarityMatrix = async (context: AuthContext, user: AuthUser, args: GraphSimilarityMatrixArgs) => {
+  const entities = await loadMatrixEntities(context, user, args);
   const profiles = await loadFeatureProfilesBatched(context, user, entities.map((e) => ({ id: e.internal_id, entity_type: e.entity_type })), getGraphAnalyticsComputeConfig());
   const byId = new Map(profiles.map((p) => [p.id, p]));
   const cells: Array<{ source_id: string; target_id: string; score: number; shared_count: number }> = [];
@@ -188,21 +215,34 @@ export const graphSimilarityMatrix = async (context: AuthContext, user: AuthUser
 // endregion
 
 // region clusters
+const filtersIdsFinder: FiltersIdsFinder = async (c, u, ids, opts) => {
+  return elFindByIds<BasicStoreObject>(c, u, ids, { ...opts, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
+};
+
 const clusterMembersFilter = (clusterId: string, filters?: InputMaybe<FilterGroup>): FilterGroup => ({
   mode: FilterMode.And,
   filters: [{ key: [GRAPH_CLUSTER_ID_FILTER], values: [clusterId] }],
   filterGroups: filters ? [filters] : [],
 });
 
-/** Number of cluster members visible to the caller, per cluster. */
-const visibleMembersPerCluster = async (context: AuthContext, user: AuthUser, kinds?: GraphClusterKind[] | null): Promise<Map<string, number>> => {
+/** Number of cluster members visible to the caller (and matching optional member filters), per cluster. */
+const visibleMembersPerCluster = async (
+  context: AuthContext,
+  user: AuthUser,
+  kinds?: GraphClusterKind[] | null,
+  memberFilters?: InputMaybe<FilterGroup>,
+): Promise<Map<string, number>> => {
+  // The aggregation filters on raw metric fields (no filter key), so the member filters are checked and converted here
+  const convertedMemberFilters = memberFilters
+    ? await checkAndConvertFilters(context, user, memberFilters, user.id, filtersIdsFinder)
+    : undefined;
   const filters: FilterGroup = {
     mode: FilterMode.And,
     filters: [
       { key: [`${GRAPH_METRICS_ATTRIBUTE}.cluster_id`], values: [], operator: FilterOperator.NotNil },
       ...(kinds && kinds.length > 0 ? [{ key: [`${GRAPH_METRICS_ATTRIBUTE}.cluster_kind`], values: kinds }] : []),
     ],
-    filterGroups: [],
+    filterGroups: convertedMemberFilters ? [convertedMemberFilters] : [],
   };
   const aggregations = await elAggregationSearch(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, noFiltersChecking: true }, {
     clusters: { terms: { field: `${GRAPH_METRICS_ATTRIBUTE}.cluster_id.keyword`, size: CLUSTER_LIST_MAX_BUCKETS } },
@@ -225,11 +265,13 @@ export interface GraphClustersArgs {
   orderBy?: string | null;
   orderMode?: OrderingMode | null;
   filters?: InputMaybe<FilterGroup>;
+  // filters on the member entities: only clusters with matching visible members are listed
+  memberFilters?: InputMaybe<FilterGroup>;
 }
 
 /** Clusters having at least one member visible to the caller; members_count is the visible count. */
 export const findGraphClusters = async (context: AuthContext, user: AuthUser, args: GraphClustersArgs) => {
-  const visible = await visibleMembersPerCluster(context, user, args.kinds);
+  const visible = await visibleMembersPerCluster(context, user, args.kinds, args.memberFilters);
   if (visible.size === 0) return buildConnection([], 0);
   const filters: FilterGroup = {
     mode: FilterMode.And,
@@ -315,10 +357,16 @@ export interface TimeSeriesArgs {
 }
 
 /** Cumulative number of visible members over time, by member creation date in the platform. */
-export const graphClusterTimeline = async (context: AuthContext, user: AuthUser, clusterId: string, args: TimeSeriesArgs) => {
+export const graphClusterTimeline = async (
+  context: AuthContext,
+  user: AuthUser,
+  clusterId: string,
+  args: TimeSeriesArgs,
+  memberFilters?: InputMaybe<FilterGroup>,
+) => {
   const endDate = args.endDate ? new Date(args.endDate) : new Date();
   const startDate = args.startDate ? new Date(args.startDate) : new Date(endDate.getTime() - 365 * 24 * 3600 * 1000);
-  const filters = clusterMembersFilter(clusterId);
+  const filters = clusterMembersFilter(clusterId, memberFilters);
   const baseline = await elCount(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, endDate: startDate.toISOString(), dateAttribute: 'created_at' });
   const histogram = await elHistogramCount(context, user, GRAPH_METRICS_ENTITY_INDICES, {
     types: [ABSTRACT_STIX_CORE_OBJECT],
@@ -340,6 +388,8 @@ export interface GraphClustersSizeArgs extends TimeSeriesArgs {
   kinds?: GraphClusterKind[] | null;
   clusterIds?: string[] | null;
   limit?: number | null;
+  // filters on the member entities: the largest clusters by matching visible members, each series counting them only
+  filters?: InputMaybe<FilterGroup>;
 }
 
 export const graphClustersSizeTimeSeries = async (context: AuthContext, user: AuthUser, args: GraphClustersSizeArgs) => {
@@ -348,13 +398,22 @@ export const graphClustersSizeTimeSeries = async (context: AuthContext, user: Au
   if (args.clusterIds && args.clusterIds.length > 0) {
     const loaded = await Promise.all(args.clusterIds.slice(0, limit).map((id) => findGraphClusterById(context, user, id)));
     clusters = loaded.filter((c): c is BasicStoreEntityGraphCluster => !!c);
+  } else if (args.filters) {
+    const visible = await visibleMembersPerCluster(context, user, args.kinds, args.filters);
+    const largest = Array.from(visible.entries()).sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])).slice(0, limit);
+    const loaded = await loadGraphClusters(context, user, largest.map(([clusterId]) => clusterId));
+    const byId = new Map(loaded.map((cluster) => [cluster.internal_id.toLowerCase(), cluster]));
+    clusters = largest.flatMap(([clusterId, count]) => {
+      const cluster = byId.get(clusterId.toLowerCase());
+      return cluster ? [{ ...cluster, members_count: count }] : [];
+    });
   } else {
     const connection = await findGraphClusters(context, user, { kinds: args.kinds, first: limit, orderBy: 'members_count', orderMode: OrderingMode.Desc });
     clusters = connection.edges.map((edge) => edge.node);
   }
   return Promise.all(clusters.map(async (cluster) => ({
     cluster,
-    data: await graphClusterTimeline(context, user, cluster.internal_id, args),
+    data: await graphClusterTimeline(context, user, cluster.internal_id, args, args.filters),
   })));
 };
 

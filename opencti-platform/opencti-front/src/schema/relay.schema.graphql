@@ -9540,10 +9540,40 @@ type Query {
   stixPaths(fromId: String!, toId: String!, maxDepth: Int, maxPaths: Int, relationshipTypes: [String!], entityTypes: [String!], includeInferred: Boolean, includeContainers: Boolean): StixPathsResult
   stixNeighborhoodSummary(id: String!, includeInferred: Boolean): StixNeighborhoodSummary
   similarEntities(id: String!, first: Int, minScore: Float, entityTypes: [String!], onlyWithSecurityCoverage: Boolean): GraphSimilarEntityConnection
-  graphSimilarityMatrix(ids: [String!]!): GraphSimilarityMatrix
+
+  """
+  Pairwise similarity of explicit entities, or of the most connected entities matching types and filters
+  """
+  graphSimilarityMatrix(ids: [String!], types: [String!], filters: FilterGroup, first: Int): GraphSimilarityMatrix
   graphCluster(id: String!): GraphCluster
-  graphClusters(first: Int, after: ID, search: String, kinds: [GraphClusterKind!], sources: [GraphClusterSource!], orderBy: GraphClustersOrdering, orderMode: OrderingMode, filters: FilterGroup): GraphClusterConnection
-  graphClustersSizeTimeSeries(kinds: [GraphClusterKind!], clusterIds: [String!], startDate: DateTime, endDate: DateTime, interval: String!, limit: Int): [GraphClusterTimeSeries!]!
+  graphClusters(
+    first: Int
+    after: ID
+    search: String
+    kinds: [GraphClusterKind!]
+    sources: [GraphClusterSource!]
+    orderBy: GraphClustersOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+
+    """
+    Filters on the member entities: only clusters with matching members are listed
+    """
+    memberFilters: FilterGroup
+  ): GraphClusterConnection
+  graphClustersSizeTimeSeries(
+    kinds: [GraphClusterKind!]
+    clusterIds: [String!]
+    startDate: DateTime
+    endDate: DateTime
+    interval: String!
+    limit: Int
+
+    """
+    Filters on the member entities: the largest clusters by matching members, counting only them
+    """
+    filters: FilterGroup
+  ): [GraphClusterTimeSeries!]!
   graphAnalyticsStatus: GraphAnalyticsStatus
   graphAnalyticsEdges(relationshipTypes: [String!]!, includeInferred: Boolean, first: Int, after: ID): GraphAnalyticsEdgeConnection
   me: MeUser!

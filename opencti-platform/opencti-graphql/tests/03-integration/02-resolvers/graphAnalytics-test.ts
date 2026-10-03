@@ -208,6 +208,20 @@ describe('Graph analytics resolvers', () => {
     expect(cell('isA', 'isC').score).toBe(0);
   });
 
+  it('should select the most connected entities of a data selection for a similarity matrix', async () => {
+    const query = gql`
+      query matrixSelection($types: [String!], $filters: FilterGroup, $first: Int) {
+        graphSimilarityMatrix(types: $types, filters: $filters, first: $first) { entities { id } cells { source_id target_id score } }
+      }
+    `;
+    const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['name'], values: ['Graph analytics set A', 'Graph analytics set B', 'Graph analytics set C'] }] };
+    const { data } = await queryAsAdminWithSuccess({ query, variables: { types: ['Intrusion-Set'], filters, first: 2 } });
+    expect(data.graphSimilarityMatrix.entities.map((e: any) => e.id)).toEqual([ids.isA, ids.isB]);
+    expect(data.graphSimilarityMatrix.cells).toHaveLength(2);
+    const missingSelection = await queryAsAdmin({ query, variables: {} });
+    expect(missingSelection.errors?.length).toBe(1);
+  });
+
   it('should find paths between two entities', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: PATHS_QUERY, variables: { fromId: ids.isB, toId: ids.sector, maxDepth: 4, maxPaths: 5 } });
     const { paths } = data.stixPaths;
@@ -269,6 +283,25 @@ describe('Graph analytics resolvers', () => {
     const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['graph_cluster_id'], values: [cluster.id] }] };
     const members = await queryAsAdminWithSuccess({ query, variables: { filters } });
     expect(members.data.stixCoreObjects.edges.map((e: any) => e.node.id).sort()).toEqual([ids.d1, ids.d2, ids.d3].sort());
+    // member filters on the cluster list and on the size series
+    const memberQuery = gql`
+      query memberClusters($memberFilters: FilterGroup) { graphClusters(memberFilters: $memberFilters, first: 50) { edges { node { id members_count } } } }
+    `;
+    const domainFilters = { mode: 'and', filterGroups: [], filters: [{ key: ['entity_type'], values: ['Domain-Name'] }] };
+    const withDomains = await queryAsAdminWithSuccess({ query: memberQuery, variables: { memberFilters: domainFilters } });
+    expect(withDomains.data.graphClusters.edges.map((e: any) => e.node.id)).toContain(cluster.id);
+    const setFilters = { mode: 'and', filterGroups: [], filters: [{ key: ['entity_type'], values: ['Intrusion-Set'] }] };
+    const withSets = await queryAsAdminWithSuccess({ query: memberQuery, variables: { memberFilters: setFilters } });
+    expect(withSets.data.graphClusters.edges.map((e: any) => e.node.id)).not.toContain(cluster.id);
+    const sizeQuery = gql`
+      query sizes($filters: FilterGroup) {
+        graphClustersSizeTimeSeries(interval: "month", filters: $filters, limit: 20) { cluster { id members_count } data { date value } }
+      }
+    `;
+    const sizes = await queryAsAdminWithSuccess({ query: sizeQuery, variables: { filters: domainFilters } });
+    const series = sizes.data.graphClustersSizeTimeSeries.find((s: any) => s.cluster.id === cluster.id);
+    expect(series.cluster.members_count).toBe(3);
+    expect(series.data[series.data.length - 1].value).toBe(3);
   });
 
   it('should promote a cluster to a grouping and add it to an investigation', async () => {

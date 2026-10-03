@@ -14,6 +14,7 @@ import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
+import GraphToolbarAnalyticsTools from './components/GraphToolbarAnalyticsTools';
 import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
@@ -132,6 +133,8 @@ const GraphToolbar = ({
               onInvestigationExpand={onInvestigationExpand}
               onInvestigationRollback={onInvestigationRollback}
             />
+            <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+            <GraphToolbarAnalyticsTools onInvestigationExpand={onInvestigationExpand} />
             <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
           </>
         )}

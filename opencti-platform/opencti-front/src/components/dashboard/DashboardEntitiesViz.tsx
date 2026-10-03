@@ -27,6 +27,8 @@ import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import GraphSimilarityMatrixWidget from '../../private/components/common/graph_analytics/GraphSimilarityMatrixWidget';
+import GraphClustersSizeWidget from '../../private/components/common/graph_analytics/GraphClustersSizeWidget';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -373,6 +375,28 @@ const DashboardEntitiesViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'graph-similarity-matrix':
+      return (
+        <GraphSimilarityMatrixWidget
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'graph-clusters-size':
+      return (
+        <GraphClustersSizeWidget
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
           popover={popover}
           host={host}
           refreshRate={refreshRate}

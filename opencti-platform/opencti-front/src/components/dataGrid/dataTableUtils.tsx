@@ -882,6 +882,29 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       </span>
     ),
   },
+  graph_degree: {
+    id: 'graph_degree',
+    label: 'Graph degree',
+    percentWidth: 8,
+    isSortable: true,
+    render: ({ x_opencti_graph_metrics }, { n }) => defaultRender(x_opencti_graph_metrics?.degree != null ? n(x_opencti_graph_metrics.degree) : EMPTY_VALUE),
+  },
+  graph_betweenness: {
+    id: 'graph_betweenness',
+    label: 'Approximate betweenness',
+    percentWidth: 8,
+    isSortable: true,
+    render: ({ x_opencti_graph_metrics }) => defaultRender(x_opencti_graph_metrics?.betweenness_approx != null
+      ? x_opencti_graph_metrics.betweenness_approx.toFixed(4)
+      : EMPTY_VALUE),
+  },
+  graph_cluster_size: {
+    id: 'graph_cluster_size',
+    label: 'Graph cluster size',
+    percentWidth: 8,
+    isSortable: true,
+    render: ({ x_opencti_graph_metrics }, { n }) => defaultRender(x_opencti_graph_metrics?.cluster_size != null ? n(x_opencti_graph_metrics.cluster_size) : EMPTY_VALUE),
+  },
   order: {
     id: 'order',
     label: 'Order',

@@ -12,6 +12,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { RootInfrastructureSubscription } from './__generated__/RootInfrastructureSubscription.graphql';
@@ -160,6 +161,9 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrast
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
                 />
+              ),
+              similar: (
+                <StixCoreObjectSimilar stixCoreObjectId={infrastructureId} />
               ),
               history: (
                 <StixCoreObjectHistory
