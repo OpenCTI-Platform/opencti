@@ -968,6 +968,10 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
 
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
+    // Check service account
+    if (userServiceAccount) {
+      throw ForbiddenAccess();
+    }
     // Check organization
     const myOrganizationIds = user.administrated_organizations.map((organization) => organization.id);
     if (newUser.objectOrganization!.length === 0 || !newUser.objectOrganization!.every((orga: string) => myOrganizationIds.includes(orga))) {
