@@ -46,6 +46,23 @@ describe('GraphLegend', () => {
     await user.click(screen.getByRole('button', { name: /Show the hidden entities/ }));
     expect(props.onShowHidden).toHaveBeenCalled();
   });
+
+  it('lists only the badges present, each selecting the entities carrying it', async () => {
+    const onSelectBadge = vi.fn();
+    const { user, unmount } = testRender(
+      <GraphLegend
+        {...props}
+        badges={[{ key: 'provenance-conflicts', label: 'Has source conflicts', tone: 'error', tooltip: 'Its sources assert conflicting values', count: 2 }]}
+        onSelectBadge={onSelectBadge}
+      />,
+    );
+    expect(screen.getByText('Badges')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Has source conflicts: 2' }));
+    expect(onSelectBadge).toHaveBeenCalledWith('provenance-conflicts');
+    unmount();
+    testRender(<GraphLegend {...props} />);
+    expect(screen.queryByText('Badges')).toBeNull();
+  });
 });
 
 describe('GraphControls', () => {
@@ -162,6 +179,21 @@ describe('GraphHoverCard', () => {
     const relationshipNode = graphNode({ id: 'rel', label: 'Uses', relationship_type: 'uses' });
     testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: relationshipNode }} badges={[]} relationshipCounts={[]} actions={handlers} />);
     expect(screen.queryByRole('button', { name: 'Start an investigation' })).toBeNull();
+  });
+
+  it('says a single source in the singular and lists every badge with what it means', () => {
+    const node = graphNode({ ...actor, corroborationCount: 1 });
+    const badges = ['a', 'b', 'c', 'd'].map((key) => ({ key, tone: 'warning' as const, label: `Badge ${key}`, tooltip: `Meaning ${key}` }));
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={badges} relationshipCounts={[]} actions={actions()} />);
+    expect(screen.getByText('1 source')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(4);
+  });
+
+  it('names a restricted entity "Restricted" and says why', () => {
+    const node = graphNode({ id: 'restricted', label: 'Restricted', isRestricted: true });
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} actions={actions()} />);
+    expect(screen.getByText('Restricted')).toBeInTheDocument();
+    expect(screen.getByText('You do not have access to this entity.')).toBeInTheDocument();
   });
 
   it('describes a relationship and a collapsed group', async () => {

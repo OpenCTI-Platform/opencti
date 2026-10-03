@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { badgesOfNode, graphBadgeProviders, registerGraphBadgeProvider } from './graphBadgeRegistry';
+import { badgesOfNode, drawnBadges, graphBadgeProviders, MAX_DRAWN_BADGES, registerGraphBadgeProvider } from './graphBadgeRegistry';
 import { confidenceBadgeProvider, inferredBadgeProvider, markingBadgeProvider } from './builtinGraphBadges';
 import { graphNodeActionsFor, registerGraphNodeAction } from './graphNodeActionRegistry';
 import { graphNode } from '../../../utils/tests/graphTestData';
@@ -52,13 +52,34 @@ describe('graph badge registry', () => {
     const raw = { hunt_verdict: 'Malicious' } as unknown as NonNullable<ReturnType<typeof graphNode>['raw']>;
     expect(badgesOfNode(graphNode({ raw }), helpers).find((b) => b.key === 'hunt')?.label).toBe('Malicious');
   });
+
+  it('keeps one badge per provider, the most severe, and puts the most severe badges first', () => {
+    cleanups.push(registerGraphBadgeProvider({
+      id: 'two-badges',
+      order: 1,
+      badgesFor: () => [{ key: 'two-info', tone: 'info', label: 'info' }, { key: 'two-warning', tone: 'warning', label: 'warning' }],
+    }));
+    cleanups.push(registerGraphBadgeProvider({ id: 'late-error', order: 900, badgesFor: () => [{ key: 'late-error', tone: 'error', label: 'error' }] }));
+    const keys = badgesOfNode(graphNode(), helpers).map((b) => b.key);
+    expect(keys).not.toContain('two-info');
+    expect(keys.slice(0, 2)).toEqual(['late-error', 'two-warning']);
+  });
+
+  it('draws at most three badges and counts the others', () => {
+    const badges = ['a', 'b', 'c', 'd', 'e'].map((key) => ({ key, tone: 'info' as const, label: key }));
+    expect(drawnBadges(badges)).toEqual({ drawn: badges.slice(0, MAX_DRAWN_BADGES), more: 2 });
+    expect(drawnBadges(badges.slice(0, 2))).toEqual({ drawn: badges.slice(0, 2), more: 0 });
+  });
 });
 
 describe('built-in badges', () => {
-  it('shows one dot per marking in its colour, never for unmarked elements', () => {
-    const marked = graphNode({ markedBy: [{ id: 'tlp', definition: 'TLP:GREEN', x_opencti_color: '#2e7d32' }] });
+  it('shows the markings as one badge in the colour of the first, never for unmarked elements', () => {
+    const marked = graphNode({ markedBy: [
+      { id: 'tlp', definition: 'TLP:GREEN', x_opencti_color: '#2e7d32' },
+      { id: 'pap', definition: 'PAP:AMBER', x_opencti_color: '#d84315' },
+    ] });
     expect(markingBadgeProvider.badgesFor(marked, helpers)).toEqual([
-      { key: 'marking-tlp', tone: 'neutral', color: '#2e7d32', label: 'TLP:GREEN' },
+      { key: 'markings', tone: 'neutral', color: '#2e7d32', label: 'TLP:GREEN, PAP:AMBER', legendLabel: 't:Markings', value: 2 },
     ]);
     const unmarked = graphNode({ markedBy: [{ id: NO_MARKING_ID, definition: 'None' }] });
     expect(markingBadgeProvider.badgesFor(unmarked, helpers)).toEqual([]);

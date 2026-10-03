@@ -5,6 +5,7 @@ import { testRenderHook } from '../../../utils/tests/test-render';
 import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import ThemeDark from '../../ThemeDark';
 import type { GraphLink, GraphNode } from '../graph.types';
+import { registerGraphBadgeProvider } from '../badges';
 
 const theme = createTheme(ThemeDark() as ThemeOptions);
 
@@ -98,6 +99,33 @@ describe('useGraphPainter', () => {
         hook.result.current.nodePaint(node({ numberOfConnectedElement }), ctx, { showNbConnectedElements: true });
         expect(ctx.texts()).toContain(expected);
       });
+    });
+
+    it('draws at most three badges, the most severe first, and counts the others', () => {
+      const removals = (['info', 'info', 'error', 'info'] as const).map((tone, index) => registerGraphBadgeProvider({
+        id: `test-badge-${index}`,
+        order: 900 + index,
+        badgesFor: () => [{ key: `test-badge-${index}`, tone, label: `badge ${index}`, value: `v${index}` }],
+      }));
+      try {
+        const { hook } = testRenderHook(() => useGraphPainter());
+        const ctx = createRecordingContext();
+        hook.result.current.nodePaint(node(), ctx, { globalScale: 4 });
+        const texts = ctx.texts();
+        expect(texts).toEqual(expect.arrayContaining(['v2', 'v0', 'v1', '+1']));
+        expect(texts).not.toContain('v3');
+      } finally {
+        removals.forEach((remove) => remove());
+      }
+    });
+
+    it('draws a restricted entity with a dashed outline', () => {
+      const { hook } = testRenderHook(() => useGraphPainter());
+      const ctx = createRecordingContext();
+      hook.result.current.nodePaint(node({ isRestricted: true, label: 'Restricted' }), ctx);
+      const outline = ctx.callsOf('stroke')[0];
+      expect(outline.lineDash.length).toBeGreaterThan(0);
+      expect(ctx.texts()).toContain('Restricted');
     });
 
     it('draws no counter when every connected element is already displayed', () => {

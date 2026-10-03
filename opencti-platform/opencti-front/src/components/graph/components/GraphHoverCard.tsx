@@ -141,6 +141,11 @@ const GraphHoverCard = ({
     content = (
       <>
         {header(node.relationship_type ? 'relationship' : node.entity_type, graphNodeTitle(node), typeLabel, node.color)}
+        {node.isRestricted && (
+          <div style={{ ...fact, color: theme.palette.text.secondary, marginBottom: theme.spacing(0.5) }}>
+            {t_i18n('You do not have access to this entity.')}
+          </div>
+        )}
         <div style={fact}>
           <span style={factLabel}>{t_i18n('Date')}</span>
           <span>{fldt(node.defaultDate)}</span>
@@ -160,7 +165,7 @@ const GraphHoverCard = ({
         {typeof node.corroborationCount === 'number' && node.corroborationCount > 0 && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Sources')}</span>
-            <span>{t_i18n('{count} sources', { values: { count: node.corroborationCount } })}</span>
+            <span>{t_i18n('{count, plural, one {# source} other {# sources}}', { values: { count: node.corroborationCount } })}</span>
           </div>
         )}
         {nodeMarkings.length > 0 && (
@@ -187,23 +192,33 @@ const GraphHoverCard = ({
         {context === 'investigation' && node.numberOfConnectedElement !== undefined && node.numberOfConnectedElement > 0 && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Not displayed')}</span>
-            <span>{t_i18n('{count} more connections', { values: { count: node.numberOfConnectedElement } })}</span>
+            <span>{t_i18n('{count, plural, one {# more connection} other {# more connections}}', { values: { count: node.numberOfConnectedElement } })}</span>
           </div>
         )}
         {badges.length > 0 && (
-          <div style={{ ...fact, flexWrap: 'wrap', marginTop: theme.spacing(0.5) }}>
+          <div role="list" aria-label={t_i18n('Badges')} style={{ ...fact, flexWrap: 'wrap', marginTop: theme.spacing(0.5) }}>
             {badges.map((badge) => (
-              <span
-                key={badge.key}
-                style={{
-                  border: `1px solid ${badge.color ?? theme.palette.divider}`,
-                  borderRadius: 10,
-                  padding: theme.spacing(0, 1),
-                  fontSize: 11,
-                }}
-              >
-                {badge.label}
-              </span>
+              <Tooltip key={badge.key}>
+                <TooltipTrigger asChild>
+                  <span
+                    role="listitem"
+                    tabIndex={0}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      border: `1px solid ${badge.color || palette.tones[badge.tone]}`,
+                      borderRadius: 10,
+                      padding: theme.spacing(0, 1),
+                      fontSize: 11,
+                    }}
+                  >
+                    <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: badge.color || palette.tones[badge.tone] }} />
+                    {badge.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{badge.tooltip ?? badge.label}</TooltipContent>
+              </Tooltip>
             ))}
           </div>
         )}
@@ -276,7 +291,7 @@ const GraphHoverCard = ({
         {typeof link.corroborationCount === 'number' && link.corroborationCount > 0 && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Sources')}</span>
-            <span>{t_i18n('{count} sources', { values: { count: link.corroborationCount } })}</span>
+            <span>{t_i18n('{count, plural, one {# source} other {# sources}}', { values: { count: link.corroborationCount } })}</span>
           </div>
         )}
         {(link.inferred || link.isNestedInferred) && (

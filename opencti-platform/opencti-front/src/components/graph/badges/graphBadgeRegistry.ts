@@ -15,25 +15,37 @@ export interface GraphBadge {
   color?: string | null;
   /** Translated text, used by the hover card, the accessible list and the export legend. */
   label: string;
+  /** Translated sentence saying what the badge means, the tooltip of the hover card (the label when absent). */
+  tooltip?: string;
+  /** Translated name of the legend entry, when the label is specific to the node (the legend uses the label when absent). */
+  legendLabel?: string;
   /** Short text drawn in a pill next to the icon, for example a score. */
   value?: string | number;
 }
 
 export interface GraphBadgeHelpers {
-  t_i18n: (message: string) => string;
+  t_i18n: (message: string, options?: { values?: Record<string, string | number> }) => string;
 }
 
 export interface GraphBadgeProvider {
   /** For example `threat-pulse`. Registering the same id again replaces the provider. */
   id: string;
-  /** Lower is drawn first. Built-in providers use 0 to 99. */
+  /** Among badges of the same tone, lower is drawn first. Built-in providers use 0 to 99. */
   order?: number;
   /**
    * Soft check: read your own fields from `node.raw` (the object received from the query) and
-   * return `[]` when they are absent. Never throw, never fetch.
+   * return `[]` when they are absent. Never throw, never fetch. At most one badge per node: when
+   * several are returned, only the most severe is kept.
    */
   badgesFor: (node: GraphNode, helpers: GraphBadgeHelpers) => GraphBadge[];
 }
+
+/** Badges drawn on a node at most; the others are counted in a "+N" marker and listed in the hover card. */
+export const MAX_DRAWN_BADGES = 3;
+
+/** Most severe first, so that a failed or blocking state is never the badge left out. */
+const TONE_SEVERITY: Record<GraphBadgeTone, number> = { error: 0, warning: 1, accent: 2, info: 3, success: 4, neutral: 5 };
+const bySeverity = (a: GraphBadge, b: GraphBadge) => TONE_SEVERITY[a.tone] - TONE_SEVERITY[b.tone];
 
 const providers = new Map<string, GraphBadgeProvider>();
 const listeners = new Set<() => void>();
@@ -60,17 +72,26 @@ export const graphBadgeProviders = (): GraphBadgeProvider[] => [...providers.val
   .sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.id.localeCompare(b.id));
 
 /**
- * Every badge of a node, in provider order. A provider that throws is skipped for that node
- * rather than breaking the drawing of the whole graph.
+ * Every badge of a node, one per provider, the most severe first and in provider order within a
+ * tone. A provider that throws is skipped for that node rather than breaking the drawing of the
+ * whole graph.
  */
 export const badgesOfNode = (node: GraphNode, helpers: GraphBadgeHelpers): GraphBadge[] => graphBadgeProviders()
   .flatMap((provider) => {
     try {
-      return provider.badgesFor(node, helpers);
+      const [mostSevere] = [...provider.badgesFor(node, helpers)].sort(bySeverity);
+      return mostSevere ? [mostSevere] : [];
     } catch {
       return [];
     }
-  });
+  })
+  .sort(bySeverity);
+
+/** The badges drawn on the canvas and the number left for the "+N" marker. */
+export const drawnBadges = (badges: readonly GraphBadge[]): { drawn: GraphBadge[]; more: number } => ({
+  drawn: badges.slice(0, MAX_DRAWN_BADGES),
+  more: Math.max(0, badges.length - MAX_DRAWN_BADGES),
+});
 
 const subscribe = (listener: () => void) => {
   listeners.add(listener);

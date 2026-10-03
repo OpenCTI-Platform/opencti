@@ -1,6 +1,6 @@
 import type { GraphLink, GraphNode } from '../graph.types';
 import type { GraphPalette } from './graphPalette';
-import type { GraphBadge } from '../badges/graphBadgeRegistry';
+import { drawnBadges, type GraphBadge } from '../badges/graphBadgeRegistry';
 import { entityGlyph, iconGlyph, paintGlyph } from './graphIcons';
 import { type Box, createBoxIndex, fitText, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
 
@@ -126,19 +126,26 @@ const paintHalo = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: numbe
   ctx.globalAlpha = opacity;
 };
 
-/** Draws the badge row above a node; returns the box it covers. */
+/**
+ * Draws the badge row above a node, at most `MAX_DRAWN_BADGES` of them followed by a "+N" marker
+ * for the others; returns the box it covers.
+ */
 const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions): Box => {
   const { palette, globalScale } = options;
+  const { drawn, more } = drawnBadges(badges);
   const size = Math.max(BADGE_SIZE, BADGE_MIN_PX / globalScale);
   const gap = BADGE_GAP * (size / BADGE_SIZE);
   ctx.font = font(600, size * 0.62);
-  const widths = badges.map((badge) => (badge.value !== undefined && badge.value !== ''
+  const moreText = more > 0 ? `+${more}` : null;
+  const moreWidth = moreText ? ctx.measureText(moreText).width + size * 0.7 : 0;
+  const widths = drawn.map((badge) => (badge.value !== undefined && badge.value !== ''
     ? size + ctx.measureText(String(badge.value)).width + size * 0.35
     : size));
-  const total = widths.reduce((sum, width) => sum + width, 0) + gap * (badges.length - 1);
+  const pills = widths.length + (moreText ? 1 : 0);
+  const total = widths.reduce((sum, width) => sum + width, 0) + moreWidth + gap * (pills - 1);
   const centreY = node.y - radius - HALO_GAP - size / 2 - gap;
   let left = node.x - total / 2;
-  badges.forEach((badge, index) => {
+  drawn.forEach((badge, index) => {
     const width = widths[index];
     const color = badge.color || palette.tones[badge.tone];
     ctx.beginPath();
@@ -164,6 +171,19 @@ const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
     }
     left += width + gap;
   });
+  if (moreText) {
+    ctx.beginPath();
+    ctx.roundRect(left, centreY - size / 2, moreWidth, size, size / 2);
+    ctx.fillStyle = palette.surface;
+    ctx.fill();
+    ctx.lineWidth = size * 0.12;
+    ctx.strokeStyle = palette.textSecondary;
+    ctx.stroke();
+    ctx.fillStyle = palette.text;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(moreText, left + moreWidth / 2, centreY + size * 0.04);
+  }
   return { x: node.x, y: centreY, halfWidth: total / 2, halfHeight: size / 2 };
 };
 
@@ -236,7 +256,8 @@ export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, o
   ctx.globalAlpha = alpha;
   ctx.lineWidth = RING_WIDTH;
   ctx.strokeStyle = node.isNestedInferred ? palette.inferred : color;
-  if (node.isNestedInferred) ctx.setLineDash([1.6, 1.1]);
+  // A dashed outline marks what is not knowledge the reader fully sees: inferred, or restricted to them.
+  if (node.isNestedInferred || node.isRestricted) ctx.setLineDash([1.6, 1.1]);
   ctx.stroke();
   ctx.setLineDash([]);
 

@@ -43,7 +43,7 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
     const nodeEntries: Entry[] = nodes.map((node) => {
       const type = node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`);
       const name = graphNodeTitle(node);
-      const count = t_i18n('{count} relationships', { values: { count: degree.get(node.id) ?? 0 } });
+      const count = t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: degree.get(node.id) ?? 0 } });
       return { kind: 'node', node, text: `${type} ${name}, ${count}` };
     });
     const endName = (end: GraphLink['source'], id: string) => {

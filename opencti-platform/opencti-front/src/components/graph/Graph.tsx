@@ -15,7 +15,7 @@ import type { Theme } from '../Theme';
 import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
 import GraphControls from './components/GraphControls';
-import GraphLegend from './components/GraphLegend';
+import GraphLegend, { type GraphLegendBadge } from './components/GraphLegend';
 import GraphHoverCard, { type GraphHoverCardTarget } from './components/GraphHoverCard';
 import GraphAccessibleList from './components/GraphAccessibleList';
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
@@ -27,7 +27,7 @@ import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphL
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
-import { badgesOfNode } from './badges';
+import { badgesOfNode, useGraphBadgeRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
@@ -165,6 +165,23 @@ const Graph = ({
   useEffect(() => {
     if (highlightedPath && !drawablePath) clearHighlightedPath();
   }, [highlightedPath, drawablePath]);
+
+  // --- Badges drawn in the graph, for the legend: one entry per badge with the entities carrying it.
+  const badgeRegistryVersion = useGraphBadgeRegistryVersion();
+  const legendBadges = useMemo(() => {
+    const entries = new Map<string, GraphLegendBadge & { nodeIds: Set<string> }>();
+    shownNodes.forEach((node) => {
+      if (node.groupOf || node.disabled) return;
+      badgesOfNode(node, { t_i18n }).forEach((badge) => {
+        const entry = entries.get(badge.key)
+          ?? { key: badge.key, label: badge.legendLabel ?? badge.label, tone: badge.tone, tooltip: badge.tooltip, count: 0, nodeIds: new Set<string>() };
+        entry.count += 1;
+        entry.nodeIds.add(node.id);
+        entries.set(badge.key, entry);
+      });
+    });
+    return [...entries.values()];
+  }, [shownNodes, badgeRegistryVersion, filterToken]);
 
   // --- Hover: focus on the canvas at once, card after a short delay.
   const [hovered, setHovered] = useState<GraphHoverTarget | null>(null);
@@ -318,6 +335,10 @@ const Graph = ({
     setSelectedLinks([]);
     setSelectedNodes(nodes);
   };
+  const selectBadgeCarriers = (key: string) => {
+    const carriers = legendBadges.find((entry) => entry.key === key)?.nodeIds;
+    if (carriers) selectNodes(shownNodes.filter((node) => carriers.has(node.id)));
+  };
   const otherSelected = (node: GraphNode) => (selectedNodes.length === 1 && selectedNodes[0].id !== node.id ? selectedNodes[0] : null);
 
   const togglePin = (node: GraphNode) => {
@@ -351,7 +372,7 @@ const Graph = ({
       palette,
       curvatureOf,
       title: imageTitle,
-      subtitle: `${t_i18n('{count} entities', { values: { count: shownNodes.length } })}, ${t_i18n('{count} relationships', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
+      subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: shownNodes.length } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),
       badgesOf: (node) => badgesOfNode(node, { t_i18n }),
       linkColor: linkColorPaint,
@@ -562,10 +583,12 @@ const Graph = ({
             disabledRelationshipTypes={disabledRelationshipTypes}
             collapsedEntityTypes={collapsedEntityTypes}
             hiddenCount={hiddenNodeIds.length}
+            badges={legendBadges}
             onToggleEntityType={toggleEntityType}
             onToggleRelationshipType={toggleRelationshipType}
             onToggleCollapsed={toggleCollapsedEntityType}
             onShowHidden={showHiddenNodes}
+            onSelectBadge={selectBadgeCarriers}
           />
         )}
         {!mode3D && card && cardTarget && (

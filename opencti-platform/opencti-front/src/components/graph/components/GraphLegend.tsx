@@ -7,8 +7,18 @@ import { itemColor } from '../../../utils/Colors';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
+import type { GraphBadgeTone } from '../badges/graphBadgeRegistry';
 import { linkDash } from '../utils/graphPainting';
 import { buildGraphPalette } from '../utils/graphPalette';
+
+/** A badge drawn in the graph, with the number of entities carrying it. */
+export interface GraphLegendBadge {
+  key: string;
+  label: string;
+  tone: GraphBadgeTone;
+  tooltip?: string;
+  count: number;
+}
 
 export interface GraphLegendProps {
   nodes: readonly GraphNode[];
@@ -17,10 +27,14 @@ export interface GraphLegendProps {
   disabledRelationshipTypes: readonly string[];
   collapsedEntityTypes: readonly string[];
   hiddenCount: number;
+  /** Only the badges present in the graph. */
+  badges?: readonly GraphLegendBadge[];
   onToggleEntityType: (type: string) => void;
   onToggleRelationshipType: (type: string) => void;
   onToggleCollapsed: (type: string) => void;
   onShowHidden: () => void;
+  /** Selects the entities carrying the badge. */
+  onSelectBadge?: (key: string) => void;
 }
 
 const countBy = <T, >(items: readonly T[], key: (item: T) => string) => {
@@ -43,10 +57,12 @@ const GraphLegend = ({
   disabledRelationshipTypes,
   collapsedEntityTypes,
   hiddenCount,
+  badges = [],
   onToggleEntityType,
   onToggleRelationshipType,
   onToggleCollapsed,
   onShowHidden,
+  onSelectBadge,
 }: GraphLegendProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -196,6 +212,30 @@ const GraphLegend = ({
                 </button>
               );
             })}
+          </>
+        )}
+        {badges.length > 0 && (
+          <>
+            <div style={heading}>{t_i18n('Badges')}</div>
+            {badges.map(({ key, label, tone, tooltip, count: total }) => (
+              <Tooltip key={key}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    style={row}
+                    aria-label={`${label}: ${total}`}
+                    onClick={() => onSelectBadge?.(key)}
+                  >
+                    <span aria-hidden style={{ width: 22, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${palette.tones[tone]}` }} />
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                    <span style={count}>{total}</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{tooltip ?? label}</TooltipContent>
+              </Tooltip>
+            ))}
           </>
         )}
         <div style={heading}>{t_i18n('Line styles')}</div>

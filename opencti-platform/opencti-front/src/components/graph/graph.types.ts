@@ -51,6 +51,8 @@ export interface GraphNode extends GraphElement {
   numberOfConnectedElement?: number;
   /** A group node standing for every entity of one type, collapsed by the reader. */
   groupOf?: { entityType: string; memberIds: string[] };
+  /** An entity the reader may not see (markings, organization): drawn with a dashed outline and named "Restricted". */
+  isRestricted?: boolean;
 }
 
 export const isGraphNode = (o: GraphNode | GraphLink): o is GraphNode => {

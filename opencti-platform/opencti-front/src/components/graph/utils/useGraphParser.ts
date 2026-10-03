@@ -59,9 +59,16 @@ export interface ObjectToParse {
  * The full name of a node as plain text. `name` is the HTML of the library tooltip and `label`
  * is shortened, so the name is read again from the object received from the query.
  */
-export const graphNodeTitle = (node: Pick<GraphNode, 'label' | 'raw' | 'relationship_type' | 'groupOf'>): string => {
-  if (node.groupOf || node.relationship_type || !node.raw) return node.label;
+export const graphNodeTitle = (node: Pick<GraphNode, 'label' | 'raw' | 'relationship_type' | 'groupOf' | 'isRestricted'>): string => {
+  if (node.groupOf || node.relationship_type || node.isRestricted || !node.raw) return node.label;
   return getMainRepresentative(node.raw) || node.label;
+};
+
+/** Name the platform gives to an entity the reader may not see, keeping only its id and type. */
+const RESTRICTED_NAME = 'Restricted';
+export const isRestrictedObject = (data: ObjectToParse) => {
+  const { name, representative } = data as ObjectToParse & { name?: string | null; representative?: { main?: string | null } | null };
+  return !data.parent_types.includes('basic-relationship') && (name === RESTRICTED_NAME || representative?.main === RESTRICTED_NAME);
 };
 
 /** Id of the placeholder marking of unmarked elements, which the marking filter lists as "None". */
@@ -169,6 +176,7 @@ const useGraphParser = () => {
     graphPositions: OctiGraphPositions,
     numberOfConnectedElement?: number,
   ): GraphNode => {
+    const isRestricted = isRestrictedObject(data);
     return {
       id: data.id,
       disabled: false,
@@ -191,7 +199,8 @@ const useGraphParser = () => {
       numberOfConnectedElement: numberOfConnectedElement ?? data.numberOfConnectedElement,
       ...getNodeImg(data),
       name: sanitize(getNodeName(data), true),
-      label: getNodeLabel(data),
+      label: isRestricted ? t_i18n('Restricted') : (getNodeLabel(data) || t_i18n(`entity_${data.entity_type}`)),
+      isRestricted,
       markedBy: getMarkings(data),
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
