@@ -134,7 +134,7 @@ const ContainerTimelineToolbar = ({
           <SelectTrigger aria-label={t_i18n('Zoom window')} style={{ minWidth: 110 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Zoom window')}>
             {TIMELINE_ZOOM_WINDOWS.map((zoom) => (
               <SelectItem key={zoom} value={zoom}>{t_i18n(TIMELINE_ZOOM_LABELS[zoom])}</SelectItem>
             ))}
@@ -157,7 +157,7 @@ const ContainerTimelineToolbar = ({
           <SelectTrigger aria-label={t_i18n('Group by')} style={{ minWidth: 110 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Group by')}>
             {TIMELINE_GROUPINGS.map((grouping) => (
               <SelectItem key={grouping} value={grouping}>{t_i18n('By {period}', { values: { period: t_i18n(TIMELINE_GROUPING_LABELS[grouping]).toLowerCase() } })}</SelectItem>
             ))}
@@ -277,7 +277,7 @@ const ContainerTimelineToolbar = ({
           <SelectTrigger aria-label={t_i18n('Event source')} style={{ minWidth: 190 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Event source')}>
             <SelectItem value="all">{t_i18n('All events')}</SelectItem>
             <SelectItem value="derived">{t_i18n('Derived from the knowledge')}</SelectItem>
             <SelectItem value="manual">{t_i18n('Analyst milestones')}</SelectItem>

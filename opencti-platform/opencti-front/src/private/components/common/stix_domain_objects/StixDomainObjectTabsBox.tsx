@@ -11,8 +11,8 @@ export type StixDomainObjectTabsBoxTab
   = | 'overview'
     | 'result'
     | 'knowledge'
-    | 'timeline'
     | 'content'
+    | 'timeline'
     | 'analyses'
     | 'sightings'
     | 'entities'
@@ -51,13 +51,13 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'knowledge',
   label: 'Knowledge',
 }, {
-  tab: 'timeline',
-  path: 'timeline',
-  label: 'Timeline',
-}, {
   tab: 'content',
   path: 'content',
   label: 'Content',
+}, {
+  tab: 'timeline',
+  path: 'timeline',
+  label: 'Timeline',
 }, {
   tab: 'analyses',
   path: 'analyses',

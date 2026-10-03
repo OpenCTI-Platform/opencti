@@ -160,13 +160,13 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
               enableReferences={enableReferences}
             />
           ),
-          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} />,
           content: (
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
             />
           ),
+          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} />,
           entities: (
             <ContainerStixDomainObjects
               container={caseData}

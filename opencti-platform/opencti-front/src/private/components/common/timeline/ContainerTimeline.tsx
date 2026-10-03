@@ -15,7 +15,7 @@ import ContainerTimelineEventDrawer, { type TimelineEventDetails } from './Conta
 import ContainerTimelineEventForm from './ContainerTimelineEventForm';
 import ContainerTimelineLanes from './ContainerTimelineLanes';
 import ContainerTimelineList from './ContainerTimelineList';
-import ContainerTimelineSettingsDialog from './ContainerTimelineSettingsDialog';
+import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
 import {
@@ -549,7 +549,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
         onClose={() => setFormOpen(false)}
         onSaved={refresh}
       />
-      <ContainerTimelineSettingsDialog
+      <ContainerTimelineSettingsDrawer
         containerId={containerId}
         open={settingsOpen}
         settings={settings}

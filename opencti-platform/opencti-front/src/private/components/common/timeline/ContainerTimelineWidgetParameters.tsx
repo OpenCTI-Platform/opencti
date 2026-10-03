@@ -144,7 +144,7 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
         <SelectTrigger aria-label={t_i18n('Time window')}>
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent aria-label={t_i18n('Time window')}>
           {TIMELINE_ZOOM_WINDOWS.map((zoom) => (
             <SelectItem key={zoom} value={zoom}>{t_i18n(TIMELINE_ZOOM_LABELS[zoom])}</SelectItem>
           ))}

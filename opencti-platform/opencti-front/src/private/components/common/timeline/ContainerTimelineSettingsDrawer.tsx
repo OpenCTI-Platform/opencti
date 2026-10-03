@@ -1,0 +1,155 @@
+import React, { useEffect, useState } from 'react';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import Button from '@common/button/Button';
+import Drawer from '@components/common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import { MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { timelineSettingsUpdateMutation } from './ContainerTimelineMutations';
+import type {
+  ContainerTimelineMutationsSettingsMutation,
+  TimelineEventKind,
+  TimelineGrouping as GqlTimelineGrouping,
+  TimelineLane as GqlTimelineLane,
+  TimelineZoomWindow as GqlTimelineZoomWindow,
+} from './__generated__/ContainerTimelineMutationsSettingsMutation.graphql';
+import {
+  TIMELINE_GROUPING_LABELS,
+  TIMELINE_GROUPINGS,
+  TIMELINE_KIND_LABELS,
+  TIMELINE_KINDS,
+  TIMELINE_LANE_LABELS,
+  TIMELINE_LANES,
+  TIMELINE_ZOOM_LABELS,
+  TIMELINE_ZOOM_WINDOWS,
+} from './timelineUtils';
+import useTimelineColors from './useTimelineColors';
+
+export interface TimelineSettingsValues {
+  enabled_lanes: readonly string[];
+  default_grouping: string;
+  default_zoom_window: string;
+  hidden_kinds: readonly string[];
+}
+
+interface ContainerTimelineSettingsDrawerProps {
+  containerId: string;
+  open: boolean;
+  settings: TimelineSettingsValues;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+const toggle = (values: readonly string[], value: string) => (values.includes(value) ? values.filter((v) => v !== value) : [...values, value]);
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => {
+  const colors = useTimelineColors();
+  return (
+    <div style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', marginBottom: 6 }}>
+      {children}
+    </div>
+  );
+};
+
+/** Per-container timeline settings, shared by every user of the case timeline. */
+const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
+  const { t_i18n } = useFormatter();
+  const [values, setValues] = useState<TimelineSettingsValues>(settings);
+  const [saving, setSaving] = useState(false);
+  const [commit] = useApiMutation<ContainerTimelineMutationsSettingsMutation>(timelineSettingsUpdateMutation);
+
+  useEffect(() => {
+    if (open) setValues(settings);
+  }, [open, settings]);
+
+  const save = () => {
+    setSaving(true);
+    commit({
+      variables: {
+        containerId,
+        input: {
+          enabled_lanes: values.enabled_lanes as GqlTimelineLane[],
+          default_grouping: values.default_grouping as GqlTimelineGrouping,
+          default_zoom_window: values.default_zoom_window as GqlTimelineZoomWindow,
+          hidden_kinds: values.hidden_kinds as TimelineEventKind[],
+        },
+      },
+      onCompleted: () => {
+        setSaving(false);
+        MESSAGING$.notifySuccess(t_i18n('The timeline settings have been saved'));
+        onSaved();
+        onClose();
+      },
+      onError: () => setSaving(false),
+    });
+  };
+
+  return (
+    <Drawer title={t_i18n('Timeline settings')} open={open} onClose={onClose}>
+      <div data-testid="timeline-settings-drawer">
+        <div style={{ marginBottom: 20 }}>{t_i18n('These settings apply to every user of this case timeline.')}</div>
+        <SectionTitle>{t_i18n('Enabled lanes')}</SectionTitle>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+          {TIMELINE_LANES.map((lane) => (
+            <Checkbox
+              key={lane}
+              label={t_i18n(TIMELINE_LANE_LABELS[lane])}
+              checked={values.enabled_lanes.includes(lane)}
+              // At least one lane stays enabled
+              disabled={values.enabled_lanes.length === 1 && values.enabled_lanes.includes(lane)}
+              onCheckedChange={() => setValues({ ...values, enabled_lanes: toggle(values.enabled_lanes, lane) })}
+            />
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 20 }}>
+          <div style={{ flex: 1 }}>
+            <Select value={values.default_grouping} onValueChange={(value) => setValues({ ...values, default_grouping: value })}>
+              <SelectLabel>{t_i18n('Default grouping')}</SelectLabel>
+              <SelectTrigger aria-label={t_i18n('Default grouping')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('Default grouping')}>
+                {TIMELINE_GROUPINGS.map((grouping) => (
+                  <SelectItem key={grouping} value={grouping}>{t_i18n(TIMELINE_GROUPING_LABELS[grouping])}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Select value={values.default_zoom_window} onValueChange={(value) => setValues({ ...values, default_zoom_window: value })}>
+              <SelectLabel>{t_i18n('Default zoom window')}</SelectLabel>
+              <SelectTrigger aria-label={t_i18n('Default zoom window')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('Default zoom window')}>
+                {TIMELINE_ZOOM_WINDOWS.map((zoom) => (
+                  <SelectItem key={zoom} value={zoom}>{t_i18n(TIMELINE_ZOOM_LABELS[zoom])}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div style={{ marginTop: 20 }}>
+          <SectionTitle>{t_i18n('Kinds hidden by default')}</SectionTitle>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+          {TIMELINE_KINDS.map((kind) => (
+            <Checkbox
+              key={kind}
+              label={t_i18n(TIMELINE_KIND_LABELS[kind])}
+              checked={values.hidden_kinds.includes(kind)}
+              onCheckedChange={() => setValues({ ...values, hidden_kinds: toggle(values.hidden_kinds, kind) })}
+            />
+          ))}
+        </div>
+        <FormButtonContainer>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>{t_i18n('Cancel')}</Button>
+          <Button onClick={save} disabled={saving || values.enabled_lanes.length === 0} data-testid="timeline-settings-save">{t_i18n('Save')}</Button>
+        </FormButtonContainer>
+      </div>
+    </Drawer>
+  );
+};
+
+export default ContainerTimelineSettingsDrawer;
