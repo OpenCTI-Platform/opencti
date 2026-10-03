@@ -15,7 +15,7 @@ const threatPulseDashboardTemplateButtonQuery = graphql`
   query ThreatPulseDashboardTemplateButtonQuery {
     pulseStatus {
       id
-      readable
+      access
     }
   }
 `;
@@ -33,7 +33,7 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
   const navigate = useNavigate();
   const { pulseStatus } = useLazyLoadQuery<ThreatPulseDashboardTemplateButtonQuery>(threatPulseDashboardTemplateButtonQuery, {}, { fetchPolicy: 'store-and-network' });
   const [commit, creating] = useApiMutation<ThreatPulseDashboardTemplateButtonMutation>(threatPulseDashboardTemplateButtonMutation);
-  if (!pulseStatus.readable) {
+  if (pulseStatus.access !== 'preview' && pulseStatus.access !== 'full') {
     return null;
   }
   const create = () => {
@@ -67,7 +67,7 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
   );
 };
 
-// Creates the "Sector benchmark" dashboard, offered on platforms reading Threat Pulse.
+// Creates the "Sector benchmark" dashboard, offered in preview too: its tiles then name what contributing unlocks.
 const ThreatPulseDashboardTemplateButton = () => (
   <Suspense fallback={null}>
     <ThreatPulseDashboardTemplateButtonComponent />
