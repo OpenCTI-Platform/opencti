@@ -35,6 +35,8 @@ import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
+import { Chip } from '@filigran/design-system';
+import { PULSE_PREVALENCE_LABELS, PULSE_PREVALENCE_SEVERITIES } from '../../common/threat_pulse/threatPulseUtils';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
@@ -74,6 +76,42 @@ const sourceFlaggedFragment = graphql`
         criterion {
           filters
         }
+      }
+    }
+    ... on IntrusionSet {
+      pulse {
+        prevalence
+        community_uniqueness
+      }
+    }
+    ... on Malware {
+      pulse {
+        prevalence
+        community_uniqueness
+      }
+    }
+    ... on Tool {
+      pulse {
+        prevalence
+        community_uniqueness
+      }
+    }
+    ... on Vulnerability {
+      pulse {
+        prevalence
+        community_uniqueness
+      }
+    }
+    ... on AttackPattern {
+      pulse {
+        prevalence
+        community_uniqueness
+      }
+    }
+    ... on Indicator {
+      pulse {
+        prevalence
+        community_uniqueness
       }
     }
   }
@@ -151,7 +189,7 @@ interface PirKnowledgeEntitiesProps {
 type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
-  const { fd } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   const computeLink = useComputeLink();
 
   const {
@@ -220,15 +258,25 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     pirLastScoreDate: {
       id: 'last_pir_score_date',
       label: 'Last score evolution',
-      percentWidth: 11,
+      percentWidth: 9,
       isSortable: true,
       render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),
     },
+    // Sorted by the numeric uniqueness: ascending lists the most widespread first.
+    pulseCommunityPrevalence: {
+      id: 'pulse_community_uniqueness',
+      label: 'Community prevalence',
+      percentWidth: 8,
+      isSortable: true,
+      render: ({ pulse }: PirKnowledgeEntities_SourceFlaggedFragment$data) => (pulse?.prevalence
+        ? <Chip label={t_i18n(PULSE_PREVALENCE_LABELS[pulse.prevalence] ?? pulse.prevalence)} severity={PULSE_PREVALENCE_SEVERITIES[pulse.prevalence] ?? 'neutral'} />
+        : defaultRender('-')),
+    },
     entity_type: { percentWidth: 10 },
-    name: { percentWidth: 20 },
+    name: { percentWidth: 16 },
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: { percentWidth: 10 },
+    objectLabel: { percentWidth: 8 },
     created_at: { percentWidth: 11 },
     objectMarking: { isSortable: isRuntimeSort },
   };

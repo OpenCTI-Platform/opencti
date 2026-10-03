@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import DialogActions from '@mui/material/DialogActions';
-import Typography from '@mui/material/Typography';
-import { Spinner } from '@filigran/design-system';
+import { useTheme } from '@mui/styles';
+import { Spinner, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useChatbot } from '../../chatbox/ChatbotContext';
@@ -34,6 +35,7 @@ export const buildPulseBriefingContext = (props: ThreatPulseBriefingProps, platf
  * configured). Renders nothing when no agent serves the intent.
  */
 const ThreatPulseBriefing = (props: ThreatPulseBriefingProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { xtmOneConfigured } = useChatbot();
@@ -104,7 +106,7 @@ const ThreatPulseBriefing = (props: ThreatPulseBriefingProps) => {
       </Button>
       <Dialog open={open} onClose={handleClose} size="large" title={t_i18n('Sector pulse briefing')} showCloseButton>
         {loading && content.length === 0 && <Spinner label={t_i18n('Writing the briefing')} />}
-        {error && <Typography color="error">{error}</Typography>}
+        {error && <Text variant="content-compact" role="alert" style={{ color: theme.palette.error.main }}>{error}</Text>}
         {content.length > 0 && <MarkdownDisplay content={content} remarkGfmPlugin={true} commonmark={true} />}
         <DialogActions>
           <Button variant="secondary" onClick={() => generate(true)} disabled={loading}>

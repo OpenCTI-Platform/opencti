@@ -418,11 +418,14 @@ export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelec
   ));
 };
 
+// Network first-seen date of the Threat Pulse scoped entities, for timelines of the community signal.
+export const PULSE_DATE_ATTRIBUTE = 'pulse_first_seen_network';
+
 export const checkIfDateAttributeValid = (dataSelection: WidgetDataSelection[]) => {
   const selectionsValid = dataSelection.map((selection) => {
     if (!selection.date_attribute) return true;
     if (selection.perspective === 'entities') {
-      return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'].includes(selection.date_attribute);
+      return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen', PULSE_DATE_ATTRIBUTE].includes(selection.date_attribute);
     } else if (selection.perspective === 'relationships') {
       const selectedEntityType = getEntityTypeFromFilters(selection.filters);
       if (selectedEntityType === 'stix-sighting-relationship') {

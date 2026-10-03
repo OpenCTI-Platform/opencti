@@ -2,10 +2,9 @@ import React, { Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/styles';
-import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { InformationOutline } from 'mdi-material-ui';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
@@ -77,12 +76,12 @@ const PrevalenceGauge = ({ prevalence }: { prevalence: string }) => {
                 : alpha(theme.palette.text.primary, 0.08),
             }}
           />
-          <Typography
-            variant="caption"
-            sx={{ color: index === activeIndex ? theme.palette.text.primary : theme.palette.text.secondary, fontWeight: index === activeIndex ? 600 : 400 }}
+          <Text
+            variant={index === activeIndex ? 'content-compact-bold' : 'content-compact'}
+            style={{ color: index === activeIndex ? theme.palette.text.primary : theme.palette.text.secondary }}
           >
             {t_i18n(PULSE_PREVALENCE_LABELS[bucket])}
-          </Typography>
+          </Text>
         </Box>
       ))}
     </Box>
@@ -115,23 +114,28 @@ export const PulseSparkline = ({ series, label }: { series: readonly number[]; l
   );
 };
 
-const DetailRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 32 }}>
-    <Typography variant="body2" color="textSecondary">{label}</Typography>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{children}</Box>
-  </Box>
-);
+const DetailRow = ({ label, children }: { label: string; children: React.ReactNode }) => {
+  const theme = useTheme<Theme>();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 32 }}>
+      <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{label}</Text>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{children}</Box>
+    </Box>
+  );
+};
 
 interface ThreatPulseCardProps {
   entityId: string;
 }
 
 const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n, fsd, fldt } = useFormatter();
   const { pulseEntity } = useLazyLoadQuery<ThreatPulseCardQuery>(threatPulseCardQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
   if (!pulseEntity.readable && HIDDEN_REASONS.includes(pulseEntity.unavailable_reason ?? '')) {
     return null;
   }
+  const secondary = { color: theme.palette.text.secondary };
   const information = pulseEntity.information;
   const reason = pulseEntity.unavailable_reason;
   const title = (
@@ -154,17 +158,17 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
       <Card title={title}>
         <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {reason && (
-            <Typography variant="body2" color="textSecondary" data-testid="threat-pulse-unavailable">
+            <Text variant="content-compact" style={secondary} data-testid="threat-pulse-unavailable">
               {t_i18n(PULSE_UNAVAILABLE_MESSAGES[reason] ?? reason)}
-            </Typography>
+            </Text>
           )}
           {information && (
             <>
               <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
               {!information.published && (
-                <Typography variant="body2" color="textSecondary">
+                <Text variant="content-compact" style={secondary}>
                   {t_i18n('Fewer platforms than the anonymity threshold observed this object: it is rare, or unique to this platform.')}
-                </Typography>
+                </Text>
               )}
               {information.published && (
                 <>
@@ -172,10 +176,10 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
                     <Chip label={information.platforms_bucket ?? '-'} severity="info" />
                   </DetailRow>
                   <DetailRow label={t_i18n('Network first seen')}>
-                    <Typography variant="body2">{information.first_seen_network ? fsd(information.first_seen_network) : '-'}</Typography>
+                    <Text variant="content-compact">{information.first_seen_network ? fsd(information.first_seen_network) : '-'}</Text>
                   </DetailRow>
                   <DetailRow label={t_i18n('Network last seen')}>
-                    <Typography variant="body2">{information.last_seen_network ? fsd(information.last_seen_network) : '-'}</Typography>
+                    <Text variant="content-compact">{information.last_seen_network ? fsd(information.last_seen_network) : '-'}</Text>
                   </DetailRow>
                   <DetailRow label={t_i18n('Community trend')}>
                     <PulseSparkline series={information.trend_series} label={t_i18n('Contributing platforms per week, last 12 weeks')} />
@@ -186,27 +190,29 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
                   <DetailRow label={`${t_i18n('Sector trend')} (${t_i18n(PULSE_SECTOR_LABELS[pulseEntity.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')})`}>
                     {information.sector_trend ? (
                       <>
-                        <Typography variant="body2" color="textSecondary">{information.sector_platforms_bucket}</Typography>
+                        <Text variant="content-compact" style={secondary}>{information.sector_platforms_bucket}</Text>
                         <Chip label={t_i18n(PULSE_TREND_LABELS[information.sector_trend])} severity={PULSE_TREND_SEVERITIES[information.sector_trend]} />
                       </>
                     ) : (
-                      <Typography variant="body2" color="textSecondary">{t_i18n('Below the anonymity threshold')}</Typography>
+                      <Text variant="content-compact" style={secondary}>{t_i18n('Below the anonymity threshold')}</Text>
                     )}
                   </DetailRow>
                 </>
               )}
               <DetailRow label={t_i18n('Community uniqueness')}>
-                <Typography variant="body2">{information.community_uniqueness !== null && information.community_uniqueness !== undefined ? `${information.community_uniqueness} / 100` : '-'}</Typography>
+                <Text variant="content-compact">
+                  {information.community_uniqueness !== null && information.community_uniqueness !== undefined ? `${information.community_uniqueness} / 100` : '-'}
+                </Text>
               </DetailRow>
               {information.updated_at && (
-                <Typography variant="caption" color="textSecondary">
+                <Text variant="content-compact" style={secondary}>
                   {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
-                </Typography>
+                </Text>
               )}
             </>
           )}
           {!information && !reason && (
-            <Typography variant="body2" color="textSecondary">{t_i18n('No Threat Pulse information for this object yet.')}</Typography>
+            <Text variant="content-compact" style={secondary}>{t_i18n('No Threat Pulse information for this object yet.')}</Text>
           )}
         </Box>
       </Card>

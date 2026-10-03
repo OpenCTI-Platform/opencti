@@ -18,6 +18,14 @@ export const PULSE_PREVALENCE_LABELS: Record<string, string> = {
   widespread: 'Widespread',
 };
 
+// The more platforms observe an object, the stronger its chip.
+export const PULSE_PREVALENCE_SEVERITIES: Record<string, ChipSeverity> = {
+  rare: 'neutral',
+  uncommon: 'info',
+  common: 'medium',
+  widespread: 'high',
+};
+
 export const PULSE_TREND_LABELS: Record<string, string> = {
   rising: 'Rising',
   stable: 'Stable',
@@ -109,4 +117,20 @@ export const buildSparklinePoints = (series: readonly number[], width: number, h
   }).join(' ');
 };
 
-export const formatPulseGrowth = (growth: number) => `x${growth >= 10 ? Math.round(growth) : growth.toFixed(1)}`;
+// A multiplier, "x2.4" or "x12" above ten.
+export const formatPulseRatio = (ratio: number | null | undefined) => {
+  if (ratio === null || ratio === undefined) {
+    return '-';
+  }
+  return `x${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)}`;
+};
+
+export const formatPulseGrowth = (growth: number) => formatPulseRatio(growth);
+
+// At least twice the sector median is high, at most half of it is low.
+export const pulseRatioSeverity = (ratio: number | null | undefined): ChipSeverity => {
+  if (ratio === null || ratio === undefined) return 'neutral';
+  if (ratio >= 2) return 'high';
+  if (ratio <= 0.5) return 'low';
+  return 'info';
+};

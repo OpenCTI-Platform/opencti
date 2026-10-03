@@ -1,7 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
 import { useTheme } from '@mui/styles';
@@ -23,6 +22,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Text,
 } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -161,18 +161,18 @@ const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: Consent
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Enable Threat Pulse')} size="medium">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-consent-dialog">
-        <Typography variant="body2">
+        <Text variant="content-compact">
           {t_i18n('By enabling Threat Pulse, this platform sends to XTM Hub, every hour, keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools it observes, with activity counts. Raw values, names, descriptions, files and the identity of your organization never leave the platform.')}
-        </Typography>
-        <Typography variant="body2">
+        </Text>
+        <Text variant="content-compact">
           {t_i18n('Hashes are derived with a salt that XTM Hub rotates every day. Objects marked TLP:RED, TLP:AMBER+STRICT or PAP:RED, objects with restricted access and the markings you exclude never contribute.')}
-        </Typography>
-        <Typography variant="body2">
+        </Text>
+        <Text variant="content-compact">
           {t_i18n('XTM Hub publishes a signal only when enough distinct platforms observed the same object (k-anonymity). Your sector and region are shared as coarse buckets only.')}
-        </Typography>
-        <Typography variant="body2">
+        </Text>
+        <Text variant="content-compact">
           {t_i18n('Reading the community signal requires contributing. You can disable Threat Pulse and purge every contribution of this platform at any time.')}
-        </Typography>
+        </Text>
         <Select value={mode} onValueChange={(value) => setMode(value as PulseMode)}>
           <SelectLabel>{t_i18n('Mode')}</SelectLabel>
           <SelectTrigger aria-label={t_i18n('Mode')}>
@@ -226,6 +226,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const { t_i18n, fldt, n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
+  const secondary = { color: theme.palette.text.secondary };
   const settings = useFragment(threatPulseSettingsFragment, settingsKey);
   const isGranted = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const [openConsent, setOpenConsent] = useState(false);
@@ -278,9 +279,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const pitch = (
     <>
       <ExperienceHeadline>{t_i18n('The open network early warning system')}</ExperienceHeadline>
-      <Typography variant="body2" color="textSecondary">
+      <Text variant="content-compact" style={secondary}>
         {t_i18n('Contribute keyed hashes and counts, never values, and get community prevalence, network first seen and sector trends on your indicators, techniques, vulnerabilities and threats.')}
-      </Typography>
+      </Text>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: theme.spacing(1.5) }}>
         <ExperienceFeatureTile accent={accent} icon={<PublicOutlined />} label={t_i18n('Community prevalence')} />
         <ExperienceFeatureTile accent={accent} icon={<TimelineOutlined />} label={t_i18n('Network first seen and trends')} />
@@ -356,7 +357,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         </Combobox>
       </Box>
       <Box sx={{ paddingY: 1.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Typography variant="body2" color="textSecondary">{t_i18n('Always excluded')}</Typography>
+        <Text variant="content-compact" style={secondary}>{t_i18n('Always excluded')}</Text>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {settings.forced_excluded_markings.map((marking) => (
             <Box key={marking.id} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -385,12 +386,12 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         </Combobox>
       </Box>
       <ExperienceDetailRow label={t_i18n('Consent')}>
-        <Typography variant="body2">
+        <Text variant="content-compact">
           {settings.consent_date ? `${settings.consent_accepted_version} - ${settings.consent_user_name ?? '-'} - ${fldt(settings.consent_date)}` : '-'}
-        </Typography>
+        </Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Records contributed (30 days)')}>
-        <Typography variant="body2" data-testid="threat-pulse-total-records">{n(settings.contribution.total_records)}</Typography>
+        <Text variant="content-compact" data-testid="threat-pulse-total-records">{n(settings.contribution.total_records)}</Text>
       </ExperienceDetailRow>
       {settings.contribution.by_type.length > 0 && (
         <ExperienceDetailRow label={t_i18n('Records by entity type')}>
@@ -402,18 +403,18 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         </ExperienceDetailRow>
       )}
       <ExperienceDetailRow label={t_i18n('Last contribution')}>
-        <Typography variant="body2">{settings.contribution.last_push_at ? fldt(settings.contribution.last_push_at) : '-'}</Typography>
+        <Text variant="content-compact">{settings.contribution.last_push_at ? fldt(settings.contribution.last_push_at) : '-'}</Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Last network refresh')}>
-        <Typography variant="body2">{settings.contribution.last_refresh_at ? fldt(settings.contribution.last_refresh_at) : '-'}</Typography>
+        <Text variant="content-compact">{settings.contribution.last_refresh_at ? fldt(settings.contribution.last_refresh_at) : '-'}</Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Contributing platforms in the network')}>
-        <Typography variant="body2">{settings.network.reachable ? (settings.network.contributors_bucket ?? '-') : t_i18n('XTM Hub is unreachable')}</Typography>
+        <Text variant="content-compact">{settings.network.reachable ? (settings.network.contributors_bucket ?? '-') : t_i18n('XTM Hub is unreachable')}</Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Anonymity threshold')} divider={false}>
-        <Typography variant="body2">
+        <Text variant="content-compact">
           {settings.network.k_threshold ? `${settings.network.k_threshold} ${t_i18n('platforms')} - ${t_i18n('retention')} ${settings.network.retention_months} ${t_i18n('months')}` : '-'}
-        </Typography>
+        </Text>
       </ExperienceDetailRow>
       {settings.contribution.last_error && (
         <Alert severity="warning" variant="outlined">{`${t_i18n('Last error')}: ${settings.contribution.last_error}`}</Alert>
@@ -448,9 +449,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         />
       )}
       <Dialog open={openPurge} onClose={() => setOpenPurge(false)} title={t_i18n('Purge my contributions')} size="small">
-        <Typography variant="body2">
+        <Text variant="content-compact">
           {t_i18n('XTM Hub deletes every contribution of this platform and recomputes the network statistics. Disable Threat Pulse as well to stop contributing.')}
-        </Typography>
+        </Text>
         <DialogActions>
           <Button variant="secondary" onClick={() => setOpenPurge(false)}>{t_i18n('Cancel')}</Button>
           <Button color="error" onClick={purge} disabled={purging} data-testid="threat-pulse-purge-confirm">{t_i18n('Purge')}</Button>

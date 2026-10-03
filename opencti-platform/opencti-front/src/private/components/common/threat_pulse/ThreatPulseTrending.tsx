@@ -2,11 +2,12 @@ import React, { ReactNode, Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner } from '@filigran/design-system';
+import { useTheme } from '@mui/styles';
+import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseTrendingQuery } from './__generated__/ThreatPulseTrendingQuery.graphql';
 import ThreatPulseBriefing from './ThreatPulseBriefing';
@@ -51,42 +52,47 @@ export const threatPulseTrendingQuery = graphql`
   }
 `;
 
+const ELLIPSIS = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
+
 interface ThreatPulseTrendingListProps {
   period: PulsePeriodValue;
   first: number;
 }
 
 const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n, fsd } = useFormatter();
   const { pulseTrending } = useLazyLoadQuery<ThreatPulseTrendingQuery>(
     threatPulseTrendingQuery,
     { period, first },
     { fetchPolicy: 'store-and-network' },
   );
+  const secondary = { color: theme.palette.text.secondary };
   if (!pulseTrending.readable) {
     return (
-      <Typography variant="body2" color="textSecondary" data-testid="threat-pulse-trending-unavailable">
+      <Text variant="content-compact" style={secondary} data-testid="threat-pulse-trending-unavailable">
         {t_i18n(PULSE_UNAVAILABLE_MESSAGES[pulseTrending.unavailable_reason ?? 'not_enabled'] ?? 'Threat Pulse is not enabled on this platform.')}
-      </Typography>
+      </Text>
     );
   }
   const notHeld = Math.max(0, pulseTrending.network_items_count - pulseTrending.entries.length);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="threat-pulse-trending-list">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant="body2" color="textSecondary">
+        <Text variant="content-compact" style={secondary}>
           {`${t_i18n('Sector')}: ${t_i18n(PULSE_SECTOR_LABELS[pulseTrending.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')}`}
-        </Typography>
+        </Text>
         <ThreatPulseBriefing period={period} sectorBucket={pulseTrending.sector_bucket} regionBucket={pulseTrending.region_bucket} />
       </Box>
       {pulseTrending.entries.length === 0 && (
-        <Typography variant="body2" color="textSecondary">
+        <Text variant="content-compact" style={secondary}>
           {t_i18n('Nothing this platform holds is trending in its sector for this period.')}
-        </Typography>
+        </Text>
       )}
       <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {pulseTrending.entries.map((entry) => {
           const link = resolveLink(entry.entity.entity_type);
+          const name = <Text variant="content-compact" style={ELLIPSIS}>{entry.entity.representative.main}</Text>;
           return (
             <Box
               component="li"
@@ -95,18 +101,12 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
             >
               <ItemIcon type={entry.entity.entity_type} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                {link ? (
-                  <Link to={`${link}/${entry.entity.id}`} style={{ color: 'inherit' }}>
-                    <Typography variant="body2" noWrap>{entry.entity.representative.main}</Typography>
-                  </Link>
-                ) : (
-                  <Typography variant="body2" noWrap>{entry.entity.representative.main}</Typography>
-                )}
-                <Typography variant="caption" color="textSecondary">
+                {link ? <Link to={`${link}/${entry.entity.id}`} style={{ color: 'inherit' }}>{name}</Link> : name}
+                <Text variant="content-compact" style={secondary}>
                   {`${t_i18n('Network first seen')} ${fsd(entry.first_seen_network)} - ${t_i18n(PULSE_PREVALENCE_LABELS[entry.prevalence])}`}
-                </Typography>
+                </Text>
               </Box>
-              <Typography variant="body2" color="textSecondary" title={t_i18n('Contributing platforms')}>{entry.platforms_bucket}</Typography>
+              <Text variant="content-compact" style={secondary} title={t_i18n('Contributing platforms')}>{entry.platforms_bucket}</Text>
               <Chip label={formatPulseGrowth(entry.growth)} severity="info" />
               <Chip label={t_i18n(PULSE_TREND_LABELS[entry.trend])} severity={PULSE_TREND_SEVERITIES[entry.trend]} />
             </Box>
@@ -114,9 +114,9 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
         })}
       </Box>
       {notHeld > 0 && (
-        <Typography variant="caption" color="textSecondary">
+        <Text variant="content-compact" style={secondary}>
           {`${notHeld} ${t_i18n('more items trend in the sector, but this platform does not hold them.')}`}
-        </Typography>
+        </Text>
       )}
     </Box>
   );
@@ -150,14 +150,13 @@ const ThreatPulseTrending = ({ title, first = 10, popover }: ThreatPulseTrending
       {popover}
     </Box>
   );
-  const content = (
-    <Suspense fallback={<Spinner label={t_i18n('Loading')} />}>
-      <ThreatPulseTrendingList period={period} first={first} />
-    </Suspense>
-  );
   return (
     <Card title={title ?? t_i18n('Trending in your sector')} action={action}>
-      <div data-testid="threat-pulse-trending">{content}</div>
+      <div data-testid="threat-pulse-trending">
+        <Suspense fallback={<Spinner label={t_i18n('Loading')} />}>
+          <ThreatPulseTrendingList period={period} first={first} />
+        </Suspense>
+      </div>
     </Card>
   );
 };

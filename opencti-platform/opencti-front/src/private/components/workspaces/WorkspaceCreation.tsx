@@ -27,6 +27,7 @@ import { WorkspacesLinesPaginationQuery$variables } from './__generated__/Worksp
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
 import { Tooltip } from '@mui/material';
+import ThreatPulseDashboardTemplateButton from '../common/threat_pulse/ThreatPulseDashboardTemplateButton';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -150,6 +151,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             {t_i18n('Import from Hub')}
           </Button>
         )}
+        <ThreatPulseDashboardTemplateButton />
         <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>
     </Security>
