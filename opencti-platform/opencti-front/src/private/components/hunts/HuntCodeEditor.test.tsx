@@ -1,5 +1,21 @@
+import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { applyIndent } from './HuntCodeEditor';
+import { screen } from '@testing-library/react';
+import testRender from '../../../utils/tests/test-render';
+import { applyIndent, HuntCodeEditor } from './HuntCodeEditor';
+
+describe('HuntCodeEditor', () => {
+  it('shows the placeholder while the value is empty', () => {
+    testRender(<HuntCodeEditor value="" onChange={() => {}} label="Sigma rule" language="sigma" placeholder="title: Example" testId="editor" />);
+    expect(screen.getByTestId('editor-placeholder')).toHaveTextContent('title: Example');
+  });
+
+  it('highlights the value instead of the placeholder once it is not empty', () => {
+    testRender(<HuntCodeEditor value="title: Typed" onChange={() => {}} label="Sigma rule" language="sigma" placeholder="title: Example" testId="editor" />);
+    expect(screen.queryByTestId('editor-placeholder')).toBeNull();
+    expect(screen.getByTestId('editor')).toHaveTextContent('title: Typed');
+  });
+});
 
 describe('applyIndent', () => {
   it('inserts an indentation at the caret', () => {

@@ -297,7 +297,7 @@ const Hunts = () => {
             exportContext={{ entity_type: HUNT_ENTITY_TYPE }}
             availableEntityTypes={[HUNT_ENTITY_TYPE]}
             additionalHeaderButtons={[
-              <HuntPackExportButton key="hunt-pack-export" />,
+              <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
               <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
                 <HuntPackImportButton paginationOptions={queryPaginationOptions} />
               </Security>,

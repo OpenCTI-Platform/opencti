@@ -207,24 +207,34 @@ export const HuntCodeEditor = ({
             aria-hidden
             style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}
           >
-            <SyntaxHighlighter
-              language={prismLanguageOf(language)}
-              style={isDark ? a11yDark : coy}
-              customStyle={{
-                ...sharedTextStyle,
-                margin: 0,
-                padding: `${PADDING_Y}px ${PADDING_X}px`,
-                background: 'transparent',
-                overflow: 'visible',
-                minHeight: '100%',
-                border: 'none',
-                boxShadow: 'none',
-              }}
-              codeTagProps={{ style: { ...sharedTextStyle, background: 'transparent' } }}
-            >
-              {/* A trailing newline keeps the last line of the overlay aligned with the textarea */}
-              {`${value}\n`}
-            </SyntaxHighlighter>
+            {value.length === 0 && placeholder ? (
+              // The textarea text is transparent, so its native placeholder is drawn here instead
+              <div
+                data-testid={testId ? `${testId}-placeholder` : undefined}
+                style={{ ...sharedTextStyle, padding: `${PADDING_Y}px ${PADDING_X}px`, color: theme.palette.text.disabled }}
+              >
+                {placeholder}
+              </div>
+            ) : (
+              <SyntaxHighlighter
+                language={prismLanguageOf(language)}
+                style={isDark ? a11yDark : coy}
+                customStyle={{
+                  ...sharedTextStyle,
+                  margin: 0,
+                  padding: `${PADDING_Y}px ${PADDING_X}px`,
+                  background: 'transparent',
+                  overflow: 'visible',
+                  minHeight: '100%',
+                  border: 'none',
+                  boxShadow: 'none',
+                }}
+                codeTagProps={{ style: { ...sharedTextStyle, background: 'transparent' } }}
+              >
+                {/* A trailing newline keeps the last line of the overlay aligned with the textarea */}
+                {`${value}\n`}
+              </SyntaxHighlighter>
+            )}
           </div>
           <textarea
             id={inputId}

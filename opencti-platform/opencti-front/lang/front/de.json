@@ -91,6 +91,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "Ein FINTEL-Export enthält zusätzliche Informationen wie Markierungen und Erstellungsdatum",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Ein geführter Arbeitsablauf, der den Import von Dateien und die Auswahl von Konnektoren vereinfacht und die Erstellung einer Workbench oder eines Entwurfs zur Überprüfung vor dem endgültigen Import ermöglicht",
   "A hunt cannot run more than once every {count} minutes": "Eine Hunt kann nicht öfter als alle {count} Minuten ausgeführt werden",
+  "A hunt pack holds at most {max} hunts, narrow the selection": "Ein Hunt-Paket enthält höchstens {max} Hunts, grenzen Sie die Auswahl ein",
   "A hunt runs once it is validated from its draft": "Eine Hunt wird ausgeführt, sobald sie aus ihrem Entwurf validiert wurde",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Ein neuer Inhaltstyp ist verfügbar, kann aber aufgrund Ihrer OpenCTI-Version nicht in dieser Benachrichtigung angezeigt werden. Bitte aktualisieren Sie",
   "A new entity enters a selected PIR": "Eine neue Entität betritt ein ausgewähltes PIR",

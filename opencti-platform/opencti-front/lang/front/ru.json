@@ -91,6 +91,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "Экспорт FINTEL содержит дополнительную информацию, например, маркировку и дату создания.",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Управляемый рабочий процесс, который упрощает импорт файлов, выбор коннекторов и позволяет создать рабочий стол или черновик для просмотра перед окончательным импортом",
   "A hunt cannot run more than once every {count} minutes": "Охоту нельзя запускать чаще одного раза в {count} мин.",
+  "A hunt pack holds at most {max} hunts, narrow the selection": "Пакет охот содержит не более {max} охот, сузьте выбор",
   "A hunt runs once it is validated from its draft": "Охота запускается после утверждения из черновика",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Доступен новый тип контента, но он не может быть отображён в этом уведомлении из-за вашей версии OpenCTI, пожалуйста, обновите",
   "A new entity enters a selected PIR": "Новая сущность входит в выбранный ПИР",

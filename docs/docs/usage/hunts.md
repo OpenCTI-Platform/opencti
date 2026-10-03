@@ -89,7 +89,7 @@ When OpenAEV executes an attack simulation for a technique, it asks OpenCTI to r
 
 ## Hunt packs
 
-Hunts can be shared as **hunt packs**: STIX 2.1 bundles carrying the hunts through a dedicated extension, together with their techniques and targets. Export one or several hunts from the hunts list, import a pack from the same list or deploy it from the XTM Hub.
+Hunts can be shared as **hunt packs**: STIX 2.1 bundles carrying the hunts through a dedicated extension, together with their techniques and targets. Export one or several hunts from the hunts list, import a pack from the same list or deploy it from the XTM Hub. Selecting all the hunts of the list exports every hunt matching its filters and search, not only the loaded page; a pack holds at most 200 hunts, so a larger selection is refused until it is narrowed.
 
 Importing a pack creates the missing hunts and updates the existing ones. The local run settings of an existing hunt (status, schedule, scope, trigger filters, PIR activation) are kept: a pack update changes the logic, never how and where your hunts run. Hunts of a pack that are new to the platform are created as drafts.
 

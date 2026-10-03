@@ -91,6 +91,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "FINTELエクスポートには、マーキングや作成日などの追加情報が含まれます。",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "ファイルのインポート、コネクタの選択を合理化し、最終的なインポートの前にレビュー用のワークベンチまたはドラフトを作成できるガイド付きワークフロー",
   "A hunt cannot run more than once every {count} minutes": "ハントは {count} 分ごとに 1 回を超えて実行できません",
+  "A hunt pack holds at most {max} hunts, narrow the selection": "ハントパックに含められるハントは最大 {max} 件です。選択を絞り込んでください",
   "A hunt runs once it is validated from its draft": "ハントは下書きから検証された後に実行されます",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "新しいコンテンツタイプが利用可能ですが、お使いの OpenCTI のバージョンのため、この通知には表示できません。アップグレードしてください",
   "A new entity enters a selected PIR": "選択されたPIRに新しいエンティティが入る",

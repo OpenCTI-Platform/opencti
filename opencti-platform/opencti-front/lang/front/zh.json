@@ -91,6 +91,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "FINTEL 导出将包含额外信息，如标记和创建日期",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "引导式工作流程可简化文件导入、连接器选择，并允许创建工作台或草稿，以便在最终导入前进行审查",
   "A hunt cannot run more than once every {count} minutes": "狩猎的运行频率不能高于每 {count} 分钟一次",
+  "A hunt pack holds at most {max} hunts, narrow the selection": "一个狩猎包最多包含 {max} 个狩猎，请缩小选择范围",
   "A hunt runs once it is validated from its draft": "狩猎在从草稿验证后才会运行",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "有新的内容类型可用，但由于您的 OpenCTI 版本，无法在此通知中显示，请升级",
   "A new entity enters a selected PIR": "新实体进入选定的 PIR",
