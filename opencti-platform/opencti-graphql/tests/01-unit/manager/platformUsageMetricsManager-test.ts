@@ -8,7 +8,7 @@ import { getIndexedFilesUsedSize } from '../../../src/modules/internal/document/
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
   redisSetPlatformUsageMetrics: vi.fn(),
-  redisIsAlive: vi.fn(),
+  redisHealthCheck: vi.fn(),
 }));
 vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));

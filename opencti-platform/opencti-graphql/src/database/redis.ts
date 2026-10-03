@@ -312,6 +312,13 @@ export const redisIsAlive = async () => {
     throw DatabaseError('Redis seems down');
   }
 };
+// Fails fast while disconnected, since the base client's offline queue would otherwise park the probe until reconnect.
+export const redisHealthCheck = async () => {
+  if (getClientBase().status !== 'ready') {
+    throw DatabaseError('Redis seems down');
+  }
+  return redisIsAlive();
+};
 export const redisInit = async () => {
   logApp.info('[CHECK] Checking if Redis is available');
   try {
