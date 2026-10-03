@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeTargetRevertInputs } from '../../../../src/modules/curation/curation-merge-diff';
+import { computeTargetRevertInputs, isIrrecoverableRecreationError } from '../../../../src/modules/curation/curation-merge-diff';
+import { DatabaseError, FunctionalError, LockTimeoutError, MissingReferenceError, ValidationError } from '../../../../src/config/errors';
 import type { MergeSourceSnapshot, MergeTargetSnapshot } from '../../../../src/modules/curation/curation-types';
 
 const MULTIPLE = new Set(['aliases', 'x_opencti_stix_ids', 'labels_text']);
@@ -69,5 +70,20 @@ describe('curation merge revert inputs', () => {
   it('removes nothing that is already gone (a resumed unmerge)', () => {
     const live = { attributes: { name: 'Cl0p', aliases: ['Graceful Spider'], x_opencti_stix_ids: [] }, refs: {} };
     expect(computeTargetRevertInputs(target, live, [source({})], [], describeAttribute, [])).toEqual([]);
+  });
+});
+
+describe('Curation unmerge - relationship recreation failures', () => {
+  it('skips the relationships that can never be recreated', () => {
+    expect(isIrrecoverableRecreationError(MissingReferenceError({ input: { fromId: 'gone' } }))).toBe(true);
+    expect(isIrrecoverableRecreationError(ValidationError('Relation not allowed', 'relationship_type'))).toBe(true);
+    expect(isIrrecoverableRecreationError(FunctionalError('Relation not supported'))).toBe(true);
+  });
+
+  it('stops the unmerge on transient failures so that it is resumed', () => {
+    expect(isIrrecoverableRecreationError(LockTimeoutError({ participantIds: ['relationship-1'] }))).toBe(false);
+    expect(isIrrecoverableRecreationError(DatabaseError('Bulk failed'))).toBe(false);
+    expect(isIrrecoverableRecreationError(new Error('socket hang up'))).toBe(false);
+    expect(isIrrecoverableRecreationError(undefined)).toBe(false);
   });
 });

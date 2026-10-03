@@ -48,7 +48,7 @@ import {
   type MergeTargetSnapshot,
   PROPOSAL_STATUS_REVERTED,
 } from './curation-types';
-import { computeTargetRevertInputs, isSnapshotAttribute } from './curation-merge-diff';
+import { computeTargetRevertInputs, isIrrecoverableRecreationError, isSnapshotAttribute } from './curation-merge-diff';
 import { getCurationSettings } from './curation-settings';
 
 const MERGE_RECORDS_ENABLED = booleanConf('curation:merge_records_enabled', true);
@@ -578,6 +578,9 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
           await recreateRelationship(context, user, relationship, lockIds);
           recreatedCount += 1;
         } catch (err) {
+          // A transient failure stops the unmerge before the source is marked reverted: its pending state is kept and
+          // resuming it recreates this relationship again.
+          if (!isIrrecoverableRecreationError(err)) throw err;
           skippedRelationshipIds.push(relationship.id);
           logApp.warn('[CURATION] Relationship removed by the merge cannot be recreated', { cause: err, relationship_id: relationship.id, merge_record_id: mergeRecordId });
         }

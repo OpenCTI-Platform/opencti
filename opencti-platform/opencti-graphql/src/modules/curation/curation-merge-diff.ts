@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { ATTRIBUTE_ADDITIONAL_NAMES, ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI } from '../../schema/stixDomainObject';
 import { IDS_STIX } from '../../schema/general';
 import type { MergeSnapshotRef, MergeSourceSnapshot, MergeTargetSnapshot } from './curation-types';
+import { ALREADY_DELETED_ERROR, FUNCTIONAL_ERROR, MISSING_REF_ERROR, VALIDATION_ERROR } from '../../config/errors';
 
 // Attributes never written back on unmerge: identity, technical timestamps and computed internal fields.
 const IGNORED_ATTRIBUTES = new Set([
@@ -159,4 +160,13 @@ export const computeTargetRevertInputs = (
     }
   });
   return inputs;
+};
+
+// Failures that recreating a relationship removed by a merge can never overcome: an endpoint or a reference is gone, or
+// the relationship is not allowed anymore. Any other failure (locks, storage) is transient: the unmerge stops and resumes.
+const IRRECOVERABLE_RECREATION_ERRORS = [MISSING_REF_ERROR, ALREADY_DELETED_ERROR, VALIDATION_ERROR, FUNCTIONAL_ERROR];
+
+export const isIrrecoverableRecreationError = (error: unknown): boolean => {
+  const code = (error as { extensions?: { code?: unknown } } | null | undefined)?.extensions?.code;
+  return typeof code === 'string' && IRRECOVERABLE_RECREATION_ERRORS.includes(code);
 };
