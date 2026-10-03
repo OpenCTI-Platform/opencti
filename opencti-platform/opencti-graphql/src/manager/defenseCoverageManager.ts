@@ -8,6 +8,7 @@ import { RELATION_DETECTS, RELATION_INDICATES } from '../schema/stixCoreRelation
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import {
+  bumpDefenseCoverageVersion,
   consumeFullComputationRequest,
   getLastFullComputation,
   requestFullDefenseCoverageComputation,
@@ -83,7 +84,11 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
   ]);
   fromDataComponents.forEach((id) => techniqueIds.add(id));
   fromRules.forEach((id) => techniqueIds.add(id));
-  if (techniqueIds.size === 0) return;
+  if (techniqueIds.size === 0) {
+    // A new version drops the per-reader access cache built on the previous one
+    if (impact.accessChanged) await bumpDefenseCoverageVersion();
+    return;
+  }
   if (techniqueIds.size > MAX_INCREMENTAL_TECHNIQUES) {
     await requestFullDefenseCoverageComputation();
     return;

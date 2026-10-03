@@ -16,6 +16,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import { capitalizeFirstLetter } from '../../../../utils/String';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseMatrixQuery } from './__generated__/DefenseMatrixQuery.graphql';
 import { DefenseMatrixPlatformsQuery } from './__generated__/DefenseMatrixPlatformsQuery.graphql';
 import { DefenseMatrixRecomputeMutation } from './__generated__/DefenseMatrixRecomputeMutation.graphql';
@@ -83,6 +85,7 @@ const defenseMatrixRecomputeMutation = graphql`
 `;
 
 const DEFAULT_KILL_CHAIN = 'mitre-attack';
+const RECOMPUTE_POLL_INTERVAL = 10000;
 
 const killChainLabel = (chain: string) => {
   if (chain === 'mitre-attack') return 'MITRE ATT&CK';
@@ -243,10 +246,36 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
   const { t_i18n, nsdt } = useFormatter();
   const { defensePlatforms, defenseCoverageStatus } = usePreloadedQuery(defenseMatrixPlatformsQuery, queryRef);
   const [recomputeRequested, setRecomputeRequested] = useState(false);
-  const [commitRecompute, recomputing] = useApiMutation<DefenseMatrixRecomputeMutation>(defenseMatrixRecomputeMutation, undefined, {
-    successMessage: t_i18n('The defense coverage will be recomputed shortly'),
-  });
+  const [commitRecompute, recomputing] = useApiMutation<DefenseMatrixRecomputeMutation>(defenseMatrixRecomputeMutation);
   const pending = recomputeRequested || !!defenseCoverageStatus?.full_computation_requested;
+  useEffect(() => {
+    if (!pending) return undefined;
+    // The status query shares the Relay store: polling it re-renders this component once the manager is done
+    const interval = setInterval(() => {
+      fetchQuery<DefenseMatrixPlatformsQuery>(defenseMatrixPlatformsQuery, {}, { fetchPolicy: 'network-only' })
+        .toPromise()
+        .then((data) => {
+          const status = data?.defenseCoverageStatus;
+          if (status && !status.full_computation_requested) {
+            setRecomputeRequested(false);
+            fetchQuery<DefenseMatrixQuery>(
+              defenseMatrixQuery,
+              { platformIds: scope.platformIds, threatScope: toThreatScopeInput(scope) },
+              { fetchPolicy: 'network-only' },
+            ).toPromise();
+          }
+        });
+    }, RECOMPUTE_POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, [pending, scope]);
+  const requestRecompute = () => commitRecompute({
+    variables: {},
+    onCompleted: (response, errors) => {
+      if (notifyPayloadErrors(errors) || !response.defenseCoverageRecompute) return;
+      MESSAGING$.notifySuccess(t_i18n('The defense coverage will be recomputed shortly'));
+      setRecomputeRequested(true);
+    },
+  });
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap spacing={1}>
@@ -263,7 +292,7 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
               startIcon={<RefreshOutlined fontSize="small" />}
               disabled={recomputing || pending}
               data-testid="defense-matrix-recompute"
-              onClick={() => commitRecompute({ variables: {}, onCompleted: () => setRecomputeRequested(true) })}
+              onClick={requestRecompute}
             >
               {t_i18n('Recompute')}
             </Button>

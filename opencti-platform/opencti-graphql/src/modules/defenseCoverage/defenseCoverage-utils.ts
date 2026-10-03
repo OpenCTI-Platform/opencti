@@ -96,7 +96,7 @@ export const maxDetectionStatus = (statuses: DefenseDetectionStatus[]): DefenseD
 /**
  * Level of a technique on one security platform:
  * 1 the platform collects a data component detecting the technique,
- * 2 it collects it and a detection rule is available in OpenCTI,
+ * 2 a detection rule indicating the technique is available in OpenCTI (deployment unknown),
  * 3 a rule indicating the technique is deployed (or active) on the platform,
  * 4 OpenAEV proved the detection or the prevention on the platform.
  * A failed latest validation caps the level at 2: the deployed detection is proven ineffective.
@@ -105,9 +105,9 @@ export const computePlatformLevel = (telemetry: boolean, detection: DefenseDetec
   let level = DEFENSE_LEVEL_NONE;
   if (telemetry) {
     level = DEFENSE_LEVEL_TELEMETRY;
-    if (detection === 'available') {
-      level = DEFENSE_LEVEL_DETECTION_AVAILABLE;
-    }
+  }
+  if (detection === 'available') {
+    level = DEFENSE_LEVEL_DETECTION_AVAILABLE;
   }
   if (detection === 'deployed' || detection === 'active') {
     level = DEFENSE_LEVEL_DETECTION_DEPLOYED;
@@ -274,7 +274,11 @@ export const evaluateCoverage = (
   const telemetry = platforms.some((p) => p.telemetry);
   const detection = maxDetectionStatus([...platforms.map((p) => p.detection), ruleIds.length > 0 ? 'available' : 'none']);
   const validated = latest?.status ?? 'none';
-  const level = computeAggregateLevel(platforms.map((p) => p.level), telemetry, ruleIds.length > 0, unattributedLatest?.status ?? 'none');
+  const aggregateLevel = computeAggregateLevel(platforms.map((p) => p.level), telemetry, ruleIds.length > 0, unattributedLatest?.status ?? 'none');
+  // The latest failure caps the technique, unless a platform still holds its own successful validation
+  const level = validated === 'failed' && !platforms.some((p) => p.level >= DEFENSE_LEVEL_VALIDATED)
+    ? Math.min(aggregateLevel, DEFENSE_LEVEL_DETECTION_AVAILABLE)
+    : aggregateLevel;
   const coverageResultIds = uniq([
     ...platforms.flatMap((p) => p.coverage_result_ids),
     ...unattributed.map((v) => v.id),
@@ -316,20 +320,26 @@ export const cellForPlatform = (cell: DefenseCell, platformId: string) => {
       recommended_action: cell.recommended_action,
     } as DefenseCellPlatform;
   }
-  return cell.platforms.find((p) => p.platform_id === platformId) ?? {
+  const found = cell.platforms.find((p) => p.platform_id === platformId);
+  if (found) {
+    return found;
+  }
+  const detection: DefenseDetectionStatus = cell.rule_ids.length > 0 ? 'available' : 'none';
+  const level = computePlatformLevel(false, detection, 'none');
+  return {
     platform_id: platformId,
     telemetry: false,
-    detection: cell.rule_ids.length > 0 ? 'available' : 'none',
+    detection,
     validated: 'none',
-    level: DEFENSE_LEVEL_NONE,
+    level,
     data_component_ids: [],
     inferred_data_component_ids: [],
     rule_ids: [],
     coverage_result_ids: [],
     recommended_action: computeRecommendedAction({
-      level: DEFENSE_LEVEL_NONE,
+      level,
       telemetry: false,
-      detection: cell.rule_ids.length > 0 ? 'available' : 'none',
+      detection,
       validated: 'none',
       hasDetectingDataComponent: cell.data_component_ids.length > 0,
     }),

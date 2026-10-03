@@ -15,6 +15,7 @@ const DEFENSE_LOGSOURCE_MAPPING_DEFINITION: ModuleDefinition<StoreEntityDefenseL
       // One entry per log source (category | product | service)
       [ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING]: [{ src: 'mapping_key' }],
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

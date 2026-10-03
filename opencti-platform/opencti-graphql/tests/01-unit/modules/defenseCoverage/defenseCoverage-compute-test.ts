@@ -101,6 +101,15 @@ describe('Defense coverage stream impact', () => {
     expect(collectDefenseImpact([event('merge', { type: 'indicator', extensions: { [STIX_EXT_OCTI]: { id: 'i', type: 'Indicator' } } })]).full).toEqual(true);
     expect(collectDefenseImpact([event('delete', { type: 'report', extensions: { [STIX_EXT_OCTI]: { id: 'r', type: 'Report' } } })]).full).toEqual(false);
   });
+  it('should invalidate the reader access when an evidence is updated', () => {
+    const dataComponent = collectDefenseImpact([event('update', { type: 'x-mitre-data-component', extensions: { [STIX_EXT_OCTI]: { id: 'dc', type: 'Data-Component' } } })]);
+    expect(dataComponent.accessChanged).toEqual(true);
+    expect(Array.from(dataComponent.dataComponentIds)).toEqual(['dc']);
+    const platform = collectDefenseImpact([event('update', { type: 'identity', extensions: { [STIX_EXT_OCTI]: { id: 'p', type: 'SecurityPlatform' } } })]);
+    expect(platform.accessChanged).toEqual(true);
+    expect(platform.full).toEqual(false);
+    expect(collectDefenseImpact([event('update', { type: 'report', extensions: { [STIX_EXT_OCTI]: { id: 'r', type: 'Report' } } })]).accessChanged).toEqual(false);
+  });
 });
 
 describe('Defense log source mapping defaults', () => {

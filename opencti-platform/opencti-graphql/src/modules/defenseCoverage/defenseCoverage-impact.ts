@@ -18,6 +18,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCover
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 // Deleting or merging one of these entities removes relationships without dedicated events: recompute everything.
+// Updating one of them can change who may see it as an evidence.
 const FULL_RECOMPUTE_ENTITY_TYPES = [
   ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
   ENTITY_TYPE_IDENTITY_SYSTEM,
@@ -35,6 +36,7 @@ export interface DefenseImpact {
   techniqueIds: Set<string>;
   dataComponentIds: Set<string>;
   ruleIds: Set<string>;
+  accessChanged: boolean;
 }
 
 interface StixEventData {
@@ -55,7 +57,7 @@ interface StixEventData {
  * data components and rules whose techniques must be recomputed, or a full recomputation.
  */
 export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): DefenseImpact => {
-  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set() };
+  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set(), accessChanged: false };
   events.forEach((event) => {
     const eventType = event.data.type;
     const data = event.data.data as unknown as StixEventData;
@@ -93,6 +95,12 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     if (extension.type === ENTITY_TYPE_INDICATOR && eventType === EVENT_TYPE_UPDATE) {
       // Pattern type, log source or revocation changes move a rule in or out of the detection layer
       impact.ruleIds.add(extension.id);
+      return;
+    }
+    if (eventType === EVENT_TYPE_UPDATE && FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) {
+      // A marking or organization change on an evidence changes who may see it: readers re-evaluate their access
+      impact.accessChanged = true;
+      if (extension.type === ENTITY_TYPE_DATA_COMPONENT) impact.dataComponentIds.add(extension.id);
     }
   });
   return impact;

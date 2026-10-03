@@ -16,6 +16,7 @@ const DEFENSE_GAP_DEFINITION: ModuleDefinition<StoreEntityDefenseGap, StixDefens
       // One record per technique and security platform ('all' for the aggregate)
       [ENTITY_TYPE_DEFENSE_GAP]: [{ src: 'attack_pattern_id' }, { src: 'platform_id' }],
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

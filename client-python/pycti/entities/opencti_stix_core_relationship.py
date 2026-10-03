@@ -873,8 +873,9 @@ class StixCoreRelationship:
                     if key in DEPLOYED_ON_ATTRIBUTES and value is not None
                 }
             )
-        # Only sent when present, so the client keeps working with platforms that do not know the field
-        if coverage_platforms_information:
+        # Only sent when supplied, so the client keeps working with platforms that do not know the field;
+        # an empty list is sent to clear a previous per-platform attribution
+        if coverage_platforms_information is not None:
             relationship_input["coverage_platforms_information"] = (
                 coverage_platforms_information
             )
@@ -1479,8 +1480,10 @@ class StixCoreRelationship:
                 for cov in raw_coverages
                 if "score" in cov
             ]
-            coverage_platforms_information = self.convert_coverage_platforms(
-                stix_relation.get("coverage_platforms") or []
+            coverage_platforms_information = (
+                self.convert_coverage_platforms(stix_relation["coverage_platforms"])
+                if "coverage_platforms" in stix_relation
+                else None
             )
 
             deployment = None
