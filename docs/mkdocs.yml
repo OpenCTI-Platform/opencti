@@ -225,6 +225,7 @@ nav:
         - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
       - Dissemination assurance: usage/dissemination-assurance.md
+      - Defense matrix: usage/defense-matrix.md
       - Data consistency: usage/dataSanityManager.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
