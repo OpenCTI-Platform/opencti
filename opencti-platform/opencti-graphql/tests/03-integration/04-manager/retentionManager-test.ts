@@ -662,4 +662,38 @@ describe('Retention Manager tests ', () => {
     // Cleanup
     await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });
+
+  it('should execute processing for draft scope with no elements: rule patched with 0 deleted', async () => {
+    // Create an draft retention rule with a window far in the past (no entries)
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] Draft rule no deletion',
+          max_retention: 36500, // 100 years → nothing older than that
+          retention_unit: 'days',
+          scope: 'draft',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Run executeProcessing — nothing should be deleted
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'draft',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
+    // Rule should be patched but with 0 deletions
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBe(0);
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
 });

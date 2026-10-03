@@ -43,6 +43,7 @@ export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASS
 export const KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS = 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS';
 export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETPARAMETERS = 'SETTINGS_SETPARAMETERS';
+export const SETTINGS_SETMANAGEMENT = 'SETTINGS_SETMANAGEMENT';
 export const SETTINGS_SETMANAGEXTMHUB = 'SETTINGS_SETMANAGEXTMHUB';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
@@ -1114,7 +1115,7 @@ export const filterMembersUsersWithUsersOrgs = async (
   members: ParticipantWithOrgIds[],
   filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
-  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEMENT].some((capa) => isUserHasCapability(user, capa));
   const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
   // case 1. no orga restriction on user visibility
@@ -1236,7 +1237,7 @@ const fetchMembersWithOrgaRestriction = async (
   }
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
   if (types.includes(ENTITY_TYPE_USER)) { // case 1. add organization restriction for users if necessary
-    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEMENT].some((capa) => isUserHasCapability(user, capa));
     const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     // case 1.1. no orga restriction on user visibility

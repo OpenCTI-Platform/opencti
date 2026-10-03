@@ -87,6 +87,7 @@ import useGranted, {
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
+  SETTINGS_SETMANAGEMENT,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETMARKINGS,
   SETTINGS_SETPARAMETERS,
@@ -157,6 +158,7 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const isGrantedToManagement = useGranted([SETTINGS_SETMANAGEMENT]);
   const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
   const canSeeExplore = useGranted([EXPLORE]);
@@ -181,6 +183,7 @@ const useNavMenu = (): NavGroup[] => {
     SETTINGS_SECURITYACTIVITY,
     SETTINGS_FILEINDEXING,
     SETTINGS_SUPPORT,
+    SETTINGS_SETMANAGEMENT,
     SETTINGS_SETMANAGEXTMHUB,
   ]);
 
@@ -393,6 +396,7 @@ const useNavMenu = (): NavGroup[] => {
             { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
             { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
             { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
+            { granted: isGrantedToManagement, link: '/dashboard/settings/management', label: t_i18n('Management') },
           ],
         },
       ] : [],
