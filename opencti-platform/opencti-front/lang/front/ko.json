@@ -5890,7 +5890,7 @@
   "XTM AI": "XTM AI",
   "XTM Hub": "XTM 허브",
   "XTM Hub Connection Unavailable": "현재 OpenCTI 플랫폼과 XTM Hub를 연결할 수 없습니다. 연결이 복구될 때까지 원클릭 배포와 같은 일부 기능이 정상적으로 작동하지 않을 수 있습니다.",
-  "XTM Hub deletes every contribution of this platform and recomputes the network statistics. Disable Threat Pulse as well to stop contributing.": "XTM Hub는 이 플랫폼의 모든 기여를 삭제하고 네트워크 통계를 다시 계산합니다. 기여를 중단하려면 Threat Pulse도 비활성화하세요.",
+  "XTM Hub deletes every contribution of this platform and recomputes the network statistics. Stop contributing as well to send nothing more.": "XTM Hub는 이 플랫폼의 모든 기여를 삭제하고 네트워크 통계를 다시 계산합니다. 더 이상 아무것도 보내지 않으려면 기여도 중지하세요.",
   "XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.": "XTM 허브는 리소스에 액세스하고, 트레이딩 기술을 공유하고, 필리그란의 제품 사용을 최적화하여 협업을 촉진하고 커뮤니티의 역량을 강화하는 중앙 포럼입니다.",
   "XTM Hub is disconnected": "XTM Hub가 연결 해제되었습니다",
   "XTM Hub is the focal point to find every Services and Products.": "XTM Hub는 모든 서비스와 상품을 찾을 수 있는 중심점입니다.",

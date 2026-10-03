@@ -318,11 +318,6 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       <Text variant="content-compact" style={secondary}>
         {t_i18n('The preview shows how widespread your objects are across the community and whether they rise, without sending anything. Contribute keyed hashes and counts, never values, to unlock network first seen, platforms ranges, sector trends, alerts and benchmarks.')}
       </Text>
-      {lapsed && (
-        <Alert severity="warning" variant="outlined" data-testid="threat-pulse-lapsed">
-          {t_i18n('XTM Hub received no contribution from this platform within the grace period: the preview is shown until the next contribution is accepted.')}
-        </Alert>
-      )}
       {previewStatus}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: theme.spacing(1.5) }}>
         <ExperienceFeatureTile accent={accent} icon={<PublicOutlined />} label={t_i18n('Community prevalence')} />
@@ -338,6 +333,11 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
 
   const configuration = (
     <div data-testid="threat-pulse-configuration">
+      {lapsed && (
+        <Alert severity="warning" variant="outlined" data-testid="threat-pulse-lapsed" style={{ marginBottom: theme.spacing(1) }}>
+          {t_i18n('XTM Hub received no contribution from this platform within the grace period: the preview is shown until the next contribution is accepted.')}
+        </Alert>
+      )}
       <ExperienceDetailRow label={t_i18n('Mode')}>
         <Select
           value={settings.mode}
@@ -509,7 +509,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       )}
       <Dialog open={openPurge} onClose={() => setOpenPurge(false)} title={t_i18n('Purge my contributions')} size="small">
         <Text variant="content-compact">
-          {t_i18n('XTM Hub deletes every contribution of this platform and recomputes the network statistics. Disable Threat Pulse as well to stop contributing.')}
+          {t_i18n('XTM Hub deletes every contribution of this platform and recomputes the network statistics. Stop contributing as well to send nothing more.')}
         </Text>
         <DialogActions>
           <Button variant="secondary" onClick={() => setOpenPurge(false)}>{t_i18n('Cancel')}</Button>

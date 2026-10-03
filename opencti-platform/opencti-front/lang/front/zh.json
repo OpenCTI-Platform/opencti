@@ -5890,7 +5890,7 @@
   "XTM AI": "XTM AI",
   "XTM Hub": "XTM 中枢",
   "XTM Hub Connection Unavailable": "您的 OpenCTI 平台与 XTM Hub 之间的连接目前不可用。在恢复连接之前，一键部署等某些功能可能无法按预期运行。",
-  "XTM Hub deletes every contribution of this platform and recomputes the network statistics. Disable Threat Pulse as well to stop contributing.": "XTM Hub 将删除本平台的所有贡献并重新计算网络统计数据。如需停止贡献，请同时禁用 Threat Pulse。",
+  "XTM Hub deletes every contribution of this platform and recomputes the network statistics. Stop contributing as well to send nothing more.": "XTM Hub 会删除此平台的所有贡献并重新计算网络统计数据。同时停止贡献，即可不再发送任何内容。",
   "XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.": "XTM Hub 是一个中心论坛，用于获取资源、分享技术和优化 Filigran&apos 产品的使用，促进合作并增强社区能力。",
   "XTM Hub is disconnected": "XTM Hub 已断开连接",
   "XTM Hub is the focal point to find every Services and Products.": "XTM Hub 是查找所有服务和产品的中心点。",
