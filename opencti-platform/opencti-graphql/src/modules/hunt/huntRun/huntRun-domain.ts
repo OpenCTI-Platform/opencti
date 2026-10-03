@@ -104,6 +104,17 @@ export const findHuntRunResults = async (context: AuthContext, user: AuthUser, r
   };
 };
 
+// The result ids of a run are only disclosed for the result objects the caller can read, like its results
+export const findHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const ids = run.result_ids ?? [];
+  if (ids.length === 0) {
+    return [];
+  }
+  const readable = await findByIds<BasicStoreObject>(context, user, ids);
+  const visible = new Set<string>(readable.flatMap((element) => [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
+  return ids.filter((id) => visible.has(id));
+};
+
 const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
   const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, run.hunt_id, ENTITY_TYPE_HUNT);
   if (!hunt) {
@@ -591,14 +602,17 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     throw FunctionalError('The evidence observation date is invalid', { observedAt: input.observed_at });
   }
   const source = typeof input.source === 'string' && input.source.trim().length > 0 ? truncate(input.source.trim(), EVIDENCE_SOURCE_MAX_LENGTH) : null;
-  const sources = Array.from(new Set([...(run.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX);
   const addedHits = Math.max(0, Math.round(input.hits_count ?? 0));
-  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, {
-    result_ids: Array.from(new Set([...(run.result_ids ?? []), ...results.map((result) => result.standard_id)])).slice(0, RESULT_IDS_MAX),
-    hits_count: (run.hits_count ?? 0) + addedHits,
-    evidence_sample: sanitizeEvidence([...(run.evidence_sample ?? []), ...(input.evidence_sample ?? [])]),
-    evidence_sources: sources,
-    last_evidence_at: observedAt.toISOString(),
+  // Merged on the run read again under the transition lock, concurrent evidence never overwrites each other
+  const element = await withHuntRunTransition(context, run.internal_id, async (current) => {
+    const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
+      result_ids: Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)])).slice(0, RESULT_IDS_MAX),
+      hits_count: (current.hits_count ?? 0) + addedHits,
+      evidence_sample: sanitizeEvidence([...(current.evidence_sample ?? []), ...(input.evidence_sample ?? [])]),
+      evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
+      last_evidence_at: observedAt.toISOString(),
+    });
+    return patched;
   });
   await publishUserAction({
     user,
@@ -630,17 +644,21 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     throw FunctionalError('A verdict is set by an analyst or an agent', { source });
   }
   const verdict = input.verdict as string;
-  const patch: Record<string, unknown> = {
-    verdict,
-    verdict_source: source,
-    analyst_feedback: input.analyst_feedback ? truncate(input.analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : run.analyst_feedback ?? null,
-  };
-  if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !run.incident_id) {
-    const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, run, parseIncidentProposal(run.incident_proposal));
-    patch.incident_id = incidentId;
-    patch.draft_id = draftId;
-  }
-  const { element } = await patchAttribute(context, user, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  // Read again under the transition lock: concurrent true positive verdicts open a single Incident draft
+  const element = await withHuntRunTransition(context, run.internal_id, async (current) => {
+    const patch: Record<string, unknown> = {
+      verdict,
+      verdict_source: source,
+      analyst_feedback: input.analyst_feedback ? truncate(input.analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.analyst_feedback ?? null,
+    };
+    if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id) {
+      const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, current, parseIncidentProposal(current.incident_proposal));
+      patch.incident_id = incidentId;
+      patch.draft_id = draftId;
+    }
+    const { element: patched } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+    return patched;
+  });
   addHuntVerdictCount(verdict);
   await publishUserAction({
     user,

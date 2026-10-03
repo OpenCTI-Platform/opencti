@@ -8,6 +8,7 @@ import {
   addHuntRunEvidence,
   findHuntConnectors,
   findHuntRunById,
+  findHuntRunResultIds,
   findHuntRunResults,
   findHuntRunsPaginated,
   registerHuntConnector,
@@ -32,6 +33,7 @@ const huntRunResolvers: Resolvers = {
     triggeredBy: (run, _, context) => (run.triggered_by ? loadCreator(context, context.user, run.triggered_by) : null),
     objectMarking: (run, _, context) => context.batch.markingsBatchLoader.load(run),
     results: (run, { first }, context) => findHuntRunResults(context, context.user, run, first ?? 50) as any,
+    result_ids: (run, _, context) => findHuntRunResultIds(context, context.user, run),
   },
   // A telemetry hit in the program-wide evidence shape: a tool result labelled by its field, quoting its preview
   HuntEvidence: {
