@@ -1,7 +1,17 @@
 import { v4 as uuid } from 'uuid';
+import type { Page, TestInfo } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import CurationPage from '../model/curation.pageModel';
-import { addIntrusionSet, deleteDashboard, deleteIntrusionSet, intrusionSetExists, mergeIntrusionSets } from '../dataForTesting/curation.data';
+import SearchPageModel from '../model/search.pageModel';
+import { addIntrusionSet, deleteDashboard, deleteIntrusionSet, intrusionSetExists, mergeIntrusionSets, openProposalIds } from '../dataForTesting/curation.data';
+
+// The screenshots of the user documentation (docs/docs/usage/assets/knowledge-curation-*.png) are the captures of
+// these tests, taken at the documented size and kept with the test results.
+test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+
+const capture = async (page: Page, testInfo: TestInfo, name: string) => {
+  await page.screenshot({ path: testInfo.outputPath(`knowledge-curation-${name}.png`) });
+};
 
 /**
  * Content of the test
@@ -40,7 +50,7 @@ test('Curation hub and customization page', { tag: ['@ce'] }, async ({ page }) =
  * 2. The Merges view of the surviving entity's Changes tab lists the merge.
  * 3. The merge record drawer reverts it (Unmerge), and the merged entity exists again.
  */
-test('Unmerge from the Changes tab of the merged entity', { tag: ['@ce'] }, async ({ page, request }) => {
+test('Unmerge from the Changes tab of the merged entity', { tag: ['@ce'] }, async ({ page, request }, testInfo) => {
   const curationPage = new CurationPage(page);
   const suffix = uuid().slice(0, 8);
   const targetName = `Curation e2e target ${suffix}`;
@@ -56,9 +66,13 @@ test('Unmerge from the Changes tab of the merged entity', { tag: ['@ce'] }, asyn
     await expect(curationPage.getChangesTab()).toBeVisible();
     const merges = curationPage.getEntityMerges();
     await expect(merges).toBeVisible();
+    await expect(merges.getByText(targetName).first()).toBeVisible();
+    await capture(page, testInfo, 'entity-merges');
     await merges.getByText(targetName).first().click();
 
     await expect(curationPage.getMergeRecordDetails()).toBeVisible();
+    await expect(curationPage.getUnmergeButton()).toBeVisible();
+    await capture(page, testInfo, 'merge-record');
     await curationPage.getUnmergeButton().click();
     await curationPage.getUnmergeConfirmButton().click();
     await expect(curationPage.getUnmergeButton()).toBeHidden({ timeout: 30000 });
@@ -76,7 +90,7 @@ test('Unmerge from the Changes tab of the merged entity', { tag: ['@ce'] }, asyn
  * 1. "Create from template" > "Knowledge health" creates a dashboard and opens it.
  * 2. The dashboard shows the three Knowledge Health widgets of the catalog.
  */
-test('Create the Knowledge health dashboard from its template', { tag: ['@ce'] }, async ({ page, request }) => {
+test('Create the Knowledge health dashboard from its template', { tag: ['@ce'] }, async ({ page, request }, testInfo) => {
   await page.goto('/dashboard/workspaces/dashboards');
   await page.getByTestId('CreateDashboardFromTemplate').click();
   await page.getByTestId('dashboard-template-knowledge-health').click();
@@ -87,7 +101,73 @@ test('Create the Knowledge health dashboard from its template', { tag: ['@ce'] }
     await expect(page.getByText('Knowledge Health score').first()).toBeVisible();
     await expect(page.getByText('Open curation proposals by kind').first()).toBeVisible();
     await expect(page.getByText('Knowledge Health trend').first()).toBeVisible();
+    await capture(page, testInfo, 'dashboard-template');
   } finally {
     if (dashboardId) await deleteDashboard(request, dashboardId);
+  }
+});
+
+/**
+ * Content of the test
+ * -------------------
+ * From detection to decision, on the running platform:
+ * 1. Two intrusion sets whose names differ only by case and punctuation are created; the curation manager raises a
+ *    merge proposal from the stream.
+ * 2. The Inbox lists it, and its page compares the subjects and explains the evidence.
+ * 3. The surviving entity shows the Possible duplicate chip.
+ * 4. Knowledge health is refreshed and shows a snapshot; Settings > Customization > Curation shows the settings and
+ *    the policies.
+ */
+test('Curation proposal from detection to decision', { tag: ['@ce'] }, async ({ page, request }, testInfo) => {
+  test.setTimeout(400000);
+  const curationPage = new CurationPage(page);
+  const suffix = `${Math.floor(1000 + Math.random() * 9000)}`;
+  const firstName = `Velvet Lynx ${suffix}`;
+  const secondName = `velvet-lynx ${suffix}`;
+  const firstId = await addIntrusionSet(request, firstName);
+  const secondId = await addIntrusionSet(request, secondName);
+
+  try {
+    await expect.poll(async () => (await openProposalIds(request, firstId)).length, { timeout: 240000, intervals: [5000] }).toBeGreaterThan(0);
+    const [proposalId] = await openProposalIds(request, firstId);
+
+    await curationPage.gotoHub();
+    await expect(curationPage.getInbox()).toBeVisible();
+    await capture(page, testInfo, 'inbox');
+    await new SearchPageModel(page).addSearch(suffix);
+    await expect(curationPage.getInbox().getByText(firstName).first()).toBeVisible();
+    await capture(page, testInfo, 'inbox-search');
+
+    await page.goto(`/dashboard/data/curation/inbox/${proposalId}`);
+    await expect(page.getByTestId('curation-proposal-page')).toBeVisible();
+    await expect(page.getByTestId('curation-compare-table')).toBeVisible();
+    await capture(page, testInfo, 'proposal');
+    await page.getByTestId('curation-evidence-table').scrollIntoViewIfNeeded();
+    await capture(page, testInfo, 'proposal-evidence');
+
+    await page.goto(`/dashboard/threats/intrusion_sets/${firstId}`);
+    await expect(page.getByTestId('curation-possible-duplicate')).toBeVisible();
+    await capture(page, testInfo, 'possible-duplicate');
+
+    await curationPage.gotoHub();
+    await curationPage.getHubTab('merges').click();
+    await expect(curationPage.getMerges()).toBeVisible();
+    await capture(page, testInfo, 'merges');
+
+    await curationPage.getHubTab('health').click();
+    await expect(curationPage.getKnowledgeHealth()).toBeVisible();
+    await page.getByTestId('knowledge-health-refresh').click();
+    await expect(page.getByText('Snapshot of').first()).toBeVisible({ timeout: 120000 });
+    await capture(page, testInfo, 'knowledge-health');
+
+    await curationPage.gotoCustomization();
+    await expect(curationPage.getSettings()).toBeVisible();
+    await capture(page, testInfo, 'settings');
+    await curationPage.getCustomizationTab('policies').click();
+    await expect(curationPage.getPolicies()).toBeVisible();
+    await capture(page, testInfo, 'policies');
+  } finally {
+    await deleteIntrusionSet(request, secondId);
+    await deleteIntrusionSet(request, firstId);
   }
 });

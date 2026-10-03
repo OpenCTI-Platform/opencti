@@ -57,6 +57,18 @@ export const deleteIntrusionSet = async (request: APIRequestContext, id: string)
   }
 };
 
+/** Ids of the open curation proposals the entity is a subject of. */
+export const openProposalIds = async (request: APIRequestContext, entityId: string): Promise<string[]> => {
+  const data = await readData(request, `
+    query {
+      curationProposalsForEntity(id: ${JSON.stringify(entityId)}, status: [open]) {
+        id
+      }
+    }
+  `);
+  return (data.curationProposalsForEntity ?? []).map((proposal: { id: string }) => proposal.id);
+};
+
 export const deleteDashboard = async (request: APIRequestContext, id: string) => {
   await graphqlQuery(request, `
     mutation {
