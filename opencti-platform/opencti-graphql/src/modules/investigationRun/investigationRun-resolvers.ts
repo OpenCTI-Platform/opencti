@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreators } from '../../database/members';
 import { elFindByIds } from '../../database/engine';
@@ -148,7 +149,8 @@ const investigationRunResolvers: Resolvers = {
   Subscription: {
     investigationRun: {
       resolve: (payload: { instance: BasicStoreEntityInvestigationRun }) => payload.instance,
-      subscribe: (_: unknown, { id }: { id: string }, context: any) => {
+      subscribe: async (_: unknown, { id }: { id: string }, context: any) => {
+        await checkEnterpriseEdition(context);
         const bus = BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN];
         // A run's markings widen as it cites restricted objects: access is checked on every event.
         return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_INVESTIGATION_RUN, notifySelf: true, recheckAccess: true });

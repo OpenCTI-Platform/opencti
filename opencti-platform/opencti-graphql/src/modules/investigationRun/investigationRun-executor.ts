@@ -531,28 +531,47 @@ const startEngine = async (exec: RunExecution) => {
     remainingEnrichmentJobs: remainingEnrichmentJobs(run),
     continuesInvestigationId: run.continues_investigation_id ?? null,
   });
+  // Collecting the context takes time: a run cancelled meanwhile starts nothing.
+  const beforeStart = await loadInvestigationRun(exec.liveContext, run.internal_id);
+  if (!beforeStart || TERMINAL_RUN_STATUSES.includes(beforeStart.run_status)) {
+    return;
+  }
   const result = await startInvestigation(jwtUserOf(runUser), body, run.draft_id);
   if (!result.ok) {
     await handleEngineFailure(exec, result);
     return;
   }
   const engine = result.value;
-  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
-    agent_slug: agentSlug,
-    pack_id: body.pack,
-    xtm_investigation_id: engine.id,
-    xtm_investigation_ids: R.uniq([...(current.xtm_investigation_ids ?? []), engine.id]),
-    xtm_revision: -1,
-    xtm_status: engine.status,
-    xtm_completed_at: null,
-    continues_investigation_id: null,
-    budget_cancelled: false,
-    engine_failures: 0,
-    goal_plan: engine.goal_plan ?? current.goal_plan ?? null,
-    end_reason_code: null,
-    status_reason: null,
-    run_phase: InvestigationRunPhase.Investigating,
-  }));
+  const outcome = { endedMeanwhile: false };
+  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
+    if (TERMINAL_RUN_STATUSES.includes(current.run_status)) {
+      // Cancelled while the engine was starting: its run is kept in the history and stopped below.
+      outcome.endedMeanwhile = true;
+      return { xtm_investigation_ids: R.uniq([...(current.xtm_investigation_ids ?? []), engine.id]) };
+    }
+    return {
+      agent_slug: agentSlug,
+      pack_id: body.pack,
+      xtm_investigation_id: engine.id,
+      xtm_investigation_ids: R.uniq([...(current.xtm_investigation_ids ?? []), engine.id]),
+      xtm_revision: -1,
+      xtm_status: engine.status,
+      xtm_completed_at: null,
+      continues_investigation_id: null,
+      budget_cancelled: false,
+      engine_failures: 0,
+      goal_plan: engine.goal_plan ?? current.goal_plan ?? null,
+      end_reason_code: null,
+      status_reason: null,
+      run_phase: InvestigationRunPhase.Investigating,
+    };
+  });
+  if (outcome.endedMeanwhile) {
+    const cancelled = await cancelInvestigation(jwtUserOf(runUser), engine.id);
+    if (!cancelled.ok) {
+      logApp.warn('[CASE AUTOPILOT] Engine run started during a cancellation not cancelled', { runId: run.internal_id, investigationId: engine.id, failure: cancelled.failure });
+    }
+  }
 };
 
 // endregion

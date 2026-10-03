@@ -13,11 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { Subject } from 'rxjs';
 import type { ChipSeverity } from '@filigran/design-system';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 
 export type InvestigationRunStatusValue = 'planned' | 'running' | 'awaiting_approval' | 'completed' | 'failed' | 'cancelled';
+
+/** Emits the id of the entity an investigation was just launched on, for the views that list its runs. */
+export const INVESTIGATION_LAUNCHED$ = new Subject<string>();
 
 export const ACTIVE_RUN_STATUSES: readonly string[] = ['planned', 'running', 'awaiting_approval'];
 

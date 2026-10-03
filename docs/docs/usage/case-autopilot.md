@@ -69,6 +69,8 @@ Investigation policies are managed in **Settings > Customization > Investigation
 
 The policy page also shows, per policy, the number of investigations and the share of hypotheses and recommendations analysts accepted.
 
+One policy is the default: it cannot be deleted, and promoting another policy to default replaces it. A policy used by investigations in progress cannot be deleted until they end; the investigations it already ran are kept. When the creation of an automatic investigation fails for a technical reason (for example the database is briefly unavailable), the request for information is investigated on the next attempt rather than skipped.
+
 ## Automate with playbooks
 
 The playbook component **Run Case Autopilot** starts an investigation for each incident or case of the bundle, once per entity, with the policy you select. Combine it with a playbook listening to the incidents your incident connectors create (for example Microsoft Sentinel incidents, Microsoft Defender incidents or CrowdStrike) to investigate every new incident as it arrives. See [playbook components](playbook-components.md).

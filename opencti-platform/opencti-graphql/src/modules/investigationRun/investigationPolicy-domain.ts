@@ -31,6 +31,7 @@ import { assertRunAsUserAllowed } from '../playbook/components/ai-agent-shared';
 import { connectorsForEnrichment } from '../../database/repository';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import {
+  ACTIVE_RUN_STATUSES,
   DEFAULT_POLICY_NAME,
   DEFAULT_POLICY_VALUES,
   ENTITY_TYPE_INVESTIGATION_POLICY,
@@ -42,6 +43,8 @@ import {
 
 const DEFAULT_POLICY_LOCK = 'investigation_policy_default_lock';
 const policyCountersLock = (policyId: string) => `investigation_policy_counters_${policyId}`;
+// Held by run creation and policy deletion: a policy is never deleted under a run being created.
+export const policyUsageLockKey = (policyId: string) => `investigation_policy_usage_${policyId}`;
 
 // Keys an administrator can edit; counters, stream position and default flag
 // go through dedicated paths.
@@ -260,6 +263,18 @@ export const editInvestigationPolicy = async (context: AuthContext, user: AuthUs
   }
 };
 
+// Every run counts, including the ones the caller cannot read.
+const countActiveRunsForPolicy = (context: AuthContext, policyId: string): Promise<number> => {
+  return elCount(context, INVESTIGATION_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_INVESTIGATION_RUN],
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['policy_id'], values: [policyId] }, { key: ['run_status'], values: ACTIVE_RUN_STATUSES }],
+      filterGroups: [],
+    },
+  });
+};
+
 export const deleteInvestigationPolicy = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
   const policy = await loadInvestigationPolicy(context, id);
@@ -269,7 +284,17 @@ export const deleteInvestigationPolicy = async (context: AuthContext, user: Auth
   if (policy.is_default) {
     throw FunctionalError('The default investigation policy cannot be deleted', { id });
   }
-  await deleteInternalObject(context, user, id, ENTITY_TYPE_INVESTIGATION_POLICY);
+  const lock = await lockResources([policyUsageLockKey(policy.internal_id)]);
+  try {
+    // Runs read their policy on every step: it stays until they end.
+    const activeRuns = await countActiveRunsForPolicy(context, policy.internal_id);
+    if (activeRuns > 0) {
+      throw FunctionalError('The investigation policy is used by investigations in progress', { id, activeRuns });
+    }
+    await deleteInternalObject(context, user, id, ENTITY_TYPE_INVESTIGATION_POLICY);
+  } finally {
+    await lock.unlock();
+  }
   await notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_POLICY].DELETE_TOPIC, policy, user);
   return id;
 };

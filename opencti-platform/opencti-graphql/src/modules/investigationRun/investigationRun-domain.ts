@@ -34,7 +34,7 @@ import {
   type InvestigationRunFeedbackInput,
   type QueryInvestigationRunsArgs,
 } from '../../generated/graphql';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { elFindByIds } from '../../database/engine';
 import { internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../database/middleware-loader';
 import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../../database/middleware';
@@ -77,7 +77,7 @@ import {
   type InvestigationRecommendation,
   type StoreEntityInvestigationRun,
 } from './investigationRun-types';
-import { applyInvestigationPolicyAcceptanceDelta, getDefaultInvestigationPolicy, loadInvestigationPolicy } from './investigationPolicy-domain';
+import { applyInvestigationPolicyAcceptanceDelta, getDefaultInvestigationPolicy, loadInvestigationPolicy, policyUsageLockKey } from './investigationPolicy-domain';
 import {
   buildBudget,
   computeWaveStatus,
@@ -94,6 +94,7 @@ import { markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
 const subjectLockKey = (subjectId: string) => `investigation_run_subject_lock_${subjectId}`;
+const runActionsLockKey = (runId: string) => `investigation_run_actions_lock_${runId}`;
 
 const outOfDraft = (context: AuthContext): AuthContext => ({ ...context, draft_context: '' });
 
@@ -151,7 +152,11 @@ const LATEST_RUNS_PAGE = 500;
 
 // Batch loader behind the run badges of case and incident lists: one query for
 // the page, per-entity queries only when that page could have hidden a run.
+// Outside the Enterprise Edition the field is null, so case queries keep working.
 export const batchLatestInvestigationRuns = async (context: AuthContext, user: AuthUser, entityIds: string[]) => {
+  if (!(await isEnterpriseEdition(context))) {
+    return entityIds.map(() => null) as unknown as BasicStoreCommon[];
+  }
   const liveContext = outOfDraft(context);
   const ids = Array.from(new Set(entityIds));
   const filtersFor = (values: string[]) => ({
@@ -343,10 +348,14 @@ export const addInvestigationRun = async (
     objectOrganization: organizationIdsOf(subject),
   };
   // Dedupe on the subject: one active investigation at a time, checked and
-  // created under a per-subject lock so concurrent launches never race.
-  const subjectLock = await lockResources([subjectLockKey(subject.internal_id)]);
+  // created under a per-subject lock so concurrent launches never race. The
+  // policy lock keeps the policy from being deleted under the new run.
+  const subjectLock = await lockResources([subjectLockKey(subject.internal_id), policyUsageLockKey(policy.internal_id)]);
   let created: BasicStoreEntityInvestigationRun;
   try {
+    if (!(await loadInvestigationPolicy(liveContext, policy.internal_id))) {
+      throw FunctionalError('Investigation policy not found', { policyId: policy.internal_id });
+    }
     const active = await findActiveInvestigationRunForSubject(liveContext, subject.internal_id);
     if (active) {
       // The active run is returned only as the caller may read it.
@@ -381,8 +390,12 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   if (TERMINAL_RUN_STATUSES.includes(run.run_status)) {
     return run;
   }
+  // Read under the run lock: an engine run recorded just before the cancellation is stopped too.
+  const cancellation: { done: boolean; engineId: string | null } = { done: false, engineId: null };
   const updated = await updateInvestigationRun(context, id, (current) => {
     if (!ACTIVE_RUN_STATUSES.includes(current.run_status)) return null;
+    cancellation.done = true;
+    cancellation.engineId = current.run_phase === InvestigationRunPhase.Investigating ? current.xtm_investigation_id ?? null : null;
     const now = new Date();
     return {
       ...statusTransition(current, InvestigationRunStatus.Cancelled, InvestigationRunPhase.Done, now, `Cancelled by ${user.name}`),
@@ -400,10 +413,10 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
     message: `cancels Case Autopilot run \`${run.name}\``,
     context_data: { id: run.subject_id, entity_type: run.subject_type, input: { run_id: id } },
   });
-  if (updated.run_status === InvestigationRunStatus.Cancelled) {
+  if (cancellation.done) {
     addInvestigationRunOutcomeCount(InvestigationRunStatus.Cancelled);
-    if (run.xtm_investigation_id && run.run_phase === InvestigationRunPhase.Investigating) {
-      const result = await cancelInvestigation({ id: user.id, user_email: user.user_email }, run.xtm_investigation_id);
+    if (cancellation.engineId) {
+      const result = await cancelInvestigation({ id: user.id, user_email: user.user_email }, cancellation.engineId);
       if (!result.ok) logApp.warn('[CASE AUTOPILOT] Engine run not cancelled', { runId: id, failure: result.failure });
     }
   }
@@ -523,6 +536,29 @@ export const resolveLiveCase = async (context: AuthContext, user: AuthUser, run:
   return cases[0] ?? null;
 };
 
+/**
+ * Analyst actions with side effects outside the run (tasks, relations, draft
+ * validation) are checked and executed under this lock against a fresh run, so
+ * a repeated click or a concurrent approval never applies an action twice.
+ * Taken before the run lock, never while holding it.
+ */
+const withRunActions = async <T>(
+  context: AuthContext,
+  runId: string,
+  execute: (run: BasicStoreEntityInvestigationRun) => Promise<T>,
+): Promise<T> => {
+  const lock = await lockResources([runActionsLockKey(runId)]);
+  try {
+    const run = await loadInvestigationRun(outOfDraft(context), runId);
+    if (!run) {
+      throw FunctionalError('Investigation run not found', { id: runId });
+    }
+    return await execute(run);
+  } finally {
+    await lock.unlock();
+  }
+};
+
 const createRecommendationTask = async (
   context: AuthContext,
   user: AuthUser,
@@ -556,41 +592,44 @@ export const applyInvestigationRecommendation = async (
   recommendationId: string,
   mode: InvestigationRecommendationApplyMode,
 ) => {
-  const run = await findAccessibleRun(context, user, id);
-  const recommendation = run.recommendations.find((r) => r.id === recommendationId);
-  if (!recommendation) {
-    throw FunctionalError('Unknown recommendation', { id, recommendationId });
-  }
-  if (recommendation.status !== InvestigationRecommendationStatus.Proposed) {
-    throw FunctionalError('This recommendation was already handled or is waiting for an approval', { id, recommendationId, status: recommendation.status });
-  }
-  const liveCase = await resolveLiveCase(context, user, run);
-  let statusPatch: Partial<InvestigationRecommendation>;
-  if (mode === InvestigationRecommendationApplyMode.CourseOfAction) {
-    if (!recommendation.course_of_action_id) {
-      throw FunctionalError('This recommendation does not reference a course of action', { id, recommendationId });
+  const accessible = await findAccessibleRun(context, user, id);
+  const { run, updated } = await withRunActions(context, accessible.internal_id, async (fresh) => {
+    const recommendation = fresh.recommendations.find((r) => r.id === recommendationId);
+    if (!recommendation) {
+      throw FunctionalError('Unknown recommendation', { id, recommendationId });
     }
-    if (!liveCase) {
-      throw FunctionalError('Approve the investigation draft first: the course of action is applied to the case', { id });
+    if (recommendation.status !== InvestigationRecommendationStatus.Proposed) {
+      throw FunctionalError('This recommendation was already handled or is waiting for an approval', { id, recommendationId, status: recommendation.status });
     }
-    await stixDomainObjectAddRelation(outOfDraft(context), user, liveCase.internal_id, { toId: recommendation.course_of_action_id, relationship_type: RELATION_OBJECT });
-    statusPatch = { status: InvestigationRecommendationStatus.Applied };
-  } else {
-    const taskId = await createRecommendationTask(context, user, run, recommendation, liveCase);
-    statusPatch = { status: InvestigationRecommendationStatus.TaskCreated, task_id: taskId };
-  }
-  // Applying a recommendation is the strongest acceptance signal: recorded as such.
-  const entry: InvestigationFeedback = {
-    item_type: InvestigationFeedbackItemType.Recommendation,
-    item_ref: recommendationId,
-    decision: InvestigationFeedbackDecision.Accepted,
-    comment: null,
-    user_id: user.id,
-    ts: new Date().toISOString(),
-  };
-  const updated = await recordFeedback(context, user, run, entry, (current) => ({
-    recommendations: current.recommendations.map((r) => (r.id === recommendationId ? { ...r, ...statusPatch } : r)),
-  }));
+    const liveCase = await resolveLiveCase(context, user, fresh);
+    let statusPatch: Partial<InvestigationRecommendation>;
+    if (mode === InvestigationRecommendationApplyMode.CourseOfAction) {
+      if (!recommendation.course_of_action_id) {
+        throw FunctionalError('This recommendation does not reference a course of action', { id, recommendationId });
+      }
+      if (!liveCase) {
+        throw FunctionalError('Approve the investigation draft first: the course of action is applied to the case', { id });
+      }
+      await stixDomainObjectAddRelation(outOfDraft(context), user, liveCase.internal_id, { toId: recommendation.course_of_action_id, relationship_type: RELATION_OBJECT });
+      statusPatch = { status: InvestigationRecommendationStatus.Applied };
+    } else {
+      const taskId = await createRecommendationTask(context, user, fresh, recommendation, liveCase);
+      statusPatch = { status: InvestigationRecommendationStatus.TaskCreated, task_id: taskId };
+    }
+    // Applying a recommendation is the strongest acceptance signal: recorded as such.
+    const entry: InvestigationFeedback = {
+      item_type: InvestigationFeedbackItemType.Recommendation,
+      item_ref: recommendationId,
+      decision: InvestigationFeedbackDecision.Accepted,
+      comment: null,
+      user_id: user.id,
+      ts: new Date().toISOString(),
+    };
+    const recorded = await recordFeedback(context, user, fresh, entry, (current) => ({
+      recommendations: current.recommendations.map((r) => (r.id === recommendationId ? { ...r, ...statusPatch } : r)),
+    }));
+    return { run: fresh, updated: recorded };
+  });
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -640,16 +679,13 @@ const executeApprovedRecommendation = async (
   return { status: InvestigationRecommendationStatus.TaskCreated, task_id: taskId };
 };
 
-export const decideInvestigationApprovals = async (
+const decideApprovalsOf = async (
   context: AuthContext,
   user: AuthUser,
   runId: string,
+  run: BasicStoreEntityInvestigationRun,
   decisions: InvestigationApprovalDecisionInput[],
 ): Promise<InvestigationApprovalOutcome> => {
-  const run = await findAccessibleRun(context, user, runId);
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
-    throw ForbiddenAccess();
-  }
   const now = new Date();
   const decided: Array<{ approval: InvestigationApproval; approved: boolean; reason: string | null }> = [];
   decisions.forEach((decision) => {
@@ -748,6 +784,21 @@ export const decideInvestigationApprovals = async (
     },
   });
   return { decided: decided.length, run: updated };
+};
+
+export const decideInvestigationApprovals = async (
+  context: AuthContext,
+  user: AuthUser,
+  runId: string,
+  decisions: InvestigationApprovalDecisionInput[],
+): Promise<InvestigationApprovalOutcome> => {
+  const accessible = await findAccessibleRun(context, user, runId);
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
+    throw ForbiddenAccess();
+  }
+  // Pending approvals are read again under the lock: a concurrent decision on
+  // the same approval finds it decided and executes nothing.
+  return withRunActions(context, accessible.internal_id, (run) => decideApprovalsOf(context, user, runId, run, decisions));
 };
 
 // endregion

@@ -28,7 +28,7 @@ import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, SETTINGS_SETPAR
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunDrawer from './InvestigationRunDrawer';
 import RunCaseAutopilotDialog, { AUTOPILOT_TAB_TYPES, type RunCaseAutopilotStarted } from './RunCaseAutopilotDialog';
-import { caseAutopilotPath } from './investigationRunUtils';
+import { caseAutopilotPath, INVESTIGATION_LAUNCHED$ } from './investigationRunUtils';
 
 interface RunCaseAutopilotAskAIProps {
   subjectId: string;
@@ -54,6 +54,7 @@ const RunCaseAutopilotAskAI = ({ subjectId, subjectType, basePath }: RunCaseAuto
   if (draftContext || !canInvestigate) return null;
   const onStarted = ({ runId, caseRef }: RunCaseAutopilotStarted) => {
     setLaunching(false);
+    INVESTIGATION_LAUNCHED$.next(subjectId);
     if (basePath && AUTOPILOT_TAB_TYPES.includes(subjectType)) {
       navigate(`${basePath}/autopilot?run=${encodeURIComponent(runId)}`);
     } else if (caseRef) {

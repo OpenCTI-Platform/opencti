@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
@@ -21,7 +21,7 @@ import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import InvestigationRunDrawer from './InvestigationRunDrawer';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
-import { caseAutopilotPath, runStatusLabel } from './investigationRunUtils';
+import { caseAutopilotPath, INVESTIGATION_LAUNCHED$, runStatusLabel } from './investigationRunUtils';
 import { LatestInvestigationChipQuery } from './__generated__/LatestInvestigationChipQuery.graphql';
 
 const latestInvestigationChipQuery = graphql`
@@ -45,11 +45,11 @@ interface LatestInvestigationChipProps {
   subjectId: string;
 }
 
-const LatestInvestigationLink = ({ subjectId }: LatestInvestigationChipProps) => {
+const LatestInvestigationLink = ({ subjectId, fetchKey }: LatestInvestigationChipProps & { fetchKey: number }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const data = useLazyLoadQuery<LatestInvestigationChipQuery>(latestInvestigationChipQuery, { subjectId }, { fetchPolicy: 'store-and-network' });
+  const data = useLazyLoadQuery<LatestInvestigationChipQuery>(latestInvestigationChipQuery, { subjectId }, { fetchPolicy: 'store-and-network', fetchKey });
   const run = data.investigationRuns?.edges?.[0]?.node;
   if (!run) return null;
   const { case: caseRef } = run;
@@ -76,10 +76,18 @@ const LatestInvestigationLink = ({ subjectId }: LatestInvestigationChipProps) =>
 /** The compact "Latest investigation" link of an indicator or an observable overview. */
 const LatestInvestigationChip = ({ subjectId }: LatestInvestigationChipProps) => {
   const isEnterpriseEdition = useEnterpriseEdition();
+  const [fetchKey, setFetchKey] = useState(0);
+  // A launch from the Ask AI menu of this overview makes its run the latest one.
+  useEffect(() => {
+    const subscription = INVESTIGATION_LAUNCHED$.subscribe((launchedOn) => {
+      if (launchedOn === subjectId) setFetchKey((key) => key + 1);
+    });
+    return () => subscription.unsubscribe();
+  }, [subjectId]);
   if (!isEnterpriseEdition) return null;
   return (
     <Suspense fallback={null}>
-      <LatestInvestigationLink subjectId={subjectId} />
+      <LatestInvestigationLink subjectId={subjectId} fetchKey={fetchKey} />
     </Suspense>
   );
 };

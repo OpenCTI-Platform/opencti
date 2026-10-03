@@ -20,6 +20,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { Promise as BluePromise } from 'bluebird';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
+import { ALREADY_DELETED_ERROR, FORBIDDEN_ACCESS, FUNCTIONAL_ERROR, MISSING_REF_ERROR, VALIDATION_ERROR } from '../config/errors';
 import { executionContext } from '../utils/access';
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent } from '../types/event';
@@ -54,24 +55,46 @@ export const resolveHookUser = async (context: AuthContext, policy: BasicStoreEn
   return resolveUserByIdFromCache(context, OPENCTI_ADMIN_UUID);
 };
 
-const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy) => {
+// A refusal (the request is gone, not investigable, not visible to the
+// identity) never succeeds on a retry; any other failure (database, lock
+// timeout, unknown) is retried.
+const HOOK_REFUSAL_CODES = [FUNCTIONAL_ERROR, FORBIDDEN_ACCESS, MISSING_REF_ERROR, ALREADY_DELETED_ERROR, VALIDATION_ERROR];
+export const isRetryableHookError = (error: unknown) => {
+  const code = (error as { extensions?: { code?: string } })?.extensions?.code;
+  return !code || !HOOK_REFUSAL_CODES.includes(code);
+};
+
+export interface CaseRfiHookProgress {
+  // Last stream event fully handled, where the next tick resumes after a retryable failure.
+  handledEventId: string | null;
+  retry: boolean;
+}
+
+export const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy, progress: CaseRfiHookProgress) => {
   return async (streamEvents: Array<SseEvent<DataEvent>>) => {
-    const created = streamEvents
-      .map((event) => event.data)
-      .filter((event) => event.type === EVENT_TYPE_CREATE && event.data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_CONTAINER_CASE_RFI);
-    if (created.length === 0) return;
-    const runUser = await resolveHookUser(context, policy);
-    if (!runUser) {
+    const isRfiCreation = ({ data: event }: SseEvent<DataEvent>) => event.type === EVENT_TYPE_CREATE
+      && event.data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_CONTAINER_CASE_RFI;
+    const hasRfiCreation = streamEvents.some(isRfiCreation);
+    const runUser = hasRfiCreation ? await resolveHookUser(context, policy) : null;
+    if (hasRfiCreation && !runUser) {
       logApp.warn('[CASE AUTOPILOT] No identity to investigate new requests for information', { policyId: policy.internal_id });
-      return;
     }
-    for (let index = 0; index < created.length; index += 1) {
-      const rfiId = created[index].data.extensions[STIX_EXT_OCTI].id;
-      try {
-        await addInvestigationRun(context, runUser, rfiId, policy.internal_id, { trigger: InvestigationRunTrigger.CaseRfiCreation, runAsUserId: runUser.id });
-      } catch (error) {
-        logApp.warn('[CASE AUTOPILOT] Investigation of a new request for information not started', { rfiId, policyId: policy.internal_id, cause: error });
+    for (let index = 0; index < streamEvents.length && !progress.retry; index += 1) {
+      const streamEvent = streamEvents[index];
+      if (runUser && isRfiCreation(streamEvent)) {
+        const rfiId = streamEvent.data.data.extensions[STIX_EXT_OCTI].id;
+        try {
+          await addInvestigationRun(context, runUser, rfiId, policy.internal_id, { trigger: InvestigationRunTrigger.CaseRfiCreation, runAsUserId: runUser.id });
+        } catch (error) {
+          if (isRetryableHookError(error)) {
+            logApp.warn('[CASE AUTOPILOT] Investigation of a new request for information delayed, retried on the next run', { rfiId, policyId: policy.internal_id, cause: error });
+            progress.retry = true;
+            return;
+          }
+          logApp.warn('[CASE AUTOPILOT] Investigation of a new request for information not started', { rfiId, policyId: policy.internal_id, cause: error });
+        }
       }
+      progress.handledEventId = streamEvent.id;
     }
   };
 };
@@ -81,13 +104,16 @@ const processCaseRfiHooks = async (context: AuthContext) => {
   for (let index = 0; index < policies.length; index += 1) {
     const policy = policies[index];
     const startEventId = policy.last_event_id || `${Date.now()}-0`;
+    const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       startEventId,
-      caseRfiCreationHandler(context, policy),
+      caseRfiCreationHandler(context, policy, progress),
       { streamBatchSize: INVESTIGATION_RUN_MANAGER_STREAM_BATCH_SIZE },
     );
-    if (lastEventId && lastEventId !== policy.last_event_id) {
-      await updateInvestigationPolicyStreamPosition(context, policy.internal_id, lastEventId);
+    // After a retryable failure the cursor stops on the last handled event, never past the failed one.
+    const position = progress.retry ? progress.handledEventId : lastEventId;
+    if (position && position !== policy.last_event_id) {
+      await updateInvestigationPolicyStreamPosition(context, policy.internal_id, position);
     }
   }
 };
