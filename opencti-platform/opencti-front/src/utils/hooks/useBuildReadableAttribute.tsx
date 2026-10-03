@@ -16,7 +16,12 @@ const MARKDOWN_ATTRIBUTES = [
   'explanation',
   'contact_information',
   'objective',
+  // Sections of the latest Case Autopilot investigation of a case.
+  ...['executive_summary', 'report', 'timeline', 'hypotheses', 'recommendations', 'iocs']
+    .map((section) => `latestInvestigationRun.report_sections.${section}`),
 ];
+
+const DATE_ATTRIBUTES = ['latestInvestigationRun.completed_at'];
 
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
@@ -52,6 +57,7 @@ const useBuildReadableAttribute = () => {
     if (attribute) {
       attributeType = stixCoreObjectsAttributesMap.get(attribute)?.type;
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
+      if (DATE_ATTRIBUTES.includes(attribute)) attributeType = 'date';
     }
 
     let readableAttribute;

@@ -40,6 +40,7 @@ import {
   formatProbability,
   investigationGraphPath,
   isRunActive,
+  reportMutationOutcome,
   RUN_TRIGGER_LABELS,
   runPhaseLabel,
 } from './investigationRunUtils';
@@ -90,15 +91,9 @@ const InvestigationRunHeader = ({ run, currentEntityId, onDecided, onDeleted }: 
   const { t_i18n, fldt, n } = useFormatter();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [approving, setApproving] = useState(false);
-  const [commitCancel, cancelling] = useApiMutation<InvestigationRunHeaderCancelMutation>(investigationRunHeaderCancelMutation, undefined, {
-    successMessage: t_i18n('The investigation was cancelled'),
-  });
-  const [commitDelete, deleting] = useApiMutation<InvestigationRunHeaderDeleteMutation>(investigationRunHeaderDeleteMutation, undefined, {
-    successMessage: t_i18n('The investigation was deleted'),
-  });
-  const [commitContinue, continuing] = useApiMutation<InvestigationRunHeaderContinueMutation>(investigationRunHeaderContinueMutation, undefined, {
-    successMessage: t_i18n('The investigation continues'),
-  });
+  const [commitCancel, cancelling] = useApiMutation<InvestigationRunHeaderCancelMutation>(investigationRunHeaderCancelMutation);
+  const [commitDelete, deleting] = useApiMutation<InvestigationRunHeaderDeleteMutation>(investigationRunHeaderDeleteMutation);
+  const [commitContinue, continuing] = useApiMutation<InvestigationRunHeaderContinueMutation>(investigationRunHeaderContinueMutation);
   const engineReason = engineReasonLabel(run.end_reason_code);
   const active = isRunActive(run.run_status);
   const draftApproval = run.approvals.find((approval) => approval.kind === 'draft_validation' && approval.status === 'pending');
@@ -144,7 +139,12 @@ const InvestigationRunHeader = ({ run, currentEntityId, onDecided, onDeleted }: 
                 intent="ai"
                 startIcon={<PlayArrowOutlined fontSize="small" />}
                 disabled={continuing}
-                onClick={() => commitContinue({ variables: { id: run.id } })}
+                onClick={() => commitContinue({
+                  variables: { id: run.id },
+                  onCompleted: (_, errors) => {
+                    reportMutationOutcome(errors, t_i18n('The investigation continues'));
+                  },
+                })}
                 data-testid="investigation-run-continue"
               >
                 {t_i18n('Continue investigation')}
@@ -169,7 +169,12 @@ const InvestigationRunHeader = ({ run, currentEntityId, onDecided, onDeleted }: 
                 intent="destructive"
                 startIcon={<CancelOutlined fontSize="small" />}
                 disabled={cancelling}
-                onClick={() => commitCancel({ variables: { id: run.id } })}
+                onClick={() => commitCancel({
+                  variables: { id: run.id },
+                  onCompleted: (_, errors) => {
+                    reportMutationOutcome(errors, t_i18n('The investigation was cancelled'));
+                  },
+                })}
                 data-testid="investigation-run-cancel"
               >
                 {t_i18n('Cancel the investigation')}
@@ -254,9 +259,9 @@ const InvestigationRunHeader = ({ run, currentEntityId, onDecided, onDeleted }: 
             disabled={deleting}
             onClick={() => commitDelete({
               variables: { id: run.id },
-              onCompleted: () => {
+              onCompleted: (_, errors) => {
                 setConfirmDelete(false);
-                onDeleted?.();
+                if (reportMutationOutcome(errors, t_i18n('The investigation was deleted'))) onDeleted?.();
               },
             })}
           >

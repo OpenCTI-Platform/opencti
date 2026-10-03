@@ -93,6 +93,7 @@ import { notifyInvestigationRunStatus } from './investigationRun-notification';
 import { markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
+const subjectLockKey = (subjectId: string) => `investigation_run_subject_lock_${subjectId}`;
 
 const outOfDraft = (context: AuthContext): AuthContext => ({ ...context, draft_context: '' });
 
@@ -287,11 +288,6 @@ export const addInvestigationRun = async (
   if (!policy) {
     throw FunctionalError('Investigation policy not found', { policyId });
   }
-  // Dedupe on the subject: one active investigation at a time.
-  const active = await findActiveInvestigationRunForSubject(liveContext, subject.internal_id);
-  if (active) {
-    return active;
-  }
   const isCase = INVESTIGATION_CASE_SUBJECT_TYPES.includes(subject.entity_type);
   const subjectName = extractEntityRepresentativeName(subject) || subject.internal_id;
   // Indicators and observables are investigated inside a case, so the results
@@ -346,7 +342,24 @@ export const addInvestigationRun = async (
     objectMarking: markingIdsOf(subject),
     objectOrganization: organizationIdsOf(subject),
   };
-  const created = await createEntity(liveContext, INVESTIGATION_MANAGER_USER, runInput, ENTITY_TYPE_INVESTIGATION_RUN);
+  // Dedupe on the subject: one active investigation at a time, checked and
+  // created under a per-subject lock so concurrent launches never race.
+  const subjectLock = await lockResources([subjectLockKey(subject.internal_id)]);
+  let created: BasicStoreEntityInvestigationRun;
+  try {
+    const active = await findActiveInvestigationRunForSubject(liveContext, subject.internal_id);
+    if (active) {
+      // The active run is returned only as the caller may read it.
+      const visible = await findInvestigationRunById(liveContext, user, active.internal_id);
+      if (!visible) {
+        throw FunctionalError('An investigation of this entity is already running', { subjectId: subject.internal_id });
+      }
+      return visible;
+    }
+    created = await createEntity(liveContext, INVESTIGATION_MANAGER_USER, runInput, ENTITY_TYPE_INVESTIGATION_RUN) as unknown as BasicStoreEntityInvestigationRun;
+  } finally {
+    await subjectLock.unlock();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

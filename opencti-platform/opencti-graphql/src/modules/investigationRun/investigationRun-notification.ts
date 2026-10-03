@@ -41,8 +41,8 @@ export const investigationTriggerEventFor = (previous: string, next: string): Tr
   return null;
 };
 
-export const investigationNotificationMessage = (eventType: TriggerEventType, run: BasicStoreEntityInvestigationRun, representative: string) => {
-  const target = `[${run.case_id ? 'case' : run.subject_type.toLowerCase()}] ${representative}`;
+export const investigationNotificationMessage = (eventType: TriggerEventType, run: BasicStoreEntityInvestigationRun, representative: string, onCase: boolean) => {
+  const target = `[${onCase ? 'case' : run.subject_type.toLowerCase()}] ${representative}`;
   switch (eventType) {
     case INVESTIGATION_TRIGGER_AWAITING_APPROVAL:
       return `Case Autopilot investigation of ${target} is waiting for an analyst approval`;
@@ -70,10 +70,12 @@ export const notifyInvestigationRunStatus = async (
     const liveNotifications = await getLiveNotifications(context);
     const candidates = liveNotifications.filter(({ trigger }) => (trigger.event_types ?? []).includes(eventType));
     if (candidates.length === 0) return 0;
-    const stix = await stixLoadById(context, SYSTEM_USER, run.case_id ?? run.subject_id) as StixObject | undefined;
+    // A case created in the run Draft is not live yet: the event is then delivered on the subject.
+    const caseStix = run.case_id ? await stixLoadById(context, SYSTEM_USER, run.case_id) as StixObject | undefined : undefined;
+    const stix = caseStix ?? await stixLoadById(context, SYSTEM_USER, run.subject_id) as StixObject | undefined;
     if (!stix) return 0;
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const message = investigationNotificationMessage(eventType, run, extractStixRepresentative(stix));
+    const message = investigationNotificationMessage(eventType, run, extractStixRepresentative(stix), !!caseStix);
     let delivered = 0;
     for (let index = 0; index < candidates.length; index += 1) {
       const { users, trigger } = candidates[index];

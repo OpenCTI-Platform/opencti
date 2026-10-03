@@ -29,7 +29,15 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import InvestigationRunFeedback from './InvestigationRunFeedback';
-import { elementPath, feedbackDecisionFor, isRunActive, prioritySeverity, RECOMMENDATION_ACTION_LABELS, RECOMMENDATION_STATUS_LABELS } from './investigationRunUtils';
+import {
+  elementPath,
+  feedbackDecisionFor,
+  isRunActive,
+  prioritySeverity,
+  RECOMMENDATION_ACTION_LABELS,
+  RECOMMENDATION_STATUS_LABELS,
+  reportMutationOutcome,
+} from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 import { InvestigationRunRecommendationsApplyMutation } from './__generated__/InvestigationRunRecommendationsApplyMutation.graphql';
 
@@ -48,11 +56,14 @@ interface InvestigationRunRecommendationsProps {
 
 const InvestigationRunRecommendations = ({ run }: InvestigationRunRecommendationsProps) => {
   const { t_i18n } = useFormatter();
-  const [commitApply, applying] = useApiMutation<InvestigationRunRecommendationsApplyMutation>(investigationRunRecommendationsApplyMutation, undefined, {
-    successMessage: t_i18n('The recommendation was applied'),
-  });
+  const [commitApply, applying] = useApiMutation<InvestigationRunRecommendationsApplyMutation>(investigationRunRecommendationsApplyMutation);
   const apply = (recommendationId: string, mode: 'task' | 'course_of_action') => {
-    commitApply({ variables: { id: run.id, recommendationId, mode } });
+    commitApply({
+      variables: { id: run.id, recommendationId, mode },
+      onCompleted: (_, errors) => {
+        reportMutationOutcome(errors, t_i18n('The recommendation was applied'));
+      },
+    });
   };
   const { recommendations } = run;
   return (

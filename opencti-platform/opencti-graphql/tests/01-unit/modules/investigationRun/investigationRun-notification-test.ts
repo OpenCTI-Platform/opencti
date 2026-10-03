@@ -22,14 +22,18 @@ describe('Case Autopilot notifications', () => {
 
   it('names the case and the reason of a failure in the message', () => {
     const run = buildRun({ case_id: 'case-1', status_reason: 'The XTM One investigation engine cannot be reached' });
-    expect(investigationNotificationMessage(TriggerEventType.InvestigationAwaitingApproval, run, 'Phishing wave'))
+    expect(investigationNotificationMessage(TriggerEventType.InvestigationAwaitingApproval, run, 'Phishing wave', true))
       .toBe('Case Autopilot investigation of [case] Phishing wave is waiting for an analyst approval');
-    expect(investigationNotificationMessage(TriggerEventType.InvestigationCompleted, run, 'Phishing wave'))
+    expect(investigationNotificationMessage(TriggerEventType.InvestigationCompleted, run, 'Phishing wave', true))
       .toBe('Case Autopilot investigation of [case] Phishing wave is completed');
-    expect(investigationNotificationMessage(TriggerEventType.InvestigationFailed, run, 'Phishing wave'))
+    expect(investigationNotificationMessage(TriggerEventType.InvestigationFailed, run, 'Phishing wave', true))
       .toBe('Case Autopilot investigation of [case] Phishing wave failed: The XTM One investigation engine cannot be reached');
     const subjectRun = buildRun({ case_id: null, subject_type: 'Incident', status_reason: null });
-    expect(investigationNotificationMessage(TriggerEventType.InvestigationFailed, subjectRun, 'Phishing wave'))
+    expect(investigationNotificationMessage(TriggerEventType.InvestigationFailed, subjectRun, 'Phishing wave', false))
       .toBe('Case Autopilot investigation of [incident] Phishing wave failed');
+    // A case still in the run Draft: the event is delivered on the live subject and names it.
+    const draftCaseRun = buildRun({ case_id: 'case-in-draft', subject_type: 'Indicator', status_reason: null });
+    expect(investigationNotificationMessage(TriggerEventType.InvestigationAwaitingApproval, draftCaseRun, 'evil.example', false))
+      .toBe('Case Autopilot investigation of [indicator] evil.example is waiting for an analyst approval');
   });
 });

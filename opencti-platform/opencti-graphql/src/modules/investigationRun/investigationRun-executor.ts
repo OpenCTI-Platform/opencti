@@ -675,7 +675,19 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
 
 // region investigating
 
-const mirrorPatch = (current: BasicStoreEntityInvestigationRun, engine: EngineInvestigation): Record<string, unknown> => ({
+// Markings of the OpenCTI objects an evidence list cites, read in the run Draft.
+const citedMarkingIds = async (exec: RunExecution, evidence: InvestigationEvidence[]) => {
+  const ids = R.uniq(evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string)).slice(0, INVESTIGATION_LIMITS.evidence);
+  if (ids.length === 0) return [];
+  const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
+  const elements = await findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
+  return R.uniq(elements.flatMap((element) => markingIdsOf(element)));
+};
+
+// A revision citing a restricted object restricts the run as soon as it is
+// mirrored, before anyone can read its evidence, summary or report.
+const mirrorPatch = (current: BasicStoreEntityInvestigationRun, engine: EngineInvestigation, citedMarkings: string[]): Record<string, unknown> => ({
+  objectMarking: R.uniq([...markingIdsOf(current), ...citedMarkings]),
   goal_plan: engine.goal_plan ?? current.goal_plan ?? null,
   steps: mirrorSteps(current.steps ?? [], engine.id, engine.steps),
   evidence: mirrorEvidence(current.evidence ?? [], engine),
@@ -721,8 +733,9 @@ const investigate = async (exec: RunExecution) => {
   const engine = result.value;
   const outcome = engineOutcome(engine.status);
   const changed = engine.revision !== run.xtm_revision || engine.status !== run.xtm_status;
+  const cited = changed || outcome !== 'running' ? await citedMarkingIds(exec, mirrorEvidence(run.evidence ?? [], engine)) : [];
   if (outcome === 'failed') {
-    await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine));
+    await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited));
     await failRun(exec.liveContext, run.internal_id, `The investigation engine stopped the investigation (${engine.end_reason_code ?? 'aborted'})`, engine.end_reason_code ?? 'engine_aborted');
     return;
   }
@@ -730,7 +743,7 @@ const investigate = async (exec: RunExecution) => {
     await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
       if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
       return {
-        ...mirrorPatch(current, engine),
+        ...mirrorPatch(current, engine, cited),
         ...statusTransition(current, InvestigationRunStatus.Cancelled, InvestigationRunPhase.Done, now, 'The investigation was cancelled in XTM One'),
         end_reason_code: engine.end_reason_code ?? 'engine_cancelled',
       };
@@ -745,7 +758,7 @@ const investigate = async (exec: RunExecution) => {
     return;
   }
   await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
-    ...mirrorPatch(current, engine),
+    ...mirrorPatch(current, engine, cited),
     xtm_completed_at: outcome === 'completed' ? current.xtm_completed_at ?? now.toISOString() : current.xtm_completed_at ?? null,
     ...(concluded ? { run_phase: InvestigationRunPhase.Ingesting } : {}),
   }));
@@ -775,13 +788,17 @@ interface OutputsResult {
 
 // Draft writes of the conclusion, each one allowed by the policy. A
 // continuation updates what the first conclusion wrote instead of duplicating it.
-const writeOutputs = async (exec: RunExecution, subject: BasicStoreEntity, engine: EngineInvestigation | null): Promise<OutputsResult> => {
+const writeOutputs = async (
+  exec: RunExecution,
+  subject: BasicStoreEntity,
+  engine: EngineInvestigation | null,
+  markings: string[],
+): Promise<OutputsResult> => {
   const { run, runUser, draftContext, policy, now } = exec;
   const failures: string[] = [];
   const outputs: InvestigationOutputs = { ...EMPTY_OUTPUTS, ...(run.outputs ?? {}) };
   const allowedAction = (action: InvestigationAutonomousAction) => policy.allowed_actions.includes(action);
   const leading = run.hypotheses.find((hypothesis) => hypothesis.rank === 1) ?? null;
-  const markings = markingIdsOf(subject);
   const subjectName = representativeNameOf(subject) ?? subject.internal_id;
   let caseId = run.case_id ?? null;
   let caseIds = run.case_ids ?? [];
@@ -982,7 +999,8 @@ const ingest = async (exec: RunExecution) => {
       return;
     }
   }
-  const mirrored = engine ? { ...run, ...mirrorPatch(run, engine) } as BasicStoreEntityInvestigationRun : run;
+  // The markings of the run are recomputed below from everything it cites.
+  const mirrored = engine ? { ...run, ...mirrorPatch(run, engine, []) } as BasicStoreEntityInvestigationRun : run;
   // OpenCTI objects the engine cites, as the run identity sees them, with the attributes ACH weights them by.
   const objectIds = mirrored.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string);
   const elements = await findElements(exec.draftContext, runUser, objectIds);
@@ -1021,7 +1039,9 @@ const ingest = async (exec: RunExecution) => {
     timeline,
     summary: grounded.summary ?? mirrored.summary ?? null,
   };
-  const { outputs, caseId, caseIds, failures } = await writeOutputs({ ...exec, run: finalRun }, subject, engine);
+  // Every output may quote what the run cites: it carries the markings of all of it.
+  const outputMarkings = await collectRunMarkings({ ...exec, run: finalRun }, subject, finalRun.case_id ?? null);
+  const { outputs, caseId, caseIds, failures } = await writeOutputs({ ...exec, run: finalRun }, subject, engine, outputMarkings);
   const markings = await collectRunMarkings({ ...exec, run: finalRun }, subject, caseId);
   const recommendationApprovals: InvestigationApproval[] = recommendations
     .filter((recommendation) => recommendation.status === InvestigationRecommendationStatus.AwaitingApproval
@@ -1073,7 +1093,7 @@ const ingest = async (exec: RunExecution) => {
     });
   }
   await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
-    ...(engine ? mirrorPatch(current, engine) : {}),
+    ...(engine ? mirrorPatch(current, engine, []) : {}),
     ...statusTransition(current, nextStatus, nextPhase, now, reasons.join('. ') || null),
     evidence,
     hypotheses,

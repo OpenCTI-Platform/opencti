@@ -45,10 +45,13 @@ const INVESTIGATION_RUN_MANAGER_MAX_RUNS_PER_TICK = conf.get('investigation_run_
 const INVESTIGATION_RUN_MANAGER_STREAM_BATCH_SIZE = conf.get('investigation_run_manager:stream_batch_size') ?? 2000;
 
 // The hook runs as the policy identity, like the AI agent playbook components
-// default to the seeded platform admin when none is configured.
-const resolveHookUser = async (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy) => {
-  const configured = policy.run_as_id ? await resolveUserByIdFromCache(context, policy.run_as_id) : null;
-  return configured ?? resolveUserByIdFromCache(context, OPENCTI_ADMIN_UUID);
+// default to the seeded platform admin when none is configured. A configured
+// identity that no longer exists never falls back to the administrator.
+export const resolveHookUser = async (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy) => {
+  if (policy.run_as_id) {
+    return resolveUserByIdFromCache(context, policy.run_as_id);
+  }
+  return resolveUserByIdFromCache(context, OPENCTI_ADMIN_UUID);
 };
 
 const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy) => {

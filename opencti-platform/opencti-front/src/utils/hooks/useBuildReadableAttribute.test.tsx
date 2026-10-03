@@ -55,4 +55,16 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(typeof textAttribute2).toEqual('object');
     expect(textAttribute2).toEqual(result);
   });
+  it('should render the Case Autopilot report sections as sanitized HTML and its completion as a date', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    const table = '| Rank | Candidate |\n| --- | --- |\n| 1 | APT28 <script>alert(1)</script> |';
+    const section = buildReadableAttribute(table, { attribute: 'latestInvestigationRun.report_sections.hypotheses' }) as React.ReactElement<{ dangerouslySetInnerHTML: { __html: string } }>;
+    const html = section.props.dangerouslySetInnerHTML.__html;
+    expect(html).toContain('<table>');
+    expect(html).toContain('<td>APT28 </td>');
+    expect(html).not.toContain('<script>');
+    expect(buildReadableAttribute('2026-10-03T18:00:00.000Z', { attribute: 'latestInvestigationRun.completed_at' })).toEqual('2026-10-03');
+  });
 });

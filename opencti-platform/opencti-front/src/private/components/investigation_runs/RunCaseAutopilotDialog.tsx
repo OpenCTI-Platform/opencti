@@ -42,7 +42,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
-import { rememberGraphAutoOpen } from './investigationRunUtils';
+import { rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
 import { RunCaseAutopilotDialogQuery } from './__generated__/RunCaseAutopilotDialogQuery.graphql';
 import { RunCaseAutopilotDialogAddMutation } from './__generated__/RunCaseAutopilotDialogAddMutation.graphql';
 
@@ -154,9 +154,7 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   const [caseMode, setCaseMode] = useState<'new' | 'existing'>(containing.length > 0 ? 'existing' : 'new');
   const [selectedCase, setSelectedCase] = useState<CaseOption | null>(containing[0] ? caseOptions[0] : null);
   const [openGraph, setOpenGraph] = useState(true);
-  const [commit, inFlight] = useApiMutation<RunCaseAutopilotDialogAddMutation>(runCaseAutopilotDialogAddMutation, undefined, {
-    successMessage: t_i18n('Case Autopilot has started the investigation'),
-  });
+  const [commit, inFlight] = useApiMutation<RunCaseAutopilotDialogAddMutation>(runCaseAutopilotDialogAddMutation);
   const selectedPolicy = policies.find((policy) => policy.id === policyId);
   const engineMissing = xtmOneConfigured !== true;
   const caseMissing = needsCase && caseMode === 'existing' && !selectedCase;
@@ -167,9 +165,10 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
         policyId: policyId ?? null,
         caseId: needsCase && caseMode === 'existing' ? selectedCase?.id ?? null : null,
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
         const run = response.investigationRunAdd;
-        if (!run) return;
+        // A launch that failed neither navigates nor says it started.
+        if (!run || !reportMutationOutcome(errors, t_i18n('Case Autopilot has started the investigation'))) return;
         if (openGraph) rememberGraphAutoOpen(run.id);
         onStarted({ runId: run.id, caseRef: run.case ? { id: run.case.id, entity_type: run.case.entity_type } : null });
       },

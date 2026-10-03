@@ -23,6 +23,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { reportMutationOutcome } from './investigationRunUtils';
 import { InvestigationRunFeedbackMutation } from './__generated__/InvestigationRunFeedbackMutation.graphql';
 
 const investigationRunFeedbackMutation = graphql`
@@ -50,13 +51,13 @@ const InvestigationRunFeedback = ({ runId, itemType, itemRef, itemLabel, decisio
   const { t_i18n } = useFormatter();
   const [rejecting, setRejecting] = useState(false);
   const [comment, setComment] = useState('');
-  const [commit, inFlight] = useApiMutation<InvestigationRunFeedbackMutation>(investigationRunFeedbackMutation, undefined, {
-    successMessage: t_i18n('Your feedback was recorded'),
-  });
+  const [commit, inFlight] = useApiMutation<InvestigationRunFeedbackMutation>(investigationRunFeedbackMutation);
   const send = (value: 'accepted' | 'rejected', text: string | null) => {
     commit({
       variables: { id: runId, input: { item_type: itemType, item_ref: itemRef, decision: value, comment: text } },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
+        // A rejection that was not saved keeps its dialog and comment.
+        if (!reportMutationOutcome(errors, t_i18n('Your feedback was recorded'))) return;
         setRejecting(false);
         setComment('');
       },

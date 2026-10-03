@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { ChipSeverity } from '@filigran/design-system';
-import { APP_BASE_PATH } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 
 export type InvestigationRunStatusValue = 'planned' | 'running' | 'awaiting_approval' | 'completed' | 'failed' | 'cancelled';
@@ -274,6 +274,21 @@ export interface InvestigationApprovalDecisionInput {
  * route as the assistant's tool approvals: an approval is a person's consent,
  * so it is only accepted from a browser session, never from a token.
  */
+type MutationErrors = readonly { readonly message: string }[] | null | undefined;
+
+/**
+ * Report a mutation that completed: GraphQL payload errors reach onCompleted,
+ * not onError, so success is only announced without them. True on success.
+ */
+export const reportMutationOutcome = (errors: MutationErrors, successMessage: string) => {
+  if (errors && errors.length > 0) {
+    MESSAGING$.notifyError(errors.map((error) => error.message).join(' - '));
+    return false;
+  }
+  MESSAGING$.notifySuccess(successMessage);
+  return true;
+};
+
 export const decideInvestigationApprovals = async (runId: string, decisions: InvestigationApprovalDecisionInput[]) => {
   const response = await fetch(`${APP_BASE_PATH}/chatbot/messages/approve`, {
     method: 'POST',
