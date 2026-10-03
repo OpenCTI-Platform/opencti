@@ -1,6 +1,6 @@
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
-export const PATH_DISSEMINATION_ASSURANCE = '/dashboard/data/assurance';
+export const PATH_DISSEMINATION_ASSURANCE = '/dashboard/defense/assurance';
 export const PATH_DISSEMINATION_ASSURANCE_OVERVIEW = `${PATH_DISSEMINATION_ASSURANCE}/overview`;
 export const PATH_DISSEMINATION_ASSURANCE_LISTS = `${PATH_DISSEMINATION_ASSURANCE}/lists`;
 export const PATH_DISSEMINATION_ASSURANCE_VALIDATIONS = `${PATH_DISSEMINATION_ASSURANCE}/validations`;

@@ -61,7 +61,7 @@ filters, lists and dashboards:
 
 ## Viewing deployments
 
-- On an indicator, the **Deployment** tab lists the security platforms the indicator is deployed on, with the
+- On an indicator, the **Deployments** tab lists the security platforms the indicator is deployed on, with the
   status, hits and validation of each deployment.
 - On a security platform, the **Deployments** tab lists the indicators deployed on the platform, with the same
   information and the assurance metrics of the platform.
@@ -76,7 +76,7 @@ From both tabs, an analyst with the *Update knowledge* capability can:
 
 ## Dissemination assurance pages
 
-Go to **Data > Dissemination assurance**.
+Go to **Defense > Dissemination assurance**.
 
 - **Overview** shows the funnel from created to disseminated, deployed, validated and hit indicators, the
   deployment and validation statuses, and the indicators that expired but are still deployed. The period can be
@@ -101,10 +101,23 @@ for the approval workflow and the safety settings.
 When OpenAEV sends the results, the validation status of each deployment is updated to `detected`, `prevented`,
 `missed` or `error`, and the request shows the outcome of every indicator and platform pair.
 
+## Dashboard template
+
+To build a dashboard of the dissemination assurance metrics, go to **Dashboards > Custom dashboards**, click
+**Create from template** and choose **Dissemination assurance**. The dashboard shows the deployments by status,
+the validations by outcome, the live deployments and missed validations by security platform, the latest failed
+deployments, and the indicators that are deployed but never validated, disseminated but not deployed, or revoked
+but still deployed. It is a regular custom dashboard: its widgets can be edited, moved and shared.
+
 ## Notifications
 
-Triggers can filter on the deployment status and the validation status of `deployed-on` relationships, for
-example to be notified when a deployment fails or when a validation proves an indicator is missed.
+Create live triggers in **Notifications** to be told when a deployment needs attention:
+
+| Event                       | Entity type     | Filters                                                        |
+|:----------------------------|:----------------|:---------------------------------------------------------------|
+| Deployment failed           | Deployed on     | Deployment status = `failed`                                   |
+| Validation missed           | Deployed on     | Validation status = `missed`                                   |
+| Expired but still deployed  | Indicator       | Revoked = `true` and Deployment platforms count greater than 0 |
 
 ## Configuration
 
