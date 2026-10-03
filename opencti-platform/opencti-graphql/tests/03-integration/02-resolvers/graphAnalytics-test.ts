@@ -539,12 +539,15 @@ describe('Graph analytics resolvers', () => {
       metrics: members.map((id) => ({ entity_id: ids[id], betweenness_approx: 0.1, cluster_id: clusterId, cluster_size: members.length, cluster_kind: 'campaign' })),
       clusters: [{ cluster_id: clusterId, cluster_kind: 'campaign', members_count: members.length, representative_ids: [ids[members[0]]], features: [] }],
     });
+    // isC is left alone in the cluster of the previous test: a first run including it would continue that cluster
     const original = uuidv4();
-    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-1-${uuidv4()}`, original, ['isA', 'isB', 'isC']) } });
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-1-${uuidv4()}`, original, ['isA', 'isB', 'tool']) } });
+    const first = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.tool } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(first.cluster_id).toBe(original);
     // the community grew and its provisional id changed: it continues the original cluster
     const provisional = uuidv4();
-    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-2-${uuidv4()}`, provisional, ['isA', 'isB', 'isC', 'tool']) } });
-    const grown = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.tool } })).data.stixCoreObject.x_opencti_graph_metrics;
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-2-${uuidv4()}`, provisional, ['isA', 'isB', 'tool', 'isC']) } });
+    const grown = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;
     expect(grown.cluster_id).toBe(original);
     const { data } = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
     const listed = data.graphClusters.edges.map((e: any) => e.node);
