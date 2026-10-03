@@ -688,6 +688,16 @@ export interface LandscapeDiffSummaryResult {
 }
 
 /**
+ * Widgets use relative dates: the end of the period is aligned on the next minute so the cache is effective
+ * without excluding the changes made during the requested period.
+ */
+export const alignSummaryEnd = (to: string): string => {
+  const requestedTo = utcDate(to);
+  const flooredTo = requestedTo.clone().startOf('minute');
+  return (flooredTo.isSame(requestedTo) ? flooredTo : flooredTo.add(1, 'minute')).toISOString();
+};
+
+/**
  * Synchronous landscape diff bounded to a small number of entities, used by dashboard widgets.
  * Results are cached per user for the cache duration.
  */
@@ -697,8 +707,7 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
     throw ValidationError('Invalid group by', 'group_by', { group_by: groupBy });
   }
   const dates = normalizeLandscapeDates(rawInput);
-  // Widgets use relative dates: align the end of the period on the minute so the cache is effective
-  const to = utcDate(dates.to).startOf('minute').toISOString();
+  const to = alignSummaryEnd(dates.to);
   const input: LandscapeDiffInputData = { ...rawInput, from: dates.from, to, group_by: groupBy };
   const scope = await resolveLandscapeScope(context, user, input);
   const cacheKey = `${LANDSCAPE_SUMMARY_PREFIX}${landscapeDiffCacheKey(user.id, userAccessFingerprint(context, user), input, scope)}`;

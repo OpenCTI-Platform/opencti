@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { landscapeDiffCacheKey, userAccessFingerprint } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { alignSummaryEnd, landscapeDiffCacheKey, userAccessFingerprint } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const buildUser = (overrides: Partial<Record<string, unknown>> = {}) => ({
@@ -43,5 +43,12 @@ describe('Landscape diff cache and rights', () => {
     expect(landscapeDiffCacheKey('user-2', fingerprint, input, scope)).not.toEqual(key);
     expect(landscapeDiffCacheKey('user-1', userAccessFingerprint(context, buildUser({ groups: [] })), input, scope)).not.toEqual(key);
     expect(landscapeDiffCacheKey('user-1', fingerprint, { ...input, group_by: 'tactic' }, scope)).not.toEqual(key);
+  });
+
+  it('should align the end of a widget period on the next minute without excluding the requested period', () => {
+    expect(alignSummaryEnd('2026-10-03T12:00:00.000Z')).toEqual('2026-10-03T12:00:00.000Z');
+    expect(alignSummaryEnd('2026-10-03T12:00:00.001Z')).toEqual('2026-10-03T12:01:00.000Z');
+    expect(alignSummaryEnd('2026-10-03T12:00:45.000Z')).toEqual('2026-10-03T12:01:00.000Z');
+    expect(alignSummaryEnd('2026-10-03T23:59:30.000Z')).toEqual('2026-10-04T00:00:00.000Z');
   });
 });
