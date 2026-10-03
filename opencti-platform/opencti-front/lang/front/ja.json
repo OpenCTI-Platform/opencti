@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "閾値は 2 から 200 の間である必要があります",
   "The timeline export failed": "タイムラインのエクスポートに失敗しました",
   "The timeline export has been saved in the files of the entity": "タイムラインのエクスポートがエンティティのファイルに保存されました",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "タイムラインのエクスポートをエンティティのファイルに保存しました。イベントに合わせて {markings} でマークされています",
   "The timeline settings have been saved": "タイムラインの設定が保存されました",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "トークンは、あなたのプラットフォームの構成に欠けている、それを提供するためにあなたのフィリグランの担当者に依頼するか、またはオンプレミスの展開手順を参照してください。そうするためにサポートチケットを開くことができます。",
   "The user has BYPASS capability, their max confidence level is set to 100.": "ユーザーはBYPASS能力を持っており、最大信頼度は100に設定されている。",

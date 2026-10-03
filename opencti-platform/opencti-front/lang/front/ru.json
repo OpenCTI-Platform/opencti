@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "Порог должен быть от 2 до 200",
   "The timeline export failed": "Не удалось экспортировать временную шкалу",
   "The timeline export has been saved in the files of the entity": "Экспорт временной шкалы сохранён в файлах сущности",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "Экспорт временной шкалы сохранён в файлах сущности с маркировкой {markings}, соответствующей его событиям",
   "The timeline settings have been saved": "Настройки временной шкалы сохранены",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "Токен отсутствует в конфигурации вашей платформы, пожалуйста, попросите представителя Filigran предоставить вам его или инструкции по развертыванию на месте. Для этого вы можете открыть тикет в службу поддержки.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "Пользователь имеет возможность BYPASS, его максимальный уровень доверия установлен на 100.",

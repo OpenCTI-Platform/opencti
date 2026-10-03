@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -22,7 +22,11 @@ import type {
 } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getExportFilter } from '../../utils/getExportFilter';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
+import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
+import { checkUserCanShareMarkings } from '../user/user-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
@@ -47,6 +51,7 @@ import {
   getTimelineRules,
   loadStoredTimelineEvents,
   loadTimelineSettings,
+  markingsOf,
   publishTimelineUpdate,
   refreshTimelineContributions,
   regenerateContainerTimeline,
@@ -81,6 +86,11 @@ export const canEditTimeline = (user: AuthUser, container: AnyStoreElement): boo
   return isUserHasCapability(user, KNOWLEDGE_KNUPDATE)
     && validateUserAccessOperation(user, container, AccessOperation.EDIT)
     && controlUserConfidenceAgainstElement(user, container as unknown as BasicStoreEntity, true);
+};
+
+/** Timeline contributions are written on the live knowledge only, never inside a draft. */
+export const canContributeToTimeline = (context: AuthContext, user: AuthUser, container: AnyStoreElement | null | undefined): boolean => {
+  return !!container && canEditTimeline(user, container) && !getDraftContext(context, user);
 };
 
 const loadEditableTimelineContainer = async (context: AuthContext, user: AuthUser, containerId: string) => {
@@ -327,7 +337,6 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
     pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: windowFilters as any, first: 1, orderBy: 'event_end_time', orderMode: OrderingMode.Desc }),
     loadTimelineSettings(context, container.internal_id),
   ]);
-  addTimelineViewCount();
   return {
     container_id: container.internal_id,
     total,
@@ -340,10 +349,17 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
     kinds: kinds.map((k) => ({ kind: k.label, count: k.count })),
     anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null,
     settings: settingsWithDefaults(container.internal_id, settings),
-    can_edit: canEditTimeline(user, container) && !getDraftContext(context, user),
+    can_edit: canContributeToTimeline(context, user, container),
     truncated: settings?.derivation_truncated ?? false,
     generated_at: settings?.generated_at ?? null,
   } as unknown as TimelineSummary;
+};
+
+/** Count one opening of the Timeline tab (the summary is also read by overview strips and widgets). */
+export const recordTimelineView = async (context: AuthContext, user: AuthUser, containerId: string): Promise<boolean> => {
+  await loadTimelineContainer(context, user, containerId);
+  addTimelineViewCount();
+  return true;
 };
 
 export const listTimelineRules = (): TimelineRuleDefinition[] => {
@@ -357,15 +373,54 @@ export const listTimelineRules = (): TimelineRuleDefinition[] => {
 // endregion
 
 // region exports
-export const exportContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportArgs) => {
+interface TimelineExportArgs extends TimelineFilterArgs {
+  id: string;
+  contentMaxMarkings?: string[] | null;
+}
+
+/**
+ * The events an export contains: the events the user can see, within the content ceiling he selected and his max
+ * shareable markings (same rule as every export of the platform).
+ */
+const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, args: TimelineExportArgs) => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
+  const contentMaxMarkings = args.contentMaxMarkings ?? [];
+  if (contentMaxMarkings.length > 0) {
+    const markingLevels = await Promise.all(contentMaxMarkings.map((markingId) => findMarkingDefinitionById(context, user, markingId)));
+    if (markingLevels.some((marking) => !marking)) {
+      throw FunctionalError('Marking definition cannot be found', { ids: contentMaxMarkings });
+    }
+    await checkUserCanShareMarkings(context, user, markingLevels as unknown as StoreMarkingDefinition[]);
+  }
+  const markingList = await getEntitiesListFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const { markingFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [] });
+  const baseFilters = buildTimelineFilters(container.internal_id, args);
+  const ceilingFilters = (markingFilter.filters as { key: string | string[] }[]).map((filter) => ({ ...filter, key: Array.isArray(filter.key) ? filter.key : [filter.key] }));
   const events = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
-    filters: buildTimelineFilters(container.internal_id, args) as any,
+    filters: { ...baseFilters, filters: [...baseFilters.filters, ...ceilingFilters] } as any,
     orderBy: ['event_time', 'ordering_hint'],
     orderMode: OrderingMode.Asc,
     maxSize: TIMELINE_MAX_EVENTS,
   } as any);
   const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e);
+  return { container, items, elements };
+};
+
+/** A stored export is never marked less strictly than the events it contains (highest marking per definition type). */
+export const findTimelineExportFileMarkings = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: TimelineExportArgs & { fileMarkings?: string[] | null },
+) => {
+  const { items } = await loadExportedTimelineEvents(context, user, args);
+  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
+  validateMarkings(user, selected);
+  const required = items.flatMap((event) => markingsOf(event));
+  return cleanMarkings(context, Array.from(new Set([...selected, ...required])));
+};
+
+export const exportContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportArgs) => {
+  const { container, items, elements } = await loadExportedTimelineEvents(context, user, args);
   const exportEvents: TimelineExportEvent[] = items.map((event) => {
     const element = event.element_id && event.element_id !== container.internal_id ? elements[event.element_id] : null;
     return {
@@ -499,7 +554,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     ordering_hint: input.ordering_hint ?? null,
     analyst_fields: [],
     external_id: input.external_id ?? null,
-    markings: [...markingIds, ...access.markings],
+    // An event is never less marked than the element it points to, nor than its container
+    markings: Array.from(new Set([...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
     created_by_id: author?.internal_id ?? null,
     creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
     restricted_members: access.restricted_members,
@@ -556,10 +612,13 @@ export const editTimelineEvent = async (context: AuthContext, user: AuthUser, id
   if (input.confidence !== undefined) patch.confidence = input.confidence;
   if (input.ordering_hint !== undefined) patch.ordering_hint = input.ordering_hint;
   if (input.annotation !== undefined) patch.annotation = input.annotation;
+  // An event is never less marked than the element it points to, nor than its container
+  let elementMarkings: string[] | null = null;
   if (input.element_id !== undefined) {
     const element = await resolveElement(context, user, input.element_id);
     patch.element_id = element?.internal_id ?? null;
     patch.element_type = element?.entity_type ?? null;
+    elementMarkings = element ? markingsOf(element) : [];
   }
   if (input.createdBy !== undefined) {
     const author = await resolveAuthor(context, user, input.createdBy);
@@ -568,7 +627,13 @@ export const editTimelineEvent = async (context: AuthContext, user: AuthUser, id
   if (input.objectMarking) {
     const markingIds = await resolveMarkingIds(context, input.objectMarking);
     validateMarkings(user, markingIds);
-    patch.markings = [...markingIds, ...containerAccessFields(container).markings];
+    if (elementMarkings === null && event.element_id) {
+      const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, event.element_id);
+      elementMarkings = current ? markingsOf(current) : [];
+    }
+    patch.markings = Array.from(new Set([...markingIds, ...(elementMarkings ?? []), ...containerAccessFields(container).markings]));
+  } else if (elementMarkings !== null) {
+    patch.markings = Array.from(new Set([...markingsOf(event), ...elementMarkings]));
   }
   patch.creator_ids = Array.from(new Set([...creatorIdsOf(event), user.id]));
   const doc = docFromStored(event, container, patch);
@@ -687,7 +752,14 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
   if (skipped > 0) {
     logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, or event not readable', { containerId: container.internal_id, skipped });
   }
-  const docs = candidates.filter((candidate) => candidate.markings !== null).map(({ event, existing, internalId, markings }) => {
+  // The references were resolved without their markings: the markings of the elements are read in full
+  const importable = candidates.filter((candidate) => candidate.markings !== null);
+  const elementIds = Array.from(new Set(importable.map(({ event }) => (event.element_ref ? resolved[event.element_ref]?.internal_id : null))
+    .filter((id): id is string => !!id)));
+  const elementsWithMarkings = elementIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  const docs = importable.map(({ event, existing, internalId, markings }) => {
     validateWindow(event.event_time, event.event_end_time);
     const element = event.element_ref ? resolved[event.element_ref] : null;
     return buildTimelineEventDoc({
@@ -711,7 +783,11 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
       external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
-      markings: [...(markings as string[]), ...access.markings],
+      markings: Array.from(new Set([
+        ...(markings as string[]),
+        ...(element ? markingsOf(elementsWithMarkings[element.internal_id] ?? {}) : []),
+        ...access.markings,
+      ])),
       created_by_id: event.created_by_ref ? resolved[event.created_by_ref]?.internal_id : null,
       creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,

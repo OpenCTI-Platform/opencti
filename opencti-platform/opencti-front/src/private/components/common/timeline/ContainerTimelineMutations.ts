@@ -123,6 +123,7 @@ export const containerTimelineExportQuery = graphql`
     $includeHidden: Boolean
     $pinnedOnly: Boolean
     $labels: [TimelineExportLabelInput!]
+    $contentMaxMarkings: [String!]
   ) {
     containerTimelineExport(
       id: $id
@@ -136,6 +137,30 @@ export const containerTimelineExportQuery = graphql`
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
       labels: $labels
+      contentMaxMarkings: $contentMaxMarkings
     )
+  }
+`;
+
+export const containerTimelineExportFileMarkingsQuery = graphql`
+  query ContainerTimelineMutationsExportFileMarkingsQuery(
+    $id: String!
+    $contentMaxMarkings: [String!]
+    $fileMarkings: [String!]
+  ) {
+    containerTimelineExportFileMarkings(
+      id: $id
+      contentMaxMarkings: $contentMaxMarkings
+      fileMarkings: $fileMarkings
+    ) {
+      id
+      definition
+    }
+  }
+`;
+
+export const timelineViewedMutation = graphql`
+  mutation ContainerTimelineMutationsViewedMutation($containerId: ID!) {
+    timelineViewed(containerId: $containerId)
   }
 `;

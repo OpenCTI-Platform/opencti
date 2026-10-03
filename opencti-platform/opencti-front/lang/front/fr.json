@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "Le seuil doit être compris entre 2 et 200",
   "The timeline export failed": "L'export de la chronologie a échoué",
   "The timeline export has been saved in the files of the entity": "L'export de la chronologie a été enregistré dans les fichiers de l'entité",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "L'export de la chronologie a été enregistré dans les fichiers de l'entité, marqué {markings} pour couvrir ses événements",
   "The timeline settings have been saved": "Les paramètres de la chronologie ont été enregistrés",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "Le jeton est manquant dans la configuration de votre plateforme, veuillez demander à votre représentant Filigran de vous le fournir ou de vous donner des instructions pour le déploiement sur site. Pour ce faire, vous pouvez ouvrir un ticket de support.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "L'utilisateur a la capacité de BYPASS, son niveau de confiance maximum est fixé à 100.",

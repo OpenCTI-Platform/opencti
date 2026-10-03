@@ -10180,7 +10180,30 @@ type Query {
     after: ID
   ): TimelineEventConnection
   containerTimelineSummary(id: String!): TimelineSummary
-  containerTimelineExport(id: String!, format: TimelineExportFormat!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean, labels: [TimelineExportLabelInput!]): String
+  containerTimelineExport(
+    id: String!
+    format: TimelineExportFormat!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+    labels: [TimelineExportLabelInput!]
+
+    """
+    Content ceiling: events marked above these markings (or above the max shareable markings of the user) are left out
+    """
+    contentMaxMarkings: [String!]
+  ): String
+
+  """
+  Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events
+  """
+  containerTimelineExportFileMarkings(id: String!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean, contentMaxMarkings: [String!], fileMarkings: [String!]): [MarkingDefinition!]!
   timelineEvent(id: String!): TimelineEvent
   timelineAnchors(containerId: String!): TimelineAnchors
   timelineRules: [TimelineRuleDefinition!]!
@@ -11171,6 +11194,11 @@ type Mutation {
   Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker)
   """
   timelineImport(containerId: ID!, extension: String!): TimelineRegenerationResult
+
+  """
+  Record that the Timeline tab of a container was opened (usage telemetry, no data change)
+  """
+  timelineViewed(containerId: ID!): Boolean
 }
 
 enum WorkflowExecutionStatus {
@@ -18752,7 +18780,7 @@ type TimelineEvent implements InternalObject & BasicObject {
   objectMarking: [MarkingDefinition!]
 
   """
-  Whether the current user can change the content of the event (manual events only) and annotate it
+  Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts (derived events can only be pinned, hidden and annotated)
   """
   editable: Boolean!
 }

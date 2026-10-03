@@ -18269,6 +18269,8 @@ export type Mutation = {
   timelineImport?: Maybe<TimelineRegenerationResult>;
   timelineRegenerate?: Maybe<TimelineRegenerationResult>;
   timelineSettingsUpdate?: Maybe<TimelineSettings>;
+  /** Record that the Timeline tab of a container was opened (usage telemetry, no data change) */
+  timelineViewed?: Maybe<Scalars['Boolean']['output']>;
   token?: Maybe<Scalars['String']['output']>;
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
@@ -20919,6 +20921,11 @@ export type MutationTimelineRegenerateArgs = {
 export type MutationTimelineSettingsUpdateArgs = {
   containerId: Scalars['ID']['input'];
   input: TimelineSettingsInput;
+};
+
+
+export type MutationTimelineViewedArgs = {
+  containerId: Scalars['ID']['input'];
 };
 
 
@@ -25639,6 +25646,8 @@ export type Query = {
   container?: Maybe<Container>;
   containerTimeline?: Maybe<TimelineEventConnection>;
   containerTimelineExport?: Maybe<Scalars['String']['output']>;
+  /** Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events */
+  containerTimelineExportFileMarkings: Array<MarkingDefinition>;
   containerTimelineSummary?: Maybe<TimelineSummary>;
   containers?: Maybe<ContainerConnection>;
   containersAskAiSummary?: Maybe<AiSummary>;
@@ -26392,12 +26401,29 @@ export type QueryContainerTimelineArgs = {
 
 
 export type QueryContainerTimelineExportArgs = {
+  contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
   format: TimelineExportFormat;
   from?: InputMaybe<Scalars['DateTime']['input']>;
   id: Scalars['String']['input'];
   includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
   kinds?: InputMaybe<Array<TimelineEventKind>>;
   labels?: InputMaybe<Array<TimelineExportLabelInput>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryContainerTimelineExportFileMarkingsArgs = {
+  contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  id: Scalars['String']['input'];
+  includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
   pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
@@ -37497,7 +37523,7 @@ export type TimelineEvent = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
-  /** Whether the current user can change the content of the event (manual events only) and annotate it */
+  /** Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts (derived events can only be pinned, hidden and annotated) */
   editable: Scalars['Boolean']['output'];
   element?: Maybe<StixObjectOrStixRelationship>;
   element_id?: Maybe<Scalars['String']['output']>;
@@ -51203,6 +51229,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   timelineImport?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineImportArgs, 'containerId' | 'extension'>>;
   timelineRegenerate?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineRegenerateArgs, 'containerId'>>;
   timelineSettingsUpdate?: Resolver<Maybe<ResolversTypes['TimelineSettings']>, ParentType, ContextType, RequireFields<MutationTimelineSettingsUpdateArgs, 'containerId' | 'input'>>;
+  timelineViewed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTimelineViewedArgs, 'containerId'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
@@ -52879,6 +52906,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containerTimeline?: Resolver<Maybe<ResolversTypes['TimelineEventConnection']>, ParentType, ContextType, RequireFields<QueryContainerTimelineArgs, 'id'>>;
   containerTimelineExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportArgs, 'format' | 'id'>>;
+  containerTimelineExportFileMarkings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportFileMarkingsArgs, 'id'>>;
   containerTimelineSummary?: Resolver<Maybe<ResolversTypes['TimelineSummary']>, ParentType, ContextType, RequireFields<QueryContainerTimelineSummaryArgs, 'id'>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
   containersAskAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAskAiSummaryArgs>>;

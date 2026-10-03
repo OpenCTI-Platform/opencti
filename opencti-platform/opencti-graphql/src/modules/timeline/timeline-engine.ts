@@ -104,7 +104,7 @@ const derivedEventKey = (event: DerivedTimelineEvent) => {
 // region store helpers
 const uniq = (values: Array<string | null | undefined>): string[] => Array.from(new Set(values.filter((v): v is string => !!v)));
 
-const markingsOf = (element: Record<string, any>): string[] => uniq(element[buildRefRelationKey(RELATION_OBJECT_MARKING)] ?? []);
+export const markingsOf = (element: Record<string, any>): string[] => uniq(element[buildRefRelationKey(RELATION_OBJECT_MARKING)] ?? []);
 
 export const loadStoredTimelineEvents = async (context: AuthContext, containerId: string): Promise<StoredTimelineEvent[]> => {
   return fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {

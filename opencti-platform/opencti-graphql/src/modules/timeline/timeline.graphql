@@ -126,7 +126,7 @@ type TimelineEvent implements InternalObject & BasicObject {
   analyst_fields: [String!]!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
-  "Whether the current user can change the content of the event (manual events only) and annotate it"
+  "Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts (derived events can only be pinned, hidden and annotated)"
   editable: Boolean!
 }
 
@@ -353,7 +353,24 @@ type Query {
     includeHidden: Boolean
     pinnedOnly: Boolean
     labels: [TimelineExportLabelInput!]
+    "Content ceiling: events marked above these markings (or above the max shareable markings of the user) are left out"
+    contentMaxMarkings: [String!]
   ): String @auth(for: [KNOWLEDGE])
+  "Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events"
+  containerTimelineExportFileMarkings(
+    id: String!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+    contentMaxMarkings: [String!]
+    fileMarkings: [String!]
+  ): [MarkingDefinition!]! @auth(for: [KNOWLEDGE])
   timelineEvent(id: String!): TimelineEvent @auth(for: [KNOWLEDGE])
   timelineAnchors(containerId: String!): TimelineAnchors @auth(for: [KNOWLEDGE])
   timelineRules: [TimelineRuleDefinition!]! @auth(for: [KNOWLEDGE])
@@ -369,6 +386,8 @@ type Mutation {
   timelineRegenerate(containerId: ID!): TimelineRegenerationResult @auth(for: [KNOWLEDGE_KNUPDATE])
   "Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker)"
   timelineImport(containerId: ID!, extension: String!): TimelineRegenerationResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  "Record that the Timeline tab of a container was opened (usage telemetry, no data change)"
+  timelineViewed(containerId: ID!): Boolean @auth(for: [KNOWLEDGE])
 }
 
 type Subscription {

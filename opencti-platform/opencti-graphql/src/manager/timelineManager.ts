@@ -75,8 +75,9 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     if (isTimelineContainerType(extension.source_type)) collector.containers.add(extension.source_ref);
     if (isTimelineContainerType(extension.target_type)) collector.containers.add(extension.target_ref);
     collector.contained.add(id);
-    // Deployments and timed relationships of contained elements impact the cases containing them
+    // Deployments and timed relationships of contained elements impact the cases containing either endpoint
     if (extension.source_ref) collector.contained.add(extension.source_ref);
+    if (extension.target_ref) collector.contained.add(extension.target_ref);
     return;
   }
   if (stix.type === STIX_TYPE_SIGHTING) {

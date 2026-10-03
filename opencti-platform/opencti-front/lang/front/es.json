@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "El umbral debe estar entre 2 y 200",
   "The timeline export failed": "La exportación de la cronología ha fallado",
   "The timeline export has been saved in the files of the entity": "La exportación de la cronología se ha guardado en los archivos de la entidad",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "La exportación de la cronología se ha guardado en los archivos de la entidad, marcada como {markings} para cubrir sus eventos",
   "The timeline settings have been saved": "La configuración de la cronología se ha guardado",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "Falta el token en la configuración de su plataforma, por favor solicite a su representante de Filigran que se lo proporcione o las instrucciones de despliegue on-premise. Puede abrir un ticket de soporte para hacerlo.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100.",

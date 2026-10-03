@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "Die Schwelle muss zwischen 2 und 200 liegen",
   "The timeline export failed": "Der Export der Zeitleiste ist fehlgeschlagen",
   "The timeline export has been saved in the files of the entity": "Der Export der Zeitleiste wurde in den Dateien der Entität gespeichert",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "Der Export der Zeitleiste wurde in den Dateien der Entität gespeichert und mit {markings} markiert, um seine Ereignisse abzudecken",
   "The timeline settings have been saved": "Die Einstellungen der Zeitleiste wurden gespeichert",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "Das Token fehlt in Ihrer Plattformkonfiguration. Bitten Sie Ihren Filigran-Vertreter, es Ihnen zur Verfügung zu stellen oder Ihnen Anweisungen für die Bereitstellung vor Ort zu geben. Sie können dazu ein Support-Ticket eröffnen.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "Der Benutzer ist BYPASS-fähig, sein maximales Vertrauensniveau ist auf 100 eingestellt.",

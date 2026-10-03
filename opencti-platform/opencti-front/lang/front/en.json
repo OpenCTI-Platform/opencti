@@ -5072,6 +5072,7 @@
   "The threshold must be between 2 and 200": "The threshold must be between 2 and 200",
   "The timeline export failed": "The timeline export failed",
   "The timeline export has been saved in the files of the entity": "The timeline export has been saved in the files of the entity",
+  "The timeline export has been saved in the files of the entity, marked {markings} to cover its events": "The timeline export has been saved in the files of the entity, marked {markings} to cover its events",
   "The timeline settings have been saved": "The timeline settings have been saved",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.": "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "The user has BYPASS capability, their max confidence level is set to 100.",

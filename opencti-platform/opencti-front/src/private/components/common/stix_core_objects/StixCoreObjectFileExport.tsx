@@ -187,7 +187,7 @@ const StixCoreObjectFileExportComponent = ({
     setAskAiOpen(false);
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { renderTimelineFile } = useTimelineFileRenderer();
+  const { renderTimelineFile, resolveFileMarkings } = useTimelineFileRenderer();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
 
   const {
@@ -503,10 +503,12 @@ const StixCoreObjectFileExportComponent = ({
       return;
     }
     try {
-      const blob = await renderTimelineFile({ containerId: scoId, format });
+      const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+      const blob = await renderTimelineFile({ containerId: scoId, format, contentMaxMarkings });
+      const fileMarkings = await resolveFileMarkings(scoId, contentMaxMarkings, values.fileMarkings.map(({ value }) => value));
       const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
       commitUploadFile({
-        variables: { id: scoId, file, fileMarkings: values.fileMarkings.map(({ value }) => value), noTriggerImport: true },
+        variables: { id: scoId, file, fileMarkings: fileMarkings.ids, noTriggerImport: true },
         onCompleted: (result, errors) => {
           setSubmitting(false);
           if (errors?.length) {
@@ -516,7 +518,11 @@ const StixCoreObjectFileExportComponent = ({
           if (result.stixCoreObjectEdit?.importPush) {
             onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
           }
-          MESSAGING$.notifySuccess(t_i18n('The timeline export has been saved in the files of the entity'));
+          MESSAGING$.notifySuccess(fileMarkings.raised.length > 0
+            ? t_i18n('The timeline export has been saved in the files of the entity, marked {markings} to cover its events', {
+                values: { markings: fileMarkings.raised.join(', ') },
+              })
+            : t_i18n('The timeline export has been saved in the files of the entity'));
           resetForm();
           close();
         },

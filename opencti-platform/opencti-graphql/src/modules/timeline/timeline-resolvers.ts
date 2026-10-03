@@ -9,6 +9,7 @@ import { isStixRelationship } from '../../schema/stixRelationship';
 import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
 import {
   addTimelineEvent,
+  canContributeToTimeline,
   deleteTimelineEvent,
   editTimelineEvent,
   exportContainerTimeline,
@@ -16,10 +17,12 @@ import {
   findContainerTimelineSummary,
   findTimelineAnchors,
   findTimelineEvent,
+  findTimelineExportFileMarkings,
   hideTimelineEvent,
   importTimelineExtension,
   listTimelineRules,
   pinTimelineEvent,
+  recordTimelineView,
   regenerateTimeline,
   updateTimelineSettings,
 } from './timeline-domain';
@@ -32,6 +35,7 @@ const timelineResolvers: Resolvers = {
     containerTimeline: (_, args, context) => findContainerTimeline(context, context.user, args),
     containerTimelineSummary: (_, { id }, context) => findContainerTimelineSummary(context, context.user, id),
     containerTimelineExport: (_, args, context) => exportContainerTimeline(context, context.user, args),
+    containerTimelineExportFileMarkings: (_, args, context) => findTimelineExportFileMarkings(context, context.user, args),
     timelineEvent: (_, { id }, context) => findTimelineEvent(context, context.user, id),
     timelineAnchors: (_, { containerId }, context) => findTimelineAnchors(context, context.user, containerId),
     timelineRules: () => listTimelineRules(),
@@ -43,7 +47,11 @@ const timelineResolvers: Resolvers = {
     pinned: (event) => event.pinned ?? false,
     hidden: (event) => event.hidden ?? false,
     analyst_fields: (event) => event.analyst_fields ?? [],
-    editable: (event) => event.event_source === 'manual',
+    editable: async (event, _, context) => {
+      if (event.event_source !== 'manual') return false;
+      const container = await context.batch.idsBatchLoader.load({ id: event.container_id, type: undefined });
+      return canContributeToTimeline(context, context.user, container);
+    },
     element: (event, _, context) => {
       // Only STIX elements belong to the element union: internal soft-check sources (hunt or investigation
       // runs) keep their id and type on the event but are not resolved here
@@ -65,6 +73,7 @@ const timelineResolvers: Resolvers = {
     timelineSettingsUpdate: (_, { containerId, input }, context) => updateTimelineSettings(context, context.user, containerId, input),
     timelineRegenerate: (_, { containerId }, context) => regenerateTimeline(context, context.user, containerId),
     timelineImport: (_, { containerId, extension }, context) => importTimelineExtension(context, context.user, containerId, extension),
+    timelineViewed: (_, { containerId }, context) => recordTimelineView(context, context.user, containerId),
   },
   Subscription: {
     containerTimelineUpdated: {

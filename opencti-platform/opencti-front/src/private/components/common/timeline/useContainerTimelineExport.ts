@@ -3,7 +3,8 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
-import { containerTimelineExportQuery } from './ContainerTimelineMutations';
+import { containerTimelineExportFileMarkingsQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
+import type { ContainerTimelineMutationsExportFileMarkingsQuery } from './__generated__/ContainerTimelineMutationsExportFileMarkingsQuery.graphql';
 import type {
   ContainerTimelineMutationsExportQuery,
   ContainerTimelineMutationsExportQuery$variables,
@@ -82,6 +83,8 @@ export interface TimelineExportFilters {
   // Time window (ISO dates) of the events
   from?: string | null;
   to?: string | null;
+  // Content ceiling of the export dialog: events marked above it are left out
+  contentMaxMarkings?: readonly string[] | null;
 }
 
 export interface TimelineFileOptions extends TimelineExportFilters {
@@ -129,6 +132,7 @@ export const useTimelineFileRenderer = () => {
       includeHidden: options.includeHidden ?? false,
       pinnedOnly: options.pinnedOnly ?? false,
       labels: format === 'csv' ? null : labels(),
+      contentMaxMarkings: options.contentMaxMarkings && options.contentMaxMarkings.length > 0 ? [...options.contentMaxMarkings] : null,
     };
     const result = await fetchQuery<ContainerTimelineMutationsExportQuery>(containerTimelineExportQuery, variables, { fetchPolicy: 'network-only' }).toPromise();
     return result?.containerTimelineExport ?? '';
@@ -158,7 +162,25 @@ export const useTimelineFileRenderer = () => {
     return svgToPngBlob(svg, size.width, size.height);
   };
 
-  return { renderTimelineFile };
+  /**
+   * Markings of an export stored as a file: the selected ones, raised by the platform to cover the markings of the
+   * exported events (a file is never marked less strictly than its content). `raised` names the markings added.
+   */
+  const resolveFileMarkings = async (containerId: string, contentMaxMarkings: string[], fileMarkings: string[]) => {
+    const result = await fetchQuery<ContainerTimelineMutationsExportFileMarkingsQuery>(
+      containerTimelineExportFileMarkingsQuery,
+      { id: containerId, contentMaxMarkings: contentMaxMarkings.length > 0 ? contentMaxMarkings : null, fileMarkings },
+      { fetchPolicy: 'network-only' },
+    ).toPromise();
+    if (!result) throw new Error('Unable to resolve the markings of the timeline export');
+    const markings = result.containerTimelineExportFileMarkings;
+    return {
+      ids: markings.map((marking) => marking.id),
+      raised: markings.filter((marking) => !fileMarkings.includes(marking.id)).map((marking) => marking.definition ?? marking.id),
+    };
+  };
+
+  return { renderTimelineFile, resolveFileMarkings };
 };
 
 /** Maps an export format of the container export dialog to the timeline format producing it. */

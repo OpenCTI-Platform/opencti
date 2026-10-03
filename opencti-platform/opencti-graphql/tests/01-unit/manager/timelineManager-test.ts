@@ -32,7 +32,8 @@ describe('Timeline manager impact collection', () => {
       extensions: { [STIX_EXT_OCTI]: { id: 'rel-1', type: 'uses', source_ref: 'incident-1', source_type: 'Incident', target_ref: 'ap-1', target_type: 'Attack-Pattern' } },
     }), collector);
     expect(Array.from(collector.containers)).toEqual(['incident-1']);
-    expect(Array.from(collector.contained).sort()).toEqual(['incident-1', 'rel-1'].sort());
+    // Cases containing either endpoint (here the targeted attack pattern) are impacted too
+    expect(Array.from(collector.contained).sort()).toEqual(['ap-1', 'incident-1', 'rel-1']);
   });
 
   it('should follow the sighted element of a sighting', () => {

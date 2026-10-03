@@ -557,8 +557,8 @@ const StixCoreObjectFileExportForm = ({
                           className="mt-5"
                         />
                       )}
-                      {/* The timeline export holds the events the user can see, like the timeline tab */}
-                      {((values.connector.value !== BUILT_IN_HTML_TO_PDF.value && values.connector.value !== BUILT_IN_TIMELINE.value) || isFintelPdf) && (
+                      {/* The timeline export applies the content ceiling to its events, like every export */}
+                      {(values.connector.value !== BUILT_IN_HTML_TO_PDF.value || isFintelPdf) && (
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}

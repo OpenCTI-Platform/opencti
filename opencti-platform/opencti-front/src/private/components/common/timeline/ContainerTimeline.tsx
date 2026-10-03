@@ -1,5 +1,5 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, useMutation, usePaginationFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useSearchParams } from 'react-router';
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Button from '@common/button/Button';
@@ -26,6 +26,7 @@ import {
   timelineEventHideMutation,
   timelineEventPinMutation,
   timelineRegenerateMutation,
+  timelineViewedMutation,
 } from './ContainerTimelineMutations';
 import type { ContainerTimelineSummaryQuery } from './__generated__/ContainerTimelineSummaryQuery.graphql';
 import type { ContainerTimelineEventsQuery, ContainerTimelineEventsQuery$variables } from './__generated__/ContainerTimelineEventsQuery.graphql';
@@ -37,6 +38,7 @@ import type { ContainerTimelineMutationsHideMutation } from './__generated__/Con
 import type { ContainerTimelineMutationsEditMutation } from './__generated__/ContainerTimelineMutationsEditMutation.graphql';
 import type { ContainerTimelineMutationsDeleteMutation } from './__generated__/ContainerTimelineMutationsDeleteMutation.graphql';
 import type { ContainerTimelineMutationsRegenerateMutation } from './__generated__/ContainerTimelineMutationsRegenerateMutation.graphql';
+import type { ContainerTimelineMutationsViewedMutation } from './__generated__/ContainerTimelineMutationsViewedMutation.graphql';
 import {
   centerDomain,
   computeTimelineExtent,
@@ -620,6 +622,11 @@ interface ContainerTimelineProps {
 const ContainerTimeline = ({ containerId, containerName }: ContainerTimelineProps) => {
   const [summaryRef, loadSummary] = useQueryLoadingWithLoadQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, { id: containerId });
   const reloadSummary = useCallback(() => loadSummary({ id: containerId }, { fetchPolicy: 'network-only' }), [loadSummary, containerId]);
+  // Usage telemetry: one opening of the tab (the strip and the widget read the same summary without counting)
+  const [commitViewed] = useMutation<ContainerTimelineMutationsViewedMutation>(timelineViewedMutation);
+  useEffect(() => {
+    commitViewed({ variables: { containerId }, onError: () => undefined });
+  }, [containerId]);
   if (!summaryRef) return <Loader variant={LoaderVariant.container} />;
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
