@@ -159,8 +159,11 @@ export interface LandscapeBucketData {
 
 export interface LandscapeItemData {
   readonly id: string;
+  readonly standard_id?: string | null;
   readonly entity_type: string;
   readonly name: string;
+  // ATT&CK external id, techniques only
+  readonly x_mitre_id?: string | null;
   readonly count: number;
 }
 
@@ -193,6 +196,7 @@ export interface LandscapeDiffData {
   } | null;
   readonly entities: ReadonlyArray<{
     readonly entity_id: string;
+    readonly standard_id?: string | null;
     readonly entity_type: string;
     readonly name: string;
     readonly created_in_period: boolean;
@@ -321,13 +325,14 @@ export const landscapeDiffToJson = (diff: LandscapeDiffData): string => JSON.str
 
 export const landscapeDiffToCsv = (diff: LandscapeDiffData, t: Translate): string => {
   const rows: Array<Array<string | number | boolean | null | undefined>> = [
-    [t('Entity'), t('Type'), t('Created in period'), t('Revoked in period'), t('Attributes changed'), t('Relationships added'),
+    [t('Entity'), t('Type'), t('Standard STIX ID'), t('Created in period'), t('Revoked in period'), t('Attributes changed'), t('Relationships added'),
       t('Relationships removed'), t('Relationships revoked'), t('Confidence'), t('Score'), t('Change score')],
   ];
   diff.entities.forEach((entity) => {
     rows.push([
       entity.name,
       entity.entity_type,
+      entity.standard_id,
       entity.created_in_period,
       entity.revoked_in_period,
       entity.attributes_changed,
