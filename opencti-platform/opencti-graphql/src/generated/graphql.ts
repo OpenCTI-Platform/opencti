@@ -6484,6 +6484,8 @@ export type CurationAdjudication = {
   decision: CurationDecision;
   model?: Maybe<Scalars['String']['output']>;
   rationale: Scalars['String']['output'];
+  /** True when OpenCTI itself obtained the adjudication from the agent bound to cti.curation_adjudicate. */
+  verified: Scalars['Boolean']['output'];
 };
 
 export type CurationAuthoritySource = {
@@ -45637,6 +45639,7 @@ export type CurationAdjudicationResolvers<ContextType = any, ParentType extends 
   decision?: Resolver<ResolversTypes['CurationDecision'], ParentType, ContextType>;
   model?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  verified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type CurationAuthoritySourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAuthoritySource'] = ResolversParentTypes['CurationAuthoritySource']> = ResolversObject<{

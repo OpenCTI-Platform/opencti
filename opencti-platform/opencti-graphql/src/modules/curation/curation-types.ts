@@ -131,6 +131,9 @@ export interface CurationAdjudication {
   model?: string | null;
   adjudicated_at: string;
   applied: boolean;
+  // True only when OpenCTI itself obtained the answer from the agent bound to cti.curation_adjudicate: a decision
+  // recorded through the API (curationProposalDecide) is never verified, whatever agent it names.
+  verified?: boolean;
 }
 
 export interface BasicStoreEntityCurationProposal extends BasicStoreEntity {

@@ -40,6 +40,7 @@ const proposalDetailsFragment = graphql`
       model
       adjudicated_at
       applied
+      verified
     }
     adjudication_requested_at
     policy {
@@ -188,6 +189,7 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Tag label={labels.decision(proposal.adjudication.decision)} />
                 {proposal.adjudication.applied && <Tag label={t_i18n('Applied')} color={theme.palette.success.main} />}
+                <Tag label={proposal.adjudication.verified ? t_i18n('Requested by OpenCTI') : t_i18n('Recorded through the API')} />
               </Box>
               <Typography variant="body2">{proposal.adjudication.rationale}</Typography>
               <Typography variant="caption" color={theme.palette.text.light}>

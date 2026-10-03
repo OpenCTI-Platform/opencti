@@ -187,6 +187,7 @@ export const adjudicateProposal = async (
     model: null,
     adjudicated_at: now(),
     applied: false,
+    verified: true,
   };
   const patch: Record<string, unknown> = { curation_adjudication: adjudication };
   if (parsed?.target_id) {

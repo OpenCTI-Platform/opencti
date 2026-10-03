@@ -108,7 +108,9 @@ export const evaluatePolicyEligibility = (
   if (policy.forbid_open_contradiction && hasOpenContradiction) return EXCLUSION_OPEN_CONTRADICTION;
   // Agreement can only be required where the Curator adjudicates: the other kinds are never sent to it.
   if (policy.require_adjudication && ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind)) {
-    const decision = proposal.curation_adjudication?.decision;
+    // Only an adjudication OpenCTI obtained from the bound agent counts: a decision recorded through the API does not.
+    const adjudication = proposal.curation_adjudication?.verified === true ? proposal.curation_adjudication : null;
+    const decision = adjudication?.decision;
     if (!decision || decision === DECISION_SKIP) return EXCLUSION_ADJUDICATION_MISSING;
     const agrees = proposal.proposal_kind === PROPOSAL_KIND_MERGE ? (decision === DECISION_MERGE || decision === DECISION_ALIAS) : decision !== DECISION_DISTINCT;
     if (!agrees) return EXCLUSION_ADJUDICATION_DISAGREES;

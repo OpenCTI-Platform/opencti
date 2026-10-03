@@ -18242,6 +18242,11 @@ type CurationAdjudication {
   model: String
   adjudicated_at: DateTime!
   applied: Boolean!
+
+  """
+  True when OpenCTI itself obtained the adjudication from the agent bound to cti.curation_adjudicate.
+  """
+  verified: Boolean!
 }
 
 type CurationProposal implements InternalObject & BasicObject {

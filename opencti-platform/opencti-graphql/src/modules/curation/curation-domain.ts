@@ -262,6 +262,7 @@ export const decideProposal = async (
     model: input.model ?? null,
     adjudicated_at: now(),
     applied: false,
+    verified: false,
   };
   if (input.apply) {
     if (input.decision === DECISION_DISTINCT) {
@@ -327,7 +328,8 @@ export const applyProposalFromTask = async (context: AuthContext, user: AuthUser
     logApp.info('[CURATION] Proposal not eligible anymore, auto-apply skipped', { proposal_id: id, policy_id: policyId, reason: exclusion });
     return proposal;
   }
-  const decision = proposal.curation_adjudication?.decision === DECISION_ALIAS ? DECISION_ALIAS : null;
+  const adjudication = proposal.curation_adjudication?.verified === true ? proposal.curation_adjudication : null;
+  const decision = adjudication?.decision === DECISION_ALIAS ? DECISION_ALIAS : null;
   const applied = await applyAndRecord(context, user, proposal, settings, {
     status: PROPOSAL_STATUS_AUTO_APPLIED,
     rationale: `Applied by curation policy ${policy.name}`,

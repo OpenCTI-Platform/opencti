@@ -111,6 +111,9 @@ const curationResolvers: Resolvers = {
     can_revert: (proposal) => isProposalRevertible(proposal as unknown as BasicStoreEntityCurationProposal),
     adjudicable: (proposal) => isProposalAdjudicable(proposal as unknown as BasicStoreEntityCurationProposal),
   },
+  CurationAdjudication: {
+    verified: (adjudication) => (adjudication as { verified?: boolean }).verified === true,
+  },
   MergeRecord: {
     objectMarking: (record, _, context) => context.batch.markingsBatchLoader.load(record),
     target: (record, _, context) => {
