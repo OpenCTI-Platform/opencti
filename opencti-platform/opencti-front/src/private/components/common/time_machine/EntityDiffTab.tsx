@@ -160,6 +160,8 @@ const EntityDiffContent = ({ entityId, range }: { entityId: string; range: DateR
     );
   }
   const { summary } = diff;
+  // The relationship history of the period was capped: the removal, revocation and confidence counters are partial too
+  const relationshipHistoryTruncated = diff.warnings.includes('RELATIONSHIP_HISTORY_TRUNCATED');
   const noChange = diff.attributes.length === 0 && diff.relationships.length === 0 && diff.container_objects.length === 0;
   return (
     <Box data-testid="time-machine-diff">
@@ -258,9 +260,11 @@ const EntityDiffContent = ({ entityId, range }: { entityId: string; range: DateR
       {diff.relationships.length > 0 && (
         <Box sx={{ marginBottom: 3 }}>
           <Card title={t_i18n('Relationships')}>
-            {diff.relationships_truncated && (
+            {(diff.relationships_truncated || relationshipHistoryTruncated) && (
               <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginBottom: 8 }}>
-                {t_i18n('Only the most recent relationship changes are listed, the counters cover the whole period.')}
+                {relationshipHistoryTruncated
+                  ? t_i18n('Too many relationship changes during this period: the list only covers its most recent part, and so do the counters of removed, revoked and confidence-changed relationships.')
+                  : t_i18n('Only the most recent relationship changes are listed, the counters cover the whole period.')}
               </Text>
             )}
             <Table size="small" aria-label={t_i18n('Relationship changes')}>

@@ -17,6 +17,7 @@ import Filters from '../../common/lists/Filters';
 import TimeMachinePeriodSelector from '../../common/time_machine/TimeMachinePeriodSelector';
 import TimeMachineExportMenu from '../../common/time_machine/TimeMachineExportMenu';
 import LandscapeChangesResults from '../../common/time_machine/LandscapeChangesResults';
+import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
 import {
   DateRange,
   exportFileName,
@@ -275,7 +276,8 @@ const LandscapeChanges = () => {
           entity_types: entityType === AUTO_ENTITY_TYPE ? null : [entityType],
         },
       },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (hasPayloadErrors(errors)) return;
         const id = response.landscapeDiffRun?.id;
         if (id) {
           setSearchParams((current) => {

@@ -5207,6 +5207,7 @@
   "Tone": "トーン",
   "Too many changes happened after this date, the view stops at the oldest change that could be replayed.": "この日付以降の変更が多すぎるため、ビューは再生できた最も古い変更で停止します。",
   "Too many objects": "オブジェクトが多すぎます",
+  "Too many relationship changes during this period: the list only covers its most recent part, and so do the counters of removed, revoked and confidence-changed relationships.": "この期間のリレーションシップの変更が多すぎます。一覧は最新の部分のみを対象とし、削除、取り消し、信頼度が変更されたリレーションシップのカウンターも同様です。",
   "Too many relationship changes to replay, the relationships only reflect the most recent part of the history.": "再生するリレーションシップの変更が多すぎるため、リレーションシップは履歴の最新部分のみを反映しています。",
   "Tool": "ツール",
   "Tool definitions": "ツールの定義",
