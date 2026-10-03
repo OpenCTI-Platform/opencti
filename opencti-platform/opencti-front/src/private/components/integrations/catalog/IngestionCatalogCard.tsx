@@ -1,7 +1,6 @@
 import React from 'react';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { GroupsOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router';
 import { alpha, useTheme } from '@mui/material/styles';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -16,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
 import { paperBorder } from '../paperSurface';
@@ -123,7 +123,8 @@ const ConnectorActions = ({
           sx={{ marginLeft: '0!important' }}
           direction="row"
           gap={1}
-          onClick={(e) => e.stopPropagation()}
+          onClick={stopLinkNavigation}
+          onAuxClick={stopLinkNavigation}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (
@@ -156,18 +157,12 @@ const IngestionCatalogCard = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const navigate = useNavigate();
-
   const link = `/dashboard/integrations/catalog/${connector.slug}`;
 
   const connectorMetadata = getConnectorMetadata(
     connector.container_type,
     t_i18n,
   );
-
-  const handleCardClick = () => {
-    navigate(link);
-  };
 
   return (
     <Box
@@ -186,7 +181,8 @@ const IngestionCatalogCard = ({
       }}
     >
       <Card
-        onClick={handleCardClick}
+        // A real link, so ctrl/cmd and middle click open the connector in a new tab.
+        to={link}
         sx={{
           height: 280,
           borderRadius: 1,
