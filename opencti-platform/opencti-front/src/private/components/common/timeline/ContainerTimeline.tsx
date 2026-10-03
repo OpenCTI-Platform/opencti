@@ -139,6 +139,7 @@ const containerTimelineEventsFragment = graphql`
       search: $search
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
+      orderMode: desc
       first: $count
       after: $cursor
     ) @connection(key: "ContainerTimelineEvents_containerTimeline") {
@@ -246,6 +247,9 @@ interface TimelineActions {
 
 interface ContainerTimelineEventsViewProps {
   queryRef: PreloadedQuery<ContainerTimelineEventsQuery>;
+  /** Event the timeline was opened on (URL link), still to be reached by loading earlier pages */
+  linkedEventId: string | null;
+  onLinkedEventResolved: () => void;
   summary: TimelineSummary;
   state: TimelineViewState;
   domain: TimelineDomain | null;
@@ -259,6 +263,8 @@ interface ContainerTimelineEventsViewProps {
 
 const ContainerTimelineEventsView = ({
   queryRef,
+  linkedEventId,
+  onLinkedEventResolved,
   summary,
   state,
   domain,
@@ -275,13 +281,22 @@ const ContainerTimelineEventsView = ({
     containerTimelineEventsFragment,
     queryData,
   );
+  // Pages are loaded from the latest event backwards: the loaded events are displayed in chronological order
   const events = useMemo(() => (data.containerTimeline?.edges ?? []).map((edge) => {
     const node = edge.node;
     return {
       ...node,
       element_name: node.element?.representative?.main ?? null,
     } as TimelineEventDetails;
-  }), [data]);
+  }).reverse(), [data]);
+  useEffect(() => {
+    if (!linkedEventId) return;
+    if (!hasNext || events.some((event) => event.id === linkedEventId)) {
+      onLinkedEventResolved();
+    } else if (!isLoadingNext) {
+      loadNext(EVENTS_PAGE_SIZE);
+    }
+  }, [linkedEventId, events, hasNext, isLoadingNext]);
   const anchors = summary.anchors;
   const extent = useMemo(() => computeTimelineExtent(events, TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key])), [events, anchors]);
   const visibleDomain = domain ?? computeVisibleDomain(extent, state.zoom);
@@ -328,7 +343,7 @@ const ContainerTimelineEventsView = ({
             </span>
             {hasNext && (
               <Button variant="secondary" size="small" disabled={isLoadingNext} onClick={() => loadNext(EVENTS_PAGE_SIZE)} data-testid="timeline-load-more">
-                {t_i18n('Show more events')}
+                {t_i18n('Show earlier events')}
               </Button>
             )}
           </div>
@@ -378,6 +393,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const [formOpen, setFormOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  // Only the event of the opening link is searched in earlier pages, never a later selection
+  const [linkedEventId, setLinkedEventId] = useState<string | null>(state.event);
 
   const updateState = useCallback((patch: Partial<TimelineViewState>) => {
     setSearchParams(serializeTimelineViewState({ ...state, ...patch }, defaults), { replace: true });
@@ -556,6 +573,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <ContainerTimelineEventsView
               queryRef={eventsRef}
+              linkedEventId={linkedEventId}
+              onLinkedEventResolved={() => setLinkedEventId(null)}
               summary={summary}
               state={state}
               domain={domain}

@@ -83,6 +83,7 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 - **Group by**: hour, day or week.
 - **Search** and filters: lanes, event kinds, event source (all events, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
 - The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
+- The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
 - In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
 
 ### Live updates

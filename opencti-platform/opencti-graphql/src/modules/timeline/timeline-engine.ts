@@ -594,12 +594,13 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
 /**
  * Regenerate the derived events of a container. Idempotent: derived events have deterministic ids,
  * unchanged events are not rewritten and analyst fields survive. Returns null when another
- * regeneration of the same container is already running.
+ * regeneration of the same container is already running, or, with `skipIfGenerated`, when a
+ * concurrent call generated the timeline while this one was waiting for the lock.
  */
 export const regenerateContainerTimeline = async (
   context: AuthContext,
   containerId: string,
-  opts: { wait?: boolean } = {},
+  opts: { wait?: boolean; skipIfGenerated?: boolean } = {},
 ): Promise<TimelineRegenerationResult | null> => {
   const container = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, containerId, { type: TIMELINE_CONTAINER_TYPES });
   if (!container) {
@@ -611,6 +612,12 @@ export const regenerateContainerTimeline = async (
   try {
     // Background regenerations skip a container being regenerated, explicit ones wait for it
     lock = await lockResources([`timeline_regeneration_${container.internal_id}`], opts.wait ? {} : { retryCount: 0 });
+    if (opts.skipIfGenerated) {
+      const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
+      if (!current) return null;
+      if (current[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return null;
+      return await regenerateLocked(context, current);
+    }
     return await regenerateLocked(context, container);
   } catch (error: any) {
     if (error?.name === TYPE_LOCK_ERROR) {

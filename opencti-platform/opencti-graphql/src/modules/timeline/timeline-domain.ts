@@ -30,7 +30,6 @@ import { now } from '../../utils/format';
 import {
   ATTRIBUTE_TIMELINE_ANCHORS,
   ENTITY_TYPE_TIMELINE_EVENT,
-  type StixTimelineExtension,
   type StixTimelineExtensionEvent,
   TIMELINE_CONTAINER_TYPES,
   TIMELINE_DEFAULT_SETTINGS,
@@ -59,6 +58,7 @@ import {
 } from './timeline-engine';
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { notifyTimelineMilestoneAdded } from './timeline-notification';
+import { sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
 import { logApp } from '../../config/conf';
 
@@ -147,9 +147,11 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
 const ensureTimelineGenerated = async (context: AuthContext, container: AnyStoreElement) => {
   if (container[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return container;
   // First opening of a container that was never processed: build its timeline now, always on the
-  // live knowledge (never inside the draft the reader may be working in)
+  // live knowledge (never inside the draft the reader may be working in). Concurrent first reads
+  // (summary and events are resolved in parallel) wait for the regeneration in flight instead of
+  // reading a partial timeline, and do not run it a second time.
   const generationContext = executionContext('timeline_generation');
-  await regenerateContainerTimeline(generationContext, container.internal_id);
+  await regenerateContainerTimeline(generationContext, container.internal_id, { wait: true, skipIfGenerated: true });
   const generated = await internalLoadById<AnyStoreElement>(generationContext, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
   return generated ?? container;
 };
@@ -191,6 +193,13 @@ export const buildTimelineFilters = (containerId: string, args: TimelineFilterAr
     filters.push({ key: ['name', 'description', 'annotation'], values: [args.search.trim()], operator: FilterOperator.Search, mode: FilterMode.Or });
   }
   return { mode: FilterMode.And, filters, filterGroups };
+};
+
+/** Latest instant of a timeline: the greatest start time or the greatest end time, whichever is later. */
+export const latestTimelineTime = (latestStart: string | null | undefined, latestEnd: string | null | undefined): string | null => {
+  if (!latestStart) return latestEnd ?? null;
+  if (!latestEnd) return latestStart;
+  return new Date(latestEnd).getTime() > new Date(latestStart).getTime() ? latestEnd : latestStart;
 };
 
 /** Drop the events pointing to elements the user cannot see (or that no longer exist). */
@@ -305,7 +314,8 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
   const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { includeHidden: true }), hiddenElementIds);
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
-  const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, firstEvents, lastEvents, settings] = await Promise.all([
+  const windowFilters = { ...visibleFilters, filters: [...visibleFilters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] };
+  const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, firstEvents, lastEvents, lastEndingEvents, settings] = await Promise.all([
     count(visibleFilters),
     count({ ...visibleFilters, filters: [...visibleFilters.filters, { key: ['event_source'], values: ['manual'] }] }),
     count({ ...visibleFilters, filters: [...visibleFilters.filters, { key: ['pinned'], values: ['true'] }] }),
@@ -314,9 +324,9 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters: visibleFilters as any, field: 'kind', normalizeLabel: false }),
     pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: visibleFilters as any, first: 1, orderBy: 'event_time', orderMode: OrderingMode.Asc }),
     pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: visibleFilters as any, first: 1, orderBy: 'event_time', orderMode: OrderingMode.Desc }),
+    pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: windowFilters as any, first: 1, orderBy: 'event_end_time', orderMode: OrderingMode.Desc }),
     loadTimelineSettings(context, container.internal_id),
   ]);
-  const lastEvent = lastEvents.edges[0]?.node;
   addTimelineViewCount();
   return {
     container_id: container.internal_id,
@@ -325,7 +335,7 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
     pinned_count: pinnedCount,
     hidden_count: hiddenCount,
     first_event_time: firstEvents.edges[0]?.node.event_time ?? null,
-    last_event_time: lastEvent ? (lastEvent.event_end_time ?? lastEvent.event_time) : null,
+    last_event_time: latestTimelineTime(lastEvents.edges[0]?.node.event_time, lastEndingEvents.edges[0]?.node.event_end_time),
     lanes: lanes.map((l) => ({ lane: l.label, count: l.count })),
     kinds: kinds.map((k) => ({ kind: k.label, count: k.count })),
     anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null,
@@ -622,14 +632,16 @@ export const regenerateTimeline = async (context: AuthContext, user: AuthUser, c
  */
 export const importTimelineExtension = async (context: AuthContext, user: AuthUser, containerId: string, rawExtension: string) => {
   const container = await loadEditableTimelineContainer(context, user, containerId);
-  let extension: StixTimelineExtension;
+  let extension: unknown;
   try {
     extension = JSON.parse(rawExtension);
   } catch {
     throw FunctionalError('Invalid timeline extension');
   }
-  const events = Array.isArray(extension.events) ? extension.events : [];
-  const annotations = Array.isArray(extension.annotations) ? extension.annotations : [];
+  const { events, annotations, dropped, normalized } = sanitizeTimelineExtension(extension);
+  if (dropped > 0 || normalized > 0) {
+    logApp.warn('[TIMELINE] Timeline extension values dropped or normalized on import', { containerId: container.internal_id, dropped, normalized });
+  }
   const refs = Array.from(new Set([
     ...events.flatMap((e) => [e.element_ref, e.created_by_ref, ...(e.object_marking_refs ?? [])]),
     ...annotations.map((a) => a.element_ref),
@@ -665,7 +677,7 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
   const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
   const readableIds = new Set(readable.map((e) => e.internal_id));
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
-  const candidates = events.filter((e) => e.title && e.event_time).map((event) => {
+  const candidates = events.map((event) => {
     const existing = findKnownEvent(event);
     const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
     const overwritesUnreadable = storedIds.has(internalId) && !readableIds.has(internalId);
@@ -685,9 +697,9 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
       description: event.description,
       event_time: new Date(event.event_time).toISOString(),
       event_end_time: event.event_end_time ? new Date(event.event_end_time).toISOString() : null,
-      time_precision: event.precision ?? 'exact',
-      lane: event.lane ?? 'custom',
-      kind: event.kind ?? 'milestone',
+      time_precision: event.precision,
+      lane: event.lane,
+      kind: event.kind,
       event_source: 'manual',
       rule_id: null,
       element_id: element?.internal_id ?? null,

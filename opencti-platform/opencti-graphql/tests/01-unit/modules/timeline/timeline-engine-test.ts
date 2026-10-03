@@ -8,8 +8,8 @@ import {
   timelineEventStandardId,
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
-import { buildTimelineFilters } from '../../../../src/modules/timeline/timeline-domain';
-import { buildStixTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
+import { buildTimelineFilters, latestTimelineTime } from '../../../../src/modules/timeline/timeline-domain';
+import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modules/timeline/timeline-types';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
@@ -97,6 +97,17 @@ describe('Timeline read filters', () => {
   });
 });
 
+describe('Timeline summary range', () => {
+  it('should end the range at the latest start or end time, whichever is later', () => {
+    // A window starting earlier but ending after the latest event start extends the range
+    expect(latestTimelineTime('2026-03-10T00:00:00.000Z', '2026-03-20T00:00:00.000Z')).toEqual('2026-03-20T00:00:00.000Z');
+    expect(latestTimelineTime('2026-03-10T00:00:00.000Z', '2026-03-05T00:00:00.000Z')).toEqual('2026-03-10T00:00:00.000Z');
+    expect(latestTimelineTime('2026-03-10T00:00:00.000Z', null)).toEqual('2026-03-10T00:00:00.000Z');
+    expect(latestTimelineTime(undefined, '2026-03-20T00:00:00.000Z')).toEqual('2026-03-20T00:00:00.000Z');
+    expect(latestTimelineTime(null, undefined)).toBeNull();
+  });
+});
+
 describe('Timeline schema registration', () => {
   it('should register the timeline types and the anchors on every timeline container', () => {
     expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_TIMELINE_EVENT, 'event_time')).toBeDefined();
@@ -129,5 +140,84 @@ describe('Timeline STIX extension', () => {
     expect(extension?.extension_type).toEqual('property-extension');
     expect(extension?.events[0]).not.toHaveProperty('description');
     expect(extension?.annotations[0]).toMatchObject({ pinned: true });
+  });
+
+  it('should keep valid imported contributions unchanged', () => {
+    const event = {
+      id: 'timeline-event--1',
+      external_id: 'splunk:1',
+      event_time: '2026-03-05T00:00:00.000Z',
+      event_end_time: '2026-03-06T00:00:00.000Z',
+      precision: 'day',
+      lane: 'detection',
+      kind: 'containment',
+      title: 'Hosts isolated',
+      description: 'EDR isolation',
+      element_ref: 'indicator--1',
+      confidence: 80,
+      ordering_hint: 2,
+      pinned: true,
+      hidden: false,
+      annotation: 'Confirmed',
+      object_marking_refs: ['marking-definition--1'],
+      created_by_ref: 'identity--1',
+    };
+    const annotation = { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--1', pinned: true, ordering_hint: 1 };
+    const result = sanitizeTimelineExtension({ extension_type: 'property-extension', events: [event], annotations: [annotation] });
+    expect(result).toEqual({ events: [event], annotations: [annotation], dropped: 0, normalized: 0 });
+  });
+
+  it('should map unknown enum values to safe defaults and drop malformed values on import', () => {
+    const result = sanitizeTimelineExtension({
+      events: [
+        { id: 'timeline-event--1', event_time: '2026-03-05T00:00:00.000Z', title: 'Defaults' },
+        {
+          id: 'timeline-event--2',
+          event_time: '2026-03-05T00:00:00.000Z',
+          event_end_time: '2026-03-01T00:00:00.000Z',
+          precision: 'minute',
+          lane: 'future-lane',
+          kind: 'future_kind',
+          title: 'x'.repeat(600),
+          confidence: 150,
+          ordering_hint: 1.5,
+          pinned: 'yes',
+          object_marking_refs: ['marking-definition--1', 42],
+        },
+      ],
+      annotations: [],
+    });
+    expect(result.dropped).toEqual(0);
+    expect(result.events[0]).toMatchObject({ precision: 'exact', lane: 'custom', kind: 'milestone' });
+    const normalized = result.events[1];
+    expect(normalized).toMatchObject({ precision: 'approximate', lane: 'custom', kind: 'milestone', object_marking_refs: ['marking-definition--1'] });
+    expect(normalized.title).toHaveLength(512);
+    expect(normalized).not.toHaveProperty('event_end_time');
+    expect(normalized).not.toHaveProperty('confidence');
+    expect(normalized).not.toHaveProperty('ordering_hint');
+    expect(normalized).not.toHaveProperty('pinned');
+    // precision, lane, kind, end time, confidence, ordering hint, markings, pinned, title length
+    expect(result.normalized).toEqual(9);
+  });
+
+  it('should drop contributions that cannot be identified, placed in time or targeted', () => {
+    const result = sanitizeTimelineExtension({
+      events: [
+        { event_time: '2026-03-05T00:00:00.000Z', title: 'No identifier' },
+        { id: 'timeline-event--1', event_time: 'not a date', title: 'Bad time' },
+        { id: 'timeline-event--2', event_time: '2026-03-05T00:00:00.000Z', title: '   ' },
+        'not an object',
+        { external_id: 'splunk:2', event_time: '2026-03-05T00:00:00.000Z', title: 'Identified by its external id' },
+      ],
+      annotations: [
+        { rule_id: 'technique-kill-chain', kind: 'unknown_kind', element_ref: 'attack-pattern--1' },
+        { rule_id: 'technique-kill-chain', kind: 'technique_used' },
+        null,
+      ],
+    });
+    expect(result.events.map((e) => e.id)).toEqual(['splunk:2']);
+    expect(result.annotations).toEqual([]);
+    expect(result.dropped).toEqual(7);
+    expect(sanitizeTimelineExtension('garbage')).toEqual({ events: [], annotations: [], dropped: 0, normalized: 0 });
   });
 });
