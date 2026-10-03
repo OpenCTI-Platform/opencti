@@ -10166,6 +10166,7 @@ type Query {
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   securityCoverageResult(id: String!): SecurityCoverageResult
   securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
+  defensePlatforms: [DefensePlatform!]!
   defenseMatrix(platformIds: [String!], threatScope: DefenseThreatScope): DefenseMatrix
   defenseTechnique(id: String!, platformIds: [String!], threatScope: DefenseThreatScope): DefenseTechnique
   defenseGaps(platformIds: [String!], threatScope: DefenseThreatScope, filter: DefenseGapsFilter, first: Int, after: ID, orderBy: DefenseGapsOrdering, orderMode: OrderingMode): DefenseGapConnection

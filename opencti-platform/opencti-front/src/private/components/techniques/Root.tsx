@@ -14,6 +14,8 @@ const DataComponents = lazy(() => import('./DataComponents'));
 const RootDataComponent = lazy(() => import('./data_components/Root'));
 const DataSources = lazy(() => import('./DataSources'));
 const RootDataSource = lazy(() => import('./data_sources/Root'));
+const DefenseMatrix = lazy(() => import('./defense_matrix/DefenseMatrix'));
+const DefenseGaps = lazy(() => import('./defense_matrix/DefenseGaps'));
 
 const Root = () => {
   let redirect: string | null = null;
@@ -74,6 +76,14 @@ const Root = () => {
         <Route
           path="/data_sources/:dataSourceId/*"
           element={boundaryWrapper(RootDataSource)}
+        />
+        <Route
+          path="/defense_matrix"
+          element={boundaryWrapper(DefenseMatrix)}
+        />
+        <Route
+          path="/defense_gaps"
+          element={boundaryWrapper(DefenseGaps)}
         />
       </Routes>
     </Suspense>
