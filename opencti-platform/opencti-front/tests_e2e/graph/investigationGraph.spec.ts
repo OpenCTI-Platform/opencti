@@ -43,6 +43,8 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     await graph.getToolbarButton('Expand').click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
+    // Nothing is ticked when the dialog opens, and expanding without a type does nothing.
+    await dialog.getByRole('checkbox', { name: /^IPv4 address/ }).click();
     await dialog.getByRole('button', { name: 'Expand' }).click();
     await expect(dialog).toBeHidden();
     await expect.poll(() => graph.nodeIds()).toContain(fixture.ipv4.id);
