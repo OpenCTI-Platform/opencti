@@ -206,7 +206,7 @@ const DisseminationAssuranceLists = () => {
     <div style={{ paddingRight: 200 }} data-testid="dissemination-assurance-lists-page">
       <DisseminationAssuranceMenu />
       <Breadcrumbs elements={[
-        { label: t_i18n('Data') },
+        { label: t_i18n('Defense') },
         { label: t_i18n('Dissemination assurance') },
         { label: t_i18n('Lists'), current: true },
       ]}

@@ -270,7 +270,7 @@ const IocValidationRequests = () => {
     <div style={{ paddingRight: 200 }} data-testid="ioc-validation-requests-page">
       <DisseminationAssuranceMenu />
       <Breadcrumbs elements={[
-        { label: t_i18n('Data') },
+        { label: t_i18n('Defense') },
         { label: t_i18n('Dissemination assurance') },
         { label: t_i18n('Validation requests'), current: true },
       ]}

@@ -178,7 +178,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                   ]}
                 />
               ),
-              deployment: (
+              deployments: (
                 <IndicatorDeployment indicator={indicator} />
               ),
               files: (

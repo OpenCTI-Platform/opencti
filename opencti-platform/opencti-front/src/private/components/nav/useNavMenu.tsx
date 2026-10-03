@@ -370,7 +370,6 @@ const useNavMenu = (): NavGroup[] => {
             { granted: isGrantedToImport && !inDraft, link: '/dashboard/data/import', label: t_i18n('Import') },
             { granted: isGrantedToProcessing && !inDraft, link: '/dashboard/data/processing', label: t_i18n('Processing') },
             { granted: isGrantedToSharing && !inDraft, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
-            { granted: isGrantedToKnowledge && !inDraft, link: '/dashboard/data/assurance', label: t_i18n('Dissemination assurance') },
             { granted: isGrantedToManage && !inDraft, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
             { granted: isDataHealthEnabled && isGrantedToManage && !inDraft, link: '/dashboard/data/health', label: t_i18n('Health') },
             { granted: isTrashEnable() && isGrantedToDelete && !inDraft, link: '/dashboard/trash', label: t_i18n('Trash') },

@@ -1,13 +1,12 @@
 import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
-import LeftBarPage from '../model/menu/leftBar.pageModel';
 import { addIndicator, addSecurityPlatform, deleteIndicator, deleteSecurityPlatform, reportDeployment } from '../dataForTesting/indicatorDeployment.data';
 
 /**
  * Content of the test
  * -------------------
  * Report the deployment of an indicator on a security platform through the API
- * Check the Deployment tab of the indicator and the Deployments tab of the platform
+ * Check the Deployments tab of the indicator and the Deployments tab of the platform
  * Retry a failed deployment and withdraw it from the platform
  * Navigate through the dissemination assurance pages
  */
@@ -22,7 +21,7 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
 
     // region Indicator deployment tab
     // -------------------------------
-    await page.goto(`/dashboard/observations/indicators/${indicatorId}/deployment`);
+    await page.goto(`/dashboard/observations/indicators/${indicatorId}/deployments`);
     await expect(page.getByTestId('indicator-deployment-tab')).toBeVisible();
     const indicatorDeployments = page.getByTestId('deployed-on-indicator');
     await expect(indicatorDeployments.getByText(platformName)).toBeVisible();
@@ -49,9 +48,7 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
 
     // region Dissemination assurance pages
     // ------------------------------------
-    const leftBarPage = new LeftBarPage(page);
-    await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Data', 'Dissemination assurance');
+    await page.goto('/dashboard/defense/assurance');
     await expect(page.getByTestId('dissemination-assurance-overview-page')).toBeVisible();
     await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
 
