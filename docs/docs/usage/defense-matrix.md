@@ -78,6 +78,8 @@ Select gaps in the Gaps tab, or open a gap drawer, and click **Validate in OpenA
 
 When OpenAEV sends the results back, they update the validation layer. OpenAEV attributes each result to the security platform that produced it, so a validation is applied to the right platform.
 
+Applications requesting a validation through the API (`defenseGapsValidate` mutation) can pass an `external_reference_url`, an http or https link to what asked for the validation (a risk scenario, a ticket). It is stored as an external reference of the security coverage, named after the host of the link.
+
 ## Notifications
 
 A [live trigger](notifications.md#triggers) can listen to two defense events in addition to creation, modification and deletion:

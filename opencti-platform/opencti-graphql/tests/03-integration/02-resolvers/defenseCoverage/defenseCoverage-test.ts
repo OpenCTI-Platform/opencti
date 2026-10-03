@@ -140,9 +140,14 @@ const DEFENSE_VALIDATE = gql`
   mutation DefenseValidate($input: DefenseValidationInput!) {
     defenseGapsValidate(input: $input) {
       gaps_count
-      securityCoverage { id objectCovered { ... on Grouping { id } } }
+      securityCoverage { id objectCovered { ... on Grouping { id } } externalReferences { edges { node { id source_name url } } } }
       grouping { id objects { edges { node { ... on BasicObject { id } } } } }
     }
+  }
+`;
+const EXTERNAL_REFERENCE_DELETE = gql`
+  mutation ExternalReferenceDelete($id: ID!) {
+    externalReferenceEdit(id: $id) { delete }
   }
 `;
 const SECURITY_COVERAGE_DELETE = gql`
@@ -204,6 +209,7 @@ describe('Threat-informed defense matrix', () => {
   let securityCoverageId: string | undefined;
   let groupingId: string | undefined;
   let mappingId: string | undefined;
+  let externalReferenceId: string | undefined;
 
   const relate = async (fromId: string, toId: string, relationship_type: string) => {
     const result = await queryAsAdminWithSuccess({ query: RELATIONSHIP_ADD, variables: { input: { fromId, toId, relationship_type, confidence: 80 } } });
@@ -264,6 +270,7 @@ describe('Threat-informed defense matrix', () => {
 
   afterAll(async () => {
     if (securityCoverageId) await queryAsAdminWithSuccess({ query: SECURITY_COVERAGE_DELETE, variables: { id: securityCoverageId } });
+    if (externalReferenceId) await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: externalReferenceId } });
     if (groupingId) await queryAsAdminWithSuccess({ query: GROUPING_DELETE, variables: { id: groupingId } });
     if (mappingId) await queryAsAdminWithSuccess({ query: MAPPING_DELETE, variables: { id: mappingId } });
     if (created.indicator) await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: created.indicator } });
@@ -363,15 +370,22 @@ describe('Threat-informed defense matrix', () => {
   });
 
   it('should validate the technique through a security coverage of a grouping', async () => {
-    const result = await queryAsAdminWithSuccess({
-      query: DEFENSE_VALIDATE,
-      variables: { input: { attackPatternIds: [created.attackPattern], platformIds: [created.platform], threatId: created.threat, name: 'Defense matrix test validation' } },
-    });
+    const input = {
+      attackPatternIds: [created.attackPattern],
+      platformIds: [created.platform],
+      threatId: created.threat,
+      name: 'Defense matrix test validation',
+      external_reference_url: ' https://risk.example.com/scenarios/defense-matrix-test ',
+    };
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_VALIDATE, variables: { input } });
     const validation = result.data?.defenseGapsValidate;
     securityCoverageId = validation.securityCoverage.id;
     groupingId = validation.grouping.id;
     expect(validation.gaps_count).toEqual(2);
     expect(validation.securityCoverage.objectCovered.id).toEqual(groupingId);
+    const references = validation.securityCoverage.externalReferences.edges.map((e: { node: { id: string; source_name: string; url: string } }) => e.node);
+    externalReferenceId = references[0]?.id;
+    expect(references).toEqual([{ id: externalReferenceId, source_name: 'risk.example.com', url: 'https://risk.example.com/scenarios/defense-matrix-test' }]);
     const objectIds = validation.grouping.objects.edges.map((e: { node: { id: string } }) => e.node.id);
     expect(objectIds).toEqual(expect.arrayContaining([created.attackPattern, created.threat]));
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
@@ -384,6 +398,10 @@ describe('Threat-informed defense matrix', () => {
     await queryAsAdminWithError(
       { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], platformIds: ['unknown-platform'] } } },
       'Some security platforms of the validation request cannot be found',
+    );
+    await queryAsAdminWithError(
+      { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], external_reference_url: 'javascript:alert(1)' } } },
+      'The external reference of a validation request must be an http or https URL',
     );
   });
 

@@ -223,6 +223,8 @@ input DefenseValidationInput {
   duration: String
   type_affinity: String
   platforms_affinity: [String!]
+  # http(s) link back to what asked for the validation, stored as an external reference of the security coverage
+  external_reference_url: String @constraint(maxLength: 2048)
 }
 type DefenseValidationResult {
   securityCoverage: SecurityCoverage!

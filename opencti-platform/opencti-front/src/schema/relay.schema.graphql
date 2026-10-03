@@ -17796,6 +17796,9 @@ input DefenseValidationInput {
   duration: String
   type_affinity: String
   platforms_affinity: [String!]
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  external_reference_url: String
 }
 
 type DefenseValidationResult {

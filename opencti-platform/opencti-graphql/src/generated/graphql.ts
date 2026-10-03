@@ -7948,6 +7948,7 @@ export type DefenseValidationInput = {
   attackPatternIds: Array<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   duration?: InputMaybe<Scalars['String']['input']>;
+  external_reference_url?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   periodicity?: InputMaybe<Scalars['String']['input']>;
   platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
