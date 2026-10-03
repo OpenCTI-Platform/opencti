@@ -25463,6 +25463,11 @@ export type Query = {
   stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
   stixObjectOrStixRelationships?: Maybe<StixObjectOrStixRelationshipConnection>;
+  /**
+   * Shortest paths between two entities, shortest first. Every intermediate entity of a returned path is at its
+   * minimal distance from one of the endpoints: a longer detour through an entity already reached by a shorter
+   * route is not returned, so this is not an exhaustive k shortest simple paths enumeration.
+   */
   stixPaths?: Maybe<StixPathsResult>;
   stixRefRelationship?: Maybe<StixRefRelationship>;
   stixRefRelationships?: Maybe<StixRefRelationshipConnection>;

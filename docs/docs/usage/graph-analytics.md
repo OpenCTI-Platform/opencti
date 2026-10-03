@@ -22,7 +22,7 @@ Graph analytics are part of the Community Edition and do not use any AI.
 1. Open any entity and click the **Connect to...** button in the header.
 2. Select the target entity.
 3. Optionally adjust the search: maximum path length (4 relationships by default, 6 at most), number of paths, relationship types and intermediate entity types, inferred relationships, or going through containers (reports, groupings, cases).
-4. Click **Find paths**. The shortest paths are listed first, each one as a chain of entities and relationship types.
+4. Click **Find paths**. The shortest paths are listed first, each one as a chain of entities and relationship types. Longer paths are only listed when they reach each of their entities by its shortest route: a detour through an entity already reached by a shorter path is not listed.
 5. Select the paths you are interested in and click **Start an investigation with the selected paths** to open them in a new investigation.
 
 The search is bounded in time and in explored entities. When a limit is reached, a warning tells you that longer paths may exist: narrow the search with relationship or entity types.

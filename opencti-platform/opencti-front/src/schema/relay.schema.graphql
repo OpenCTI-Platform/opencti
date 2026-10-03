@@ -9539,6 +9539,12 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+
+  """
+  Shortest paths between two entities, shortest first. Every intermediate entity of a returned path is at its
+  minimal distance from one of the endpoints: a longer detour through an entity already reached by a shorter
+  route is not returned, so this is not an exhaustive k shortest simple paths enumeration.
+  """
   stixPaths(fromId: String!, toId: String!, maxDepth: Int, maxPaths: Int, relationshipTypes: [String!], entityTypes: [String!], includeInferred: Boolean, includeContainers: Boolean): StixPathsResult
   stixNeighborhoodSummary(id: String!, includeInferred: Boolean): StixNeighborhoodSummary
   similarEntities(id: String!, first: Int, minScore: Float, entityTypes: [String!], onlyWithSecurityCoverage: Boolean): GraphSimilarEntityConnection
