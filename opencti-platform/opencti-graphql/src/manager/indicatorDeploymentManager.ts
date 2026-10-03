@@ -11,6 +11,7 @@ import {
   repairRecentDeploymentCounters,
 } from '../modules/indicatorDeployment/indicatorDeployment-domain';
 import { maintainIocValidationRequests } from '../modules/iocValidation/iocValidation-domain';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 
 const toPositiveNumber = (value: unknown, fallback: number) => {
   const parsed = Number(value);
@@ -50,12 +51,20 @@ export const extractDeploymentIndicatorIds = (events: Array<SseEvent<DataEvent>>
   return [...ids];
 };
 
-export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>) => {
+export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const indicatorIds = extractDeploymentIndicatorIds(events);
   if (indicatorIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
     await refreshIndicatorDeploymentCounters(context, indicatorIds);
   }
+  // Saved after the refresh so a restart replays the events received while the manager was stopped.
+  if (lastEventId) {
+    await redisSetManagerEventState(CONTEXT_NAME, lastEventId);
+  }
+};
+
+export const indicatorDeploymentStreamStartFrom = async () => {
+  return (await redisGetManagerEventState(CONTEXT_NAME)) ?? 'live';
 };
 
 const INDICATOR_DEPLOYMENT_MANAGER_DEFINITION: ManagerDefinition = {
@@ -72,7 +81,7 @@ const INDICATOR_DEPLOYMENT_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: INDICATOR_DEPLOYMENT_MANAGER_STREAM_KEY,
     streamOpts: { bufferTime: 2000 },
-    streamProcessorStartFrom: () => 'live',
+    streamProcessorStartFrom: indicatorDeploymentStreamStartFrom,
   },
   enabledByConfig: INDICATOR_DEPLOYMENT_MANAGER_ENABLED,
   enabledToStart(): boolean {
