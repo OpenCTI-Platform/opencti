@@ -38,6 +38,29 @@ import {
 } from './investigationRun-types';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../schema/stixDomainObject';
 
+export interface RunPage<T> {
+  items: T[];
+  endCursor: string | null;
+  hasNextPage: boolean;
+}
+
+/**
+ * A processing window that moves forward on every call and wraps around at
+ * the end, so every active run gets its turn however many there are and
+ * however long the oldest ones stay active.
+ */
+export const createRunWindow = <T>() => {
+  let cursor: string | null = null;
+  return async (page: (after: string | null) => Promise<RunPage<T>>): Promise<T[]> => {
+    let current = await page(cursor);
+    if (current.items.length === 0 && cursor) {
+      current = await page(null);
+    }
+    cursor = current.hasNextPage ? current.endCursor : null;
+    return current.items;
+  };
+};
+
 // Longest wait for an enrichment job before it counts as timed out.
 export const ENRICHMENT_WAVE_TIMEOUT_MS = 10 * 60 * 1000;
 // Longest wait for the validation work of an approved draft.

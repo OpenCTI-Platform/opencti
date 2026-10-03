@@ -14,6 +14,7 @@ import {
   computeAcceptance,
   computeUsedMinutes,
   computeWaveStatus,
+  createRunWindow,
   evaluateEnrichmentRequest,
   feedbackCounterDelta,
   isBudgetExhausted,
@@ -26,6 +27,37 @@ import { type InvestigationFeedback } from '../../../../src/modules/investigatio
 import { buildPolicy, buildRun } from './investigationRun-fixtures';
 
 const NOW = new Date('2026-10-01T10:30:00.000Z');
+
+describe('Case Autopilot processing window', () => {
+  it('gives every active run its turn, however long the oldest ones stay active', async () => {
+    const active = ['r1', 'r2', 'r3', 'r4', 'r5'];
+    // A page of two, oldest first, resuming after the cursor (the index of the last run served).
+    const page = async (after: string | null) => {
+      const start = after ? Number(after) + 1 : 0;
+      const items = active.slice(start, start + 2);
+      return { items, endCursor: items.length > 0 ? String(start + items.length - 1) : null, hasNextPage: start + 2 < active.length };
+    };
+    const window = createRunWindow<string>();
+    expect(await window(page)).toEqual(['r1', 'r2']);
+    expect(await window(page)).toEqual(['r3', 'r4']);
+    expect(await window(page)).toEqual(['r5']);
+    // The end was reached: the next tick starts again from the oldest.
+    expect(await window(page)).toEqual(['r1', 'r2']);
+  });
+
+  it('starts again from the oldest when the runs after the cursor are no longer active', async () => {
+    let active = ['r1', 'r2', 'r3'];
+    const page = async (after: string | null) => {
+      const start = after ? active.indexOf(after) + 1 : 0;
+      const items = start > 0 && active.indexOf(after as string) < 0 ? [] : active.slice(start, start + 2);
+      return { items, endCursor: items[items.length - 1] ?? null, hasNextPage: start + 2 < active.length };
+    };
+    const window = createRunWindow<string>();
+    expect(await window(page)).toEqual(['r1', 'r2']);
+    active = ['r1', 'r2'];
+    expect(await window(page)).toEqual(['r1', 'r2']);
+  });
+});
 
 describe('Case Autopilot budgets', () => {
   it('counts only the time spent running', () => {

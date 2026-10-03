@@ -46,7 +46,7 @@ import {
 } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { elFindByIds } from '../../database/engine';
-import { internalFindByIds, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
+import { internalFindByIds, pageEntitiesConnection, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import { getEntityFromCache } from '../../database/cache';
 import { READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_DRAFT_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
@@ -100,6 +100,7 @@ import {
   buildTimeline,
   canAutoApproveDraft,
   computeWaveStatus,
+  createRunWindow,
   ENRICHMENT_WAVE_TIMEOUT_MS,
   isBudgetExhausted,
   isTerminalRequest,
@@ -1288,8 +1289,11 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
   }
 };
 
-export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => {
-  return topEntitiesList<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
+const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
+
+/** The next active runs to advance, oldest first, resuming where the previous tick stopped. */
+export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => nextRunsWindow(async (after) => {
+  const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
     filters: {
       mode: FilterMode.And,
       filters: [{ key: ['run_status'], values: [InvestigationRunStatus.Planned, InvestigationRunStatus.Running] }],
@@ -1298,5 +1302,11 @@ export const listInvestigationRunsToProcess = (context: AuthContext, limit: numb
     orderBy: 'created_at',
     orderMode: 'asc' as never,
     first: limit,
+    after,
   });
-};
+  return {
+    items: connection.edges.map((edge) => edge.node),
+    endCursor: connection.pageInfo.endCursor ?? null,
+    hasNextPage: connection.pageInfo.hasNextPage,
+  };
+});
