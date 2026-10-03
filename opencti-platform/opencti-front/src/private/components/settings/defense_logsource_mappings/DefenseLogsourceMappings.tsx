@@ -101,7 +101,7 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
   );
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
   const [commitDelete, deleting] = useApiMutation<DefenseLogsourceMappingsDeleteMutation>(defenseLogsourceMappingsDeleteMutation, undefined, {
-    successMessage: t_i18n('Log source mapping deleted'),
+    successMessage: t_i18n('Telemetry mapping deleted'),
   });
   const [commitActive] = useApiMutation<DefenseLogsourceMappingsActiveMutation>(defenseLogsourceMappingsActiveMutation);
   React.useEffect(() => {
@@ -110,12 +110,12 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
   const mappings = (data.defenseLogsourceMappings?.edges ?? []).map(({ node }) => node);
 
   return (
-    <Card title={t_i18n('{count} log source mappings', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}>
+    <Card title={t_i18n('{count} telemetry mappings', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}>
       {mappings.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">{t_i18n('No log source mapping matches the search.')}</Typography>
+        <Typography variant="body2" color="text.secondary">{t_i18n('No telemetry mapping matches the search.')}</Typography>
       ) : (
         <TableContainer>
-          <Table size="small" aria-label={t_i18n('Log source mappings')} data-testid="defense-logsource-mappings-table">
+          <Table size="small" aria-label={t_i18n('Telemetry mappings')} data-testid="defense-logsource-mappings-table">
             <TableHead>
               <TableRow>
                 <TableCell>{t_i18n('Log source')}</TableCell>
@@ -188,7 +188,7 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
         </Box>
       )}
       <Dialog open={!!toDelete} onClose={() => setToDelete(null)} title={t_i18n('Are you sure?')} size="small">
-        <Typography>{t_i18n('Do you want to delete the log source mapping {name}?', { values: { name: toDelete?.name ?? '' } })}</Typography>
+        <Typography>{t_i18n('Do you want to delete the telemetry mapping {name}?', { values: { name: toDelete?.name ?? '' } })}</Typography>
         <DialogActions>
           <Button variant="secondary" onClick={() => setToDelete(null)} disabled={deleting}>{t_i18n('Cancel')}</Button>
           <Button
@@ -229,10 +229,10 @@ const DefenseLogsourceMappings = () => {
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
-          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Log source mappings'), current: true }]}
+          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Telemetry mappings'), current: true }]}
         />
         <Alert
-          content={t_i18n('Log source mappings turn the log sources of detection rules and security platforms (Sigma taxonomy) into MITRE data components. The defense matrix uses them to infer the telemetry of a platform from its deployed rules and to declare telemetry from log sources.')}
+          content={t_i18n('Telemetry mappings turn the log sources of detection rules and security platforms (Sigma taxonomy) into MITRE data components. The defense matrix uses them to infer the telemetry of a platform from its deployed rules and to declare telemetry from log sources.')}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <SearchInput variant="thin" onSubmit={setSearch} />
@@ -247,7 +247,7 @@ const DefenseLogsourceMappings = () => {
               }}
               data-testid="defense-logsource-mappings-create"
             >
-              {t_i18n('Create a log source mapping')}
+              {t_i18n('Create a telemetry mapping')}
             </Button>
           </Stack>
         </Box>

@@ -22,7 +22,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../components/i18n';
 import { defenseCellLevel, isUsedByThreats } from './AttackPatternsMatrixDefense';
-import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../defense_matrix/defenseMatrix-utils';
+import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];

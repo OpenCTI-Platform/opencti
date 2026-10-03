@@ -5,8 +5,8 @@ import StixCoreObjectsCustomAttributes from '@components/common/stix_core_object
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
-import WidgetDefenseTacticCoverage from '@components/techniques/defense_matrix/widgets/WidgetDefenseTacticCoverage';
-import WidgetDefenseTopGaps from '@components/techniques/defense_matrix/widgets/WidgetDefenseTopGaps';
+import WidgetDefenseTacticCoverage from '@components/defense/matrix/widgets/WidgetDefenseTacticCoverage';
+import WidgetDefenseTopGaps from '@components/defense/matrix/widgets/WidgetDefenseTopGaps';
 
 interface DashboardRawVizProps {
   widget: Widget;

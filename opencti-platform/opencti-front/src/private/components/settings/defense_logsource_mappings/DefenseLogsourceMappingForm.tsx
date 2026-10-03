@@ -95,10 +95,10 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
   const [options, setOptions] = useState<NameOption[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [commitAdd, adding] = useApiMutation<DefenseLogsourceMappingFormAddMutation>(defenseLogsourceMappingFormAddMutation, undefined, {
-    successMessage: t_i18n('Log source mapping created'),
+    successMessage: t_i18n('Telemetry mapping created'),
   });
   const [commitPatch, patching] = useApiMutation<DefenseLogsourceMappingFormPatchMutation>(defenseLogsourceMappingFormPatchMutation, undefined, {
-    successMessage: t_i18n('Log source mapping updated'),
+    successMessage: t_i18n('Telemetry mapping updated'),
   });
 
   useEffect(() => {
@@ -172,11 +172,11 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
     <Drawer
       open={open}
       onClose={onClose}
-      title={isEdition ? t_i18n('Update a log source mapping') : t_i18n('Create a log source mapping')}
+      title={isEdition ? t_i18n('Update a telemetry mapping') : t_i18n('Create a telemetry mapping')}
     >
       <Stack spacing={2.5} data-testid="defense-logsource-mapping-form">
         <Typography variant="body2" color="text.secondary">
-          {t_i18n('A log source uses the Sigma taxonomy. A mapping applies to every log source matching all its defined fields.')}
+          {t_i18n('A log source uses the Sigma taxonomy. A telemetry mapping applies to every log source matching all its defined fields.')}
         </Typography>
         <Input
           label={t_i18n('Category')}

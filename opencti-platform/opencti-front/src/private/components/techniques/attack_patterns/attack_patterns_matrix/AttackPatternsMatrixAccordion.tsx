@@ -28,7 +28,7 @@ import AttackPatternsMatrixDefenseMarkers, {
   getDefenseBoxStyles,
   useDefenseCellLabel,
 } from './AttackPatternsMatrixDefense';
-import { defenseLevelColor } from '../../defense_matrix/defenseMatrix-utils';
+import { defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;

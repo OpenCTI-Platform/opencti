@@ -22,8 +22,6 @@ import {
   Switch,
 } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import PageContainer from '../../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
@@ -144,108 +142,105 @@ const DefenseGaps = () => {
   };
 
   return (
-    <div data-testid="defense-gaps-page">
-      <PageContainer withGap>
-        <Breadcrumbs noMargin elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Defense gaps'), current: true }]} />
-        {platformsQueryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <PlatformsToolbar queryRef={platformsQueryRef} scope={scope} onScopeChange={setScope} />
-          </Suspense>
-        )}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2 }}>
-          <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 360 }}>
-            <Combobox<LevelOption>
-              multiple
-              className="w-full"
-              options={levelOptions}
-              value={levelOptions.filter((o) => levels.includes(o.value))}
-              getOptionLabel={(o) => o.label}
-              isOptionEqualToValue={(a, b) => a.value === b.value}
-              onValueChange={(next) => setLevels(((next as LevelOption[] | null) ?? []).map((o) => o.value))}
-            >
-              <ComboboxLabel>{t_i18n('Defense levels')}</ComboboxLabel>
-              <ComboboxField>
-                <ComboboxChips aria-label={t_i18n('Defense levels')} />
-                <ComboboxInput placeholder={t_i18n('Below validated')} data-testid="defense-gaps-levels" />
-                <ComboboxControls>
-                  <ComboboxClear />
-                  <ComboboxTrigger />
-                </ComboboxControls>
-              </ComboboxField>
-              <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Defense levels')} />
-            </Combobox>
-          </Box>
-          <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 420 }}>
-            <Combobox<ActionOption>
-              multiple
-              className="w-full"
-              options={actionOptions}
-              value={actionOptions.filter((o) => actions.includes(o.value))}
-              getOptionLabel={(o) => o.label}
-              isOptionEqualToValue={(a, b) => a.value === b.value}
-              onValueChange={(next) => setActions(((next as ActionOption[] | null) ?? []).map((o) => o.value))}
-            >
-              <ComboboxLabel>{t_i18n('Recommended actions')}</ComboboxLabel>
-              <ComboboxField>
-                <ComboboxChips aria-label={t_i18n('Recommended actions')} />
-                <ComboboxInput placeholder={t_i18n('All actions')} data-testid="defense-gaps-actions" />
-                <ComboboxControls>
-                  <ComboboxClear />
-                  <ComboboxTrigger />
-                </ComboboxControls>
-              </ComboboxField>
-              <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Recommended actions')} />
-            </Combobox>
-          </Box>
-          <Box sx={{ minWidth: 180 }}>
-            <Select value={orderBy} onValueChange={(value) => setOrderBy(value as GapsOrdering)}>
-              <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
-              <SelectTrigger aria-label={t_i18n('Sort by')}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent aria-label={t_i18n('Sort by')}>
-                {ORDERINGS.map((ordering) => (
-                  <SelectItem key={ordering} value={ordering}>{t_i18n(ORDERING_LABELS[ordering])}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Box>
-          <IconButton
-            size="md"
-            priority="tertiary"
-            aria-label={orderMode === 'asc' ? t_i18n('Ascending order') : t_i18n('Descending order')}
-            onClick={() => setOrderMode(orderMode === 'asc' ? 'desc' : 'asc')}
-            icon={orderMode === 'asc' ? <ArrowUpwardOutlined fontSize="small" /> : <ArrowDownwardOutlined fontSize="small" />}
-          />
-          <Box sx={{ paddingBottom: 1 }}>
-            <Switch
-              label={t_i18n('Only techniques used by threats')}
-              checked={onlyUsedByThreats}
-              disabled={scope.threatMode === 'NONE'}
-              onCheckedChange={(checked) => setOnlyUsedByThreats(checked)}
-              data-testid="defense-gaps-only-threats"
-            />
-          </Box>
-          <SearchInput variant="thin" onSubmit={setSearch} />
-          <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
-            <Button
-              variant="secondary"
-              startIcon={<FileDownloadOutlined fontSize="small" />}
-              onClick={handleExport}
-              disabled={exporting}
-              data-testid="defense-gaps-export"
-            >
-              {t_i18n('Export CSV')}
-            </Button>
-          </Stack>
+    <Stack spacing={3} data-testid="defense-gaps-tab">
+      {platformsQueryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <PlatformsToolbar queryRef={platformsQueryRef} scope={scope} onScopeChange={setScope} />
+        </Suspense>
+      )}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2 }}>
+        <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 360 }}>
+          <Combobox<LevelOption>
+            multiple
+            className="w-full"
+            options={levelOptions}
+            value={levelOptions.filter((o) => levels.includes(o.value))}
+            getOptionLabel={(o) => o.label}
+            isOptionEqualToValue={(a, b) => a.value === b.value}
+            onValueChange={(next) => setLevels(((next as LevelOption[] | null) ?? []).map((o) => o.value))}
+          >
+            <ComboboxLabel>{t_i18n('Defense levels')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t_i18n('Defense levels')} />
+              <ComboboxInput placeholder={t_i18n('Below validated')} data-testid="defense-gaps-levels" />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Defense levels')} />
+          </Combobox>
         </Box>
-        {gapsQueryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} />
-          </Suspense>
-        )}
-      </PageContainer>
-    </div>
+        <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 420 }}>
+          <Combobox<ActionOption>
+            multiple
+            className="w-full"
+            options={actionOptions}
+            value={actionOptions.filter((o) => actions.includes(o.value))}
+            getOptionLabel={(o) => o.label}
+            isOptionEqualToValue={(a, b) => a.value === b.value}
+            onValueChange={(next) => setActions(((next as ActionOption[] | null) ?? []).map((o) => o.value))}
+          >
+            <ComboboxLabel>{t_i18n('Recommended actions')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t_i18n('Recommended actions')} />
+              <ComboboxInput placeholder={t_i18n('All actions')} data-testid="defense-gaps-actions" />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Recommended actions')} />
+          </Combobox>
+        </Box>
+        <Box sx={{ minWidth: 180 }}>
+          <Select value={orderBy} onValueChange={(value) => setOrderBy(value as GapsOrdering)}>
+            <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
+            <SelectTrigger aria-label={t_i18n('Sort by')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Sort by')}>
+              {ORDERINGS.map((ordering) => (
+                <SelectItem key={ordering} value={ordering}>{t_i18n(ORDERING_LABELS[ordering])}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Box>
+        <IconButton
+          size="md"
+          priority="tertiary"
+          aria-label={orderMode === 'asc' ? t_i18n('Ascending order') : t_i18n('Descending order')}
+          onClick={() => setOrderMode(orderMode === 'asc' ? 'desc' : 'asc')}
+          icon={orderMode === 'asc' ? <ArrowUpwardOutlined fontSize="small" /> : <ArrowDownwardOutlined fontSize="small" />}
+        />
+        <Box sx={{ paddingBottom: 1 }}>
+          <Switch
+            label={t_i18n('Only techniques used by threats')}
+            checked={onlyUsedByThreats}
+            disabled={scope.threatMode === 'NONE'}
+            onCheckedChange={(checked) => setOnlyUsedByThreats(checked)}
+            data-testid="defense-gaps-only-threats"
+          />
+        </Box>
+        <SearchInput variant="thin" onSubmit={setSearch} />
+        <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
+          <Button
+            variant="secondary"
+            startIcon={<FileDownloadOutlined fontSize="small" />}
+            onClick={handleExport}
+            disabled={exporting}
+            data-testid="defense-gaps-export"
+          >
+            {t_i18n('Export CSV')}
+          </Button>
+        </Stack>
+      </Box>
+      {gapsQueryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} />
+        </Suspense>
+      )}
+    </Stack>
   );
 };
 

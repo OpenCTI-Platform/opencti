@@ -66,7 +66,7 @@ export const DEFENSE_ACTION_LABELS: Record<DefenseAction, string> = {
   import_rule: 'Import a detection rule',
   deploy_rule: 'Deploy a detection rule',
   activate_rule: 'Activate the deployed rule',
-  validate: 'Validate with OpenAEV',
+  validate: 'Validate in OpenAEV',
   fix_detection: 'Fix the detection',
   none: 'No action needed',
 };

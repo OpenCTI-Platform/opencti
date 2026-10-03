@@ -1,14 +1,11 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import { FilterCenterFocusOutlined, RefreshOutlined } from '@mui/icons-material';
 import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import AttackPatternsMatrix from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import type { DefenseMatrixMode } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixDefense';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import PageContainer from '../../../../components/PageContainer';
 import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -260,9 +257,6 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
           {pending ? ` - ${t_i18n('Recomputation requested')}` : ''}
         </Typography>
         <Stack direction="row" spacing={1}>
-          <Button variant="secondary" component={Link} to="/dashboard/techniques/defense_gaps">
-            {t_i18n('Defense gaps')}
-          </Button>
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
             <Button
               variant="secondary"
@@ -288,7 +282,6 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
 };
 
 const DefenseMatrix = () => {
-  const { t_i18n } = useFormatter();
   const [scope, setScope] = useDefenseScope();
   const [layers, setLayers] = useState<DefenseLayersState>(ALL_DEFENSE_LAYERS);
   const platformsQueryRef = useQueryLoading<DefenseMatrixPlatformsQuery>(defenseMatrixPlatformsQuery, {});
@@ -297,27 +290,24 @@ const DefenseMatrix = () => {
     threatScope: toThreatScopeInput(scope),
   });
   return (
-    <div data-testid="defense-matrix-page">
-      <PageContainer withGap>
-        <Breadcrumbs noMargin elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Defense matrix'), current: true }]} />
-        {platformsQueryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <DefenseMatrixStatus
-              queryRef={platformsQueryRef}
-              scope={scope}
-              onScopeChange={setScope}
-              layers={layers}
-              onLayersChange={setLayers}
-            />
-          </Suspense>
-        )}
-        {matrixQueryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <DefenseMatrixContent queryRef={matrixQueryRef} scope={scope} layers={layers} />
-          </Suspense>
-        )}
-      </PageContainer>
-    </div>
+    <Stack spacing={3} data-testid="defense-matrix-tab">
+      {platformsQueryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <DefenseMatrixStatus
+            queryRef={platformsQueryRef}
+            scope={scope}
+            onScopeChange={setScope}
+            layers={layers}
+            onLayersChange={setLayers}
+          />
+        </Suspense>
+      )}
+      {matrixQueryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <DefenseMatrixContent queryRef={matrixQueryRef} scope={scope} layers={layers} />
+        </Suspense>
+      )}
+    </Stack>
   );
 };
 

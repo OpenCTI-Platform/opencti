@@ -33,8 +33,8 @@ const CustomizationMenu: FunctionComponent = () => {
       label: 'Exclusion lists',
     },
     {
-      path: '/dashboard/settings/customization/log_source_mappings',
-      label: 'Log source mappings',
+      path: '/dashboard/settings/customization/telemetry_mappings',
+      label: 'Telemetry mappings',
     },
   ];
 

@@ -277,6 +277,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
         title={technique?.title ?? ''}
         scope={scope}
         onClose={() => setTechnique(null)}
+        allowValidation
       />
     </Card>
   );
