@@ -3545,6 +3545,26 @@ export const elAggregationRelationsCount = async (
       throw DatabaseError('Processing aggregation relations count fail', { cause: e });
     });
 };
+// Run caller-defined aggregations on top of the standard query body, so the marking and organization
+// restrictions of the user are applied exactly as for any listing. Only the aggregations are returned.
+export const elAggregationSearch = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[],
+  searchOptions: QueryBodyBuilderOpts,
+  aggregations: Record<string, any>,
+): Promise<Record<string, any>> => {
+  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = aggregations;
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
+  logApp.debug('[SEARCH] aggregationSearch', { query });
+  return elRawSearch(context, user, searchOptions.types ?? null, query)
+    .then((data) => data.aggregations ?? {})
+    .catch((e) => {
+      throw DatabaseError('Processing aggregation search fail', { cause: e });
+    });
+};
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {
   size?: number;
 };

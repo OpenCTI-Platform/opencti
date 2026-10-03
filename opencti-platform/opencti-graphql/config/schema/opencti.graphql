@@ -2552,6 +2552,9 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_min
   opinions_metrics_max
   opinions_metrics_total
+  graph_degree
+  graph_betweenness
+  graph_cluster_size
   _score
   authorized_members_activation_date
 }
@@ -2678,6 +2681,7 @@ interface StixCoreObject {
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
 }
 
 ########## STIX DOMAIN OBJECT ENTITIES
@@ -3015,6 +3019,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3271,6 +3276,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3636,6 +3642,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3883,6 +3890,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4108,6 +4116,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4348,6 +4357,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4580,6 +4590,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4978,6 +4989,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5186,6 +5198,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5389,6 +5402,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5601,6 +5615,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5806,6 +5821,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6214,6 +6230,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6420,6 +6437,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6620,6 +6638,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6819,6 +6838,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7032,6 +7052,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7253,6 +7274,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7422,6 +7444,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7640,6 +7663,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7848,6 +7872,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -8179,6 +8204,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8317,6 +8343,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8459,6 +8486,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   observable_value: String!
   x_opencti_score: Int
@@ -8593,6 +8621,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8729,6 +8758,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8875,6 +8905,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9154,6 +9185,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9301,6 +9333,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9457,6 +9490,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9648,6 +9682,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9785,6 +9820,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9920,6 +9956,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10054,6 +10091,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10188,6 +10226,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10345,6 +10384,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10525,6 +10565,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10680,6 +10721,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10814,6 +10856,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10975,6 +11018,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11113,6 +11157,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11251,6 +11296,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11385,6 +11431,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11519,6 +11566,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11653,6 +11701,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11787,6 +11836,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11922,6 +11972,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12063,6 +12114,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12200,6 +12252,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12334,6 +12387,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12468,6 +12522,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12608,6 +12663,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12751,6 +12807,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -12888,6 +12945,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -13036,6 +13094,7 @@ type AIPrompt implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -13172,6 +13231,7 @@ type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -13303,6 +13363,7 @@ type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -13434,6 +13495,7 @@ type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String

@@ -89,6 +89,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int

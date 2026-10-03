@@ -2,6 +2,7 @@ import './dataSanityManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
+import './graphAnalyticsManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
 import './pirManager';
