@@ -182,6 +182,29 @@ describe('Case Autopilot conclusion grounding', () => {
     expect(grounded.dropped).toBe(3);
   });
 
+  it('reads the evidence references of the shared conclusion schema: cite:<n> and OpenCTI ids', () => {
+    const engine = engineAnswer({
+      conclusion: {
+        hypotheses: [{
+          candidate_id: 'intrusion-set--28',
+          evidence: [
+            { evidence_id: 'cite:2', category: 'ttp_overlap', consistency: 1 },
+            { evidence_id: 'ip-1', category: 'infrastructure_overlap', consistency: 2 },
+            { evidence_id: 'cite:9', category: 'tooling', consistency: 1 },
+          ],
+        }],
+        recommendations: [],
+      },
+    }) as NonNullable<ReturnType<typeof engineAnswer>>;
+    const evidence = mirrorEvidence([], engine);
+    const allowed = buildAllowedIds(context);
+    evidence.forEach((item) => allowed.evidence.add(item.id));
+    const candidateInfo = new Map([['apt28', { name: 'APT28', entity_type: 'Intrusion-Set', standard_id: 'intrusion-set--28' }]]);
+    const grounded = groundConclusion(engine.conclusion, allowed, candidateInfo, evidence, engine.id);
+    expect(grounded.hypotheses[0].evidence.map((cell) => cell.evidence_id)).toEqual(['inv-1:2', 'ip-1']);
+    expect(grounded.dropped).toBe(1);
+  });
+
   it('maps recommendations on OpenCTI actions, behind an approval when they act on the case or reach people', () => {
     const engine = engineAnswer() as NonNullable<ReturnType<typeof engineAnswer>>;
     const grounded = groundConclusion(engine.conclusion, buildAllowedIds(context), new Map(), [], engine.id);
