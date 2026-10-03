@@ -18555,6 +18555,7 @@ type CurationSettings {
   digest_recipients: [Member!]!
   field_authority_enabled: Boolean!
   field_authority_rules: [CurationFieldAuthorityRule!]!
+  authority_connector_sources: [CurationAuthoritySource!]!
   scan_max_entities_per_type: Int!
   force_scan: Boolean!
   last_scan_date: DateTime

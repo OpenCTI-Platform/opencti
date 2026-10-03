@@ -1,0 +1,38 @@
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import { useFormatter } from '../../../../components/i18n';
+import useCurationLabels, { formatPercent } from './curationUtils';
+
+interface CurationConfidenceProps {
+  value: number;
+  ambiguous?: boolean;
+  width?: number | string;
+}
+
+const CurationConfidence = ({ value, ambiguous = false, width = '100%' }: CurationConfidenceProps) => {
+  const { t_i18n } = useFormatter();
+  const { confidenceColor } = useCurationLabels();
+  const color = confidenceColor(value);
+  return (
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', gap: 1, width }}
+      title={ambiguous ? t_i18n('In the ambiguous band: eligible for adjudication') : undefined}
+    >
+      <LinearProgress
+        variant="determinate"
+        value={Math.round(Math.min(1, Math.max(0, value)) * 100)}
+        aria-label={t_i18n('Curation confidence')}
+        sx={{
+          flex: 1,
+          height: 6,
+          borderRadius: 1,
+          '& .MuiLinearProgress-bar': { backgroundColor: color },
+        }}
+      />
+      <span style={{ minWidth: 38, textAlign: 'right' }}>{formatPercent(value)}</span>
+      {ambiguous && <span aria-hidden={true}>?</span>}
+    </Box>
+  );
+};
+
+export default CurationConfidence;
