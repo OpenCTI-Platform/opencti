@@ -1491,6 +1491,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
   platform_map_custom_file: MapCustomFile
+  platform_map_countries_custom_file: MapCustomFile
 }
 
 type MapCustomFile {
@@ -9541,6 +9542,8 @@ type SettingsEditMutations {
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings
   uploadMapCustomFile(file: Upload!): Settings
   deleteMapCustomFile: Settings
+  uploadCountriesCustomFile(file: Upload!): Settings
+  deleteCountriesCustomFile: Settings
 }
 
 type SubTypeEditMutations {

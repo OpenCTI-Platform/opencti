@@ -117,6 +117,10 @@ const settingsQuery = graphql`
         name
         size
       }
+      platform_map_countries_custom_file {
+        name
+        size
+      }
     }
     about {
       version
