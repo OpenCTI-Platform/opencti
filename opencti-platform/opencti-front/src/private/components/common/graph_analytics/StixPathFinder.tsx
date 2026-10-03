@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo, useState } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import {
@@ -32,6 +32,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import EntitySelect, { type EntityOption } from '../form/EntitySelect';
 import type { StixPathFinderQuery, StixPathFinderQuery$data } from './__generated__/StixPathFinderQuery.graphql';
+import type { StixPathFinderNeighborhoodQuery, StixPathFinderNeighborhoodQuery$data } from './__generated__/StixPathFinderNeighborhoodQuery.graphql';
 
 export const stixPathFinderQuery = graphql`
   query StixPathFinderQuery(
@@ -77,6 +78,24 @@ export const stixPathFinderQuery = graphql`
     }
   }
 `;
+
+const neighborhoodQuery = graphql`
+  query StixPathFinderNeighborhoodQuery($id: String!) {
+    stixNeighborhoodSummary(id: $id) {
+      total
+      by_relationship_type {
+        label
+        value
+      }
+      by_entity_type {
+        label
+        value
+      }
+    }
+  }
+`;
+
+type NeighborhoodSummary = NonNullable<StixPathFinderNeighborhoodQuery$data['stixNeighborhoodSummary']>;
 
 export type StixPathsResult = NonNullable<StixPathFinderQuery$data['stixPaths']>;
 export type StixPathResult = StixPathsResult['paths'][number];
@@ -172,6 +191,12 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StixPathsResult | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [neighborhood, setNeighborhood] = useState<NeighborhoodSummary | null>(null);
+
+  useEffect(() => {
+    fetchQuery<StixPathFinderNeighborhoodQuery>(neighborhoodQuery, { id: fromId }).toPromise()
+      .then((data) => setNeighborhood(data?.stixNeighborhoodSummary ?? null));
+  }, [fromId]);
 
   const relationshipOptions = useMemo(() => schema.scrs
     .map(({ label }) => ({ label: t_i18n(`relationship_${label}`), value: label }))
@@ -203,6 +228,15 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
       .finally(() => setLoading(false));
   };
 
+  // Quick pivot: restrict the search to (or release) a relationship type of the starting entity
+  const toggleRelationshipType = (type: string) => {
+    if (relationshipTypes.some((r) => r.value === type)) {
+      setRelationshipTypes(relationshipTypes.filter((r) => r.value !== type));
+    } else {
+      setRelationshipTypes([...relationshipTypes, { label: t_i18n(`relationship_${type}`), value: type }]);
+    }
+  };
+
   const togglePath = (index: number) => {
     const next = new Set(selected);
     if (next.has(index)) next.delete(index);
@@ -218,6 +252,26 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
           ? `${t_i18n('Paths between')} ${fromLabel} ${t_i18n('and')} ${toLabel ?? ''}`
           : `${t_i18n('Paths from')} ${fromLabel}`}
       </Text>
+      {neighborhood && neighborhood.total > 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="graph-neighborhood-summary">
+          <Text variant="content-caption">{`${t_i18n('Neighborhood')}: ${n(neighborhood.total)} ${t_i18n('relationships')}`}</Text>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {neighborhood.by_relationship_type.map(({ label, value }) => (
+              <Chip
+                key={label}
+                label={`${t_i18n(`relationship_${label}`)} (${n(value)})`}
+                severity={relationshipTypes.some((r) => r.value === label) ? 'info' : 'neutral'}
+                onClick={() => toggleRelationshipType(label)}
+              />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {neighborhood.by_entity_type.slice(0, 12).map(({ label, value }) => (
+              <Chip key={label} label={`${t_i18n(`entity_${label}`)} (${n(value)})`} startIcon={<ItemIcon type={label} size="small" />} />
+            ))}
+          </Box>
+        </Box>
+      )}
       {!toId && (
         <EntitySelect
           label={t_i18n('Target entity')}
