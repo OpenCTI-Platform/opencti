@@ -25,6 +25,7 @@ import {
   landscapeDiffToHtml,
   landscapeDiffToJson,
   LandscapeDiffData,
+  landscapeFailureReason,
   presetRange,
 } from '../../common/time_machine/timeMachineUtils';
 import { LandscapeChangesRunMutation } from './__generated__/LandscapeChangesRunMutation.graphql';
@@ -52,6 +53,9 @@ const landscapeChangesPollQuery = graphql`
       from
       to
       group_by
+      filters
+      saved_filter_id
+      custom_view_id
       scope_entity_types
       error
       truncated
@@ -68,8 +72,11 @@ const landscapeChangesPollQuery = graphql`
         score_changes
         new_techniques_by_tactic { key label count }
         new_techniques { id standard_id entity_type name x_mitre_id count }
+        new_techniques_count
         new_malware { id standard_id entity_type name count }
+        new_malware_count
         new_tools { id standard_id entity_type name count }
+        new_tools_count
         new_victims_by_sector { key label count }
         new_victims_by_country { key label count }
         new_victims_by_region { key label count }
@@ -123,6 +130,7 @@ const landscapeChangesScopesQuery = graphql`
 `;
 
 type LandscapeDiffResult = NonNullable<LandscapeChangesPollQuery$data['landscapeDiff']>;
+type LandscapeDiffInput = LandscapeChangesRunMutation['variables']['input'];
 type ScopeMode = 'saved_filter' | 'custom_view' | 'filters';
 
 const AUTO_ENTITY_TYPE = 'auto';
@@ -262,22 +270,9 @@ const LandscapeChanges = () => {
     || (mode === 'custom_view' && !!customViewId)
     || mode === 'filters';
 
-  const handleCompute = () => {
-    const serializedFilters = mode === 'filters' && filters.filters.length + filters.filterGroups.length > 0
-      ? serializeFilterGroupForBackend(filters)
-      : null;
+  const runLandscape = (input: LandscapeDiffInput) => {
     commitRun({
-      variables: {
-        input: {
-          from: range.from,
-          to: range.to,
-          group_by: groupBy as LandscapeGroupBy,
-          filters: serializedFilters,
-          saved_filter_id: mode === 'saved_filter' ? savedFilterId : null,
-          custom_view_id: mode === 'custom_view' ? customViewId : null,
-          entity_types: entityType === AUTO_ENTITY_TYPE ? null : [entityType],
-        },
-      },
+      variables: { input },
       onCompleted: (response, errors) => {
         if (hasPayloadErrors(errors)) return;
         const id = response.landscapeDiffRun?.id;
@@ -289,6 +284,34 @@ const LandscapeChanges = () => {
           }, { replace: true });
         }
       },
+    });
+  };
+
+  const handleCompute = () => {
+    const serializedFilters = mode === 'filters' && filters.filters.length + filters.filterGroups.length > 0
+      ? serializeFilterGroupForBackend(filters)
+      : null;
+    runLandscape({
+      from: range.from,
+      to: range.to,
+      group_by: groupBy as LandscapeGroupBy,
+      filters: serializedFilters,
+      saved_filter_id: mode === 'saved_filter' ? savedFilterId : null,
+      custom_view_id: mode === 'custom_view' ? customViewId : null,
+      entity_types: entityType === AUTO_ENTITY_TYPE ? null : [entityType],
+    });
+  };
+
+  // A failed diff is computed again with its own scope and period, whatever the form shows
+  const handleRecompute = (failed: LandscapeDiffResult) => {
+    runLandscape({
+      from: failed.from,
+      to: failed.to,
+      group_by: (failed.group_by ?? 'entity_type') as LandscapeGroupBy,
+      filters: failed.filters ?? null,
+      saved_filter_id: failed.saved_filter_id ?? null,
+      custom_view_id: failed.custom_view_id ?? null,
+      entity_types: [...failed.scope_entity_types],
     });
   };
 
@@ -380,8 +403,17 @@ const LandscapeChanges = () => {
         </Box>
       )}
       {diff && diff.status === 'failed' && (
-        <Alert severity="error" sx={{ marginBottom: 3 }}>
-          {t_i18n('The landscape diff could not be computed.')} {diff.error}
+        <Alert
+          severity="error"
+          sx={{ marginBottom: 3 }}
+          data-testid="landscape-changes-failed"
+          action={(
+            <Button variant="secondary" size="small" onClick={() => handleRecompute(diff)} disabled={running}>
+              {t_i18n('Compute again')}
+            </Button>
+          )}
+        >
+          {t_i18n('The landscape diff could not be computed.')} {t_i18n(landscapeFailureReason(diff.error))}
         </Alert>
       )}
       {diff && diff.status === 'complete' && (
@@ -401,7 +433,17 @@ const LandscapeChanges = () => {
         </>
       )}
       {diffId && diff === null && !loadingDiff && !running && (
-        <Alert severity="info">{t_i18n('This landscape diff has expired, compute it again.')}</Alert>
+        <Alert
+          severity="info"
+          data-testid="landscape-changes-expired"
+          action={(
+            <Button variant="secondary" size="small" onClick={handleCompute} disabled={!canCompute}>
+              {t_i18n('Compute again')}
+            </Button>
+          )}
+        >
+          {t_i18n('This landscape diff has expired. Compute it again with the scope and period above.')}
+        </Alert>
       )}
     </div>
   );

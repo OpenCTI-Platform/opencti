@@ -17311,8 +17311,11 @@ type LandscapeDiffAggregates {
   score_changes: Int!
   new_techniques_by_tactic: [LandscapeDiffBucket!]!
   new_techniques: [LandscapeDiffNamedItem!]!
+  new_techniques_count: Int!
   new_malware: [LandscapeDiffNamedItem!]!
+  new_malware_count: Int!
   new_tools: [LandscapeDiffNamedItem!]!
+  new_tools_count: Int!
   new_victims_by_sector: [LandscapeDiffBucket!]!
   new_victims_by_country: [LandscapeDiffBucket!]!
   new_victims_by_region: [LandscapeDiffBucket!]!

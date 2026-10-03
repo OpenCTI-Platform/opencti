@@ -18,6 +18,7 @@ import {
   landscapeDiffToCsv,
   landscapeDiffToHtml,
   type LandscapeDiffData,
+  landscapeFailureReason,
   landscapeGroupBuckets,
   landscapeGroupTitle,
   presetLabel,
@@ -321,5 +322,16 @@ describe('Landscape changes grouping', () => {
     expect(byType).toContain('Changed entities by entity type');
     expect(byType).toContain('New techniques by tactic');
     expect(byType).toContain('New relationships by type');
+  });
+});
+
+describe('Landscape changes failures', () => {
+  it('should explain the failures an analyst can act upon and never show the raw message', () => {
+    expect(landscapeFailureReason('Landscape diff computation was interrupted'))
+      .toEqual('The computation stopped before its end, for example because the platform restarted.');
+    expect(landscapeFailureReason('Access to the knowledge of this landscape diff changed, it must be computed again'))
+      .toEqual('Access to part of this knowledge changed since the computation, so its result can no longer be shown.');
+    expect(landscapeFailureReason('Cannot read properties of undefined')).toEqual('An unexpected error stopped the computation.');
+    expect(landscapeFailureReason(null)).toEqual('An unexpected error stopped the computation.');
   });
 });
