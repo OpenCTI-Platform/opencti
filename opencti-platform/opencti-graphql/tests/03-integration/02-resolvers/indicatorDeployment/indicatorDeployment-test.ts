@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
@@ -59,9 +59,15 @@ const DEPLOYMENT_FIELDS = `
   last_sync_at
   removed_at
   hit_count
+  first_hit_at
   last_hit_at
   validation_status
   error_message
+`;
+const RELATION_ADD = gql`
+  mutation DeployedOnAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) { ${DEPLOYMENT_FIELDS} }
+  }
 `;
 const REPORT_DEPLOYMENT = gql`
   mutation IndicatorReportDeployment($indicatorId: StixRef!, $platformId: StixRef!, $status: IndicatorDeploymentStatus!, $externalId: String, $metadata: IndicatorDeploymentMetadataInput) {
@@ -265,10 +271,80 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
     });
     expect(retried.data?.indicatorReportHits.attribute_count).toEqual(5);
+    // The first hit of the first report, kept on the deployment, not the first hit of the retry
+    expect(new Date(retried.data?.indicatorReportHits.first_seen).toISOString()).toEqual('2026-09-30T10:00:00.000Z');
     expect(new Date(retried.data?.indicatorReportHits.last_seen).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
     const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
     const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
     expect(deployment.hit_count).toEqual(5);
+    expect(new Date(deployment.first_hit_at).toISOString()).toEqual('2026-09-30T10:00:00.000Z');
+  });
+
+  it('should repair on replay a hits sighting whose update failed after the deployment was written', async () => {
+    const current = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
+    });
+    const sightingId = current.data?.indicatorReportHits.id;
+    const stored = await internalLoadById(testContext, ADMIN_USER, sightingId) as unknown as { _index: string };
+    // The sighting as it was before the last counted report: 2 hits and its last hit missing
+    const staleScript = "ctx._source.attribute_count = 3; ctx._source.last_seen = '2026-10-01T10:00:00.000Z';";
+    await elUpdate(testContext, stored._index, sightingId, { script: { source: staleScript, lang: 'painless' } });
+    const retried = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 2, lastHit: '2026-10-02T10:00:00.000Z' },
+    });
+    expect(retried.data?.indicatorReportHits.id).toEqual(sightingId);
+    expect(retried.data?.indicatorReportHits.attribute_count).toEqual(5);
+    expect(new Date(retried.data?.indicatorReportHits.last_seen).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
+  });
+
+  it('should leave the write-back mutations to connector accounts', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: REPORT_DEPLOYMENT,
+      variables: { indicatorId, platformId, status: 'active' },
+    });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: REPORT_DEPLOYMENTS,
+      variables: { platformId, reports: [{ indicatorId, status: 'active' }] },
+    });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: REPORT_HITS,
+      variables: { indicatorId, platformId, count: 50, lastHit: '2026-10-03T10:00:00.000Z' },
+    });
+  });
+
+  it('should refuse deployment state written by a regular editor through the generic relationship creation', async () => {
+    // Fabricated write-back evidence on a new deployment
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { fromId: secondIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'active', hit_count: 40 } },
+    });
+    // Reset of the existing deployment through an upsert
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { fromId: indicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending', hit_count: 0, update: true } },
+    });
+    const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
+    const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
+    expect(deployment.deployment_status).toEqual('active');
+    expect(deployment.hit_count).toEqual(5);
+  });
+
+  it('should let a regular editor create a deployment in its default state', async () => {
+    const thirdIndicator = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'manual.evil.example', pattern: "[domain-name:value = 'manual.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+    });
+    const thirdIndicatorId = thirdIndicator.data?.indicatorAdd.id;
+    const created = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { fromId: thirdIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending' } },
+    });
+    expect(created.data?.stixCoreRelationshipAdd.deployment_status).toEqual('pending');
+    expect(created.data?.stixCoreRelationshipAdd.hit_count).toEqual(0);
+    expect(created.data?.stixCoreRelationshipAdd.validation_status).toEqual('not_requested');
+    await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: thirdIndicatorId } });
   });
 
   it('should refresh the derived indicator counters', async () => {
@@ -300,7 +376,8 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       query: REPORT_DEPLOYMENT,
       variables: { indicatorId, platformId, status: 'failed', metadata: { error_message: 'Indicator quota exceeded' } },
     });
-    const retried = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } });
+    // An analyst action: no connector capability needed
+    const retried = await queryAsUserWithSuccess(USER_EDITOR, { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } });
     expect(retried.data?.indicatorDeploymentRetry.revoked).toEqual(false);
     expect(retried.data?.indicatorDeploymentRetry.deployment_status).toEqual('pending');
     expect(retried.data?.indicatorDeploymentRetry.error_message).toBeNull();

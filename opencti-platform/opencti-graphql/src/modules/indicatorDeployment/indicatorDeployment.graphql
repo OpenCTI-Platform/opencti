@@ -27,6 +27,7 @@ extend type StixCoreRelationship {
   last_sync_at: DateTime
   removed_at: DateTime
   hit_count: Int
+  first_hit_at: DateTime
   last_hit_at: DateTime
   validation_status: IndicatorValidationStatus
   last_validation_at: DateTime
@@ -45,6 +46,8 @@ extend enum StixCoreRelationshipsOrdering {
 }
 
 # Used by bundle imports and platform synchronization to carry the deployment state.
+# Only connector accounts (CONNECTORAPI) and administrators may set the lifecycle fields; any other
+# account creates deployments in their default state (pending, no hit, validation not requested).
 extend input StixCoreRelationshipAddInput {
   deployment_status: IndicatorDeploymentStatus
   external_id: String
@@ -52,6 +55,7 @@ extend input StixCoreRelationshipAddInput {
   last_sync_at: DateTime
   removed_at: DateTime
   hit_count: Int
+  first_hit_at: DateTime
   last_hit_at: DateTime
   validation_status: IndicatorValidationStatus
   last_validation_at: DateTime
@@ -141,21 +145,22 @@ type Query {
 }
 
 type Mutation {
+  # Write-back of the security platform integrations: connector accounts only.
   indicatorReportDeployment(
     indicatorId: StixRef!
     platformId: StixRef!
     status: IndicatorDeploymentStatus!
     externalId: String
     metadata: IndicatorDeploymentMetadataInput
-  ): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  ): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
+  indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   indicatorReportHits(
     indicatorId: StixRef!
     platformId: StixRef!
     count: Int!
     lastHit: DateTime
     firstHit: DateTime
-  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   indicatorDeploymentRetry(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorDeploymentRemove(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -9450,6 +9450,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   last_sync_at: DateTime
   removed_at: DateTime
   hit_count: Int
+  first_hit_at: DateTime
   last_hit_at: DateTime
   validation_status: IndicatorValidationStatus
   last_validation_at: DateTime
@@ -9495,6 +9496,7 @@ input StixCoreRelationshipAddInput {
   last_sync_at: DateTime
   removed_at: DateTime
   hit_count: Int
+  first_hit_at: DateTime
   last_hit_at: DateTime
   validation_status: IndicatorValidationStatus
   last_validation_at: DateTime

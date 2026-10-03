@@ -33,6 +33,7 @@ export const deployedOnAttributes: Array<AttributeDefinition> = [
   { name: 'last_sync_at', label: 'Last synchronization', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'removed_at', label: 'Removed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'hit_count', label: 'Hit count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'first_hit_at', label: 'First hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'last_hit_at', label: 'Last hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   {
     name: 'validation_status',

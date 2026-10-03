@@ -23,6 +23,7 @@ export const convertDeployedOnToStixExtension = (instance: StoreRelation): StixD
     last_sync_at: toStixDate(deployment.last_sync_at),
     removed_at: toStixDate(deployment.removed_at),
     hit_count: deployment.hit_count,
+    first_hit_at: toStixDate(deployment.first_hit_at),
     last_hit_at: toStixDate(deployment.last_hit_at),
     validation_status: deployment.validation_status,
     last_validation_at: toStixDate(deployment.last_validation_at),

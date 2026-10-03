@@ -21,6 +21,7 @@ carries the lifecycle of the indicator on that platform:
 | Last synchronization | When the connector last reported on the indicator.                          |
 | Removed at           | When the platform confirmed the removal.                                    |
 | Hit count            | The number of hits the platform reported for the indicator.                 |
+| First hit            | When the earliest hit the platform reported happened.                      |
 | Last hit             | When the platform last reported a hit.                                      |
 | Validation status    | `not_requested`, `requested`, `detected`, `prevented`, `missed` or `error`. |
 | Last validation      | When the last validation result was received.                               |
@@ -32,7 +33,9 @@ Reports are idempotent: a connector can report the same state again without crea
 takes effect. Only the platform manager sets the `expired` status.
 
 Hits reported by a security platform are also recorded as a sighting of the indicator by the platform, so they show
-up with the other sightings of the indicator.
+up with the other sightings of the indicator. The deployment is the reference record of the hits: the sighting is
+rebuilt from its hit count, first hit and last hit on every report, so a sighting left behind by an interrupted
+report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice.
 
 ### Supported connectors
 
@@ -163,6 +166,18 @@ Connectors use the following GraphQL mutations, also available in the Python cli
 - `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
 - `indicatorReportHits`: reports the hits of one indicator on one platform.
 
+These mutations require both the "Update knowledge" and the "Connectors API usage" (`CONNECTORAPI`) capabilities, as
+granted by the default *Connector* role: the account of a stream connector or of any other integration writing the
+deployments back (for example a SIEM add-on) must have that role, or a role with both capabilities.
+
+The deployment state (deployment status, external id, deployed at, last synchronization, removed at, hit count, first
+hit, last hit, deployment error) is written the same way everywhere else. Creating, importing or editing a `deployed-on`
+relationship with these values set is reserved to connector accounts (bundle imports, platform synchronization) and
+administrators. Any other account can still create a `deployed-on` relationship, which then starts in its default
+state (`pending`, no hit, validation not requested), but cannot set or reset the state of an existing one, including
+through a creation that updates an existing relationship. The analyst actions of the Deployments tabs (retry, remove)
+stay available with the "Update knowledge" capability.
+
 A security platform able to prove a validation test from its own data (for example a SIEM that searched for the
 benign test of a request) reports the outcome with `iocValidationReportResults(id, platformId, results)`: each result
 gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
@@ -174,6 +189,7 @@ A validation result is proof attributed to the platform, so it is accepted only 
 deployments of the pairs on that platform (the integration reporting its deployment statuses), from the OpenAEV
 connector the request was sent to, or from an administrator. Any other account, even with the "Update knowledge"
 capability, is refused. The same rule protects every other way to write the validation fields of a deployment
-(validation status, last validation, validation run): editing the relationship requires one of these accounts, and
-creating or importing a deployment that already carries a validation outcome is reserved to an OpenAEV IOC
-validation connector or an administrator.
+(validation status, last validation, validation run): editing the relationship, or creating it again with these
+fields so that the existing relationship is updated, requires one of these accounts, resets to "not requested"
+included, and creating or importing a deployment that already carries a validation outcome is reserved to an OpenAEV
+IOC validation connector or an administrator.

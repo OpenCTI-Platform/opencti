@@ -358,6 +358,11 @@ describe('IOC validation requests', () => {
       query: RELATION_ADD,
       variables: { input: { relationship_type: 'deployed-on', fromId: liveIndicatorId, toId: platformId, validation_status: 'prevented' } },
     });
+    // Upsert of the existing deployment erasing its verdict: the edition rules apply, resets included
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { relationship_type: 'deployed-on', fromId: liveIndicatorId, toId: platformId, validation_status: 'not_requested', update: true } },
+    });
     const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('missed');
   });

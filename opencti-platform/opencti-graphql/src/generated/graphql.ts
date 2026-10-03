@@ -33330,6 +33330,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   error_message?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   external_id?: Maybe<Scalars['String']['output']>;
+  first_hit_at?: Maybe<Scalars['DateTime']['output']>;
   freshness_days?: Maybe<Scalars['Int']['output']>;
   freshness_stale?: Maybe<Scalars['Boolean']['output']>;
   freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
@@ -33465,6 +33466,7 @@ export type StixCoreRelationshipAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   external_id?: InputMaybe<Scalars['String']['input']>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
+  first_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
   fromId: Scalars['StixRef']['input'];
   hit_count?: InputMaybe<Scalars['Int']['input']>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -54641,6 +54643,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipExternalReferencesArgs>>;
   external_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  first_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

@@ -3,8 +3,10 @@ import '../../../../src/modules/index';
 import {
   computeDeploymentChange,
   computeIndicatorDeploymentCounters,
+  computeHitsSightingValues,
   computeProvenShare,
   hitsSightingStixId,
+  isHitsSightingUpToDate,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { extractDeploymentIndicatorIds, hasSecurityPlatformRemoval } from '../../../../src/manager/indicatorDeploymentManager';
@@ -118,6 +120,35 @@ describe('hits sighting identifier', () => {
     expect(first).toMatch(/^sighting--[0-9a-f-]{36}$/);
     expect(hitsSightingStixId('indicator-a', 'platform-b')).toEqual(first);
     expect(hitsSightingStixId('indicator-a', 'platform-c')).not.toEqual(first);
+  });
+});
+
+describe('hits sighting values', () => {
+  const FIRST = new Date('2026-10-01T08:00:00.000Z');
+  const LAST = new Date('2026-10-03T10:00:00.000Z');
+  const REPORT_FIRST = new Date('2026-10-03T09:00:00.000Z');
+  const deployment = { hit_count: 12, first_hit_at: FIRST, last_hit_at: LAST };
+
+  it('should rebuild a missing sighting from the deployment, original first hit included', () => {
+    expect(computeHitsSightingValues(undefined, deployment, 0, REPORT_FIRST, LAST)).toEqual({ attribute_count: 12, first_seen: FIRST, last_seen: LAST });
+  });
+  it('should repair a sighting left behind by a failed write on a replay', () => {
+    const stale = { attribute_count: 7, first_seen: FIRST.toISOString(), last_seen: '2026-10-02T10:00:00.000Z' };
+    const values = computeHitsSightingValues(stale, deployment, 0, REPORT_FIRST, LAST);
+    expect(values).toEqual({ attribute_count: 12, first_seen: FIRST, last_seen: LAST });
+    expect(isHitsSightingUpToDate(stale, values)).toEqual(false);
+  });
+  it('should add the new hits to a consistent sighting and never decrease a larger count', () => {
+    const consistent = { attribute_count: 9, first_seen: FIRST, last_seen: new Date('2026-10-02T10:00:00.000Z') };
+    expect(computeHitsSightingValues(consistent, deployment, 3, REPORT_FIRST, LAST).attribute_count).toEqual(12);
+    const larger = { attribute_count: 40, first_seen: new Date('2026-09-01T00:00:00.000Z'), last_seen: LAST };
+    const values = computeHitsSightingValues(larger, deployment, 0, REPORT_FIRST, LAST);
+    expect(values).toEqual({ attribute_count: 40, first_seen: larger.first_seen, last_seen: LAST });
+    expect(isHitsSightingUpToDate(larger, values)).toEqual(true);
+  });
+  it('should fall back to the report dates for a deployment without first hit', () => {
+    const values = computeHitsSightingValues(undefined, { hit_count: 2 }, 2, REPORT_FIRST, LAST);
+    expect(values).toEqual({ attribute_count: 2, first_seen: REPORT_FIRST, last_seen: LAST });
   });
 });
 
