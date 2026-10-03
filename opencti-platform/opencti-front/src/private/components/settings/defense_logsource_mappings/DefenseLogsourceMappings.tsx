@@ -153,7 +153,9 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
                         checked={mapping.active}
                         onCheckedChange={(checked) => commitActive({
                           variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] },
-                          onCompleted: (_, errors) => notifyPayloadErrors(errors),
+                          onCompleted: (_, errors) => {
+                            notifyPayloadErrors(errors);
+                          },
                         })}
                       />
                     </TableCell>

@@ -59,7 +59,7 @@ const defenseCoverageResolvers: Resolvers = {
     validations: (view, _, context) => defenseTechniqueValidations(context, context.user, view),
     mitigations: (view, _, context) => defenseTechniqueMitigations(context, context.user, view),
     threats: (view, _, context) => defenseTechniqueThreats(context, context.user, view),
-    gaps: (view, _, context) => defenseTechniqueGaps(context, view),
+    gaps: (view, _, context) => defenseTechniqueGaps(context, context.user, view),
   },
   DefenseGap: {
     attackPattern: (gap, _, context) => context.batch.idsBatchLoader.load({ id: gap.attack_pattern_id }),
