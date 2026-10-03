@@ -5,6 +5,7 @@ import StixCoreObjectsCustomAttributes from '@components/common/stix_core_object
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import ContainerTimelineWidget from '../../private/components/common/timeline/ContainerTimelineWidget';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -26,6 +27,18 @@ const DashboardRawViz = ({
       return (
         <WidgetText
           parameters={widget.parameters}
+          popover={popover}
+        />
+      );
+    case 'case-timeline':
+      return (
+        <ContainerTimelineWidget
+          parameters={{
+            ...widget.parameters,
+            // In a custom view, the widget shows the timeline of the incident or case it is displayed on
+            container_id: widget.parameters?.container_id
+              || (host?.kind === 'custom-view' ? host.customViewTargetEntityId : null),
+          }}
           popover={popover}
         />
       );

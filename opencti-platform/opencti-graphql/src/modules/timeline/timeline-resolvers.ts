@@ -4,6 +4,8 @@ import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreators } from '../../database/members';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
+import { isStixObject } from '../../schema/stixCoreObject';
+import { isStixRelationship } from '../../schema/stixRelationship';
 import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
 import {
   addTimelineEvent,
@@ -43,7 +45,11 @@ const timelineResolvers: Resolvers = {
     analyst_fields: (event) => event.analyst_fields ?? [],
     editable: (event) => event.event_source === 'manual',
     element: (event, _, context) => {
-      if (!event.element_id) return null;
+      // Only STIX elements belong to the element union: internal soft-check sources (hunt or investigation
+      // runs) keep their id and type on the event but are not resolved here
+      if (!event.element_id || (event.element_type && !isStixObject(event.element_type) && !isStixRelationship(event.element_type))) {
+        return null;
+      }
       return context.batch.idsBatchLoader.load({ id: event.element_id, type: event.element_type ?? undefined });
     },
     createdBy: (event, _, context) => loadThroughDenormalized(context, context.user, event, INPUT_CREATED_BY),

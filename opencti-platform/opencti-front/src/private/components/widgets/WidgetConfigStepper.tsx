@@ -12,7 +12,8 @@ const WidgetConfigStepper = () => {
   const { config, step, setStep, disabledSteps } = useWidgetConfigContext();
   const { type } = config.widget;
 
-  const isText = getCurrentCategory(type) === 'text';
+  // The timeline of a case has no perspective nor filters: it is configured in the parameters step
+  const isText = getCurrentCategory(type) === 'text' || getCurrentCategory(type) === 'case-timeline';
   const isAttribute = getCurrentCategory(type) === 'attribute';
   const isCustomAttributes = getCurrentCategory(type) === 'custom-attributes';
 

@@ -37,6 +37,9 @@ const StixDomainObjectMain = ({
         {tabs.includes('knowledge') && (
           <Route path="/knowledge/*" element={pages.knowledge} />
         )}
+        {tabs.includes('timeline') && (
+          <Route path="/timeline" element={pages.timeline} />
+        )}
         {tabs.includes('content') && (
           <Route path="/content/*" element={pages.content} />
         )}
