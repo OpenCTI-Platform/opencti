@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import type { AttributeRef } from '../../../generated/graphql';
 
 export const ENTITY_TYPE_JSON_MAPPER = 'JsonMapper';
@@ -103,11 +101,3 @@ export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
 }
 
 export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity { }
-
-export interface StixJsonMapper extends StixObject {
-  name: string;
-  representations: string;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
-}

@@ -1,12 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { StixForm, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM } from './form-types';
-import { convertFormToStix } from './form-converter';
 
-export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
+export const FORM_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'forms',
     name: ENTITY_TYPE_FORM,
@@ -85,10 +83,6 @@ export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
   ],
   relations: [],
   relationsRefs: [],
-  representative: (stix: StixForm) => {
-    return stix.name;
-  },
-  converter_2_1: convertFormToStix,
 };
 
-registerDefinition(FORM_DEFINITION);
+registerInternalObjectDefinition(FORM_DEFINITION);

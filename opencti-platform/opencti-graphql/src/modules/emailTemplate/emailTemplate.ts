@@ -14,12 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_EMAIL_TEMPLATE, type StixEmailTemplate, type StoreEntityEmailTemplate } from './emailTemplate-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from './emailTemplate-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertEmailTemplateToStix from './emailTemplate-converter';
 
-const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, StixEmailTemplate> = {
+const EMAIL_TEMPLATE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'emailTemplate',
     name: ENTITY_TYPE_EMAIL_TEMPLATE,
@@ -39,10 +38,6 @@ const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, Stix
     { name: 'template_body', label: 'Template body', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixEmailTemplate) => {
-    return stix.name;
-  },
-  converter_2_1: convertEmailTemplateToStix,
 };
 
-registerDefinition(EMAIL_TEMPLATE_DEFINITION);
+registerInternalObjectDefinition(EMAIL_TEMPLATE_DEFINITION);

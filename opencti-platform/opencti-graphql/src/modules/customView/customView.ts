@@ -1,11 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_CUSTOM_VIEW, type StixCustomView, type StoreEntityCustomView } from './customView-types';
-import convertCustomViewToStix from './customView-converter';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_CUSTOM_VIEW } from './customView-types';
 
-export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, StixCustomView> = {
+export const CUSTOM_VIEW_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'customView',
     name: ENTITY_TYPE_CUSTOM_VIEW,
@@ -35,10 +34,6 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
   ],
   relations: [],
   relationsRefs: [],
-  representative: (stix: StixCustomView) => {
-    return stix.name;
-  },
-  converter_2_1: convertCustomViewToStix,
 };
 
-registerDefinition(CUSTOM_VIEW_DEFINITION);
+registerInternalObjectDefinition(CUSTOM_VIEW_DEFINITION);

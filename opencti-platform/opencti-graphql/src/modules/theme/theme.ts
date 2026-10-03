@@ -1,11 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { registerDefinition, type ModuleDefinition } from '../../schema/module';
-import { type StixTheme, type StoreEntityTheme } from './theme-types';
-import convertThemeToStix from './theme-converter';
+import { registerInternalObjectDefinition, type InternalObjectModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 
-const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
+const THEME_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'theme',
     name: ENTITY_TYPE_THEME,
@@ -36,10 +34,6 @@ const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
     { name: 'theme_login_aside_image', label: 'Theme login aside image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixTheme) => {
-    return stix.name;
-  },
-  converter_2_1: convertThemeToStix,
 };
 
-registerDefinition(THEME_DEFINITION);
+registerInternalObjectDefinition(THEME_DEFINITION);

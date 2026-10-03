@@ -1,13 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
-import type { StixJsonMapper, StoreEntityJsonMapper } from './jsonMapper-types';
+import type { InternalObjectModuleDefinition } from '../../../schema/module';
+import { registerInternalObjectDefinition } from '../../../schema/module';
 import { ENTITY_TYPE_JSON_MAPPER } from './jsonMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
-import convertJsonMapperToStix from './jsonMapper-converter';
 
-const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMapper> = {
+const CSV_MAPPER_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'jsonmapper',
     name: ENTITY_TYPE_JSON_MAPPER,
@@ -30,10 +28,6 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMap
     { name: 'representations', label: 'Representations', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
-  representative: (instance: StixJsonMapper) => {
-    return instance.name;
-  },
-  converter_2_1: convertJsonMapperToStix,
 };
 
-registerDefinition(CSV_MAPPER_DEFINITION);
+registerInternalObjectDefinition(CSV_MAPPER_DEFINITION);

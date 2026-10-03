@@ -1,14 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_AUTHENTICATION_PROVIDER, type StixAuthenticationProvider, type StoreEntityAuthenticationProvider } from './authenticationProvider-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from './authenticationProvider-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertAuthenticationProviderToStix from './authenticationProvider-converter';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { refreshedAt } from '../../schema/attribute-definition';
 
 const AuthenticationProviderTypeList = Object.values(AuthenticationProviderType);
 
-const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthenticationProvider, StixAuthenticationProvider> = {
+const AUTHENTICATION_PROVIDER_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'authenticationProvider',
     name: ENTITY_TYPE_AUTHENTICATION_PROVIDER,
@@ -31,10 +30,6 @@ const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthentica
     { ...refreshedAt, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixAuthenticationProvider) => {
-    return stix.name;
-  },
-  converter_2_1: convertAuthenticationProviderToStix,
 };
 
-registerDefinition(AUTHENTICATION_PROVIDER_DEFINITION);
+registerInternalObjectDefinition(AUTHENTICATION_PROVIDER_DEFINITION);

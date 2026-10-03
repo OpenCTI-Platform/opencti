@@ -1,7 +1,6 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { MappingDefinition } from '../../../schema/attribute-definition';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
-import convertWorkflowToStix from '../engine/workflow-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../../schema/module';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../types/workflow-types';
 
 const versionMappings: MappingDefinition<any>[] = [
@@ -41,7 +40,7 @@ const versionMappings: MappingDefinition<any>[] = [
   },
 ];
 
-const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
+const WORKFLOW_DEFINITION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'workflowdefinitions',
     name: ENTITY_TYPE_WORKFLOW_DEFINITION,
@@ -54,7 +53,6 @@ const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
     },
     resolvers: {},
   },
-  converter_2_1: convertWorkflowToStix,
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
@@ -96,9 +94,6 @@ const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
     },
   ],
   relations: [],
-  representative: (stix: any) => {
-    return stix.name;
-  },
 };
 
-registerDefinition(WORKFLOW_DEFINITION_DEFINITION);
+registerInternalObjectDefinition(WORKFLOW_DEFINITION_DEFINITION);

@@ -4,10 +4,7 @@ import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
 import { findDataSanityByOperationName, markOperationAsRunning, OPERATION_STOPPED_MESSAGE, setForceRun, stopOperation } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
-import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
-import type { StoreEntityDataSanity } from '../../../../src/modules/dataSanity/dataSanity-types';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from '../../../../src/modules/dataSanity/dataSanity-types';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { utcDate } from '../../../../src/utils/format';
 
@@ -231,29 +228,5 @@ describe('Data sanity manager handler test coverage', () => {
   it('should throw an error when stopping an unknown operation', async () => {
     await expect(stopOperation(testContext, ADMIN_USER, 'mockUnknownOperation'))
       .rejects.toThrowError('Unknown sanity operation: mockUnknownOperation');
-  });
-
-  it('should convert a DataSanity entity to STIX format', async () => {
-    const runOnceOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
-    expect(runOnceOp).toBeDefined();
-
-    const result = convertDataSanityToStix(runOnceOp as StoreEntityDataSanity);
-
-    // Core STIX properties
-    expect(result.type).toBe('datasanityexecution');
-    expect(result.id).toBeDefined();
-
-    // All domain-specific fields are mapped correctly
-    expect(result.operation_name).toBe('mockRunOnceOperation');
-    expect(result.last_run_date).toBe(runOnceOp!.last_run_date);
-    expect(result.last_execution_time).toBe(runOnceOp!.last_execution_time);
-    expect(result.last_run_success).toBe(true);
-    expect(result.last_run_message).toBeDefined();
-    expect(result.last_run_output).toBeDefined();
-
-    // STIX extension structure
-    expect(result.extensions).toBeDefined();
-    expect(result.extensions[STIX_EXT_OCTI]).toBeDefined();
-    expect(result.extensions[STIX_EXT_OCTI].extension_type).toBe('new-sdo');
   });
 });

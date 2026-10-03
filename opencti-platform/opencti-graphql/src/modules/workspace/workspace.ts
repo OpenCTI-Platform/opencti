@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_WORKSPACE, type StixWorkspace, type StoreEntityWorkspace } from './workspace-types';
+import { ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
-import convertWorkspaceToStix from './workspace-converter';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
 import { authorizedMembers, draftChange } from '../../schema/attribute-definition';
 
-export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace> = {
+export const WORKSPACE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'workspaces',
     name: ENTITY_TYPE_WORKSPACE,
@@ -38,10 +37,6 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
     authorizedMembers,
   ],
   relations: [],
-  representative: (stix: StixWorkspace) => {
-    return stix.name;
-  },
-  converter_2_1: convertWorkspaceToStix,
 };
 
-registerDefinition(WORKSPACE_DEFINITION);
+registerInternalObjectDefinition(WORKSPACE_DEFINITION);

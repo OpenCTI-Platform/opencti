@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicWorkflowStatus, StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
 import {
   buildCreateEvent,
@@ -65,7 +66,9 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
 };
 
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
-  await pushToStream(context, user, event);
+  if (isStixExportableInStreamData(event.data.extensions[STIX_EXT_OCTI].type)) {
+    await pushToStream(context, user, event);
+  }
 };
 
 export const storeMergeEvent = async (
@@ -77,9 +80,12 @@ export const storeMergeEvent = async (
   opts: EventOpts,
 ) => {
   try {
-    const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
-    await pushToStream(context, user, event, opts);
-    return event;
+    if (isStixExportableInStreamData(mergedInstance.entity_type)) {
+      const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
+      await pushToStream(context, user, event, opts);
+      return event;
+    }
+    return undefined;
   } catch (e) {
     throw DatabaseError('Error in store merge event', { cause: e });
   }
@@ -93,7 +99,7 @@ export const storeUpdateEvent = async (
   opts: UpdateEventOpts = {},
 ) => {
   try {
-    if (isStixExportableInStreamData(instance)) {
+    if (isStixExportableInStreamData(instance.entity_type)) {
       const [previousStatus, currentStatus] = await Promise.all([
         resolveWorkflowStatusName(context, user, previous),
         resolveWorkflowStatusName(context, user, instance),
@@ -111,7 +117,7 @@ export const storeUpdateEvent = async (
 
 export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixExportableInStreamData(instance)) {
+    if (isStixExportableInStreamData(instance.entity_type)) {
       const { withoutMessage = false, restore = false } = opts;
       let message = '-';
       if (!withoutMessage) {
@@ -130,7 +136,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixExportableInStreamData(instance)) {
+    if (isStixExportableInStreamData(instance.entity_type)) {
       const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
       const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
@@ -143,7 +149,7 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
   try {
-    if (isStixExportableInStreamData(instance)) {
+    if (isStixExportableInStreamData(instance.entity_type)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message);
       await pushToStream(context, user, event, opts);

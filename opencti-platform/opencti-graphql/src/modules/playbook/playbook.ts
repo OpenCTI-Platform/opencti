@@ -15,12 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_PLAYBOOK, playbookComponentDefinition, type StixPlaybook, type StoreEntityPlaybook } from './playbook-types';
-import convertEntityPlaybookToStix from './playbook-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_PLAYBOOK, playbookComponentDefinition } from './playbook-types';
 import { draftChange } from '../../schema/attribute-definition';
 
-const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlaybook> = {
+const ENTITY_PLAYBOOK_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'playbook',
     name: ENTITY_TYPE_PLAYBOOK,
@@ -41,10 +40,6 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
     { ...draftChange, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixPlaybook) => {
-    return stix.name;
-  },
-  converter_2_1: convertEntityPlaybookToStix,
 };
 
-registerDefinition(ENTITY_PLAYBOOK_DEFINITION);
+registerInternalObjectDefinition(ENTITY_PLAYBOOK_DEFINITION);

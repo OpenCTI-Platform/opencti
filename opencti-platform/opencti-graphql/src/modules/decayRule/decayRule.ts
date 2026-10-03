@@ -1,10 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_DECAY_RULE, type StixDecayRule, type StoreEntityDecayRule } from './decayRule-types';
-import convertDecayRuleToStix from './decayRule-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_DECAY_RULE } from './decayRule-types';
 
-const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRule> = {
+const DECAY_RULE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'decayRule',
     name: ENTITY_TYPE_DECAY_RULE,
@@ -29,10 +28,6 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
     { name: 'decay_filters', label: 'Decay indicator filter', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixDecayRule) => {
-    return stix.name;
-  },
-  converter_2_1: convertDecayRuleToStix,
 };
 
-registerDefinition(DECAY_RULE_DEFINITION);
+registerInternalObjectDefinition(DECAY_RULE_DEFINITION);

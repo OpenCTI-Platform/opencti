@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_RSS, type StixIngestionRss, type StoreEntityIngestionRss } from './ingestion-types';
-import { convertIngestionRssToStix } from './ingestion-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_RSS } from './ingestion-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
+const INGESTION_RSS_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'ingestion-rss',
     name: ENTITY_TYPE_INGESTION_RSS,
@@ -50,10 +49,6 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixIngestionRss) => {
-    return stix.name;
-  },
-  converter_2_1: convertIngestionRssToStix,
 };
 
-registerDefinition(INGESTION_RSS_DEFINITION);
+registerInternalObjectDefinition(INGESTION_RSS_DEFINITION);

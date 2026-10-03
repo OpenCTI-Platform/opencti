@@ -1,10 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_SUPPORT_PACKAGE, type StixSupportPackage, type StoreEntitySupportPackage } from './support-types';
-import convertSupportPackageToStix from './support-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_SUPPORT_PACKAGE } from './support-types';
 
-const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, StixSupportPackage> = {
+const SUPPORT_PACKAGE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'support-package',
     name: ENTITY_TYPE_SUPPORT_PACKAGE,
@@ -67,10 +66,6 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
     },
   ],
   relations: [],
-  representative: (instance: StixSupportPackage) => {
-    return instance.name;
-  },
-  converter_2_1: convertSupportPackageToStix,
 };
 
-registerDefinition(SUPPORT_PACKAGE_DEFINITION);
+registerInternalObjectDefinition(SUPPORT_PACKAGE_DEFINITION);

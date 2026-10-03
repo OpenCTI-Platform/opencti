@@ -14,13 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_PIR, PIR_TYPES, type StixPir, type StoreEntityPir } from './pir-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_PIR, PIR_TYPES } from './pir-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertEntityPirToStix from './pir-converter';
 import { authorizedMembers, draftChange, lastEventId } from '../../schema/attribute-definition';
 
-const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
+const ENTITY_PIR_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'pir',
     name: ENTITY_TYPE_PIR,
@@ -44,8 +43,6 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     { ...draftChange, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixPir) => stix.name,
-  converter_2_1: convertEntityPirToStix,
 };
 
-registerDefinition(ENTITY_PIR_DEFINITION);
+registerInternalObjectDefinition(ENTITY_PIR_DEFINITION);

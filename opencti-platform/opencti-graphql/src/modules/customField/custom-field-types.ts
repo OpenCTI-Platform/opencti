@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 
@@ -69,20 +67,4 @@ export interface StoreEntityCustomFieldDefinition extends StoreEntity {
   min_value?: number;
   max_value?: number;
   select_options?: string[];
-}
-
-export interface StixCustomFieldDefinition extends StixObject {
-  name: string;
-  description: string;
-  label: string;
-  field_type: CustomFieldType;
-  entity_types?: string[];
-  entity_type_settings?: CustomFieldEntityTypeSetting[];
-  multiple: boolean;
-  min_value?: number;
-  max_value?: number;
-  select_options?: string[];
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
