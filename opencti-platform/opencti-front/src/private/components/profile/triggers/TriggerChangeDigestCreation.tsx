@@ -50,6 +50,9 @@ const triggerChangeDigestCreationSavedFiltersQuery = graphql`
 `;
 
 const NO_SAVED_FILTER = 'none';
+// With a saved filter, the entity types of its list unless the user picks one
+const AUTO_ENTITY_TYPE = 'auto';
+const DEFAULT_ENTITY_TYPE = 'Intrusion-Set';
 export const CHANGE_DIGEST_ENTITY_TYPES = [
   'Stix-Domain-Object',
   'Intrusion-Set',
@@ -85,7 +88,7 @@ const changeDigestValidation = (t: (message: string) => string) => Yup.object().
   time: Yup.string().nullable(),
 });
 
-const SavedFilterField = () => {
+const SavedFilterField = ({ onSelect }: { onSelect: (savedFilterId: string) => void }) => {
   const { t_i18n } = useFormatter();
   const data = useLazyLoadQuery<TriggerChangeDigestCreationSavedFiltersQuery>(triggerChangeDigestCreationSavedFiltersQuery, {}, { fetchPolicy: 'store-and-network' });
   const savedFilters = (data.savedFilters?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node);
@@ -97,6 +100,7 @@ const SavedFilterField = () => {
       label={t_i18n('Saved filter')}
       fullWidth={true}
       containerstyle={fieldSpacingContainerStyle}
+      onChange={(_: string, value: string) => onSelect(value)}
     >
       <SelectItem value={NO_SAVED_FILTER}>{t_i18n('No saved filter (use the filters below)')}</SelectItem>
       {savedFilters.map((savedFilter) => (
@@ -124,7 +128,7 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
   const initialValues: TriggerChangeDigestFormValues = {
     name: '',
     description: '',
-    scope_entity_type: 'Intrusion-Set',
+    scope_entity_type: DEFAULT_ENTITY_TYPE,
     saved_filter: NO_SAVED_FILTER,
     period: 'week',
     day: '1',
@@ -141,9 +145,10 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
     // when the saved filter changes and its recipients do not need access to the saved filter
     const withSavedFilter = values.saved_filter !== NO_SAVED_FILTER;
     const hasFilters = filters.filters.length + filters.filterGroups.length > 0;
+    const explicitTypes = values.scope_entity_type !== AUTO_ENTITY_TYPE ? { scope_entity_types: [values.scope_entity_type] } : {};
     const scope = withSavedFilter
-      ? { saved_filter_id: values.saved_filter }
-      : { filters: hasFilters ? serializeFilterGroupForBackend(filters) : null, scope_entity_types: [values.scope_entity_type] };
+      ? { saved_filter_id: values.saved_filter, ...explicitTypes }
+      : { filters: hasFilters ? serializeFilterGroupForBackend(filters) : null, ...explicitTypes };
     commit({
       variables: {
         input: {
@@ -195,22 +200,31 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               style={{ marginTop: 20 }}
             />
             <Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-              <SavedFilterField />
+              <SavedFilterField
+                onSelect={(savedFilterId) => {
+                  if (savedFilterId !== NO_SAVED_FILTER) {
+                    setFieldValue('scope_entity_type', AUTO_ENTITY_TYPE);
+                  } else if (values.scope_entity_type === AUTO_ENTITY_TYPE) {
+                    setFieldValue('scope_entity_type', DEFAULT_ENTITY_TYPE);
+                  }
+                }}
+              />
             </Suspense>
-            {values.saved_filter === NO_SAVED_FILTER && (
-              <Field
-                component={SelectFieldFds}
-                variant="outlined"
-                name="scope_entity_type"
-                label={t_i18n('Entity types')}
-                fullWidth={true}
-                containerstyle={fieldSpacingContainerStyle}
-              >
-                {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
-                ))}
-              </Field>
-            )}
+            <Field
+              component={SelectFieldFds}
+              variant="outlined"
+              name="scope_entity_type"
+              label={t_i18n('Entity types')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+            >
+              {values.saved_filter !== NO_SAVED_FILTER && (
+                <SelectItem value={AUTO_ENTITY_TYPE}>{t_i18n('Entity types of the scope')}</SelectItem>
+              )}
+              {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
+              ))}
+            </Field>
             {values.saved_filter === NO_SAVED_FILTER && (
               <Box sx={{ marginTop: '20px' }}>
                 <Filters availableFilterKeys={availableFilterKeys} helpers={helpers} searchContext={{ entityTypes: ['Stix-Domain-Object'] }} />
