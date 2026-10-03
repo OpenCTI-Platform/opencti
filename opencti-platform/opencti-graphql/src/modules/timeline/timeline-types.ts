@@ -54,7 +54,7 @@ export const TIMELINE_KINDS = [
   'assigned',
   'note_added',
   'opinion_added',
-  'autopilot_step',
+  'investigation_step',
   // knowledge
   'object_added',
   'relation_created',

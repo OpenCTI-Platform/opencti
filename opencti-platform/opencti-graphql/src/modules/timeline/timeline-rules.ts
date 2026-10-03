@@ -883,15 +883,101 @@ export const deploymentRule: TimelineRule = {
   }),
 };
 
-interface InvestigationStepEntry { id?: string; tool?: string; description?: string; status?: string; started_at?: string; duration_ms?: number }
+// Steps of an investigation run: the engine shape (action, source_name, findings_count) and the
+// former ledger shape (tool, description, duration_ms), read side by side while #18672 migrates.
+interface InvestigationStepEntry {
+  id?: string;
+  position?: number;
+  action?: string | null;
+  source_name?: string | null;
+  status?: string | null;
+  findings_count?: number | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  tool?: string | null;
+  description?: string | null;
+  duration_ms?: number | null;
+}
+interface InvestigationGoalActionEntry { slug?: string; label?: string }
 interface InvestigationTimelineEntry { ts?: string; entity_id?: string; entity_type?: string; name?: string | null; event?: string }
+interface InvestigationEvidenceEntry {
+  opencti_id?: string | null;
+  entity_type?: string | null;
+  label?: string | null;
+  first_seen?: string | null;
+  last_seen?: string | null;
+}
 
+export const RULE_INVESTIGATION_RUN = 'investigation-run';
+export const INVESTIGATION_RUN_TITLE = 'Case Autopilot investigation';
+// Engine step state of a source that answered with findings (Found); empty, degraded, error and skipped did not
+const STEP_WITH_FINDINGS = 'completed';
+// Ledger state of a step that produced results, before the engine states
+const LEGACY_STEP_WITH_FINDINGS = 'succeeded';
 const INVESTIGATION_FINDING_LABELS: Record<string, string> = { first_seen: 'first seen', last_seen: 'last seen', created: 'created' };
 
-export const autopilotRule: TimelineRule = {
-  id: 'autopilot-run',
-  label: 'Case Autopilot investigation runs, their steps and the findings outside the case',
-  kinds: ['autopilot_step'],
+const humanizeSlug = (slug: string) => {
+  const words = slug.replace(/[_-]+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
+const isStepWithFindings = (step: InvestigationStepEntry) => {
+  if (step.status === STEP_WITH_FINDINGS) return true;
+  return !step.source_name && step.status === LEGACY_STEP_WITH_FINDINGS;
+};
+
+const stepActionKey = (step: InvestigationStepEntry): string | null => step.action || (step.source_name ? null : step.tool || null);
+
+const stepEndTime = (step: InvestigationStepEntry, start: number | null): number | null => {
+  const end = toTimelineTime(step.completed_at);
+  if (end !== null) return end;
+  return start !== null && step.duration_ms && step.duration_ms > 0 ? start + step.duration_ms : null;
+};
+
+interface InvestigationActionGroup {
+  key: string;
+  order: number;
+  start: number | null;
+  end: number | null;
+  findings: number;
+  withFindings: boolean;
+  sources: Set<string>;
+}
+
+/** One group per goal-plan action, in the order the plan declares them, then in the order the steps reached them. */
+const groupStepsByAction = (steps: InvestigationStepEntry[], actionOrder: Map<string, number>): InvestigationActionGroup[] => {
+  const groups = new Map<string, InvestigationActionGroup>();
+  steps.forEach((step, index) => {
+    const key = stepActionKey(step);
+    if (!key) return;
+    const start = toTimelineTime(step.started_at);
+    const end = stepEndTime(step, start);
+    const group = groups.get(key) ?? {
+      key,
+      order: actionOrder.get(key) ?? actionOrder.size + (step.position ?? index),
+      start: null,
+      end: null,
+      findings: 0,
+      withFindings: false,
+      sources: new Set<string>(),
+    };
+    if (start !== null) group.start = group.start === null ? start : Math.min(group.start, start);
+    if (end !== null) group.end = group.end === null ? end : Math.max(group.end, end);
+    if (isStepWithFindings(step)) {
+      group.withFindings = true;
+      group.findings += step.findings_count && step.findings_count > 0 ? step.findings_count : 0;
+      const source = step.source_name || step.tool;
+      if (source) group.sources.add(source);
+    }
+    groups.set(key, group);
+  });
+  return [...groups.values()].sort((a, b) => a.order - b.order);
+};
+
+export const investigationRunRule: TimelineRule = {
+  id: RULE_INVESTIGATION_RUN,
+  label: 'Case Autopilot investigation runs, the goal-plan actions that found something and the findings outside the case',
+  kinds: ['investigation_step'],
   derive: (input) => {
     // Findings about elements already in scope are derived by the core rules, only the others are new
     const inScope = new Set([input.container.id, ...input.entities.map((e) => e.id), ...input.relationships.map((r) => r.id)]);
@@ -901,59 +987,88 @@ export const autopilotRule: TimelineRule = {
       const start = toTimelineTime(readExtraString(run, 'started_at')) ?? toTimelineTime(run.created_at);
       const end = toTimelineTime(readExtraString(run, 'completed_at'));
       const status = readExtraString(run, 'run_status') ?? readExtraString(run, 'status');
+      const steps = (readExtra(run, 'steps') as InvestigationStepEntry[] | undefined) ?? [];
+      const goalPlan = readExtra(run, 'goal_plan') as { actions?: InvestigationGoalActionEntry[] } | undefined;
+      const planActions = Array.isArray(goalPlan?.actions) ? goalPlan.actions.filter((a) => !!a?.slug) : [];
+      const actionLabels = new Map(planActions.map((a) => [a.slug as string, a.label || humanizeSlug(a.slug as string)]));
+      const actionOrder = new Map(planActions.map((a, index) => [a.slug as string, index]));
+      const groups = groupStepsByAction(steps, actionOrder).filter((group) => group.withFindings);
+      const totalFindings = groups.reduce((sum, group) => sum + group.findings, 0);
       if (start !== null) {
+        const details = [
+          run.name && run.name !== INVESTIGATION_RUN_TITLE ? run.name : null,
+          status ? `Status: ${status}` : null,
+          totalFindings > 0 ? formatCount(totalFindings, 'finding', 'findings') : null,
+        ].filter((d) => !!d);
         events.push({
-          rule_id: 'autopilot-run',
-          kind: 'autopilot_step',
+          rule_id: RULE_INVESTIGATION_RUN,
+          kind: 'investigation_step',
           lane: 'response',
           element_id: run.id,
           element_type: run.entity_type,
           event_time: iso(start),
           event_end_time: end !== null && end > start ? iso(end) : null,
           time_precision: 'exact',
-          name: `Case Autopilot run ${run.name}`,
-          description: status ? `Status: ${status}` : undefined,
+          name: INVESTIGATION_RUN_TITLE,
+          description: details.join(' - ') || undefined,
           markings,
         });
       }
-      const steps = (readExtra(run, 'steps') as InvestigationStepEntry[] | undefined) ?? [];
-      steps.forEach((step, index) => {
-        const time = toTimelineTime(step.started_at);
-        if (time === null) return;
-        const stepEnd = step.duration_ms && step.duration_ms > 0 ? time + step.duration_ms : null;
+      // Never one event per source step: a run has up to fifty of them and they would flood the lane
+      groups.forEach((group) => {
+        const actionStart = group.start ?? start;
+        if (actionStart === null) return;
+        const sources = [...group.sources].sort();
+        const details = [
+          group.findings > 0 ? formatCount(group.findings, 'finding', 'findings') : null,
+          sources.length > 0 ? `Sources: ${sources.join(', ')}` : null,
+        ].filter((d) => !!d);
         events.push({
-          rule_id: 'autopilot-run',
-          kind: 'autopilot_step',
+          rule_id: RULE_INVESTIGATION_RUN,
+          kind: 'investigation_step',
           lane: 'response',
-          discriminator: `${run.id}-step-${step.id ?? index}`,
+          discriminator: `${run.id}-action-${group.key}`,
           element_id: run.id,
           element_type: run.entity_type,
-          event_time: iso(time),
-          event_end_time: stepEnd !== null ? iso(stepEnd) : null,
-          time_precision: 'exact',
-          name: step.description || step.tool || `Step ${index + 1}`,
-          description: [step.tool ? `Tool: ${step.tool}` : null, step.status ? `Status: ${step.status}` : null].filter((d) => !!d).join(' - ') || undefined,
+          event_time: iso(actionStart),
+          event_end_time: group.end !== null && group.end > actionStart ? iso(group.end) : null,
+          time_precision: group.start !== null ? 'exact' : 'approximate',
+          name: actionLabels.get(group.key) ?? humanizeSlug(group.key),
+          description: details.join(' - ') || undefined,
           markings,
-          ordering_hint: index,
+          ordering_hint: group.order,
         });
       });
-      const findings = (readExtra(run, 'timeline') as InvestigationTimelineEntry[] | undefined) ?? [];
-      findings.forEach((entry) => {
-        const time = toTimelineTime(entry.ts);
-        if (time === null || !entry.event || !entry.entity_id || inScope.has(entry.entity_id)) return;
+      // Findings outside the case: when the run saw the element, as the engine dated it
+      const seen = new Set<string>();
+      const pushFinding = (entityId: string, entityType: string | null, name: string | null, event: string, time: number | null) => {
+        const discriminator = `${run.id}-finding-${entityId}-${event}`;
+        if (time === null || inScope.has(entityId) || seen.has(discriminator)) return;
+        seen.add(discriminator);
         events.push({
-          rule_id: 'autopilot-run',
-          kind: 'autopilot_step',
+          rule_id: RULE_INVESTIGATION_RUN,
+          kind: 'investigation_step',
           lane: 'evidence',
-          discriminator: `${run.id}-finding-${entry.entity_id}-${entry.event}`,
-          element_id: entry.entity_id,
-          element_type: entry.entity_type ?? null,
+          discriminator,
+          element_id: entityId,
+          element_type: entityType,
           event_time: iso(time),
-          time_precision: 'exact',
-          name: `${entry.name ?? entry.entity_type ?? 'Element'} ${INVESTIGATION_FINDING_LABELS[entry.event] ?? entry.event}`,
-          description: `Found by the Case Autopilot run ${run.name}`,
+          time_precision: 'approximate',
+          name: `${name ?? entityType ?? 'Element'} ${INVESTIGATION_FINDING_LABELS[event] ?? event}`,
+          description: `Found by the ${INVESTIGATION_RUN_TITLE} ${run.name}`,
           markings,
         });
+      };
+      const timeline = (readExtra(run, 'timeline') as InvestigationTimelineEntry[] | undefined) ?? [];
+      timeline.forEach((entry) => {
+        if (!entry.event || !entry.entity_id) return;
+        pushFinding(entry.entity_id, entry.entity_type ?? null, entry.name ?? null, entry.event, toTimelineTime(entry.ts));
+      });
+      const evidence = (readExtra(run, 'evidence') as InvestigationEvidenceEntry[] | undefined) ?? [];
+      evidence.forEach((entry) => {
+        if (!entry.opencti_id) return;
+        pushFinding(entry.opencti_id, entry.entity_type ?? null, entry.label ?? null, 'first_seen', toTimelineTime(entry.first_seen));
+        pushFinding(entry.opencti_id, entry.entity_type ?? null, entry.label ?? null, 'last_seen', toTimelineTime(entry.last_seen));
       });
       return events;
     });
@@ -986,7 +1101,7 @@ export const TIMELINE_SOFT_RULES: TimelineRule[] = [
   coverageResultRule,
   huntRunRule,
   deploymentRule,
-  autopilotRule,
+  investigationRunRule,
 ];
 
 /** Run every available rule; a failing rule never prevents the others from producing their events. */

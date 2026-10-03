@@ -402,7 +402,7 @@ describe('Incident and case timeline', () => {
       const rules = result.data.timelineRules as Array<{ id: string; available: boolean; kinds: string[] }>;
       expect(rules.find((r) => r.id === 'technique-kill-chain')).toMatchObject({ available: true, kinds: ['technique_used'] });
       expect(rules.find((r) => r.id === 'security-coverage-result')?.available).toBe(true);
-      expect(rules.map((r) => r.id)).toEqual(expect.arrayContaining(['hunt-run', 'indicator-deployment', 'autopilot-run']));
+      expect(rules.map((r) => r.id)).toEqual(expect.arrayContaining(['hunt-run', 'indicator-deployment', 'investigation-run']));
     });
   });
 

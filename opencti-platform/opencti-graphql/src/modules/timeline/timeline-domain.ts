@@ -461,14 +461,15 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   }, existing);
   await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [doc]);
   await afterTimelineChange(context, user, container, 'manual', [internalId]);
+  const stored = await reloadEvent(context, user, internalId);
   if (!existing) {
     addTimelineManualEventCount();
-    if ((TIMELINE_MILESTONE_KINDS as readonly string[]).includes(kind)) {
-      notifyTimelineMilestoneAdded(context, user, container.internal_id, { name: doc.name, kind, event_time: doc.event_time })
+    if (stored && (TIMELINE_MILESTONE_KINDS as readonly string[]).includes(kind)) {
+      notifyTimelineMilestoneAdded(context, user, container.internal_id, stored)
         .catch((error) => logApp.error('[TIMELINE] Unable to notify milestone', { cause: error, containerId: container.internal_id }));
     }
   }
-  return reloadEvent(context, user, internalId);
+  return stored;
 };
 
 const DERIVED_EDITABLE_FIELDS = ['annotation', 'ordering_hint'];

@@ -48,6 +48,7 @@ import {
   TIMELINE_LANES,
   TIMELINE_ZOOM_LABELS,
   TIMELINE_ZOOM_WINDOWS,
+  type TimelineExportFormat,
   type TimelineGrouping,
   type TimelineLane,
   type TimelineSource,
@@ -55,8 +56,6 @@ import {
   type TimelineViewState,
   type TimelineZoomWindow,
 } from './timelineUtils';
-
-export type TimelineExportFormat = 'csv' | 'pdf' | 'svg' | 'png';
 
 interface ContainerTimelineToolbarProps {
   state: TimelineViewState;

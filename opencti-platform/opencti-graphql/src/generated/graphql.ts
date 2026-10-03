@@ -36529,7 +36529,6 @@ export type TimelineEventEditInput = {
 
 export enum TimelineEventKind {
   Assigned = 'assigned',
-  AutopilotStep = 'autopilot_step',
   CaseOpened = 'case_opened',
   Containment = 'containment',
   CoverageResult = 'coverage_result',
@@ -36540,6 +36539,7 @@ export enum TimelineEventKind {
   IncidentSeen = 'incident_seen',
   IndicatorValid = 'indicator_valid',
   InfrastructureSeen = 'infrastructure_seen',
+  InvestigationStep = 'investigation_step',
   MalwareSeen = 'malware_seen',
   Merged = 'merged',
   Milestone = 'milestone',

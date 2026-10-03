@@ -37,6 +37,7 @@ import {
 import {
   deriveTimelineEvents,
   type DerivedTimelineEvent,
+  RULE_INVESTIGATION_RUN,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
   TIMELINE_CORE_RULES,
@@ -66,7 +67,7 @@ const SOFT_RULE_TYPES: Record<string, string> = {
   'security-coverage-result': ENTITY_TYPE_SECURITY_COVERAGE,
   'hunt-run': SOFT_TYPE_HUNT_RUN,
   'indicator-deployment': SOFT_RELATION_DEPLOYED_ON,
-  'autopilot-run': SOFT_TYPE_INVESTIGATION_RUN,
+  [RULE_INVESTIGATION_RUN]: SOFT_TYPE_INVESTIGATION_RUN,
 };
 
 export const getTimelineRules = (): TimelineRule[] => [

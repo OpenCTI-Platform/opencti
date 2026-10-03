@@ -114,7 +114,7 @@ describe('Timeline schema registration', () => {
     expect(new Set(rules.map((r) => r.id)).size).toEqual(rules.length);
     rules.forEach((rule) => expect(rule.kinds.length).toBeGreaterThan(0));
     // soft-check rules expose their availability
-    expect(rules.filter((r) => r.isAvailable).map((r) => r.id)).toEqual(['security-coverage-result', 'hunt-run', 'indicator-deployment', 'autopilot-run']);
+    expect(rules.filter((r) => r.isAvailable).map((r) => r.id)).toEqual(['security-coverage-result', 'hunt-run', 'indicator-deployment', 'investigation-run']);
   });
 });
 

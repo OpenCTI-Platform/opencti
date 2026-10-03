@@ -36,7 +36,7 @@ export const TIMELINE_KIND_LABELS: Record<string, string> = {
   assigned: 'Assignment',
   note_added: 'Note added',
   opinion_added: 'Opinion added',
-  autopilot_step: 'Case Autopilot step',
+  investigation_step: 'Investigation step',
   object_added: 'Object added',
   relation_created: 'Relationship created',
   merged: 'Merge',
@@ -87,6 +87,11 @@ export const TIMELINE_ZOOM_LABELS: Record<TimelineZoomWindow, string> = {
 
 export const TIMELINE_SOURCES = ['derived', 'manual'] as const;
 export type TimelineSource = typeof TIMELINE_SOURCES[number];
+
+export type TimelineExportFormat = 'csv' | 'pdf' | 'svg' | 'png';
+
+// Entity types carrying a timeline
+export const TIMELINE_CONTAINER_TYPES = ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'];
 
 export type TimelineView = 'lanes' | 'list';
 

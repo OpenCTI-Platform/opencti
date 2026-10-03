@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  autopilotRule,
   computeAdversaryWindow,
   coverageResultRule,
   deploymentRule,
   deriveTimelineEvents,
   huntRunRule,
+  investigationRunRule,
   MAX_DETAILED_OBJECT_ADDITIONS,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
@@ -302,7 +302,7 @@ describe('Timeline knowledge rules', () => {
 });
 
 describe('Timeline soft-check rules', () => {
-  it('should derive coverage results, hunt runs, deployments and autopilot steps from their sources', () => {
+  it('should derive coverage results, hunt runs, deployments and investigation steps from their sources', () => {
     const input = buildInput({
       entities: [element({ id: 'hunt-1', entity_type: 'Hunt', name: 'Cobalt beacons' }), element({ id: 'malware-1', entity_type: 'Malware', name: 'Cobalt Strike' })],
       soft: {
@@ -333,7 +333,7 @@ describe('Timeline soft-check rules', () => {
         })],
       },
     });
-    const events = deriveTimelineEvents(input, [coverageResultRule, huntRunRule, deploymentRule, autopilotRule], () => {});
+    const events = deriveTimelineEvents(input, [coverageResultRule, huntRunRule, deploymentRule, investigationRunRule], () => {});
     expect(events.find((e) => e.element_id === 'cov-res-1')).toMatchObject({ kind: 'coverage_result', lane: 'detection', description: 'detection: 80%' });
     expect(events.find((e) => e.element_id === 'has-cov-1')).toMatchObject({ name: 'Coverage of Phishing', description: 'prevention: 40%' });
     const huntRuns = events.filter((e) => e.kind === 'hunt_run');
@@ -341,12 +341,95 @@ describe('Timeline soft-check rules', () => {
     // The hunt of the second run is not in scope: the event points to the run itself
     expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', description: 'Status: failed' });
     expect(events.find((e) => e.kind === 'deployment')).toMatchObject({ name: 'evil.com deployed on Sentinel', lane: 'detection' });
-    const autopilot = events.filter((e) => e.kind === 'autopilot_step');
-    expect(autopilot).toHaveLength(3);
-    expect(autopilot[0]).toMatchObject({ name: 'Case Autopilot run Autopilot', description: 'Status: completed', event_end_time: '2026-03-16T01:00:00.000Z' });
-    expect(autopilot[1]).toMatchObject({ name: 'Enrichment wave 1', discriminator: 'inv-1-step-step-a', description: 'Tool: enrich - Status: succeeded', event_end_time: '2026-03-16T00:11:00.000Z' });
+    // Former ledger shape: the tool stands for the action, the step without findings is left out
+    const investigation = events.filter((e) => e.kind === 'investigation_step');
+    expect(investigation).toHaveLength(3);
+    expect(investigation[0]).toMatchObject({
+      rule_id: 'investigation-run',
+      lane: 'response',
+      name: 'Case Autopilot investigation',
+      description: 'Autopilot - Status: completed',
+      event_end_time: '2026-03-16T01:00:00.000Z',
+    });
+    expect(investigation[1]).toMatchObject({ name: 'Enrich', discriminator: 'inv-1-action-enrich', description: 'Sources: enrich', event_end_time: '2026-03-16T00:11:00.000Z' });
     // Findings about elements in scope are already derived by the core rules
-    expect(autopilot[2]).toMatchObject({ lane: 'evidence', element_id: 'ip-9', name: '10.0.0.9 first seen', discriminator: 'inv-1-finding-ip-9-first_seen' });
+    expect(investigation[2]).toMatchObject({
+      lane: 'evidence',
+      element_id: 'ip-9',
+      name: '10.0.0.9 first seen',
+      discriminator: 'inv-1-finding-ip-9-first_seen',
+      time_precision: 'approximate',
+    });
+  });
+
+  it('should derive one investigation event per run and per goal-plan action that found something', () => {
+    const input = buildInput({
+      entities: [element({ id: 'malware-1', entity_type: 'Malware', name: 'Cobalt Strike' })],
+      soft: {
+        coverageResults: [],
+        coverageRelationships: [],
+        huntRuns: [],
+        deployments: [],
+        investigationRuns: [element({
+          id: 'inv-2',
+          entity_type: 'InvestigationRun',
+          name: 'Investigation of the phishing case',
+          extra: {
+            started_at: '2026-03-16T00:00:00.000Z',
+            completed_at: '2026-03-16T00:30:00.000Z',
+            run_status: 'completed',
+            goal_plan: {
+              declared: true,
+              objective: 'Qualify {value}',
+              actions: [
+                { slug: 'enrich_opencti', label: 'Enrich through OpenCTI connectors' },
+                { slug: 'search_web', label: 'Search the web' },
+                { slug: 'write_report', label: 'Write the report' },
+              ],
+            },
+            steps: [
+              { id: 's1', position: 0, action: 'enrich_opencti', source_name: 'VirusTotal', status: 'completed', findings_count: 4, started_at: '2026-03-16T00:05:00.000Z', completed_at: '2026-03-16T00:07:00.000Z' },
+              { id: 's2', position: 1, action: 'enrich_opencti', source_name: 'Shodan', status: 'empty', findings_count: 0, started_at: '2026-03-16T00:06:00.000Z', completed_at: '2026-03-16T00:09:00.000Z' },
+              { id: 's3', position: 2, action: 'search_web', source_name: 'Web', status: 'error', findings_count: 0, started_at: '2026-03-16T00:08:00.000Z', completed_at: '2026-03-16T00:10:00.000Z' },
+              { id: 's4', position: 3, action: 'enrich_opencti', source_name: 'AbuseIPDB', status: 'completed', findings_count: 2, started_at: '2026-03-16T00:04:00.000Z', completed_at: '2026-03-16T00:12:00.000Z' },
+              { id: 's5', position: 4, action: null, source_name: 'Internal', status: 'completed', findings_count: 1, started_at: '2026-03-16T00:13:00.000Z' },
+            ],
+            evidence: [
+              { n: 1, kind: 'opencti_object', label: '10.0.0.7', opencti_id: 'ip-7', entity_type: 'IPv4-Addr', first_seen: '2026-02-01T00:00:00.000Z', last_seen: '2026-02-10T00:00:00.000Z' },
+              { n: 2, kind: 'opencti_object', label: 'Cobalt Strike', opencti_id: 'malware-1', entity_type: 'Malware', first_seen: '2026-01-01T00:00:00.000Z' },
+              { n: 3, kind: 'url', label: 'Vendor blog', href: 'https://example.com' },
+            ],
+          },
+        })],
+      },
+    });
+    const events = deriveTimelineEvents(input, [investigationRunRule], () => {});
+    expect(events).toHaveLength(4);
+    expect(events.every((e) => e.kind === 'investigation_step' && e.rule_id === 'investigation-run')).toBe(true);
+    expect(events[0]).toMatchObject({
+      lane: 'response',
+      element_id: 'inv-2',
+      name: 'Case Autopilot investigation',
+      description: 'Investigation of the phishing case - Status: completed - 6 findings',
+      event_time: '2026-03-16T00:00:00.000Z',
+      event_end_time: '2026-03-16T00:30:00.000Z',
+    });
+    // Source steps of the same action collapse into one event spanning them; actions without findings are left out
+    expect(events[1]).toMatchObject({
+      lane: 'response',
+      name: 'Enrich through OpenCTI connectors',
+      discriminator: 'inv-2-action-enrich_opencti',
+      description: '6 findings - Sources: AbuseIPDB, VirusTotal',
+      event_time: '2026-03-16T00:04:00.000Z',
+      event_end_time: '2026-03-16T00:12:00.000Z',
+      time_precision: 'exact',
+      ordering_hint: 0,
+    });
+    // Evidence outside the case is dated as the engine saw it
+    expect(events.slice(2).map((e) => [e.element_id, e.name, e.lane, e.time_precision])).toEqual([
+      ['ip-7', '10.0.0.7 first seen', 'evidence', 'approximate'],
+      ['ip-7', '10.0.0.7 last seen', 'evidence', 'approximate'],
+    ]);
   });
 
   it('should skip unavailable rules and isolate failing rules', () => {

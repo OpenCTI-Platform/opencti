@@ -10,7 +10,6 @@ import type {
   TimelineEventKind,
   TimelineLane as GqlTimelineLane,
 } from './__generated__/ContainerTimelineMutationsExportQuery.graphql';
-import type { TimelineExportFormat } from './ContainerTimelineToolbar';
 import {
   buildTimelineFileName,
   fitSvgToWidth,
@@ -22,9 +21,17 @@ import {
   TIMELINE_LANES,
   TIMELINE_PRECISION_LABELS,
   TIMELINE_PRECISIONS,
+  type TimelineExportFormat,
 } from './timelineUtils';
 
 const PNG_SCALE = 2;
+
+const TIMELINE_EXPORT_MIME_TYPES: Record<TimelineExportFormat, string> = {
+  pdf: 'application/pdf',
+  csv: 'text/csv',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+};
 
 const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
@@ -63,19 +70,19 @@ const svgToPngBlob = (svg: string, width: number, height: number): Promise<Blob>
   image.src = url;
 });
 
-interface TimelineExportOptions {
+export interface TimelineFileOptions {
   containerId: string;
-  containerName: string;
-  lanes: readonly string[] | null;
-  kinds: readonly string[] | null;
-  includeHidden: boolean;
+  format: TimelineExportFormat;
+  lanes?: readonly string[] | null;
+  kinds?: readonly string[] | null;
+  includeHidden?: boolean;
   // The rendered lanes chart, exported as is for SVG and PNG; the server rendering is used otherwise
-  svgRef: RefObject<SVGSVGElement | null>;
+  svgElement?: SVGSVGElement | null;
 }
 
-const useContainerTimelineExport = ({ containerId, containerName, lanes, kinds, includeHidden, svgRef }: TimelineExportOptions) => {
+/** Renders a timeline export as a file content, from the events the current user can see. */
+export const useTimelineFileRenderer = () => {
   const { t_i18n } = useFormatter();
-  const [exporting, setExporting] = useState(false);
 
   // Exports are standalone documents: every label the server writes is translated here
   const labels = () => [
@@ -98,54 +105,74 @@ const useContainerTimelineExport = ({ containerId, containerName, lanes, kinds, 
     { key: 'column.annotation', label: t_i18n('Annotation') },
   ];
 
-  const fetchServerExport = async (format: 'csv' | 'svg' | 'html') => {
+  const fetchServerExport = async (options: TimelineFileOptions, format: 'csv' | 'svg' | 'html') => {
     const variables: ContainerTimelineMutationsExportQuery$variables = {
-      id: containerId,
+      id: options.containerId,
       format,
-      lanes: lanes as GqlTimelineLane[] | null,
-      kinds: kinds as TimelineEventKind[] | null,
-      includeHidden,
+      lanes: (options.lanes ?? null) as GqlTimelineLane[] | null,
+      kinds: (options.kinds ?? null) as TimelineEventKind[] | null,
+      includeHidden: options.includeHidden ?? false,
       labels: format === 'csv' ? null : labels(),
     };
     const result = await fetchQuery<ContainerTimelineMutationsExportQuery>(containerTimelineExportQuery, variables, { fetchPolicy: 'network-only' }).toPromise();
     return result?.containerTimelineExport ?? '';
   };
 
-  const renderedSvg = (): { svg: string; width: number; height: number } | null => {
-    const element = svgRef.current;
-    if (!element) return null;
-    const width = Number(element.getAttribute('width'));
-    const height = Number(element.getAttribute('height'));
-    return { svg: serializeSvgElement(element), width, height };
+  const renderTimelineFile = async (options: TimelineFileOptions): Promise<Blob> => {
+    const { format, svgElement } = options;
+    if (format === 'csv') {
+      const csv = await fetchServerExport(options, 'csv');
+      return new Blob([csv], { type: `${TIMELINE_EXPORT_MIME_TYPES.csv};charset=utf-8` });
+    }
+    if (format === 'pdf') {
+      // Built-in HTML to PDF export, the timeline being rendered server side as an SVG in the HTML
+      const html = fitSvgToWidth(await fetchServerExport(options, 'html'), MAX_WIDTH_PORTRAIT);
+      return htmlToPdf('timeline', html).getBlob();
+    }
+    let svg = svgElement ? serializeSvgElement(svgElement) : null;
+    let size = svgElement ? { width: Number(svgElement.getAttribute('width')), height: Number(svgElement.getAttribute('height')) } : null;
+    if (!svg || !size) {
+      svg = await fetchServerExport(options, 'svg');
+      const match = svg.match(/width="(\d+)" height="(\d+)"/);
+      size = match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 1200, height: 400 };
+    }
+    if (format === 'svg') {
+      return new Blob([svg], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });
+    }
+    return svgToPngBlob(svg, size.width, size.height);
   };
+
+  return { renderTimelineFile };
+};
+
+/** Maps an export format of the container export dialog to the timeline format producing it. */
+export const timelineFormatOfMimeType = (mimeType: string): TimelineExportFormat | null => {
+  const entry = Object.entries(TIMELINE_EXPORT_MIME_TYPES).find(([, mime]) => mime === mimeType);
+  return entry ? entry[0] as TimelineExportFormat : null;
+};
+
+export const TIMELINE_EXPORT_MIME_TYPE_LIST = Object.values(TIMELINE_EXPORT_MIME_TYPES);
+
+interface TimelineExportOptions {
+  containerId: string;
+  containerName: string;
+  lanes: readonly string[] | null;
+  kinds: readonly string[] | null;
+  includeHidden: boolean;
+  svgRef: RefObject<SVGSVGElement | null>;
+}
+
+/** Download of the timeline from the tab toolbar, with the filters of the current view. */
+const useContainerTimelineExport = ({ containerId, containerName, lanes, kinds, includeHidden, svgRef }: TimelineExportOptions) => {
+  const { t_i18n } = useFormatter();
+  const { renderTimelineFile } = useTimelineFileRenderer();
+  const [exporting, setExporting] = useState(false);
 
   const exportTimeline = async (format: TimelineExportFormat) => {
     setExporting(true);
     try {
-      if (format === 'csv') {
-        const csv = await fetchServerExport('csv');
-        downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), buildTimelineFileName(containerName, 'csv'));
-      } else if (format === 'pdf') {
-        // Built-in HTML to PDF export, the timeline being rendered server side as an SVG in the HTML
-        const html = fitSvgToWidth(await fetchServerExport('html'), MAX_WIDTH_PORTRAIT);
-        const fileName = buildTimelineFileName(containerName, 'pdf');
-        htmlToPdf(fileName, html).download(fileName);
-      } else {
-        const rendered = renderedSvg();
-        let svg = rendered?.svg;
-        let size = rendered ? { width: rendered.width, height: rendered.height } : null;
-        if (!svg || !size) {
-          svg = await fetchServerExport('svg');
-          const match = svg.match(/width="(\d+)" height="(\d+)"/);
-          size = match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 1200, height: 400 };
-        }
-        if (format === 'svg') {
-          downloadBlob(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), buildTimelineFileName(containerName, 'svg'));
-        } else {
-          const png = await svgToPngBlob(svg, size.width, size.height);
-          downloadBlob(png, buildTimelineFileName(containerName, 'png'));
-        }
-      }
+      const blob = await renderTimelineFile({ containerId, format, lanes, kinds, includeHidden, svgElement: svgRef.current });
+      downloadBlob(blob, buildTimelineFileName(containerName, format));
     } catch {
       MESSAGING$.notifyError(t_i18n('The timeline export failed'));
     } finally {

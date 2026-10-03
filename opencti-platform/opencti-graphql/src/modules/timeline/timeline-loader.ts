@@ -61,7 +61,7 @@ const SOFT_EXTRA_KEYS = [
   // hunt runs
   'hunt_id', 'hunt_run_status', 'hunt_run_trigger', 'incident_id', 'hits_count', 'verdict', 'time_window_start', 'time_window_end',
   // investigation runs
-  'run_status', 'run_trigger', 'timeline', 'steps',
+  'run_status', 'run_trigger', 'timeline', 'steps', 'goal_plan', 'evidence',
   // deployed-on relationships
   'deployment_status', 'deployed_at', 'removed_at', 'hit_count', 'last_hit_at', 'validation_status', 'last_validation_at',
   // shared

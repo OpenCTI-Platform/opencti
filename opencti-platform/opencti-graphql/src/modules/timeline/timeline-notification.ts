@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser, UserOrigin } from '../../types/user';
-import { isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import type { BasicStoreCommon } from '../../types/store';
+import { isUserCanAccessStixElement, isUserCanAccessStoreElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { stixLoadById } from '../../database/middleware';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -27,6 +28,7 @@ const ANCHOR_LABELS: Record<TimelineAnchorKey, string> = {
  * Deliver a timeline notification to the live triggers listening to the given event type.
  * Every recipient must be able to access the container and match the trigger filters, exactly as
  * for knowledge events; digests built on these triggers collect them like any live notification.
+ * When the message describes a timeline event, the recipient must also be able to access that event.
  */
 const notifyTimelineTrigger = async (
   context: AuthContext,
@@ -34,6 +36,7 @@ const notifyTimelineTrigger = async (
   eventType: TriggerEventType,
   buildMessage: (stix: StixObject) => string,
   origin: Partial<UserOrigin>,
+  describedEvent?: BasicStoreCommon,
 ) => {
   const liveNotifications = await getLiveNotifications(context);
   const candidates = liveNotifications.filter(({ trigger }) => (trigger.event_types ?? []).includes(eventType));
@@ -50,7 +53,8 @@ const notifyTimelineTrigger = async (
     for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
       const user: AuthUser = users[userIndex];
       const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-      const canAccess = await isUserCanAccessStixElement(userContext, user, stix);
+      const canAccess = await isUserCanAccessStixElement(userContext, user, stix)
+        && (!describedEvent || await isUserCanAccessStoreElement(userContext, user, describedEvent));
       if (canAccess && await isStixMatchFilterGroup(userContext, user, stix, filters)) {
         targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message });
       }
@@ -95,7 +99,7 @@ export const notifyTimelineMilestoneAdded = async (
   context: AuthContext,
   user: AuthUser,
   containerId: string,
-  milestone: { name: string; kind: string; event_time: string },
+  milestone: BasicStoreCommon & { name: string; kind: string; event_time: string },
 ) => {
   return notifyTimelineTrigger(
     context,
@@ -103,5 +107,6 @@ export const notifyTimelineMilestoneAdded = async (
     TIMELINE_TRIGGER_MILESTONE_ADDED,
     (stix) => `[timeline] \`${extractStixRepresentative(stix)}\`: ${milestone.kind} \`${milestone.name}\` at ${milestone.event_time}`,
     { user_id: user.id },
+    milestone,
   );
 };
