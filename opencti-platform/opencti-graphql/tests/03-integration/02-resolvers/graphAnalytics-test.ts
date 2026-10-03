@@ -53,8 +53,8 @@ const SIMILAR_QUERY = gql`
 `;
 
 const PATHS_QUERY = gql`
-  query stixPaths($fromId: String!, $toId: String!, $maxDepth: Int, $maxPaths: Int) {
-    stixPaths(fromId: $fromId, toId: $toId, maxDepth: $maxDepth, maxPaths: $maxPaths) {
+  query stixPaths($fromId: String!, $toId: String!, $maxDepth: Int, $maxPaths: Int, $entityTypes: [String!]) {
+    stixPaths(fromId: $fromId, toId: $toId, maxDepth: $maxDepth, maxPaths: $maxPaths, entityTypes: $entityTypes) {
       max_depth
       depth_reached
       truncated
@@ -298,6 +298,19 @@ describe('Graph analytics resolvers', () => {
     expect(paths[0].nodes.map((n: any) => n.id)).toEqual(paths[0].node_ids);
     expect(paths[0].relationship_types[2]).toBe('targets');
     expect(data.stixPaths.timed_out).toBe(false);
+  });
+
+  it('should only restrict the intermediate entities of a path to the requested entity types', async () => {
+    // intermediates restricted to attack patterns: the intrusion set endpoints stay eligible
+    const variables = { fromId: ids.isB, toId: ids.isA, maxDepth: 2, maxPaths: 5, entityTypes: ['Attack-Pattern'] };
+    const { data } = await queryAsAdminWithSuccess({ query: PATHS_QUERY, variables });
+    const { paths } = data.stixPaths;
+    expect(paths.length).toBe(2);
+    paths.forEach((path: any) => {
+      expect(path.node_ids[0]).toBe(ids.isB);
+      expect(path.node_ids[2]).toBe(ids.isA);
+      expect([ids.t1, ids.t2]).toContain(path.node_ids[1]);
+    });
   });
 
   it('should never route a path through an entity the caller cannot access', async () => {

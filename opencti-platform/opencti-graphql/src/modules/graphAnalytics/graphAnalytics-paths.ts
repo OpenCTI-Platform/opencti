@@ -124,14 +124,18 @@ export const findStixPaths = async (context: AuthContext, user: AuthUser, args: 
     });
     return relationsToExpansion(relations, nodeIds, limit);
   };
+  // the endpoints were loaded with the caller's access above; the entity types only restrict the intermediate nodes
+  const endpointIds = new Set([from.internal_id, to.internal_id]);
   const acceptNodes = async (nodes: Array<{ id: string; type: string }>): Promise<Set<string>> => {
-    const candidates = nodes.filter((node) => isAcceptedPathEntityType(node.type, args.entityTypes));
-    if (candidates.length === 0) return new Set();
+    const accepted = new Set(nodes.filter((node) => endpointIds.has(node.id)).map((node) => node.id));
+    const candidates = nodes.filter((node) => !endpointIds.has(node.id) && isAcceptedPathEntityType(node.type, args.entityTypes));
+    if (candidates.length === 0) return accepted;
     const accessible = await elFindByIds<BasicStoreBase>(context, user, candidates.map((c) => c.id), {
       indices: READ_ENTITIES_INDICES,
       baseData: true,
     }) as BasicStoreBase[];
-    return new Set(accessible.map((a) => a.internal_id));
+    accessible.forEach((a) => accepted.add(a.internal_id));
+    return accepted;
   };
   const result = await searchPaths({
     fromId: from.internal_id,
