@@ -3,6 +3,8 @@ import type { ComponentType, LazyExoticComponent, ReactNode } from 'react';
 export const PATH_DEFENSE = '/dashboard/defense';
 
 export interface DefenseArea {
+  /** Position in the menu: Hunts 10, Defense matrix 20, Dissemination assurance 30. */
+  order: number;
   /** Route segment under `/dashboard/defense`, also the nav item key. */
   path: string;
   /** English source string, translated by the menu. */
@@ -17,18 +19,13 @@ export interface DefenseArea {
 }
 
 /**
- * The areas of the Defense hub, in menu order: Hunts, Defense matrix, Dissemination assurance
- * (information architecture directive, OpenCTI-Platform/opencti#18685). The hub and its menu entry
- * only exist while at least one visible area is registered here. Each area is registered under its
- * own heading, so the areas can be added independently of one another.
+ * The areas of the Defense hub (information architecture directive, OpenCTI-Platform/opencti#18685):
+ * one file per area in `./areas/`, whose default export is its `DefenseArea`, so each area is added
+ * without touching the others. The hub and its menu entry only exist while a visible area is registered.
  */
-export const DEFENSE_AREAS: DefenseArea[] = [
-  // Hunts
+const areaModules = import.meta.glob<DefenseArea>('./areas/*.tsx', { eager: true, import: 'default' });
 
-  // Defense matrix
-
-  // Dissemination assurance
-];
+export const DEFENSE_AREAS: DefenseArea[] = Object.values(areaModules).sort((a, b) => a.order - b.order);
 
 export const visibleDefenseAreas = (
   areas: DefenseArea[],

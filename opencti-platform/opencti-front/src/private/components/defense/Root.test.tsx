@@ -13,6 +13,7 @@ vi.mock('../../../utils/hooks/useEntitySettings', async (importOriginal) => ({
 }));
 
 const area = (path: string, entityType?: string): DefenseArea => ({
+  order: 0,
   path,
   label: path,
   icon: null,

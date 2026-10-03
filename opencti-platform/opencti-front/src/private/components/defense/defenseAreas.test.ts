@@ -4,6 +4,7 @@ import { CURATION_TABS, grantedCurationTabs } from '../data/curation/curationTab
 import { DEFENSE_AREAS, type DefenseArea, visibleDefenseAreas } from './defenseAreas';
 
 const area = (path: string, entityType?: string): DefenseArea => ({
+  order: 0,
   path,
   label: path,
   icon: null,
@@ -40,6 +41,12 @@ describe.each([
     expect(new Set(paths).size).toEqual(paths.length);
   });
 
+  it('gives every entry its own position, in ascending order', () => {
+    const orders = entries.map((entry) => entry.order);
+    expect(new Set(orders).size).toEqual(orders.length);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
+  });
+
   it('uses lowercase route segments, as the rest of the dashboard does', () => {
     entries.forEach((entry) => expect(entry.path).toMatch(ROUTE_SEGMENT));
   });
@@ -67,8 +74,8 @@ describe('the capability an area or a tab needs', () => {
 
   it('drops a tab the user is not granted', () => {
     const tabs = [
-      { path: 'inbox', label: 'Inbox', needs: ['KNOWLEDGE_KNUPDATE_KNMERGE'], component: lazyNothing },
-      { path: 'health', label: 'Knowledge health', component: lazyNothing },
+      { order: 10, path: 'inbox', label: 'Inbox', needs: ['KNOWLEDGE_KNUPDATE_KNMERGE'], component: lazyNothing },
+      { order: 50, path: 'health', label: 'Knowledge health', component: lazyNothing },
     ];
     expect(grantedCurationTabs(tabs, granted).map((t) => t.path)).toEqual(['health']);
   });

@@ -25,9 +25,9 @@ vi.mock('../../../utils/hooks/useImportAccess', () => ({
 
 const lazyNothing = lazy(async () => ({ default: () => null }));
 const area = (path: string, label: string, entityType?: string): DefenseArea => ({
-  path, label, entityType, icon: <svg />, component: lazyNothing,
+  order: 0, path, label, entityType, icon: <svg />, component: lazyNothing,
 });
-const tab = (path: string, label: string): CurationTab => ({ path, label, component: lazyNothing });
+const tab = (path: string, label: string): CurationTab => ({ order: 0, path, label, component: lazyNothing });
 
 const menu = (): NavGroup[] => testRenderHook(() => useNavMenu()).hook.result.current;
 const knowledgeIds = (groups: NavGroup[]) => groups.find((g) => g.id === 'knowledge')?.items.map((i) => i.id);

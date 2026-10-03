@@ -3,6 +3,8 @@ import type { ComponentType, LazyExoticComponent } from 'react';
 export const PATH_CURATION = '/dashboard/data/curation';
 
 export interface CurationTab {
+  /** Position in the hub: Inbox 10, Conflicts 20, Stale knowledge 30, Merges 40, Knowledge health 50. */
+  order: number;
   /** Route segment under `/dashboard/data/curation`, also the tab value. */
   path: string;
   /** English source string, translated by the hub. */
@@ -14,22 +16,14 @@ export interface CurationTab {
 }
 
 /**
- * The tabs of the Curation hub, the data-quality home of Data, in display order: Inbox, Conflicts,
- * Stale knowledge, Merges, Knowledge health (information architecture directive,
- * OpenCTI-Platform/opencti#18685). The hub and its menu entry only exist while a tab is registered here.
- * Each tab is registered under its own heading, so the tabs can be added independently of one another.
+ * The tabs of the Curation hub, the data-quality home of Data (information architecture directive,
+ * OpenCTI-Platform/opencti#18685): one file per tab in `./tabs/`, whose default export is its
+ * `CurationTab`, so each tab is added without touching the others. The hub and its menu entry only
+ * exist while a tab is registered.
  */
-export const CURATION_TABS: CurationTab[] = [
-  // Inbox
+const tabModules = import.meta.glob<CurationTab>('./tabs/*.tsx', { eager: true, import: 'default' });
 
-  // Conflicts
-
-  // Stale knowledge
-
-  // Merges
-
-  // Knowledge health
-];
+export const CURATION_TABS: CurationTab[] = Object.values(tabModules).sort((a, b) => a.order - b.order);
 
 export const grantedCurationTabs = (
   tabs: CurationTab[],
