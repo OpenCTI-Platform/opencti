@@ -420,6 +420,7 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
     severity: instance.severity,
     source: instance.source,
     extensions: {
+      ...incident.extensions,
       [STIX_EXT_OCTI]: cleanObject({
         ...incident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',

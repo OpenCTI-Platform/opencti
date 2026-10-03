@@ -108,6 +108,8 @@ export const loadStoredTimelineEvents = async (context: AuthContext, containerId
   return fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: { mode: FilterMode.And, filters: [{ key: ['container_id'], values: [containerId] }], filterGroups: [] },
     noFiltersChecking: true,
+    // Events are rewritten from what is loaded here: their author must come along with them
+    withoutRels: false,
     maxSize: TIMELINE_MAX_EVENTS * 2,
   } as any);
 };

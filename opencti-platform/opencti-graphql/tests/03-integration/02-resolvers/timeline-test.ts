@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
-import { deleteContainerTimeline, loadStoredTimelineEvents } from '../../../src/modules/timeline/timeline-engine';
+import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
@@ -97,6 +97,7 @@ const TIMELINE_EVENT_FIELDS = `
   analyst_fields
   editable
   objectMarking { id }
+  createdBy { id }
 `;
 
 const CONTAINER_TIMELINE = gql`
@@ -238,15 +239,28 @@ interface TimelineEventNode {
   external_id: string | null;
   analyst_fields: string[];
   editable: boolean;
+  createdBy: { id: string } | null;
 }
 
 const ADVERSARY_START = '2026-02-01T08:00:00.000Z';
 const ADVERSARY_STOP = '2026-02-03T18:00:00.000Z';
 const CONTAINMENT_TIME = '2026-02-05T10:30:00.000Z';
 
+// DateTime values are returned as dates by the test client
+const iso = (value: string | Date | null | undefined) => (value ? new Date(value).toISOString() : null);
+
 const listTimeline = async (id: string, variables: Record<string, unknown> = {}): Promise<TimelineEventNode[]> => {
   const result = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE, variables: { id, first: 500, ...variables } });
-  return result.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node);
+  return result.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => ({
+    ...edge.node,
+    event_time: iso(edge.node.event_time) as string,
+    event_end_time: iso(edge.node.event_end_time),
+  }));
+};
+
+const storedSignatures = async (containerId: string) => {
+  const stored = await loadStoredTimelineEvents(testContext, containerId);
+  return Object.fromEntries(stored.map((event) => [event.internal_id, JSON.parse(timelineEventSignature(event))]));
 };
 
 const streamEvent = (stix: Record<string, unknown>): SseEvent<DataEvent> => ({
@@ -367,21 +381,20 @@ describe('Incident and case timeline', () => {
     });
 
     it('should be idempotent: a second regeneration rewrites nothing and keeps the ids', async () => {
-      const before = await listTimeline(caseIncident.id);
+      const before = await storedSignatures(caseIncident.id);
       const result = await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+      expect(await storedSignatures(caseIncident.id)).toEqual(before);
       expect(result.data.timelineRegenerate).toMatchObject({ created_count: 0, updated_count: 0, deleted_count: 0 });
-      const after = await listTimeline(caseIncident.id);
-      expect(after.map((e) => e.id).sort()).toEqual(before.map((e) => e.id).sort());
     });
 
     it('should compute the anchors and expose them on the container', async () => {
       const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
-      expect(anchors.data.timelineAnchors.first_adversary_activity).toEqual(ADVERSARY_START);
-      expect(anchors.data.timelineAnchors.first_response).toEqual('2026-02-04T12:00:00.000Z');
+      expect(iso(anchors.data.timelineAnchors.first_adversary_activity)).toEqual(ADVERSARY_START);
+      expect(iso(anchors.data.timelineAnchors.first_response)).toEqual('2026-02-04T12:00:00.000Z');
       expect(anchors.data.timelineAnchors.containment).toBeNull();
       expect(anchors.data.timelineAnchors.computed_at).toBeDefined();
       const stix = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
-      expect(stix.data.caseIncident.x_opencti_timeline_anchors.first_adversary_activity).toEqual(ADVERSARY_START);
+      expect(iso(stix.data.caseIncident.x_opencti_timeline_anchors.first_adversary_activity)).toEqual(ADVERSARY_START);
     });
 
     it('should list the derivation rules with their availability', async () => {
@@ -431,11 +444,11 @@ describe('Incident and case timeline', () => {
       manualEventId = event.id;
       expect(event).toMatchObject({ source: 'manual', kind: 'containment', lane: 'response', title: 'Hosts isolated', editable: true, precision: 'exact' });
       const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
-      expect(anchors.data.timelineAnchors.containment).toEqual(CONTAINMENT_TIME);
+      expect(iso(anchors.data.timelineAnchors.containment)).toEqual(CONTAINMENT_TIME);
     });
 
     it('should be idempotent on the external id of a manual event', async () => {
-      const input = { container_id: caseIncident.id, event_time: '2026-02-05T12:00:00.000Z', title: 'Regulator notified', kind: 'notification', external_id: 'splunk-alert-42' };
+      const input = { container_id: caseIncident.id, event_time: '2026-02-05T12:00:00.000Z', title: 'Regulator notified', kind: 'notification', external_id: 'splunk-alert-42', createdBy: TEST_ORGANIZATION.id };
       const first = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input } });
       const second = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, title: 'Regulator notified (CNIL)' } } });
       expect(second.data.timelineEventAdd.id).toEqual(first.data.timelineEventAdd.id);
@@ -474,6 +487,9 @@ describe('Incident and case timeline', () => {
       const result = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT, variables: { id: derivedMalwareEventId } });
       expect(result.data.timelineEvent).toMatchObject({ pinned: true, annotation: 'Initial dropper' });
       expect(result.data.timelineEvent.analyst_fields).toEqual(expect.arrayContaining(['pinned', 'annotation']));
+      // Manual events keep their author
+      const [notification] = await listTimeline(caseIncident.id, { kinds: ['notification'] });
+      expect(notification.createdBy?.id).toBeDefined();
     });
 
     it('should hide events from the default view only', async () => {
@@ -505,10 +521,10 @@ describe('Incident and case timeline', () => {
       const result = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
       const summary = result.data.containerTimelineSummary;
       expect(summary.total).toBeGreaterThan(5);
-      expect(summary.first_event_time).toEqual(ADVERSARY_START);
-      // The only knowledge event (the relationship) is hidden
-      expect(summary.lanes.map((l: { lane: string }) => l.lane).sort()).toEqual(['adversary', 'evidence', 'response']);
-      expect(summary.anchors.containment).toEqual(CONTAINMENT_TIME);
+      expect(iso(summary.first_event_time)).toEqual(ADVERSARY_START);
+      // The only knowledge event (the relationship) is hidden, the notification milestone has no lane
+      expect(summary.lanes.map((l: { lane: string }) => l.lane).sort()).toEqual(['adversary', 'custom', 'evidence', 'response']);
+      expect(iso(summary.anchors.containment)).toEqual(CONTAINMENT_TIME);
       expect(summary.settings).toMatchObject({ default_grouping: 'day', default_zoom_window: 'fit' });
     });
 
