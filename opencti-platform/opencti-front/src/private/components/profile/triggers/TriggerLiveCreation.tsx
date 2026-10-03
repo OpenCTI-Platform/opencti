@@ -99,6 +99,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
+  // Offered but not selected by default: it notifies on Threat Pulse signals, not on changes of the knowledge.
+  const availableEventTypesOptions: { value: TriggerEventType; label: string }[] = [
+    ...eventTypesOptions,
+    { value: 'pulse_trending', label: t_i18n('Trending in my sector (Threat Pulse)') },
+  ];
   const onReset = () => {
     handleClose?.();
     setInstanceTrigger(false);
@@ -187,7 +192,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           multiple={true}
           label={t_i18n('Triggering on')}
           options={
-            instance_trigger ? instanceEventTypesOptions : eventTypesOptions
+            instance_trigger ? instanceEventTypesOptions : availableEventTypesOptions
           }
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />

@@ -11,6 +11,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ThreatPulseCard from '@components/common/threat_pulse/ThreatPulseCard';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -117,6 +118,7 @@ const Indicator: React.FC<IndicatorProps> = ({
             defaultMarkings={indicator.objectMarking ?? []}
           />
         </Grid>
+        <ThreatPulseCard entityId={indicator.id} />
       </Grid>
     </div>
   );

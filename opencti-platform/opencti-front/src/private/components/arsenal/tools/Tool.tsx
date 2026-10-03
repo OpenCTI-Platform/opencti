@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ThreatPulseCard from '@components/common/threat_pulse/ThreatPulseCard';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -145,6 +146,7 @@ const Tool: React.FC<ToolProps> = ({
             }
           })
         }
+        <ThreatPulseCard entityId={tool.id} />
       </Grid>
     </div>
   );

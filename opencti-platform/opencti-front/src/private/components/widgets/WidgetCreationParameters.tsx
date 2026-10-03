@@ -579,7 +579,7 @@ const WidgetCreationParameters = () => {
                 )}
 
                 {perspective !== 'audits'
-                  && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
+                  && !['text', 'attribute', 'custom-attributes', 'bookmark', 'pulse-trending', 'pulse-benchmark'].includes(type)
                   && (
                     <div
                       style={{
