@@ -34,8 +34,8 @@ import { addWorkspace, findById as findWorkspaceById, workspaceEditField } from 
 import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
 import { getGraphAnalyticsComputeConfig, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
-import { keepAccessibleEndpoints } from './graphAnalytics-features';
-import { computeSimilarityScore } from './graphAnalytics-scoring';
+import { isSameComparisonGroup, keepAccessibleEndpoints } from './graphAnalytics-features';
+import { computeSimilarityScore, type GraphSimilarityScore } from './graphAnalytics-scoring';
 import {
   addClusterPromotion,
   computeDegreeMetrics,
@@ -55,6 +55,7 @@ import {
   type GraphClusterSource,
   type GraphFeatureFamily,
   type GraphMetrics,
+  type GraphSimilarityDocument,
 } from './graphAnalytics-types';
 import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
@@ -68,11 +69,14 @@ import {
 } from './graphAnalytics-state';
 
 const SIMILARITY_MAX_RESULTS: number = conf.get('graph_analytics:similarity_max_results') ?? 100;
+const SIMILARITY_SCAN_WINDOW = 500;
+const SIMILARITY_MAX_SCANNED_ROWS = 5000;
 const MATRIX_MAX_ENTITIES: number = conf.get('graph_analytics:matrix_max_entities') ?? 25;
 const MATRIX_MAX_CANDIDATES = 500;
 const CLUSTER_AGGREGATION_PAGE_SIZE = 5000;
 export const PROMOTION_MAX_MEMBERS = 2000;
-const INVESTIGATION_MAX_ELEMENTS = 2000;
+// same limit as a promotion, the cluster page disables both actions above it
+const INVESTIGATION_MAX_ELEMENTS = PROMOTION_MAX_MEMBERS;
 const UPSERT_MAX_METRICS = 5000;
 const UPSERT_MAX_CLUSTERS = 1000;
 const EDGES_MAX_PAGE = 5000;
@@ -125,6 +129,13 @@ const matchesEntityTypes = (entityType: string, entityTypes: string[] | null | u
   return entityTypes.includes(entityType) || getParentTypes(entityType).some((parent: string) => entityTypes.includes(parent));
 };
 
+interface QualifyingSimilarity {
+  row: GraphSimilarityDocument;
+  target: BasicStoreEntity;
+  score: GraphSimilarityScore;
+  families: Array<{ family: GraphFeatureFamily; entities: BasicStoreEntity[] }>;
+}
+
 /**
  * Top-N similar entities for the caller. The precomputed rows only select the candidates: every score is computed
  * again from profiles restricted to what the caller can access, so a hidden relationship never raises a score,
@@ -137,41 +148,49 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
   }
   const first = clamp(args.first, 10, 1, SIMILARITY_MAX_RESULTS);
   const minScore = args.minScore ?? 0;
-  const rows = await listSimilarityRows(context, user, entity.internal_id, Math.min(first * 4 + 20, 500));
-  const typedRows = rows.filter((row) => matchesEntityTypes(row.similarity_target_type, args.entityTypes));
-  const targets = await accessibleMap<BasicStoreEntity>(context, user, typedRows.map((r) => r.similarity_target_id));
-  const candidates = typedRows.flatMap((row) => (targets[row.similarity_target_id] ? [{ row, target: targets[row.similarity_target_id] }] : []));
-  const profiles = await loadFeatureProfilesBatched(
-    context,
-    user,
-    [entity, ...candidates.map((c) => c.target)].map((e) => ({ id: e.internal_id, entity_type: e.entity_type })),
-    getGraphAnalyticsComputeConfig(),
-    true,
-  );
-  const profilesById = new Map(profiles.map((p) => [p.id, p]));
-  const source = profilesById.get(entity.internal_id);
-  const scored = candidates.flatMap(({ row, target }) => {
-    const profile = profilesById.get(target.internal_id);
-    if (!source || !profile || profile.kind !== source.kind) return [];
-    const score = computeSimilarityScore(source, profile);
-    if (score.shared_count === 0 || score.score < minScore) return [];
-    return [{ row, target, score }];
-  });
-  scored.sort((x, y) => (y.score.score - x.score.score)
+  const config = getGraphAnalyticsComputeConfig();
+  const [source] = await loadFeatureProfilesBatched(context, user, [{ id: entity.internal_id, entity_type: entity.entity_type }], config, true);
+  // The stored rows are scanned by windows until enough of them qualify for the caller (types, access, visible
+  // evidence, security coverage), so a filter never hides candidates stored beyond a fixed prefetch.
+  const windowSize = Math.min(first * 4 + 20, SIMILARITY_SCAN_WINDOW);
+  const qualifying: QualifyingSimilarity[] = [];
+  const coverages = new Map<string, BasicStoreEntity>();
+  let scanned = 0;
+  let exhausted = !source;
+  while (!exhausted && qualifying.length <= first && scanned < SIMILARITY_MAX_SCANNED_ROWS) {
+    const rows = await listSimilarityRows(context, user, entity.internal_id, windowSize, 0, scanned);
+    scanned += rows.length;
+    exhausted = rows.length < windowSize;
+    const typedRows = rows.filter((row) => matchesEntityTypes(row.similarity_target_type, args.entityTypes)
+      && isSameComparisonGroup(entity.entity_type, row.similarity_target_type));
+    const targets = await accessibleMap<BasicStoreEntity>(context, user, typedRows.map((r) => r.similarity_target_id));
+    const candidates = typedRows.flatMap((row) => (targets[row.similarity_target_id] ? [{ row, target: targets[row.similarity_target_id] }] : []));
+    const profiles = await loadFeatureProfilesBatched(context, user, candidates.map((c) => ({ id: c.target.internal_id, entity_type: c.target.entity_type })), config, true);
+    const profilesById = new Map(profiles.map((p) => [p.id, p]));
+    const scored = candidates.flatMap(({ row, target }) => {
+      const profile = profilesById.get(target.internal_id);
+      if (!source || !profile) return [];
+      const score = computeSimilarityScore(source, profile);
+      if (score.shared_count === 0 || score.score < minScore) return [];
+      return [{ row, target, score }];
+    });
+    const evidenceIds = scored.flatMap(({ score }) => Object.values(score.shared).flat() as string[]);
+    const evidence = await accessibleMap<BasicStoreEntity>(context, user, evidenceIds);
+    const visibleRows = scored.flatMap(({ row, target, score }) => {
+      const families = GRAPH_FEATURE_FAMILIES
+        .map((family) => ({ family, entities: (score.shared[family] ?? []).map((id) => evidence[id]).filter(Boolean) }))
+        .filter((f) => f.entities.length > 0);
+      if (families.length === 0) return [];
+      return [{ row, target, score, families }];
+    });
+    const windowCoverages = await findSecurityCoverages(context, user, visibleRows.map((v) => v.target.internal_id));
+    windowCoverages.forEach((coverage, coveredId) => coverages.set(coveredId, coverage));
+    qualifying.push(...visibleRows.filter((v) => !args.onlyWithSecurityCoverage || coverages.has(v.target.internal_id)));
+  }
+  qualifying.sort((x, y) => (y.score.score - x.score.score)
     || (y.score.shared_count - x.score.shared_count)
     || x.target.internal_id.localeCompare(y.target.internal_id));
-  const evidenceIds = scored.flatMap(({ score }) => Object.values(score.shared).flat() as string[]);
-  const evidence = await accessibleMap<BasicStoreEntity>(context, user, evidenceIds);
-  const visibleRows = scored.flatMap(({ row, target, score }) => {
-    const families = GRAPH_FEATURE_FAMILIES
-      .map((family) => ({ family, entities: (score.shared[family] ?? []).map((id) => evidence[id]).filter(Boolean) }))
-      .filter((f) => f.entities.length > 0);
-    if (families.length === 0) return [];
-    return [{ row, target, score, families }];
-  });
-  const coverages = await findSecurityCoverages(context, user, visibleRows.map((v) => v.target.internal_id));
-  const nodes = visibleRows
-    .filter((v) => !args.onlyWithSecurityCoverage || coverages.has(v.target.internal_id))
+  const nodes = qualifying
     .slice(0, first)
     .map(({ row, target, score, families }) => ({
       id: `${row.similarity_entity_id}_${row.similarity_target_id}`,
@@ -185,7 +204,7 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
       securityCoverage: coverages.get(target.internal_id) ?? null,
     }));
   addGraphSimilarityQueryCount();
-  return buildConnection(nodes, nodes.length, visibleRows.length > nodes.length);
+  return buildConnection(nodes, nodes.length, qualifying.length > nodes.length);
 };
 
 export interface GraphSimilarityMatrixArgs {
@@ -250,7 +269,7 @@ export const graphSimilarityMatrix = async (context: AuthContext, user: AuthUser
       if (i === j) continue;
       const a = byId.get(entities[i].internal_id);
       const b = byId.get(entities[j].internal_id);
-      const comparable = a && b && a.kind === b.kind;
+      const comparable = a && b && isSameComparisonGroup(entities[i].entity_type, entities[j].entity_type);
       const score = comparable ? computeSimilarityScore(a, b) : { score: 0, shared_count: 0 };
       cells.push({ source_id: entities[i].internal_id, target_id: entities[j].internal_id, score: score.score, shared_count: score.shared_count });
     }
@@ -379,6 +398,15 @@ export interface GraphClustersArgs {
   memberFilters?: InputMaybe<FilterGroup>;
 }
 
+const CLUSTER_IDS_CHUNK = 10000;
+const compareText = (a?: string | null, b?: string | null) => (a ?? '').localeCompare(b ?? '');
+const CLUSTER_SORTERS: Record<string, (a: BasicStoreEntityGraphCluster, b: BasicStoreEntityGraphCluster) => number> = {
+  name: (a, b) => compareText(a.name, b.name),
+  cluster_kind: (a, b) => compareText(a.cluster_kind, b.cluster_kind),
+  members_count: (a, b) => a.members_count - b.members_count,
+  last_computed_at: (a, b) => compareText(a.last_computed_at ? String(a.last_computed_at) : null, b.last_computed_at ? String(b.last_computed_at) : null),
+};
+
 /** Clusters having at least one member visible to the caller; members_count is the visible count. */
 export const findGraphClusters = async (context: AuthContext, user: AuthUser, args: GraphClustersArgs) => {
   const visible = await visibleMembersPerCluster(context, user, args.kinds, args.memberFilters);
@@ -394,46 +422,47 @@ export const findGraphClusters = async (context: AuthContext, user: AuthUser, ar
   const visibleCount = (cluster: BasicStoreEntityGraphCluster) => visible.get(cluster.internal_id.toLowerCase()) ?? visible.get(cluster.internal_id) ?? 0;
   const first = clamp(args.first, 25, 1, 500);
   const orderBy = args.orderBy ?? 'members_count';
-  const orderMode = args.orderMode ?? OrderingMode.Desc;
-  if (orderBy === 'members_count' && !(await isUserWithCompleteRelationshipsView(context, user))) {
-    // The stored members count includes members the caller cannot read: clusters are ranked by their visible count
-    const matching = await elList<BasicStoreEntityGraphCluster>(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
+  const direction = args.orderMode === OrderingMode.Asc ? 1 : -1;
+  // Clusters are ranked here and not by the engine: members_count must be the visible count, and the visible
+  // clusters are matched by chunks of identifiers below the terms query limit.
+  const matching: BasicStoreEntityGraphCluster[] = [];
+  const visibleIds = Array.from(visible.keys());
+  for (let index = 0; index < visibleIds.length; index += CLUSTER_IDS_CHUNK) {
+    const chunkMatches = await elList<BasicStoreEntityGraphCluster>(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
       types: [ENTITY_TYPE_GRAPH_CLUSTER],
-      ids: Array.from(visible.keys()),
+      ids: visibleIds.slice(index, index + CLUSTER_IDS_CHUNK),
       search: args.search,
       filters,
+      baseData: true,
+      baseFields: ['name', 'cluster_kind', 'last_computed_at'],
+      ...(orderBy === '_score' ? { orderBy: '_score', orderMode: args.orderMode ?? OrderingMode.Desc } : {}),
     });
-    const direction = orderMode === OrderingMode.Asc ? 1 : -1;
-    const ranked = matching
-      .map((cluster) => ({ ...cluster, members_count: visibleCount(cluster) }))
-      .sort((a, b) => (direction * (a.members_count - b.members_count)) || a.internal_id.localeCompare(b.internal_id));
-    const offset = args.after ? Math.max(0, Number.parseInt(args.after, 10) + 1 || 0) : 0;
-    const page = ranked.slice(offset, offset + first);
-    return {
-      edges: page.map((node, index) => ({ cursor: String(offset + index), node })),
-      pageInfo: {
-        startCursor: page.length > 0 ? String(offset) : '',
-        endCursor: page.length > 0 ? String(offset + page.length - 1) : '',
-        hasNextPage: offset + page.length < ranked.length,
-        hasPreviousPage: offset > 0,
-        globalCount: ranked.length,
-      },
-    };
+    matching.push(...chunkMatches);
   }
-  const connection = await pageEntitiesConnection<BasicStoreEntityGraphCluster>(context, user, [ENTITY_TYPE_GRAPH_CLUSTER], {
-    ids: Array.from(visible.keys()),
-    first,
-    after: args.after,
-    search: args.search,
-    orderBy,
-    orderMode,
-    filters,
-    indices: [READ_INDEX_INTERNAL_OBJECTS],
+  const ranked = matching.map((cluster) => ({ id: cluster.internal_id, members_count: visibleCount(cluster), cluster }));
+  const sorter = CLUSTER_SORTERS[orderBy];
+  if (sorter) {
+    ranked.sort((a, b) => (direction * sorter({ ...a.cluster, members_count: a.members_count }, { ...b.cluster, members_count: b.members_count }))
+      || a.id.localeCompare(b.id));
+  }
+  const offset = args.after ? Math.max(0, (Number.parseInt(args.after, 10) || 0) + 1) : 0;
+  const page = ranked.slice(offset, offset + first);
+  const loaded = await loadGraphClusters(context, user, page.map((entry) => entry.id));
+  const loadedById = new Map(loaded.map((cluster) => [cluster.internal_id, cluster]));
+  const nodes = page.flatMap((entry) => {
+    const cluster = loadedById.get(entry.id);
+    return cluster ? [{ ...cluster, members_count: entry.members_count }] : [];
   });
-  connection.edges.forEach((edge) => {
-    edge.node.members_count = visibleCount(edge.node);
-  });
-  return connection;
+  return {
+    edges: nodes.map((node, index) => ({ cursor: String(offset + index), node })),
+    pageInfo: {
+      startCursor: nodes.length > 0 ? String(offset) : '',
+      endCursor: nodes.length > 0 ? String(offset + nodes.length - 1) : '',
+      hasNextPage: offset + page.length < ranked.length,
+      hasPreviousPage: offset > 0,
+      globalCount: ranked.length,
+    },
+  };
 };
 
 export const findGraphClusterById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityGraphCluster | null> => {
@@ -621,17 +650,31 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
     }
     created = campaign;
   }
-  await addClusterPromotion(context, cluster, created.internal_id);
+  try {
+    await addClusterPromotion(context, cluster, created.internal_id);
+  } catch (error) {
+    // a promotion is only kept when the cluster lists it: the created knowledge is removed with its relationships
+    await deleteElementById(context, SYSTEM_USER, created.internal_id, created.entity_type).catch((rollbackError) => {
+      logApp.error('[OPENCTI-MODULE] Graph analytics promotion rollback failed', { cause: rollbackError, createdId: created.internal_id });
+    });
+    throw error;
+  }
   addGraphClusterPromotionCount();
   return created;
 };
 
 export const addGraphClusterToInvestigation = async (context: AuthContext, user: AuthUser, id: string, investigationId?: string | null) => {
   const cluster = await loadClusterOrFail(context, user, id);
+  // the investigation must hold every accessible member and shared feature, never a silent subset
+  if (cluster.members_count > INVESTIGATION_MAX_ELEMENTS) {
+    throw FunctionalError('Graph cluster has too many accessible elements to be added to an investigation', { id, elements: cluster.members_count, max: INVESTIGATION_MAX_ELEMENTS });
+  }
   const members = await loadVisibleMemberIds(context, user, cluster.internal_id, INVESTIGATION_MAX_ELEMENTS);
   const features = await graphClusterFeatures(context, user, cluster);
-  const ids = Array.from(new Set([...members.map((m) => m.internal_id), ...features.flatMap((f) => f.entities.map((e) => e.internal_id))]))
-    .slice(0, INVESTIGATION_MAX_ELEMENTS);
+  const ids = Array.from(new Set([...members.map((m) => m.internal_id), ...features.flatMap((f) => f.entities.map((e) => e.internal_id))]));
+  if (ids.length > INVESTIGATION_MAX_ELEMENTS) {
+    throw FunctionalError('Graph cluster has too many accessible elements to be added to an investigation', { id, elements: ids.length, max: INVESTIGATION_MAX_ELEMENTS });
+  }
   let workspace;
   if (investigationId) {
     const existing = await findWorkspaceById(context, user, investigationId);

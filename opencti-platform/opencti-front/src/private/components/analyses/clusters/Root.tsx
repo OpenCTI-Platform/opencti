@@ -115,7 +115,7 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
         <Chip label={t_i18n(GRAPH_CLUSTER_SOURCE_LABELS[cluster.cluster_source] ?? cluster.cluster_source)} />
         <Box sx={{ flex: 1 }} />
         {canInvestigate && (
-          <Button variant="secondary" onClick={addToInvestigation} disabled={investigating}>
+          <Button variant="secondary" onClick={addToInvestigation} disabled={investigating || tooLargeToPromote}>
             {t_i18n('Add to investigation')}
           </Button>
         )}
@@ -137,6 +137,11 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
             {canPromote && tooLargeToPromote && (
               <Text variant="content-compact">
                 {`${t_i18n('Too many members to create a Grouping or a Campaign, maximum')}: ${n(cluster.promotion_max_members)}`}
+              </Text>
+            )}
+            {canInvestigate && tooLargeToPromote && (
+              <Text variant="content-compact">
+                {`${t_i18n('Too many members to add them to an investigation, maximum')}: ${n(cluster.promotion_max_members)}`}
               </Text>
             )}
             <Text variant="content-compact">{`${t_i18n('Last computation')}: ${fldt(cluster.last_computed_at)}`}</Text>

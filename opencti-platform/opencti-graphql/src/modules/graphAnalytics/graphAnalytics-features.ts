@@ -71,6 +71,11 @@ export const getGraphProfileSpec = (entityType: string): GraphProfileSpec | unde
   return GRAPH_PROFILE_SPECS.find((spec) => spec.entityTypes.includes(entityType));
 };
 
+export const isSameComparisonGroup = (entityType: string, otherEntityType: string): boolean => {
+  const spec = getGraphProfileSpec(entityType);
+  return !!spec && spec.group === getGraphProfileSpec(otherEntityType)?.group;
+};
+
 const VICTIM_TYPES = [
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
