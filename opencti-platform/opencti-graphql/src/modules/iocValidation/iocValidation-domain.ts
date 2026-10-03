@@ -224,6 +224,9 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not deployed on this security platform' });
       } else if (!LIVE_DEPLOYMENT_STATUSES.includes(deployment.deployment_status)) {
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: `Not live on this security platform (${deployment.deployment_status})` });
+      } else if (deployment.validation_status === VALIDATION_STATUS_REQUESTED && deployment.validation_run_id) {
+        // The pair belongs to the run that marked it until that run resolves or is deleted
+        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Already waiting for the results of another validation request' });
       } else {
         pairs.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, deployed_on_id: deployment.internal_id });
         pairDeployments.push(deployment);

@@ -1,6 +1,7 @@
 # coding: utf-8
 """Unit tests of the dissemination assurance write-back (OpenCTI-Platform/opencti#18680)."""
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -170,6 +171,18 @@ def test_report_hits_validates_count(local_api_client):
     variables = local_api_client.query.call_args_list[1].args[1]
     assert variables["count"] == 3
     assert variables["lastHit"] == "2026-10-03T10:00:00Z"
+
+
+def test_report_hits_always_sends_a_watermark(local_api_client):
+    sighting = {"id": "sighting-1", "attribute_count": 1}
+    deployment = deployment_with(
+        local_api_client,
+        [SUPPORTED_FIELDS, {"data": {"indicatorReportHits": sighting}}],
+    )
+    assert deployment.report_hits("indicator-1", "platform-1", 1) == sighting
+    last_hit = local_api_client.query.call_args_list[1].args[1]["lastHit"]
+    assert last_hit.endswith("Z")
+    assert datetime.fromisoformat(last_hit.replace("Z", "+00:00")).tzinfo is not None
 
 
 def test_security_platform_resolution_is_cached(local_api_client):

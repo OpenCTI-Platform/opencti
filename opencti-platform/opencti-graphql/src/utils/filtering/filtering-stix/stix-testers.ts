@@ -275,9 +275,11 @@ export const testValidationStatus = (stix: ReadonlyStix, filter: Filter, changeC
 /**
  * DEPLOYMENT PLATFORMS COUNT
  * - number of platforms an indicator is live on, absent from the STIX export when none, so absent reads as 0
+ * - other types have no such counter and keep an absent value
  */
 export const testDeploymentPlatformsCount = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: number = stix.extensions?.[STIX_EXT_OCTI]?.deployment_platforms_count ?? 0;
+  const count: number | undefined = stix.extensions?.[STIX_EXT_OCTI]?.deployment_platforms_count;
+  const stixValue = stix.type === 'indicator' ? (count ?? 0) : count;
   return testNumericFilter(filter, stixValue, changeContext);
 };
 

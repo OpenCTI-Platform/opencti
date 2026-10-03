@@ -2912,7 +2912,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param indicator_id: id of the indicator
         :param platform_id: id of the security platform
         :param count: number of new hits (>= 1)
-        :param last_hit: ISO date of the most recent hit
+        :param last_hit: ISO date of the most recent hit, the idempotency watermark of the report;
+            pass the vendor time of the newest hit so that a re-sent report is ignored
         :param first_hit: ISO date of the oldest new hit
         :return: the hits sighting or None
         :rtype: Optional[Dict]
