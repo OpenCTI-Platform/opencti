@@ -1,0 +1,87 @@
+import { v4 as uuidv4 } from 'uuid';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import { createdAt, creators, updatedAt } from '../../../schema/attribute-definition';
+import { objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
+import convertHuntRunToStix from './huntRun-converter';
+import { ENTITY_TYPE_HUNT } from '../hunt-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
+import {
+  ENTITY_TYPE_HUNT_RUN,
+  HUNT_RUN_MODES,
+  HUNT_RUN_STATUSES,
+  HUNT_RUN_TRIGGERS,
+  HUNT_VERDICT_SOURCES,
+  HUNT_VERDICTS,
+  type StixHuntRun,
+  type StoreEntityHuntRun,
+} from './huntRun-types';
+
+const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
+  type: {
+    id: 'hunt-run',
+    name: ENTITY_TYPE_HUNT_RUN,
+    category: ABSTRACT_INTERNAL_OBJECT,
+    aliased: false,
+  },
+  identifier: {
+    definition: {
+      [ENTITY_TYPE_HUNT_RUN]: () => uuidv4(),
+    },
+  },
+  attributes: [
+    creators,
+    createdAt,
+    updatedAt,
+    { name: 'hunt_id', label: 'Run hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_run_status', label: 'Run status', type: 'string', format: 'enum', values: HUNT_RUN_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_run_trigger', label: 'Run trigger', type: 'string', format: 'enum', values: HUNT_RUN_TRIGGERS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_run_mode', label: 'Run mode', type: 'string', format: 'enum', values: HUNT_RUN_MODES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'security_platform_id', label: 'Run security platform', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'connector_id', label: 'Run connector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'connector_name', label: 'Run connector name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'work_id', label: 'Run work', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'time_window_start', label: 'Run time window start', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'time_window_end', label: 'Run time window end', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'translated_query', label: 'Translated query', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'query_language', label: 'Query language', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hits_count', label: 'Run hits', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'distinct_entities', label: 'Distinct entities', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'evidence_sample', label: 'Evidence sample', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'result_ids', label: 'Run results', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'verdict', label: 'Run verdict', type: 'string', format: 'enum', values: HUNT_VERDICTS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'verdict_source', label: 'Verdict source', type: 'string', format: 'enum', values: HUNT_VERDICT_SOURCES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'verdict_rationale', label: 'Verdict rationale', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'analyst_feedback', label: 'Analyst feedback', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'verdict_proposal', label: 'Proposed verdict', type: 'string', format: 'enum', values: HUNT_VERDICTS, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'verdict_proposal_confidence', label: 'Proposed verdict confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'verdict_proposal_rationale', label: 'Proposed verdict rationale', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'verdict_proposal_agent', label: 'Proposing agent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'incident_proposal', label: 'Proposed incident', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'incident_id', label: 'Run incident', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'draft_id', label: 'Run draft', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'aev_inject_id', label: 'OpenAEV inject', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'security_coverage_id', label: 'Run security coverage', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'technique_id', label: 'Validated technique', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'triggered_by', label: 'Run triggered by', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'attempt', label: 'Run attempt', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'next_retry_at', label: 'Run next retry date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'dispatched_at', label: 'Run dispatch date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'started_at', label: 'Run start date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'completed_at', label: 'Run completion date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'cost_ms', label: 'Run duration (ms)', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'error_message', label: 'Run error', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  ],
+  relations: [],
+  relationsRefs: [
+    objectMarking,
+    { ...objectOrganization, isFilterable: false },
+  ],
+  representative: (stix: StixHuntRun) => {
+    return `${stix.hunt_run_trigger} run (${stix.hunt_run_status})`;
+  },
+  converter_2_1: convertHuntRunToStix,
+};
+
+registerDefinition(HUNT_RUN_DEFINITION);

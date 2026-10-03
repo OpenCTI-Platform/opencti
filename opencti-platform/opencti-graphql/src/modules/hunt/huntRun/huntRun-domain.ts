@@ -1,0 +1,624 @@
+import { findByIds } from '../hunt-loaders';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
+import type { BasicStoreEntityConnector } from '../../../types/connector';
+import { BUS_TOPICS, logApp } from '../../../config/conf';
+import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
+import { createEntity, patchAttribute } from '../../../database/middleware';
+import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
+import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
+import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { notify } from '../../../database/redis';
+import { publishUserAction } from '../../../listener/UserActionListener';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
+import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
+import { FilterMode, FilterOperator, OrderingMode, type FilterGroup, type HuntConnectorRegisterInput, type HuntRunReportInput, type HuntRunVerdictInput } from '../../../generated/graphql';
+import { HUNT_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../../utils/access';
+import { addFilter } from '../../../utils/filtering/filtering-utils';
+import { now } from '../../../utils/format';
+import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { addHuntRunCount, addHuntTriageCount, addHuntVerdictCount } from '../../../manager/telemetryManager';
+import { addSecurityPlatform } from '../../securityPlatform/securityPlatform-domain';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../../securityPlatform/securityPlatform-types';
+import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
+import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_PLATFORM_INTERNET, HUNT_PLATFORMS, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from '../hunt-types';
+import { dispatchHuntRun, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
+import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, sanitizeEvidence, truncate } from '../hunt-utils';
+import { updateHuntRunInformation } from '../hunt-stats';
+import { writeHuntCoverageResult } from '../hunt-coverage';
+import { createHuntIncidentDraft, parseIncidentProposal } from '../hunt-incident';
+import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
+import {
+  type BasicStoreEntityHuntRun,
+  ENTITY_TYPE_HUNT_RUN,
+  HUNT_RUN_AUTONOMOUS_TRIGGERS,
+  HUNT_RUN_MODE_EXECUTE,
+  HUNT_RUN_MODE_PREVIEW,
+  HUNT_RUN_STATUS_COMPLETED,
+  HUNT_RUN_STATUS_FAILED,
+  HUNT_RUN_STATUS_QUEUED,
+  HUNT_RUN_STATUS_RUNNING,
+  HUNT_RUN_STATUS_TIMEOUT,
+  HUNT_RUN_TERMINAL_STATUSES,
+  HUNT_RUN_TRIGGER_PREVIEW,
+  HUNT_RUN_TRIGGER_RETRY,
+  HUNT_VERDICT_BENIGN,
+  HUNT_VERDICT_INCONCLUSIVE,
+  HUNT_VERDICT_PENDING,
+  HUNT_VERDICT_SOURCE_ANALYST,
+  HUNT_VERDICT_SOURCE_AUTO,
+  HUNT_VERDICT_SOURCES,
+  HUNT_VERDICT_TRUE_POSITIVE,
+} from './huntRun-types';
+
+const ERROR_MESSAGE_MAX_LENGTH = 4000;
+const TRANSLATED_QUERY_MAX_LENGTH = 65536;
+const RESULT_IDS_MAX = 5000;
+const TRIAGE_HISTORY_SIZE = 10;
+const MAX_LANGUAGES = 20;
+
+// region read
+export const findHuntRunById = (context: AuthContext, user: AuthUser, id: string) => {
+  return storeLoadById<BasicStoreEntityHuntRun>(context, user, id, ENTITY_TYPE_HUNT_RUN);
+};
+
+export const findHuntRunsPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityHuntRun>) => {
+  return pageEntitiesConnection<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], args);
+};
+
+export const findHuntRunsForHunt = (context: AuthContext, user: AuthUser, huntId: string, args: EntityOptions<BasicStoreEntityHuntRun>) => {
+  const filters = addFilter(args.filters as FilterGroup | undefined, 'hunt_id', huntId);
+  return findHuntRunsPaginated(context, user, { orderBy: 'created_at', orderMode: OrderingMode.Desc, ...args, filters });
+};
+
+/**
+ * Objects produced by a run, as visible to the user (markings and organizations of every object apply).
+ */
+export const findHuntRunResults = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, first = 50) => {
+  const ids = (run.result_ids ?? []).slice(0, Math.min(Math.max(first, 1), 500));
+  const elements = ids.length > 0 ? await findByIds<BasicStoreObject>(context, user, ids) : [];
+  return {
+    edges: elements.map((element) => ({ cursor: element.internal_id, node: element })),
+    pageInfo: { startCursor: '', endCursor: '', hasNextPage: (run.result_ids ?? []).length > ids.length, hasPreviousPage: false, globalCount: (run.result_ids ?? []).length },
+  };
+};
+
+const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, run.hunt_id, ENTITY_TYPE_HUNT);
+  if (!hunt) {
+    throw ResourceNotFoundError('Hunt of the run cannot be found', { runId: run.internal_id });
+  }
+  return hunt;
+};
+// endregion
+
+// region creation and dispatch
+export interface HuntRunRequest {
+  trigger: string;
+  mode?: string;
+  securityPlatformIds?: string[];
+  connectorIds?: string[];
+  timeWindowHours?: number | null;
+  windowStart?: string | null;
+  windowEnd?: string | null;
+  aevInjectId?: string | null;
+  securityCoverageId?: string | null;
+  techniqueId?: string | null;
+  triggeredBy?: string | null;
+  dispatch?: boolean;
+}
+
+/**
+ * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
+ * dispatches the deferred ones). Runs are created by the hunt manager identity so that they always carry the
+ * hunt markings and organizations, the human or system at the origin of the run is kept in triggered_by.
+ */
+export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<BasicStoreEntityHuntRun[]> => {
+  const mode = request.mode ?? HUNT_RUN_MODE_EXECUTE;
+  let targets = await resolveHuntConnectorTargets(context, HUNT_MANAGER_USER, hunt, request.securityPlatformIds ?? []);
+  if (request.connectorIds && request.connectorIds.length > 0) {
+    targets = targets.filter((target) => request.connectorIds?.includes(target.connector.internal_id));
+  }
+  if (mode === HUNT_RUN_MODE_PREVIEW) {
+    targets = targets.filter((target) => target.connector.hunt_supports_preview !== false).slice(0, 1);
+  }
+  const windowEnd = request.windowEnd ? new Date(request.windowEnd) : new Date();
+  const hours = clampInteger(request.timeWindowHours ?? hunt.time_window_hours, 1, HUNT_CONFIG.maxTimeWindowHours, HUNT_DEFAULT_TIME_WINDOW_HOURS);
+  const windowStart = request.windowStart ? new Date(request.windowStart) : new Date(windowEnd.getTime() - hours * 3600 * 1000);
+  if (windowStart.getTime() >= windowEnd.getTime()) {
+    throw FunctionalError('The hunt time window start must be before its end', { windowStart, windowEnd });
+  }
+  const runs: BasicStoreEntityHuntRun[] = [];
+  for (let index = 0; index < targets.length; index += 1) {
+    const { connector, securityPlatform } = targets[index];
+    const runInput = {
+      hunt_id: hunt.internal_id,
+      hunt_run_status: HUNT_RUN_STATUS_QUEUED,
+      hunt_run_trigger: request.trigger,
+      hunt_run_mode: mode,
+      security_platform_id: securityPlatform?.internal_id ?? null,
+      connector_id: connector.internal_id,
+      connector_name: connector.name,
+      time_window_start: windowStart.toISOString(),
+      time_window_end: windowEnd.toISOString(),
+      verdict: HUNT_VERDICT_PENDING,
+      attempt: 1,
+      aev_inject_id: request.aevInjectId ?? null,
+      security_coverage_id: request.securityCoverageId ?? null,
+      technique_id: request.techniqueId ?? null,
+      triggered_by: request.triggeredBy ?? HUNT_MANAGER_USER.id,
+      objectMarking: hunt[RELATION_OBJECT_MARKING] ?? [],
+      objectOrganization: hunt[RELATION_GRANTED_TO] ?? [],
+    };
+    const run = await createEntity(context, HUNT_MANAGER_USER, runInput, ENTITY_TYPE_HUNT_RUN) as BasicStoreEntityHuntRun;
+    runs.push(run);
+    addHuntRunCount(request.trigger);
+    if (request.dispatch !== false) {
+      try {
+        await dispatchHuntRun(context, run, hunt);
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE] Hunt run dispatch failed, the hunt manager will retry', { cause: error, runId: run.internal_id });
+      }
+    }
+  }
+  if (runs.length > 0 && mode === HUNT_RUN_MODE_EXECUTE) {
+    await updateHuntRunInformation(context, hunt.internal_id, { last_run_at: now(), last_run_status: HUNT_RUN_STATUS_QUEUED });
+  }
+  return runs;
+};
+
+export const startHuntRuns = async (
+  context: AuthContext,
+  user: AuthUser,
+  huntId: string,
+  input: { security_platform_ids?: string[] | null; time_window_hours?: number | null } | null | undefined,
+) => {
+  const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
+  if (!hunt) {
+    throw ResourceNotFoundError('Hunt cannot be found', { huntId });
+  }
+  const runs = await createHuntRuns(context, hunt, {
+    trigger: 'manual',
+    securityPlatformIds: input?.security_platform_ids ?? [],
+    timeWindowHours: input?.time_window_hours,
+    triggeredBy: user.id,
+  });
+  if (runs.length === 0) {
+    throw FunctionalError('No live hunt connector serves the security platforms of this hunt', { huntId });
+  }
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `runs hunt \`${hunt.name}\` on ${runs.length} platform(s)`,
+    context_data: { id: hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input: input ?? {} },
+  });
+  return runs;
+};
+
+export const startHuntPreview = async (context: AuthContext, user: AuthUser, huntId: string, securityPlatformId?: string | null) => {
+  const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
+  if (!hunt) {
+    throw ResourceNotFoundError('Hunt cannot be found', { huntId });
+  }
+  const runs = await createHuntRuns(context, hunt, {
+    trigger: HUNT_RUN_TRIGGER_PREVIEW,
+    mode: HUNT_RUN_MODE_PREVIEW,
+    securityPlatformIds: securityPlatformId ? [securityPlatformId] : [],
+    triggeredBy: user.id,
+  });
+  if (runs.length === 0) {
+    throw FunctionalError('No live hunt connector supporting translation preview serves this platform', { huntId, securityPlatformId });
+  }
+  return runs[0];
+};
+
+export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
+  const run = await findHuntRunById(context, user, runId);
+  if (!run) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  if (!HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
+    throw FunctionalError('Only a terminated run can be retried', { runId, status: run.hunt_run_status });
+  }
+  const hunt = await loadHuntForRun(context, user, run);
+  const runs = await createHuntRuns(context, hunt, {
+    trigger: HUNT_RUN_TRIGGER_RETRY,
+    mode: run.hunt_run_mode,
+    securityPlatformIds: run.security_platform_id ? [run.security_platform_id] : [],
+    connectorIds: run.connector_id ? [run.connector_id] : [],
+    windowStart: run.time_window_start,
+    windowEnd: run.time_window_end,
+    aevInjectId: run.aev_inject_id,
+    securityCoverageId: run.security_coverage_id,
+    techniqueId: run.technique_id,
+    triggeredBy: user.id,
+  });
+  if (runs.length === 0) {
+    throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: run.connector_id });
+  }
+  return runs[0];
+};
+// endregion
+
+// region completion
+const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string => {
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
+    return HUNT_VERDICT_INCONCLUSIVE;
+  }
+  return (run.hits_count ?? 0) === 0 ? HUNT_VERDICT_BENIGN : HUNT_VERDICT_PENDING;
+};
+
+export const triageHuntRunWithAgent = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt, jwtUserId?: string) => {
+  const jwtUser = await resolveAgentJwtUser(jwtUserId);
+  const history = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    first: TRIAGE_HISTORY_SIZE,
+    orderBy: 'completed_at',
+    orderMode: OrderingMode.Desc,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['hunt_id'], values: [hunt.internal_id] },
+        { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] },
+        { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+        { key: ['id'], values: [run.internal_id], operator: FilterOperator.NotEq },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  const [techniques, targets, securityPlatform] = await Promise.all([
+    hunt[RELATION_HUNT_TECHNIQUES]?.length ? findByIds<BasicStoreEntity & { x_mitre_id?: string }>(context, HUNT_MANAGER_USER, hunt[RELATION_HUNT_TECHNIQUES] ?? []) : [],
+    hunt[RELATION_HUNT_TARGETS]?.length ? findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, hunt[RELATION_HUNT_TARGETS] ?? []) : [],
+    run.security_platform_id ? internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null,
+  ]);
+  const payload = {
+    task: 'hunt_triage',
+    hunt: {
+      id: hunt.internal_id,
+      name: hunt.name,
+      hypothesis: hunt.hypothesis ?? '',
+      sigma_rule: hunt.sigma_rule ?? '',
+      benign_patterns: hunt.benign_patterns ?? [],
+      escalation_threshold: hunt.escalation_threshold,
+      techniques: techniques.map((technique) => ({ x_mitre_id: technique.x_mitre_id ?? null, name: technique.name })),
+      targets: targets.map((target) => ({ name: target.name, entity_type: target.entity_type })),
+    },
+    run: {
+      id: run.internal_id,
+      hits_count: run.hits_count ?? 0,
+      distinct_entities: run.distinct_entities ?? 0,
+      time_window: { start: run.time_window_start, end: run.time_window_end },
+      security_platform: securityPlatform?.name ?? HUNT_PLATFORM_INTERNET,
+      translated_query: run.translated_query ?? '',
+      evidence_sample: run.evidence_sample ?? [],
+    },
+    history: history.map((previous) => ({ id: previous.internal_id, completed_at: previous.completed_at, hits_count: previous.hits_count ?? 0, verdict: previous.verdict })),
+  };
+  const { slug, answer } = await callHuntAgent(HUNT_TRIAGE_INTENT, jwtUser, payload);
+  const triage = validateHuntTriageResult(answer);
+  addHuntTriageCount();
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, {
+    verdict_proposal: triage.verdict,
+    verdict_proposal_confidence: triage.confidence,
+    verdict_proposal_rationale: triage.rationale,
+    verdict_proposal_agent: slug,
+    incident_proposal: triage.incident ? JSON.stringify(triage.incident) : null,
+  });
+  return element as unknown as BasicStoreEntityHuntRun;
+};
+
+/**
+ * Post-completion of a run: automatic verdict, Incident draft above the escalation threshold, hunt statistics,
+ * Security Coverage write-back for emulation runs and agent triage (Enterprise Edition, never applied as verdict).
+ */
+const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
+  if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
+    return run;
+  }
+  let current = run;
+  const verdict = computeAutomaticVerdict(run);
+  const patch: Record<string, unknown> = { verdict, verdict_source: HUNT_VERDICT_SOURCE_AUTO };
+  if (run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (run.hits_count ?? 0) >= hunt.escalation_threshold && !run.incident_id) {
+    try {
+      const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, run, null);
+      patch.incident_id = incidentId;
+      patch.draft_id = draftId;
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: run.internal_id });
+    }
+  }
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  current = element as unknown as BasicStoreEntityHuntRun;
+  await updateHuntRunInformation(context, hunt.internal_id, {
+    last_run_at: current.completed_at ?? now(),
+    last_run_status: current.hunt_run_status,
+    last_hits_count: current.hits_count ?? 0,
+  });
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
+    try {
+      await writeHuntCoverageResult(context, current);
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Hunt coverage write-back failed', { cause: error, runId: current.internal_id });
+    }
+  }
+  return current;
+};
+
+const isTriageAvailable = async (context: AuthContext) => {
+  try {
+    await checkEnterpriseEdition(context);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Automatic triage of runs with hits never blocks the connector report
+const scheduleAutomaticTriage = (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
+  if (run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED || (run.hits_count ?? 0) === 0) {
+    return;
+  }
+  isTriageAvailable(context)
+    .then((available) => (available ? triageHuntRunWithAgent(context, run, hunt) : null))
+    .catch((error) => logApp.warn('[OPENCTI-MODULE] Automatic hunt triage skipped', { cause: error, runId: run.internal_id }));
+};
+
+/**
+ * Report of a run by its hunt connector (contract section 5).
+ */
+export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunReportInput) => {
+  const run = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
+  if (!run) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  const connectors = await listHuntConnectors(context, false);
+  const connector = connectors.find((c) => c.internal_id === run.connector_id);
+  if (!isBypassUser(user) && connector?.connector_user_id !== user.id) {
+    throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
+  }
+  if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
+    throw FunctionalError('The hunt run is already terminated', { runId, status: run.hunt_run_status });
+  }
+  const status = input.status as string;
+  if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED].includes(status)) {
+    throw FunctionalError('A hunt connector can only report a running, completed or failed status', { runId, status });
+  }
+  const reportedAt = now();
+  const patch: Record<string, unknown> = { hunt_run_status: status };
+  if (!run.started_at) {
+    patch.started_at = reportedAt;
+  }
+  if (typeof input.translated_query === 'string') {
+    patch.translated_query = truncate(input.translated_query, TRANSLATED_QUERY_MAX_LENGTH);
+  }
+  if (typeof input.query_language === 'string') {
+    patch.query_language = truncate(input.query_language, 64);
+  }
+  if (status === HUNT_RUN_STATUS_COMPLETED) {
+    patch.completed_at = reportedAt;
+    if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
+      patch.hits_count = Math.max(0, Math.round(input.hits_count ?? 0));
+      patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
+      patch.evidence_sample = sanitizeEvidence(input.evidence_sample);
+      patch.result_ids = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && id.length > 0))).slice(0, RESULT_IDS_MAX);
+    }
+    if (typeof input.cost_ms === 'number') {
+      patch.cost_ms = Math.max(0, Math.round(input.cost_ms));
+    }
+  }
+  if (status === HUNT_RUN_STATUS_FAILED) {
+    patch.completed_at = reportedAt;
+    patch.error_message = truncate(input.error ?? 'Unknown error', ERROR_MESSAGE_MAX_LENGTH);
+    // Automatic retries with exponential backoff, translation previews are never retried
+    if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
+      const backoff = HUNT_CONFIG.retryBackoffMinutes * (2 ** (run.attempt - 1));
+      patch.next_retry_at = new Date(Date.now() + backoff * 60000).toISOString();
+    }
+  }
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  let updated = element as unknown as BasicStoreEntityHuntRun;
+  if (HUNT_RUN_TERMINAL_STATUSES.includes(status)) {
+    const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
+    if (hunt) {
+      updated = await finalizeHuntRun(context, updated, hunt);
+      scheduleAutomaticTriage(context, updated, hunt);
+    }
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
+};
+// endregion
+
+// region verdict and triage
+export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunVerdictInput) => {
+  const run = await findHuntRunById(context, user, runId);
+  if (!run) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  const hunt = await loadHuntForRun(context, user, run);
+  if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
+    throw FunctionalError('A translation preview has no verdict', { runId });
+  }
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
+    throw FunctionalError('Only a completed run can receive a verdict', { runId, status: run.hunt_run_status });
+  }
+  const source = (input.source as string | null | undefined) ?? HUNT_VERDICT_SOURCE_ANALYST;
+  if (!HUNT_VERDICT_SOURCES.includes(source) || source === HUNT_VERDICT_SOURCE_AUTO) {
+    throw FunctionalError('A verdict is set by an analyst or an agent', { source });
+  }
+  const verdict = input.verdict as string;
+  const patch: Record<string, unknown> = {
+    verdict,
+    verdict_source: source,
+    analyst_feedback: input.analyst_feedback ? truncate(input.analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : run.analyst_feedback ?? null,
+  };
+  if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !run.incident_id) {
+    const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, run, parseIncidentProposal(run.incident_proposal));
+    patch.incident_id = incidentId;
+    patch.draft_id = draftId;
+  }
+  const { element } = await patchAttribute(context, user, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  addHuntVerdictCount(verdict);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `sets verdict \`${verdict}\` on a run of hunt \`${hunt.name}\``,
+    context_data: { id: hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, element, user);
+};
+
+export const triageHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
+  await checkEnterpriseEdition(context);
+  const run = await findHuntRunById(context, user, runId);
+  if (!run) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  const hunt = await loadHuntForRun(context, user, run);
+  if (run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
+    throw FunctionalError('Only a completed hunt run can be triaged', { runId });
+  }
+  const triaged = await triageHuntRunWithAgent(context, run, hunt, user.id);
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, triaged, user);
+};
+// endregion
+
+// region hunt connectors
+export interface HuntConnectorView {
+  id: string;
+  name: string;
+  active: boolean;
+  platform: string;
+  languages: string[];
+  supports_preview: boolean;
+  max_concurrent_runs: number | null;
+  security_platform_id: string | null;
+  updated_at: string | Date;
+}
+
+const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntConnectorView => ({
+  id: connector.internal_id,
+  name: connector.name,
+  active: connector.active === true,
+  platform: connector.hunt_platform ?? '',
+  languages: connector.hunt_languages ?? [],
+  supports_preview: connector.hunt_supports_preview !== false,
+  max_concurrent_runs: connector.hunt_max_concurrent_runs ?? null,
+  security_platform_id: connector.hunt_security_platform_id ?? null,
+  updated_at: connector.updated_at,
+});
+
+export const findHuntConnectors = async (context: AuthContext, onlyAlive = false) => {
+  const connectors = await listHuntConnectors(context, onlyAlive);
+  return connectors.filter((connector) => !!connector.hunt_platform).map(toHuntConnectorView);
+};
+
+export const registerHuntConnector = async (context: AuthContext, user: AuthUser, input: HuntConnectorRegisterInput) => {
+  const connector = await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, input.connector_id, ENTITY_TYPE_CONNECTOR);
+  if (!connector) {
+    throw ResourceNotFoundError('Connector cannot be found', { connectorId: input.connector_id });
+  }
+  if (connector.connector_type !== CONNECTOR_INTERNAL_HUNT) {
+    throw FunctionalError('Only INTERNAL_HUNT connectors can register a hunt platform', { connectorId: input.connector_id });
+  }
+  if (!isBypassUser(user) && connector.connector_user_id !== user.id) {
+    throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
+  }
+  const platform = input.platform.trim().toLowerCase();
+  if (!HUNT_PLATFORMS.includes(platform)) {
+    throw FunctionalError(`Hunt platform must be one of ${HUNT_PLATFORMS.join(', ')}`, { platform });
+  }
+  const languages = Array.from(new Set(input.languages.map((language) => language.trim().toLowerCase()).filter((language) => language.length > 0))).slice(0, MAX_LANGUAGES);
+  if (languages.length === 0) {
+    throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
+  }
+  let securityPlatformId: string | null = null;
+  if (platform !== HUNT_PLATFORM_INTERNET) {
+    const name = input.security_platform_name?.trim();
+    if (!name) {
+      throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
+    }
+    // Upsert by deterministic identity (name + identity class)
+    const securityPlatform = await addSecurityPlatform(context, user, {
+      name,
+      security_platform_type: input.security_platform_type ?? 'SIEM',
+    }) as BasicStoreEntitySecurityPlatform;
+    securityPlatformId = securityPlatform.internal_id;
+  }
+  const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
+  const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
+    hunt_platform: platform,
+    hunt_languages: languages,
+    hunt_security_platform_id: securityPlatformId,
+    hunt_supports_preview: input.supports_preview !== false,
+    hunt_max_concurrent_runs: maxConcurrent,
+  });
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  logApp.info('[OPENCTI-MODULE] Hunt connector registered', { connectorId: connector.internal_id, platform, securityPlatformId });
+  return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: true });
+};
+// endregion
+
+// region statistics
+interface HuntStatisticsArgs {
+  huntId?: string | null;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+  interval?: string | null;
+}
+
+const HUNT_STATISTICS_DEFAULT_DAYS = 30;
+const HUNT_STATISTICS_INTERVALS = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
+
+export const computeHuntStatistics = async (context: AuthContext, user: AuthUser, args: HuntStatisticsArgs) => {
+  const endDate = args.endDate ? new Date(args.endDate) : new Date();
+  const startDate = args.startDate ? new Date(args.startDate) : new Date(endDate.getTime() - HUNT_STATISTICS_DEFAULT_DAYS * 24 * 3600 * 1000);
+  const interval = args.interval && HUNT_STATISTICS_INTERVALS.includes(args.interval) ? args.interval : 'day';
+  const executeFilter = { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] };
+  const filters: FilterGroup = {
+    mode: FilterMode.And,
+    filters: args.huntId ? [executeFilter, { key: ['hunt_id'], values: [args.huntId] }] : [executeFilter],
+    filterGroups: [],
+  };
+  const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, dateAttribute: 'created_at' };
+  const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'verdict', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
+    elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, field: 'created_at', interval, sumField: 'hits_count' }),
+    elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, startDate, endDate, field: 'created_at', interval }),
+    topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }),
+  ]);
+  const countOf = (buckets: { label: string; count: number }[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
+  const platformIds = platforms.map((bucket) => bucket.label).filter((label) => label !== 'unknown');
+  const platformEntities = platformIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM }) : [];
+  const platformNames = new Map(platformEntities.map((platform) => [platform.internal_id, platform.name]));
+  const hitsSeries = fillTimeSeries(startDate, endDate, interval, hitsOverTime);
+  const runsSeries = fillTimeSeries(startDate, endDate, interval, runsOverTime);
+  return {
+    runs_count: statuses.reduce((sum, bucket) => sum + bucket.count, 0),
+    completed_runs_count: countOf(statuses, HUNT_RUN_STATUS_COMPLETED),
+    failed_runs_count: countOf(statuses, HUNT_RUN_STATUS_FAILED) + countOf(statuses, HUNT_RUN_STATUS_TIMEOUT),
+    autonomous_runs_count: triggers.filter((bucket) => HUNT_RUN_AUTONOMOUS_TRIGGERS.includes(bucket.label)).reduce((sum, bucket) => sum + bucket.count, 0),
+    hits_total: hitsSeries.reduce((sum: number, point: { value: number }) => sum + point.value, 0),
+    true_positive_count: countOf(verdicts, HUNT_VERDICT_TRUE_POSITIVE),
+    benign_count: countOf(verdicts, HUNT_VERDICT_BENIGN),
+    inconclusive_count: countOf(verdicts, HUNT_VERDICT_INCONCLUSIVE),
+    pending_count: countOf(verdicts, HUNT_VERDICT_PENDING),
+    last_run_at: lastRuns.length > 0 ? lastRuns[0].created_at : null,
+    hits_over_time: hitsSeries,
+    runs_over_time: runsSeries,
+    runs_per_platform: platforms.map((bucket) => ({
+      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? bucket.label),
+      value: bucket.count,
+    })),
+    verdict_distribution: verdicts.map((bucket) => ({ label: String(bucket.label), value: bucket.count })),
+  };
+};
+// endregion

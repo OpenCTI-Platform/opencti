@@ -1713,6 +1713,7 @@ enum ConnectorType {
   INTERNAL_ENRICHMENT
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
+  INTERNAL_HUNT
   STREAM
 }
 
@@ -13568,6 +13569,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | SecurityPlatform
   | SecurityCoverage
   | SecurityCoverageResult
+  | Hunt
   | Sector
   | System
   | Indicator
@@ -13738,6 +13740,7 @@ union StixObjectOrStixRelationship =
   | Pir
   | SecurityCoverage
   | SecurityCoverageResult
+  | Hunt
   | CustomView
   | IMEI
   | ICCID

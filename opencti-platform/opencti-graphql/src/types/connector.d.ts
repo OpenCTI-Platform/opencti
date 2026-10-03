@@ -30,6 +30,13 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   xtm_one_intent: string | null;
   version: string | null;
   slug: string | null;
+  // region hunt connectors (set only on INTERNAL_HUNT connectors)
+  hunt_platform?: string | null;
+  hunt_languages?: string[];
+  hunt_security_platform_id?: string | null;
+  hunt_supports_preview?: boolean | null;
+  hunt_max_concurrent_runs?: number | null;
+  // endregion
   // region composer (set only on composer-managed connectors)
   catalog_id?: string;
   manager_contract_image?: string;
