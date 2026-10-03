@@ -413,6 +413,21 @@ describe('Knowledge time machine', () => {
     await queryAsAdminWithSuccess({ query: SAVED_FILTER_DELETE, variables: { id: savedFilterId } });
   });
 
+  it('should require explicit entity types for a saved filter of a list without entity type', async () => {
+    const savedFilter = await queryAsAdminWithSuccess({
+      query: SAVED_FILTER_ADD,
+      variables: { input: { name: `${testName} relationships filter`, filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }), scope: 'relationships' } },
+    });
+    const savedFilterId = savedFilter.data.savedFilterAdd.id;
+    const input = { name: 'Time machine unmapped saved filter digest', saved_filter_id: savedFilterId, period: 'day', trigger_time: '09:00:00.000Z', notifiers: [STATIC_NOTIFIER_UI] };
+    const rejected = await queryAsAdmin({ query: CHANGE_DIGEST_ADD, variables: { input } });
+    expect(rejected.errors?.[0]?.message).toContain('choose the entity types');
+    const { data } = await queryAsAdminWithSuccess({ query: CHANGE_DIGEST_ADD, variables: { input: { ...input, scope_entity_types: ['Intrusion-Set'] } } });
+    expect(data.triggerKnowledgeChangeDigestAdd.scope_entity_types).toEqual(['Intrusion-Set']);
+    await queryAsAdminWithSuccess({ query: TRIGGER_DELETE, variables: { id: data.triggerKnowledgeChangeDigestAdd.id } });
+    await queryAsAdminWithSuccess({ query: SAVED_FILTER_DELETE, variables: { id: savedFilterId } });
+  });
+
   it('should reject ambiguous scopes and change digests for several recipients', async () => {
     const now = new Date().toISOString();
     const ambiguous = await queryAsUser(USER_PARTICIPATE, {

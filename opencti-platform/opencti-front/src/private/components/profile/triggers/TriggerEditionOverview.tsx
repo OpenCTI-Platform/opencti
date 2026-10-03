@@ -34,6 +34,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useTheme } from '@mui/material/styles';
 
@@ -134,8 +135,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: values,
       },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (hasPayloadErrors(errors)) return;
         handleClose();
       },
     });

@@ -146,7 +146,14 @@ export const resolveLandscapeScope = async (context: AuthContext, user: AuthUser
     if (!savedFilter) throw FunctionalError('Saved filter not found', { id: input.saved_filter_id });
     const savedFilters = parseFilters(savedFilter.filters);
     if (savedFilters) filterGroups.push(savedFilters);
-    entityTypes = entityTypes ?? savedFilterScopeEntityTypes(savedFilter.scope);
+    if (!entityTypes) {
+      // Without explicit entity types, the list of the saved filter gives them: a list that does not map
+      // to entity types must not silently widen the scope to every domain object
+      entityTypes = savedFilterScopeEntityTypes(savedFilter.scope);
+      if (!entityTypes) {
+        throw ValidationError('The list of this saved filter has no entity type to compare, choose the entity types', 'entity_types', { scope: savedFilter.scope });
+      }
+    }
   }
   if (input.custom_view_id) {
     const customView = await internalLoadById<BasicStoreEntityCustomView>(context, user, input.custom_view_id, { type: ENTITY_TYPE_CUSTOM_VIEW });

@@ -126,7 +126,7 @@ A change digest sends, at each period, what changed on a set of entities during 
 1. Go on the "Alerts and triggers" window through the bell icon at the top right.
 2. Navigate to the "Triggers" tab.
 3. Click **Create Change digest**.
-4. Define the set of entities: either a saved filter, or an entity type with optional filters. A saved filter is copied in the digest with the entity type of the list it was saved from, so the digest keeps its scope when the saved filter changes, and its recipients do not need access to the saved filter.
+4. Define the set of entities: either a saved filter, or an entity type with optional filters. A saved filter is copied in the digest with the entity type of the list it was saved from (**Entity types of the scope**) or with the entity type you choose, so the digest keeps its scope when the saved filter changes, and its recipients do not need access to the saved filter. Saved filters of lists that are not about one entity type (relationships, for example) need an explicit entity type.
 5. Set the period (hour, day, week or month) and the delivery time.
 6. Choose the notifier(s): within the OpenCTI interface, via email, etc.
 
