@@ -28,6 +28,7 @@ import {
   diffDocuments,
   extractAttributeValues,
   firstNumber,
+  flagReplayBeyondWindow,
   replayBackward,
   replayForward,
 } from './timeMachine-replay';
@@ -382,6 +383,7 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       order: 'asc',
     });
     const replay = replayForward(before.snapshot_document.attributes, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
+    flagReplayBeyondWindow(replay, before.history_cursor, date, MAX_REPLAY_DAYS);
     return {
       replay,
       anchor: 'snapshot',
@@ -399,9 +401,7 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
     max: MAX_REPLAY_EVENTS + 1,
   });
   const replay = replayBackward(anchorDocument, element.entity_type, events, date, MAX_REPLAY_EVENTS);
-  if (utcDate(backwardAnchorDate).diff(utcDate(date), 'days') > MAX_REPLAY_DAYS && !replay.warnings.includes('REPLAY_BEYOND_WINDOW')) {
-    replay.warnings.push('REPLAY_BEYOND_WINDOW');
-  }
+  flagReplayBeyondWindow(replay, backwardAnchorDate, date, MAX_REPLAY_DAYS);
   return { replay, anchor: after ? 'snapshot' : 'current', anchorDate: backwardAnchorDate, events, direction: 'backward', anchorContainerObjectsCount };
 };
 
