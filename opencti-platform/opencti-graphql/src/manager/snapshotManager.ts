@@ -219,11 +219,6 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
   });
   if (documents.size === 0) return documents;
   const ids = [...documents.keys()];
-  const deletedSince = await findRelationshipsDeletedSince(context, ids, snapshotDate);
-  if (!deletedSince) {
-    logApp.warn('[TIME MACHINE] Too many relationship changes since the snapshot date, the batch is snapshotted at the next window', { entities: ids.length });
-    return new Map();
-  }
   // One extra relationship is read to know whether the relationships of the batch were all read
   const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
@@ -234,6 +229,13 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
   const allRead = relations.length <= MAX_RELATIONSHIPS_PER_BATCH;
+  // Read after the present relationships: one deleted between the two reads is in both and counted once
+  const deletedSince = await findRelationshipsDeletedSince(context, ids, snapshotDate);
+  if (!deletedSince) {
+    logApp.warn('[TIME MACHINE] Too many relationship changes since the snapshot date, the batch is snapshotted at the next window', { entities: ids.length });
+    return new Map();
+  }
+  const listedIds = new Set(relations.slice(0, MAX_RELATIONSHIPS_PER_BATCH).map((relation) => relation.internal_id));
   const register = (entityId: string | undefined, relationshipId: string, type: string, counted: boolean) => {
     const document = entityId ? documents.get(entityId) : undefined;
     if (!document) return;
@@ -259,7 +261,7 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     }
   }
   // Deleted relationships are no longer indexed: they are added on top of the counts of the present ones
-  deletedSince.forEach((event) => {
+  deletedSince.filter((event) => !listedIds.has(event.context_id)).forEach((event) => {
     register(event.from_id, event.context_id, event.context_entity_type, true);
     if (event.to_id !== event.from_id) register(event.to_id, event.context_id, event.context_entity_type, true);
   });

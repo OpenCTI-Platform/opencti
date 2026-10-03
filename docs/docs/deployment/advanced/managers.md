@@ -22,7 +22,7 @@ It is designed to help users audit and understand the evolution of their CTI dat
 
 ## Knowledge snapshot manager
 
-This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot: its attribute values and the identifiers of its relationships by type. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
+This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot, including the entities whose only change is a relationship created, updated or deleted: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
 
 The manager also applies the retention of the time machine data: snapshots are deleted with the shortest active History retention rule, and the "new since your last visit" markers expire after one year or when their user is deleted.
 
