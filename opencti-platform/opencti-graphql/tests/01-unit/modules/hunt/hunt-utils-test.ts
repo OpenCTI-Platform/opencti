@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  clampInteger,
-  isAutonomousHunt,
-  normalizeNativeQueries,
-  parseHuntFilterGroup,
-  sanitizeEvidence,
-  sha256,
-  truncate,
-} from '../../../../src/modules/hunt/hunt-utils';
+import { clampInteger, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup, sanitizeEvidence, sha256, truncate } from '../../../../src/modules/hunt/hunt-utils';
 import { mergeHuntDetectedCoverage, preservePlatformCoverage } from '../../../../src/modules/hunt/hunt-coverage-utils';
 import { parseIncidentProposal } from '../../../../src/modules/hunt/hunt-incident';
 
