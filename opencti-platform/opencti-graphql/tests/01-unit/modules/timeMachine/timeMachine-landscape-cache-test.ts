@@ -45,6 +45,12 @@ describe('Landscape diff cache and rights', () => {
     expect(landscapeDiffCacheKey('user-1', fingerprint, { ...input, group_by: 'tactic' }, scope)).not.toEqual(key);
   });
 
+  it('should separate the results computed in a draft from the main knowledge', () => {
+    const main = userAccessFingerprint(context, buildUser());
+    expect(userAccessFingerprint(context, buildUser({ draft_context: 'draft-1' }))).not.toEqual(main);
+    expect(userAccessFingerprint({ ...context, draft_context: 'draft-1' } as AuthContext, buildUser())).not.toEqual(main);
+  });
+
   it('should align the end of a widget period on the next minute without excluding the requested period', () => {
     expect(alignSummaryEnd('2026-10-03T12:00:00.000Z')).toEqual('2026-10-03T12:00:00.000Z');
     expect(alignSummaryEnd('2026-10-03T12:00:00.001Z')).toEqual('2026-10-03T12:01:00.000Z');

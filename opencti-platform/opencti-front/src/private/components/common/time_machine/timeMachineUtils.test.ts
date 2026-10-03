@@ -153,6 +153,7 @@ describe('escaping', () => {
     expect(escapeCsvCell('+1')).toBe('\'+1');
     expect(escapeCsvCell('-1')).toBe('\'-1');
     expect(escapeCsvCell('@cmd')).toBe('\'@cmd');
+    expect(escapeCsvCell('\n=cmd')).toBe('"\'\n=cmd"');
     expect(escapeCsvCell('a,b')).toBe('"a,b"');
     expect(escapeCsvCell('say "hi"')).toBe('"say ""hi"""');
     expect(escapeCsvCell('line\nbreak')).toBe('"line\nbreak"');

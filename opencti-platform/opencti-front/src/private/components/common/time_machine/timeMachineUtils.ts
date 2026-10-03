@@ -195,7 +195,7 @@ export const escapeCsvCell = (value: string | number | boolean | null | undefine
   if (value === null || value === undefined) return '';
   const text = String(value);
   // Neutralize spreadsheet formulas and quote cells containing separators
-  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  const safe = /^[=+\-@\t\r\n]/.test(text) ? `'${text}` : text;
   return /[",\n\r;]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 };
 
