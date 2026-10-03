@@ -65,6 +65,28 @@ export const huntStatisticsVariables = (huntId: string | null, period: HuntStati
   interval: PERIODS[period].interval,
 });
 
+type HuntStatisticsData = HuntStatisticsQuery['response']['huntStatistics'];
+type Translate = (key: string) => string;
+
+export const huntHitsSeries = (statistics: HuntStatisticsData, t_i18n: Translate) => [{
+  name: t_i18n('Hits'),
+  data: statistics.hits_over_time.map((point) => ({ x: new Date(point.date), y: point.value })),
+}, {
+  name: t_i18n('Runs'),
+  data: statistics.runs_over_time.map((point) => ({ x: new Date(point.date), y: point.value })),
+}] as ApexAxisChartSeries;
+
+export const huntHasTimeSeries = (statistics: HuntStatisticsData) => statistics.runs_over_time.some((point) => point.value > 0);
+
+export const huntPlatformSeries = (statistics: HuntStatisticsData, t_i18n: Translate) => [{
+  name: t_i18n('Runs'),
+  data: statistics.runs_per_platform.map((bucket) => ({ x: bucket.label, y: bucket.value })),
+}] as ApexAxisChartSeries;
+
+export const huntVerdictData = (statistics: HuntStatisticsData, t_i18n: Translate) => statistics.verdict_distribution
+  .filter((bucket) => bucket.value > 0)
+  .map((bucket) => ({ label: t_i18n(huntVerdictLabel(bucket.label)), value: bucket.value }));
+
 const WIDGET_HEIGHT = 280;
 
 interface HuntStatisticsComponentProps {
@@ -82,21 +104,10 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
   const autonomousRate = statistics.runs_count > 0
     ? Math.round((statistics.autonomous_runs_count / statistics.runs_count) * 100)
     : null;
-  const hitsSeries = [{
-    name: t_i18n('Hits'),
-    data: statistics.hits_over_time.map((point) => ({ x: new Date(point.date), y: point.value })),
-  }, {
-    name: t_i18n('Runs'),
-    data: statistics.runs_over_time.map((point) => ({ x: new Date(point.date), y: point.value })),
-  }] as ApexAxisChartSeries;
-  const platformSeries = [{
-    name: t_i18n('Runs'),
-    data: statistics.runs_per_platform.map((bucket) => ({ x: bucket.label, y: bucket.value })),
-  }] as ApexAxisChartSeries;
-  const verdicts = statistics.verdict_distribution
-    .filter((bucket) => bucket.value > 0)
-    .map((bucket) => ({ label: t_i18n(huntVerdictLabel(bucket.label)), value: bucket.value }));
-  const hasTimeSeries = statistics.runs_over_time.some((point) => point.value > 0);
+  const hitsSeries = huntHitsSeries(statistics, t_i18n);
+  const platformSeries = huntPlatformSeries(statistics, t_i18n);
+  const verdicts = huntVerdictData(statistics, t_i18n);
+  const hasTimeSeries = huntHasTimeSeries(statistics);
 
   return (
     <>

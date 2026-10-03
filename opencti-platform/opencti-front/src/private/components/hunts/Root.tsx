@@ -117,7 +117,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
   return (
     <div style={{ paddingRight }} data-testid="hunt-details-page">
       <Breadcrumbs elements={[
-        { label: t_i18n('Events') },
+        { label: t_i18n('Defense') },
         { label: t_i18n('Hunts'), link: PATH_HUNTS },
         { label: hunt.name, current: true },
       ]}

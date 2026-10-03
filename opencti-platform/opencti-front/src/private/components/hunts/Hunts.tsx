@@ -163,7 +163,7 @@ const Hunts = () => {
   const { t_i18n } = useFormatter();
   const scheduleText = useHuntScheduleText();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Hunts | Events'));
+  setTitle(t_i18n('Hunts | Defense'));
   const [showCharts, setShowCharts] = useState(() => localStorage.getItem(CHARTS_STORAGE_KEY) !== 'false');
   const [statisticsElement, setStatisticsElement] = useState<HTMLDivElement | null>(null);
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
@@ -268,7 +268,7 @@ const Hunts = () => {
 
   return (
     <div data-testid="hunts-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Hunts'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Defense') }, { label: t_i18n('Hunts'), current: true }]} />
       <div ref={setStatisticsElement} style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
           <Button
