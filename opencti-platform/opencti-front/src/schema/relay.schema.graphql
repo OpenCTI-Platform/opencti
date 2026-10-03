@@ -16607,6 +16607,7 @@ type HuntRun implements BasicObject & InternalObject {
   aev_inject_id: String
   security_coverage_id: String
   technique_id: String
+  technique: AttackPattern
   triggered_by: String
   triggeredBy: Creator
   attempt: Int!

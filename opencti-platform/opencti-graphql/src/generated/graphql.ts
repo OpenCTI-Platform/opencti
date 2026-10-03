@@ -11595,6 +11595,7 @@ export type HuntRun = BasicObject & InternalObject & {
   security_platform_id?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   started_at?: Maybe<Scalars['DateTime']['output']>;
+  technique?: Maybe<AttackPattern>;
   technique_id?: Maybe<Scalars['String']['output']>;
   time_window_end?: Maybe<Scalars['DateTime']['output']>;
   time_window_start?: Maybe<Scalars['DateTime']['output']>;
@@ -47710,6 +47711,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   security_platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  technique?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType>;
   technique_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   time_window_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   time_window_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

@@ -2,6 +2,7 @@ import type { Resolvers } from '../../../generated/graphql';
 import { storeLoadById } from '../../../database/middleware-loader';
 import { loadCreator, loadCreators } from '../../../database/members';
 import { ENTITY_TYPE_HUNT } from '../hunt-types';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { HUNT_EVIDENCE_KIND_TOOL_RESULT } from './huntRun-types';
 import {
@@ -28,6 +29,9 @@ const huntRunResolvers: Resolvers = {
     hunt: (run, _, context) => storeLoadById(context, context.user, run.hunt_id, ENTITY_TYPE_HUNT),
     securityPlatform: (run, _, context) => (run.security_platform_id
       ? storeLoadById(context, context.user, run.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
+      : null),
+    technique: (run, _, context) => (run.technique_id
+      ? storeLoadById(context, context.user, run.technique_id, ENTITY_TYPE_ATTACK_PATTERN) as any
       : null),
     creators: (run, _, context) => loadCreators(context, context.user, run),
     triggeredBy: (run, _, context) => (run.triggered_by ? loadCreator(context, context.user, run.triggered_by) : null),

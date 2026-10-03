@@ -447,6 +447,11 @@ describe('Hunt resolvers', () => {
     expect(pending.data?.hunt.techniqueValidations).toEqual([
       { technique_id: techniqueId, status: 'in_progress', emulation_runs_count: 1, detected_runs_count: 0 },
     ]);
+    const runTechnique = await queryAsAdminWithSuccess({
+      query: gql`query HuntRunTechnique($id: String!) { huntRun(id: $id) { technique_id technique { id x_mitre_id } } }`,
+      variables: { id: emulationRunId },
+    });
+    expect(runTechnique.data?.huntRun).toEqual({ technique_id: techniqueId, technique: { id: techniqueId, x_mitre_id: TECHNIQUE_MITRE_ID } });
     await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: emulationRunId, input: { status: 'completed', hits_count: 2 } } });
     const validated = await queryAsAdminWithSuccess({ query, variables: { id: huntId } });
     expect(validated.data?.hunt.techniqueValidations).toEqual([
