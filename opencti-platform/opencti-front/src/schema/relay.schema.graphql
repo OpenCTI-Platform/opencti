@@ -11336,6 +11336,9 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  investigation_awaiting_approval
+  investigation_completed
+  investigation_failed
   create
   update
   delete

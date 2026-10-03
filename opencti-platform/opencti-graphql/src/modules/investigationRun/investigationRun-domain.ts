@@ -89,6 +89,7 @@ import {
   upsertFeedback,
 } from './investigationRun-state';
 import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
+import { notifyInvestigationRunStatus } from './investigationRun-notification';
 import { markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
@@ -197,6 +198,8 @@ export const updateInvestigationRun = async (
   mutate: (run: BasicStoreEntityInvestigationRun) => Promise<Record<string, unknown> | null> | Record<string, unknown> | null,
 ): Promise<BasicStoreEntityInvestigationRun> => {
   const lock = await lockResources([runLockKey(runId)]);
+  let previous: BasicStoreEntityInvestigationRun;
+  let updated: BasicStoreEntityInvestigationRun;
   try {
     const run = await loadInvestigationRun(outOfDraft(context), runId);
     if (!run) {
@@ -208,10 +211,14 @@ export const updateInvestigationRun = async (
     }
     const { element } = await patchAttribute<StoreEntityInvestigationRun>(outOfDraft(context), INVESTIGATION_MANAGER_USER, runId, ENTITY_TYPE_INVESTIGATION_RUN, patch);
     await notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].EDIT_TOPIC, element, INVESTIGATION_MANAGER_USER);
-    return element as unknown as BasicStoreEntityInvestigationRun;
+    previous = run;
+    updated = element as unknown as BasicStoreEntityInvestigationRun;
   } finally {
     await lock.unlock();
   }
+  // Outside the lock: delivering to the live triggers reads every listening user.
+  await notifyInvestigationRunStatus(outOfDraft(context), previous, updated);
+  return updated;
 };
 
 // endregion

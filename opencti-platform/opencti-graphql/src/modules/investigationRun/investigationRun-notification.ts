@@ -1,0 +1,109 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { StixObject } from '../../types/stix-2-1-common';
+import type { BasicStoreSettings } from '../../types/settings';
+import { INVESTIGATION_MANAGER_USER, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { stixLoadById } from '../../database/middleware';
+import { getEntityFromCache } from '../../database/cache';
+import { storeNotificationEvent } from '../../database/stream/stream-handler';
+import { extractStixRepresentative } from '../../database/stix-representative';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getLiveNotifications, type KnowledgeNotificationEvent } from '../../manager/notificationManager';
+import { logApp } from '../../config/conf';
+import { InvestigationRunStatus, TriggerEventType } from '../../generated/graphql';
+import type { BasicStoreEntityInvestigationRun } from './investigationRun-types';
+
+export const INVESTIGATION_TRIGGER_AWAITING_APPROVAL = TriggerEventType.InvestigationAwaitingApproval;
+export const INVESTIGATION_TRIGGER_COMPLETED = TriggerEventType.InvestigationCompleted;
+export const INVESTIGATION_TRIGGER_FAILED = TriggerEventType.InvestigationFailed;
+
+/** The trigger event a status change raises, if any: cancellations are the analyst's own act. */
+export const investigationTriggerEventFor = (previous: string, next: string): TriggerEventType | null => {
+  if (previous === next) return null;
+  if (next === InvestigationRunStatus.AwaitingApproval) return INVESTIGATION_TRIGGER_AWAITING_APPROVAL;
+  if (next === InvestigationRunStatus.Completed) return INVESTIGATION_TRIGGER_COMPLETED;
+  if (next === InvestigationRunStatus.Failed) return INVESTIGATION_TRIGGER_FAILED;
+  return null;
+};
+
+export const investigationNotificationMessage = (eventType: TriggerEventType, run: BasicStoreEntityInvestigationRun, representative: string) => {
+  const target = `[${run.case_id ? 'case' : run.subject_type.toLowerCase()}] ${representative}`;
+  switch (eventType) {
+    case INVESTIGATION_TRIGGER_AWAITING_APPROVAL:
+      return `Case Autopilot investigation of ${target} is waiting for an analyst approval`;
+    case INVESTIGATION_TRIGGER_COMPLETED:
+      return `Case Autopilot investigation of ${target} is completed`;
+    default:
+      return `Case Autopilot investigation of ${target} failed${run.status_reason ? `: ${run.status_reason}` : ''}`;
+  }
+};
+
+/**
+ * Deliver an investigation event to the live triggers listening to it (and to
+ * the digests built on them). The notified object is the case of the run, or
+ * its subject when the run has no case yet: every recipient must be able to
+ * access it and match the trigger filters, exactly as for knowledge events.
+ */
+export const notifyInvestigationRunStatus = async (
+  context: AuthContext,
+  previous: BasicStoreEntityInvestigationRun,
+  run: BasicStoreEntityInvestigationRun,
+) => {
+  const eventType = investigationTriggerEventFor(previous.run_status, run.run_status);
+  if (!eventType) return 0;
+  try {
+    const liveNotifications = await getLiveNotifications(context);
+    const candidates = liveNotifications.filter(({ trigger }) => (trigger.event_types ?? []).includes(eventType));
+    if (candidates.length === 0) return 0;
+    const stix = await stixLoadById(context, SYSTEM_USER, run.case_id ?? run.subject_id) as StixObject | undefined;
+    if (!stix) return 0;
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const message = investigationNotificationMessage(eventType, run, extractStixRepresentative(stix));
+    let delivered = 0;
+    for (let index = 0; index < candidates.length; index += 1) {
+      const { users, trigger } = candidates[index];
+      const filters = trigger.filters ? JSON.parse(trigger.filters) : trigger.raw_filters;
+      const targets: KnowledgeNotificationEvent['targets'] = [];
+      for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+        const user: AuthUser = users[userIndex];
+        const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
+        if (await isUserCanAccessStixElement(userContext, user, stix) && await isStixMatchFilterGroup(userContext, user, stix, filters)) {
+          targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message });
+        }
+      }
+      if (targets.length > 0) {
+        const notificationEvent: KnowledgeNotificationEvent = {
+          version: EVENT_NOTIFICATION_VERSION,
+          notification_id: trigger.internal_id,
+          type: 'live',
+          targets,
+          data: stix,
+          streamMessage: message,
+          origin: { user_id: INVESTIGATION_MANAGER_USER.id },
+        };
+        await storeNotificationEvent(context, notificationEvent);
+        delivered += targets.length;
+      }
+    }
+    return delivered;
+  } catch (error) {
+    // A notification never fails the run it reports on.
+    logApp.error('[INVESTIGATION] Notification of an investigation run failed', { cause: error, runId: run.internal_id, eventType });
+    return 0;
+  }
+};

@@ -106,10 +106,18 @@ export const convertMapper = (element, field = 'csvMapper') => {
 
 export const convertNotifiers = (element) => element?.notifiers?.map(({ id, name }) => ({ value: id, label: name }));
 
+// Live trigger and digest events raised by Case Autopilot runs, on their case (Enterprise Edition).
+export const INVESTIGATION_TRIGGER_EVENT_TYPES = [
+  { value: 'investigation_awaiting_approval', label: 'Investigation awaiting approval' },
+  { value: 'investigation_completed', label: 'Investigation completed' },
+  { value: 'investigation_failed', label: 'Investigation failed' },
+];
+
 export const filterEventTypesOptions = [
   { value: 'create', label: 'Creation' },
   { value: 'update', label: 'Modification' },
   { value: 'delete', label: 'Deletion' },
+  ...INVESTIGATION_TRIGGER_EVENT_TYPES,
 ];
 
 export const instanceEventTypesOptions = [

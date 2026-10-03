@@ -37621,6 +37621,9 @@ export type TriggerEdge = {
 export enum TriggerEventType {
   Create = 'create',
   Delete = 'delete',
+  InvestigationAwaitingApproval = 'investigation_awaiting_approval',
+  InvestigationCompleted = 'investigation_completed',
+  InvestigationFailed = 'investigation_failed',
   Update = 'update'
 }
 

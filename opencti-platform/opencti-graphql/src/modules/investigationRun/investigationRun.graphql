@@ -511,6 +511,14 @@ type InvestigationPackCatalog {
   packs: [InvestigationPack!]!
 }
 
+# Live trigger and digest events raised by a run, delivered on its case (or on
+# its subject while it has no case).
+extend enum TriggerEventType {
+  investigation_awaiting_approval
+  investigation_completed
+  investigation_failed
+}
+
 extend interface Case {
   latestInvestigationRun: InvestigationRun
 }

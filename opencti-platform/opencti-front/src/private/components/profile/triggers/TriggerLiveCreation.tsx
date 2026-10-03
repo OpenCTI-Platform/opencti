@@ -12,6 +12,8 @@ import { Box } from '@mui/material';
 import ComboboxField from '../../../../components/ComboboxField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
+import { INVESTIGATION_TRIGGER_EVENT_TYPES } from '../../../../utils/edition';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
@@ -79,6 +81,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   recipientId,
 }) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
@@ -91,6 +94,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
+    ...(isEnterpriseEdition ? INVESTIGATION_TRIGGER_EVENT_TYPES.map(({ value, label }) => ({ value: value as TriggerEventType, label: t_i18n(label) })) : []),
   ];
   const instanceEventTypesOptions: {
     value: TriggerEventType;
