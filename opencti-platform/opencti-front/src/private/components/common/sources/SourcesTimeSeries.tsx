@@ -10,9 +10,9 @@ import type { DashboardConfig } from '../../../../components/dashboard/dashboard
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { findSourceWidgetMetric, REFERENCE_SCORECARD_PERIOD, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
+import { findSourceWidgetMetric, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
 import SourcesWidgetRenderContent from './SourcesWidgetRenderContent';
-import { toAggregation } from './sourcesWidgetUtils';
+import { periodFromRange, toAggregation } from './sourcesWidgetUtils';
 import { SourcesTimeSeriesQuery } from './__generated__/SourcesTimeSeriesQuery.graphql';
 
 const sourcesTimeSeriesQuery = graphql`
@@ -75,7 +75,8 @@ interface SourcesTimeSeriesProps {
 }
 
 /**
- * Daily trend of a scorecard metric over the dashboard time range, from the 30 day rolling scorecard snapshots.
+ * Daily trend of a scorecard metric over the dashboard time range, from the snapshots of the rolling window that
+ * the range selects (7, 30 or 90 days), like the other Sources widgets.
  */
 const SourcesTimeSeries = ({ variant, height, dataSelection, parameters = {}, popover, host, config, refreshRate = null }: SourcesTimeSeriesProps) => {
   const { t_i18n } = useFormatter();
@@ -85,7 +86,7 @@ const SourcesTimeSeries = ({ variant, height, dataSelection, parameters = {}, po
     const { startDate, endDate } = computeStartEndDates(dashboardConfig);
     return {
       metric: findSourceWidgetMetric(selection.attribute).key,
-      period: REFERENCE_SCORECARD_PERIOD,
+      period: periodFromRange(startDate, endDate),
       filters: normalizeFilterGroupForBackend(selection.filters),
       startDate: startDate ?? null,
       endDate: endDate ?? null,
