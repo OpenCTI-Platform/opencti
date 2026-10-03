@@ -265,6 +265,13 @@ describe('IOC validation requests', () => {
       variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'SIEM proof' },
     });
     const id = created.data?.indicatorsRequestValidation.id;
+    // OpenAEV finishing before the results are ingested never makes the request final
+    const finished = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: STATUS_UPDATE,
+      variables: { id, input: { status: 'completed' } },
+    });
+    expect(finished.data?.iocValidationRequestStatusUpdate.status).toEqual('running');
+    expect(finished.data?.iocValidationRequestStatusUpdate.completed_at).toBeNull();
     // Validation of the input and of the target platform
     await queryAsUserIsExpectedError(USER_CONNECTOR, {
       query: REPORT_RESULTS,
@@ -299,6 +306,10 @@ describe('IOC validation requests', () => {
     );
     expect(sighting?.x_opencti_negative).toEqual(true);
     expect(sighting?.attribute_count).toEqual(1);
+    // Every pair has its result: the maintenance completes the request
+    await maintainIocValidationRequests(testContext);
+    const completed = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } });
+    expect(completed.data?.iocValidationRequest.status).toEqual('completed');
     // A late result never overwrites the recorded verdict
     await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: REPORT_RESULTS,

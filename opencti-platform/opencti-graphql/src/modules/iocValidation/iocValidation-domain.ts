@@ -496,12 +496,20 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
     if (input.external_uri) patch.external_uri = input.external_uri;
     if (input.message !== undefined) patch.status_message = input.message;
     if (FINAL_REQUEST_STATUSES.includes(status)) {
-      patch.completed_at = new Date();
       if (status === REQUEST_STATUS_FAILED || status === REQUEST_STATUS_REJECTED) {
         await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
       }
       const deployments = await findRequestDeployments(context, request.internal_id);
       patch.results_summary = summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
+      const awaitingResults = deployments.some((d) => d.validation_status === VALIDATION_STATUS_REQUESTED);
+      if (awaitingResults && isAllowedTransition(request.status, REQUEST_STATUS_RUNNING)) {
+        // The result bundle is ingested separately: the maintenance completes the request once every pair has
+        // its result (or expires it after the timeout), so the request never looks final with pending pairs.
+        patch.status = REQUEST_STATUS_RUNNING;
+        patch.status_message = input.message ?? 'OpenAEV finished the validation, waiting for the results of every pair';
+      } else {
+        patch.completed_at = new Date();
+      }
     }
     return patchRequest(context, user, request.internal_id, patch);
   });
