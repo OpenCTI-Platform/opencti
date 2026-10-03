@@ -81,7 +81,15 @@ import {
   SOURCE_KIND_INGESTION_FEED,
 } from './sourceIntelligence-types';
 import { findLiveScorecards } from './sourceIntelligence-store';
-import { evaluateSourceRules, type RecommendationProposal, type RuleConnector, type RuleFeed, type RuleSourceUser, SCHEDULE_CONFIGURATION_KEY } from './sourceIntelligence-rules';
+import {
+  connectorMatchesCatalogEntry,
+  evaluateSourceRules,
+  type RecommendationProposal,
+  type RuleConnector,
+  type RuleFeed,
+  type RuleSourceUser,
+  SCHEDULE_CONFIGURATION_KEY,
+} from './sourceIntelligence-rules';
 import { buildResolverFromSources, clearDisabledSourcesLiveData } from './sourceIntelligence-domain';
 import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
@@ -408,6 +416,12 @@ const executeApply = async (
       if (input.connector_id) {
         const connector = await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, input.connector_id, ENTITY_TYPE_CONNECTOR);
         if (!connector) throw FunctionalError('Deployed connector not found', { connector_id: input.connector_id });
+        if (!connectorMatchesCatalogEntry(connector, payload)) {
+          throw FunctionalError('The connector is not the catalog connector of this recommendation', {
+            connector_id: input.connector_id,
+            catalog_id: payload.catalog_id ?? null,
+          });
+        }
         return { apply_result: `Connector ${connector.name} deployed`, revert_payload: { connector_id: connector.id } };
       }
       if (!payload.contract_image) {
