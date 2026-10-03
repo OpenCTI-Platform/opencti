@@ -10,6 +10,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Security from '../../../../utils/Security';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
+import StixCoreObjectPathFinderButton from '../../common/graph_analytics/StixCoreObjectPathFinderButton';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
@@ -57,6 +58,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
       title={stixCyberObservable.observable_value}
       rightActions={(
         <>
+          <StixCoreObjectPathFinderButton stixCoreObjectId={stixCyberObservable.id} stixCoreObjectName={stixCyberObservable.observable_value} />
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}

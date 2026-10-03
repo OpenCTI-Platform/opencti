@@ -250,7 +250,8 @@ type Query {
         entityTypes: [String!]
         onlyWithSecurityCoverage: Boolean
     ): GraphSimilarEntityConnection @auth(for: [KNOWLEDGE])
-    graphSimilarityMatrix(ids: [String!]!): GraphSimilarityMatrix @auth(for: [KNOWLEDGE, EXPLORE])
+    "Pairwise similarity of explicit entities, or of the most connected entities matching types and filters"
+    graphSimilarityMatrix(ids: [String!], types: [String!], filters: FilterGroup, first: Int): GraphSimilarityMatrix @auth(for: [KNOWLEDGE, EXPLORE])
     graphCluster(id: String!): GraphCluster @auth(for: [KNOWLEDGE])
     graphClusters(
         first: Int
@@ -261,6 +262,8 @@ type Query {
         orderBy: GraphClustersOrdering
         orderMode: OrderingMode
         filters: FilterGroup
+        "Filters on the member entities: only clusters with matching members are listed"
+        memberFilters: FilterGroup
     ): GraphClusterConnection @auth(for: [KNOWLEDGE])
     graphClustersSizeTimeSeries(
         kinds: [GraphClusterKind!]
@@ -269,6 +272,8 @@ type Query {
         endDate: DateTime
         interval: String!
         limit: Int
+        "Filters on the member entities: the largest clusters by matching members, counting only them"
+        filters: FilterGroup
     ): [GraphClusterTimeSeries!]! @auth(for: [KNOWLEDGE, EXPLORE])
     graphAnalyticsStatus: GraphAnalyticsStatus @auth(for: [KNOWLEDGE])
     graphAnalyticsEdges(

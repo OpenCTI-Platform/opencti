@@ -8,6 +8,7 @@ import {
   AutoAwesomeOutlined,
   BackupTableOutlined,
   BiotechOutlined,
+  HubOutlined,
   BugReportOutlined,
   CampaignOutlined,
   CastConnectedOutlined,
@@ -293,6 +294,8 @@ const iconSelector = (
       return <TrackChanges style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'malware-analysis':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'graph-cluster':
+      return <HubOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'threat-actor':
     case 'threat-actor-group':
       return (

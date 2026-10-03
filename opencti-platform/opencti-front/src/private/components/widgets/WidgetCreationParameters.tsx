@@ -69,6 +69,9 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_max',
     'opinions_metrics_min',
     'opinions_metrics_total',
+    'graph_degree',
+    'graph_betweenness',
+    'graph_cluster_size',
   ];
 
   const draftWorkspaceSortByValues: { value: string; label: string }[] = [
@@ -488,7 +491,8 @@ const WidgetCreationParameters = () => {
                 )}
 
                 {(widgetCategory === 'distribution'
-                  || widgetCategory === 'list') && (
+                  || widgetCategory === 'list'
+                  || type === 'graph-clusters-size') && (
                   <Input
                     label={t_i18n('Number of results')}
                     type="number"

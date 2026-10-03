@@ -15,6 +15,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -199,6 +200,8 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                     entity={campaign}
                   />
                 ),
+                similar:
+                  <StixCoreObjectSimilar stixCoreObjectId={campaignId} />,
                 history:
                   <StixCoreObjectHistory stixCoreObjectId={campaignId} />,
               }}

@@ -25240,6 +25240,7 @@ export type Query = {
   graphCluster?: Maybe<GraphCluster>;
   graphClusters?: Maybe<GraphClusterConnection>;
   graphClustersSizeTimeSeries: Array<GraphClusterTimeSeries>;
+  /** Pairwise similarity of explicit entities, or of the most connected entities matching types and filters */
   graphSimilarityMatrix?: Maybe<GraphSimilarityMatrix>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -26472,6 +26473,7 @@ export type QueryGraphClustersArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   kinds?: InputMaybe<Array<GraphClusterKind>>;
+  memberFilters?: InputMaybe<FilterGroup>;
   orderBy?: InputMaybe<GraphClustersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -26482,6 +26484,7 @@ export type QueryGraphClustersArgs = {
 export type QueryGraphClustersSizeTimeSeriesArgs = {
   clusterIds?: InputMaybe<Array<Scalars['String']['input']>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   interval: Scalars['String']['input'];
   kinds?: InputMaybe<Array<GraphClusterKind>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -26490,7 +26493,10 @@ export type QueryGraphClustersSizeTimeSeriesArgs = {
 
 
 export type QueryGraphSimilarityMatrixArgs = {
-  ids: Array<Scalars['String']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -51538,7 +51544,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   graphCluster?: Resolver<Maybe<ResolversTypes['GraphCluster']>, ParentType, ContextType, RequireFields<QueryGraphClusterArgs, 'id'>>;
   graphClusters?: Resolver<Maybe<ResolversTypes['GraphClusterConnection']>, ParentType, ContextType, Partial<QueryGraphClustersArgs>>;
   graphClustersSizeTimeSeries?: Resolver<Array<ResolversTypes['GraphClusterTimeSeries']>, ParentType, ContextType, RequireFields<QueryGraphClustersSizeTimeSeriesArgs, 'interval'>>;
-  graphSimilarityMatrix?: Resolver<Maybe<ResolversTypes['GraphSimilarityMatrix']>, ParentType, ContextType, RequireFields<QueryGraphSimilarityMatrixArgs, 'ids'>>;
+  graphSimilarityMatrix?: Resolver<Maybe<ResolversTypes['GraphSimilarityMatrix']>, ParentType, ContextType, Partial<QueryGraphSimilarityMatrixArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
   groupingContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryGroupingContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;

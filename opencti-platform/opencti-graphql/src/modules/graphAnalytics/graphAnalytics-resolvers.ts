@@ -26,7 +26,7 @@ const graphAnalyticsResolvers: Resolvers = {
     stixPaths: (_, args, context) => findStixPaths(context, context.user!, args) as any,
     stixNeighborhoodSummary: (_, { id, includeInferred }, context) => stixNeighborhoodSummary(context, context.user!, id, !!includeInferred),
     similarEntities: (_, args, context) => findSimilarEntities(context, context.user!, args) as any,
-    graphSimilarityMatrix: (_, { ids }, context) => graphSimilarityMatrix(context, context.user!, ids) as any,
+    graphSimilarityMatrix: (_, args, context) => graphSimilarityMatrix(context, context.user!, args) as any,
     graphCluster: (_, { id }, context) => findGraphClusterById(context, context.user!, id),
     graphClusters: (_, args, context) => findGraphClusters(context, context.user!, {
       ...args,

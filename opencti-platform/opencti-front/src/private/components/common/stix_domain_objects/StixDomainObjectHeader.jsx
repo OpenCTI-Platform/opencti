@@ -45,6 +45,7 @@ import { DraftChip } from '../draft/DraftChip';
 import CommitMessage from '../form/CommitMessage';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
+import StixCoreObjectPathFinderButton from '../graph_analytics/StixCoreObjectPathFinderButton';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -525,6 +526,7 @@ const StixDomainObjectHeader = (props) => {
                 onExportCompleted={handleExportCompleted}
               />
             </Security>
+            <StixCoreObjectPathFinderButton stixCoreObjectId={stixDomainObject.id} stixCoreObjectName={title} />
             {isKnowledgeUpdater && (
               <StixCoreObjectContainer elementId={stixDomainObject.id} />
             )}
