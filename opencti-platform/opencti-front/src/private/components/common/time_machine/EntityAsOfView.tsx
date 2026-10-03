@@ -61,6 +61,8 @@ export const useTimeMachineWarningMessage = () => {
         return t_i18n('A merge happened after this date, the attributes it brought cannot be removed from this view.');
       case 'REPLAY_WINDOW_EXCEEDED':
         return t_i18n('Too many changes happened after this date, the view stops at the oldest change that could be replayed.');
+      case 'RELATIONSHIP_HISTORY_TRUNCATED':
+        return t_i18n('Too many relationship changes to replay, the relationships only reflect the most recent part of the history.');
       case 'REPLAY_BEYOND_WINDOW':
         return t_i18n('This date is older than the replay window between two knowledge snapshots, the reconstruction relies on a long history replay.');
       default:

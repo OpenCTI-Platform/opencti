@@ -11,6 +11,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
+import { hasPayloadErrors } from './timeMachineMutations';
 
 export type TimeMachineExportFormat = 'json' | 'csv' | 'pdf';
 
@@ -49,10 +50,8 @@ const TimeMachineExportMenu = ({ fileName, buildJson, buildCsv, buildHtml, entit
   const { t_i18n } = useFormatter();
   const [exporting, setExporting] = useState(false);
   const canUpload = useGranted([KNOWLEDGE_KNUPLOAD]);
-  const [commitUpload] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
+  const [commitUpload, uploading] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-    undefined,
-    { successMessage: t_i18n('The export has been saved in the files of the entity') },
   );
 
   const buildBlob = async (format: TimeMachineExportFormat): Promise<Blob> => {
@@ -63,21 +62,30 @@ const TimeMachineExportMenu = ({ fileName, buildJson, buildCsv, buildHtml, entit
 
   const handleExport = async (format: TimeMachineExportFormat, store: boolean) => {
     setExporting(true);
+    let blob: Blob;
     try {
-      const blob = await buildBlob(format);
-      const name = fileName(format);
-      if (store && entityId) {
-        commitUpload({
-          variables: { id: entityId, file: new File([blob], name, { type: MIME_TYPES[format] }), noTriggerImport: true },
-        });
-      } else {
-        downloadBlob(blob, name);
-      }
+      blob = await buildBlob(format);
     } catch {
       MESSAGING$.notifyError(t_i18n('Error trying to export the file'));
-    } finally {
       setExporting(false);
+      return;
     }
+    const name = fileName(format);
+    if (store && entityId) {
+      commitUpload({
+        variables: { id: entityId, file: new File([blob], name, { type: MIME_TYPES[format] }), noTriggerImport: true },
+        onCompleted: (_, errors) => {
+          setExporting(false);
+          if (!hasPayloadErrors(errors)) {
+            MESSAGING$.notifySuccess(t_i18n('The export has been saved in the files of the entity'));
+          }
+        },
+        onError: () => setExporting(false),
+      });
+      return;
+    }
+    downloadBlob(blob, name);
+    setExporting(false);
   };
 
   const formats: Array<{ format: TimeMachineExportFormat; label: string }> = [
@@ -92,7 +100,7 @@ const TimeMachineExportMenu = ({ fileName, buildJson, buildCsv, buildHtml, entit
         <Button
           variant="secondary"
           startIcon={<FileDownloadOutlined fontSize="small" />}
-          disabled={disabled || exporting}
+          disabled={disabled || exporting || uploading}
           aria-label={t_i18n('Export')}
         >
           {t_i18n('Export')}

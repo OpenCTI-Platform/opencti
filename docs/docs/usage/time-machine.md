@@ -46,7 +46,8 @@ When the entity did not exist yet at the selected date, the view says so. When t
 
     - a merge happened after the date: the attributes brought by the merged entities cannot be removed from the view,
     - too many changes happened after the date: the view stops at the oldest change that could be replayed,
-    - the date is older than the replay window between two knowledge snapshots: the reconstruction relies on a long history replay.
+    - the date is older than the replay window between two knowledge snapshots: the reconstruction relies on a long history replay,
+    - too many relationship changes happened after the date (or during the period of a diff): relationship counts and changes only cover the most recent part of the history.
 
 ## Compare two dates with the Diff tab
 
@@ -109,7 +110,7 @@ Click an entity in **Top changed entities** to open its **Diff** tab on the same
 
 !!! note "Limits"
 
-    The scope is the set of entities as they exist at the end of the period. To keep the platform responsive, a landscape diff covers at most 1,000 entities (the most recently created first) and 20,000 new relationships; when a limit is reached, the result is flagged as partial. Each user can run one landscape diff at a time. These limits are configurable (see [Configuration](#configuration)).
+    The scope is the set of entities you track today: the entities that currently match the filters (or the saved filter, or the custom view) and that were created before the end of the period. Filters are evaluated on the current knowledge, and entities deleted since are not part of the scope. To keep the platform responsive, a landscape diff covers at most 1,000 entities (the most recently created first) and 20,000 new relationships; when a limit is reached, the result is flagged as partial. Each user can run one landscape diff at a time. These limits are configurable (see [Configuration](#configuration)).
 
 ### Landscape widgets
 
@@ -144,6 +145,7 @@ A change digest sends you, at each period, the landscape changes of a set of ent
 
 The time machine never bypasses markings or organization restrictions:
 
+- The time machine is only available on entities you can access today: restricting an entity also restricts its past versions.
 - Every view is computed with your current rights. If, at the selected date, the entity had markings or a sharing you do not have access to, the view only says that the entity was restricted.
 - Related entities you cannot access are displayed as **Restricted**, without their name.
 - Entities deleted since are displayed as tombstones (**Deleted**).

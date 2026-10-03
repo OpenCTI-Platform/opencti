@@ -7,6 +7,8 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../relay/environment';
+import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
 import { UserVisitsPurgeDialogMutation } from './__generated__/UserVisitsPurgeDialogMutation.graphql';
 
 const userVisitsPurgeDialogMutation = graphql`
@@ -27,11 +29,17 @@ interface UserVisitsPurgeDialogProps {
  */
 const UserVisitsPurgeDialog = ({ userId, isOpen, handleClose }: UserVisitsPurgeDialogProps) => {
   const { t_i18n } = useFormatter();
-  const [commitPurge, purging] = useApiMutation<UserVisitsPurgeDialogMutation>(
-    userVisitsPurgeDialogMutation,
-    undefined,
-    { successMessage: t_i18n('The last visit markers of the user have been purged') },
-  );
+  const [commitPurge, purging] = useApiMutation<UserVisitsPurgeDialogMutation>(userVisitsPurgeDialogMutation);
+  const handlePurge = () => {
+    commitPurge({
+      variables: { userId },
+      onCompleted: (_, errors) => {
+        if (hasPayloadErrors(errors)) return;
+        MESSAGING$.notifySuccess(t_i18n('The last visit markers of the user have been purged'));
+        handleClose();
+      },
+    });
+  };
   return (
     <Dialog open={isOpen} onClose={handleClose} title={t_i18n('Purge the last visit markers')}>
       <Alert icon={false} severity="warning" variant="outlined" sx={{ color: 'text.primary' }}>
@@ -44,7 +52,7 @@ const UserVisitsPurgeDialog = ({ userId, isOpen, handleClose }: UserVisitsPurgeD
           {t_i18n('Cancel')}
         </Button>
         <Button
-          onClick={() => commitPurge({ variables: { userId }, onCompleted: handleClose })}
+          onClick={handlePurge}
           disabled={purging}
           data-testid="purge-user-last-visits"
         >

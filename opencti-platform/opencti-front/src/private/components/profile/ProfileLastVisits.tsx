@@ -8,6 +8,8 @@ import Dialog from '@common/dialog/Dialog';
 import Card from '../../../components/common/card/Card';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../relay/environment';
+import { hasPayloadErrors } from '../common/time_machine/timeMachineMutations';
 import { ProfileLastVisitsPurgeMutation } from './__generated__/ProfileLastVisitsPurgeMutation.graphql';
 
 const profileLastVisitsPurgeMutation = graphql`
@@ -23,11 +25,17 @@ const profileLastVisitsPurgeMutation = graphql`
 const ProfileLastVisits: React.FC = () => {
   const { t_i18n } = useFormatter();
   const [displayConfirmation, setDisplayConfirmation] = useState(false);
-  const [commitPurge, purging] = useApiMutation<ProfileLastVisitsPurgeMutation>(
-    profileLastVisitsPurgeMutation,
-    undefined,
-    { successMessage: t_i18n('Your last visit markers have been purged') },
-  );
+  const [commitPurge, purging] = useApiMutation<ProfileLastVisitsPurgeMutation>(profileLastVisitsPurgeMutation);
+  const handlePurge = () => {
+    commitPurge({
+      variables: {},
+      onCompleted: (_, errors) => {
+        if (hasPayloadErrors(errors)) return;
+        MESSAGING$.notifySuccess(t_i18n('Your last visit markers have been purged'));
+        setDisplayConfirmation(false);
+      },
+    });
+  };
   return (
     <>
       <Card title={t_i18n('Last visit markers')} sx={{ marginBottom: 3 }}>
@@ -51,14 +59,10 @@ const ProfileLastVisits: React.FC = () => {
           </AlertTitle>
         </Alert>
         <DialogActions>
-          <Button variant="secondary" onClick={() => setDisplayConfirmation(false)}>
+          <Button variant="secondary" onClick={() => setDisplayConfirmation(false)} disabled={purging}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={() => {
-              commitPurge({ variables: {}, onCompleted: () => setDisplayConfirmation(false) });
-            }}
-          >
+          <Button onClick={handlePurge} disabled={purging}>
             {t_i18n('Validate')}
           </Button>
         </DialogActions>
