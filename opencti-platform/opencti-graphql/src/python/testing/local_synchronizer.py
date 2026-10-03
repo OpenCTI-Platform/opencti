@@ -6,6 +6,15 @@ import sys
 import jsonpatch
 from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 
+OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+
+
+def _stix_ids(stix_object):
+    return (
+        stix_object.get("extensions", {}).get(OPENCTI_EXTENSION, {}).get("stix_ids")
+        or []
+    )
+
 
 # pylint: disable-next=too-few-public-methods
 # pylint: disable-next=too-many-instance-attributes
@@ -79,6 +88,23 @@ class TestLocalSynchronizer:
                 current = data["data"]
                 # In case of update always apply operation to the previous id
                 current["id"] = previous["id"]
+                # An upsert only adds alternative ids: the ones the update removed are removed explicitly
+                removed_ids = [
+                    stix_id
+                    for stix_id in _stix_ids(previous)
+                    if stix_id not in _stix_ids(current)
+                ]
+                if removed_ids:
+                    extension = current.setdefault("extensions", {}).setdefault(
+                        OPENCTI_EXTENSION, {}
+                    )
+                    extension["opencti_upsert_operations"] = [
+                        {
+                            "key": "x_opencti_stix_ids",
+                            "value": removed_ids,
+                            "operation": "remove",
+                        }
+                    ]
                 bundle = {
                     "type": "bundle",
                     "x_opencti_event_version": data["version"],
