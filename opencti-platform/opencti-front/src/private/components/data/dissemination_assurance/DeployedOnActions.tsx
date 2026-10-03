@@ -131,7 +131,6 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
                   MESSAGING$.notifySuccess(t_i18n('The connector will remove the indicator from the platform'));
                 }
               },
-              onError: () => {},
             })}
             disabled={removing}
           >
