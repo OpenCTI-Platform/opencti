@@ -1419,6 +1419,8 @@
   "Defense coverage dashboard created": "已创建防御覆盖仪表板",
   "Defense gaps": "防御缺口",
   "Defense level": "防御等级",
+  "Defense level decreased": "防御等级下降",
+  "Defense level increased": "防御等级上升",
   "Defense levels": "防御等级",
   "Defense matrix": "防御矩阵",
   "Defense matrix widgets are not supported in public dashboards": "公共仪表板不支持防御矩阵小部件",

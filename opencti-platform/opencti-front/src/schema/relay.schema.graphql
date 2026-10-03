@@ -12131,6 +12131,8 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  defense_level_decreased
+  defense_level_increased
   create
   update
   delete

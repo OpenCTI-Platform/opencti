@@ -1419,6 +1419,8 @@
   "Defense coverage dashboard created": "防御カバレッジのダッシュボードを作成しました",
   "Defense gaps": "防御ギャップ",
   "Defense level": "防御レベル",
+  "Defense level decreased": "防御レベルが低下",
+  "Defense level increased": "防御レベルが上昇",
   "Defense levels": "防御レベル",
   "Defense matrix": "防御マトリックス",
   "Defense matrix widgets are not supported in public dashboards": "防御マトリックスのウィジェットは公開ダッシュボードではサポートされていません",

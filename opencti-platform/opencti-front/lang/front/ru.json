@@ -1419,6 +1419,8 @@
   "Defense coverage dashboard created": "Панель покрытия защиты создана",
   "Defense gaps": "Пробелы в защите",
   "Defense level": "Уровень защиты",
+  "Defense level decreased": "Уровень защиты снизился",
+  "Defense level increased": "Уровень защиты повысился",
   "Defense levels": "Уровни защиты",
   "Defense matrix": "Матрица защиты",
   "Defense matrix widgets are not supported in public dashboards": "Виджеты матрицы защиты не поддерживаются в общедоступных панелях",
