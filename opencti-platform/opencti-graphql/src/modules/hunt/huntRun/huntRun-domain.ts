@@ -7,13 +7,12 @@ import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../.
 import { withHuntLock } from '../hunt-lock';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
-import { elAggregationCount, elCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
+import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import {
   FilterMode,
   FilterOperator,
@@ -43,7 +42,7 @@ import {
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
 import { dispatchHuntRun, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
-import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, sanitizeEvidence, techniqueValidationStatus, truncate } from '../hunt-utils';
+import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, huntRunRestrictions, sanitizeEvidence, techniqueValidationStatus, truncate } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
 import { updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
@@ -167,6 +166,8 @@ export interface HuntRunRequest {
   securityCoverageId?: string | null;
   techniqueId?: string | null;
   triggeredBy?: string | null;
+  // The user starting a manual run, a preview or a manual retry: only the security platforms this user can read are targeted
+  requester?: AuthUser | null;
   dispatch?: boolean;
   attempt?: number;
   playbook?: {
@@ -180,8 +181,8 @@ export interface HuntRunRequest {
 
 /**
  * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
- * dispatches the deferred ones). Runs are created by the hunt manager identity so that they always carry the
- * hunt markings and organizations, the human or system at the origin of the run is kept in triggered_by.
+ * dispatches the deferred ones). Runs are created by the hunt manager identity with the markings and organizations
+ * of both the hunt and the target security platform, the human or system at the origin of the run is kept in triggered_by.
  */
 export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<BasicStoreEntityHuntRun[]> => {
   const mode = request.mode ?? HUNT_RUN_MODE_EXECUTE;
@@ -197,7 +198,18 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   if (logicError) {
     throw FunctionalError(`The hunt cannot run: ${logicError.message}`, { huntId: hunt.internal_id, field: logicError.field });
   }
-  let targets = await resolveHuntConnectorTargets(context, HUNT_MANAGER_USER, hunt, request.securityPlatformIds ?? []);
+  const resolved = await resolveHuntConnectorTargets(context, request.requester ?? HUNT_MANAGER_USER, hunt, request.securityPlatformIds ?? []);
+  let targets = resolved.flatMap((target) => {
+    const restrictions = huntRunRestrictions(hunt, target.securityPlatform);
+    if (!restrictions) {
+      logApp.warn('[OPENCTI-MODULE] Hunt run skipped, the hunt and its security platform are shared with different organizations', {
+        huntId: hunt.internal_id,
+        securityPlatformId: target.securityPlatform?.internal_id,
+      });
+      return [];
+    }
+    return [{ ...target, restrictions }];
+  });
   if (request.connectorIds && request.connectorIds.length > 0) {
     targets = targets.filter((target) => request.connectorIds?.includes(target.connector.internal_id));
   }
@@ -212,7 +224,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   }
   const runs: BasicStoreEntityHuntRun[] = [];
   for (let index = 0; index < targets.length; index += 1) {
-    const { connector, securityPlatform } = targets[index];
+    const { connector, securityPlatform, restrictions } = targets[index];
     const runInput = {
       hunt_id: hunt.internal_id,
       hunt_run_status: HUNT_RUN_STATUS_QUEUED,
@@ -228,9 +240,9 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       aev_inject_id: request.aevInjectId ?? null,
       security_coverage_id: request.securityCoverageId ?? null,
       technique_id: request.techniqueId ?? null,
-      triggered_by: request.triggeredBy ?? HUNT_MANAGER_USER.id,
-      objectMarking: hunt[RELATION_OBJECT_MARKING] ?? [],
-      objectOrganization: hunt[RELATION_GRANTED_TO] ?? [],
+      triggered_by: request.triggeredBy ?? request.requester?.id ?? HUNT_MANAGER_USER.id,
+      objectMarking: restrictions.objectMarking,
+      objectOrganization: restrictions.objectOrganization,
       ...(request.playbook ? {
         playbook_id: request.playbook.playbookId,
         playbook_execution_id: request.playbook.executionId,
@@ -271,9 +283,10 @@ export const startHuntRuns = async (
     securityPlatformIds: input?.security_platform_ids ?? [],
     timeWindowHours: input?.time_window_hours,
     triggeredBy: user.id,
+    requester: user,
   });
   if (runs.length === 0) {
-    throw FunctionalError('No live hunt connector serves the security platforms of this hunt', { huntId });
+    throw FunctionalError('No live hunt connector serves a security platform of this hunt you can access', { huntId });
   }
   await publishUserAction({
     user,
@@ -296,9 +309,10 @@ export const startHuntPreview = async (context: AuthContext, user: AuthUser, hun
     mode: HUNT_RUN_MODE_PREVIEW,
     securityPlatformIds: securityPlatformId ? [securityPlatformId] : [],
     triggeredBy: user.id,
+    requester: user,
   });
   if (runs.length === 0) {
-    throw FunctionalError('No live hunt connector supporting translation preview serves this platform', { huntId, securityPlatformId });
+    throw FunctionalError('No live hunt connector supporting translation preview serves a platform you can access', { huntId, securityPlatformId });
   }
   return runs[0];
 };
@@ -491,6 +505,7 @@ export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: 
       securityCoverageId: run.security_coverage_id,
       techniqueId: run.technique_id,
       triggeredBy: user.id,
+      requester: user,
       attempt: (run.attempt ?? 1) + 1,
       playbook: planned && run.playbook_id && run.playbook_execution_id && run.playbook_step_id
         ? { playbookId: run.playbook_id, executionId: run.playbook_execution_id, stepId: run.playbook_step_id }
@@ -832,43 +847,57 @@ interface HuntStatisticsArgs {
 const HUNT_STATISTICS_DEFAULT_DAYS = 30;
 const HUNT_STATISTICS_INTERVALS = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
 
+// Terms aggregations return at most this many buckets (MAX_AGGREGATION_SIZE of the engine)
+const TECHNIQUE_VALIDATION_BATCH = 100;
+
 /**
  * Validation of each technique of a hunt by the OpenAEV emulations, counted over every emulation run of the hunt the
- * user can read.
+ * user can read: four aggregations by technique per batch of techniques, whatever the number of runs.
  */
 export const computeHuntTechniqueValidations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
-  const countEmulationRuns = (techniqueId: string, extra: { key: string; values: string[]; operator?: FilterOperator }[]) => {
-    return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+  const countByTechnique = async (techniqueIds: string[], extra: { key: string; values: string[]; operator?: FilterOperator }[]) => {
+    const buckets = await elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
       types: [ENTITY_TYPE_HUNT_RUN],
+      field: 'technique_id',
+      normalizeLabel: false,
       noFiltersChecking: true,
       filters: {
         mode: FilterMode.And,
         filters: [
           { key: ['hunt_id'], values: [hunt.internal_id] },
           { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_EMULATION] },
-          { key: ['technique_id'], values: [techniqueId] },
+          { key: ['technique_id'], values: techniqueIds },
           ...extra.map((filter) => ({ key: [filter.key], values: filter.values, operator: filter.operator ?? FilterOperator.Eq })),
         ],
         filterGroups: [],
       },
     });
+    return new Map(buckets.map((bucket) => [String(bucket.label), bucket.count]));
   };
   const techniqueIds = hunt[RELATION_HUNT_TECHNIQUES] ?? [];
-  const validations = [];
-  for (let index = 0; index < techniqueIds.length; index += 1) {
-    const techniqueId = techniqueIds[index];
-    const completedFilter = { key: 'hunt_run_status', values: [HUNT_RUN_STATUS_COMPLETED] };
+  const completedFilter = { key: 'hunt_run_status', values: [HUNT_RUN_STATUS_COMPLETED] };
+  const validations: { technique_id: string; status: ReturnType<typeof techniqueValidationStatus>; emulation_runs_count: number; detected_runs_count: number }[] = [];
+  for (let start = 0; start < techniqueIds.length; start += TECHNIQUE_VALIDATION_BATCH) {
+    const batch = techniqueIds.slice(start, start + TECHNIQUE_VALIDATION_BATCH);
     const [runs, detected, active, completed] = await Promise.all([
-      countEmulationRuns(techniqueId, []),
-      countEmulationRuns(techniqueId, [completedFilter, { key: 'hits_count', values: ['0'], operator: FilterOperator.Gt }]),
-      countEmulationRuns(techniqueId, [{ key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES }]),
-      countEmulationRuns(techniqueId, [completedFilter]),
+      countByTechnique(batch, []),
+      countByTechnique(batch, [completedFilter, { key: 'hits_count', values: ['0'], operator: FilterOperator.Gt }]),
+      countByTechnique(batch, [{ key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES }]),
+      countByTechnique(batch, [completedFilter]),
     ]);
-    validations.push({
-      technique_id: techniqueId,
-      status: techniqueValidationStatus({ runs, detected, active, completed }),
-      emulation_runs_count: runs,
-      detected_runs_count: detected,
+    batch.forEach((techniqueId) => {
+      const counts = {
+        runs: runs.get(techniqueId) ?? 0,
+        detected: detected.get(techniqueId) ?? 0,
+        active: active.get(techniqueId) ?? 0,
+        completed: completed.get(techniqueId) ?? 0,
+      };
+      validations.push({
+        technique_id: techniqueId,
+        status: techniqueValidationStatus(counts),
+        emulation_runs_count: counts.runs,
+        detected_runs_count: counts.detected,
+      });
     });
   }
   return validations;

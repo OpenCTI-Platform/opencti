@@ -33,7 +33,7 @@ Two playbook components orchestrate hunts. See [Playbook components](playbook-co
 
 ## Validation from OpenAEV
 
-When OpenAEV finishes an inject for a technique on an asset whose security platform is known, it asks OpenCTI to validate the detection: the active hunts covering the technique run on the hunt connector of that security platform, over the execution window of the inject. The request is idempotent per inject, hunt and platform.
+When OpenAEV finishes an inject for a technique on an asset whose security platform is known, it asks OpenCTI to validate the detection: every active hunt covering the technique runs on the hunt connector of that security platform, over the execution window of the inject. The request is idempotent per inject, hunt and platform, including when OpenAEV delivers the same inject several times at once.
 
 When the runs complete, OpenCTI writes the `hunt_detected` coverage on the security coverage of the simulation: 100 when the hunt found the emulated activity, 0 otherwise. This coverage is kept when OpenAEV later updates the security coverage.
 

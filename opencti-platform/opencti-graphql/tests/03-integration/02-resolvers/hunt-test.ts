@@ -2,9 +2,13 @@ import gql from 'graphql-tag';
 import { Readable } from 'node:stream';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
+import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { resetCacheForEntity } from '../../../src/database/cache';
@@ -14,6 +18,7 @@ import { HUNT_INCIDENT_RECOMMENDATION } from '../../../src/modules/hunt/hunt-inc
 import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
 
 const CONNECTOR_ID = '0b7e4b54-1f4f-4bde-9e93-8d0f1d6a3c01';
+const RESTRICTED_CONNECTOR_ID = '4c3f2a1d-8e7b-4d6c-9a5f-1b2c3d4e5f60';
 const SECURITY_PLATFORM_NAME = 'Hunt test Splunk';
 const TECHNIQUE_MITRE_ID = 'T1999.001';
 const SIGMA_RULE = `title: Hunt test encoded command
@@ -97,6 +102,9 @@ const HUNT_RUN_START = gql`
 `;
 const HUNT_TEST_QUERY = gql`
   mutation HuntTestQuery($id: ID!, $securityPlatformId: ID) { huntTestQuery(id: $id, securityPlatformId: $securityPlatformId) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_READ = gql`
+  query HuntRunRead($id: String!) { huntRun(id: $id) { id } }
 `;
 const HUNT_RUN_REPORT = gql`
   mutation HuntRunReport($id: ID!, $input: HuntRunReportInput!) { huntRunReport(id: $id, input: $input) { ${RUN_FIELDS} } }
@@ -455,11 +463,16 @@ describe('Hunt resolvers', () => {
       window_start: new Date(Date.now() - 3600 * 1000).toISOString(),
       window_end: new Date().toISOString(),
     };
-    const first = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
+    // Two deliveries of the same inject at once (OpenAEV retries) start one run, not two
+    const [first, concurrent] = await Promise.all([
+      queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } }),
+      queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } }),
+    ]);
     const validation = first.data?.huntValidateFromEmulation;
     expect(validation.hunts_count).toEqual(1);
     expect(validation.runs).toHaveLength(1);
     expect(validation.runs[0]).toMatchObject({ hunt_run_trigger: 'emulation', aev_inject_id: 'hunt-test-inject', technique_id: techniqueId });
+    expect(concurrent.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
     emulationRunId = validation.runs[0].id;
     const second = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
     expect(second.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
@@ -483,6 +496,58 @@ describe('Hunt resolvers', () => {
     expect(validated.data?.hunt.techniqueValidations).toEqual([
       { technique_id: techniqueId, status: 'validated', emulation_runs_count: 1, detected_runs_count: 1 },
     ]);
+  });
+
+  it('should target only the security platforms the user starting a run can read, and restrict each run like its platform', async () => {
+    const restrictedPlatform = await addSecurityPlatform(testContext, ADMIN_USER, {
+      name: 'Hunt test restricted platform',
+      security_platform_type: 'SIEM',
+      objectMarking: [MARKING_TLP_RED],
+    }) as BasicStoreEntity;
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REGISTER_CONNECTOR,
+      variables: { input: { id: RESTRICTED_CONNECTOR_ID, name: 'Hunt test restricted connector', type: 'INTERNAL_HUNT', scope: ['splunk'], auto: false, only_contextual: false } },
+    });
+    await patchAttribute(testContext, ADMIN_USER, RESTRICTED_CONNECTOR_ID, ENTITY_TYPE_CONNECTOR, {
+      hunt_platform: 'splunk',
+      hunt_languages: ['spl'],
+      hunt_security_platform_id: restrictedPlatform.internal_id,
+      hunt_supports_preview: true,
+    });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const startedRunIds: string[] = [];
+    try {
+      // The editor cannot read the TLP:RED platform: a run without platform targets only the readable one
+      const editorRuns = await queryAsUserWithSuccess(USER_EDITOR, { query: HUNT_RUN_START, variables: { id: huntId } });
+      startedRunIds.push(...(editorRuns.data?.huntRunStart ?? []).map((run: { id: string }) => run.id));
+      expect(editorRuns.data?.huntRunStart.map((run: { security_platform_id: string }) => run.security_platform_id)).toEqual([securityPlatformId]);
+      await queryAsUserIsExpectedError(
+        USER_EDITOR,
+        { query: HUNT_RUN_START, variables: { id: huntId, input: { security_platform_ids: [restrictedPlatform.internal_id] } } },
+        'No live hunt connector serves a security platform of this hunt you can access',
+      );
+      await queryAsUserIsExpectedError(
+        USER_EDITOR,
+        { query: HUNT_TEST_QUERY, variables: { id: huntId, securityPlatformId: restrictedPlatform.internal_id } },
+        'No live hunt connector supporting translation preview serves a platform you can access',
+      );
+      // A run on the platform carries its marking, so it stays hidden from the users who cannot read the platform
+      const adminRuns = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId, input: { security_platform_ids: [restrictedPlatform.internal_id] } } });
+      const [restrictedRun] = adminRuns.data?.huntRunStart ?? [];
+      startedRunIds.push(restrictedRun.id);
+      expect(restrictedRun.connector_id).toEqual(RESTRICTED_CONNECTOR_ID);
+      const hidden = await queryAsUserWithSuccess(USER_EDITOR, { query: HUNT_RUN_READ, variables: { id: restrictedRun.id } });
+      expect(hidden.data?.huntRun).toBeNull();
+      const visible = await queryAsAdminWithSuccess({ query: HUNT_RUN_READ, variables: { id: restrictedRun.id } });
+      expect(visible.data?.huntRun.id).toEqual(restrictedRun.id);
+    } finally {
+      for (let index = 0; index < startedRunIds.length; index += 1) {
+        await deleteElementById(testContext, ADMIN_USER, startedRunIds[index], ENTITY_TYPE_HUNT_RUN);
+      }
+      await queryAsAdmin({ query: gql`mutation DeleteConnector($id: ID!) { deleteConnector(id: $id) }`, variables: { id: RESTRICTED_CONNECTOR_ID } });
+      await deleteElementById(testContext, ADMIN_USER, restrictedPlatform.internal_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
   });
 
   it('should delete a hunt', async () => {

@@ -3,6 +3,7 @@ import conf, { booleanConf } from '../../config/conf';
 import { ValidationError } from '../../config/errors';
 import { type FilterGroup, HuntTechniqueValidationStatus } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
@@ -167,6 +168,24 @@ export const parseHuntFilterGroup = (filters: string | null | undefined, field: 
     throw ValidationError('Filters must be a filter group (mode, filters, filterGroups)', field);
   }
   return isFilterGroupNotEmpty(parsed) ? parsed : null;
+};
+
+type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[] };
+
+/**
+ * Access of a run, which discloses both its hunt and its target security platform: the markings of both, and only
+ * the organizations both are shared with (an element is shared with any of its organizations). Null when the hunt
+ * and the platform are shared with disjoint organizations, a restriction one list of organizations cannot express.
+ */
+export const huntRunRestrictions = (hunt: AccessRestricted, platform?: AccessRestricted | null) => {
+  const objectMarking = Array.from(new Set([...(hunt[RELATION_OBJECT_MARKING] ?? []), ...(platform?.[RELATION_OBJECT_MARKING] ?? [])]));
+  const huntOrganizations = hunt[RELATION_GRANTED_TO] ?? [];
+  const platformOrganizations = platform?.[RELATION_GRANTED_TO] ?? [];
+  if (huntOrganizations.length === 0 || platformOrganizations.length === 0) {
+    return { objectMarking, objectOrganization: huntOrganizations.length > 0 ? huntOrganizations : platformOrganizations };
+  }
+  const shared = huntOrganizations.filter((id) => platformOrganizations.includes(id));
+  return shared.length > 0 ? { objectMarking, objectOrganization: shared } : null;
 };
 
 export const clampInteger = (value: unknown, min: number, max: number, fallback: number) => {

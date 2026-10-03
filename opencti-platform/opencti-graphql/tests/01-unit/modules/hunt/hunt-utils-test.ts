@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampInteger,
+  huntRunRestrictions,
   isAutonomousHunt,
   normalizeNativeQueries,
   parseHuntFilterGroup,
@@ -13,6 +14,26 @@ import { mergeHuntDetectedCoverage, preservePlatformCoverage } from '../../../..
 import { parseIncidentProposal } from '../../../../src/modules/hunt/hunt-incident';
 
 const HASH = 'a'.repeat(64);
+
+describe('Hunt run restrictions', () => {
+  it('should give a run the markings of its hunt and of its security platform', () => {
+    const hunt = { 'object-marking': ['tlp-green', 'pap-green'] };
+    const platform = { 'object-marking': ['tlp-red', 'tlp-green'] };
+    expect(huntRunRestrictions(hunt, platform)).toEqual({ objectMarking: ['tlp-green', 'pap-green', 'tlp-red'], objectOrganization: [] });
+    expect(huntRunRestrictions(hunt, null)).toEqual({ objectMarking: ['tlp-green', 'pap-green'], objectOrganization: [] });
+    expect(huntRunRestrictions({}, undefined)).toEqual({ objectMarking: [], objectOrganization: [] });
+  });
+
+  it('should share a run only with the organizations both its hunt and its security platform are shared with', () => {
+    expect(huntRunRestrictions({ granted: ['org-a', 'org-b'] }, { granted: ['org-b', 'org-c'] })?.objectOrganization).toEqual(['org-b']);
+    expect(huntRunRestrictions({ granted: ['org-a'] }, {})?.objectOrganization).toEqual(['org-a']);
+    expect(huntRunRestrictions({}, { granted: ['org-c'] })?.objectOrganization).toEqual(['org-c']);
+  });
+
+  it('should refuse a run whose hunt and security platform are shared with disjoint organizations', () => {
+    expect(huntRunRestrictions({ granted: ['org-a'] }, { granted: ['org-c'] })).toBeNull();
+  });
+});
 
 describe('Hunt evidence sanitization', () => {
   it('should keep hashes, cap previews and merge duplicates', () => {

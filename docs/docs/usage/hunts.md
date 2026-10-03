@@ -62,6 +62,8 @@ When a run completes, the hunt connector sends to OpenCTI:
 
 Evidence can also be attached to a run later (an alert raised by the SIEM, a follow-up search): it is merged into the run without changing its verdict.
 
+The **Evidence** tab of a hunt aggregates the evidence samples of its completed runs: one row per field and hashed value, with its total count, the runs and platforms that saw it and when it was first and last seen. It covers the 100 most recent completed runs; when the hunt has more, the run selector reads "Latest 100 of N runs" and the tab names the date its window starts. The evidence of an older run stays on the page of that run, in the **Runs** tab.
+
 The verdict is set as follows:
 
 | Situation | Verdict |
@@ -107,3 +109,5 @@ Hunts can run on a schedule, react to new knowledge, be armed by Priority Intell
 | Create, update, run hunts, set verdicts, import packs | Create / Update knowledge |
 | Delete hunts | Delete knowledge |
 | Register a hunt connector, report runs | Connector API usage |
+
+A hunt run reveals both its hunt and the security platform it ran on. It therefore carries the markings of both, and it is shared only with the organizations both are shared with; a hunt and a platform restricted to different organizations never run together. A run started by a user (a manual run, a translation preview or a retry) only targets the security platforms that user can read, so a platform hidden from the user is never queried on their behalf. Scheduled, standing, playbook and OpenAEV runs target every security platform of the hunt scope.
