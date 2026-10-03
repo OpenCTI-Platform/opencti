@@ -3,7 +3,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { logApp } from '../../config/conf';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { lockResources } from '../../lock/master-lock';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { completeConnector } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
@@ -27,6 +28,7 @@ import {
   ENTITY_TYPE_HUNT_RUN,
   HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_MODE_PREVIEW,
+  HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_TRIGGER_MANUAL,
   HUNT_RUN_TRIGGER_PREVIEW,
 } from './huntRun/huntRun-types';
@@ -235,8 +237,31 @@ export const buildHuntRunMessage = async (
   };
 };
 
+const HUNT_CONNECTOR_DISPATCH_LOCK = 'hunt_connector_dispatch';
+
+// Budget checks and slot reservations of a connector are serialized: concurrent starts and manager dispatches cannot
+// all see the same free slot, and a run is dispatched only once
+const withConnectorDispatchLock = async <T>(connectorId: string, reservation: () => Promise<T>): Promise<T> => {
+  const lockKey = `${HUNT_CONNECTOR_DISPATCH_LOCK}_${connectorId}`;
+  let lock;
+  try {
+    lock = await lockResources([lockKey]);
+    return await reservation();
+  } catch (e: any) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [lockKey] });
+    }
+    throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 /**
  * Pushes a queued run to its connector queue, tracked by a work. Returns false when the budget defers the run.
+ * The run occupies its budget slot from the reservation of its dispatch date, before its message is published.
  */
 export const dispatchHuntRun = async (
   context: AuthContext,
@@ -249,22 +274,42 @@ export const dispatchHuntRun = async (
     logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, connector is not alive', { runId: run.internal_id, connectorId: run.connector_id });
     return false;
   }
-  const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
-  if (!budget.canDispatch) {
-    logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
+  const reserved = await withConnectorDispatchLock(connector.internal_id, async () => {
+    const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
+    if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run already dispatched or settled', { runId: run.internal_id });
+      return false;
+    }
+    const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
+    if (!budget.canDispatch) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
+      return false;
+    }
+    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
+    return true;
+  });
+  if (!reserved) {
     return false;
   }
-  const securityPlatform = run.security_platform_id
-    ? (await findByIds<BasicStoreEntity>(context, SYSTEM_USER, [run.security_platform_id]))[0] ?? null
-    : null;
-  const work = await createWork(context, HUNT_MANAGER_USER, connector, `Hunt ${hunt.name} (${run.hunt_run_trigger})`, hunt.standard_id, {
-    fileMarkings: hunt[RELATION_OBJECT_MARKING] ?? [],
-  });
-  if (!work) {
-    throw FunctionalError('The hunt run work cannot be created', { runId: run.internal_id });
+  let workId: string;
+  try {
+    const securityPlatform = run.security_platform_id
+      ? (await findByIds<BasicStoreEntity>(context, SYSTEM_USER, [run.security_platform_id]))[0] ?? null
+      : null;
+    const work = await createWork(context, HUNT_MANAGER_USER, connector, `Hunt ${hunt.name} (${run.hunt_run_trigger})`, hunt.standard_id, {
+      fileMarkings: hunt[RELATION_OBJECT_MARKING] ?? [],
+    });
+    if (!work) {
+      throw FunctionalError('The hunt run work cannot be created', { runId: run.internal_id });
+    }
+    workId = work.id;
+    const message = await buildHuntRunMessage(context, run, hunt, connector, securityPlatform, workId);
+    await pushToConnector(connector.internal_id, message);
+  } catch (error) {
+    // Nothing was published: the slot is released and the run stays queued for the next dispatch
+    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null });
+    throw error;
   }
-  const message = await buildHuntRunMessage(context, run, hunt, connector, securityPlatform, work.id);
-  await pushToConnector(connector.internal_id, message);
-  await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { work_id: work.id, dispatched_at: now() });
+  await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { work_id: workId });
   return true;
 };

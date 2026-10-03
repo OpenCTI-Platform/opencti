@@ -16,6 +16,7 @@ import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT } from '../../../src/module
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
+  HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_MODE_PREVIEW,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TRIGGER_MANUAL,
@@ -27,6 +28,7 @@ import {
 } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { createHuntRuns, expireHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-domain';
 import { HUNT_CONFIG } from '../../../src/modules/hunt/hunt-utils';
+import { dispatchHuntRun } from '../../../src/modules/hunt/hunt-dispatch';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import {
   dispatchQueuedHuntRuns,
@@ -244,5 +246,29 @@ describe('Hunt manager', () => {
       HUNT_CONFIG.previewRetentionDays = previewRetentionDays;
     }
     expect(await loadRun(preview.internal_id)).toBeFalsy();
+  });
+
+  it('should keep racing dispatches of a connector within its budget and dispatch each run once', async () => {
+    const hunt = await loadHunt(huntId);
+    const runs: BasicStoreEntityHuntRun[] = [];
+    for (let index = 0; index < 3; index += 1) {
+      runs.push(...await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false }));
+    }
+    const occupied = (await listHuntRuns(huntId))
+      .filter((run) => HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status) && run.dispatched_at).length;
+    const { maxConcurrentRunsPerConnector } = HUNT_CONFIG;
+    HUNT_CONFIG.maxConcurrentRunsPerConnector = occupied + 1;
+    try {
+      const results = await Promise.all([...runs, runs[0]].map((run) => dispatchHuntRun(testContext, run, hunt)));
+      expect(results.filter((dispatched) => dispatched)).toHaveLength(1);
+      const reloaded = await Promise.all(runs.map((run) => loadRun(run.internal_id)));
+      expect(reloaded.filter((run) => run.dispatched_at)).toHaveLength(1);
+      expect(reloaded.filter((run) => run.work_id)).toHaveLength(1);
+    } finally {
+      HUNT_CONFIG.maxConcurrentRunsPerConnector = maxConcurrentRunsPerConnector;
+    }
+    for (let index = 0; index < runs.length; index += 1) {
+      await expireHuntRun(testContext, await loadRun(runs[index].internal_id), 'Hunt manager test');
+    }
   });
 });
