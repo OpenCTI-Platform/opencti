@@ -27,7 +27,7 @@ import {
   findRecommendationsPaginated,
   revertSourceRecommendation,
 } from './sourceIntelligence-recommendations';
-import { findCollectionGaps } from './sourceIntelligence-gaps';
+import { deployCollectionGapConnector, findCollectionGaps } from './sourceIntelligence-gaps';
 import {
   createIntelligenceRoiDashboard,
   SCORECARD_METRICS,
@@ -110,6 +110,10 @@ const sourceIntelligenceResolvers: Resolvers = {
     },
     revertSourceRecommendation: (_, { id }, context) => revertSourceRecommendation(context, context.user, id) as any,
     dismissSourceRecommendation: (_, { id, reason }, context) => dismissSourceRecommendation(context, context.user, id, reason) as any,
+    collectionGapDeployConnector: async (_, { id, slug }, context) => {
+      const settings = await getSourceIntelligenceSettings(context);
+      return deployCollectionGapConnector(context, context.user, id, slug, settings) as any;
+    },
     sourceIntelligenceSettingsEdit: (_, { input }, context) => editSourceIntelligenceSettings(context, context.user, input) as any,
     sourceIntelligenceRecompute: (_, __, context) => requestSourceIntelligenceRecompute(context, context.user),
     sourceIntelligenceDashboardCreate: (_, { name }, context) => createIntelligenceRoiDashboard(context, context.user, name) as any,

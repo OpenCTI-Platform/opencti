@@ -860,6 +860,7 @@
   "Connector catalog | Ingestion | Data": "连接器目录 | 输入 | 数据",
   "Connector catalogs": "连接器目录",
   "Connector configuration": "连接器配置",
+  "Connector deployed through XTM Composer": "已通过 XTM Composer 部署连接器",
   "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "连接器的部署需要 OpenCTI 企业版。在社区版中，此配置为只读。",
   "Connector health and logs": "连接器健康状况和日志",
   "Connector name": "连接器名称",

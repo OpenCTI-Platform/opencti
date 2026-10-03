@@ -19,7 +19,8 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
-import { fullEntitiesList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { FunctionalError } from '../../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import { elCount, elPaginate } from '../../database/engine';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -62,7 +63,7 @@ import { buildResolverFromSources } from './sourceIntelligence-domain';
 import { resolveDocumentAssertions } from './sourceIntelligence-provenance';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
-import { applyAutonomousRecommendations, upsertProposals } from './sourceIntelligence-recommendations';
+import { applyAutonomousRecommendations, applySourceRecommendation, findOrCreateProposal, upsertProposals } from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
 const COVERAGE_SAMPLE_SIZE = 2000;
@@ -308,6 +309,44 @@ const hubPlatformOf = async (context: AuthContext) => {
  * Compute the collection gap of every PIR criterion: how well the platform sources cover it, and which catalog
  * integrations (XTM Hub first, local catalog otherwise) would fill it.
  */
+type AddConnectorGap = Pick<BasicStoreEntityCollectionGap, 'internal_id' | 'pir_id' | 'criterion_key' | 'criterion_label' | 'gap_coverage_score'
+  | 'recent_relationships' | 'matched_relationships' | 'distinct_sources'>;
+
+/**
+ * Recommendation to deploy one catalog connector for a collection gap. The fingerprint identifies the gap and the
+ * connector, so the gap computation and a deployment requested from the gap share the same recommendation.
+ */
+export const buildAddConnectorProposal = (
+  gap: AddConnectorGap,
+  pirName: string,
+  connector: CollectionGapRecommendedConnector,
+  recentDays: number,
+): RecommendationProposal => ({
+  kind: RECOMMENDATION_ADD_CONNECTOR,
+  source_id: null,
+  fingerprint: recommendationFingerprint(RECOMMENDATION_ADD_CONNECTOR, gap.pir_id, gap.criterion_key, connector.slug),
+  name: `Deploy ${connector.title} for ${pirName}`,
+  rationale: `The criterion "${gap.criterion_label}" of the PIR ${pirName} has a coverage of ${gap.gap_coverage_score}/100 `
+    + `(${gap.recent_relationships} relationships in the last ${recentDays} days from ${gap.distinct_sources} sources). `
+    + `${connector.title} covers ${[...connector.matched_object_types, ...connector.matched_sectors, ...connector.matched_regions].join(', ') || 'this criterion'}.`,
+  payload: {
+    pir_id: gap.pir_id,
+    collection_gap_id: gap.internal_id,
+    slug: connector.slug,
+    title: connector.title,
+    catalog_id: connector.catalog_id,
+    contract_image: connector.contract_image,
+    origin: connector.origin,
+    score: connector.score,
+  },
+  evidence: {
+    coverage_score: gap.gap_coverage_score,
+    recent_relationships: gap.recent_relationships,
+    matched_relationships: gap.matched_relationships,
+    distinct_sources: gap.distinct_sources,
+  },
+});
+
 export const computeCollectionGaps = async (context: AuthContext, sources: BasicStoreEntitySource[], settings: SourceIntelligenceSettings) => {
   const pirs = await fullEntitiesList<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
   const existingGaps = await fullEntitiesList<BasicStoreEntityCollectionGap>(context, SYSTEM_USER, [ENTITY_TYPE_COLLECTION_GAP]);
@@ -395,26 +434,7 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
       }
       const best = recommended.find((connector) => !connector.deployed);
       if (isGap && best) {
-        proposals.push({
-          kind: RECOMMENDATION_ADD_CONNECTOR,
-          source_id: null,
-          fingerprint: recommendationFingerprint(RECOMMENDATION_ADD_CONNECTOR, pir.internal_id, key, best.slug),
-          name: `Deploy ${best.title} for ${pir.name}`,
-          rationale: `The criterion "${resolved.label}" of the PIR ${pir.name} has a coverage of ${coverage}/100 `
-            + `(${recentCount} relationships in the last ${settings.gaps.recent_days} days from ${sample.distinct} sources). `
-            + `${best.title} covers ${[...best.matched_object_types, ...best.matched_sectors, ...best.matched_regions].join(', ') || 'this criterion'}.`,
-          payload: {
-            pir_id: pir.internal_id,
-            collection_gap_id: gapId,
-            slug: best.slug,
-            title: best.title,
-            catalog_id: best.catalog_id,
-            contract_image: best.contract_image,
-            origin: best.origin,
-            score: best.score,
-          },
-          evidence: { coverage_score: coverage, recent_relationships: recentCount, matched_relationships: windowCount, distinct_sources: sample.distinct },
-        });
+        proposals.push(buildAddConnectorProposal({ ...gapFields, internal_id: gapId }, pir.name, best, settings.gaps.recent_days));
       }
     }
   }
@@ -462,5 +482,40 @@ export const findCollectionGaps = async (context: AuthContext, user: AuthUser, a
     orderMode: args.orderMode ?? 'asc',
     filters: { mode: 'and', filters, filterGroups: [] },
   } as any);
+};
+// endregion
+
+// region mutations
+/**
+ * One-click deployment, through XTM Composer, of a connector recommended for a collection gap. It runs as the
+ * add_connector recommendation of the gap and connector (created when the gap computation did not propose this
+ * connector), so the deployment is audited, listed in the recommendations inbox and reversible.
+ */
+export const deployCollectionGapConnector = async (
+  context: AuthContext,
+  user: AuthUser,
+  gapId: string,
+  slug: string,
+  settings: SourceIntelligenceSettings,
+) => {
+  await checkEnterpriseEdition(context);
+  const gap = await storeLoadById<BasicStoreEntityCollectionGap>(context, user, gapId, ENTITY_TYPE_COLLECTION_GAP);
+  if (!gap) {
+    throw FunctionalError('Collection gap not found', { id: gapId });
+  }
+  const pir = await getPirWithAccessCheck(context, user, gap.pir_id);
+  const connector = (gap.recommended_connectors ?? []).find((recommended) => recommended.slug === slug);
+  if (!connector) {
+    throw FunctionalError('This connector is not recommended for the collection gap', { id: gapId, slug });
+  }
+  if (connector.deployed) {
+    throw FunctionalError('This connector is already deployed', { id: gapId, slug });
+  }
+  if (!connector.manager_supported || !connector.contract_image) {
+    throw FunctionalError('This connector cannot be deployed through XTM Composer, deploy it from the catalog page', { id: gapId, slug });
+  }
+  const proposal = buildAddConnectorProposal(gap, pir.name, connector, settings.gaps.recent_days);
+  const recommendation = await findOrCreateProposal(context, proposal);
+  return applySourceRecommendation(context, user, recommendation.internal_id, settings);
 };
 // endregion

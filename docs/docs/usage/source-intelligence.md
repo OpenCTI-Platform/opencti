@@ -76,7 +76,7 @@ The **Collection gaps** tab checks every criterion of every [PIR](pir.md) agains
 - diversity (40%): distinct sources contributing to it, against a target of 3,
 - freshness (20%): share of the 90-day matches that are recent.
 
-A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations. A recommended connector can be deployed in one click through the connector composer, or opened in the catalog.
+A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations. A recommended connector available in the local catalog as a managed connector can be deployed in one click through XTM Composer; the deployment runs as an "Add a connector" recommendation, so it is recorded in the recommendations inbox with its audit trail and can be reverted. Other recommended connectors open in the catalog.
 
 ## Recommendations (EE)
 

@@ -210,6 +210,15 @@ const APPLY_MUTATION = gql`
   }
 `;
 
+const DEPLOY_MUTATION = gql`
+  mutation collectionGapDeployConnector($id: ID!, $slug: String!) {
+    collectionGapDeployConnector(id: $id, slug: $slug) {
+      id
+      status
+    }
+  }
+`;
+
 const REVERT_MUTATION = gql`
   mutation revertSourceRecommendation($id: ID!) {
     revertSourceRecommendation(id: $id) {
@@ -499,5 +508,11 @@ describe('Source intelligence', () => {
       evidence: {},
     }], settings, { kinds: [] });
     await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, { query: APPLY_MUTATION, variables: { id: created[0].internal_id } });
+  });
+
+  it('should guard the one-click deployment of a collection gap connector', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DEPLOY_MUTATION, variables: { id: sourceId, slug: 'any-connector' } });
+    const unknownGap = await queryAsAdmin({ query: DEPLOY_MUTATION, variables: { id: sourceId, slug: 'any-connector' } });
+    expect(unknownGap.errors?.[0]?.message).toEqual('Collection gap not found');
   });
 });

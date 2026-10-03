@@ -608,6 +608,7 @@ type Mutation {
   applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
+  collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
   sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceRecompute: Boolean @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceDashboardCreate(name: String): Workspace @auth(for: [EXPLORE_EXUPDATE])

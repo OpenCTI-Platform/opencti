@@ -629,6 +629,45 @@ const loadAllRecommendations = async (context: AuthContext) => {
   return fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION]);
 };
 
+const createProposal = async (context: AuthContext, proposal: RecommendationProposal, nowIso: string) => {
+  const recommendation = await createEntity(context, SOURCE_INTELLIGENCE_MANAGER_USER, {
+    name: proposal.name,
+    rationale: proposal.rationale,
+    payload: JSON.stringify(proposal.payload),
+    evidence: JSON.stringify(proposal.evidence),
+    recommendation_kind: proposal.kind,
+    recommendation_status: RECOMMENDATION_STATUS_PROPOSED,
+    source_id: proposal.source_id,
+    fingerprint: proposal.fingerprint,
+    autonomous: false,
+    proposed_at: nowIso,
+    collection_gap_id: (proposal.payload.collection_gap_id as string | undefined) ?? null,
+    pir_id: (proposal.payload.pir_id as string | undefined) ?? null,
+  }, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+  return recommendation as BasicStoreEntitySourceRecommendation;
+};
+
+/**
+ * Live recommendation (proposed, or failed and retryable) of the proposal fingerprint, created when there is none.
+ * Unlike upsertProposals, it never withdraws the other proposals of the same kind.
+ */
+export const findOrCreateProposal = async (context: AuthContext, proposal: RecommendationProposal) => {
+  const existing = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['fingerprint'], values: [proposal.fingerprint], operator: 'eq', mode: 'or' },
+        { key: ['recommendation_status'], values: [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    },
+  } as any);
+  if (existing.length > 0) {
+    return existing[0];
+  }
+  return createProposal(context, proposal, new Date().toISOString());
+};
+
 /**
  * Persist proposals: one live recommendation per fingerprint, dismissed ones are not proposed again before the
  * cooldown, proposals not produced anymore by the rules are withdrawn (dismissed by the system).
@@ -667,18 +706,7 @@ export const upsertProposals = async (
       const cooldownEnd = new Date(current.dismissed_at).getTime() + settings.tuning.dismiss_cooldown_days * DAY_MS;
       if (cooldownEnd > now) continue;
     }
-    const recommendation = await createEntity(context, SOURCE_INTELLIGENCE_MANAGER_USER, {
-      ...fields,
-      recommendation_kind: proposal.kind,
-      recommendation_status: RECOMMENDATION_STATUS_PROPOSED,
-      source_id: proposal.source_id,
-      fingerprint: proposal.fingerprint,
-      autonomous: false,
-      proposed_at: nowIso,
-      collection_gap_id: (proposal.payload.collection_gap_id as string | undefined) ?? null,
-      pir_id: (proposal.payload.pir_id as string | undefined) ?? null,
-    }, ENTITY_TYPE_SOURCE_RECOMMENDATION);
-    created.push(recommendation as BasicStoreEntitySourceRecommendation);
+    created.push(await createProposal(context, proposal, nowIso));
   }
   // Withdraw the proposals the rules do not produce anymore (the situation improved)
   const withdrawn = existing.filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED

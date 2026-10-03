@@ -860,6 +860,7 @@
   "Connector catalog | Ingestion | Data": "Каталог коннекторов | Ingestion | Data",
   "Connector catalogs": "Каталоги коннекторов",
   "Connector configuration": "Конфигурация коннектора",
+  "Connector deployed through XTM Composer": "Коннектор развернут через XTM Composer",
   "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "Для развертывания коннектора требуется OpenCTI Enterprise Edition. В версии Community Edition эта конфигурация доступна только для чтения.",
   "Connector health and logs": "Состояние и журналы коннектора",
   "Connector name": "Имя коннектора",
