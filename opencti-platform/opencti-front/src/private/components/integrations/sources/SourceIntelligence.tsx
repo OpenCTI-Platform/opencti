@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import notifyMutationOutcome from './notifyMutationOutcome';
 import useGranted, { EXPLORE_EXUPDATE, INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
@@ -78,18 +79,24 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
   const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const canCreateDashboard = useGranted([EXPLORE_EXUPDATE]);
   const [recomputeRequested, setRecomputeRequested] = useState(false);
-  const [commitRecompute, recomputing] = useApiMutation(sourceIntelligenceRecomputeMutation, undefined, {
-    successMessage: t_i18n('The scorecards will be recomputed in the next minutes'),
-  });
+  const [commitRecompute, recomputing] = useApiMutation(sourceIntelligenceRecomputeMutation);
   const [commitDashboard, creatingDashboard] = useApiMutation(sourceIntelligenceDashboardCreateMutation);
 
   const handleRecompute = () => {
-    commitRecompute({ variables: {}, onCompleted: () => setRecomputeRequested(true) });
+    commitRecompute({
+      variables: {},
+      onCompleted: (_, errors) => {
+        if (notifyMutationOutcome(errors, { success: t_i18n('The scorecards will be recomputed in the next minutes') })) {
+          setRecomputeRequested(true);
+        }
+      },
+    });
   };
   const handleCreateDashboard = () => {
     commitDashboard({
       variables: { name: t_i18n('Intelligence ROI') },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (!notifyMutationOutcome(errors)) return;
         const created = (response as { sourceIntelligenceDashboardCreate?: { id: string } | null }).sourceIntelligenceDashboardCreate;
         if (created?.id) {
           navigate(`/dashboard/workspaces/dashboards/${created.id}`);
