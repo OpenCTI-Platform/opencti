@@ -13,7 +13,15 @@ import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
-import { FilterMode, FilterOperator, OrderingMode, type FilterGroup, type HuntConnectorRegisterInput, type HuntRunReportInput, type HuntRunVerdictInput } from '../../../generated/graphql';
+import {
+  FilterMode,
+  FilterOperator,
+  OrderingMode,
+  type FilterGroup,
+  type HuntConnectorRegisterInput,
+  type HuntRunReportInput,
+  type HuntRunVerdictInput,
+} from '../../../generated/graphql';
 import { HUNT_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../../utils/access';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { now } from '../../../utils/format';
@@ -22,7 +30,16 @@ import { addHuntRunCount, addHuntTriageCount, addHuntVerdictCount } from '../../
 import { addSecurityPlatform } from '../../securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../../securityPlatform/securityPlatform-types';
 import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
-import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_PLATFORM_INTERNET, HUNT_PLATFORMS, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from '../hunt-types';
+import {
+  type BasicStoreEntityHunt,
+  ENTITY_TYPE_HUNT,
+  HUNT_PLATFORM_INTERNET,
+  HUNT_PLATFORMS,
+  HUNT_STATUS_DRAFT,
+  HUNT_STATUS_RETIRED,
+  RELATION_HUNT_TARGETS,
+  RELATION_HUNT_TECHNIQUES,
+} from '../hunt-types';
 import { dispatchHuntRun, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
 import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, sanitizeEvidence, truncate } from '../hunt-utils';
 import { updateHuntRunInformation } from '../hunt-stats';
@@ -50,6 +67,7 @@ import {
   HUNT_VERDICT_SOURCE_AUTO,
   HUNT_VERDICT_SOURCES,
   HUNT_VERDICT_TRUE_POSITIVE,
+  type HuntPlaybookContext,
 } from './huntRun-types';
 
 const ERROR_MESSAGE_MAX_LENGTH = 4000;
@@ -107,6 +125,14 @@ export interface HuntRunRequest {
   techniqueId?: string | null;
   triggeredBy?: string | null;
   dispatch?: boolean;
+  attempt?: number;
+  playbook?: {
+    playbookId: string;
+    executionId: string;
+    stepId: string;
+    // Stored on the first run of the group only (continuation of the playbook)
+    context?: HuntPlaybookContext;
+  } | null;
 }
 
 /**
@@ -116,6 +142,13 @@ export interface HuntRunRequest {
  */
 export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<BasicStoreEntityHuntRun[]> => {
   const mode = request.mode ?? HUNT_RUN_MODE_EXECUTE;
+  if (context.draft_context) {
+    throw FunctionalError('A hunt runs once it is validated from its draft', { huntId: hunt.internal_id });
+  }
+  // Draft and retired hunts never execute, their logic can still be previewed
+  if (mode === HUNT_RUN_MODE_EXECUTE && [HUNT_STATUS_DRAFT, HUNT_STATUS_RETIRED].includes(hunt.hunt_status)) {
+    throw FunctionalError(`A hunt in ${hunt.hunt_status} status does not run`, { huntId: hunt.internal_id, status: hunt.hunt_status });
+  }
   let targets = await resolveHuntConnectorTargets(context, HUNT_MANAGER_USER, hunt, request.securityPlatformIds ?? []);
   if (request.connectorIds && request.connectorIds.length > 0) {
     targets = targets.filter((target) => request.connectorIds?.includes(target.connector.internal_id));
@@ -143,13 +176,20 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       time_window_start: windowStart.toISOString(),
       time_window_end: windowEnd.toISOString(),
       verdict: HUNT_VERDICT_PENDING,
-      attempt: 1,
+      attempt: Math.max(1, request.attempt ?? 1),
       aev_inject_id: request.aevInjectId ?? null,
       security_coverage_id: request.securityCoverageId ?? null,
       technique_id: request.techniqueId ?? null,
       triggered_by: request.triggeredBy ?? HUNT_MANAGER_USER.id,
       objectMarking: hunt[RELATION_OBJECT_MARKING] ?? [],
       objectOrganization: hunt[RELATION_GRANTED_TO] ?? [],
+      ...(request.playbook ? {
+        playbook_id: request.playbook.playbookId,
+        playbook_execution_id: request.playbook.executionId,
+        playbook_step_id: request.playbook.stepId,
+        playbook_leader: index === 0 && !!request.playbook.context,
+        playbook_context: index === 0 && request.playbook.context ? JSON.stringify(request.playbook.context) : null,
+      } : {}),
     };
     const run = await createEntity(context, HUNT_MANAGER_USER, runInput, ENTITY_TYPE_HUNT_RUN) as BasicStoreEntityHuntRun;
     runs.push(run);
@@ -244,6 +284,12 @@ export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: 
 // endregion
 
 // region completion
+// Exponential backoff of automatic retries: retry_backoff_minutes, then twice as long at each attempt
+export const computeRetryAt = (attempt: number, from = Date.now()) => {
+  const backoff = HUNT_CONFIG.retryBackoffMinutes * (2 ** (Math.max(1, attempt) - 1));
+  return new Date(from + backoff * 60000).toISOString();
+};
+
 const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string => {
   if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
     return HUNT_VERDICT_INCONCLUSIVE;
@@ -318,7 +364,6 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
     return run;
   }
-  let current = run;
   const verdict = computeAutomaticVerdict(run);
   const patch: Record<string, unknown> = { verdict, verdict_source: HUNT_VERDICT_SOURCE_AUTO };
   if (run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (run.hits_count ?? 0) >= hunt.escalation_threshold && !run.incident_id) {
@@ -331,7 +376,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     }
   }
   const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
-  current = element as unknown as BasicStoreEntityHuntRun;
+  const current = element as unknown as BasicStoreEntityHuntRun;
   await updateHuntRunInformation(context, hunt.internal_id, {
     last_run_at: current.completed_at ?? now(),
     last_run_status: current.hunt_run_status,
@@ -414,8 +459,7 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
     patch.error_message = truncate(input.error ?? 'Unknown error', ERROR_MESSAGE_MAX_LENGTH);
     // Automatic retries with exponential backoff, translation previews are never retried
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
-      const backoff = HUNT_CONFIG.retryBackoffMinutes * (2 ** (run.attempt - 1));
-      patch.next_retry_at = new Date(Date.now() + backoff * 60000).toISOString();
+      patch.next_retry_at = computeRetryAt(run.attempt);
     }
   }
   const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
@@ -428,6 +472,32 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
     }
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
+};
+
+/**
+ * Terminates a run the platform stopped waiting for (hunt manager): never dispatched in time, or dispatched and not
+ * reported within its timeout. Same completion path as a connector failure: verdict, retry schedule, statistics.
+ */
+export const expireHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, reason: string) => {
+  if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
+    return run;
+  }
+  const patch: Record<string, unknown> = {
+    hunt_run_status: HUNT_RUN_STATUS_TIMEOUT,
+    completed_at: now(),
+    error_message: truncate(reason, ERROR_MESSAGE_MAX_LENGTH),
+  };
+  // A run that never reached its connector is not retried: its connector is gone or saturated
+  if (run.dispatched_at && run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
+    patch.next_retry_at = computeRetryAt(run.attempt);
+  }
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  let updated = element as unknown as BasicStoreEntityHuntRun;
+  const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
+  if (hunt) {
+    updated = await finalizeHuntRun(context, updated, hunt);
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, HUNT_MANAGER_USER);
 };
 // endregion
 

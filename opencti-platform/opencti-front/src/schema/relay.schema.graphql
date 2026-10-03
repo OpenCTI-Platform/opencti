@@ -16351,6 +16351,8 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   last_run_status: String
   last_hits_count: Int
   next_run_at: DateTime
+  hunt_pir_armed: Boolean
+  hunt_pir_armed_at: DateTime
   huntTargets: [StixDomainObject!]
   huntTechniques: [AttackPattern!]
   huntSources: [StixDomainObject!]
@@ -16583,6 +16585,8 @@ type HuntRun implements BasicObject & InternalObject {
   completed_at: DateTime
   cost_ms: Int
   error_message: String
+  playbook_id: String
+  playbook_execution_id: String
   objectMarking: [MarkingDefinition!]
 }
 

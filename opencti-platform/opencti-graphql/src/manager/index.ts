@@ -3,6 +3,7 @@ import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
+import './huntManager';
 import './indicatorDecayManager';
 import './pirManager';
 import './platformUsageMetricsManager';

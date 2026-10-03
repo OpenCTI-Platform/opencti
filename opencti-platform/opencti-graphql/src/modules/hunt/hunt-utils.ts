@@ -30,6 +30,9 @@ export const HUNT_CONFIG = {
   maxResultsPerRun: numberConf('hunt_manager:max_results_per_run', 10000),
   evidenceMaxItems: numberConf('hunt_manager:evidence_max_items', 20),
   evidenceMaxValueLength: numberConf('hunt_manager:evidence_max_value_length', 256),
+  queueExpiryHours: numberConf('hunt_manager:queue_expiry_hours', 24),
+  runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
+  previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
 };
 
 export const HUNT_DEFAULT_TIME_WINDOW_HOURS = 24;

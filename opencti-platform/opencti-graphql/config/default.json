@@ -384,7 +384,10 @@
     "max_time_window_hours": 720,
     "max_results_per_run": 10000,
     "evidence_max_items": 20,
-    "evidence_max_value_length": 256
+    "evidence_max_value_length": 256,
+    "queue_expiry_hours": 24,
+    "run_retention_days": 365,
+    "preview_retention_days": 7
   },
   "data_sanity_manager": {
     "enabled": true,

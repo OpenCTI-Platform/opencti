@@ -28,7 +28,6 @@ import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { addHuntPlanCount } from '../../manager/telemetryManager';
 import { HUNT_MANAGER_USER } from '../../utils/access';
-import { now } from '../../utils/format';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
@@ -36,21 +35,7 @@ import { findPirRelationPaginated } from '../pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { resolveAgentJwtUser } from '../playbook/components/ai-agent-shared';
-import {
-  type BasicStoreEntityHunt,
-  ENTITY_TYPE_HUNT,
-  HUNT_SCHEDULE_MANUAL,
-  HUNT_SOURCE_AGENT,
-  HUNT_SOURCE_ANALYST,
-  HUNT_STATUS_ACTIVE,
-  HUNT_TYPE_TELEMETRY,
-  INPUT_HUNT_SOURCES,
-  INPUT_HUNT_TARGETS,
-  INPUT_HUNT_TECHNIQUES,
-  RELATION_HUNT_SOURCES,
-  RELATION_HUNT_TARGETS,
-  RELATION_HUNT_TECHNIQUES,
-} from './hunt-types';
+import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_SCHEDULE_MANUAL, HUNT_STATUS_ACTIVE, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt';
 import { validateSigmaRule } from './hunt-sigma';
 import { computeNextRunAt } from './hunt-schedule';
@@ -100,8 +85,8 @@ const resolveTechniqueIds = async (context: AuthContext, user: AuthUser, values:
   const otherIds = values.filter((value) => !ATTACK_TECHNIQUE_ID.test(value));
   const byAttackId = attackIds.length > 0
     ? await fullEntitiesList<BasicStoreEntity & { x_mitre_id?: string }>(context, user, [ENTITY_TYPE_ATTACK_PATTERN], {
-      filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: attackIds }], filterGroups: [] },
-    })
+        filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: attackIds }], filterGroups: [] },
+      })
     : [];
   const unresolvedAttackIds = attackIds.filter((attackId) => !byAttackId.some((technique) => technique.x_mitre_id === attackId));
   if (unresolvedAttackIds.length > 0) {
@@ -160,7 +145,7 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
 };
 
 export const huntDelete = async (context: AuthContext, user: AuthUser, huntId: string) => {
-  // Runs of deleted hunts are garbage collected by the hunt manager
+  // Runs are kept so that a hunt restored from the trash keeps its history, the run retention purges them
   await deleteElementById(context, user, huntId, ENTITY_TYPE_HUNT);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, huntId, user);
   return huntId;
@@ -256,7 +241,13 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
     reports: reports.map((report) => ({ id: report.internal_id, name: report.name, description: report.description ?? '' })),
     security_platforms: platforms.map((platform) => {
       const connector = connectors.find((c) => c.security_platform_id === platform.internal_id);
-      return { id: platform.internal_id, name: platform.name, security_platform_type: platform.security_platform_type, platform: connector?.platform, languages: connector?.languages ?? [] };
+      return {
+        id: platform.internal_id,
+        name: platform.name,
+        security_platform_type: platform.security_platform_type,
+        platform: connector?.platform,
+        languages: connector?.languages ?? [],
+      };
     }),
     benign_patterns: input.benign_patterns ?? [],
     constraints: { max_time_window_hours: 720, max_escalation_threshold: 10000 },

@@ -90,6 +90,8 @@ type HuntRun implements BasicObject & InternalObject {
   completed_at: DateTime
   cost_ms: Int
   error_message: String
+  playbook_id: String
+  playbook_execution_id: String
   objectMarking: [MarkingDefinition!]
 }
 

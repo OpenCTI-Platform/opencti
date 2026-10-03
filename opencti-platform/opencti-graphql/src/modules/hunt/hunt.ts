@@ -92,6 +92,8 @@ const HUNT_DEFINITION: ModuleDefinition<StoreEntityHunt, StixHunt> = {
     { name: 'last_run_status', label: 'Hunt last run status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_hits_count', label: 'Hunt last run hits', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'next_run_at', label: 'Hunt next run date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_pir_armed', label: 'Hunt armed by a PIR', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_pir_armed_at', label: 'Hunt PIR arming date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   relationsRefs: [

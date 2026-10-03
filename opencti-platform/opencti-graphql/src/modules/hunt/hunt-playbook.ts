@@ -1,0 +1,112 @@
+import type { AuthContext } from '../../types/user';
+import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
+import { logApp } from '../../config/conf';
+import { stixLoadByIds } from '../../database/middleware';
+import { fullEntitiesList } from '../../database/middleware-loader';
+import { FilterMode } from '../../generated/graphql';
+import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
+import {
+  type BasicStoreEntityHuntRun,
+  ENTITY_TYPE_HUNT_RUN,
+  HUNT_RUN_STATUS_COMPLETED,
+  HUNT_RUN_TERMINAL_STATUSES,
+  type HuntPlaybookContext,
+  HUNT_VERDICT_PENDING,
+} from './huntRun/huntRun-types';
+
+// Objects produced by the runs and appended to the playbook bundle when the step resumes
+export const HUNT_PLAYBOOK_MAX_RESULTS = 500;
+// The continuation keeps the bundle of the step: oversized bundles are resumed immediately instead of waiting
+export const HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH = 5 * 1024 * 1024;
+
+/**
+ * Runs started by one hunt step of one playbook execution (retries included). Without a step id, every hunt run of the
+ * execution is returned (a result filter placed after other steps).
+ */
+export const findPlaybookHuntRuns = async (context: AuthContext, executionId: string, stepId?: string | null) => {
+  const filters = [{ key: ['playbook_execution_id'], values: [executionId] }];
+  if (stepId) {
+    filters.push({ key: ['playbook_step_id'], values: [stepId] });
+  }
+  return fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    filters: { mode: FilterMode.And, filters, filterGroups: [] },
+    noFiltersChecking: true,
+  });
+};
+
+// A group of runs is settled when every run is terminated and no automatic retry is still planned
+export const isHuntRunGroupSettled = (runs: Pick<BasicStoreEntityHuntRun, 'hunt_run_status' | 'next_retry_at'>[]) => {
+  return runs.every((run) => HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status) && !run.next_retry_at);
+};
+
+export interface HuntPlaybookOutcome {
+  runs_count: number;
+  completed_count: number;
+  hits_total: number;
+  verdicts: string[];
+  proposed_verdicts: string[];
+  incident_ids: string[];
+}
+
+/**
+ * Outcome of the hunt runs of a playbook execution. A retried run only counts through its last attempt: superseded
+ * failed attempts are ignored when a later attempt exists for the same connector.
+ */
+export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): HuntPlaybookOutcome => {
+  const latest = new Map<string, BasicStoreEntityHuntRun>();
+  runs.forEach((run) => {
+    const key = `${run.hunt_id}:${run.connector_id ?? ''}`;
+    const current = latest.get(key);
+    if (!current || (run.attempt ?? 1) > (current.attempt ?? 1)) {
+      latest.set(key, run);
+    }
+  });
+  const effective = Array.from(latest.values());
+  return {
+    runs_count: effective.length,
+    completed_count: effective.filter((run) => run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED).length,
+    hits_total: effective.reduce((sum, run) => sum + (run.hits_count ?? 0), 0),
+    verdicts: Array.from(new Set(effective.map((run) => run.verdict))),
+    proposed_verdicts: Array.from(new Set(effective
+      .map((run) => (run.verdict === HUNT_VERDICT_PENDING && run.verdict_proposal ? run.verdict_proposal : run.verdict)))),
+    incident_ids: Array.from(new Set(effective.map((run) => run.incident_id).filter((id): id is string => !!id))),
+  };
+};
+
+/**
+ * Continues a playbook execution waiting on a hunt step (PLAYBOOK_HUNT_COMPONENT): the step executor runs with the
+ * bundle of the step, completed with the knowledge produced by the runs when configured.
+ */
+export const resumeHuntPlaybookStep = async (context: AuthContext, playbookContext: HuntPlaybookContext, runs: BasicStoreEntityHuntRun[]) => {
+  const bundle = JSON.parse(playbookContext.bundle) as StixBundle;
+  if (playbookContext.include_results) {
+    const knownIds = new Set<string>(bundle.objects.map((object) => object.id));
+    const resultIds = Array.from(new Set(runs.flatMap((run) => run.result_ids ?? [])))
+      .filter((id) => !knownIds.has(id))
+      .slice(0, HUNT_PLAYBOOK_MAX_RESULTS);
+    if (resultIds.length > 0) {
+      const results = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, resultIds) as StixObject[];
+      bundle.objects.push(...results.filter((result) => !!result));
+    }
+  }
+  // Imported lazily: the playbook manager loads the playbook components, this module included
+  const { playbookStepExecution } = await import('../../manager/playbookManager/playbookManager');
+  const resumed = await playbookStepExecution(context, AUTOMATION_MANAGER_USER, {
+    playbook_id: playbookContext.playbook_id,
+    step_id: playbookContext.step_id,
+    previous_step_id: playbookContext.previous_step_id,
+    execution_id: playbookContext.execution_id,
+    event_id: playbookContext.event_id,
+    data_instance_id: playbookContext.data_instance_id,
+    execution_start: playbookContext.execution_start,
+    previous_bundle: playbookContext.previous_bundle,
+    bundle: JSON.stringify(bundle),
+  });
+  if (!resumed) {
+    logApp.warn('[OPENCTI-MODULE] Hunt playbook step cannot be resumed, the playbook or its step does not exist anymore', {
+      playbookId: playbookContext.playbook_id,
+      stepId: playbookContext.step_id,
+    });
+  }
+  return resumed;
+};

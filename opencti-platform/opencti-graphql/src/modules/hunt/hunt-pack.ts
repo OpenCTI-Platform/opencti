@@ -104,7 +104,7 @@ export const exportHuntPack = async (context: AuthContext, user: AuthUser, ids: 
       ...((hunt[INPUT_HUNT_SOURCES] ?? []) as StoreEntity[]).filter((source) => source.entity_type === ENTITY_TYPE_INDICATOR),
     ];
     const stixHunt = toPackHunt(convertStoreToStix_2_1(hunt) as StixHunt);
-    const distributedRefs = new Set(references.map((reference) => reference.standard_id));
+    const distributedRefs = new Set<string>(references.map((reference) => reference.standard_id));
     stixHunt[ATTRIBUTE_HUNT_SOURCES] = (stixHunt[ATTRIBUTE_HUNT_SOURCES] ?? []).filter((ref) => distributedRefs.has(ref));
     objects.set(stixHunt.id, stixHunt);
     const fullReferences = references.length > 0
@@ -173,7 +173,7 @@ export const planHuntPackImport = async (
       return [];
     }
     const found = await findByIds<BasicStoreEntity>(context, user, refs);
-    const foundIds = new Set(found.flatMap((element) => [element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
+    const foundIds = new Set<string>(found.flatMap((element) => [element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
     refs.filter((ref) => !foundIds.has(ref)).forEach((ref) => unresolved.push(ref));
     return found.map((element) => element.internal_id);
   };
@@ -182,15 +182,15 @@ export const planHuntPackImport = async (
       return [];
     }
     const found = await findByIds<BasicStoreEntity>(context, user, refs, { type: ENTITY_TYPE_ATTACK_PATTERN });
-    const foundIds = new Set(found.map((element) => element.standard_id));
+    const foundIds = new Set<string>(found.map((element) => element.standard_id));
     const missing = refs.filter((ref) => !foundIds.has(ref));
     const byMitreId = missing
       .map((ref) => ({ ref, mitreId: attackExternalId(bundleObjects.get(ref)) }))
       .filter((item): item is { ref: string; mitreId: string } => !!item.mitreId);
     const resolvedByMitre = byMitreId.length > 0
       ? await fullEntitiesList<BasicStoreEntity & { x_mitre_id?: string }>(context, user, [ENTITY_TYPE_ATTACK_PATTERN], {
-        filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: byMitreId.map((item) => item.mitreId) }], filterGroups: [] },
-      })
+          filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: byMitreId.map((item) => item.mitreId) }], filterGroups: [] },
+        })
       : [];
     const resolvedMitreIds = new Set(resolvedByMitre.map((element) => element.x_mitre_id));
     missing.filter((ref) => !byMitreId.some((item) => item.ref === ref && resolvedMitreIds.has(item.mitreId))).forEach((ref) => unresolved.push(ref));

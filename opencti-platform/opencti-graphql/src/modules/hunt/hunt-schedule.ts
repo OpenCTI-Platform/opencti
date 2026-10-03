@@ -111,7 +111,7 @@ export const parseCron = (expression: string): ParsedCron => {
     try {
       return parseField(part, FIELDS[index]);
     } catch (error) {
-      throw new Error(`field ${index + 1}: ${(error as Error).message}`);
+      throw new Error(`field ${index + 1}: ${(error as Error).message}`, { cause: error });
     }
   });
   const daysOfWeek = new Set(Array.from(parsed[4].values).map((day) => day % 7));

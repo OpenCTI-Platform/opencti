@@ -94,6 +94,29 @@ interface HuntRunAttributes {
   completed_at?: string | null;
   cost_ms?: number | null;
   error_message?: string | null;
+  playbook_id?: string | null;
+  playbook_execution_id?: string | null;
+  playbook_step_id?: string | null;
+  playbook_leader?: boolean | null;
+  playbook_context?: string | null;
+  playbook_resumed_at?: string | null;
+}
+
+/**
+ * Continuation of a playbook waiting for hunt runs (PLAYBOOK_HUNT_COMPONENT), stored on the first run of the group
+ * and replayed through the playbook step execution once every run of the group is terminated.
+ */
+export interface HuntPlaybookContext {
+  playbook_id: string;
+  step_id: string;
+  previous_step_id: string;
+  execution_id: string;
+  event_id: string;
+  data_instance_id: string;
+  execution_start: string;
+  include_results: boolean;
+  bundle: string;
+  previous_bundle: string;
 }
 
 export interface BasicStoreEntityHuntRun extends BasicStoreEntity, HuntRunAttributes {}

@@ -11171,6 +11171,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   huntTechniques?: Maybe<Array<AttackPattern>>;
   hunt_max_results?: Maybe<Scalars['Int']['output']>;
   hunt_pir_activation?: Maybe<Scalars['Boolean']['output']>;
+  hunt_pir_armed?: Maybe<Scalars['Boolean']['output']>;
+  hunt_pir_armed_at?: Maybe<Scalars['DateTime']['output']>;
   hunt_schedule: Scalars['String']['output'];
   hunt_scope?: Maybe<Scalars['String']['output']>;
   hunt_source_kind: HuntSourceKind;
@@ -11568,6 +11570,8 @@ export type HuntRun = BasicObject & InternalObject & {
   next_retry_at?: Maybe<Scalars['DateTime']['output']>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
+  playbook_execution_id?: Maybe<Scalars['String']['output']>;
+  playbook_id?: Maybe<Scalars['String']['output']>;
   query_language?: Maybe<Scalars['String']['output']>;
   representative: Representative;
   result_ids?: Maybe<Array<Scalars['String']['output']>>;
@@ -47486,6 +47490,8 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   huntTechniques?: Resolver<Maybe<Array<ResolversTypes['AttackPattern']>>, ParentType, ContextType>;
   hunt_max_results?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hunt_pir_activation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hunt_pir_armed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hunt_pir_armed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   hunt_schedule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hunt_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hunt_source_kind?: Resolver<ResolversTypes['HuntSourceKind'], ParentType, ContextType>;
@@ -47622,6 +47628,8 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   next_retry_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_execution_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   result_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;

@@ -21,20 +21,12 @@ import { now } from '../../utils/format';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import {
-  type BasicStoreEntityHunt,
-  HUNT_PLATFORM_INTERNET,
-  HUNT_TYPE_INFRASTRUCTURE,
-  RELATION_HUNT_SOURCES,
-  RELATION_HUNT_TARGETS,
-  RELATION_HUNT_TECHNIQUES,
-} from './hunt-types';
+import { type BasicStoreEntityHunt, HUNT_PLATFORM_INTERNET, HUNT_TYPE_INFRASTRUCTURE, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
   HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_MODE_PREVIEW,
-  HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_TRIGGER_MANUAL,
   HUNT_RUN_TRIGGER_PREVIEW,
 } from './huntRun/huntRun-types';
@@ -136,8 +128,10 @@ export const checkConnectorBudget = async (context: AuthContext, connector: Basi
     HUNT_CONFIG.maxConcurrentRunsPerConnector,
     connector.hunt_max_concurrent_runs && connector.hunt_max_concurrent_runs > 0 ? connector.hunt_max_concurrent_runs : Number.MAX_SAFE_INTEGER,
   ));
+  // A dispatched run occupies its connector until it terminates, even before the connector reports it running
   const activeRuns = await countRuns(context, runsFilters(connector.internal_id, [
-    { key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES.filter((status) => status !== HUNT_RUN_STATUS_QUEUED) },
+    { key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES },
+    { key: 'dispatched_at', values: [], operator: FilterOperator.NotNil },
   ]));
   if (activeRuns >= maxConcurrent) {
     return { canDispatch: false, reason: `connector ${connector.name} already runs ${activeRuns} hunts` };
