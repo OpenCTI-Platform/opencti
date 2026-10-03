@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectTimelineImpacts, isTimelineConsistencyPassDue } from '../../../src/manager/timelineManager';
+import { buildTimelineConsistencyFilters, collectTimelineImpacts, isTimelineConsistencyPassDue } from '../../../src/manager/timelineManager';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
@@ -66,5 +66,21 @@ describe('Timeline consistency pass schedule', () => {
     expect(isTimelineConsistencyPassDue(null, at('2026-10-03T02:00:00.000Z'), 2)).toBe(true);
     expect(isTimelineConsistencyPassDue(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T03:00:00.000Z'), 2)).toBe(true);
     expect(isTimelineConsistencyPassDue(at('2026-10-03T02:00:05.000Z'), at('2026-10-03T23:00:00.000Z'), 2)).toBe(false);
+  });
+
+  it('should only schedule the containers changed since the last pass, never computed or older than the max age', () => {
+    const filters = buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30);
+    expect(filters.mode).toEqual('or');
+    expect(filters.filters).toEqual([
+      { key: ['updated_at'], operator: 'gte', values: ['2026-10-02T02:00:05.000Z'] },
+      { key: ['x_opencti_timeline_anchors.computed_at'], operator: 'nil', values: [] },
+      { key: ['x_opencti_timeline_anchors.computed_at'], operator: 'lt', values: ['2026-09-03T02:00:00.000Z'] },
+    ]);
+  });
+
+  it('should look back one day on the first pass', () => {
+    const filters = buildTimelineConsistencyFilters(null, at('2026-10-03T02:00:00.000Z'), 7);
+    expect(filters.filters[0].values).toEqual(['2026-10-02T02:00:00.000Z']);
+    expect(filters.filters[2].values).toEqual(['2026-09-26T02:00:00.000Z']);
   });
 });

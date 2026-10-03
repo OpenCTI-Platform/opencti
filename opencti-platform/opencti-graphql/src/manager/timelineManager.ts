@@ -13,8 +13,14 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, STIX_TYPE_RELATIO
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
-import { FilterMode } from '../generated/graphql';
-import { ENTITY_TYPE_TIMELINE_EVENT, ENTITY_TYPE_TIMELINE_SETTINGS, isTimelineContainerType, TIMELINE_CONTAINER_TYPES } from '../modules/timeline/timeline-types';
+import { FilterMode, FilterOperator } from '../generated/graphql';
+import {
+  ATTRIBUTE_TIMELINE_ANCHORS,
+  ENTITY_TYPE_TIMELINE_EVENT,
+  ENTITY_TYPE_TIMELINE_SETTINGS,
+  isTimelineContainerType,
+  TIMELINE_CONTAINER_TYPES,
+} from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
 import {
   claimDueTimelineRegenerations,
@@ -40,8 +46,10 @@ const TIMELINE_MANAGER_REGENERATION_BATCH = conf.get('timeline_manager:regenerat
 const TIMELINE_MANAGER_MAX_CONCURRENCY = conf.get('timeline_manager:max_concurrency') ?? 2;
 // Containers impacted by a single stream batch through a shared element are bounded
 const TIMELINE_MANAGER_MAX_IMPACTED = conf.get('timeline_manager:max_impacted_containers') ?? 1000;
-// Nightly consistency pass (UTC hour)
+// Nightly consistency pass (UTC hour), and the age after which a timeline is regenerated even without any change
 const TIMELINE_MANAGER_CONSISTENCY_HOUR = conf.get('timeline_manager:consistency_hour') ?? 2;
+const TIMELINE_MANAGER_CONSISTENCY_MAX_AGE_DAYS = conf.get('timeline_manager:consistency_max_age_days') ?? 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const CONTAINERS_REFERENCING_TYPES = [ENTITY_TYPE_CONTAINER_TASK, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT];
 
@@ -174,12 +182,31 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
   }, { concurrency: TIMELINE_MANAGER_MAX_CONCURRENCY });
 };
 
-/** Once a day, every timeline container is scheduled for regeneration (spread by the queue batch size). */
+/** Once a day, the timeline containers that may be stale are scheduled for regeneration (spread by the queue batch size). */
 export const isTimelineConsistencyPassDue = (lastRun: number | null, nowTime: number, hour: number): boolean => {
   const today = new Date(nowTime);
   const scheduled = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), hour);
   if (nowTime < scheduled) return false;
   return lastRun === null || lastRun < scheduled;
+};
+
+/**
+ * Containers of the consistency pass: changed since the previous pass, never computed, or not regenerated for the
+ * max age. Its cost follows the activity of the platform, not the number of incidents and cases it holds.
+ */
+export const buildTimelineConsistencyFilters = (lastRun: number | null, nowTime: number, maxAgeDays: number) => {
+  const changedSince = new Date(lastRun ?? nowTime - DAY_MS).toISOString();
+  const staleBefore = new Date(nowTime - maxAgeDays * DAY_MS).toISOString();
+  const computedAtKey = `${ATTRIBUTE_TIMELINE_ANCHORS}.computed_at`;
+  return {
+    mode: FilterMode.Or,
+    filters: [
+      { key: ['updated_at'], operator: FilterOperator.Gte, values: [changedSince] },
+      { key: [computedAtKey], operator: FilterOperator.Nil, values: [] },
+      { key: [computedAtKey], operator: FilterOperator.Lt, values: [staleBefore] },
+    ],
+    filterGroups: [],
+  };
 };
 
 const runConsistencyPass = async (context: AuthContext) => {
@@ -189,6 +216,8 @@ const runConsistencyPass = async (context: AuthContext) => {
   let scheduled = 0;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
     baseData: true,
+    filters: buildTimelineConsistencyFilters(lastRun, nowTime, TIMELINE_MANAGER_CONSISTENCY_MAX_AGE_DAYS),
+    noFiltersChecking: true,
     callback: async (containers: BasicStoreEntity[]) => {
       await enqueueTimelineRegeneration(containers.map((c) => c.internal_id));
       scheduled += containers.length;

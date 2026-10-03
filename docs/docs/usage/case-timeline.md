@@ -88,7 +88,7 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 
 ### Live updates
 
-The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects, and runs a nightly consistency pass. Users who can update the case can also use **Regenerate the timeline**.
+The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects. A nightly consistency pass also regenerates the timelines of the cases changed since the previous pass, and of those not regenerated for 30 days. Users who can update the case can also use **Regenerate the timeline**.
 
 ### Event details
 
