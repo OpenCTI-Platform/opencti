@@ -2,11 +2,11 @@ import { ForbiddenAccess } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { isBypassUser, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
+import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { findDeployedOn } from '../indicatorDeployment/indicatorDeployment-domain';
 import { DEPLOYMENT_STATUS_PENDING, RELATION_DEPLOYED_ON, VALIDATION_STATUS_NOT_REQUESTED } from '../indicatorDeployment/indicatorDeployment-types';
 import { findIocValidationConnectors } from './iocValidation-domain';
-import { isDeploymentReporter } from './iocValidation-utils';
+import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
 const VALIDATION_FIELDS = ['validation_status', 'last_validation_at', 'validation_run_id'];
 const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'error_message'];
@@ -37,8 +37,7 @@ export const carriesLifecycleState = (instance: Record<string, unknown>) => LIFE
 /** Whether an input changes a lifecycle field, whatever the value (a reset erases the recorded state). */
 export const touchesLifecycleFields = (instance: Record<string, unknown>) => LIFECYCLE_FIELDS.some((field) => isProvided(instance, field));
 
-/** Accounts allowed to write the deployment lifecycle outside the write-back mutations: connectors (imports, synchronization) and administrators. */
-export const isLifecycleWriter = (user: AuthUser) => isBypassUser(user) || isUserHasCapability(user, 'CONNECTORAPI');
+export { isLifecycleWriter };
 
 const isIocValidationConnectorUser = async (context: AuthContext, user: AuthUser) => {
   const connectors = await findIocValidationConnectors(context, SYSTEM_USER);
@@ -58,9 +57,12 @@ const refuseLifecycle = (user: AuthUser) => {
 };
 
 // Validation fields of an existing deployment: the same accounts as iocValidationReportResults,
-// i.e. an IOC validation connector or the account that recorded the deployment.
+// i.e. an IOC validation connector or the connector account that recorded the deployment.
 const canChangeValidation = async (context: AuthContext, user: AuthUser, initial: { creator_id?: string | string[] | null } | undefined) => {
-  if (initial && isDeploymentReporter(initial, user.id)) {
+  if (!isLifecycleWriter(user)) {
+    return false;
+  }
+  if (initial && isTrustedDeploymentReporter(initial, user)) {
     return true;
   }
   return isIocValidationConnectorUser(context, user);

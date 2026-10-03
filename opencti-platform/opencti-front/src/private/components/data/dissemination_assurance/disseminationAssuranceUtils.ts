@@ -104,8 +104,11 @@ export const isOpenRequest = (status: string | null | undefined) => OPEN_REQUEST
 
 /** A deployment can be retried when the platform does not hold it (or holds it in error). */
 export const canRetryDeployment = (status: string | null | undefined) => ['failed', 'removed', 'expired'].includes(status ?? '');
-/** A deployment can be withdrawn while it is (or is about to be) on the platform. */
-export const canRemoveDeployment = (status: string | null | undefined, revoked?: boolean | null) => !revoked && ['pending', 'deployed', 'active', 'failed'].includes(status ?? '');
+/**
+ * A deployment can be withdrawn while it is (or is about to be) on the platform, including an expired one whose
+ * removal the platform never confirmed, until a withdrawal is already requested (revoked relationship).
+ */
+export const canRemoveDeployment = (status: string | null | undefined, revoked?: boolean | null) => !revoked && ['pending', 'deployed', 'active', 'failed', 'expired'].includes(status ?? '');
 
 export const toggleTestKind = (selected: IocValidationTestKind[], kind: IocValidationTestKind): IocValidationTestKind[] => {
   if (selected.includes(kind)) {
@@ -264,8 +267,9 @@ export const RETRYABLE_VALIDATION_STATUSES: ValidationStatus[] = ['not_requested
 
 /**
  * Live deployments of an indicator or a security platform that a new validation request can include,
- * validations in flight excluded: the unproven ones (retryable or never set), or the proven ones.
- * Applied by the API before pagination, so the request limit is filled with unproven deployments first.
+ * validations in flight and deployments awaiting removal (revoked) excluded: the unproven ones (retryable or
+ * never set), or the proven ones. Applied by the API before pagination, so the request limit is filled with
+ * deployments the request accepts, unproven first.
  */
 export const buildValidationCandidateFilters = (side: 'indicator' | 'platform', entityId: string, proven: boolean): FilterGroup => ({
   mode: 'and',
@@ -273,6 +277,7 @@ export const buildValidationCandidateFilters = (side: 'indicator' | 'platform', 
     filter('relationship_type', [RELATION_DEPLOYED_ON]),
     filter(side === 'indicator' ? 'fromId' : 'toId', [entityId]),
     filter('deployment_status', LIVE_DEPLOYMENT_STATUSES),
+    filter('revoked', ['false']),
     ...(proven ? [filter('validation_status', PROVEN_VALIDATION_STATUSES)] : []),
   ],
   filterGroups: proven ? [] : [{

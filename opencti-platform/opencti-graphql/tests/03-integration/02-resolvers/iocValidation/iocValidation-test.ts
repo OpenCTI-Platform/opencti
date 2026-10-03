@@ -45,6 +45,11 @@ const DEPLOYMENT_READ = gql`
     stixCoreRelationship(id: $id) { id validation_status validation_run_id updated_at }
   }
 `;
+const DEPLOYMENT_CREATORS = gql`
+  query DeploymentCreators($id: String!) {
+    stixCoreRelationship(id: $id) { id creators { id } }
+  }
+`;
 const REQUEST_FIELDS = `
   id
   name
@@ -365,6 +370,34 @@ describe('IOC validation requests', () => {
     });
     const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('missed');
+  });
+
+  it('should not let an editor who upserted a deployment speak for the security platform', async () => {
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    // Upserting the deployment with a description only adds the editor to its creators
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: RELATION_ADD,
+      variables: { input: { relationship_type: 'deployed-on', fromId: liveIndicatorId, toId: platformId, description: 'Seen in the change log', update: true } },
+    });
+    const upserted = await queryAsAdminWithSuccess({ query: DEPLOYMENT_CREATORS, variables: { id: liveDeploymentId } });
+    expect(upserted.data?.stixCoreRelationship.creators.map((creator: { id: string }) => creator.id)).toContain(editorId);
+    // Being a creator is not enough to write a verdict, by edition or as a result of a request
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: DEPLOYMENT_FIELD_PATCH,
+      variables: { id: liveDeploymentId, input: [{ key: 'validation_status', value: ['detected'] }] },
+    });
+    const created = await queryAsAdminWithSuccess({
+      query: REQUEST_VALIDATION,
+      variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Upserted deployment' },
+    });
+    const id = created.data?.indicatorsRequestValidation.id;
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+    });
+    const waiting = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(waiting.data?.stixCoreRelationship.validation_status).toEqual('requested');
+    await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
   });
 
   it('should only filter requests on plain attributes and accessible references', async () => {

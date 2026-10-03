@@ -1,5 +1,7 @@
 import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
+import { isBypassUser, isUserHasCapability } from '../../utils/access';
 import type { StixId } from '../../types/stix-2-1-common';
+import type { AuthUser } from '../../types/user';
 import {
   type IocValidationIoc,
   type IocValidationResultsSummary,
@@ -39,6 +41,18 @@ export const requesterIdOf = (request: { creator_id?: string | string[] | null }
 export const isDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, userId: string) => {
   const creators = Array.isArray(deployment.creator_id) ? deployment.creator_id : [deployment.creator_id];
   return creators.includes(userId);
+};
+
+/** Accounts allowed to write the deployment lifecycle outside the write-back mutations: connectors (imports, synchronization) and administrators. */
+export const isLifecycleWriter = (user: AuthUser) => isBypassUser(user) || isUserHasCapability(user, 'CONNECTORAPI');
+
+/**
+ * Whether the account speaks for the security platform of a deployment: a connector account among the accounts that
+ * recorded it. Being a creator is not enough on its own, since any editor who upserts the relationship (a description,
+ * a new deployment in its default state) is added to its creators.
+ */
+export const isTrustedDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, user: AuthUser) => {
+  return isLifecycleWriter(user) && isDeploymentReporter(deployment, user.id);
 };
 
 interface ExtractedObservable {
