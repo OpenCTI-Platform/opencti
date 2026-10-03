@@ -15,6 +15,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
+import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 
 interface ControlProps {
   label: string;
@@ -87,6 +88,7 @@ const GraphControls = ({
     <Paper
       elevation={2}
       padding={0}
+      className={EXPORT_REMOVE_CLASS}
       role="toolbar"
       aria-orientation="vertical"
       aria-label={t_i18n('Graph view controls')}

@@ -78,8 +78,8 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     await graph.getToolbarButton('Enable horizontal tree mode').click();
     await expect(graph.getToolbarButton('Disable horizontal tree mode')).toBeVisible();
     await graph.getToolbarButton('Disable horizontal tree mode').click();
-    await page.getByPlaceholder('Search these results...').fill(fixture.malware.name);
-    await page.getByPlaceholder('Search these results...').press('Enter');
+    await graph.getToolbar().getByPlaceholder('Search these results...').fill(fixture.malware.name);
+    await graph.getToolbar().getByPlaceholder('Search these results...').press('Enter');
     await expect(graph.getSelectionSummary(1)).toBeVisible();
   });
 

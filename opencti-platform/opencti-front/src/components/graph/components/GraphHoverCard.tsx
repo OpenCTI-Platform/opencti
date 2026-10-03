@@ -19,6 +19,7 @@ import type { GraphLink, GraphNode } from '../graph.types';
 import { type GraphBadge, graphNodeActionsFor, useGraphNodeActionRegistryVersion } from '../badges';
 import { NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
 import { buildGraphPalette } from '../utils/graphPalette';
+import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 
 export type GraphHoverCardTarget
   = | { kind: 'node'; node: GraphNode }
@@ -289,6 +290,7 @@ const GraphHoverCard = ({
     <Paper
       elevation={3}
       padding={16}
+      className={EXPORT_REMOVE_CLASS}
       role="group"
       aria-label={t_i18n('Details on hover')}
       data-testid="graph-hover-card"

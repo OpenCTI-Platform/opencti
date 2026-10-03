@@ -112,10 +112,10 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await expect(graph.getSelectionSummary(1)).toBeVisible();
     await graph.clickBackground();
 
-    await page.getByPlaceholder('Search these results...').fill(fixture.attackPattern.name);
-    await page.getByPlaceholder('Search these results...').press('Enter');
+    await graph.getToolbar().getByPlaceholder('Search these results...').fill(fixture.attackPattern.name);
+    await graph.getToolbar().getByPlaceholder('Search these results...').press('Enter');
     await expect(graph.getSelectionSummary(1)).toBeVisible();
-    await page.getByPlaceholder('Search these results...').fill('');
+    await graph.getToolbar().getByPlaceholder('Search these results...').fill('');
     await graph.clickBackground();
 
     await graph.getToolbarButton('Free rectangle select').click();

@@ -40,8 +40,8 @@ test.describe('Correlation and analyses graphs', { tag: ['@ce'] }, () => {
     await graph.getToolbarButton('Select all nodes').click();
     await expect(graph.getSelectionSummary(3)).toBeVisible();
     await graph.clickBackground();
-    await page.getByPlaceholder('Search these results...').fill(fixture.correlatedReport.name);
-    await page.getByPlaceholder('Search these results...').press('Enter');
+    await graph.getToolbar().getByPlaceholder('Search these results...').fill(fixture.correlatedReport.name);
+    await graph.getToolbar().getByPlaceholder('Search these results...').press('Enter');
     await expect(graph.getSelectionSummary(1)).toBeVisible();
   });
 
@@ -52,8 +52,9 @@ test.describe('Correlation and analyses graphs', { tag: ['@ce'] }, () => {
     await graph.waitForGraph(2);
     await expect.poll(() => graph.nodeIds()).toEqual(expect.arrayContaining([fixture.report.id, fixture.correlatedReport.id]));
     await expect(page.getByText(/Limitations applied, number of fully loaded containers/).first()).toBeVisible();
-    // Read-only surface: no search and no content edition in the toolbar.
-    await expect(page.getByPlaceholder('Search these results...')).toHaveCount(0);
+    // Read-only surface: no search and no content edition in the graph toolbar (the page above
+    // the graph has a search field of its own).
+    await expect(graph.getToolbar().getByPlaceholder('Search these results...')).toHaveCount(0);
     await expect(graph.getToolbarButton('Remove selected items')).toHaveCount(0);
     await graph.getToolbarButton('Select all nodes').click();
     await expect(graph.getAnySelectionSummary()).toBeVisible();

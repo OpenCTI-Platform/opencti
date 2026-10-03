@@ -72,6 +72,11 @@ export default class GraphPage {
     return this.page.locator('.force-graph-container canvas').first();
   }
 
+  /** The toolbar docked at the bottom of every graph. */
+  getToolbar() {
+    return this.page.locator('.MuiDrawer-paperAnchorDockedBottom').last();
+  }
+
   getToolbarButton(name: string | RegExp) {
     return this.page.getByRole('button', { name, exact: typeof name === 'string' });
   }
@@ -175,27 +180,34 @@ export default class GraphPage {
     await this.page.mouse.up({ button: 'right' });
   }
 
-  /** Drags a selection shape over the whole canvas, from one corner to the opposite one. */
+  /**
+   * Left edge of the gestures covering the whole drawing: clear of the panels floating over the
+   * left of the canvas, and still left of every node once the graph is fitted.
+   */
+  private static readonly GESTURE_LEFT = 70;
+
+  /** Drags a selection shape over the whole drawing, from one corner to the opposite one. */
   async dragAcrossCanvas() {
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
-    await this.page.mouse.move(box.x + 5, box.y + 5);
+    await this.page.mouse.move(box.x + GraphPage.GESTURE_LEFT, box.y + 5);
     await this.page.mouse.down();
     await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
     await this.page.mouse.move(box.x + box.width - 5, box.y + box.height - 5, { steps: 5 });
     await this.page.mouse.up();
   }
 
-  /** Draws a closed loop around the whole canvas, the lasso selection gesture. */
+  /** Draws a closed loop around the whole drawing, the lasso selection gesture. */
   async lassoAcrossCanvas() {
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
+    const left = box.x + GraphPage.GESTURE_LEFT;
     const points = [
-      [box.x + 5, box.y + 5],
+      [left, box.y + 5],
       [box.x + box.width - 5, box.y + 5],
       [box.x + box.width - 5, box.y + box.height - 5],
-      [box.x + 5, box.y + box.height - 5],
-      [box.x + 5, box.y + 8],
+      [left, box.y + box.height - 5],
+      [left, box.y + 8],
     ];
     await this.page.mouse.move(points[0][0], points[0][1]);
     await this.page.mouse.down();
@@ -205,14 +217,25 @@ export default class GraphPage {
     await this.page.mouse.up();
   }
 
+  /**
+   * Clicks an empty spot of the canvas: far from every node and not under anything floating over
+   * the canvas (panels, cards, the details panel).
+   */
   async clickBackground() {
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
     const state = await this.snapshot();
-    // The first corner far enough from every node.
-    const corners = [[20, 20], [box.width - 20, 20], [20, box.height - 80], [box.width - 20, box.height - 80]];
-    const free = corners.find(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > 60)) ?? corners[0];
-    await this.page.mouse.click(box.x + free[0], box.y + free[1]);
+    const candidates: [number, number][] = [];
+    for (let fy = 0.05; fy < 0.95; fy += 0.1) {
+      for (let fx = 0.05; fx < 0.95; fx += 0.1) candidates.push([box.width * fx, box.height * fy]);
+    }
+    const farFromNodes = candidates.filter(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > 60));
+    const onCanvas = await this.page.evaluate((points) => points.find(([x, y]) => {
+      const element = document.elementFromPoint(x, y);
+      return element?.tagName === 'CANVAS';
+    }) ?? null, farFromNodes.map(([cx, cy]) => [box.x + cx, box.y + cy]));
+    if (!onCanvas) throw new Error('No free spot on the canvas to click');
+    await this.page.mouse.click(onCanvas[0], onCanvas[1]);
   }
 
   /** Picks one entry of a toolbar option list (select by type, filters), then closes the list. */
