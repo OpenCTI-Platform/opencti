@@ -34,8 +34,9 @@ import {
   type StoreAssertion,
   type StoreConflict,
   type StoreProcedure,
+  type StoreProvenanceFields,
 } from './provenance-types';
-import { applyProvenanceUpdate, isProvenanceRecordable, type UpsertProvenanceRecord } from './provenance-write';
+import { applyProvenanceUpdate, computeProvenanceChange, isProvenanceRecordable, publishProvenanceChange, type UpsertProvenanceRecord } from './provenance-write';
 
 type UpsertElement = Record<string, any> & { entity_type: string; internal_id: string };
 
@@ -169,6 +170,8 @@ export const mergeProvenanceOnEntitiesMerge = async (
       return;
     }
     await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd });
+    const change = computeProvenanceChange(target as Partial<StoreProvenanceFields>, assertions.map((assertion) => assertion.source_id), conflictsAdd);
+    await publishProvenanceChange(context, target, change);
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to merge the provenance of merged entities', { cause: err, id: target.internal_id });
   }

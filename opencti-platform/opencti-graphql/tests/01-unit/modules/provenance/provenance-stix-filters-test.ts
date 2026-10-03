@@ -45,7 +45,7 @@ describe('Provenance STIX extension', () => {
   });
 
   it('should leave elements without provenance untouched', () => {
-    const stix = { id: 'malware--1', extensions: { other: {} } };
+    const stix: { id: string; extensions: Record<string, unknown> } = { id: 'malware--1', extensions: { other: {} } };
     expect(withProvenanceStixExtension({ entity_type: 'Malware' }, stix)).toBe(stix);
     const enriched = withProvenanceStixExtension({
       entity_type: 'Malware',

@@ -3,8 +3,14 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import {
   adoptConflictValue,
   adoptProcedure,
+  assertElement,
   computeFreshnessDays,
   dismissConflictValue,
+  provenanceBackfillRestart,
+  provenanceBackfillStatus,
+  provenanceFreshnessDistribution,
+  provenanceSingleSourcedByType,
+  provenanceSourceKindsDistribution,
   provenanceStatistics,
   resolveAssertionsForUser,
   resolveConflictsForUser,
@@ -26,12 +32,18 @@ const provenanceFieldsResolvers = {
 const provenanceResolvers: Resolvers = {
   Query: {
     provenanceStatistics: (_, args, context) => provenanceStatistics(context, context.user, args),
+    provenanceFreshnessDistribution: (_, args, context) => provenanceFreshnessDistribution(context, context.user, args),
+    provenanceSourceKindsDistribution: (_, args, context) => provenanceSourceKindsDistribution(context, context.user, args) as any,
+    provenanceSingleSourcedByType: (_, args, context) => provenanceSingleSourcedByType(context, context.user, args),
+    provenanceBackfill: (_, __, context) => provenanceBackfillStatus(context) as any,
   },
   // Results are resolved through the StixObjectOrStixRelationship union, stricter than the store types
   Mutation: {
     provenanceConflictAdopt: (_, { id, field, value_hash }, context) => adoptConflictValue(context, context.user, id, field, value_hash) as any,
     provenanceConflictDismiss: (_, { id, field, value_hash }, context) => dismissConflictValue(context, context.user, id, field, value_hash) as any,
     provenanceProcedureAdopt: (_, { id, text }, context) => adoptProcedure(context, context.user, id, text) as any,
+    provenanceAssert: (_, { id }, context) => assertElement(context, context.user, id) as any,
+    provenanceBackfillRestart: (_, __, context) => provenanceBackfillRestart(context, context.user) as any,
   },
   // Inherited by every implementation of the interface (inheritResolversFromInterfaces)
   StixCoreObject: provenanceFieldsResolvers as any,

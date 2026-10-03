@@ -1,5 +1,5 @@
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
-import { elCount } from '../../database/engine';
+import { elAggregationCount, elCount } from '../../database/engine';
 import { READ_STIX_DATA_WITH_INFERRED } from '../../database/utils';
 import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -8,15 +8,32 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { AccessOperation, filterMembersUsersWithUsersOrgs, RESTRICTED_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { EditOperation, type FilterGroup, FilterMode, FilterOperator, type QueryProvenanceStatisticsArgs } from '../../generated/graphql';
+import {
+  EditOperation,
+  type FilterGroup,
+  FilterMode,
+  FilterOperator,
+  type QueryProvenanceFreshnessDistributionArgs,
+  type QueryProvenanceSingleSourcedByTypeArgs,
+  type QueryProvenanceSourceKindsDistributionArgs,
+  type QueryProvenanceStatisticsArgs,
+} from '../../generated/graphql';
 import { now } from '../../utils/format';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreObject, StoreObject } from '../../types/store';
+import { addProvenanceConflictAdoptionCount } from '../../manager/telemetryManager';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
 import { buildConflictValue, isConflictTrackedAttribute, normalizeConflictValue } from './provenance-conflicts';
 import { isProcedureRelationship, procedureMatchKey } from './provenance-procedures';
 import { resolveCurrentValueOwner } from './provenance-upsert';
-import { applyProvenanceUpdate, isProvenanceTrackedType } from './provenance-write';
+import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
+import { getProvenanceBackfillState, restartProvenanceBackfill } from './provenance-backfill';
 import {
+  ASSERTION_SOURCE_KINDS,
+  ATTRIBUTE_ASSERTION_SOURCE_KINDS,
+  ATTRIBUTE_LAST_ASSERTED_AT,
+  PROVENANCE_BACKFILL_MANAGER_ID,
+  VIRTUAL_FRESHNESS_DAYS,
   ATTRIBUTE_CONFLICTS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_FRESHNESS_STALE,
@@ -106,8 +123,10 @@ const withFilter = (filters: FilterGroup | null | undefined, filter: FilterGroup
   filterGroups: filters ? [filters] : [],
 });
 
+const statisticsTypes = (types: string[] | null | undefined) => (types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES);
+
 export const provenanceStatistics = async (context: AuthContext, user: AuthUser, args: QueryProvenanceStatisticsArgs) => {
-  const types = args.types && args.types.length > 0 ? args.types : DEFAULT_STATISTICS_TYPES;
+  const types = statisticsTypes(args.types);
   const baseFilters = args.filters ?? null;
   const count = (filters: FilterGroup | null) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
   const [total, withProvenance, single, corroborated, withConflicts, stale] = await Promise.all([
@@ -119,6 +138,93 @@ export const provenanceStatistics = async (context: AuthContext, user: AuthUser,
     count(withFilter(baseFilters, { key: [ATTRIBUTE_FRESHNESS_STALE], values: ['true'] })),
   ]);
   return { total, with_provenance: withProvenance, single_sourced: single, corroborated, with_conflicts: withConflicts, stale };
+};
+
+// Freshness buckets, in days since the last assertion of any source (bounds included)
+export const FRESHNESS_BUCKETS: Array<{ label: string; from: number; to: number | null }> = [
+  { label: '0-30', from: 0, to: 30 },
+  { label: '31-90', from: 31, to: 90 },
+  { label: '91-180', from: 91, to: 180 },
+  { label: '181-365', from: 181, to: 365 },
+  { label: '366+', from: 366, to: null },
+];
+
+const freshnessBucketFilter = (bucket: { from: number; to: number | null }): FilterGroup => ({
+  mode: FilterMode.And,
+  filters: [
+    { key: [VIRTUAL_FRESHNESS_DAYS], values: [String(bucket.from)], operator: FilterOperator.Gte },
+    ...(bucket.to !== null ? [{ key: [VIRTUAL_FRESHNESS_DAYS], values: [String(bucket.to)], operator: FilterOperator.Lte }] : []),
+  ],
+  filterGroups: [],
+});
+
+const combineFilters = (base: FilterGroup | null | undefined, extra: FilterGroup): FilterGroup => ({
+  mode: FilterMode.And,
+  filters: [],
+  filterGroups: base ? [base, extra] : [extra],
+});
+
+export const provenanceFreshnessDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceFreshnessDistributionArgs) => {
+  const types = statisticsTypes(args.types);
+  const count = (filters: FilterGroup) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
+  const counts = await Promise.all(FRESHNESS_BUCKETS.map((bucket) => count(combineFilters(args.filters, freshnessBucketFilter(bucket)))));
+  const unknown = await count(combineFilters(args.filters, {
+    mode: FilterMode.And,
+    filters: [{ key: [ATTRIBUTE_LAST_ASSERTED_AT], values: [], operator: FilterOperator.Nil }],
+    filterGroups: [],
+  }));
+  return [...FRESHNESS_BUCKETS.map((bucket, index) => ({ label: bucket.label, value: counts[index] })), { label: 'unknown', value: unknown }];
+};
+
+export const provenanceSourceKindsDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSourceKindsDistributionArgs) => {
+  const types = statisticsTypes(args.types);
+  const counts = await Promise.all(ASSERTION_SOURCE_KINDS.map((kind) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
+    types,
+    filters: combineFilters(args.filters, { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_ASSERTION_SOURCE_KINDS], values: [kind] }], filterGroups: [] }),
+  })));
+  return ASSERTION_SOURCE_KINDS.map((kind, index) => ({ source_kind: kind, count: counts[index] }));
+};
+
+/**
+ * Share of single-sourced knowledge per entity type, among the knowledge with provenance.
+ */
+export const provenanceSingleSourcedByType = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSingleSourcedByTypeArgs) => {
+  const types = statisticsTypes(args.types);
+  const aggregate = (filters: FilterGroup) => elAggregationCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
+    types,
+    field: 'entity_type',
+    filters,
+    convertEntityTypeLabel: true,
+  });
+  const withProvenance = { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_CORROBORATION_COUNT], values: [], operator: FilterOperator.NotNil }], filterGroups: [] };
+  const single = { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_SINGLE_SOURCED], values: ['true'] }], filterGroups: [] };
+  const [totals, singles] = await Promise.all([
+    aggregate(combineFilters(args.filters, withProvenance)),
+    aggregate(combineFilters(args.filters, single)),
+  ]);
+  const singleByType = new Map(singles.map((entry) => [entry.label, entry.count]));
+  return totals
+    .map((entry) => ({ entity_type: entry.label, total: entry.count, single_sourced: singleByType.get(entry.label) ?? 0 }))
+    .sort((a, b) => b.total - a.total);
+};
+// endregion
+
+// region backfill
+export const provenanceBackfillStatus = async (context: AuthContext) => {
+  return getProvenanceBackfillState(context);
+};
+
+export const provenanceBackfillRestart = async (context: AuthContext, user: AuthUser) => {
+  const state = await restartProvenanceBackfill(context);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'restarts the provenance backfill',
+    context_data: { id: PROVENANCE_BACKFILL_MANAGER_ID, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input: {} },
+  });
+  return state;
 };
 // endregion
 
@@ -185,6 +291,22 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
   }
   await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
   await publishProvenanceAction(user, element, `adopts the value proposed by \`${proposal.source_name ?? proposal.source_id}\` for \`${field}\``, { field, value_hash: valueHash });
+  await addProvenanceConflictAdoptionCount();
+  return loadTrackedElement(context, user, element.internal_id);
+};
+
+/**
+ * The analyst confirms the element is still valid: the analyst becomes (or refreshes) one of its sources,
+ * which resets its freshness like any re-assertion.
+ */
+export const assertElement = async (context: AuthContext, user: AuthUser, id: string) => {
+  const element = await loadEditableTrackedElement(context, user, id);
+  const source = { source_id: user.id, source_kind: SOURCE_KIND_USER, source_name: user.name, work_id: null } as const;
+  const recorded = await recordUpsertProvenance(context, user, element, { source, input: {}, confidence: element.confidence ?? null }, { refresh: true });
+  if (!recorded) {
+    throw FunctionalError('Provenance cannot be recorded on this element', { id });
+  }
+  await publishProvenanceAction(user, element, 'confirms the element is still valid', {});
   return loadTrackedElement(context, user, element.internal_id);
 };
 

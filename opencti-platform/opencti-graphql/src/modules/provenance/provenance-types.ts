@@ -117,6 +117,34 @@ export interface StoreProcedure {
   last_asserted_at: string;
 }
 
+// Backfill of the assertions of the knowledge that existed before provenance tracking,
+// its state is stored in the manager configuration of the backfill manager.
+export const PROVENANCE_BACKFILL_MANAGER_ID = 'PROVENANCE_BACKFILL_MANAGER';
+export const BACKFILL_STATUSES = ['pending', 'running', 'completed'] as const;
+export type ProvenanceBackfillStatus = typeof BACKFILL_STATUSES[number];
+
+export interface ProvenanceBackfillState {
+  status: ProvenanceBackfillStatus;
+  cursor: string | null;
+  processed: number;
+  updated: number;
+  expected: number;
+  errors: number;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export const DEFAULT_PROVENANCE_BACKFILL_STATE: ProvenanceBackfillState = {
+  status: 'pending',
+  cursor: null,
+  processed: 0,
+  updated: 0,
+  expected: 0,
+  errors: 0,
+  started_at: null,
+  completed_at: null,
+};
+
 export interface StoreProvenanceFields {
   [ATTRIBUTE_ASSERTIONS]?: StoreAssertion[];
   [ATTRIBUTE_ASSERTION_SOURCE_IDS]?: string[];

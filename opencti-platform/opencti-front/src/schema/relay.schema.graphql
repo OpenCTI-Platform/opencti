@@ -10099,6 +10099,10 @@ type Query {
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics!
+  provenanceFreshnessDistribution(types: [String!], filters: FilterGroup): [ProvenanceDistributionEntry!]!
+  provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]!
+  provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]!
+  provenanceBackfill: ProvenanceBackfill!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -10941,6 +10945,7 @@ type Mutation {
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
+  knowledgeDecayRuleAdd(input: KnowledgeDecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
   decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
@@ -11027,6 +11032,8 @@ type Mutation {
   provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
   provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship
   provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship
+  provenanceAssert(id: ID!): StixObjectOrStixRelationship
+  provenanceBackfillRestart: ProvenanceBackfill!
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -12044,6 +12051,8 @@ enum TriggerEventType {
   create
   update
   delete
+  corroboration
+  conflict
 }
 
 input TriggerLiveAddInput {
@@ -12055,6 +12064,9 @@ input TriggerLiveAddInput {
   instance_trigger: Boolean!
   filters: String
   recipients: [String!]
+
+  "*Constraints:*\n* Minimal value: `2`\n* Maximal value: `200`\n"
+  corroboration_threshold: Int
 }
 
 input TriggerDigestAddInput {
@@ -12094,6 +12106,7 @@ type Trigger implements InternalObject & BasicObject {
   isDirectAdministrator: Boolean
   currentUserAccessRight: String
   instance_trigger: Boolean
+  corroboration_threshold: Int
 }
 
 type TriggerConnection {
@@ -15263,6 +15276,18 @@ type VulnerabilityEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
 }
 
+enum DecayRuleTargetScope {
+  indicator
+  relationship
+  entity
+}
+
+enum KnowledgeFreshnessPolicy {
+  flag
+  lower_confidence
+  revoke
+}
+
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -15285,6 +15310,12 @@ type DecayRule implements InternalObject & BasicObject {
   decay_revoke_score: Int!
   decaySettingsChartData: DecayData
   decay_filters: String
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  freshness_policy: KnowledgeFreshnessPolicy
+  stale_after_days: Int
+  freshness_confidence_step: Int
+  staleElementsCount: Int!
 }
 
 type DecayData {
@@ -15318,6 +15349,24 @@ input DecayRuleAddInput {
   decay_points: [Int!]
   decay_revoke_score: Int!
   decay_filters: String
+}
+
+input KnowledgeDecayRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  order: Int!
+  active: Boolean!
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  decay_filters: String
+  freshness_policy: KnowledgeFreshnessPolicy!
+
+  "*Constraints:*\n* Minimal value: `1`\n"
+  stale_after_days: Int!
+
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `100`\n"
+  freshness_confidence_step: Int
 }
 
 type DecayExclusionRule implements InternalObject & BasicObject {
@@ -16669,6 +16718,33 @@ type ProvenanceStatistics {
   corroborated: Int!
   with_conflicts: Int!
   stale: Int!
+}
+
+type ProvenanceDistributionEntry {
+  label: String!
+  value: Int!
+}
+
+type ProvenanceSingleSourcedEntry {
+  entity_type: String!
+  total: Int!
+  single_sourced: Int!
+}
+
+enum ProvenanceBackfillStatus {
+  pending
+  running
+  completed
+}
+
+type ProvenanceBackfill {
+  status: ProvenanceBackfillStatus!
+  processed: Int!
+  expected: Int!
+  updated: Int!
+  errors: Int!
+  started_at: DateTime
+  completed_at: DateTime
 }
 
 type FintelDesign implements BasicObject & InternalObject {

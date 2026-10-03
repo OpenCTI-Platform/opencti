@@ -7559,6 +7559,8 @@ export type DecayRule = BasicObject & InternalObject & {
   decay_revoke_score: Scalars['Int']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  freshness_confidence_step?: Maybe<Scalars['Int']['output']>;
+  freshness_policy?: Maybe<KnowledgeFreshnessPolicy>;
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -7566,7 +7568,11 @@ export type DecayRule = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
+  staleElementsCount: Scalars['Int']['output'];
+  stale_after_days?: Maybe<Scalars['Int']['output']>;
   standard_id: Scalars['String']['output'];
+  target_scope: DecayRuleTargetScope;
+  target_types?: Maybe<Array<Scalars['String']['output']>>;
   updated_at: Scalars['DateTime']['output'];
 };
 
@@ -7598,6 +7604,12 @@ export enum DecayRuleOrdering {
   Score = '_score',
   Name = 'name',
   Order = 'order'
+}
+
+export enum DecayRuleTargetScope {
+  Entity = 'entity',
+  Indicator = 'indicator',
+  Relationship = 'relationship'
 }
 
 export type DefaultMarking = {
@@ -15373,6 +15385,25 @@ export enum KillChainPhasesOrdering {
   XOpenctiOrder = 'x_opencti_order'
 }
 
+export type KnowledgeDecayRuleAddInput = {
+  active: Scalars['Boolean']['input'];
+  decay_filters?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  freshness_confidence_step?: InputMaybe<Scalars['Int']['input']>;
+  freshness_policy: KnowledgeFreshnessPolicy;
+  name: Scalars['String']['input'];
+  order: Scalars['Int']['input'];
+  stale_after_days: Scalars['Int']['input'];
+  target_scope: DecayRuleTargetScope;
+  target_types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum KnowledgeFreshnessPolicy {
+  Flag = 'flag',
+  LowerConfidence = 'lower_confidence',
+  Revoke = 'revoke'
+}
+
 export type Label = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Label';
   color?: Maybe<Scalars['String']['output']>;
@@ -17972,6 +18003,7 @@ export type Mutation = {
   jsonMapperTest?: Maybe<JsonMapperTestResult>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
+  knowledgeDecayRuleAdd?: Maybe<DecayRule>;
   labelAdd?: Maybe<Label>;
   labelEdit?: Maybe<LabelEditMutations>;
   languageAdd?: Maybe<Language>;
@@ -18063,6 +18095,8 @@ export type Mutation = {
   playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
+  provenanceAssert?: Maybe<StixObjectOrStixRelationship>;
+  provenanceBackfillRestart: ProvenanceBackfill;
   provenanceConflictAdopt?: Maybe<StixObjectOrStixRelationship>;
   provenanceConflictDismiss?: Maybe<StixObjectOrStixRelationship>;
   provenanceProcedureAdopt?: Maybe<StixObjectOrStixRelationship>;
@@ -19505,6 +19539,11 @@ export type MutationKillChainPhaseEditArgs = {
 };
 
 
+export type MutationKnowledgeDecayRuleAddArgs = {
+  input: KnowledgeDecayRuleAddInput;
+};
+
+
 export type MutationLabelAddArgs = {
   input: LabelAddInput;
 };
@@ -20010,6 +20049,11 @@ export type MutationPositionAddArgs = {
 
 
 export type MutationPositionEditArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationProvenanceAssertArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -25285,6 +25329,36 @@ export type ProcessAddInput = {
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ProvenanceBackfill = {
+  __typename?: 'ProvenanceBackfill';
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  errors: Scalars['Int']['output'];
+  expected: Scalars['Int']['output'];
+  processed: Scalars['Int']['output'];
+  started_at?: Maybe<Scalars['DateTime']['output']>;
+  status: ProvenanceBackfillStatus;
+  updated: Scalars['Int']['output'];
+};
+
+export enum ProvenanceBackfillStatus {
+  Completed = 'completed',
+  Pending = 'pending',
+  Running = 'running'
+}
+
+export type ProvenanceDistributionEntry = {
+  __typename?: 'ProvenanceDistributionEntry';
+  label: Scalars['String']['output'];
+  value: Scalars['Int']['output'];
+};
+
+export type ProvenanceSingleSourcedEntry = {
+  __typename?: 'ProvenanceSingleSourcedEntry';
+  entity_type: Scalars['String']['output'];
+  single_sourced: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+};
+
 export type ProvenanceSourceKindCount = {
   __typename?: 'ProvenanceSourceKindCount';
   count: Scalars['Int']['output'];
@@ -25678,6 +25752,10 @@ export type Query = {
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
+  provenanceBackfill: ProvenanceBackfill;
+  provenanceFreshnessDistribution: Array<ProvenanceDistributionEntry>;
+  provenanceSingleSourcedByType: Array<ProvenanceSingleSourcedEntry>;
+  provenanceSourceKindsDistribution: Array<ProvenanceSourceKindCount>;
   provenanceStatistics: ProvenanceStatistics;
   publicBookmarks?: Maybe<StixDomainObjectConnection>;
   publicDashboard?: Maybe<PublicDashboard>;
@@ -27664,6 +27742,24 @@ export type QueryPositionsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryProvenanceFreshnessDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceSingleSourcedByTypeArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceSourceKindsDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -37810,6 +37906,7 @@ export type TrackingNumberAddInput = {
 
 export type Trigger = BasicObject & InternalObject & {
   __typename?: 'Trigger';
+  corroboration_threshold?: Maybe<Scalars['Int']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
@@ -37886,12 +37983,15 @@ export type TriggerEdge = {
 };
 
 export enum TriggerEventType {
+  Conflict = 'conflict',
+  Corroboration = 'corroboration',
   Create = 'create',
   Delete = 'delete',
   Update = 'update'
 }
 
 export type TriggerLiveAddInput = {
+  corroboration_threshold?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   event_types: Array<TriggerEventType>;
   filters?: InputMaybe<Scalars['String']['input']>;
@@ -41831,6 +41931,7 @@ export type ResolversTypes = ResolversObject<{
   DecayRuleConnection: ResolverTypeWrapper<Omit<DecayRuleConnection, 'edges'> & { edges: Array<ResolversTypes['DecayRuleEdge']> }>;
   DecayRuleEdge: ResolverTypeWrapper<Omit<DecayRuleEdge, 'node'> & { node: ResolversTypes['DecayRule'] }>;
   DecayRuleOrdering: DecayRuleOrdering;
+  DecayRuleTargetScope: DecayRuleTargetScope;
   DefaultMarking: ResolverTypeWrapper<Omit<DefaultMarking, 'values'> & { values?: Maybe<Array<ResolversTypes['MarkingDefinition']>> }>;
   DefaultMarkingDefinition: ResolverTypeWrapper<DefaultMarkingDefinition>;
   DefaultMarkingInput: DefaultMarkingInput;
@@ -42126,6 +42227,8 @@ export type ResolversTypes = ResolversObject<{
   KillChainPhaseEdge: ResolverTypeWrapper<Omit<KillChainPhaseEdge, 'node'> & { node: ResolversTypes['KillChainPhase'] }>;
   KillChainPhaseEditMutations: ResolverTypeWrapper<Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['KillChainPhase']> }>;
   KillChainPhasesOrdering: KillChainPhasesOrdering;
+  KnowledgeDecayRuleAddInput: KnowledgeDecayRuleAddInput;
+  KnowledgeFreshnessPolicy: KnowledgeFreshnessPolicy;
   Label: ResolverTypeWrapper<Omit<Label, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   LabelAddInput: LabelAddInput;
   LabelConnection: ResolverTypeWrapper<Omit<LabelConnection, 'edges'> & { edges: Array<ResolversTypes['LabelEdge']> }>;
@@ -42354,6 +42457,10 @@ export type ResolversTypes = ResolversObject<{
   ProceduresDescriptionPolicy: ProceduresDescriptionPolicy;
   Process: ResolverTypeWrapper<Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ProcessAddInput: ProcessAddInput;
+  ProvenanceBackfill: ResolverTypeWrapper<ProvenanceBackfill>;
+  ProvenanceBackfillStatus: ProvenanceBackfillStatus;
+  ProvenanceDistributionEntry: ResolverTypeWrapper<ProvenanceDistributionEntry>;
+  ProvenanceSingleSourcedEntry: ResolverTypeWrapper<ProvenanceSingleSourcedEntry>;
   ProvenanceSourceKindCount: ResolverTypeWrapper<ProvenanceSourceKindCount>;
   ProvenanceStatistics: ResolverTypeWrapper<ProvenanceStatistics>;
   Provider: ResolverTypeWrapper<Provider>;
@@ -43243,6 +43350,7 @@ export type ResolversParentTypes = ResolversObject<{
   KillChainPhaseConnection: Omit<KillChainPhaseConnection, 'edges'> & { edges: Array<ResolversParentTypes['KillChainPhaseEdge']> };
   KillChainPhaseEdge: Omit<KillChainPhaseEdge, 'node'> & { node: ResolversParentTypes['KillChainPhase'] };
   KillChainPhaseEditMutations: Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['KillChainPhase']> };
+  KnowledgeDecayRuleAddInput: KnowledgeDecayRuleAddInput;
   Label: Omit<Label, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   LabelAddInput: LabelAddInput;
   LabelConnection: Omit<LabelConnection, 'edges'> & { edges: Array<ResolversParentTypes['LabelEdge']> };
@@ -43443,6 +43551,9 @@ export type ResolversParentTypes = ResolversObject<{
   Procedure: Procedure;
   Process: Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ProcessAddInput: ProcessAddInput;
+  ProvenanceBackfill: ProvenanceBackfill;
+  ProvenanceDistributionEntry: ProvenanceDistributionEntry;
+  ProvenanceSingleSourcedEntry: ProvenanceSingleSourcedEntry;
   ProvenanceSourceKindCount: ProvenanceSourceKindCount;
   ProvenanceStatistics: ProvenanceStatistics;
   Provider: Provider;
@@ -46438,6 +46549,8 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   decay_revoke_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  freshness_confidence_step?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  freshness_policy?: Resolver<Maybe<ResolversTypes['KnowledgeFreshnessPolicy']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46445,7 +46558,11 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  staleElementsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stale_after_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_scope?: Resolver<ResolversTypes['DecayRuleTargetScope'], ParentType, ContextType>;
+  target_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -50386,6 +50503,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   jsonMapperTest?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationJsonMapperTestArgs, 'configuration' | 'file'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
+  knowledgeDecayRuleAdd?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationKnowledgeDecayRuleAddArgs, 'input'>>;
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
   languageAdd?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageAddArgs, 'input'>>;
@@ -50477,6 +50595,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
+  provenanceAssert?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceAssertArgs, 'id'>>;
+  provenanceBackfillRestart?: Resolver<ResolversTypes['ProvenanceBackfill'], ParentType, ContextType>;
   provenanceConflictAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictAdoptArgs, 'field' | 'id' | 'value_hash'>>;
   provenanceConflictDismiss?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictDismissArgs, 'field' | 'id' | 'value_hash'>>;
   provenanceProcedureAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceProcedureAdoptArgs, 'id' | 'text'>>;
@@ -52100,6 +52220,27 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProvenanceBackfillResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceBackfill'] = ResolversParentTypes['ProvenanceBackfill']> = ResolversObject<{
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  expected?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ProvenanceBackfillStatus'], ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceDistributionEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceDistributionEntry'] = ResolversParentTypes['ProvenanceDistributionEntry']> = ResolversObject<{
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceSingleSourcedEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceSingleSourcedEntry'] = ResolversParentTypes['ProvenanceSingleSourcedEntry']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  single_sourced?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type ProvenanceSourceKindCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceSourceKindCount'] = ResolversParentTypes['ProvenanceSourceKindCount']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   source_kind?: Resolver<ResolversTypes['AssertionSourceKind'], ParentType, ContextType>;
@@ -52461,6 +52602,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
+  provenanceBackfill?: Resolver<ResolversTypes['ProvenanceBackfill'], ParentType, ContextType>;
+  provenanceFreshnessDistribution?: Resolver<Array<ResolversTypes['ProvenanceDistributionEntry']>, ParentType, ContextType, Partial<QueryProvenanceFreshnessDistributionArgs>>;
+  provenanceSingleSourcedByType?: Resolver<Array<ResolversTypes['ProvenanceSingleSourcedEntry']>, ParentType, ContextType, Partial<QueryProvenanceSingleSourcedByTypeArgs>>;
+  provenanceSourceKindsDistribution?: Resolver<Array<ResolversTypes['ProvenanceSourceKindCount']>, ParentType, ContextType, Partial<QueryProvenanceSourceKindsDistributionArgs>>;
   provenanceStatistics?: Resolver<ResolversTypes['ProvenanceStatistics'], ParentType, ContextType, Partial<QueryProvenanceStatisticsArgs>>;
   publicBookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicBookmarksArgs, 'uriKey' | 'widgetId'>>;
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
@@ -55615,6 +55760,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type TriggerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Trigger'] = ResolversParentTypes['Trigger']> = ResolversObject<{
+  corroboration_threshold?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -57229,6 +57375,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PositionEditMutations?: PositionEditMutationsResolvers<ContextType>;
   Procedure?: ProcedureResolvers<ContextType>;
   Process?: ProcessResolvers<ContextType>;
+  ProvenanceBackfill?: ProvenanceBackfillResolvers<ContextType>;
+  ProvenanceDistributionEntry?: ProvenanceDistributionEntryResolvers<ContextType>;
+  ProvenanceSingleSourcedEntry?: ProvenanceSingleSourcedEntryResolvers<ContextType>;
   ProvenanceSourceKindCount?: ProvenanceSourceKindCountResolvers<ContextType>;
   ProvenanceStatistics?: ProvenanceStatisticsResolvers<ContextType>;
   Provider?: ProviderResolvers<ContextType>;

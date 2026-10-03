@@ -206,6 +206,33 @@ export class TelemetryMeterManager {
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
+  // Number of knowledge decay rules (relationship and entity scopes) created
+  knowledgeDecayRuleCreationCount = 0;
+
+  // Number of active knowledge decay rules
+  activeKnowledgeDecayRulesCount = 0;
+
+  // Number of elements flagged as stale by the knowledge freshness manager
+  knowledgeStaleFlaggedCount = 0;
+
+  // Number of alternative values proposed by sources and recorded as conflicts
+  provenanceConflictDetectedCount = 0;
+
+  // Number of conflicting values adopted by analysts
+  provenanceConflictAdoptionCount = 0;
+
+  // Number of Stix core relationships with provenance
+  provenanceTrackedRelationshipsCount = 0;
+
+  // Number of Stix core relationships asserted by at least two distinct sources
+  provenanceCorroboratedRelationshipsCount = 0;
+
+  // Number of elements currently flagged as stale knowledge
+  provenanceStaleKnowledgeCount = 0;
+
+  // Number of elements currently holding source conflicts
+  provenanceConflictingKnowledgeCount = 0;
+
   // Whether the history retention rule is active on the platform (0 or 1)
   isHistoryRetentionRuleActive = 0;
 
@@ -531,6 +558,42 @@ export class TelemetryMeterManager {
     this.decayRuleCreationCount = n;
   }
 
+  setKnowledgeDecayRuleCreationCount(n: number) {
+    this.knowledgeDecayRuleCreationCount = n;
+  }
+
+  setActiveKnowledgeDecayRulesCount(n: number) {
+    this.activeKnowledgeDecayRulesCount = n;
+  }
+
+  setKnowledgeStaleFlaggedCount(n: number) {
+    this.knowledgeStaleFlaggedCount = n;
+  }
+
+  setProvenanceConflictDetectedCount(n: number) {
+    this.provenanceConflictDetectedCount = n;
+  }
+
+  setProvenanceConflictAdoptionCount(n: number) {
+    this.provenanceConflictAdoptionCount = n;
+  }
+
+  setProvenanceTrackedRelationshipsCount(n: number) {
+    this.provenanceTrackedRelationshipsCount = n;
+  }
+
+  setProvenanceCorroboratedRelationshipsCount(n: number) {
+    this.provenanceCorroboratedRelationshipsCount = n;
+  }
+
+  setProvenanceStaleKnowledgeCount(n: number) {
+    this.provenanceStaleKnowledgeCount = n;
+  }
+
+  setProvenanceConflictingKnowledgeCount(n: number) {
+    this.provenanceConflictingKnowledgeCount = n;
+  }
+
   setIsHistoryRetentionRuleActive(n: number) {
     this.isHistoryRetentionRuleActive = n;
   }
@@ -754,6 +817,15 @@ export class TelemetryMeterManager {
     this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
     this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
+    this.registerGauge('knowledge_decay_rule_creation_count', 'Number of knowledge decay rules created', 'knowledgeDecayRuleCreationCount');
+    this.registerGauge('active_knowledge_decay_rules_count', 'Number of active knowledge decay rules', 'activeKnowledgeDecayRulesCount');
+    this.registerGauge('knowledge_stale_flagged_count', 'Number of elements newly flagged as stale by knowledge decay rules', 'knowledgeStaleFlaggedCount');
+    this.registerGauge('provenance_conflict_detected_count', 'Number of conflicting values recorded from sources', 'provenanceConflictDetectedCount');
+    this.registerGauge('provenance_conflict_adoption_count', 'Number of conflicting values adopted', 'provenanceConflictAdoptionCount');
+    this.registerGauge('provenance_tracked_relationships_count', 'Number of relationships with provenance', 'provenanceTrackedRelationshipsCount');
+    this.registerGauge('provenance_corroborated_relationships_count', 'Number of relationships asserted by at least two sources', 'provenanceCorroboratedRelationshipsCount');
+    this.registerGauge('provenance_stale_knowledge_count', 'Number of elements flagged as stale knowledge', 'provenanceStaleKnowledgeCount');
+    this.registerGauge('provenance_conflicting_knowledge_count', 'Number of elements with source conflicts', 'provenanceConflictingKnowledgeCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_enabled', 'Whether activity is enabled on the platform (has activity listeners)', 'isActivityEnabled', { unit: 'boolean' });

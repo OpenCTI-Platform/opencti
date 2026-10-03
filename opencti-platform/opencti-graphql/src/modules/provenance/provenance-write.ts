@@ -7,14 +7,17 @@ import { getDraftContext } from '../../utils/draftContext';
 import { now } from '../../utils/format';
 import { isNotEmptyField } from '../../database/utils';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { addProvenanceConflictDetectedCount } from '../../manager/telemetryManager';
 import { resolveAssertionSource } from './provenance-source';
 import type { ConflictAddition, ConflictRemoval } from './provenance-conflicts';
+import { notifyProvenanceChange, type ProvenanceChange as ProvenanceTriggerChange } from './provenance-notification';
 import {
   type AssertionSource,
   ATTRIBUTE_ASSERTION_SOURCE_IDS,
   ATTRIBUTE_ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTIONS,
   ATTRIBUTE_CONFLICT_FIELDS,
+  ATTRIBUTE_CONFLICTS,
   ATTRIBUTE_CORROBORATION_COUNT,
   ATTRIBUTE_HAS_CONFLICTS,
   ATTRIBUTE_LAST_ASSERTED_AT,
@@ -35,6 +38,8 @@ const PROVENANCE_REFRESH_ON_WRITE = booleanConf('provenance:refresh_on_write', f
 export const MAX_CONFLICT_VALUES_PER_FIELD: number = conf.get('provenance:max_conflict_values_per_field') || DEFAULT_MAX_CONFLICT_VALUES_PER_FIELD;
 
 export type ProvenanceTarget = { _index: string; _id?: string; internal_id: string; entity_type: string };
+
+export type ProvenanceChange = ProvenanceTriggerChange & { newConflictValues?: number };
 
 export interface FreshnessFlag {
   rule_id: string;
@@ -335,10 +340,43 @@ export interface UpsertProvenanceRecord {
 }
 
 /**
+ * Corroboration and conflicts change produced by a write, computed from the element as loaded before it.
+ */
+export const computeProvenanceChange = (
+  element: Partial<StoreProvenanceFields>,
+  sourceIds: string[],
+  conflictsAdd: ConflictAddition[] = [],
+): ProvenanceChange => {
+  const previousSources = new Set((element[ATTRIBUTE_ASSERTIONS] ?? []).map((assertion) => assertion.source_id));
+  const from = previousSources.size;
+  const to = Math.min(MAX_ASSERTIONS_PER_ELEMENT, new Set([...previousSources, ...sourceIds]).size);
+  const knownValues = new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
+  const newConflicts = conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
+  return {
+    corroboration: to > from ? { from, to } : undefined,
+    conflictFields: [...new Set(newConflicts.map((addition) => addition.field))],
+    newConflictValues: newConflicts.length,
+  };
+};
+
+export const publishProvenanceChange = async (context: AuthContext, element: ProvenanceTarget, change: ProvenanceChange) => {
+  await addProvenanceConflictDetectedCount(change.newConflictValues ?? 0);
+  if (change.corroboration || (change.conflictFields ?? []).length > 0) {
+    await notifyProvenanceChange(context, element, change);
+  }
+};
+
+/**
  * Refresh the assertion of the writing source on an existing element after upsert resolution.
  * A provenance failure never fails the knowledge write itself.
  */
-export const recordUpsertProvenance = async (context: AuthContext, user: AuthUser, element: ProvenanceTarget, record: UpsertProvenanceRecord) => {
+export const recordUpsertProvenance = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: ProvenanceTarget & Partial<StoreProvenanceFields>,
+  record: UpsertProvenanceRecord,
+  opts: { refresh?: boolean } = {},
+) => {
   if (!isProvenanceRecordable(context, user, element.entity_type)) {
     return null;
   }
@@ -352,7 +390,8 @@ export const recordUpsertProvenance = async (context: AuthContext, user: AuthUse
       conflictsRemove: record.conflictsRemove,
       proceduresAdd: record.proceduresAdd,
       resetFreshness: true,
-    });
+    }, opts);
+    await publishProvenanceChange(context, element, computeProvenanceChange(element, [source.source_id], record.conflictsAdd));
     return { source, assertion };
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to record the assertion', { cause: err, id: element.internal_id, type: element.entity_type });

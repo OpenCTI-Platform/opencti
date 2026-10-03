@@ -60,12 +60,47 @@ type ProvenanceStatistics {
   stale: Int!
 }
 
+type ProvenanceDistributionEntry {
+  label: String!
+  value: Int!
+}
+
+type ProvenanceSingleSourcedEntry {
+  entity_type: String!
+  total: Int!
+  single_sourced: Int!
+}
+
+enum ProvenanceBackfillStatus {
+  pending
+  running
+  completed
+}
+
+type ProvenanceBackfill {
+  status: ProvenanceBackfillStatus!
+  processed: Int!
+  expected: Int!
+  updated: Int!
+  errors: Int!
+  started_at: DateTime
+  completed_at: DateTime
+}
+
 extend type Query {
   provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics! @auth(for: [KNOWLEDGE, EXPLORE])
+  # Knowledge per bucket of days since its last assertion (0-30, 31-90, 91-180, 181-365, 366+, unknown)
+  provenanceFreshnessDistribution(types: [String!], filters: FilterGroup): [ProvenanceDistributionEntry!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceBackfill: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
 }
 
 extend type Mutation {
   provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  # The current user confirms the element is still valid (re-assertion, resets its freshness)
+  provenanceAssert(id: ID!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceBackfillRestart: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
 }

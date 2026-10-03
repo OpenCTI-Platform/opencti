@@ -110,7 +110,7 @@ const resolveWritingConnector = async (context: AuthContext, user: AuthUser) => 
   return uniqueConnectorOfUser(connectors, user.id);
 };
 
-const sourceFromConnector = async (context: AuthContext, connector: BasicStoreEntityConnector, workId: string | null): Promise<AssertionSource> => {
+export const sourceFromConnector = async (context: AuthContext, connector: BasicStoreEntityConnector, workId: string | null): Promise<AssertionSource> => {
   if (isOpenAevCoverageConnector(connector)) {
     return { source_id: connector.internal_id, source_kind: SOURCE_KIND_EMULATION, source_name: connector.name, work_id: workId };
   }
@@ -122,7 +122,7 @@ const sourceFromConnector = async (context: AuthContext, connector: BasicStoreEn
   return { source_id: connector.internal_id, source_kind: SOURCE_KIND_CONNECTOR, source_name: connector.name, work_id: workId };
 };
 
-const sourceFromRule = (fromRule: string | undefined): AssertionSource => {
+export const sourceFromRule = (fromRule: string | undefined): AssertionSource => {
   const ruleId = fromRule?.startsWith(RULE_PREFIX) ? fromRule.substring(RULE_PREFIX.length) : (fromRule ?? RULE_MANAGER_USER.id);
   const definition = rule_definitions.find((rule) => rule.id === ruleId);
   return { source_id: ruleId, source_kind: SOURCE_KIND_INFERENCE, source_name: definition?.name ?? ruleId, work_id: null };
