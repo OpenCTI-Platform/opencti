@@ -12,7 +12,8 @@ import IconButton from '../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
-import { handleError, handleErrorInForm } from '../../../relay/environment';
+import { handleError, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
+import type { RelayError } from '../../../relay/relayTypes';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -61,7 +62,7 @@ interface WorkspaceCreationProps {
 
 interface DashboardCreationDialProps extends DrawerControlledDialProps {
   onImportFile: () => void;
-  onCreateFromTemplate: (file: File) => void;
+  onCreateFromTemplate: (file: File) => Promise<void>;
 }
 
 const DashboardCreationDial = ({ onImportFile, onCreateFromTemplate, ...dialProps }: DashboardCreationDialProps) => {
@@ -70,6 +71,13 @@ const DashboardCreationDial = ({ onImportFile, onCreateFromTemplate, ...dialProp
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_custom_dashboards?platform_id=${settings.id}`
     : '';
+  // a rejection without payload follows a request error the mutation already reported
+  const createFromTemplate = (file: File) => {
+    onCreateFromTemplate(file).catch((error?: RelayError) => {
+      if (error?.res?.errors?.length) MESSAGING$.notifyRelayError(error);
+      else if (error) MESSAGING$.notifyError(t_i18n('An unknown error has occurred! Please try again later.'));
+    });
+  };
   return (
     <Security needs={[EXPLORE_EXUPDATE]}>
       <>
@@ -86,7 +94,7 @@ const DashboardCreationDial = ({ onImportFile, onCreateFromTemplate, ...dialProp
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>
         </Tooltip>
-        <DashboardTemplateMenu onCreate={onCreateFromTemplate} />
+        <DashboardTemplateMenu onCreate={createFromTemplate} />
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient
@@ -113,7 +121,11 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const handleImport = useCallback((file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
+        if ((errors && errors.length > 0) || !data.workspaceConfigurationImport) {
+          reject({ res: { errors: errors ?? [] } });
+          return;
+        }
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
@@ -127,9 +139,6 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   }), [commitImportMutation, navigate]);
   const importHelpers = useDashboardImport({ onImport: handleImport });
   const openImportFile = importHelpers.handleImport;
-  const createFromTemplate = useCallback((file: File) => {
-    handleImport(file).catch(() => {});
-  }, [handleImport]);
 
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
@@ -172,8 +181,8 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   // Drawer renders the dial as a component: a new function on every render would remount it and close the
   // template menu whenever the list re-renders.
   const createDashboardButton = useCallback((props: DrawerControlledDialProps) => (
-    <DashboardCreationDial {...props} onImportFile={openImportFile} onCreateFromTemplate={createFromTemplate} />
-  ), [openImportFile, createFromTemplate]);
+    <DashboardCreationDial {...props} onImportFile={openImportFile} onCreateFromTemplate={handleImport} />
+  ), [openImportFile, handleImport]);
 
   return (
     <>

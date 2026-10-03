@@ -10,6 +10,8 @@ const useDashboardImport = ({ onImport }: {
     const importedFile = event.target.files[0];
     onImport(importedFile)
       .catch((error) => {
+        // a rejection without payload follows a request error the mutation already reported
+        if (!error?.res) return;
         MESSAGING$.notifyCustomRelayError(error, {
           name: 'An unknown error has occurred! Please try again later.',
         });
