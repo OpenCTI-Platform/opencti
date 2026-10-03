@@ -85,8 +85,20 @@ export default class GraphPage {
     return this.page.locator('.MuiDrawer-paperAnchorDockedBottom').last();
   }
 
+  /** A control of the panel floating over the canvas (zoom, fit, full screen, export...). */
+  getControl(name: string) {
+    return this.page.getByRole('toolbar', { name: 'Graph view controls' }).getByRole('button', { name, exact: true });
+  }
+
+  async hoverNode(id: string) {
+    const { x, y } = await this.pagePoint(id);
+    await this.page.mouse.move(x - 30, y - 30);
+    await this.page.mouse.move(x, y, { steps: 6 });
+  }
+
+  /** A button of the graph toolbar; other buttons of the page may carry the same name. */
   getToolbarButton(name: string | RegExp) {
-    return this.page.getByRole('button', { name, exact: typeof name === 'string' });
+    return this.getToolbar().getByRole('button', { name, exact: typeof name === 'string' });
   }
 
   getSelectionSummary(count: number) {

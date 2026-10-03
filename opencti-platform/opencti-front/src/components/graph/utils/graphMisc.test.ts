@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import ThemeDark from '../../ThemeDark';
+import ThemeLight from '../../ThemeLight';
+import { buildGraphPalette } from './graphPalette';
 import { collisionForce } from './collisionForce';
 import { shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
@@ -84,6 +88,23 @@ describe('graph view state persistence', () => {
       layoutCentreId: '',
     })).toEqual({ hiddenNodeIds: ['a', 'b'], collapsedEntityTypes: [], showLegend: false, layoutMode: null, layoutCentreId: null });
     expect(normalizeGraphStateParams({ layoutMode: 'tiers', showLegend: true })).toEqual({ layoutMode: 'tiers', showLegend: true });
+  });
+});
+
+describe('buildGraphPalette', () => {
+  it('takes every colour from the theme, dark or light', () => {
+    const dark = createTheme(ThemeDark() as ThemeOptions);
+    const light = createTheme(ThemeLight() as ThemeOptions);
+    const darkPalette = buildGraphPalette(dark);
+    const lightPalette = buildGraphPalette(light);
+    expect(darkPalette.mode).toBe('dark');
+    expect(lightPalette.mode).toBe('light');
+    expect(darkPalette.background).toBe(dark.palette.background.default);
+    expect(lightPalette.background).toBe(light.palette.background.default);
+    expect(lightPalette.accent).toBe(light.palette.secondary.main);
+    expect(lightPalette.tones.warning).toBe(light.palette.warning.main);
+    // Read against the surface behind, so the tint is lighter on a light surface.
+    expect(lightPalette.tintAlpha).toBeLessThan(darkPalette.tintAlpha);
   });
 });
 

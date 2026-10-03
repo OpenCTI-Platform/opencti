@@ -104,8 +104,12 @@ const addReport = async (request: APIRequestContext, name: string, objects: stri
   return data.reportAdd.id;
 };
 
-export const createGraphFixture = async (request: APIRequestContext): Promise<GraphFixture> => {
-  const suffix = `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
+/**
+ * @param fixedSuffix A constant suffix gives constant names and values, which visual snapshots
+ * need; the platform deduplicates by name, so a second run reuses the same entities.
+ */
+export const createGraphFixture = async (request: APIRequestContext, fixedSuffix?: string): Promise<GraphFixture> => {
+  const suffix = fixedSuffix ?? `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
 
   const markings = await graphqlRequest<{ markingDefinitions: { edges: { node: { id: string; definition: string } }[] } }>(
     request,
@@ -136,7 +140,7 @@ export const createGraphFixture = async (request: APIRequestContext): Promise<Gr
   const attackPatternId = await addDomainObject(request, 'attackPatternAdd', attackPatternName, ', confidence: 40');
 
   // TEST-NET-2 (RFC 5737), never routable.
-  const ipv4Value = `198.51.100.${(Date.now() % 200) + 20}`;
+  const ipv4Value = fixedSuffix ? '198.51.100.250' : `198.51.100.${(Date.now() % 200) + 20}`;
   const ipv4 = await graphqlRequest<{ stixCyberObservableAdd: IdResult }>(
     request,
     `mutation { stixCyberObservableAdd(type: "IPv4-Addr", IPv4Addr: { value: ${quote(ipv4Value)} }) { id } }`,
