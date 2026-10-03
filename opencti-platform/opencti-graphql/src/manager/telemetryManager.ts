@@ -38,6 +38,7 @@ import { elAggregationCount, elCount } from '../database/engine';
 import {
   READ_INDEX_FILES,
   READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_KNOWLEDGE_SNAPSHOTS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -45,6 +46,7 @@ import {
 } from '../database/utils';
 import type { BasicStoreEntity } from '../types/store';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+import { ENTITY_TYPE_KNOWLEDGE_SNAPSHOT } from '../modules/timeMachine/timeMachine-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { NOTIFIER_CONNECTOR_EMAIL, NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL, NOTIFIER_CONNECTOR_UI, NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
@@ -176,6 +178,12 @@ export const TELEMETRY_GAUGE_PLAYBOOK_EXECUTION = 'playbookExecutionCount';
 export const TELEMETRY_GAUGE_NOTIFICATION_SENT = 'notificationSentCount';
 export const TELEMETRY_GAUGE_EXPORT_GENERATED = 'exportGeneratedCount';
 export const TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED = 'ingestionObjectsProcessedCount';
+// Knowledge time machine counters
+export const TELEMETRY_GAUGE_TIME_MACHINE_AS_OF = 'timeMachineAsOfCount';
+export const TELEMETRY_GAUGE_TIME_MACHINE_DIFF = 'timeMachineDiffCount';
+export const TELEMETRY_GAUGE_LANDSCAPE_DIFF = 'landscapeDiffCount';
+export const TELEMETRY_GAUGE_TIME_MACHINE_VISIT = 'timeMachineVisitCount';
+export const TELEMETRY_GAUGE_CHANGE_DIGEST_SENT = 'changeDigestSentCount';
 
 // Bounded enums for dimensional counters (cardinality discipline: every
 // dimension value set is a closed list, mirrored by the warehouse models).
@@ -373,6 +381,31 @@ export const addNotificationSentCount = (channel: NotificationChannel) => {
 export const addExportGeneratedCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_EXPORT_GENERATED, 1)
     .catch((reason) => logApp.warn('Error adding export generated count to telemetry', { reason }));
+};
+
+export const addTimeMachineAsOfCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIME_MACHINE_AS_OF, 1)
+    .catch((reason) => logApp.warn('Error adding time machine as-of count to telemetry', { reason }));
+};
+
+export const addTimeMachineDiffCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIME_MACHINE_DIFF, 1)
+    .catch((reason) => logApp.warn('Error adding time machine diff count to telemetry', { reason }));
+};
+
+export const addLandscapeDiffCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_LANDSCAPE_DIFF, 1)
+    .catch((reason) => logApp.warn('Error adding landscape diff count to telemetry', { reason }));
+};
+
+export const addTimeMachineVisitCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIME_MACHINE_VISIT, 1)
+    .catch((reason) => logApp.warn('Error adding time machine visit count to telemetry', { reason }));
+};
+
+export const addChangeDigestSentCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CHANGE_DIGEST_SENT, 1)
+    .catch((reason) => logApp.warn('Error adding change digest sent count to telemetry', { reason }));
 };
 
 // Volume counter: adds the number of objects processed by a completed work.
@@ -712,6 +745,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       { value: liveTriggersCount, attributes: { type: 'live' } },
       { value: triggers.length - liveTriggersCount, attributes: { type: 'digest' } },
     ]);
+    manager.setChangeDigestTriggersCount(triggers.filter((trigger) => trigger.trigger_type === 'change_digest').length);
+    manager.setKnowledgeSnapshotsCount(await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_KNOWLEDGE_SNAPSHOTS, { types: [ENTITY_TYPE_KNOWLEDGE_SNAPSHOT] }));
     const notifiers = await getEntitiesListFromCache<BasicStoreEntity & { notifier_connector_id?: string }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_NOTIFIER);
     const notifierConnectorLabel = (connectorId?: string) => {
       if (connectorId === NOTIFIER_CONNECTOR_EMAIL || connectorId === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL) return 'email';
@@ -867,6 +902,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setExportGeneratedCount(exportGeneratedCountInRedis);
     const ingestionObjectsProcessedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED);
     manager.setIngestionObjectsProcessedCount(ingestionObjectsProcessedCountInRedis);
+    manager.setTimeMachineAsOfCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIME_MACHINE_AS_OF));
+    manager.setTimeMachineDiffCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIME_MACHINE_DIFF));
+    manager.setLandscapeDiffCount(await redisGetTelemetry(TELEMETRY_GAUGE_LANDSCAPE_DIFF));
+    manager.setTimeMachineVisitCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIME_MACHINE_VISIT));
+    manager.setChangeDigestSentCount(await redisGetTelemetry(TELEMETRY_GAUGE_CHANGE_DIGEST_SENT));
     // end region Telemetry user events
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);

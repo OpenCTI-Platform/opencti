@@ -40,6 +40,8 @@ import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
 import { InterruptibleTimer } from './interruptible-timer';
 import { memoize } from '../utils/memoize';
+import { buildChangeDigestData, type ChangeDigestTrigger, TRIGGER_TYPE_CHANGE_DIGEST } from '../modules/timeMachine/timeMachine-changeDigest';
+import { addChangeDigestSentCount } from './telemetryManager';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -736,6 +738,40 @@ export const handleDigestNotifications = async (context: AuthContext) => {
   }
 };
 
+export const isChangeDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
+  return n.trigger.trigger_type === TRIGGER_TYPE_CHANGE_DIGEST;
+};
+
+// Change digests send, for each recipient, the landscape diff of the trigger filter set over the digest period
+export const handleChangeDigestNotifications = async (context: AuthContext) => {
+  const baseDate = utcDate().startOf('minutes');
+  const notifications = await getNotifications(context);
+  const changeDigests = notifications.filter(isChangeDigest).filter((digest) => isTimeTrigger(digest, baseDate));
+  if (changeDigests.length === 0) {
+    return;
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  for (let index = 0; index < changeDigests.length; index += 1) {
+    const { trigger, users } = changeDigests[index];
+    const fromDate = baseDate.clone().subtract(1, trigger.period).toISOString();
+    for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+      const user = users[userIndex];
+      const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
+      try {
+        const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, fromDate, baseDate.toISOString());
+        if (data.length > 0) {
+          const target = convertToNotificationUser(user, trigger.notifiers);
+          const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
+          await storeNotificationEvent(context, digestEvent);
+          addChangeDigestSentCount();
+        }
+      } catch (err) {
+        logApp.error('[OPENCTI-MODULE] Change digest generation error', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: trigger.internal_id });
+      }
+    }
+  }
+};
+
 const initNotificationManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
@@ -783,6 +819,7 @@ const initNotificationManager = () => {
       while (!shutdown) {
         lock.signal.throwIfAborted();
         await handleDigestNotifications(context);
+        await handleChangeDigestNotifications(context);
         await cronTimer.start(CRON_SCHEDULE_TIME);
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (digest)');

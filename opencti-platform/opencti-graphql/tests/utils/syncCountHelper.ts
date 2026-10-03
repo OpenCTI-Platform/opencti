@@ -36,14 +36,15 @@ testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
 testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
-testCreatedCounter['intrusion-set'] = 6;
+// + 3 created by timeMachine-test
+testCreatedCounter['intrusion-set'] = 9;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 21;
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 63;
+testCreatedCounter.malware = 64;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -55,8 +56,10 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 52;
+// + 2 created by timeMachine-test
+testCreatedCounter.relationship = 149;
+// + 1 created by timeMachine-test
+testCreatedCounter.report = 53;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -70,12 +73,13 @@ testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 9;
+// + 1 updated by timeMachine-test (marking added to a relationship)
+testUpdatedCounter.relationship = 10;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 19;
-testUpdatedCounter['intrusion-set'] = 5;
+testUpdatedCounter['intrusion-set'] = 6;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
@@ -140,13 +144,14 @@ testDeletedCounter.identity = 37;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
-testDeletedCounter['intrusion-set'] = 5;
+// + 3 deleted by timeMachine-test
+testDeletedCounter['intrusion-set'] = 8;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 16;
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 36;
+testDeletedCounter.malware = 37;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
@@ -156,8 +161,10 @@ testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 4;
-testDeletedCounter.report = 43;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.relationship = 5;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.report = 44;
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;

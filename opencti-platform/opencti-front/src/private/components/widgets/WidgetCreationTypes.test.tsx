@@ -23,6 +23,9 @@ const ALL_VISUALIZATION_TYPES = [
   'provenance-single-sourced',
   'bookmark',
   'wordcloud',
+  'landscape-relationships',
+  'landscape-techniques',
+  'landscape-top-entities',
 ];
 
 describe('getVisualizationTypes', () => {

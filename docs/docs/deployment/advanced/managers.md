@@ -20,6 +20,12 @@ This manager keeps tracks of user/connector interactions on entities in the plat
 
 It is designed to help users audit and understand the evolution of their CTI data.
 
+## Knowledge snapshot manager
+
+This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot, including the entities whose only change is a relationship created, updated or deleted: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
+
+The manager also applies the retention of the time machine data: snapshots are deleted with the shortest active History retention rule, and the "new since your last visit" markers expire after one year or when their user is deleted.
+
 ## Activity manager
 
 The activity manager in OpenCTI is a component that monitors and logs the user actions in the platform such as login, settings update, and user activities if configured (read, update, etc.).
