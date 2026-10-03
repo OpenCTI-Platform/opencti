@@ -33,7 +33,7 @@ A security platform, or a system, declares the MITRE data components it collects
 * On a **Security platform**, open the **Coverage** tab. The **Provided telemetry** card lists the data components and lets you add one with the relationship creation, or declare log sources: describe them with the Sigma taxonomy (category, product, service) and OpenCTI turns them into data components through the telemetry mappings.
 * On a **System**, create the `provides` relationship to a data component from the knowledge view, like any other relationship.
 
-Telemetry is also inferred from the log sources of the rules deployed on a platform.
+Telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source.
 
 ### Telemetry mappings
 
@@ -54,7 +54,9 @@ The **Matrix** tab displays the ATT&CK matrix with the defense level of each tec
 * **Layers**: show or hide telemetry, detection, validation and mitigations.
 * The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats.
 
-Click a technique to open its drawer. It explains the level per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results, the mitigations, the threats using the technique and the validation requests already sent.
+The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps tabs. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh.
+
+Click a technique to open its drawer. It explains the level per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
 
 The coverage is computed in the background by the defense coverage manager: a full computation every night and an incremental computation when the knowledge changes. Users allowed to customize the platform can request a full computation with **Recompute**.
 
