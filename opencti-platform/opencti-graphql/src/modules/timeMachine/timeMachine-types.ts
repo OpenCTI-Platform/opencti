@@ -211,9 +211,13 @@ export interface LandscapeDiffAggregates {
   confidence_changes: number;
   score_changes: number;
   new_techniques_by_tactic: LandscapeDiffBucket[];
+  // The named lists keep the most frequent items only, the counts are the totals
   new_techniques: LandscapeDiffNamedItem[];
+  new_techniques_count: number;
   new_malware: LandscapeDiffNamedItem[];
+  new_malware_count: number;
   new_tools: LandscapeDiffNamedItem[];
+  new_tools_count: number;
   new_victims_by_sector: LandscapeDiffBucket[];
   new_victims_by_country: LandscapeDiffBucket[];
   new_victims_by_region: LandscapeDiffBucket[];

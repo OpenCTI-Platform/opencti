@@ -93,12 +93,18 @@ describe('Change digest messages', () => {
       removed_relationships: 2,
       revocations: 1,
       new_techniques: [{ id: 't', entity_type: 'Attack-Pattern', name: 'T1059', count: 2 }],
+      new_techniques_count: 1,
       new_malware: [],
+      new_malware_count: 0,
       new_tools: [],
+      new_tools_count: 0,
       new_infrastructure_count: 3,
     } as unknown as LandscapeDiffAggregates;
     expect(buildAggregatesMessage(aggregates))
       .toEqual('`4` of `10` entities changed, `12` new relationship(s), `2` removed, `1` revocation(s), `1` new technique(s), `3` new infrastructure');
+    // The named lists are capped, the message uses the totals
+    const capped = { ...aggregates, new_malware: [{ id: 'm', entity_type: 'Malware', name: 'Malware', count: 1 }], new_malware_count: 120, new_tools_count: 75 };
+    expect(buildAggregatesMessage(capped)).toContain('`120` new malware, `75` new tool(s)');
     expect(buildAggregatesMessage(aggregates, { listed: 4 })).not.toContain('not listed');
     expect(buildAggregatesMessage(aggregates, { listed: 1 })).toContain('`3` other changed entities not listed');
     expect(buildAggregatesMessage(aggregates, { partial: false })).not.toContain('partial result');

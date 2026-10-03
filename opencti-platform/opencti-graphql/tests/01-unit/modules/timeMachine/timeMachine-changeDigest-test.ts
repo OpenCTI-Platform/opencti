@@ -40,8 +40,11 @@ const aggregates = {
   removed_relationships: 0,
   revocations: 0,
   new_techniques: [],
+  new_techniques_count: 0,
   new_malware: [],
+  new_malware_count: 0,
   new_tools: [],
+  new_tools_count: 0,
   new_infrastructure_count: 0,
 } as unknown as LandscapeDiffAggregates;
 
