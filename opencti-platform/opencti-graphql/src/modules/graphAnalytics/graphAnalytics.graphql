@@ -81,6 +81,7 @@ type StixNeighborhoodSummary {
     by_relationship_type: [StixNeighborhoodCount!]!
     by_entity_type: [StixNeighborhoodCount!]!
     pairs: [StixNeighborhoodPair!]!
+    truncated: Boolean!
 }
 # endregion
 

@@ -1,7 +1,7 @@
 import conf from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { computeQueryIndices, elAggregationSearch, elFindByIds, elList } from '../../database/engine';
+import { computeQueryIndices, elFindByIds, elList } from '../../database/engine';
 import { buildRelationsFilter, storeLoadById } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -172,9 +172,17 @@ export interface NeighborhoodSummary {
   by_relationship_type: Array<{ label: string; value: number }>;
   by_entity_type: Array<{ label: string; value: number }>;
   pairs: Array<{ relationship_type: string; entity_type: string; value: number }>;
+  truncated: boolean;
 }
 
-/** Counts per relationship type and per neighbor entity type, as visible by the caller. */
+const countEntries = (counts: Map<string, number>) => Array.from(counts.entries())
+  .map(([label, value]) => ({ label, value }))
+  .sort((a, b) => b.value - a.value);
+
+/**
+ * Counts per relationship type and per neighbor entity type, as visible by the caller:
+ * a relationship is counted only when the caller can read both the relationship and the neighbor at its other end.
+ */
 export const stixNeighborhoodSummary = async (
   context: AuthContext,
   user: AuthUser,
@@ -187,43 +195,46 @@ export const stixNeighborhoodSummary = async (
   }
   const types = PATH_DEFAULT_RELATIONSHIP_TYPES;
   const indices = computeQueryIndices(undefined, types, includeInferred) as string[];
-  const { filters } = buildRelationsFilter(types, { fromOrToId: [entity.internal_id] });
-  const aggregations = await elAggregationSearch(context, user, indices, { types, filters }, {
-    relationships: {
-      terms: { field: 'relationship_type.keyword', size: 200 },
-      aggs: {
-        connections: {
-          nested: { path: 'connections' },
-          aggs: {
-            others: {
-              filter: { bool: { must_not: [{ term: { 'connections.internal_id.keyword': entity.internal_id } }] } },
-              aggs: { types: { terms: { field: 'connections.types.keyword', size: 200 } } },
-            },
-          },
-        },
-      },
-    },
+  const limit = PATH_MAX_RELATIONSHIPS_PER_LEVEL;
+  const relations = await elList<BasicStoreRelation>(context, user, indices, {
+    ...buildRelationsFilter(types, { fromOrToId: [entity.internal_id] }),
+    baseData: true,
+    first: Math.min(limit + 1, 5000),
+    maxSize: limit + 1,
   });
-  const byRelationship: Array<{ label: string; value: number }> = [];
+  const kept = relations.slice(0, limit);
+  const neighborOf = (relation: BasicStoreRelation) => (relation.fromId === entity.internal_id
+    ? { id: relation.toId, type: relation.toType }
+    : { id: relation.fromId, type: relation.fromType });
+  const neighborIds = Array.from(new Set(kept.map((relation) => neighborOf(relation).id)));
+  const accessible = neighborIds.length > 0
+    ? await elFindByIds<BasicStoreBase>(context, user, neighborIds, { indices: READ_ENTITIES_INDICES, baseData: true }) as BasicStoreBase[]
+    : [];
+  const accessibleIds = new Set(accessible.map((neighbor) => neighbor.internal_id));
+  const byRelationship = new Map<string, number>();
   const byEntity = new Map<string, number>();
-  const pairs: NeighborhoodSummary['pairs'] = [];
+  const pairs = new Map<string, NeighborhoodSummary['pairs'][number]>();
   let total = 0;
-  (aggregations.relationships?.buckets ?? []).forEach((bucket: any) => {
-    const relationshipType = String(bucket.key);
-    byRelationship.push({ label: relationshipType, value: bucket.doc_count });
-    total += bucket.doc_count;
-    (bucket.connections?.others?.types?.buckets ?? []).forEach((typeBucket: any) => {
-      const entityType = resolveConcreteEntityType(String(typeBucket.key));
-      if (!entityType) return;
-      pairs.push({ relationship_type: relationshipType, entity_type: entityType, value: typeBucket.doc_count });
-      byEntity.set(entityType, (byEntity.get(entityType) ?? 0) + typeBucket.doc_count);
-    });
+  kept.forEach((relation) => {
+    const neighbor = neighborOf(relation);
+    if (!accessibleIds.has(neighbor.id)) return;
+    total += 1;
+    const relationshipType = relation.relationship_type;
+    byRelationship.set(relationshipType, (byRelationship.get(relationshipType) ?? 0) + 1);
+    const entityType = resolveConcreteEntityType(neighbor.type);
+    if (!entityType) return;
+    byEntity.set(entityType, (byEntity.get(entityType) ?? 0) + 1);
+    const pairKey = `${relationshipType}|${entityType}`;
+    const pair = pairs.get(pairKey) ?? { relationship_type: relationshipType, entity_type: entityType, value: 0 };
+    pair.value += 1;
+    pairs.set(pairKey, pair);
   });
   return {
     id: entity.internal_id,
     total,
-    by_relationship_type: byRelationship.sort((a, b) => b.value - a.value),
-    by_entity_type: Array.from(byEntity.entries()).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
-    pairs: pairs.sort((a, b) => b.value - a.value),
+    by_relationship_type: countEntries(byRelationship),
+    by_entity_type: countEntries(byEntity),
+    pairs: Array.from(pairs.values()).sort((a, b) => b.value - a.value),
+    truncated: relations.length > limit,
   };
 };

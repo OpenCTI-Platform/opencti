@@ -83,6 +83,7 @@ const neighborhoodQuery = graphql`
   query StixPathFinderNeighborhoodQuery($id: String!) {
     stixNeighborhoodSummary(id: $id) {
       total
+      truncated
       by_relationship_type {
         label
         value
@@ -254,7 +255,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
       </Text>
       {neighborhood && neighborhood.total > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="graph-neighborhood-summary">
-          <Text variant="content-caption">{`${t_i18n('Neighborhood')}: ${n(neighborhood.total)} ${t_i18n('relationships')}`}</Text>
+          <Text variant="content-caption">{`${t_i18n('Neighborhood')}: ${n(neighborhood.total)}${neighborhood.truncated ? '+' : ''} ${t_i18n('relationships')}`}</Text>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {neighborhood.by_relationship_type.map(({ label, value }) => (
               <Chip
