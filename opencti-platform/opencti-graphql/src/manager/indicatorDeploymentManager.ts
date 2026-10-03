@@ -8,6 +8,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatf
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import {
   backfillIndicatorDeploymentCounters,
+  reconcileDeployedIndicatorCounters,
   flagExpiredDeployments,
   reconcileAllIndicatorDeploymentCounters,
   reconcileIndicatorDeploymentCounters,
@@ -40,9 +41,10 @@ export const indicatorDeploymentCronHandler = async () => {
   const flagged = await flagExpiredDeployments(context, EXPIRATION_MANAGER_USER, REMOVAL_GRACE_PERIOD, BATCH_SIZE);
   const repaired = await repairRecentDeploymentCounters(context, SCHEDULE_TIME * 2, BATCH_SIZE);
   const reconciled = await reconcileIndicatorDeploymentCounters(context, BATCH_SIZE);
+  const deployedReconciled = await reconcileDeployedIndicatorCounters(context, BATCH_SIZE);
   const requests = await maintainIocValidationRequests(context);
   const backfilled = await backfillIndicatorDeploymentCounters(context, BACKFILL_BATCH_SIZE);
-  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, reconciled, requests, backfilled });
+  logApp.debug('[OPENCTI-MODULE] Indicator deployment manager run', { flagged, repaired, reconciled, deployedReconciled, requests, backfilled });
 };
 
 type DeploymentEventData = {
