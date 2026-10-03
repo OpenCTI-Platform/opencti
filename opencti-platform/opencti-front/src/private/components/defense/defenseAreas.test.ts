@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { describe, expect, it } from 'vitest';
 import { CURATION_TABS, grantedCurationTabs } from '../data/curation/curationTabs';
-import { DEFENSE_AREAS, type DefenseArea, visibleDefenseAreas } from './defenseAreas';
+import { DEFENSE_AREAS, type DefenseArea, defenseAreaSection, visibleDefenseAreas } from './defenseAreas';
 
 const area = (path: string, entityType?: string): DefenseArea => ({
   order: 0,
@@ -56,6 +56,46 @@ describe.each([
       expect(entry.label.trim()).not.toEqual('');
       expect(entry.label[0]).toEqual(entry.label[0].toUpperCase());
     });
+  });
+
+  it('describes an entry, when it does, with a sentence-case source string', () => {
+    entries.forEach((entry) => {
+      if (entry.description === undefined) return;
+      expect(entry.description.trim()).not.toEqual('');
+      expect(entry.description[0]).toEqual(entry.description[0].toUpperCase());
+    });
+  });
+});
+
+describe('DEFENSE_AREAS sections', () => {
+  it('give every area page a unique lowercase segment and a sentence-case label', () => {
+    DEFENSE_AREAS.forEach((entry) => {
+      const sections = entry.sections ?? [];
+      expect(new Set(sections.map((section) => section.path)).size).toEqual(sections.length);
+      sections.forEach((section) => {
+        expect(section.path).toMatch(ROUTE_SEGMENT);
+        expect(section.label[0]).toEqual(section.label[0].toUpperCase());
+      });
+    });
+  });
+});
+
+describe('defenseAreaSection', () => {
+  const assurance: DefenseArea = {
+    ...area('assurance'),
+    sections: [{ path: 'overview', label: 'Overview' }, { path: 'lists', label: 'Lists' }],
+  };
+
+  it('finds the section a path opens, its own sub-paths included', () => {
+    expect(defenseAreaSection(assurance, 'lists')?.label).toEqual('Lists');
+    expect(defenseAreaSection(assurance, 'lists/list-1')?.label).toEqual('Lists');
+  });
+
+  it('finds no section for the area root, an unknown path or a path that only starts like one', () => {
+    expect(defenseAreaSection(assurance, '')).toBeUndefined();
+    expect(defenseAreaSection(assurance, 'unknown')).toBeUndefined();
+    expect(defenseAreaSection(assurance, 'listsx')).toBeUndefined();
+    expect(defenseAreaSection(area('matrix'), 'gaps')).toBeUndefined();
   });
 });
 

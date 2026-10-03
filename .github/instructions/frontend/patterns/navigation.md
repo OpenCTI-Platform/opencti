@@ -33,9 +33,12 @@ const hunts: DefenseArea = {
   order: 10,
   path: 'hunts',
   label: 'Hunts',
+  description: 'Is this threat already in my environment?',
   icon: <Crosshairs fontSize="small" />,
   entityType: 'Hunt',
   needs: [KNOWLEDGE],
+  // A hunt's own page (`/dashboard/defense/hunts/<id>/...`) has its header and tabs.
+  rendersOwnPage: (subPath) => subPath.length > 0,
   component: lazy(() => import('../../hunts/RootHunts')),
 };
 
@@ -47,17 +50,50 @@ export default hunts;
   sub-routes. Do not add a route for it in `Index.tsx`: the hub's `/defense/*` route mounts it.
 - `label` is an English source string, translated by the menu, so it must exist in every
   `lang/front/*.json` file.
+- `description` is the question the area answers, an English source string in every language file.
+  The area's first-use state shows it (see below).
 - `entityType` hides the area with that entity type (Customization > Entity types).
 - `needs` lists the capabilities that grant the area (any of them); without it the area is shown to
   every user who sees the knowledge menu. The component still guards its own actions with `Security`.
+- `sections` lists the area's pages (`{ path, label }`, in order) when it has several: the hub shows
+  them as tabs and adds the open one to the breadcrumb (Defense / Dissemination assurance / Lists).
+- `rendersOwnPage(subPath)` is true for a path below the area that the area renders as a page of its
+  own, typically an entity page with its header and tabs; the hub adds nothing around it.
+- `useBadgeCount` is a hook returning the pending work of the area (runs to triage, proposals to
+  review), never a total; the menu row shows it as a badge. It may suspend or fail: the menu waits for
+  nothing and hides the badge.
+
+### The hub owns the page
+
+The hub renders the page of every area: its container, its breadcrumb (Defense / <area>, then the
+open section) and its section tabs. An area or tab file **never renders its own breadcrumb or page
+container**; it renders its content only, which keeps Hunts, Defense matrix and Dissemination
+assurance identical in structure. The area's code loads inside the page, so the breadcrumb and the
+tabs stay on screen meanwhile. A reader with no visible area gets a page saying that nothing in
+Defense is available to them, with a way back, rather than a silent redirect.
+
+Inside the page, build the area on the hub page anatomy of the UX charter (OpenCTI-Platform/opencti#18685):
+a KPI strip of 3 to 5 counters, the main list, a right drawer for detail. When the area has nothing yet,
+render `HubFirstUse` (`src/private/components/common/hub/HubFirstUse.tsx`) with its one primary action
+and its documentation link: it shows the area's name and description from the registry, so every area
+explains itself the same way.
+
+```tsx
+<HubFirstUse
+  action={<Button onClick={openPlanner}>{t_i18n('Plan a hunt')}</Button>}
+  documentationUrl="https://docs.opencti.io/latest/usage/defense-hub/"
+/>
+```
 
 ## Registering a Curation tab
 
 The Data > Curation hub (`/dashboard/data/curation`) works the same way with one file per tab in
 `src/private/components/data/curation/tabs/`, whose default export is its `CurationTab`
-(`{ order, path, label, needs?, component }`; Inbox 10, Conflicts 20, Stale knowledge 30, Merges 40,
-Knowledge health 50). The hub renders the breadcrumbs and the tab bar; the component renders the
-tab's content only.
+(`{ order, path, label, description?, needs?, useBadgeCount?, component }`; Inbox 10, Conflicts 20,
+Stale knowledge 30, Merges 40, Knowledge health 50). The hub renders the breadcrumb and the tab bar,
+and keeps them on screen while a tab's code loads; the component renders the tab's content only and
+uses `HubFirstUse` for its first-use state. A tab's `useBadgeCount` shows on its tab, and the counts
+of all tabs are summed on the Data > Curation menu row.
 
 `defenseAreas.test.ts` checks both registries: unique, lowercase route segments, unique ascending
 positions and sentence-case labels.

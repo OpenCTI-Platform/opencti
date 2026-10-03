@@ -1,4 +1,5 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
+import type { HubBadgeCount } from '../../common/hub/HubCountBadge';
 
 export const PATH_CURATION = '/dashboard/data/curation';
 
@@ -9,9 +10,13 @@ export interface CurationTab {
   path: string;
   /** English source string, translated by the hub. */
   label: string;
+  /** English source string: the question the tab answers, shown by its first-use state. */
+  description?: string;
   /** When set, the tab is listed and routed only for a user granted one of these capabilities. */
   needs?: string[];
-  /** Mounted at `/dashboard/data/curation/<path>/*`. */
+  /** Pending work in the tab (proposals to review), shown on the tab and summed on the menu item; never a total. */
+  useBadgeCount?: HubBadgeCount;
+  /** Mounted at `/dashboard/data/curation/<path>/*`; renders the tab's content only, the hub owns the page. */
   component: LazyExoticComponent<ComponentType>;
 }
 
