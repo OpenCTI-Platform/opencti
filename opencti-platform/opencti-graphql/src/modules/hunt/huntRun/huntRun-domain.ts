@@ -3,7 +3,8 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
 import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { BUS_TOPICS, logApp } from '../../../config/conf';
-import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR } from '../../../config/errors';
+import { lockResources } from '../../../lock/master-lock';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
 import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
@@ -412,25 +413,60 @@ const scheduleAutomaticTriage = (context: AuthContext, run: BasicStoreEntityHunt
     .catch((error) => logApp.warn('[OPENCTI-MODULE] Automatic hunt triage skipped', { cause: error, runId: run.internal_id }));
 };
 
+const HUNT_RUN_TRANSITION_LOCK = 'hunt_run_transition';
+
+// Connector reports and manager expiries of a run are serialized, the run is read again under the lock so that a run
+// is finalized (verdict, statistics, retry schedule, notification) only once
+const withHuntRunTransition = async <T>(
+  context: AuthContext,
+  runId: string,
+  transition: (current: BasicStoreEntityHuntRun) => Promise<T>,
+): Promise<T> => {
+  const lockKey = `${HUNT_RUN_TRANSITION_LOCK}_${runId}`;
+  let lock;
+  try {
+    lock = await lockResources([lockKey]);
+    const current = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
+    if (!current) {
+      throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+    }
+    return await transition(current);
+  } catch (e: any) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [lockKey] });
+    }
+    throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 /**
  * Report of a run by its hunt connector (contract section 5).
  */
 export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunReportInput) => {
-  const run = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
-  if (!run) {
+  const reported = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
+  if (!reported) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
   const connectors = await listHuntConnectors(context, false);
-  const connector = connectors.find((c) => c.internal_id === run.connector_id);
+  const connector = connectors.find((c) => c.internal_id === reported.connector_id);
   if (!isBypassUser(user) && connector?.connector_user_id !== user.id) {
     throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
-  }
-  if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
-    throw FunctionalError('The hunt run is already terminated', { runId, status: run.hunt_run_status });
   }
   const status = input.status as string;
   if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED].includes(status)) {
     throw FunctionalError('A hunt connector can only report a running, completed or failed status', { runId, status });
+  }
+  const updated = await withHuntRunTransition(context, reported.internal_id, (run) => applyHuntRunReport(context, run, status, input));
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
+};
+
+const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHuntRun, status: string, input: HuntRunReportInput) => {
+  if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
+    throw FunctionalError('The hunt run is already terminated', { runId: run.internal_id, status: run.hunt_run_status });
   }
   const reportedAt = now();
   const patch: Record<string, unknown> = { hunt_run_status: status };
@@ -472,14 +508,21 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
       scheduleAutomaticTriage(context, updated, hunt);
     }
   }
-  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
+  return updated;
 };
 
 /**
  * Terminates a run the platform stopped waiting for (hunt manager): never dispatched in time, or dispatched and not
  * reported within its timeout. Same completion path as a connector failure: verdict, retry schedule, statistics.
  */
-export const expireHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, reason: string) => {
+export const expireHuntRun = async (context: AuthContext, expiredRun: BasicStoreEntityHuntRun, reason: string) => {
+  if (HUNT_RUN_TERMINAL_STATUSES.includes(expiredRun.hunt_run_status)) {
+    return expiredRun;
+  }
+  return withHuntRunTransition(context, expiredRun.internal_id, (run) => applyHuntRunExpiry(context, run, reason));
+};
+
+const applyHuntRunExpiry = async (context: AuthContext, run: BasicStoreEntityHuntRun, reason: string) => {
   if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
     return run;
   }

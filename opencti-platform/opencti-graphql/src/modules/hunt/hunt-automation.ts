@@ -191,6 +191,8 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
         }
       } catch (error) {
         logApp.error('[OPENCTI-MODULE] Hunt run retry failed', { cause: error, runId: run.internal_id });
+        await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(run.attempt ?? 1) })
+          .catch((restoreError) => logApp.error('[OPENCTI-MODULE] Hunt run retry reschedule failed', { cause: restoreError, runId: run.internal_id }));
       }
     }
   }
@@ -259,7 +261,8 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
 
 /**
  * Continuation of the playbooks waiting on hunt steps: once every run of a step is settled, the step resumes.
- * The resume is recorded first so that a step never resumes twice (at most once delivery of the playbook).
+ * The resume is recorded first so that a step never resumes twice, and released when the resume fails so that the
+ * next tick tries again (the manager lock keeps ticks sequential across the cluster).
  */
 export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<number> => {
   const leaders = await listRuns(context, [
@@ -269,15 +272,21 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
   let resumed = 0;
   for (let index = 0; index < leaders.length; index += 1) {
     const leader = leaders[index];
+    let claimed = false;
     try {
       const group = leader.playbook_execution_id ? await findPlaybookHuntRuns(context, leader.playbook_execution_id, leader.playbook_step_id) : [leader];
       if (isHuntRunGroupSettled(group) && leader.playbook_context) {
         await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: now() });
+        claimed = true;
         await resumeHuntPlaybookStep(context, JSON.parse(leader.playbook_context) as HuntPlaybookContext, group);
         resumed += 1;
       }
     } catch (error) {
       logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id });
+      if (claimed) {
+        await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: null })
+          .catch((releaseError) => logApp.error('[OPENCTI-MODULE] Hunt playbook resume release failed', { cause: releaseError, runId: leader.internal_id }));
+      }
     }
   }
   return resumed;

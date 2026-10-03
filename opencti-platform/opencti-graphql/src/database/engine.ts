@@ -3352,7 +3352,7 @@ const HISTOGRAM_DATE_FORMATS: Record<string, string> = {
   month: 'yyyy-MM',
   week: 'yyyy-MM-dd',
   day: 'yyyy-MM-dd',
-  hour: 'yyyy-MM-dd hh:mm:ss',
+  hour: 'yyyy-MM-dd HH:mm:ss',
 };
 // Date histogram summing a numeric field (missing values count as 0), with the same data restrictions as elHistogramCount
 export const elHistogramSum = async (
