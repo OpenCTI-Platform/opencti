@@ -1,10 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { Chip, Dialog, DialogBody, DialogContent, DialogFooter, DialogTitle, Textarea } from '@filigran/design-system';
-import { CenterFocusStrongOutlined, DeleteOutlined, EditOutlined, PushPinOutlined, VisibilityOffOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import {
+  Chip,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+  IconButton,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+  Text,
+  Textarea,
+} from '@filigran/design-system';
+import { CenterFocusStrongOutlined, DeleteOutlined, EditOutlined, MoreVertOutlined, PushPinOutlined, VisibilityOffOutlined, VisibilityOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
+import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
@@ -25,7 +42,7 @@ export interface TimelineEventDetails extends TimelineListEvent {
   editable: boolean;
   analyst_fields: readonly string[];
   external_id?: string | null;
-  createdBy?: { readonly name?: string } | null;
+  createdBy?: { readonly id?: string; readonly entity_type?: string; readonly name?: string } | null;
   objectMarking?: readonly {
     readonly id: string;
     readonly definition?: string | null;
@@ -55,12 +72,15 @@ interface ContainerTimelineEventDrawerProps {
   onCenter: (event: TimelineEventDetails) => void;
 }
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
+const ICON = { fontSize: 18 };
+
+/** One item of the metadata grid: a secondary caption over its value. */
+const MetadataItem = ({ label, children }: { label: string; children: React.ReactNode }) => {
   const colors = useTimelineColors();
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', marginBottom: 6 }}>{title}</div>
-      {children}
+    <div style={{ minWidth: 0 }}>
+      <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{label}</Text>
+      <div>{children}</div>
     </div>
   );
 };
@@ -77,13 +97,16 @@ const ContainerTimelineEventDrawer = ({
   onCenter,
 }: ContainerTimelineEventDrawerProps) => {
   const { t_i18n, fldt } = useFormatter();
+  const theme = useTheme();
   const colors = useTimelineColors();
   const computeLink = useComputeLink();
   const [annotation, setAnnotation] = useState(event?.annotation ?? '');
+  const [annotating, setAnnotating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     setAnnotation(event?.annotation ?? '');
+    setAnnotating(false);
   }, [event?.id, event?.annotation]);
 
   if (!event) {
@@ -98,118 +121,183 @@ const ContainerTimelineEventDrawer = ({
     from: element.from && 'id' in element.from ? element.from as TimelineElementRef : null,
     to: element.to && 'id' in element.to ? element.to as TimelineElementRef : null,
   }) : undefined;
+  const author = event.createdBy?.name ? event.createdBy : null;
+  const authorLink = author?.id && author.entity_type ? computeLink({ id: author.id, entity_type: author.entity_type }) : undefined;
+  const hasConfidence = event.confidence !== null && event.confidence !== undefined;
+  const markings = event.objectMarking ?? [];
   const annotationChanged = annotation !== (event.annotation ?? '');
 
+  const headerActions = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+      {canEdit && event.editable && (
+        <Button variant="secondary" size="small" startIcon={<EditOutlined sx={ICON} />} onClick={() => onEdit(event)} data-testid="timeline-event-edit">
+          {t_i18n('Edit')}
+        </Button>
+      )}
+      {canEdit && (
+        <Button variant="secondary" size="small" startIcon={<PushPinOutlined sx={ICON} />} onClick={() => onTogglePin(event)} data-testid="timeline-event-pin">
+          {event.pinned ? t_i18n('Unpin') : t_i18n('Pin')}
+        </Button>
+      )}
+      <Menu>
+        <MenuTrigger asChild>
+          <IconButton priority="tertiary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined sx={ICON} />} data-testid="timeline-event-more" />
+        </MenuTrigger>
+        <MenuContent align="end">
+          <MenuItem onSelect={() => onCenter(event)}>
+            <CenterFocusStrongOutlined sx={ICON} />
+            {t_i18n('Center on the timeline')}
+          </MenuItem>
+          {canEdit && (
+            <MenuItem onSelect={() => onToggleHide(event)} data-testid="timeline-event-hide">
+              {event.hidden ? <VisibilityOutlined sx={ICON} /> : <VisibilityOffOutlined sx={ICON} />}
+              {event.hidden ? t_i18n('Show') : t_i18n('Hide')}
+            </MenuItem>
+          )}
+          {canEdit && event.editable && (
+            <>
+              <MenuSeparator />
+              <MenuItem onSelect={() => setConfirmDelete(true)} data-testid="timeline-event-delete">
+                <DeleteOutlined sx={ICON} />
+                {t_i18n('Delete')}
+              </MenuItem>
+            </>
+          )}
+        </MenuContent>
+      </Menu>
+    </div>
+  );
+
   return (
-    <Drawer title={event.title} open={true} onClose={onClose}>
+    <Drawer title={event.title} open={true} onClose={onClose} size="medium" header={headerActions}>
       <>
-        <div data-testid="timeline-event-drawer">
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
-            <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
-            <Chip
-              label={t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? event.precision)}
-              severity={event.precision === 'exact' ? 'low' : 'medium'}
-            />
-            <Chip label={event.source === 'manual' ? t_i18n('Analyst milestone') : t_i18n('Derived from the knowledge')} severity="info" />
-            {event.pinned && <Chip label={t_i18n('Pinned')} severity="high" />}
-            {event.hidden && <Chip label={t_i18n('Hidden')} />}
+        <div data-testid="timeline-event-drawer" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2.5) }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+            <Text variant="content-base" style={{ color: colors.textSecondary }}>{t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? 'Timeline event')}</Text>
+            {event.pinned && <Chip label={t_i18n('Pinned')} severity="info" size="sm" />}
+            {event.hidden && <Chip label={t_i18n('Hidden')} size="sm" />}
           </div>
-          <Section title={t_i18n('When')}>
-            <div>{fldt(event.event_time)}</div>
-            {event.event_end_time && <div>{`\u2192 ${fldt(event.event_end_time)}`}</div>}
-          </Section>
-          {element && (
-            <Section title={t_i18n('Element')}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ItemIcon type={element.entity_type} />
-                {elementLink ? (
-                  <Link to={elementLink} data-testid="timeline-event-element">{element.representative?.main ?? element.entity_type}</Link>
-                ) : (
-                  <span>{element.representative?.main ?? element.entity_type}</span>
-                )}
-              </div>
-            </Section>
-          )}
-          {event.description && (
-            <Section title={t_i18n('Description')}>
-              <MarkdownDisplay content={event.description} limit={2000} />
-            </Section>
-          )}
-          {(event.objectMarking ?? []).length > 0 && (
-            <Section title={t_i18n('Marking')}>
-              <ItemMarkings markingDefinitions={event.objectMarking ?? []} limit={4} />
-            </Section>
-          )}
-          {(event.createdBy?.name || (event.confidence !== null && event.confidence !== undefined)) && (
-            <Section title={t_i18n('Source')}>
-              {event.createdBy?.name && <div>{`${t_i18n('Author')}: ${event.createdBy.name}`}</div>}
-              {event.confidence !== null && event.confidence !== undefined && <div>{`${t_i18n('Confidence')}: ${event.confidence}`}</div>}
-            </Section>
-          )}
-          <Section title={t_i18n('Annotation')}>
-            {canEdit ? (
-              <>
-                <Textarea
-                  value={annotation}
-                  onChange={(changeEvent) => setAnnotation(changeEvent.target.value)}
-                  aria-label={t_i18n('Annotation')}
-                  placeholder={t_i18n('Add the analyst context of this event')}
-                  rows={3}
-                  maxLength={10000}
-                  data-testid="timeline-annotation-input"
-                />
-                <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button size="small" disabled={!annotationChanged} onClick={() => onSaveAnnotation(event, annotation)}>
-                    {t_i18n('Save the annotation')}
-                  </Button>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: theme.spacing(2, 3) }} data-testid="timeline-event-metadata">
+            <MetadataItem label={t_i18n('Time')}>
+              <Text variant="content-base" as="div">
+                {event.event_end_time
+                  ? t_i18n('From {start} to {end}', { values: { start: fldt(event.event_time), end: fldt(event.event_end_time) } })
+                  : fldt(event.event_time)}
+              </Text>
+              <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
+                {t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? 'Exact')}
+              </Text>
+            </MetadataItem>
+            <MetadataItem label={t_i18n('Lane')}>
+              <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? 'Custom')} color={colors.lanes[lane]} size="sm" />
+            </MetadataItem>
+            <MetadataItem label={t_i18n('Source')}>
+              <Text variant="content-base" as="div">
+                {event.source === 'manual' ? t_i18n('Analyst milestone') : t_i18n('Derived from the knowledge')}
+              </Text>
+            </MetadataItem>
+            {author && (
+              <MetadataItem label={t_i18n('Author')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                  <ItemIcon type={author.entity_type ?? 'Identity'} size="small" />
+                  {authorLink ? <Link to={authorLink}>{author.name}</Link> : <Text variant="content-base">{author.name}</Text>}
                 </div>
-              </>
-            ) : (
-              <div style={{ fontStyle: 'italic' }}>{event.annotation || t_i18n('No annotation')}</div>
+              </MetadataItem>
             )}
-          </Section>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24 }}>
-            <Button variant="secondary" size="small" startIcon={<CenterFocusStrongOutlined />} onClick={() => onCenter(event)}>
-              {t_i18n('Center on the timeline')}
-            </Button>
-            {canEdit && (
-              <>
-                <Button variant="secondary" size="small" startIcon={<PushPinOutlined />} onClick={() => onTogglePin(event)} data-testid="timeline-event-pin">
-                  {event.pinned ? t_i18n('Unpin') : t_i18n('Pin')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  startIcon={event.hidden ? <VisibilityOutlined /> : <VisibilityOffOutlined />}
-                  onClick={() => onToggleHide(event)}
-                  data-testid="timeline-event-hide"
-                >
-                  {event.hidden ? t_i18n('Show') : t_i18n('Hide')}
-                </Button>
-                {event.editable && (
-                  <>
-                    <Button variant="secondary" size="small" startIcon={<EditOutlined />} onClick={() => onEdit(event)} data-testid="timeline-event-edit">
-                      {t_i18n('Edit')}
-                    </Button>
-                    <Button variant="secondary" intent="destructive" size="small" startIcon={<DeleteOutlined />} onClick={() => setConfirmDelete(true)} data-testid="timeline-event-delete">
-                      {t_i18n('Delete')}
-                    </Button>
-                  </>
-                )}
-              </>
+            {hasConfidence && (
+              <MetadataItem label={t_i18n('Confidence')}>
+                <ItemConfidence confidence={event.confidence} entityType="Timeline-Event" />
+              </MetadataItem>
+            )}
+            {element && (
+              <MetadataItem label={t_i18n('Element')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), minWidth: 0 }}>
+                  <ItemIcon type={element.entity_type} size="small" />
+                  <div style={{ minWidth: 0 }}>
+                    {elementLink ? (
+                      <Link to={elementLink} data-testid="timeline-event-element">{element.representative?.main ?? t_i18n(`entity_${element.entity_type}`)}</Link>
+                    ) : (
+                      <Text variant="content-base">{element.representative?.main ?? t_i18n(`entity_${element.entity_type}`)}</Text>
+                    )}
+                    <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
+                      {element.relationship_type ? t_i18n(`relationship_${element.relationship_type}`) : t_i18n(`entity_${element.entity_type}`)}
+                    </Text>
+                  </div>
+                </div>
+              </MetadataItem>
+            )}
+            {markings.length > 0 && (
+              <MetadataItem label={t_i18n('Marking')}>
+                <ItemMarkings markingDefinitions={markings} limit={4} />
+              </MetadataItem>
             )}
           </div>
+          {event.description && (
+            <div>
+              <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Description')}</Text>
+              <MarkdownDisplay content={event.description} limit={2000} />
+            </div>
+          )}
+          {(event.annotation || annotating) && (
+            <div>
+              <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Annotation')}</Text>
+              {canEdit && annotating ? (
+                <>
+                  <Textarea
+                    value={annotation}
+                    onChange={(changeEvent) => setAnnotation(changeEvent.target.value)}
+                    aria-label={t_i18n('Annotation')}
+                    placeholder={t_i18n('Add the analyst context of this event')}
+                    rows={3}
+                    maxLength={10000}
+                    autoFocus={true}
+                    data-testid="timeline-annotation-input"
+                  />
+                  <div style={{ marginTop: theme.spacing(1), display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      onClick={() => {
+                        setAnnotation(event.annotation ?? '');
+                        setAnnotating(false);
+                      }}
+                    >
+                      {t_i18n('Cancel')}
+                    </Button>
+                    <Button
+                      size="small"
+                      disabled={!annotationChanged}
+                      onClick={() => {
+                        onSaveAnnotation(event, annotation);
+                        setAnnotating(false);
+                      }}
+                    >
+                      {t_i18n('Save the annotation')}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <Text variant="content-base" as="div" style={{ whiteSpace: 'pre-wrap' }}>{event.annotation}</Text>
+              )}
+            </div>
+          )}
+          {canEdit && !annotating && (
+            <div>
+              <Button variant="tertiary" size="small" startIcon={<EditOutlined sx={ICON} />} onClick={() => setAnnotating(true)} data-testid="timeline-event-annotate">
+                {event.annotation ? t_i18n('Edit the annotation') : t_i18n('Add an annotation')}
+              </Button>
+            </div>
+          )}
           {!event.editable && canEdit && (
-            <p style={{ marginTop: 12, fontSize: 12, color: colors.textSecondary }}>
+            <Text variant="content-caption" as="p" style={{ color: colors.textSecondary }}>
               {t_i18n('Derived events follow the knowledge of the case: they can be pinned, hidden and annotated, not edited.')}
-            </p>
+            </Text>
           )}
         </div>
         <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <DialogContent>
-            <DialogTitle>{t_i18n('Delete this milestone?')}</DialogTitle>
-            <DialogBody>{t_i18n('The milestone is removed from the timeline and its anchors are recomputed.')}</DialogBody>
+            <DialogTitle>{t_i18n('Delete the event {title}?', { values: { title: event.title } })}</DialogTitle>
+            <DialogBody>{t_i18n('The event is removed from the timeline and its anchors are recomputed.')}</DialogBody>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setConfirmDelete(false)}>{t_i18n('Cancel')}</Button>
               <Button

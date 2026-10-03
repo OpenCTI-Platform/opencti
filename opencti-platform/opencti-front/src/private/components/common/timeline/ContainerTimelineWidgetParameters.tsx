@@ -16,7 +16,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Text,
 } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
@@ -69,6 +71,7 @@ interface ContainerTimelineWidgetParametersProps {
 /** Parameters of the incident and case timeline widget: the container, the lanes and the window. */
 const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTimelineWidgetParametersProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [options, setOptions] = useState<ContainerOption[]>([]);
   const [selected, setSelected] = useState<ContainerOption | null>(null);
   const lanes = parameters.timeline_lanes ?? [];
@@ -100,7 +103,7 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
   };
 
   return (
-    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 20 }} data-testid="timeline-widget-parameters">
+    <div style={{ marginTop: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="timeline-widget-parameters">
       <Combobox<ContainerOption>
         className="w-full"
         options={options}
@@ -114,7 +117,7 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
           onChange({ container_id: option?.value ?? null });
         }}
         renderOption={(option) => (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
             <ItemIcon type={option.type} />
             <span>{option.label}</span>
           </span>
@@ -131,8 +134,8 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
         <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Incident or case')} />
       </Combobox>
       <div>
-        <div style={{ fontSize: 12, marginBottom: 6 }}>{t_i18n('Lanes (all when none is selected)')}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+        <Text variant="content-caption" as="div" style={{ marginBottom: theme.spacing(1) }}>{t_i18n('Lanes (all when none is selected)')}</Text>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: theme.spacing(1) }}>
           {TIMELINE_LANES.map((lane) => (
             <Checkbox key={lane} label={t_i18n(TIMELINE_LANE_LABELS[lane])} checked={lanes.includes(lane)} onCheckedChange={() => toggleLane(lane)} />
           ))}

@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
+  Text,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -29,6 +30,7 @@ import {
   FilterListOutlined,
   FitScreenOutlined,
   GetAppOutlined,
+  MoreVertOutlined,
   SettingsOutlined,
   SyncOutlined,
   ViewListOutlined,
@@ -40,14 +42,17 @@ import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
 import {
+  describeTimelineSpan,
   TIMELINE_GROUPING_LABELS,
   TIMELINE_GROUPINGS,
   TIMELINE_KIND_LABELS,
   TIMELINE_KINDS,
   TIMELINE_LANE_LABELS,
   TIMELINE_LANES,
+  TIMELINE_SPAN_LABELS,
   TIMELINE_ZOOM_LABELS,
   TIMELINE_ZOOM_WINDOWS,
+  type TimelineDomain,
   type TimelineExportFormat,
   type TimelineGrouping,
   type TimelineLane,
@@ -71,6 +76,8 @@ interface ContainerTimelineToolbarProps {
   onRegenerate: () => void;
   onZoom: (factor: number) => void;
   onFit: () => void;
+  // Span of the lanes in view, shown next to the zoom controls
+  visibleDomain?: TimelineDomain | null;
 }
 
 const ICON = { fontSize: 18 };
@@ -96,9 +103,11 @@ const ContainerTimelineToolbar = ({
   onRegenerate,
   onZoom,
   onFit,
+  visibleDomain,
 }: ContainerTimelineToolbarProps) => {
   const { t_i18n } = useFormatter();
   const colors = useTimelineColors();
+  const visibleSpan = visibleDomain ? describeTimelineSpan(visibleDomain) : null;
   const lanes = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
   const selectedLanes = state.lanes.length > 0 ? state.lanes : lanes;
 
@@ -150,6 +159,13 @@ const ContainerTimelineToolbar = ({
             <WithTooltip title={t_i18n('Fit the timeline')}>
               <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined sx={ICON} />} onClick={onFit} />
             </WithTooltip>
+            {visibleSpan && (
+              <WithTooltip title={t_i18n('Visible period')}>
+                <Text variant="content-caption" aria-live="polite" data-testid="timeline-visible-span" style={{ color: colors.textSecondary }}>
+                  {t_i18n(TIMELINE_SPAN_LABELS[visibleSpan.unit], { values: { count: visibleSpan.count } })}
+                </Text>
+              </WithTooltip>
+            )}
           </>
         )}
         <Select value={state.grouping} onValueChange={(value) => onChange({ grouping: value as TimelineGrouping })}>
@@ -186,7 +202,7 @@ const ContainerTimelineToolbar = ({
         </Badge>
         {canEdit && (
           <Button variant="primary" size="small" startIcon={<AddOutlined sx={ICON} />} onClick={onAdd} data-testid="timeline-add-milestone">
-            {t_i18n('Add milestone')}
+            {t_i18n('Add an event')}
           </Button>
         )}
         <Menu>
@@ -202,21 +218,21 @@ const ContainerTimelineToolbar = ({
           </MenuContent>
         </Menu>
         {canEdit && (
-          <>
-            <WithTooltip title={t_i18n('Timeline settings')}>
-              <IconButton priority="secondary" size="sm" aria-label={t_i18n('Timeline settings')} icon={<SettingsOutlined sx={ICON} />} onClick={onOpenSettings} />
-            </WithTooltip>
-            <WithTooltip title={t_i18n('Regenerate the timeline')}>
-              <IconButton
-                priority="secondary"
-                size="sm"
-                aria-label={t_i18n('Regenerate the timeline')}
-                icon={<AutorenewOutlined sx={ICON} />}
-                onClick={onRegenerate}
-                disabled={regenerating}
-              />
-            </WithTooltip>
-          </>
+          <Menu>
+            <MenuTrigger asChild>
+              <IconButton priority="secondary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined sx={ICON} />} data-testid="timeline-more-actions" />
+            </MenuTrigger>
+            <MenuContent align="end">
+              <MenuItem onSelect={onOpenSettings} data-testid="timeline-open-settings">
+                <SettingsOutlined sx={ICON} />
+                {t_i18n('Timeline settings')}
+              </MenuItem>
+              <MenuItem onSelect={onRegenerate} disabled={regenerating}>
+                <AutorenewOutlined sx={ICON} />
+                {t_i18n('Regenerate the timeline')}
+              </MenuItem>
+            </MenuContent>
+          </Menu>
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

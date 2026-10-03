@@ -113,7 +113,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
       setSubmitting(false);
       if (notifyTimelineMutationErrors(errors)) return;
       resetForm();
-      MESSAGING$.notifySuccess(isEdition ? t_i18n('The milestone has been updated') : t_i18n('The milestone has been added to the timeline'));
+      MESSAGING$.notifySuccess(isEdition ? t_i18n('The event has been updated') : t_i18n('The event has been added to the timeline'));
       onSaved();
       onClose();
     };
@@ -151,7 +151,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
   };
 
   return (
-    <Drawer title={isEdition ? t_i18n('Update the milestone') : t_i18n('Add a milestone')} open={open} onClose={onClose}>
+    <Drawer title={isEdition ? t_i18n('Update the event') : t_i18n('Add an event')} open={open} onClose={onClose}>
       <Formik<TimelineEventFormValues>
         initialValues={initialValues}
         enableReinitialize={true}

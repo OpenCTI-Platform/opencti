@@ -109,6 +109,27 @@ export const TIMELINE_MAX_SPAN = 100 * 365 * DAY;
 
 export type TimelineDomain = [number, number];
 
+export type TimelineSpanUnit = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year';
+export const TIMELINE_SPAN_LABELS: Record<TimelineSpanUnit, string> = {
+  minute: '{count, plural, one {# minute} other {# minutes}}',
+  hour: '{count, plural, one {# hour} other {# hours}}',
+  day: '{count, plural, one {# day} other {# days}}',
+  week: '{count, plural, one {# week} other {# weeks}}',
+  month: '{count, plural, one {# month} other {# months}}',
+  year: '{count, plural, one {# year} other {# years}}',
+};
+
+/** The visible span of the lanes in the largest unit that reads naturally ("3 days", "2 weeks"). */
+export const describeTimelineSpan = (domain: TimelineDomain): { unit: TimelineSpanUnit; count: number } => {
+  const span = Math.max(domain[1] - domain[0], 0);
+  if (span < 2 * HOUR) return { unit: 'minute', count: Math.max(1, Math.round(span / (60 * 1000))) };
+  if (span < 2 * DAY) return { unit: 'hour', count: Math.round(span / HOUR) };
+  if (span < 14 * DAY) return { unit: 'day', count: Math.round(span / DAY) };
+  if (span < 60 * DAY) return { unit: 'week', count: Math.round(span / (7 * DAY)) };
+  if (span < 730 * DAY) return { unit: 'month', count: Math.round(span / (30 * DAY)) };
+  return { unit: 'year', count: Math.round(span / (365 * DAY)) };
+};
+
 // region minimal event shape used by the helpers
 export interface TimelineEventLike {
   id: string;

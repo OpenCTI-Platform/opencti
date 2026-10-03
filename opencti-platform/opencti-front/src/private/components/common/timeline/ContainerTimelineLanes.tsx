@@ -1,6 +1,8 @@
 import React, { KeyboardEvent, PointerEvent, Ref, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { scaleTime } from 'd3-scale';
 import { useIntl } from 'react-intl';
+import { useTheme } from '@mui/material/styles';
+import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
 import {
@@ -93,6 +95,7 @@ const ContainerTimelineLanes = ({
   ariaLabel,
 }: ContainerTimelineLanesProps) => {
   const { t_i18n, fldt } = useFormatter();
+  const theme = useTheme();
   const intl = useIntl();
   const colors = useTimelineColors();
   const clipId = `timeline-plot-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -440,29 +443,36 @@ const ContainerTimelineLanes = ({
             left: Math.min(Math.max(hover.x - 140, 0), Math.max(width - 280, 0)),
             top: hover.y + 8,
             width: 280,
-            padding: '8px 10px',
-            borderRadius: 4,
+            padding: theme.spacing(1, 1.5),
+            borderRadius: theme.shape.borderRadius,
             background: colors.background,
             border: `1px solid ${colors.grid}`,
             boxShadow: colors.shadow,
             pointerEvents: 'none',
             zIndex: 2,
-            fontSize: 12,
             color: colors.text,
           }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>{hover.event.title}</div>
-          <div style={{ color: colors.textSecondary }}>
-            {fldt(hover.event.event_time)}
-            {hover.event.event_end_time ? ` - ${fldt(hover.event.event_end_time)}` : ''}
-          </div>
-          <div style={{ color: colors.textSecondary }}>
-            {t_i18n(TIMELINE_LANE_LABELS[hover.event.lane as TimelineLane] ?? hover.event.lane)}
-            {' / '}
-            {t_i18n(TIMELINE_KIND_LABELS[hover.event.kind] ?? hover.event.kind)}
-            {hover.event.precision === 'approximate' ? ` / ${t_i18n('Approximate')}` : ''}
-          </div>
-          {hover.event.annotation && <div style={{ marginTop: 4, fontStyle: 'italic' }}>{hover.event.annotation}</div>}
+          <Text variant="content-compact-bold" as="div">{hover.event.title}</Text>
+          <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
+            {hover.event.event_end_time
+              ? t_i18n('From {start} to {end}', { values: { start: fldt(hover.event.event_time), end: fldt(hover.event.event_end_time) } })
+              : fldt(hover.event.event_time)}
+          </Text>
+          {hover.event.precision === 'approximate' && (
+            <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Approximate time')}</Text>
+          )}
+          <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
+            {t_i18n('{kind} in the {lane} lane', {
+              values: {
+                kind: t_i18n(TIMELINE_KIND_LABELS[hover.event.kind] ?? hover.event.kind),
+                lane: t_i18n(TIMELINE_LANE_LABELS[hover.event.lane as TimelineLane] ?? hover.event.lane),
+              },
+            })}
+          </Text>
+          {hover.event.annotation && (
+            <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }}>{hover.event.annotation}</Text>
+          )}
         </div>
       )}
     </div>

@@ -175,6 +175,8 @@ const containerTimelineEventsFragment = graphql`
           editable
           createdBy {
             ... on Identity {
+              id
+              entity_type
               name
             }
           }
@@ -264,6 +266,7 @@ interface ContainerTimelineEventsViewProps {
   onAdd: () => void;
   onRegenerate: () => void;
   onClearFilters: () => void;
+  onVisibleDomainChange: (domain: TimelineDomain | null) => void;
   regenerating: boolean;
   actions: TimelineActions;
 }
@@ -283,6 +286,7 @@ const ContainerTimelineEventsView = ({
   onAdd,
   onRegenerate,
   onClearFilters,
+  onVisibleDomainChange,
   regenerating,
   actions,
 }: ContainerTimelineEventsViewProps) => {
@@ -311,6 +315,10 @@ const ContainerTimelineEventsView = ({
   const anchors = summary.anchors;
   const extent = useMemo(() => computeTimelineExtent(events, TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key])), [events, anchors]);
   const visibleDomain = domain ?? computeVisibleDomain(extent, state.zoom);
+  const showsLanes = state.view === 'lanes' && events.length > 0;
+  useEffect(() => {
+    onVisibleDomainChange(showsLanes ? visibleDomain : null);
+  }, [showsLanes, visibleDomain[0], visibleDomain[1]]);
   const selected = state.event ? events.find((event) => event.id === state.event) ?? null : null;
   const total = data.containerTimeline?.pageInfo.globalCount ?? events.length;
 
@@ -409,6 +417,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const [formOpen, setFormOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [visibleDomain, setVisibleDomain] = useState<TimelineDomain | null>(null);
   // Only the event of the opening link is searched in earlier pages, never a later selection
   const [linkedEventId, setLinkedEventId] = useState<string | null>(state.event);
 
@@ -593,6 +602,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           onRegenerate={regenerate}
           onZoom={(factor) => onDomainChange(zoomDomain(domain ?? computeVisibleDomain(null, state.zoom), factor))}
           onFit={() => onDomainChange(null)}
+          visibleDomain={visibleDomain}
         />
         {eventsRef ? (
           <Suspense fallback={<ContainerTimelineSkeleton />}>
@@ -617,6 +627,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
               }}
               onRegenerate={regenerate}
               onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
+              onVisibleDomainChange={setVisibleDomain}
               regenerating={regenerating}
               actions={actions}
             />

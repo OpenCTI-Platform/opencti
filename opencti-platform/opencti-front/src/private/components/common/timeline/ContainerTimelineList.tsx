@@ -1,6 +1,7 @@
 import React, { KeyboardEvent, useMemo, useRef, useState } from 'react';
-import { Chip } from '@filigran/design-system';
+import { Chip, Text } from '@filigran/design-system';
 import { PushPinOutlined, VisibilityOffOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import { useIntl } from 'react-intl';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
@@ -36,6 +37,7 @@ interface ContainerTimelineListProps {
 const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect, onTogglePin, onToggleHide }: ContainerTimelineListProps) => {
   const { t_i18n, fldt } = useFormatter();
   const intl = useIntl();
+  const theme = useTheme();
   const colors = useTimelineColors();
   const buckets = useMemo(() => groupEventsByBucket([...events], grouping), [events, grouping]);
   const ordered = useMemo(() => buckets.flatMap((bucket) => bucket.events), [buckets]);
@@ -75,7 +77,11 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
   };
 
   if (ordered.length === 0) {
-    return <div style={{ padding: 20, color: colors.textSecondary }}>{t_i18n('No event matches the current filters')}</div>;
+    return (
+      <div role="status" style={{ padding: theme.spacing(2) }}>
+        <Text variant="content-base" style={{ color: colors.textSecondary }}>{t_i18n('No event matches the current filters')}</Text>
+      </div>
+    );
   }
 
   return (

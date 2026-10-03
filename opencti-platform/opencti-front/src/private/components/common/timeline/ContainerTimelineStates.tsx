@@ -1,10 +1,14 @@
 import React from 'react';
+import { Link } from 'react-router';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
-import { FilterAltOffOutlined, ViewTimelineOutlined } from '@mui/icons-material';
+import { Hero, HeroBody, HeroHeader, Text } from '@filigran/design-system';
+import { AddOutlined, ViewTimelineOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
+
+export const TIMELINE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/case-timeline/';
 
 interface ContainerTimelineEmptyStateProps {
   // The case has events, but none matches the current filters
@@ -16,44 +20,54 @@ interface ContainerTimelineEmptyStateProps {
   onClearFilters: () => void;
 }
 
-/** Why the timeline shows nothing, and what to do next. */
+/** First use: what fills the timeline and how to start it. Filtered out: how to get the events back. */
 export const ContainerTimelineEmptyState = ({ filtered, canEdit, regenerating, onAdd, onRegenerate, onClearFilters }: ContainerTimelineEmptyStateProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
-  const Icon = filtered ? FilterAltOffOutlined : ViewTimelineOutlined;
+  if (filtered) {
+    return (
+      <div
+        data-testid="timeline-empty"
+        role="status"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(4, 2) }}
+      >
+        <Text variant="content-base-medium">{t_i18n('No event matches the current filters')}</Text>
+        <Button variant="secondary" size="small" onClick={onClearFilters} data-testid="timeline-empty-clear-filters">
+          {t_i18n('Clear filters')}
+        </Button>
+      </div>
+    );
+  }
   return (
-    <div
-      data-testid="timeline-empty"
-      role="status"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(5, 2), textAlign: 'center' }}
-    >
-      <Icon sx={{ fontSize: 40, color: colors.textSecondary }} aria-hidden={true} />
-      <div style={{ fontSize: 15, fontWeight: 600 }}>
-        {filtered ? t_i18n('No event matches the current filters') : t_i18n('This timeline has no event yet')}
-      </div>
-      <div style={{ maxWidth: 520, fontSize: 13, color: colors.textSecondary }}>
-        {filtered
-          ? t_i18n('Clear the filters or widen the search to see the other events of the case.')
-          : t_i18n('Events appear as knowledge, tasks, notes and files are added to the case. Record what the knowledge cannot tell with a milestone.')}
-      </div>
-      <div style={{ display: 'flex', gap: theme.spacing(1), marginTop: theme.spacing(0.5) }}>
-        {filtered && (
-          <Button variant="secondary" size="small" onClick={onClearFilters} data-testid="timeline-empty-clear-filters">
-            {t_i18n('Clear filters')}
-          </Button>
-        )}
-        {!filtered && canEdit && (
-          <>
-            <Button variant="primary" size="small" onClick={onAdd} data-testid="timeline-empty-add-milestone">
-              {t_i18n('Add milestone')}
+    <div data-testid="timeline-empty" role="status" style={{ padding: theme.spacing(2, 0) }}>
+      <Hero>
+        <HeroHeader
+          icon={<ViewTimelineOutlined sx={{ color: colors.textSecondary }} aria-hidden={true} />}
+          action={canEdit ? (
+            <Button variant="primary" size="small" startIcon={<AddOutlined />} onClick={onAdd} data-testid="timeline-empty-add-event">
+              {t_i18n('Add an event')}
             </Button>
-            <Button variant="secondary" size="small" onClick={onRegenerate} disabled={regenerating}>
-              {t_i18n('Regenerate the timeline')}
-            </Button>
-          </>
-        )}
-      </div>
+          ) : undefined}
+        >
+          <Text variant="title-sm">{t_i18n('This timeline has no event yet')}</Text>
+        </HeroHeader>
+        <HeroBody>
+          <Text variant="content-base">
+            {t_i18n('The timeline fills itself from the knowledge of the case, the Case Autopilot steps, the hunt runs and the deployments, and from the events you add.')}
+          </Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(2), marginTop: theme.spacing(1.5) }}>
+            <Link to={TIMELINE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+              {t_i18n('Read the documentation')}
+            </Link>
+            {canEdit && (
+              <Button variant="tertiary" size="small" onClick={onRegenerate} disabled={regenerating}>
+                {t_i18n('Regenerate the timeline')}
+              </Button>
+            )}
+          </div>
+        </HeroBody>
+      </Hero>
     </div>
   );
 };

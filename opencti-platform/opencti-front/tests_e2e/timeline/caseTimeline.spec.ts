@@ -59,8 +59,9 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     const drawer = page.getByTestId('timeline-event-drawer');
     await expect(drawer).toBeVisible();
     await capture('timeline-event-drawer');
-    await drawer.getByTestId('timeline-event-pin').click();
-    await expect(drawer.getByTestId('timeline-event-pin')).toHaveText('Unpin');
+    // The drawer actions sit in its header, next to the close button
+    await page.getByTestId('timeline-event-pin').click();
+    await expect(page.getByTestId('timeline-event-pin')).toHaveText('Unpin');
     await page.keyboard.press('Escape');
     await expect(drawer).not.toBeVisible();
 
@@ -78,12 +79,13 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await form.getByLabel('Title').fill(milestoneTitle);
     await capture('timeline-milestone-form');
     await page.getByTestId('timeline-event-form-submit').click();
-    await expect(page.getByText('The milestone has been added to the timeline')).toBeVisible();
+    await expect(page.getByText('The event has been added to the timeline')).toBeVisible();
     await expect(list).toContainText(milestoneTitle);
 
     await list.getByRole('listitem', { name: new RegExp(`^${milestoneTitle}`) }).click();
     await expect(drawer).toBeVisible();
-    await drawer.getByTestId('timeline-event-hide').click();
+    await page.getByTestId('timeline-event-more').click();
+    await page.getByTestId('timeline-event-hide').click();
     await expect(drawer).not.toBeVisible();
     await expect(list).not.toContainText(milestoneTitle);
     await page.getByRole('switch', { name: 'Show hidden events' }).click();
@@ -107,7 +109,8 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     // endregion
 
     // region Timeline settings
-    await page.getByRole('button', { name: 'Timeline settings' }).click();
+    await page.getByTestId('timeline-more-actions').click();
+    await page.getByTestId('timeline-open-settings').click();
     await expect(page.getByTestId('timeline-settings-drawer')).toBeVisible();
     await capture('timeline-settings-drawer');
     // endregion

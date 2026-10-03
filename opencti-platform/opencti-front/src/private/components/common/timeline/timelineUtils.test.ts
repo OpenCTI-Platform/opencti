@@ -6,6 +6,7 @@ import {
   clusterLaneEvents,
   computeTimelineExtent,
   computeVisibleDomain,
+  describeTimelineSpan,
   effectiveKinds,
   effectiveLanes,
   fitSvgToWidth,
@@ -118,6 +119,21 @@ describe('Timeline time domain', () => {
   it('should never zoom below one minute', () => {
     const [start, end] = zoomDomain([0, 2 * TIMELINE_MIN_SPAN], 0.01, TIMELINE_MIN_SPAN);
     expect(end - start).toEqual(TIMELINE_MIN_SPAN);
+  });
+});
+
+describe('Timeline visible span', () => {
+  it('should name the span in the largest unit that reads naturally', () => {
+    expect(describeTimelineSpan([0, 45 * 60 * 1000])).toEqual({ unit: 'minute', count: 45 });
+    expect(describeTimelineSpan([0, 6 * HOUR])).toEqual({ unit: 'hour', count: 6 });
+    expect(describeTimelineSpan([0, DAY * 3])).toEqual({ unit: 'day', count: 3 });
+    expect(describeTimelineSpan([0, DAY * 21])).toEqual({ unit: 'week', count: 3 });
+    expect(describeTimelineSpan([0, DAY * 91])).toEqual({ unit: 'month', count: 3 });
+    expect(describeTimelineSpan([0, DAY * 365 * 4])).toEqual({ unit: 'year', count: 4 });
+  });
+
+  it('should never name an empty span', () => {
+    expect(describeTimelineSpan([10, 10])).toEqual({ unit: 'minute', count: 1 });
   });
 });
 
