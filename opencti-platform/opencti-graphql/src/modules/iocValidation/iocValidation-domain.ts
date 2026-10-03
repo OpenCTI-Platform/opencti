@@ -68,7 +68,15 @@ import {
   REQUEST_STATUS_SENT,
   type StoreEntityIocValidationRequest,
 } from './iocValidation-types';
-import { emptyResultsSummary, extractIocFromIndicator, isIocValidationTestKind, isSummaryComplete, requesterIdOf, summarizeValidationResults } from './iocValidation-utils';
+import {
+  emptyResultsSummary,
+  extractIocFromIndicator,
+  isDeploymentReporter,
+  isIocValidationTestKind,
+  isSummaryComplete,
+  requesterIdOf,
+  summarizeValidationResults,
+} from './iocValidation-utils';
 
 const toPositiveInteger = (value: unknown, fallback: number) => {
   const parsed = Number(value);
@@ -461,15 +469,19 @@ const isAllowedTransition = (current: IocValidationRequestStatus, next: IocValid
   return true;
 };
 
-// Only the service account of the connector the request was sent to may report its lifecycle.
-export const assertRequestConnectorUser = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+const isRequestConnectorUser = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   if (isBypassUser(user)) {
-    return;
+    return true;
   }
   const connector = request.connector_id
     ? await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, request.connector_id, ENTITY_TYPE_CONNECTOR)
     : undefined;
-  if (!connector || connector.connector_user_id !== user.id) {
+  return !!connector && connector.connector_user_id === user.id;
+};
+
+// Only the service account of the connector the request was sent to may report its lifecycle.
+export const assertRequestConnectorUser = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  if (!await isRequestConnectorUser(context, user, request)) {
     throw ForbiddenAccess('Only the connector the IOC validation request was sent to can report its status', { id: request.internal_id });
   }
 };
@@ -555,6 +567,18 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   if (!platform || !(request.platform_ids ?? []).includes(platform.internal_id)) {
     throw FunctionalError('The security platform is not targeted by this IOC validation request', { id: args.id, platformId: args.platformId });
   }
+  // A result is proof attributed to the platform: besides the request connector, only an account that recorded
+  // the deployment of a pair speaks for the platform, and only for the pairs it recorded.
+  const trusted = await isRequestConnectorUser(context, user, request);
+  if (!trusted) {
+    const platformDeployments = (await findRequestDeployments(context, request.internal_id)).filter((d) => d.toId === platform.internal_id);
+    if (!platformDeployments.some((d) => isDeploymentReporter(d, user.id))) {
+      throw ForbiddenAccess('Only the account reporting the deployments of this security platform can report its validation results', {
+        id: request.internal_id,
+        platformId: platform.internal_id,
+      });
+    }
+  }
   const now = new Date();
   const updatedIndicatorIds: string[] = [];
   await BluePromise.map(args.results, async (result) => {
@@ -567,6 +591,10 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
     try {
       const deployment = await findDeployedOn(context, SYSTEM_USER, indicator.internal_id, platform.internal_id);
       if (!deployment || deployment.validation_run_id !== request.internal_id) {
+        return;
+      }
+      if (!trusted && !isDeploymentReporter(deployment, user.id)) {
+        logApp.info('[IOC-VALIDATION] Ignoring a result for a pair recorded by another account', { id: request.internal_id, deploymentId: deployment.internal_id });
         return;
       }
       const waiting = deployment.validation_status === VALIDATION_STATUS_REQUESTED;
@@ -607,9 +635,11 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   if (updatedIndicatorIds.length > 0) {
     await addIocValidationPlatformResultCount(updatedIndicatorIds.length);
     await refreshIndicatorDeploymentCounters(context, updatedIndicatorIds);
-    const deployments = await findRequestDeployments(context, request.internal_id);
-    await setRequestAttributes(context, request, {
-      results_summary: summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status)),
+    await withRequestLock(request.internal_id, async () => {
+      const deployments = await findRequestDeployments(context, request.internal_id);
+      await setRequestAttributes(context, request, {
+        results_summary: summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status)),
+      });
     });
   }
   return findIocValidationRequest(context, user, request.internal_id);
@@ -633,6 +663,38 @@ const setRequestAttributes = async (context: AuthContext, request: BasicStoreEnt
   await elUpdate(context, request._index, request.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
 };
 
+// Must run under the request lock: reads the request again and refreshes its summary, completion and timeout.
+const refreshIocValidationRequest = async (context: AuthContext, requestId: string, now: number) => {
+  const request = await findIocValidationRequest(context, SYSTEM_USER, requestId);
+  if (!request) {
+    return false;
+  }
+  const deployments = await findRequestDeployments(context, request.internal_id);
+  const summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
+  const attributes: Record<string, unknown> = {};
+  if (JSON.stringify(summary) !== JSON.stringify(request.results_summary)) {
+    attributes.results_summary = summary;
+  }
+  const isOpen = OPEN_REQUEST_STATUSES.includes(request.status);
+  const dispatchedAt = request.dispatched_at ? new Date(request.dispatched_at).getTime() : new Date(request.created_at as unknown as string).getTime();
+  if (isOpen && isSummaryComplete(summary)) {
+    attributes.status = summary.error > 0 ? REQUEST_STATUS_PARTIAL : REQUEST_STATUS_COMPLETED;
+    attributes.completed_at = new Date();
+  } else if (isOpen && now - dispatchedAt > IOC_VALIDATION_TIMEOUT_MS) {
+    await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
+    const expiredDeployments = await findRequestDeployments(context, request.internal_id);
+    attributes.results_summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, expiredDeployments.map((d) => d.validation_status));
+    attributes.status = REQUEST_STATUS_EXPIRED;
+    attributes.status_message = 'No result received from OpenAEV before the timeout';
+    attributes.completed_at = new Date();
+  }
+  if (Object.keys(attributes).length === 0) {
+    return false;
+  }
+  await setRequestAttributes(context, request, { ...attributes, updated_at: new Date() });
+  return true;
+};
+
 /**
  * - dispatch pending requests when a connector becomes available,
  * - refresh the results summary from the deployed-on relationships (results arrive through bundles),
@@ -652,38 +714,24 @@ export const maintainIocValidationRequests = async (context: AuthContext) => {
     noFiltersChecking: true,
   });
   let processed = 0;
-  await BluePromise.map(requests, async (request) => {
+  await BluePromise.map(requests, async (listed) => {
     try {
-      if (request.status === REQUEST_STATUS_PENDING) {
-        await dispatchIocValidationRequest(context, request as unknown as StoreEntityIocValidationRequest);
-        processed += 1;
+      if (listed.status === REQUEST_STATUS_PENDING) {
+        const current = await findIocValidationRequest(context, SYSTEM_USER, listed.internal_id);
+        if (current?.status === REQUEST_STATUS_PENDING) {
+          await dispatchIocValidationRequest(context, current as unknown as StoreEntityIocValidationRequest);
+          processed += 1;
+        }
         return;
       }
-      const deployments = await findRequestDeployments(context, request.internal_id);
-      const summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
-      const attributes: Record<string, unknown> = {};
-      if (JSON.stringify(summary) !== JSON.stringify(request.results_summary)) {
-        attributes.results_summary = summary;
-      }
-      const isOpen = OPEN_REQUEST_STATUSES.includes(request.status);
-      const dispatchedAt = request.dispatched_at ? new Date(request.dispatched_at).getTime() : new Date(request.created_at as unknown as string).getTime();
-      if (isOpen && isSummaryComplete(summary)) {
-        attributes.status = summary.error > 0 ? REQUEST_STATUS_PARTIAL : REQUEST_STATUS_COMPLETED;
-        attributes.completed_at = new Date();
-      } else if (isOpen && now - dispatchedAt > IOC_VALIDATION_TIMEOUT_MS) {
-        await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
-        const expiredDeployments = await findRequestDeployments(context, request.internal_id);
-        attributes.results_summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, expiredDeployments.map((d) => d.validation_status));
-        attributes.status = REQUEST_STATUS_EXPIRED;
-        attributes.status_message = 'No result received from OpenAEV before the timeout';
-        attributes.completed_at = new Date();
-      }
-      if (Object.keys(attributes).length > 0) {
-        await setRequestAttributes(context, request, { ...attributes, updated_at: new Date() });
+      // An OpenAEV lifecycle update can land between the listing and this point: decide on the current request,
+      // under the lock of the lifecycle callback, so a final status is never overwritten by a stale decision.
+      const updated = await withRequestLock(listed.internal_id, () => refreshIocValidationRequest(context, listed.internal_id, now));
+      if (updated) {
         processed += 1;
       }
     } catch (error) {
-      logApp.error('[IOC-VALIDATION] Request maintenance failed', { cause: error, requestId: request.internal_id });
+      logApp.error('[IOC-VALIDATION] Request maintenance failed', { cause: error, requestId: listed.internal_id });
     }
   }, { concurrency: CONCURRENCY });
   return processed;

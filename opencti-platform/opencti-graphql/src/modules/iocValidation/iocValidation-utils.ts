@@ -32,6 +32,15 @@ export const requesterIdOf = (request: { creator_id?: string | string[] | null }
   return creators.find((id): id is string => typeof id === 'string' && id.length > 0);
 };
 
+/**
+ * The creator_id of a deployed-on relationship lists the accounts that created or upserted it: the integrations
+ * that record the lifecycle of this indicator on this security platform, the only ones speaking for the platform.
+ */
+export const isDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, userId: string) => {
+  const creators = Array.isArray(deployment.creator_id) ? deployment.creator_id : [deployment.creator_id];
+  return creators.includes(userId);
+};
+
 interface ExtractedObservable {
   type: string;
   value?: string;

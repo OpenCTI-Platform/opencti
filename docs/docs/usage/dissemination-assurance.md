@@ -169,3 +169,8 @@ gives an indicator, `detected`, `prevented` or `missed`, and optionally the obse
 evidence. Only the pairs of the request on that platform still waiting for an answer are updated, so a result already
 received from OpenAEV is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss.
+
+A validation result is proof attributed to the platform, so it is accepted only from the account that recorded the
+deployments of the pairs on that platform (the integration reporting its deployment statuses), from the OpenAEV
+connector the request was sent to, or from an administrator. Any other account, even with the "Update knowledge"
+capability, is refused.
