@@ -129,6 +129,10 @@ export const isCustomFieldFilterKey = (key: string): boolean => {
   return key.startsWith(CUSTOM_FIELD_PREFIX);
 };
 
+// for provenance
+export const FRESHNESS_DAYS_FILTER = 'freshness_days'; // days since the last assertion, converted to last_asserted_at ranges
+export const ASSERTION_SOURCE_IDS_FILTER = 'assertion_source_ids';
+
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 
@@ -167,6 +171,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
   PIR_SCORE_FILTER, // should be associated to Pir Ids
   LAST_PIR_SCORE_DATE_FILTER, // should be associated to Pir Ids
+  FRESHNESS_DAYS_FILTER, // converted to a last_asserted_at range
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
@@ -237,6 +242,7 @@ export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   RELATION_TO_FILTER,
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO,
+  ASSERTION_SOURCE_IDS_FILTER, // connectors, feeds, authors and users that asserted the element
 ];
 
 // special filter values

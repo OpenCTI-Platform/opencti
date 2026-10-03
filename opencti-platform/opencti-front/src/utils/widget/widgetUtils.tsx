@@ -2,8 +2,10 @@ import * as R from 'ramda';
 import { Checklist, DifferenceOutlined, FormatShapesOutlined, MapOutlined, PieChartOutlined, TrendingUpOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
+  CalendarClock,
   ChartAreasplineVariant,
   ChartBar,
+  ChartBarStacked,
   ChartBubble,
   ChartDonut,
   ChartLine,
@@ -186,6 +188,26 @@ const widgetVisualizationTypes = [
     isAudits: false,
   },
   {
+    key: 'provenance-freshness',
+    name: 'Freshness distribution',
+    dataSelectionLimit: 1,
+    category: 'provenance',
+    availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
+    key: 'provenance-single-sourced',
+    name: 'Single sourced share by type',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
     key: 'bookmark',
     name: 'Bookmark',
     dataSelectionLimit: 1,
@@ -338,6 +360,10 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <PieChartOutlined fontSize={fontSize} color="primary" />;
     case 'tree':
       return <ChartTree fontSize={fontSize} color="primary" />;
+    case 'provenance-freshness':
+      return <CalendarClock fontSize={fontSize} color="primary" />;
+    case 'provenance-single-sourced':
+      return <ChartBarStacked fontSize={fontSize} color="primary" />;
     case 'bookmark':
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':

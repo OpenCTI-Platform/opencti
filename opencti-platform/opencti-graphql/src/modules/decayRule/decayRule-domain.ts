@@ -1,9 +1,18 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
+import type { DecayRuleAddInput, EditInput, KnowledgeDecayRuleAddInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
+import { type BasicStoreEntityDecayRule, DECAY_RULE_SCOPE_INDICATOR, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
+import {
+  addKnowledgeDecayRule,
+  checkDecayRulePatch,
+  clearFreshnessFlagsOfRule,
+  initKnowledgeDecayRules,
+  isKnowledgeDecayRule,
+  KNOWLEDGE_PRIORITY_FIELDS,
+} from './decayRule-knowledge';
+import { releaseFlagsTakenOverByRule } from '../provenance/provenance-freshness';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -94,6 +103,7 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
     updated_at: now(),
     active: input.active || false,
     built_in: builtIn || false,
+    target_scope: DECAY_RULE_SCOPE_INDICATOR,
   };
 
   if (input.decay_points) {
@@ -115,15 +125,19 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   return created;
 };
 
+export const createKnowledgeDecayRule = async (context: AuthContext, user: AuthUser, input: KnowledgeDecayRuleAddInput) => {
+  const created = await addKnowledgeDecayRule(context, user, input);
+  await releaseFlagsTakenOverByRule(context, user, created);
+  return created;
+};
+
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const finalInput = [...input];
   const decayRule = await findById(context, user, id);
   if (!decayRule) {
     throw FunctionalError(`Decay rule ${id} cannot be found`);
   }
-  if (decayRule.built_in) {
-    throw FunctionalError(`Cannot update built-in decay rule ${id}`);
-  }
+  const mustClearFreshnessFlags = checkDecayRulePatch(decayRule, finalInput);
 
   const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
   if (decayPointsInput) {
@@ -138,6 +152,13 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
   }
 
   const { element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
+  if (mustClearFreshnessFlags) {
+    // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
+    await clearFreshnessFlagsOfRule(id);
+  }
+  if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
+    await releaseFlagsTakenOverByRule(context, user, element);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -158,6 +179,9 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
     throw FunctionalError(`Cannot delete built-in decay rule ${id}`);
   }
   const deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
+  if (isKnowledgeDecayRule(decayRule)) {
+    await clearFreshnessFlagsOfRule(id);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -171,6 +195,9 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
 };
 
 export const countAppliedIndicators = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+  if (isKnowledgeDecayRule(decayRule)) {
+    return 0;
+  }
   return countAllThings(context, user, {
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: {
@@ -250,6 +277,10 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
 };
 
 export const getDecaySettingsChartData = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+  if (isKnowledgeDecayRule(decayRule)) {
+    // Knowledge decay rules have no score curve
+    return { live_score_serie: [] } as DecayChartData;
+  }
   const scoreListForChart = computeScoreList(100);
   const chartCurveData: ComputeDecayChartInput = {
     decayBaseScore: 100,
@@ -368,14 +399,16 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
     },
   };
   const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
-  if (currentBuiltInDecayRules.length === 0) {
-    // no built-in decay rule, we should create the default ones
+  if (!currentBuiltInDecayRules.some((rule) => !isKnowledgeDecayRule(rule))) {
+    // no built-in indicator decay rule, we should create the default ones
     const defaultDecayRules = [...BUILT_IN_DECAY_RULES];
     for (let index = 0; index < defaultDecayRules.length; index += 1) {
       const decayRule = defaultDecayRules[index];
       await addDecayRule(context, user, decayRule, true);
     }
   }
+  // Built-in knowledge decay rules are shipped disabled, created when missing
+  await initKnowledgeDecayRules(context, user);
 };
 
 // end region
@@ -384,7 +417,8 @@ export type ResolvedDecayRule = Record<string, any>;
 
 const getActiveDecayRules = async (context: AuthContext) => {
   const decayRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
-  return decayRuleList.filter((rule) => rule.active);
+  // Knowledge decay rules never take part in the indicator score decay
+  return decayRuleList.filter((rule) => rule.active && !isKnowledgeDecayRule(rule));
 };
 
 export const checkDecayRules = async (context: AuthContext, user: AuthUser, resolvedIndicator: ResolvedDecayRule) => {

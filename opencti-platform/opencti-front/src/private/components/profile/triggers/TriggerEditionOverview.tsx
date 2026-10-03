@@ -14,7 +14,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions, provenanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -67,6 +67,7 @@ const triggerEditionOverviewFragment = graphql`
     trigger_time
     instance_trigger
     scope_entity_types
+    corroboration_threshold
     triggers {
       id
       name
@@ -148,6 +149,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const triggerValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    corroboration_threshold: Yup.number().integer()
+      .min(2, t_i18n('The threshold must be between 2 and 200'))
+      .max(200, t_i18n('The threshold must be between 2 and 200')),
     event_types:
       trigger.trigger_type === 'live'
         ? Yup.array()
@@ -325,6 +329,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     notifiers: convertNotifiers(trigger),
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
+    corroboration_threshold: trigger.corroboration_threshold ?? 2,
     day: currentTime.length > 1 ? currentTime[0] : '1',
     time:
       currentTime.length > 1
@@ -366,9 +371,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               multiple={true}
               label={t_i18n('Triggering on')}
               options={
-                trigger.instance_trigger
-                  ? instanceEventTypesOptions
-                  : filterEventTypesOptions
+                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...provenanceEventTypesOptions]
+                  .map((option) => ({ ...option, label: t_i18n(option.label) }))
               }
               onChange={asMultiValue<{ value: string; label: string }>((
                 name,
@@ -377,6 +381,18 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 name,
                 value.map((n) => n.value),
               ))}
+            />
+          )}
+          {trigger.trigger_type === 'live' && ((values.event_types ?? []) as FieldOption[]).some((option) => option.value === 'corroboration') && (
+            <Field
+              component={TextField}
+              variant="outlined"
+              type="number"
+              name="corroboration_threshold"
+              label={t_i18n('Corroboration threshold (distinct sources)')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+              onSubmit={handleSubmitField}
             />
           )}
           {trigger.trigger_type === 'digest' && (

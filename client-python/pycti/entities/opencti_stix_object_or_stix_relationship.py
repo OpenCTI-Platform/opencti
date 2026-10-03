@@ -27,6 +27,27 @@ class StixObjectOrStixRelationship:
                 created_at
                 updated_at
             }
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
+            ... on StixCoreRelationship {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
+            ... on StixSightingRelationship {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             ... on StixDomainObject {
             creators {
                 id
@@ -755,6 +776,70 @@ class StixObjectOrStixRelationship:
                 last_seen
             }
         """
+        provenance_fields = """
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                single_sourced
+                has_conflicts
+                freshness_stale
+                freshness_stale_at
+                x_opencti_assertions {
+                    source_id
+                    source_kind
+                    source_name
+                    first_asserted_at
+                    last_asserted_at
+                    assert_count
+                    confidence
+                    work_id
+                }
+                x_opencti_conflicts {
+                    field
+                    values {
+                        value_hash
+                        display
+                        value
+                        adoptable
+                        source_id
+                        source_kind
+                        source_name
+                        confidence
+                        last_asserted_at
+                    }
+                }
+        """
+        self.provenance_properties = (
+            """
+            ... on StixObject {
+                id
+                standard_id
+                entity_type
+            }
+            ... on StixRelationship {
+                id
+                standard_id
+                entity_type
+            }
+            ... on StixCoreObject {"""
+            + provenance_fields
+            + """
+            }
+            ... on StixCoreRelationship {"""
+            + provenance_fields
+            + """
+                procedures {
+                    text
+                    source_id
+                    last_asserted_at
+                }
+            }
+            ... on StixSightingRelationship {"""
+            + provenance_fields
+            + """
+            }
+        """
+        )
 
     def read(self, **kwargs):
         """Read a StixObjectOrStixRelationship object.
@@ -803,6 +888,25 @@ class StixObjectOrStixRelationship:
         else:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
+
+    def read_provenance(self, **kwargs):
+        """Read the provenance of a STIX core object or relationship.
+
+        Provenance is computed by the platform and read-only: one assertion per
+        source (connector, feed, author, user, inference or emulation), the
+        competing values of conflicting fields and, on relationships, the
+        procedures merged from every source.
+
+        :param id: the id of the object or relationship
+        :type id: str
+        :return: the provenance fields, None if the element does not exist
+        :rtype: dict or None
+        """
+        id = kwargs.get("id", None)
+        if id is None:
+            self.opencti.app_logger.error("Missing parameters: id")
+            return None
+        return self.read(id=id, customAttributes=self.provenance_properties)
 
     def list(self, **kwargs):
         """List StixObjectOrStixRelationship objects.
