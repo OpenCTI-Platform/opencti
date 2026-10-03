@@ -55,8 +55,8 @@ The batch schema accepts no other field, on the platform and on XTM Hub.
 
 The hash is derived in two steps:
 
-1. A stable keyed hash of the normalized value (indicators and observables), of the MITRE ID (attack patterns), of the CVE identifier (vulnerabilities) or of the normalized name and each alias (intrusion sets, malware, tools). Every OpenCTI platform derives the same key for the same object, which is what lets the network match it. This key never leaves the platform.
-2. The stable key is encrypted with the salt that XTM Hub draws every UTC day. The hashes on the wire therefore change every day and cannot be linked across days by anyone who only sees the traffic.
+1. A stable keyed hash of the normalized value (indicators and observables), of the MITRE ID (attack patterns), of the CVE identifier (vulnerabilities) or of the normalized name and each alias (intrusion sets, malware, tools). Every OpenCTI platform derives the same key for the same object, which is what lets the network match it. The key itself is never sent, only its encryption of the day (step 2).
+2. The stable key is encrypted with the salt that XTM Hub draws every UTC day and serves to connected platforms only. The hashes sent therefore change every day: hashes recorded on different days (a proxy log, a copy of request bodies) cannot be linked to each other or to an object without the salts of those days, which XTM Hub deletes after 3 days. The salt is not a secret among connected platforms, and every platform derives the same stable key for the same object: a connected platform that knows a value can compute its hash for a day, exactly as the preview does. The request bodies are protected in transit by TLS, and what XTM Hub publishes is protected by k-anonymity, not by the salt.
 
 XTM Hub re-keys every received hash with a key only it holds, stores platform identifiers as pseudonyms, deletes contributions after 13 months and never logs Threat Pulse requests. The details are in the XTM Hub documentation.
 
