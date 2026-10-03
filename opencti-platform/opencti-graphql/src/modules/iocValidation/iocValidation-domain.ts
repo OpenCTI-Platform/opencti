@@ -13,7 +13,7 @@ import { lockResources } from '../../lock/master-lock';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { createWork } from '../../domain/work';
@@ -86,8 +86,58 @@ export const findIocValidationRequest = (context: AuthContext, user: AuthUser, i
   return storeLoadById<BasicStoreEntityIocValidationRequest>(context, user, id, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
 };
 
-export const findIocValidationRequestsPaginated = (context: AuthContext, user: AuthUser, args: QueryIocValidationRequestsArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityIocValidationRequest>(context, user, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], args);
+// Requests store unmarked IOC payloads: only plain attributes are filterable, never a payload subfield, and an
+// indicator or platform reference only matches when the reader can access it, so a filter never reveals the
+// membership of an entity the reader cannot see.
+const REQUEST_FILTER_KEYS = ['entity_type', 'name', 'status', 'test_kinds', 'connector_id', 'creator_id', 'created_at', 'updated_at', 'dispatched_at', 'completed_at'];
+const REQUEST_REFERENCE_FILTER_TYPES: Record<string, string> = {
+  platform_ids: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
+  indicator_ids: ENTITY_TYPE_INDICATOR,
+};
+const NO_ACCESSIBLE_REFERENCE = 'no-accessible-reference';
+const MAX_REFERENCE_FILTER_VALUES = 100;
+
+type RequestFilter = { key: string | string[]; values: unknown[]; operator?: string | null; mode?: string | null };
+type RequestFilterGroup = { mode?: string | null; filters?: RequestFilter[] | null; filterGroups?: RequestFilterGroup[] | null };
+
+export const sanitizeIocValidationRequestFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  group: RequestFilterGroup | null | undefined,
+): Promise<RequestFilterGroup | null | undefined> => {
+  if (!group) {
+    return group;
+  }
+  const filters = await Promise.all((group.filters ?? []).map(async (filter) => {
+    const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    if (keys.length !== 1) {
+      throw ValidationError('IOC validation requests are filtered on one key per filter', 'filters', { keys });
+    }
+    const [key] = keys;
+    const referenceType = REQUEST_REFERENCE_FILTER_TYPES[key];
+    if (!referenceType) {
+      if (!REQUEST_FILTER_KEYS.includes(key)) {
+        throw ValidationError('This filter is not supported on IOC validation requests', 'filters', { key });
+      }
+      return filter;
+    }
+    if ((filter.operator ?? 'eq') !== 'eq') {
+      throw ValidationError('Only the equality operator is supported on this filter', 'filters', { key, operator: filter.operator });
+    }
+    if ((filter.values ?? []).length > MAX_REFERENCE_FILTER_VALUES) {
+      throw ValidationError(`This filter accepts at most ${MAX_REFERENCE_FILTER_VALUES} values`, 'filters', { key });
+    }
+    const references = await Promise.all((filter.values ?? []).map((value) => storeLoadById(context, user, String(value), referenceType)));
+    const readableIds = references.filter((reference) => !!reference).map((reference) => reference.internal_id);
+    return { ...filter, key: [key], values: readableIds.length > 0 ? readableIds : [NO_ACCESSIBLE_REFERENCE] };
+  }));
+  const filterGroups = await Promise.all((group.filterGroups ?? []).map((child) => sanitizeIocValidationRequestFilters(context, user, child)));
+  return { ...group, filters, filterGroups: filterGroups as RequestFilterGroup[] };
+};
+
+export const findIocValidationRequestsPaginated = async (context: AuthContext, user: AuthUser, args: QueryIocValidationRequestsArgs) => {
+  const filters = await sanitizeIocValidationRequestFilters(context, user, args.filters as RequestFilterGroup | null | undefined);
+  return pageEntitiesConnection<BasicStoreEntityIocValidationRequest>(context, user, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], { ...args, filters } as never);
 };
 
 /**
@@ -129,7 +179,8 @@ const findRequestDeployments = async (context: AuthContext, requestId: string) =
   });
 };
 
-// Pairs still waiting for an answer from this request are resolved with the given status.
+// Pairs still waiting for an answer from this request are resolved with the given status. Each pair is rechecked
+// under the pair lock of the result reports, so a result recorded meanwhile is never overwritten.
 const resolvePendingPairs = async (context: AuthContext, requestId: string, status: string) => {
   const deployments = await findRequestDeployments(context, requestId);
   const pending = deployments.filter((d) => d.validation_status === VALIDATION_STATUS_REQUESTED);
@@ -137,7 +188,21 @@ const resolvePendingPairs = async (context: AuthContext, requestId: string, stat
     const attributes = status === VALIDATION_STATUS_NOT_REQUESTED
       ? { validation_status: VALIDATION_STATUS_NOT_REQUESTED, validation_run_id: null }
       : { validation_status: status, last_validation_at: new Date() };
-    await setPairsValidationStatus(context, pending, attributes);
+    const resolved: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
+    await BluePromise.map(pending, async (relation) => {
+      const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
+      try {
+        const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
+        if (current && current.validation_status === VALIDATION_STATUS_REQUESTED && current.validation_run_id === requestId) {
+          const params = buildReplaceScriptParams(attributes);
+          await elUpdate(context, current._index, current.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
+          resolved.push(current);
+        }
+      } finally {
+        await lock.unlock();
+      }
+    }, { concurrency: CONCURRENCY });
+    await refreshIndicatorDeploymentCounters(context, resolved.map((r) => r.fromId));
   }
   return deployments;
 };
@@ -275,6 +340,16 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
 // endregion
 
 // region dispatch to OpenAEV
+// Serializes the writes of the request status (dispatch, OpenAEV lifecycle updates).
+const withRequestLock = async <T>(requestId: string, callback: () => Promise<T>): Promise<T> => {
+  const lock = await lockResources([`ioc-validation-request-${requestId}`]);
+  try {
+    return await callback();
+  } finally {
+    await lock.unlock();
+  }
+};
+
 const patchRequest = async (context: AuthContext, user: AuthUser, id: string, patch: Record<string, unknown>) => {
   const { element } = await patchAttribute<StoreEntityIocValidationRequest>(context, user, id, ENTITY_TYPE_IOC_VALIDATION_REQUEST, patch);
   return element;
@@ -359,12 +434,19 @@ export const dispatchIocValidationRequest = async (context: AuthContext, request
   };
   await pushToConnector(connector.internal_id, message);
   logApp.info('[IOC-VALIDATION] Request dispatched to OpenAEV', { requestId: request.internal_id, connectorId: connector.internal_id, pairs: pairs.length });
-  return patchRequest(context, SYSTEM_USER, request.internal_id, {
-    status: REQUEST_STATUS_SENT,
-    connector_id: connector.internal_id,
-    work_id: work.id,
-    dispatched_at: new Date(),
-    status_message: null,
+  // OpenAEV can report its lifecycle before this write: an advanced status is never set back to sent.
+  return withRequestLock(request.internal_id, async () => {
+    const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id);
+    const patch: Record<string, unknown> = {
+      connector_id: connector.internal_id,
+      work_id: work.id,
+      dispatched_at: new Date(),
+    };
+    if (!current || current.status === REQUEST_STATUS_PENDING) {
+      patch.status = REQUEST_STATUS_SENT;
+      patch.status_message = null;
+    }
+    return patchRequest(context, SYSTEM_USER, request.internal_id, patch);
   });
 };
 // endregion
@@ -397,29 +479,32 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
   if (!OPENAEV_REPORTABLE_STATUSES.includes(status)) {
     throw ValidationError('This status cannot be reported by OpenAEV', 'status', { status });
   }
-  const request = await findIocValidationRequest(context, user, id);
-  if (!request) {
+  const found = await findIocValidationRequest(context, user, id);
+  if (!found) {
     throw FunctionalError('IOC validation request not found', { id });
   }
-  await assertRequestConnectorUser(context, user, request);
-  if (!isAllowedTransition(request.status, status)) {
-    logApp.info('[IOC-VALIDATION] Ignoring out of order status update', { id, current: request.status, next: status });
-    return request;
-  }
-  const patch: Record<string, unknown> = { status };
-  if (input.openaev_scenario_id) patch.openaev_scenario_id = input.openaev_scenario_id;
-  if (input.openaev_simulation_id) patch.openaev_simulation_id = input.openaev_simulation_id;
-  if (input.external_uri) patch.external_uri = input.external_uri;
-  if (input.message !== undefined) patch.status_message = input.message;
-  if (FINAL_REQUEST_STATUSES.includes(status)) {
-    patch.completed_at = new Date();
-    if (status === REQUEST_STATUS_FAILED || status === REQUEST_STATUS_REJECTED) {
-      await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
+  await assertRequestConnectorUser(context, user, found);
+  return withRequestLock(found.internal_id, async () => {
+    const request = await findIocValidationRequest(context, user, found.internal_id) ?? found;
+    if (!isAllowedTransition(request.status, status)) {
+      logApp.info('[IOC-VALIDATION] Ignoring out of order status update', { id, current: request.status, next: status });
+      return request;
     }
-    const deployments = await findRequestDeployments(context, request.internal_id);
-    patch.results_summary = summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
-  }
-  return patchRequest(context, user, request.internal_id, patch);
+    const patch: Record<string, unknown> = { status };
+    if (input.openaev_scenario_id) patch.openaev_scenario_id = input.openaev_scenario_id;
+    if (input.openaev_simulation_id) patch.openaev_simulation_id = input.openaev_simulation_id;
+    if (input.external_uri) patch.external_uri = input.external_uri;
+    if (input.message !== undefined) patch.status_message = input.message;
+    if (FINAL_REQUEST_STATUSES.includes(status)) {
+      patch.completed_at = new Date();
+      if (status === REQUEST_STATUS_FAILED || status === REQUEST_STATUS_REJECTED) {
+        await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
+      }
+      const deployments = await findRequestDeployments(context, request.internal_id);
+      patch.results_summary = summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
+    }
+    return patchRequest(context, user, request.internal_id, patch);
+  });
 };
 
 export const IOC_VALIDATION_RESULTS_MAX_SIZE = 500;
@@ -473,27 +558,40 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
     const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
     try {
       const deployment = await findDeployedOn(context, SYSTEM_USER, indicator.internal_id, platform.internal_id);
-      if (!deployment || deployment.validation_status !== VALIDATION_STATUS_REQUESTED || deployment.validation_run_id !== request.internal_id) {
+      if (!deployment || deployment.validation_run_id !== request.internal_id) {
         return;
       }
-      const { element } = await patchAttribute(context, user, deployment.internal_id, RELATION_DEPLOYED_ON, {
-        validation_status: result.status,
-        last_validation_at: observedAt,
-      });
-      await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
-      await createRelation(context, user, {
-        fromId: indicator.internal_id,
-        toId: platform.internal_id,
-        relationship_type: STIX_SIGHTING_RELATIONSHIP,
-        stix_id: validationResultSightingStixId(request.internal_id, indicator.internal_id, platform.internal_id),
-        [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
-        attribute_count: result.hitCount ?? 1,
-        first_seen: observedAt,
-        last_seen: observedAt,
-        x_opencti_negative: result.status === VALIDATION_STATUS_MISSED,
-        description: result.evidence || `IOC validation ${result.status} reported by ${platform.name}`,
-      });
-      updatedIndicatorIds.push(indicator.internal_id);
+      const waiting = deployment.validation_status === VALIDATION_STATUS_REQUESTED;
+      // A retry of the recorded verdict only repairs its sighting (the verdict is written first).
+      if (!waiting && deployment.validation_status !== result.status) {
+        return;
+      }
+      if (waiting) {
+        const { element } = await patchAttribute(context, user, deployment.internal_id, RELATION_DEPLOYED_ON, {
+          validation_status: result.status,
+          last_validation_at: observedAt,
+        });
+        await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
+      }
+      const sightingStixId = validationResultSightingStixId(request.internal_id, indicator.internal_id, platform.internal_id);
+      const sighting = await internalLoadById(context, SYSTEM_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP });
+      if (!sighting) {
+        await createRelation(context, user, {
+          fromId: indicator.internal_id,
+          toId: platform.internal_id,
+          relationship_type: STIX_SIGHTING_RELATIONSHIP,
+          stix_id: sightingStixId,
+          [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+          attribute_count: result.hitCount ?? 1,
+          first_seen: observedAt,
+          last_seen: observedAt,
+          x_opencti_negative: result.status === VALIDATION_STATUS_MISSED,
+          description: result.evidence || `IOC validation ${result.status} reported by ${platform.name}`,
+        });
+      }
+      if (waiting) {
+        updatedIndicatorIds.push(indicator.internal_id);
+      }
     } finally {
       await lock.unlock();
     }

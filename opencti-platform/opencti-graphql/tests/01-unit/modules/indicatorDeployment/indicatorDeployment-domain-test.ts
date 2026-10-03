@@ -133,6 +133,15 @@ describe('deployment manager stream extraction', () => {
     ]);
     expect(ids).toEqual(['ind-1']);
   });
+  it('should refresh the surviving indicator of a merge', () => {
+    const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
+    const merge = (data: Record<string, unknown>) => ({ id: '1', event: 'merge', data: { type: 'merge', data } }) as unknown as SseEvent<DataEvent>;
+    expect(extractDeploymentIndicatorIds([
+      merge({ type: 'indicator', extensions: { [ext]: { id: 'survivor', type: 'Indicator' } } }),
+      merge({ type: 'malware', extensions: { [ext]: { id: 'malware-1', type: 'Malware' } } }),
+      event({ type: 'indicator', extensions: { [ext]: { id: 'updated', type: 'Indicator' } } }),
+    ])).toEqual(['survivor']);
+  });
   it('should detect a security platform deleted or merged away', () => {
     const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
     const platform = { type: 'identity', extensions: { [ext]: { type: 'SecurityPlatform' } } };

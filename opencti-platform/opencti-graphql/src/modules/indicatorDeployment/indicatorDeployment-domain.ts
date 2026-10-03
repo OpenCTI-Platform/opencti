@@ -425,15 +425,22 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
  */
 export const retryIndicatorDeployment = async (context: AuthContext, user: AuthUser, id: string) => {
   const relation = await loadDeployedOnById(context, user, id);
-  if (!RETRYABLE_DEPLOYMENT_STATUSES.includes(relation.deployment_status as DeploymentStatus)) {
-    throw FunctionalError('Only a failed, removed or expired deployment can be retried', { id, status: relation.deployment_status });
+  // Checked under the pair lock of the connector reports: a deployment confirmed meanwhile is never reset.
+  const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
+  try {
+    const current = await loadDeployedOnById(context, user, id);
+    if (!RETRYABLE_DEPLOYMENT_STATUSES.includes(current.deployment_status as DeploymentStatus)) {
+      throw FunctionalError('Only a failed, removed or expired deployment can be retried', { id, status: current.deployment_status });
+    }
+    const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, {
+      deployment_status: DEPLOYMENT_STATUS_PENDING,
+      error_message: null,
+      revoked: false,
+    });
+    return await notifyRelationEdit(user, element);
+  } finally {
+    await lock.unlock();
   }
-  const { element } = await patchAttribute(context, user, relation.internal_id, RELATION_DEPLOYED_ON, {
-    deployment_status: DEPLOYMENT_STATUS_PENDING,
-    error_message: null,
-    revoked: false,
-  });
-  return notifyRelationEdit(user, element);
 };
 
 /**
