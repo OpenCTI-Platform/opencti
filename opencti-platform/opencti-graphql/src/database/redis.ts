@@ -888,6 +888,25 @@ export const redisGraphAnalyticsDeleteState = async (fields: string[]) => {
   if (fields.length === 0) return;
   await getClientBase().hdel(GRAPH_ANALYTICS_STATE_KEY, ...fields);
 };
+// One clustering run writes at a time: each write of the run refreshes its lease, completion releases it
+const GRAPH_ANALYTICS_RUN_LEASE_KEY = 'graph_analytics_run_lease';
+const ACQUIRE_RUN_LEASE_SCRIPT = `
+local current = redis.call('GET', KEYS[1])
+if current == false or current == ARGV[1] then
+  redis.call('SET', KEYS[1], ARGV[1], 'PX', tonumber(ARGV[2]))
+  return 1
+end
+return 0`;
+const RELEASE_RUN_LEASE_SCRIPT = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end
+return 0`;
+export const redisGraphAnalyticsAcquireRunLease = async (runId: string, ttlMs: number): Promise<boolean> => {
+  const acquired = await getClientBase().eval(ACQUIRE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId, ttlMs);
+  return Number(acquired) === 1;
+};
+export const redisGraphAnalyticsReleaseRunLease = async (runId: string) => {
+  await getClientBase().eval(RELEASE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId);
+};
 // endregion
 
 // region connector logs

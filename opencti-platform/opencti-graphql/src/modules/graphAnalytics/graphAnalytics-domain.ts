@@ -25,7 +25,14 @@ import {
 import { GRAPH_CLUSTER_ID_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { GRAPH_ANALYTICS_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../utils/access';
-import { redisGraphAnalyticsGetState, redisGraphAnalyticsMarkPriority, redisGraphAnalyticsPendingCount, redisGraphAnalyticsSetState } from '../../database/redis';
+import {
+  redisGraphAnalyticsAcquireRunLease,
+  redisGraphAnalyticsGetState,
+  redisGraphAnalyticsMarkPriority,
+  redisGraphAnalyticsPendingCount,
+  redisGraphAnalyticsReleaseRunLease,
+  redisGraphAnalyticsSetState,
+} from '../../database/redis';
 import { addGraphAnalyticsPivotCount, addGraphClusterPromotionCount, addGraphSimilarityQueryCount } from '../../manager/telemetryManager';
 import { addGrouping } from '../grouping/grouping-domain';
 import { addCampaign } from '../../domain/campaign';
@@ -33,7 +40,7 @@ import { RELATION_COVERED } from '../securityCoverage/securityCoverage-types';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditField } from '../workspace/workspace-domain';
 import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
-import { getGraphAnalyticsComputeConfig, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
+import { getGraphAnalyticsComputeConfig, GRAPH_RUN_LEASE_MS, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
 import { isSameComparisonGroup, keepAccessibleEndpoints } from './graphAnalytics-features';
 import { computeSimilarityScore, type GraphSimilarityScore } from './graphAnalytics-scoring';
 import {
@@ -766,6 +773,10 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   if (invalidCluster) {
     throw FunctionalError('Cluster identifiers must be UUIDs', { cluster_id: invalidCluster });
   }
+  // the staged metrics and clusters of an entity have one slot: a single run writes at a time
+  if (!(await redisGraphAnalyticsAcquireRunLease(input.run_id, GRAPH_RUN_LEASE_MS))) {
+    throw FunctionalError('Another graph analytics run is in progress', { run_id: input.run_id });
+  }
   const { updated, skipped } = await writeRunMetrics(context, user, input.run_id, input.metrics.map((metric) => ({
     entity_id: metric.entity_id,
     cluster_id: metric.cluster_id ?? null,
@@ -785,6 +796,7 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   if (input.process_version) state[GRAPH_STATE_ANALYTICS_VERSION] = input.process_version;
   if (input.complete) {
     removed = await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id);
+    await redisGraphAnalyticsReleaseRunLease(input.run_id);
     state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
   }
   await redisGraphAnalyticsSetState(state);
@@ -802,7 +814,12 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
   const [pending, similarityDocuments, clustersCount] = await Promise.all([
     redisGraphAnalyticsPendingCount(),
     countSimilarityRows(context, user),
-    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_GRAPH_CLUSTER] }),
+    // clusters of a run in progress are only counted once published
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_GRAPH_CLUSTER],
+      filters: { mode: FilterMode.And, filters: [{ key: ['last_run_id'], values: [], operator: FilterOperator.NotNil }], filterGroups: [] },
+      noFiltersChecking: true,
+    }),
   ]);
   return {
     manager_enabled: booleanConf('graph_analytics_manager:enabled', true),

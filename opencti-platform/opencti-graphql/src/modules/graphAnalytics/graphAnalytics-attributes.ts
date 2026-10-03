@@ -89,6 +89,46 @@ export const graphMetricsAttribute: ObjectAttribute = {
   ],
 };
 
+const clusterFeaturesMappings: MappingDefinition[] = [
+  { name: 'family', label: 'Feature family', type: 'string', format: 'enum', values: [...GRAPH_FEATURE_FAMILIES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'ids', label: 'Feature entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+];
+
+// Cluster fields staged by a clustering run in progress, published when the run completes
+const pendingClusterAttribute: ObjectAttribute = {
+  name: 'pending_cluster',
+  label: 'Pending cluster publication',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  update: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'run_id', label: 'Last computation run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'cluster_kind', label: 'Cluster kind', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_KINDS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'cluster_source', label: 'Cluster source', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_SOURCES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'members_count', label: 'Members count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'representative_ids', label: 'Representative entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    {
+      name: 'cluster_features',
+      label: 'Cluster shared features',
+      type: 'object',
+      format: 'standard',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+      mappings: clusterFeaturesMappings,
+    },
+    { name: 'computed_at', label: 'Last computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  ],
+};
+
 export const graphClusterAttributes: AttributeDefinition[] = [
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'cluster_id', label: 'Cluster identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
@@ -106,14 +146,12 @@ export const graphClusterAttributes: AttributeDefinition[] = [
     multiple: true,
     upsert: true,
     isFilterable: false,
-    mappings: [
-      { name: 'family', label: 'Feature family', type: 'string', format: 'enum', values: [...GRAPH_FEATURE_FAMILIES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'ids', label: 'Feature entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    ],
+    mappings: clusterFeaturesMappings,
   },
   { name: 'promoted_to_ids', label: 'Promoted to', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   { name: 'last_run_id', label: 'Last computation run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'last_computed_at', label: 'Last computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  pendingClusterAttribute,
 ];
 
 export const graphSimilarityAttributes: AttributeDefinition[] = [

@@ -96,6 +96,7 @@
   "Body": "Corps",
   "Graph cluster joining date": "Date d'entrée dans le cluster de graphe",
   "Pending approximate betweenness": "Intermédiarité approximative en attente",
+  "Pending cluster publication": "Publication du cluster en attente",
   "Pending graph analytics run": "Exécution d'analyse de graphe en attente",
   "Pending graph cluster": "Cluster de graphe en attente",
   "Pending graph cluster kind": "Type du cluster de graphe en attente",

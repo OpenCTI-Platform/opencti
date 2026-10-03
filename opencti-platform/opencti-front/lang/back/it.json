@@ -96,6 +96,7 @@
   "Body": "Corpo",
   "Graph cluster joining date": "Data di ingresso nel cluster del grafo",
   "Pending approximate betweenness": "Intermediazione approssimativa in sospeso",
+  "Pending cluster publication": "Pubblicazione del cluster in sospeso",
   "Pending graph analytics run": "Esecuzione di analisi del grafo in sospeso",
   "Pending graph cluster": "Cluster del grafo in sospeso",
   "Pending graph cluster kind": "Tipo del cluster del grafo in sospeso",

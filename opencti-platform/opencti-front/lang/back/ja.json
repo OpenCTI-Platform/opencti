@@ -96,6 +96,7 @@
   "Body": "本文",
   "Graph cluster joining date": "グラフクラスターへの参加日",
   "Pending approximate betweenness": "保留中の近似媒介中心性",
+  "Pending cluster publication": "保留中のクラスター公開",
   "Pending graph analytics run": "保留中のグラフ分析の実行",
   "Pending graph cluster": "保留中のグラフクラスター",
   "Pending graph cluster kind": "保留中のグラフクラスターの種類",

@@ -6,7 +6,14 @@ import { elList, elPaginate } from '../../database/engine';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { doYield } from '../../utils/eventloop-utils';
-import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsMarkDirty, redisGraphAnalyticsSetState } from '../../database/redis';
+import {
+  redisGraphAnalyticsAcquireRunLease,
+  redisGraphAnalyticsDeleteState,
+  redisGraphAnalyticsGetState,
+  redisGraphAnalyticsMarkDirty,
+  redisGraphAnalyticsReleaseRunLease,
+  redisGraphAnalyticsSetState,
+} from '../../database/redis';
 import {
   candidateQueriesForKind,
   classifyInfrastructureNeighbor,
@@ -80,6 +87,8 @@ export const getGraphAnalyticsComputeConfig = (): GraphAnalyticsComputeConfig =>
 
 const PROFILE_BATCH_SIZE = 25;
 const STALE_SIMILARITY_DAYS = 7;
+// A clustering run holds the write lease while it writes; a run silent for this long gives it up
+export const GRAPH_RUN_LEASE_MS = 30 * 60 * 1000;
 // Families linking infrastructure elements into a cluster (shared certificate, ASN, registrar, nameserver, hosting, report).
 export const INFRASTRUCTURE_CLUSTER_FAMILIES: GraphFeatureFamily[] = ['certificates', 'asn', 'registrar', 'nameservers', 'hosting', 'reports'];
 
@@ -428,6 +437,11 @@ export const runInfrastructureClustering = async (
     minClusterSize: config.clusteringMinSize,
   });
   const kind: GraphClusterKind = 'infrastructure';
+  // the staged metrics and clusters of an entity have one slot: skipped while another run writes
+  if (!(await redisGraphAnalyticsAcquireRunLease(runId, GRAPH_RUN_LEASE_MS))) {
+    logApp.info('[OPENCTI-MODULE] Graph analytics infrastructure clustering skipped, another clustering run is in progress');
+    return { clusters: 0, members: 0, skipped: true };
+  }
   const writes = clusters.map((cluster) => ({
     cluster_id: buildGraphClusterId(kind, cluster.anchor),
     cluster_kind: kind,
@@ -442,11 +456,15 @@ export const runInfrastructureClustering = async (
     cluster_kind: kind,
     cluster_size: write.members_count,
   })));
-  for (let i = 0; i < assignments.length; i += 1000) {
-    await writeRunMetrics(context, user, runId, assignments.slice(i, i + 1000));
+  try {
+    for (let i = 0; i < assignments.length; i += 1000) {
+      await writeRunMetrics(context, user, runId, assignments.slice(i, i + 1000));
+    }
+    await upsertGraphClusters(context, user, writes, 'platform', runId);
+    await finalizeClusteringRun(context, user, runId);
+  } finally {
+    await redisGraphAnalyticsReleaseRunLease(runId);
   }
-  await upsertGraphClusters(context, user, writes, 'platform', runId);
-  await finalizeClusteringRun(context, user, runId);
   await redisGraphAnalyticsSetState({ [GRAPH_STATE_CLUSTERING_LAST_RUN]: new Date().toISOString() });
   return { clusters: writes.length, members: assignments.length, skipped: false };
 };

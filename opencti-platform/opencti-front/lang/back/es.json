@@ -96,6 +96,7 @@
   "Body": "Cuerpo",
   "Graph cluster joining date": "Fecha de incorporación al clúster del grafo",
   "Pending approximate betweenness": "Intermediación aproximada pendiente",
+  "Pending cluster publication": "Publicación del clúster pendiente",
   "Pending graph analytics run": "Ejecución de análisis del grafo pendiente",
   "Pending graph cluster": "Clúster del grafo pendiente",
   "Pending graph cluster kind": "Tipo del clúster del grafo pendiente",

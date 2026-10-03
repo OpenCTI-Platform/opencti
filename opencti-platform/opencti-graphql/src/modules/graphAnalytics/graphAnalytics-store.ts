@@ -471,7 +471,10 @@ export const loadGraphClusters = async (context: AuthContext, user: AuthUser, id
   }) as Promise<BasicStoreEntityGraphCluster[]>;
 };
 
-/** Create or refresh cluster documents. Promotion links are preserved, the creation date too. */
+/**
+ * Stage cluster documents of a run in `pending_cluster`, published when the run completes. A cluster created by the
+ * run is a skeleton without published fields until then. Promotion links are preserved, the creation date too.
+ */
 export const upsertGraphClusters = async (
   context: AuthContext,
   user: AuthUser,
@@ -487,22 +490,21 @@ export const upsertGraphClusters = async (
     const existingById = new Map(existing.map((e) => [e.internal_id, e]));
     const body = chunks[i].flatMap((cluster): Array<Record<string, unknown>> => {
       const current = existingById.get(cluster.cluster_id);
-      const fields = {
+      const pending = {
+        run_id: runId,
         name: buildGraphClusterName(cluster.cluster_kind, cluster.cluster_id),
         cluster_kind: cluster.cluster_kind,
         cluster_source: source,
         members_count: cluster.members_count,
         representative_ids: cluster.representative_ids,
         cluster_features: cluster.features,
-        last_run_id: runId,
-        last_computed_at: now,
-        updated_at: now,
+        computed_at: now,
       };
       if (current) {
-        return [{ update: { _index: current._index, _id: current.internal_id, retry_on_conflict: 5 } }, { doc: fields }];
+        return [{ update: { _index: current._index, _id: current.internal_id, retry_on_conflict: 5 } }, { doc: { pending_cluster: pending } }];
       }
       const doc = {
-        ...fields,
+        pending_cluster: pending,
         internal_id: cluster.cluster_id,
         standard_id: generateStandardId(ENTITY_TYPE_GRAPH_CLUSTER, { cluster_id: cluster.cluster_id }),
         entity_type: ENTITY_TYPE_GRAPH_CLUSTER,
@@ -520,12 +522,46 @@ export const upsertGraphClusters = async (
   return upserted;
 };
 
+const CLUSTER_PUBLISH_SCRIPT = 'def p = ctx._source.remove(\'pending_cluster\');'
+  + ' for (entry in p.entrySet()) { def key = entry.getKey();'
+  + ' if (key == \'run_id\') { ctx._source.last_run_id = entry.getValue(); }'
+  + ' else if (key == \'computed_at\') { ctx._source.last_computed_at = entry.getValue(); ctx._source.updated_at = entry.getValue(); }'
+  + ' else { ctx._source[key] = entry.getValue(); } }';
+// a skeleton (cluster never published) staged by an interrupted run is removed, a published cluster keeps its fields
+const CLUSTER_DROP_PENDING_SCRIPT = 'ctx._source.remove(\'pending_cluster\'); if (ctx._source.last_run_id == null) { ctx.op = \'delete\'; }';
+
+const updateRunClusters = async (source: string, query: Record<string, unknown>, failure: string) => {
+  await elRawUpdateByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source, lang: 'painless' },
+      query: { bool: { must: [{ term: { 'entity_type.keyword': ENTITY_TYPE_GRAPH_CLUSTER } }, query] } },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError(failure, { cause: err });
+  });
+};
+
+const publishRunClusters = async (runId: string) => {
+  await updateRunClusters(CLUSTER_PUBLISH_SCRIPT, { term: { 'pending_cluster.run_id.keyword': runId } }, 'Graph analytics clusters publication fail');
+  await updateRunClusters(CLUSTER_DROP_PENDING_SCRIPT, {
+    bool: {
+      must: [{ exists: { field: 'pending_cluster.run_id' } }],
+      must_not: [{ term: { 'pending_cluster.run_id.keyword': runId } }],
+    },
+  }, 'Graph analytics pending clusters cleanup fail');
+};
+
 /**
  * Finalize a clustering run: its staged entity metrics become the live ones, clusters not refreshed by the run are
  * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
  * are detached.
  */
 export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser, runId: string): Promise<string[]> => {
+  // clusters are published before their members point to them, so a cluster never shows another run's metadata
+  await publishRunClusters(runId);
   await promoteRunMetrics(runId);
   await dropPendingMetricsNotFromRun(runId);
   const stale = await elList<BasicStoreEntityGraphCluster>(context, user, READ_INDEX_INTERNAL_OBJECTS, {
