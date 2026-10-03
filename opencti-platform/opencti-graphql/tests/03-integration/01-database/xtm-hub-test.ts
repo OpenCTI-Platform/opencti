@@ -292,6 +292,41 @@ describe('XTM hub', () => {
 
         expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
+
+      it('should complete connectivity check when lost-connectivity email sending fails', async () => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+          xtm_hub_should_send_connectivity_email: true,
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        sendAdministratorsLostConnectivityEmailSpy.mockRejectedValue(new Error('SMTP send failed'));
+
+        const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(result.status).toBe(XtmHubRegistrationStatus.LostConnectivity);
+        expect(sendAdministratorsLostConnectivityEmailSpy).toHaveBeenCalled();
+        // Registration status still updates; email flag is left true so the next check can retry.
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }],
+        );
+        expect(updateAttributeSpy).not.toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          expect.arrayContaining([
+            { key: 'xtm_hub_should_send_connectivity_email', value: [false] },
+          ]),
+        );
+      });
     });
   });
 
