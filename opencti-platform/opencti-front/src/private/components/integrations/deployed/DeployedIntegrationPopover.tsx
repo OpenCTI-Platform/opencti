@@ -24,7 +24,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import stopEvent from '../../../../utils/domEvent';
+import stopEvent, { stopLinkNavigation } from '../../../../utils/domEvent';
 
 interface DeployedIntegrationPopoverProps {
   item: DeployedIntegrationItem;
@@ -200,7 +200,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   }
 
   return (
-    <div onClick={stopEvent}>
+    <div onClick={stopLinkNavigation}>
       <IconButton
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}

@@ -15,7 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
-import stopEvent from '../../../../utils/domEvent';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
 import { paperBorder } from '../paperSurface';
@@ -123,9 +123,7 @@ const ConnectorActions = ({
           sx={{ marginLeft: '0!important' }}
           direction="row"
           gap={1}
-          // The actions live inside the card link: block both the click
-          // bubbling and the native anchor navigation.
-          onClick={stopEvent}
+          onClick={stopLinkNavigation}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (

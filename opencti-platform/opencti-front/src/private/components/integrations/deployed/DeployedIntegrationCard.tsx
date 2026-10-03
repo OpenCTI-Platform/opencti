@@ -9,7 +9,7 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import stopEvent from '../../../../utils/domEvent';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 interface StatusDotProps {
@@ -248,7 +248,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={stopEvent}>
+          <Box onClick={stopLinkNavigation}>
             {statusChip}
           </Box>
         </Stack>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import Security from '../utils/Security';
-import { shouldOpenInNewTabMouseEvent } from '../utils/domEvent';
+import { navigationClickHandlers } from '../utils/domEvent';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
 import { Stack } from '@mui/material';
 import Tag from '@common/tag/Tag';
@@ -24,17 +24,6 @@ interface ItemCreatorsProps {
 const ItemCreators = ({ creators }: ItemCreatorsProps) => {
   const navigate = useNavigate();
 
-  // Chips cannot be real anchors without losing the Tag styling: honor
-  // ctrl/cmd click manually so the user page can open in a new tab.
-  const goToUser = (event: React.MouseEvent, creatorId: string) => {
-    const link = `/dashboard/settings/accesses/users/${creatorId}`;
-    if (shouldOpenInNewTabMouseEvent(event)) {
-      window.open(link, '_blank');
-    } else {
-      navigate(link);
-    }
-  };
-
   return (
     <Stack direction="row" gap={1} flexWrap="wrap">
       {creators.map((creator) => {
@@ -49,10 +38,12 @@ const ItemCreators = ({ creators }: ItemCreatorsProps) => {
             {systemUsers.includes(creator.id) ? (
               <Tag label={creator.name} />
             ) : (
+              // FDS-WORKAROUND #62: the library Chip cannot render as a link, so
+              // the new tab clicks of a link are handled by hand.
               <Tag
                 key={creator.id}
                 label={creator.name}
-                onClick={(event) => goToUser(event, creator.id)}
+                {...navigationClickHandlers(`/dashboard/settings/accesses/users/${creator.id}`, navigate)}
               />
             )}
           </Security>

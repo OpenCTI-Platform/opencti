@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import stopEvent from '../../../../utils/domEvent';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, mirroring the
@@ -113,18 +113,17 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
     ? connector.short_description
     : t_i18n(item.builtIn?.description ?? '');
 
-  // Opening a connector line navigates to its catalog detail (rendered as a
-  // real link so ctrl/cmd/middle click opens a new tab); a built-in line
-  // opens its creation drawer (like the matching cards).
-  const linkProps = connector
+  // A connector line is a real link to its catalog detail (so ctrl/cmd and
+  // middle click open a new tab); a built-in line opens its creation drawer
+  // (like the matching cards), an action rather than a navigation.
+  const lineProps = connector
     ? { component: Link, to: `/dashboard/integrations/catalog/${connector.slug}` }
-    : {};
+    : { onClick: canCreate ? () => onClickCreate() : undefined };
 
   return (
     <Box
       data-testid="available-integration-line"
-      {...linkProps}
-      onClick={!connector && canCreate ? onClickCreate : undefined}
+      {...lineProps}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -251,8 +250,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
           </Typography>
         )}
       </Box>
-      {/* Actions column: lives inside the row link, block navigation. */}
-      <Box onClick={stopEvent} sx={cellSx('actions')}>
+      {/* Actions column. */}
+      <Box onClick={stopLinkNavigation} sx={cellSx('actions')}>
         {item.builtIn ? (
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <Stack direction="row" alignItems="center">

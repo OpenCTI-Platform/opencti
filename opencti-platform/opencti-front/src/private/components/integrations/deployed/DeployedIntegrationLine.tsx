@@ -10,7 +10,7 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import stopEvent from '../../../../utils/domEvent';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, so every
@@ -288,8 +288,8 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           </Typography>
         )}
       </Box>
-      {/* Status column: lives inside the row link, block navigation. */}
-      <Box onClick={stopEvent} sx={cellSx('status')}>
+      {/* Status column. */}
+      <Box onClick={stopLinkNavigation} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />
           : <ItemBoolean status={item.status === 'active'} label={statusText} />}
