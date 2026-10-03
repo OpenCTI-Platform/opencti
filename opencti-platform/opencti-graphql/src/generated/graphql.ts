@@ -26294,6 +26294,7 @@ export type Query = {
   defenseLogsourceMapping?: Maybe<DefenseLogsourceMapping>;
   defenseLogsourceMappings?: Maybe<DefenseLogsourceMappingConnection>;
   defenseMatrix?: Maybe<DefenseMatrix>;
+  defensePlatforms: Array<DefensePlatform>;
   defenseTechnique?: Maybe<DefenseTechnique>;
   deleteOperation?: Maybe<DeleteOperation>;
   deleteOperations?: Maybe<DeleteOperationConnection>;
@@ -53756,6 +53757,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   defenseLogsourceMapping?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMapping']>, ParentType, ContextType, RequireFields<QueryDefenseLogsourceMappingArgs, 'id'>>;
   defenseLogsourceMappings?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMappingConnection']>, ParentType, ContextType, Partial<QueryDefenseLogsourceMappingsArgs>>;
   defenseMatrix?: Resolver<Maybe<ResolversTypes['DefenseMatrix']>, ParentType, ContextType, Partial<QueryDefenseMatrixArgs>>;
+  defensePlatforms?: Resolver<Array<ResolversTypes['DefensePlatform']>, ParentType, ContextType>;
   defenseTechnique?: Resolver<Maybe<ResolversTypes['DefenseTechnique']>, ParentType, ContextType, RequireFields<QueryDefenseTechniqueArgs, 'id'>>;
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
