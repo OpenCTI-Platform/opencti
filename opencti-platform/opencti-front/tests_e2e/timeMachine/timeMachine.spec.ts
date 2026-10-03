@@ -77,3 +77,10 @@ test('Time machine: create a change digest', { tag: ['@ce'] }, async ({ page }) 
   await expect(page.getByText(name)).toBeVisible();
   await expect(page.getByText('Change digest', { exact: true }).first()).toBeVisible();
 });
+
+test('Time machine: purge my last visit markers', { tag: ['@ce'] }, async ({ page }) => {
+  await page.goto('/dashboard/profile/me');
+  await page.getByTestId('purge-last-visits').click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Validate' }).click();
+  await expect(page.getByText('Your last visit markers have been purged')).toBeVisible();
+});
