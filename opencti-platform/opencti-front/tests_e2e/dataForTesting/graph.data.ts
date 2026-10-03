@@ -217,6 +217,73 @@ const deleteSilently = async (request: APIRequestContext, query: string) => {
   }
 };
 
+export interface LargeGraphFixture {
+  malwareIds: string[];
+  domainIds: string[];
+  relationshipIds: string[];
+  investigationId: string;
+}
+
+/** Runs the calls `size` at a time: fast enough for hundreds of objects, gentle on the platform. */
+const inBatches = async <T, R>(items: T[], size: number, run: (item: T, index: number) => Promise<R>): Promise<R[]> => {
+  const results: R[] = [];
+  for (let start = 0; start < items.length; start += size) {
+    const batch = items.slice(start, start + size);
+    results.push(...await Promise.all(batch.map((item, offset) => run(item, start + offset))));
+  }
+  return results;
+};
+
+/**
+ * An investigation large enough to measure the drawing: `hubs` malware, each communicating with
+ * `spokes` domain names, so `hubs * (spokes + 1)` nodes and `hubs * spokes` links.
+ */
+export const createLargeGraphFixture = async (request: APIRequestContext, hubs: number, spokes: number): Promise<LargeGraphFixture> => {
+  const suffix = `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
+  const malwareIds = await inBatches([...Array(hubs).keys()], 10, (hub) => addDomainObject(request, 'malwareAdd', `Graph perf malware ${suffix} ${hub}`, ''));
+  const domainIds = await inBatches([...Array(hubs * spokes).keys()], 20, async (index) => {
+    const data = await graphqlRequest<{ stixCyberObservableAdd: IdResult }>(
+      request,
+      `mutation { stixCyberObservableAdd(type: "Domain-Name", DomainName: { value: ${quote(`perf-${index}-${suffix}.example.com`)} }) { id } }`,
+      'perf domain name',
+    );
+    return data.stixCyberObservableAdd.id;
+  });
+  // Each batch links distinct malware, so concurrent creations never wait on the same lock.
+  const relationshipIds = await inBatches(domainIds, hubs, async (domainId, index) => {
+    const data = await graphqlRequest<{ stixCoreRelationshipAdd: IdResult }>(
+      request,
+      `mutation { stixCoreRelationshipAdd(input: {
+        relationship_type: "communicates-with",
+        fromId: ${quote(malwareIds[index % hubs])},
+        toId: ${quote(domainId)}
+      }) { id } }`,
+      'perf relationship',
+    );
+    return data.stixCoreRelationshipAdd.id;
+  });
+  const investigation = await graphqlRequest<{ workspaceAdd: IdResult }>(
+    request,
+    `mutation { workspaceAdd(input: {
+      type: "investigation",
+      name: ${quote(`Graph perf investigation ${suffix}`)},
+      investigated_entities_ids: ${JSON.stringify([...malwareIds, ...domainIds, ...relationshipIds])}
+    }) { id } }`,
+    'perf investigation',
+  );
+  return { malwareIds, domainIds, relationshipIds, investigationId: investigation.workspaceAdd.id };
+};
+
+export const deleteLargeGraphFixture = async (request: APIRequestContext, fixture: LargeGraphFixture | undefined) => {
+  if (!fixture) return;
+  await deleteSilently(request, `mutation { workspaceDelete(id: ${quote(fixture.investigationId)}) }`);
+  // Deleting a domain name deletes its relationship; one malware per batch, as for the creation.
+  await inBatches(fixture.domainIds, fixture.malwareIds.length, (id) => deleteSilently(request, `mutation { stixCoreObjectEdit(id: ${quote(id)}) { delete } }`));
+  for (const id of fixture.malwareIds) {
+    await deleteSilently(request, `mutation { stixCoreObjectEdit(id: ${quote(id)}) { delete } }`);
+  }
+};
+
 /** Removes an investigation a test created from the graph. */
 export const deleteInvestigation = (request: APIRequestContext, id: string) => deleteSilently(request, `mutation { workspaceDelete(id: ${quote(id)}) }`);
 
