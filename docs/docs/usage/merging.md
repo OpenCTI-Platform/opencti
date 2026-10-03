@@ -24,3 +24,4 @@ OpenCTI’s merge capability helps improve the quality of threat intelligence da
 
 - **Administration:** To understand how to merge entities and the consideration to take into account, refer to the [Merging](../administration/merging.md) page in the Administration section of the documentation.
 - **Deduplication mechanism:** the platform is equipped with [deduplication processes](deduplication.md) that automatically merge data at creation (either manually or by importing data from different sources) if it meets certain conditions.
+- **Knowledge curation:** [knowledge curation](knowledge-curation.md) proposes the merges of entities named differently by different sources, and records every merge so that it can be reverted (unmerge) during a retention window.

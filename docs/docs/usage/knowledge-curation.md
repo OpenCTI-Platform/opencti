@@ -1,0 +1,401 @@
+# Knowledge curation
+
+Knowledge curation keeps the knowledge graph clean after ingestion. Detectors continuously look for duplicates across vendor naming, contradictions, stale knowledge and conflicting relationships, and turn each finding into a proposal that explains its confidence with evidence. Analysts work these proposals in a curation inbox, policies can apply the safest ones automatically, every merge stays reversible, and a Knowledge Health score tracks the quality of the graph over time.
+
+This page explains what the detectors find, how a proposal is scored, how to review and apply proposals, how merges are reverted, how policies and adjudication by an XTM One agent work, and how to read the Knowledge Health score.
+
+!!! tip "Enterprise edition"
+
+    The detectors, the curation inbox, reversible merges, the Knowledge Health score and its weekly digest, field authority and the `curationResolve` query are available in the Community Edition. Adjudication by an XTM One agent and curation policies (automatic apply) require the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details.
+
+## What is knowledge curation?
+
+Knowledge curation is available in **Data > Curation**, organized in five tabs: **Inbox**, **Merge history**, **Policies**, **Knowledge Health** and **Settings**. It relies on the following concepts:
+
+| Concept          | Description                                                                                                                                                                       |
+|:-----------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Proposal         | A finding of a detector: its kind (for example `merge` or `stale`), its subjects (the entities or relationships concerned), the recommended action, the evidence and a confidence. |
+| Evidence         | One signal that supports (or contradicts) a proposal, with a score, a weight and a plain-language description.                                                                    |
+| Confidence       | A value between 0 and 1 computed from the evidence. It decides whether a proposal is ambiguous, and whether a policy may apply it.                                                |
+| Ambiguous band   | The confidence range in which a proposal can be sent to an XTM One agent for adjudication (Enterprise Edition).                                                                    |
+| Merge record     | A snapshot taken around every merge, which makes the merge reversible (unmerge) during a retention window.                                                                        |
+| Curation policy  | A rule that applies eligible proposals automatically, through background tasks (Enterprise Edition).                                                                              |
+| Knowledge Health | A daily snapshot of the quality of the graph, summarized as a score from 0 to 100.                                                                                                |
+
+## Why use it?
+
+Every source names threats its own way. When one connector imports the malware `Cl0p` and another one imports `Clop Ransomware`, the platform holds two entities: their relationships are split, their behavior is hidden, and every analysis built on them is incomplete. The same goes for sources overwriting each other's fields, indicators revoked while the observables they are based on are still active, or procedures lost when a source replaces the description of a `uses` relationship.
+
+Knowledge curation addresses these problems on the stored graph:
+
+- **Analysts work an inbox instead of hunting duplicates.** Each proposal explains why it exists, with the evidence that produced its confidence.
+- **Merges are no longer final.** Every merge is recorded and can be reverted, entirely or for some of the merged entities, during a retention window.
+- **Automation stays safe.** Policies only apply proposals above their thresholds, never merge across markings or organizations, and every automatic action is reversible.
+- **Managers get a measure.** The Knowledge Health score and its trend show whether the graph gets cleaner.
+- **Agents get a graph they can reason over.** XTM One agents and importers bind names to existing entities instead of creating new duplicates.
+
+!!! note "Curation, deduplication and data consistency"
+
+    [Deduplication](deduplication.md) prevents duplicates at creation time, when two objects share the same identifier. Knowledge curation finds the duplicates deduplication cannot see (different names for the same object), along with contradictions and stale knowledge, after ingestion. The [data consistency manager](dataSanityManager.md) handles technical operations, such as identifiers computed by older versions. Curation never adds knowledge from outside the graph: it reconciles what already exists.
+
+## How does it work?
+
+### When detection runs
+
+The curation manager detects findings in two ways:
+
+- **Live detection.** The manager listens to the platform stream. When an entity of a curated type is created, merged, or has its name, aliases or description updated, the manager compares it with the similar entities found by a full text search on its names. Inverted dates are detected on every created or updated object, procedure conflicts on every updated `uses` relationship towards an Attack Pattern, and fields overwritten by another source on every updated entity of a curated type.
+- **Scheduled scans.** A full scan runs every 24 hours, or at the next manager cycle (every minute) after an administrator clicks **Run a scan now** in the settings. For each curated entity type, a scan reads the most recently updated entities, up to the configured scan size (5,000 per type by default).
+
+A finding detected again refreshes the open proposal (its confidence and evidence) instead of creating a new one. A finding that was rejected or reverted is never proposed again. For duplicates, a pair of entities decided distinct (rejected or reverted) is never proposed again, whatever the detector that compares them later.
+
+### The six detectors
+
+| Detector                                     | What it finds                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Proposal kinds                     |
+|:---------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------|
+| Normalization and alias graph (`normalization`) | Entities whose names or aliases have the same canonical form. The canonical form ignores case, diacritics, punctuation and separators, reads digits used as letters (`Cl0p` and `B1ackCat`, but not `APT28` or `LockBit 3.0`), and removes vendor suffixes and qualifiers (`Group`, `Team`, `Ransomware`, `Loader`, `Operation`, text in parentheses...). It also uses a vendor taxonomy shipped with the platform, built from MITRE ATT&CK Enterprise, the MISP galaxy `threat-actor` cluster (vendor naming, including the ETDA threat group cards) and the MISP galaxy `malpedia` cluster: two entities listed as names of the same object are compared, and names the taxonomy lists for an entity but that it does not carry yet are proposed as aliases. | `merge`, `type_mismatch`, `alias` |
+| Similarity (`similarity`)                    | Entities of the same type whose names or aliases (5 characters or more) are similar but not identical, using trigram similarity above the similarity threshold (0.8 by default). Optionally, descriptions of at least 80 characters are compared (TF-IDF cosine similarity above 0.92 by default). Description similarity only reinforces or reveals a pair: it is never enough on its own to create a proposal.                                                                                            | `merge`                            |
+| Behavior anchoring (`behavior`)              | Intrusion Sets, Threat Actors, Campaigns, Malware and Tools with overlapping behavior: shared ATT&CK techniques, tools and malware, infrastructure (including IP addresses, domain names, URLs, email addresses and hostnames), victimology (targeted sectors, locations and organizations), and campaigns or incidents attributed to both. A pair found on behavior alone needs at least 5 shared techniques and a technique overlap of at least 60%.                                                         | `merge`                            |
+| Contradictions (`contradiction`)             | Impossible dates (`first_seen` after `last_seen`, `valid_from` after `valid_until`, `start_time` after `stop_time`), an object attributed to two actors that were decided distinct, and revoked Indicators still based on active Observables (updated after the Indicator, with a score of at least 50). When the subject of a contradiction results from a recorded merge, a `split` proposal suggests to revert that merge.                                                                                 | `contradiction`, `split`           |
+| Staleness (`staleness`)                      | Non-revoked entities with no update and no new or updated relationship for a number of months (24 by default, 12 for Infrastructure and Indicators, 36 for Campaigns), and Indicators whose decayed score fell below the revoke score of their decay rule but which are still not revoked.                                                                                                                                                                                                                   | `stale`                            |
+| Relationship conflicts (`relationship_conflict`) | A `uses` relationship towards an Attack Pattern whose description (the procedure) was replaced by a different text written by another source. A text that only extends the previous one is an enrichment, not a conflict.                                                                                                                                                                                                                                                                         | `relationship_conflict`            |
+
+Duplicates are only compared within the same type, or within the same family for type mismatches: actors (Intrusion Set, Threat Actor Group, Threat Actor Individual), software (Malware, Tool) and campaigns. A Malware and a Tool with the same name produce a `type_mismatch` proposal, not a `merge` proposal. Indicators are never compared for duplicates.
+
+One more kind of proposal, `field_precedence`, comes from the [field authority](#field-authority) rules rather than from a detector.
+
+### Proposal kinds and actions
+
+Accepting a proposal executes its recommended action with the rights of the user who accepts it.
+
+| Kind                    | Recommended action                         | What accepting the proposal does                                                                                                                                                                                                                            |
+|:------------------------|:-------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `merge`                 | `merge`                                    | Merges the subjects into the surviving entity. The suggested surviving entity is the one with the most relationships, then the most names; you can choose another subject. The merge is [reversible](#reversible-merges-and-unmerge).                        |
+| `alias`                 | `add_aliases`                              | Adds the missing names listed by the vendor taxonomy as aliases of the entity.                                                                                                                                                                              |
+| `type_mismatch`         | `acknowledge`                              | Changes nothing: it records that the two entities of different types were reviewed. Rejecting it records that they are distinct.                                                                                                                             |
+| `contradiction`         | `fix_dates`                                | Swaps the two inverted dates.                                                                                                                                                                                                                               |
+| `contradiction`         | `resolve_attribution`                      | Keeps the attribution you choose and deletes the other ones. You must choose the attribution to keep, and you need the `Delete knowledge` capability.                                                                                                        |
+| `contradiction`         | `unrevoke_indicator`                       | Reactivates the Indicator for its original lifetime, bounded between 30 and 365 days, so that the expiration scheduler does not revoke it again immediately.                                                                                                |
+| `split`                 | `unmerge`                                  | Reverts the merge that produced the entity.                                                                                                                                                                                                                 |
+| `stale`                 | `revoke`                                   | Revokes the entity.                                                                                                                                                                                                                                         |
+| `relationship_conflict` | `preserve_procedure`                       | Keeps the overwritten procedure, according to the relationship conflict mode of the settings: in a list of procedures on the relationship when the platform supports it, otherwise in an analysis Note attached to the relationship and authored by the previous source. In the **Detect only** mode, accepting only records the decision. |
+| `field_precedence`      | `set_field`                                | Restores the value that a less authoritative source overwrote.                                                                                                                                                                                              |
+
+### Evidence and confidence
+
+Every proposal lists the evidence that produced its confidence. Each evidence has:
+
+- a **score** between 0 and 1: how strongly the signal is present (for example 0.87 for names that are 87% similar);
+- a **weight**: how much this kind of signal counts. A negative weight means the signal argues against the proposal;
+- a **description** in plain language, such as `"Cl0p" and "Clop Ransomware" are the same name once vendor suffixes and qualifiers are removed ("clop")`.
+
+The confidence combines the evidence with a noisy-OR: every independent signal raises the confidence without ever exceeding 1, then negative evidence discounts the result.
+
+```
+confidence = (1 - (1 - w1 x s1) x (1 - w2 x s2) x ...) x (1 - |wn| x sn) x ...
+             positive evidence                         negative evidence
+```
+
+The weights of the duplicate evidence are:
+
+| Evidence                                 | Weight | Score                                                                                         |
+|:-----------------------------------------|:-------|:----------------------------------------------------------------------------------------------|
+| `canonical_collision`, `shared_alias`    | 0.92   | 1, when a name or an alias has the same canonical form                                        |
+| `canonical_collision`, `shared_alias`    | 0.75   | 1, when the names are the same once vendor suffixes and qualifiers are removed                |
+| `taxonomy`                               | 0.8    | Reliability of the taxonomy source: 0.85 for MITRE ATT&CK, 0.75 for the MISP galaxy `malpedia` cluster, 0.70 for the MISP galaxy `threat-actor` cluster |
+| `trigram`                                | 0.6    | Trigram similarity of the closest names                                                       |
+| `attack_overlap`                         | 0.5    | Overlap of the ATT&CK technique sets (each entity needs at least 3 techniques)                 |
+| `description_similarity`                 | 0.45   | Cosine similarity of the descriptions                                                         |
+| `shared_infrastructure`                  | 0.45   | Overlap of the infrastructure sets                                                            |
+| `graph_similarity`                       | 0.4    | Structural similarity, when the platform provides a graph similarity analysis                 |
+| `co_attribution`                         | 0.35   | 0.5 per campaign or incident attributed to both, up to 1                                      |
+| `shared_tools`                           | 0.3    | Overlap of the tools and malware sets                                                         |
+| `victimology`                            | 0.2    | Overlap of the targeted sectors, locations and organizations                                  |
+| `source_agreement` (different sources)   | 0.15   | 1: entities coming from different sources are a typical pattern of vendor naming              |
+| `source_agreement` (same source)         | -0.3   | Share of common sources: a source that maintains both entities separately suggests they are distinct (not used when the names collide exactly) |
+
+A `type_collision` evidence (same name, different types of the same family) uses the weights of the canonical forms or of the taxonomy. The other detectors produce fixed evidence: `date_inversion` (0.95), `attribution_conflict` (0.9), `revoked_indicator` (0.8), `merged_entity` (0.6, for split proposals), `staleness` (0.7), `decayed_indicator` (0.6), `procedure_conflict` (0.75) and `field_conflict` (0.8).
+
+Duplicate proposals (`merge` and `type_mismatch`) need at least one name-based evidence, or a technique overlap of at least 60%, and a confidence of at least the minimum proposal confidence (0.45 by default). When several detectors contributed to a proposal, its detector is `combined`.
+
+### Ambiguous band and adjudication by XTM One
+
+Proposals whose confidence falls in the **ambiguous band** (from 0.55 included to 0.85 excluded by default) are flagged as such in the inbox. The band marks the proposals that are neither clearly right nor clearly wrong: this is where the judgement of an agent is worth its cost, and adjudication is limited to them to keep that cost bounded.
+
+!!! tip "Enterprise edition"
+
+    Adjudication requires the OpenCTI Enterprise Edition and a platform registered with XTM One (see [XTM Suite configuration](../deployment/configuration.md#xtm-suite)).
+
+When adjudication is enabled in the settings, the curation manager sends the open proposals of the ambiguous band that have no adjudication yet to the XTM One agent bound to the `cti.curation_adjudicate` intent: the **OpenCTI Curator** out of the box, or the agent selected in the settings. It sends up to 5 proposals per manager cycle, highest confidence first, within a daily limit (50 by default, counted per UTC day for automatic and manual requests together). A request that failed is retried after 24 hours.
+
+The agent receives the proposal kind, confidence, detector and evidence, and for each subject its type, name, aliases, description (the first 1,500 characters), author, first and last seen dates and creation date. It answers with one JSON object:
+
+```json
+{
+  "decision": "merge",
+  "rationale": "Same ransomware family: identical name once normalized, shared infrastructure.",
+  "target_id": "<identifier of the subject to keep>"
+}
+```
+
+| Decision   | Meaning                                                                                 | Effect when the decision is applied                                                           |
+|:-----------|:----------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `merge`    | The subjects are the same real-world object.                                            | The subjects are merged into the subject named by `target_id`, or into the suggested target. |
+| `alias`    | The names designate the same object, but the records should stay apart (sub-groups, overlapping clusters). | The names of the other subjects become aliases of the target; the entities stay separate.     |
+| `distinct` | The subjects are different objects.                                                     | The proposal is rejected and the pair is never proposed again.                                |
+| `skip`     | The evidence supports no decision.                                                      | The proposal stays open for an analyst.                                                       |
+
+An answer that is not a valid decision is recorded as `skip`, and a `target_id` that is not a subject of the proposal is ignored. The adjudication is **advisory**: OpenCTI records the decision, the rationale, the agent, the model when the adjudicator provides it, and the date on the proposal, but does not apply it. A decision is applied by an analyst who accepts the proposal, by a curation policy that [requires adjudication agreement](#curation-policies-and-auto-apply), or by the XTM One `decide_opencti_curation_proposal` tool when its user approves the action.
+
+The **Ask the Curator** action of a proposal requests an adjudication on demand, for any open proposal. It requires the `Create / Update knowledge` capability and counts towards the daily limit.
+
+## How do I curate the knowledge graph?
+
+### Work the curation inbox
+
+1. Go to **Data > Curation > Inbox**. The list shows the proposals with their kind, confidence, subjects and recommended action. Filter by status, kind, detector, or ambiguous band.
+2. Open a proposal. The comparison shows its subjects side by side (type, name, aliases, description, author, markings, creation and modification dates), with the suggested surviving entity highlighted. Select another subject to keep it instead.
+3. Read the evidence: each line gives its score, its weight and its description, which together explain the confidence. When the proposal was adjudicated, the adjudication shows the decision, the rationale, the agent, the model and the date. Use **Ask the Curator** to request one (Enterprise Edition).
+4. Decide:
+    - **Accept** executes the recommended action, with the surviving entity you selected for a merge.
+    - **Reject** records your rationale. The finding is never proposed again.
+    - **Revert** undoes an accepted or auto-applied proposal (see below).
+5. To process many proposals at once, select rows and use **bulk accept** or **bulk reject** (up to 500 proposals at a time). Bulk accept runs as a [background task](background-tasks.md) with your rights; bulk reject is immediate and can carry a rationale.
+
+On an entity, a **Possible duplicate** chip in the header signals an open `merge` or `alias` proposal and links to it.
+
+!!! note "Visibility and rights"
+
+    A proposal carries the markings of all its subjects and is shared only with the organizations every restricted subject is shared with, so it never reveals an entity to a user who cannot read it. When you cannot access some subjects, the proposal shows how many are restricted. Applying a proposal also checks your confidence level against the subjects, like any update (see [Reliability and confidence](reliability-confidence.md)).
+
+Reverting a proposal undoes what its apply changed:
+
+- For a merge, the [merge record](#reversible-merges-and-unmerge) restores every merged entity.
+- For the other actions, OpenCTI replays the recorded change backwards. A value is restored only if the entity still holds the value written by the apply: later edits are kept, and reported in the activity log. Notes created by the apply are deleted, and attributions deleted by the apply are restored from the [trash](delete-restore.md) as long as they are still in it.
+
+A reverted proposal is never proposed again. Every decision (accept, reject, revert, adjudication) is recorded in the [activity log](../administration/audit/overview.md).
+
+### Reversible merges and unmerge
+
+Every merge is recorded in a **merge record**, whatever triggered it: the Merge action of **Data > Entities**, the API, the platform deduplication at creation, a data consistency operation or a curation proposal. Merges done inside a [draft](draftWorkspaces.md) are not recorded: they are reverted with the draft.
+
+Before the merge runs, the merge record snapshots the surviving entity and every merged entity (attributes, references such as markings, labels or author, relationships and files), along with what each merged entity brings to the survivor. Go to **Data > Curation > Merge history** to see the merge records: merged entity, merged sources, status, merged by, date, reversible until, and number of relationships redirected. Opening a record shows each source with its aliases and its relationship counts, and the alias provenance: for each source, its name, its aliases and the relationships it brought to the merged entity.
+
+| Status               | Meaning                                                                                                   |
+|:---------------------|:----------------------------------------------------------------------------------------------------------|
+| `active`             | The merge can be reverted until the **reversible until** date.                                            |
+| `partially_reverted` | Some sources were restored; the other ones can still be restored.                                         |
+| `reverted`           | Every source was restored.                                                                                |
+| `irreversible`       | The merge can no longer be reverted, because the retention window is over or the merge exceeded the snapshot limits. |
+
+To revert a merge, open its record and click **Unmerge**, for all the sources or only the ones you select. Unmerge requires the `Merge knowledge` capability. It:
+
+1. removes from the merged entity what the restored sources brought (their names, aliases, identifiers and references), without touching the values that were there before the merge, the values that other merged sources still contribute, or the values changed by users after the merge;
+2. recreates each restored source with its original internal identifier, standard identifier and STIX identifiers, attributes and references, so that external references to it resolve again;
+3. moves back the relationships the source carried, recreates the relationships the merge had removed as duplicates, and moves back its files;
+4. marks the record (and the curation proposal that triggered the merge, if any) as reverted.
+
+!!! warning "What unmerge cannot restore"
+
+    - **Merges past their retention window.** The retention is 365 days by default (**Merge record retention** in the settings). Once a day, the manager closes the expired records: they become `irreversible`, their snapshot is dropped to free storage, and the participants and alias provenance stay for the history. Changing the retention only applies to the merges recorded afterwards.
+    - **Very large merges.** A merge that removes more than 10,000 duplicated relationships, or moves more than 100,000 relationships, is recorded as `irreversible` at merge time (both limits are configurable).
+    - **A merged entity that no longer exists.** If the entity produced by the merge was deleted or merged again, revert its most recent merge first.
+    - **Deleted elements.** References to elements deleted since the merge are dropped, and relationships that cannot be moved back or recreated are skipped and reported in the logs.
+    - **Inferred relationships** are not part of the snapshot: the rules engine recomputes them.
+    - **Merges without a merge record**, such as merges done before this feature was installed, cannot be reverted.
+
+### Curation policies and auto-apply
+
+!!! tip "Enterprise edition"
+
+    Curation policies are available under the **OpenCTI Enterprise Edition** licence. Creating, editing, deleting, testing and applying a policy requires the `Manage parameters` capability.
+
+A curation policy applies eligible proposals automatically. Create policies in **Data > Curation > Policies**:
+
+| Field                                  | Description                                                                                                                                                                                          |
+|:---------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Name, description                      | How the policy is identified in lists, in the rationale of applied proposals and in background tasks.                                                                                                 |
+| Entity types                           | The types the policy covers: every subject of a proposal must have one of these types. Leave empty to cover every type.                                                                              |
+| Proposal kinds                         | The kinds the policy applies (at least one). `split` proposals are never applied automatically.                                                                                                       |
+| Source class                           | `Any`, `Connector` (every subject was created by connectors) or `Manual` (every subject was created by users).                                                                                        |
+| Auto-apply threshold                   | The minimum confidence, between 0.5 and 1.                                                                                                                                                           |
+| Never apply with an open contradiction | On by default: a proposal whose subjects are involved in an open contradiction proposal is excluded.                                                                                                  |
+| Require adjudication agreement         | Off by default. When on, the XTM One adjudication must agree with the proposal: `merge` or `alias` for a merge proposal, any decision but `distinct` for the other kinds. A proposal without adjudication, or adjudicated `skip`, is excluded. |
+| Max applies per run                    | The maximum number of proposals applied by one run, between 1 and 1,000 (100 by default).                                                                                                             |
+| Enabled                                | A new policy is disabled until you enable it.                                                                                                                                                        |
+
+Before enabling a policy, click **Dry run**. The dry run evaluates the open proposals of the policy kinds whose confidence reaches the threshold (up to 10,000) without changing anything, and shows the number of eligible and excluded proposals, the estimated impact (per kind and subject types, such as `merge:Malware`), the exclusion reasons and a sample of eligible proposals. The last dry run stays visible on the policy.
+
+| Exclusion reason          | Meaning                                                                                       |
+|:--------------------------|:----------------------------------------------------------------------------------------------|
+| `not_open`                | The proposal is already decided.                                                              |
+| `kind_not_covered`        | The policy does not cover the proposal kind.                                                  |
+| `entity_type_not_covered` | A subject has a type the policy does not cover.                                               |
+| `manual_choice_required`  | The action needs a human choice (attribution conflicts, splits).                              |
+| `subject_missing`         | A subject no longer exists.                                                                   |
+| `below_threshold`         | The confidence is below the auto-apply threshold.                                             |
+| `source_class_mismatch`   | The subjects do not come from the source class of the policy.                                 |
+| `cross_markings`          | A merge between subjects that do not carry the same markings.                                 |
+| `cross_organizations`     | A merge between subjects that are not shared with the same organizations.                     |
+| `open_contradiction`      | A subject is involved in an open contradiction.                                               |
+| `adjudication_missing`    | Agreement is required but there is no adjudication, or the agent answered `skip`.             |
+| `adjudication_disagrees`  | Agreement is required and the adjudication disagrees with the proposal.                       |
+
+The enabled policies run automatically every 15 minutes, with the rights of the internal curation manager. **Apply now** runs a policy immediately with your rights. In both cases, the eligible proposals (up to the maximum per run) are applied by a [background task](background-tasks.md) executed by the workers. Each proposal is checked again when the task applies it: a proposal that is no longer eligible, or whose policy was disabled or deleted in the meantime, is skipped. Applied proposals get the `auto_applied` status, the policy, and the rationale `Applied by curation policy <name>`. When the XTM One agent answered `alias` on a merge proposal, the policy adds aliases instead of merging.
+
+!!! warning "Guardrails no policy can disable"
+
+    - A merge is never applied automatically between subjects that do not carry exactly the same markings, or that are not shared with exactly the same organizations.
+    - Choices that need a human are never applied automatically: which attribution to keep in an attribution conflict, and split (unmerge) proposals.
+    - Every automatic apply is recorded in the activity log and reversible like any accepted proposal: revert it from the inbox, or unmerge it from the merge history.
+
+### Read the Knowledge Health score
+
+Go to **Data > Curation > Knowledge Health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. The home dashboard displays a Knowledge Health badge.
+
+The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage parameters` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
+
+| Component          | What it measures                                                                                                                       | Weight | Scores 0 when             |
+|:-------------------|:---------------------------------------------------------------------------------------------------------------------------------------|:-------|:--------------------------|
+| `duplicates`       | Duplicate estimate divided by the number of curated entities                                                                           | 30%    | 10% of duplicates         |
+| `contradictions`   | Open contradiction proposals divided by the number of curated entities                                                                 | 20%    | 2% of contradictions      |
+| `staleness`        | Open stale proposals divided by the number of curated entities                                                                         | 20%    | 100% of stale entities    |
+| `alias_coverage`   | Share of the curated entities supporting aliases that have at least one alias (scored 100 at full coverage)                             | 15%    | No alias at all           |
+| `source_conflicts` | Fields overwritten by another source during the last 7 days, divided by the number of curated entities updated during the same period | 15%    | 20% of conflicts          |
+
+The **duplicate estimate** is the number of entities that would disappear if every open merge proposal with a confidence of at least the ambiguous band minimum were accepted. The other counters are the open proposals, the proposals accepted, auto-applied, rejected and reverted since the previous snapshot, the merges and unmerges since the previous snapshot, the contradictions, the stale entities, the alias coverage and the source conflict rate.
+
+#### Weekly digest
+
+Enable the **weekly digest** in the settings to send the latest snapshot to a list of recipients (users, groups or organizations) on the chosen day of the week (UTC), at most once every six days. Each recipient receives a platform [notification](notifications.md), and an email with a link to the Knowledge Health page when [SMTP is configured](../administration/smtp-configuration.md).
+
+With the Enterprise Edition and XTM One, the **OpenCTI Knowledge Health Analyst** agent of XTM One can also write a commented digest, with the components that weigh on the score and recommended next actions, through its **Weekly Knowledge Health digest** assignment.
+
+### Field authority
+
+Field authority lets you decide which source wins on a given attribute, whatever the confidence of the data. It is a **merge policy**, consulted when incoming data updates an existing entity (the [update behavior of deduplication](deduplication.md#update-behavior)); it is **not an ingestion transformation**: it never rewrites incoming data, and never creates or drops objects.
+
+Configure it in **Data > Curation > Settings**: enable field authority, then add rules. A rule targets one attribute of one entity type (for example `description` of `Intrusion-Set`) and lists sources in order, the first one being the most authoritative. A source is either an **author** (the identity set as author of the data) or a **connector**.
+
+When incoming data matches an existing entity, for each attribute that has a rule:
+
+- if the incoming source ranks higher than the source of the current value, the incoming value is written, whatever its confidence;
+- if it ranks lower, the current value is kept, whatever the incoming confidence;
+- if both rank the same, or neither is listed, the usual confidence comparison applies.
+
+The incoming source is the author of the incoming data and the connector that sends it. The source of the current value is recorded each time a listed source writes the attribute; until then, the author of the entity is considered as its source. Empty fields are always filled, attributes without a rule keep the confidence behavior, and requests in synchronized upsert mode (used to mirror another platform) bypass field authority.
+
+When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. Every field overwritten by another source also counts in the source conflict rate of the Knowledge Health score.
+
+You can define up to 200 rules, one per entity type and attribute, each listing between 1 and 20 sources. Rules only apply to business attributes of knowledge entity types.
+
+### Bind importer names with curationResolve
+
+Importers extract names from documents ("Clop", "Graceful Spider", "USA") and, without help, create a new entity whenever the spelling differs from the existing one. The `curationResolve` GraphQL query resolves a name to an existing entity of a given type, with the access rights of the caller (`Access knowledge` capability):
+
+```graphql
+query CurationResolve($name: String!, $type: String!) {
+  curationResolve(name: $name, type: $type) {
+    entity_id
+    standard_id
+    entity_type
+    name
+    match_type
+    score
+    matched_value
+  }
+}
+```
+
+```json
+{
+  "name": "Cl0p",
+  "type": "malware"
+}
+```
+
+The `type` accepts an OpenCTI type (`Intrusion-Set`) or a STIX type (`intrusion-set`; `threat-actor` covers both Threat Actor types). The name must contain between 1 and 512 characters. The query tries, in this order:
+
+| Match type   | When                                                                                     | Score                                                                    |
+|:-------------|:-----------------------------------------------------------------------------------------|:-------------------------------------------------------------------------|
+| `exact`      | The name of an entity                                                                    | 1                                                                        |
+| `alias`      | An alias of an entity                                                                    | 0.98                                                                     |
+| `canonical`  | A name or an alias with the same canonical form                                          | 0.95, or 0.86 when equal only once vendor suffixes and qualifiers are removed |
+| `taxonomy`   | A name the vendor taxonomy lists for the same object                                     | The reliability of the taxonomy source (0.70 to 0.85)                    |
+| `similarity` | A name or an alias with a trigram similarity of at least 92%                             | The similarity multiplied by 0.95                                        |
+
+A result is returned only when its score is at least 0.85 and a single entity has the best score: an ambiguous name returns nothing rather than binding to the wrong entity. In practice, only the names listed by MITRE ATT&CK bind through the taxonomy.
+
+The [ImportDocumentAI connector](https://github.com/OpenCTI-Platform/connectors/tree/master/internal-import-file/import-document-ai) calls `curationResolve` for every named entity it extracts, before sending the bundle, so that extracted names bind to the existing entities. This behavior is controlled by its `IMPORT_DOCUMENT_AI_RESOLVE_EXISTING_ENTITIES` option (enabled by default) and is skipped on platforms that do not expose the query.
+
+### Configure curation
+
+Go to **Data > Curation > Settings** (changing the settings requires the `Manage parameters` capability):
+
+| Setting                         | Default                                                                                                                                  | Description                                                                                                                                                                                                       |
+|:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Enable curation                 | On                                                                                                                                       | Runs the detectors (scheduled scans and live detection).                                                                                                                                                          |
+| Enabled detectors               | All six                                                                                                                                  | The detectors that run.                                                                                                                                                                                           |
+| Curated entity types            | Intrusion Set, Threat Actor Group, Threat Actor Individual, Malware, Tool, Campaign, Attack Pattern, Infrastructure, Organization, Sector | The types the detectors examine: any domain object type except containers, and Indicator. The staleness detector always examines Indicators.                                                                      |
+| Similarity threshold            | 0.8                                                                                                                                      | The minimum trigram similarity between two names (0.5 to 1).                                                                                                                                                      |
+| Description similarity          | Off, threshold 0.92                                                                                                                      | Compares the descriptions in addition to the names (threshold from 0.5 to 1).                                                                                                                                     |
+| Behavior threshold              | 0.6                                                                                                                                      | The minimum ATT&CK technique overlap to pair two entities on behavior (0.1 to 1). Whatever this value, a pair without name-based evidence needs an overlap of at least 60%.                                        |
+| Minimum proposal confidence     | 0.45                                                                                                                                     | Duplicate proposals below this confidence are not created.                                                                                                                                                        |
+| Ambiguous band                  | 0.55 to 0.85                                                                                                                             | The minimum is included, the maximum excluded, and the minimum must be lower than the maximum.                                                                                                                    |
+| Adjudication (Enterprise Edition) | Off, daily limit 50                                                                                                                    | Enables adjudication, selects the XTM One agent (empty: the highest priority agent bound to `cti.curation_adjudicate`), the run-as user OpenCTI uses to call XTM One (the platform administrator by default) and the daily limit (0 to 10,000). |
+| Staleness                       | 24 months; Infrastructure 12, Indicator 12, Campaign 36                                                                                  | The number of months without activity after which an entity is stale, by default and per entity type (1 to 240).                                                                                                  |
+| Relationship conflict mode      | Procedures list                                                                                                                          | `Procedures list` (falls back to `Note` when the platform does not support a list of procedures on relationships), `Note` or `Detect only`.                                                                       |
+| Merge record retention          | 365 days                                                                                                                                 | How long a merge stays reversible (1 to 3,650 days).                                                                                                                                                              |
+| Weekly digest                   | Off, Monday                                                                                                                              | Enables the digest, its day of the week (UTC) and its recipients.                                                                                                                                                 |
+| Field authority                 | Off                                                                                                                                      | Enables [field authority](#field-authority) and its rules.                                                                                                                                                        |
+| Scan size                       | 5,000                                                                                                                                    | The most recently updated entities read per entity type at each scan (100 to 100,000).                                                                                                                            |
+
+**Run a scan now** requests a full scan at the next manager cycle. The settings also show the dates of the last scan, snapshot and digest, and the version of the vendor taxonomy.
+
+Platform administrators can tune the manager schedules and the merge record limits in the [configuration](../deployment/configuration.md#engines-schedules-managers) (`curation_manager:*` and `curation:*` keys).
+
+### Editions and capabilities
+
+| Feature                                                                         | Community Edition | Enterprise Edition |
+|:--------------------------------------------------------------------------------|:------------------|:-------------------|
+| Detectors, curation inbox, bulk accept and reject, revert                       | Yes               | Yes                |
+| Reversible merges and unmerge                                                   | Yes               | Yes                |
+| Knowledge Health score and weekly digest (notification and email)               | Yes               | Yes                |
+| Field authority and `curationResolve`                                           | Yes               | Yes                |
+| Adjudication by an XTM One agent (automatic and Ask the Curator)                | No                | Yes                |
+| Curation policies (dry run, apply now, automatic apply)                         | No                | Yes                |
+
+| Action                                                                                           | Required capability                                    |
+|:-------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
+| See the proposals, the merge history, the policies and the Knowledge Health                      | `Access knowledge`                                     |
+| Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
+| Accept or revert a `merge` or `split` proposal, unmerge from the merge history                   | `Merge knowledge`                                      |
+| Accept an attribution conflict (deletes the attributions not kept)                               | `Delete knowledge`                                     |
+| Change the settings, run a scan now, refresh the Knowledge Health, manage and apply policies     | `Manage parameters`                                    |
+
+See [Users and RBAC](../administration/users.md) for the capabilities.
+
+## Example
+
+Two connectors import the same ransomware: the first one creates the Malware `Cl0p`, the second one creates the Malware `Clop Ransomware`.
+
+1. When the second entity is created, the curation manager compares it with similar Malware and Tools. Both names normalize to `clop` once the digit used as a letter is read and the `Ransomware` suffix is removed. The proposal `Cl0p / Clop Ransomware` appears in the inbox with two pieces of evidence:
+    - `canonical_collision`, score 1, weight 0.75: the names are the same once vendor suffixes and qualifiers are removed;
+    - `source_agreement`, score 1, weight 0.15: the entities come from different sources.
+
+    Its confidence is `1 - (1 - 0.75) x (1 - 0.15) = 0.79`, inside the default ambiguous band. Had the second connector named it `Clop`, both names would have had the same full canonical form (weight 0.92) and the confidence would have reached `1 - (1 - 0.92) x (1 - 0.15) = 0.93`, above the band.
+2. With the Enterprise Edition and adjudication enabled, the OpenCTI Curator receives the proposal and answers `merge`, with a rationale citing the evidence and naming `Cl0p` as the entity to keep. The adjudication appears on the proposal.
+3. An analyst opens the proposal, compares the two entities side by side, keeps `Cl0p` as the surviving entity and clicks **Accept**. `Clop Ransomware` becomes an alias of `Cl0p`, and its relationships move to `Cl0p`.
+4. The merge record appears in **Merge history**, reversible for 365 days. If a later report shows that the two names designated different families, the analyst clicks **Unmerge**: `Clop Ransomware` comes back with its original identifiers, aliases and relationships, and the proposal becomes `reverted`, so it is never proposed again.
+5. The next Knowledge Health snapshot counts one accepted proposal and one merge, and the duplicate estimate decreases.
+
+To let such merges happen without an analyst, an administrator creates a policy covering `merge` proposals for `Malware` and `Tool`, with a threshold of 0.9 and **Require adjudication agreement** enabled, runs a **Dry run** to check the eligible proposals and the exclusion reasons, then enables it.
+
+## What's next?
+
+- [Merge objects](merging.md) and [Merging](../administration/merging.md): how a merge works.
+- [Deduplication](deduplication.md): how the platform avoids duplicates at creation, and how updates are resolved.
+- [Background tasks](background-tasks.md): follow bulk accepts and policy applies.
+- [Delete and restore knowledge](delete-restore.md): the trash used when reverting deleted attributions.
+- [Platform managers](../deployment/advanced/managers.md): the curation manager and the other managers.
+- [Usage telemetry](../reference/usage-telemetry.md): the anonymous curation metrics sent to Filigran.
