@@ -250,12 +250,13 @@ describe('Graph analytics resolvers', () => {
   it('should summarize the neighborhood of an entity', async () => {
     const query = gql`
       query neighborhood($id: String!) {
-        stixNeighborhoodSummary(id: $id) { id total by_relationship_type { label value } by_entity_type { label value } pairs { relationship_type entity_type value } }
+        stixNeighborhoodSummary(id: $id) { id total by_relationship_type { label value } by_entity_type { label value } pairs { relationship_type entity_type value } truncated }
       }
     `;
     const { data } = await queryAsAdminWithSuccess({ query, variables: { id: ids.isA } });
     const summary = data.stixNeighborhoodSummary;
     expect(summary.total).toBe(5);
+    expect(summary.truncated).toBe(false);
     expect(summary.by_relationship_type).toEqual([{ label: 'uses', value: 4 }, { label: 'targets', value: 1 }]);
     expect(summary.by_entity_type).toContainEqual({ label: 'Attack-Pattern', value: 2 });
     expect(summary.pairs).toContainEqual({ relationship_type: 'targets', entity_type: 'Sector', value: 1 });

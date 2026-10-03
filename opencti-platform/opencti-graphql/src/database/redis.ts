@@ -856,13 +856,14 @@ export const redisGraphAnalyticsMarkPriority = async (ids: string[]) => {
   // NX keeps the original request time, so repeated requests do not delay each other
   await getClientBase().zadd(GRAPH_ANALYTICS_PRIORITY_KEY, 'NX', ...members);
 };
+// Selection and removal must be atomic: a mark landing between them would otherwise be deleted and lost
+const POP_RANGE_SCRIPT = `
+local ids = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[2]))
+if #ids > 0 then redis.call('ZREM', KEYS[1], unpack(ids)) end
+return ids`;
 const popRange = async (key: string, max: number, limit: number): Promise<string[]> => {
   if (limit <= 0) return [];
-  const ids = await getClientBase().zrangebyscore(key, '-inf', max, 'LIMIT', 0, limit);
-  if (ids.length > 0) {
-    await getClientBase().zrem(key, ...ids);
-  }
-  return ids;
+  return await getClientBase().eval(POP_RANGE_SCRIPT, 1, key, max, limit) as string[];
 };
 export const redisGraphAnalyticsPopReady = async (readyBefore: number, limit: number): Promise<string[]> => {
   const priority = await popRange(GRAPH_ANALYTICS_PRIORITY_KEY, Date.now(), limit);

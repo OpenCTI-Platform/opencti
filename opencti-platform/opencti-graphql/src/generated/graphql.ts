@@ -33872,6 +33872,7 @@ export type StixNeighborhoodSummary = {
   id: Scalars['ID']['output'];
   pairs: Array<StixNeighborhoodPair>;
   total: Scalars['Int']['output'];
+  truncated: Scalars['Boolean']['output'];
 };
 
 export type StixObject = {
@@ -53460,6 +53461,7 @@ export type StixNeighborhoodSummaryResolvers<ContextType = any, ParentType exten
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   pairs?: Resolver<Array<ResolversTypes['StixNeighborhoodPair']>, ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
