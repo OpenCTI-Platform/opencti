@@ -346,6 +346,18 @@ export const replayForward = (
   return { document, exists, complete, warnings, replayedEvents };
 };
 
+/**
+ * Flag a replay between its anchor and the requested date spanning more than `maxDays`, in either direction,
+ * so the reconstruction is presented as a long replay.
+ */
+export const flagReplayBeyondWindow = (replay: ReplayResult, anchorDate: string, date: string, maxDays: number) => {
+  const days = Math.abs(utcDate(anchorDate).diff(utcDate(date), 'days'));
+  if (days > maxDays && !replay.warnings.includes('REPLAY_BEYOND_WINDOW')) {
+    replay.warnings.push('REPLAY_BEYOND_WINDOW');
+  }
+  return replay;
+};
+
 const sameValues = (a: string[], b: string[]) => {
   if (a.length !== b.length) return false;
   const sortedA = [...a].sort();

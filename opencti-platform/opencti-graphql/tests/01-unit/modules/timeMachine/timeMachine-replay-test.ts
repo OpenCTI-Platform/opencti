@@ -5,6 +5,7 @@ import {
   diffDocuments,
   extractAttributeValues,
   firstNumber,
+  flagReplayBeyondWindow,
   forwardOperationsForChange,
   isMultipleAttribute,
   replayBackward,
@@ -171,6 +172,20 @@ describe('Time machine replay', () => {
     expect(diffDocuments(forward.document, CURRENT)).toEqual([]);
     const deleted = replayForward(atJanuary15.document, ENTITY_TYPE, [...EVENTS, scopedEvent('2026-05-01T00:00:00.000Z', 'delete')], '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 100);
     expect(deleted.exists).toBe(false);
+  });
+
+  it('should flag long replays from an anchor after or before the requested date', () => {
+    const atJanuary15 = replayBackward(CURRENT, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', 100);
+    // Backward: the anchor (current knowledge) is months after the requested date
+    const backward = flagReplayBeyondWindow(replayBackward(CURRENT, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', 100), '2026-06-01T00:00:00.000Z', '2026-01-15T00:00:00.000Z', 90);
+    expect(backward.warnings).toEqual(['REPLAY_BEYOND_WINDOW']);
+    // Forward: the anchor (an older snapshot) is months before the requested date
+    const forward = replayForward(atJanuary15.document, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 100);
+    expect(flagReplayBeyondWindow(forward, '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 90).warnings).toEqual(['REPLAY_BEYOND_WINDOW']);
+    // Flagged once, and not within the window
+    expect(flagReplayBeyondWindow(forward, '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 90).warnings).toEqual(['REPLAY_BEYOND_WINDOW']);
+    const short = replayForward(atJanuary15.document, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', '2026-03-01T00:00:00.000Z', 100);
+    expect(flagReplayBeyondWindow(short, '2026-01-15T00:00:00.000Z', '2026-03-01T00:00:00.000Z', 90).warnings).toEqual([]);
   });
 
   it('should diff two documents attribute by attribute', () => {
