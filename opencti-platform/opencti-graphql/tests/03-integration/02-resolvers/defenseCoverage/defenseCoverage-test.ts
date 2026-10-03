@@ -307,7 +307,10 @@ describe('Threat-informed defense matrix', () => {
   });
 
   it('should explain the level with every evidence', async () => {
-    const result = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform], threatScope: scope([created.threat]) } });
+    const result = await queryAsAdminWithSuccess({
+      query: DEFENSE_TECHNIQUE,
+      variables: { id: created.attackPattern, platformIds: [created.platform], threatScope: scope([created.threat]) },
+    });
     const technique = result.data?.defenseTechnique;
     expect(technique.cell.level).toEqual(LEVEL_DETECTION_DEPLOYED);
     expect(technique.dataComponents).toEqual([{ dataComponent: { id: created.dataComponent }, providedBy: [{ id: created.platform }] }]);
