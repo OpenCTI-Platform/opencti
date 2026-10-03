@@ -238,10 +238,11 @@ export const buildSimilarityRow = (
   };
 };
 
-const searchSimilarityRows = async (context: AuthContext, user: AuthUser, query: any, size: number): Promise<GraphSimilarityDocument[]> => {
+const searchSimilarityRows = async (context: AuthContext, user: AuthUser, query: any, size: number, from = 0): Promise<GraphSimilarityDocument[]> => {
   const data = await elRawSearch(context, user, ENTITY_TYPE_GRAPH_SIMILARITY, {
     index: READ_INDEX_GRAPH_SIMILARITY,
     body: {
+      from,
       size,
       query,
       sort: [{ similarity_score: 'desc' }, { 'similarity_target_id.keyword': 'asc' }],
@@ -250,13 +251,13 @@ const searchSimilarityRows = async (context: AuthContext, user: AuthUser, query:
   return (data.hits?.hits ?? []).map((hit: any) => hit._source as GraphSimilarityDocument);
 };
 
-export const listSimilarityRows = async (context: AuthContext, user: AuthUser, entityId: string, size: number, minScore = 0) => {
+export const listSimilarityRows = async (context: AuthContext, user: AuthUser, entityId: string, size: number, minScore = 0, from = 0) => {
   return searchSimilarityRows(context, user, {
     bool: {
       must: [{ term: { 'similarity_entity_id.keyword': entityId } }],
       filter: [{ range: { similarity_score: { gte: minScore } } }],
     },
-  }, size);
+  }, size, from);
 };
 
 export const listSimilarityRowsBetween = async (context: AuthContext, user: AuthUser, ids: string[]) => {

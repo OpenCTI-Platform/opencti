@@ -10,6 +10,7 @@
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- vous ne ferez plus partie de l'organisation de la plate-forme principale, à moins que l'accès à l'organisation ne vous ait été spécifiquement accordé.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "This list is ranked by graph metrics, which require access to every relationship of the platform.": "Cette liste est classée selon des métriques de graphe, qui nécessitent un accès à toutes les relations de la plateforme.",
+  "Too many members to add them to an investigation, maximum": "Trop de membres pour les ajouter à une investigation, maximum",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "« Oui, toujours » enregistre une préférence pour vous. Cet outil s’exécutera alors sans vous demander votre avis — y compris lors d’exécutions programmées que personne ne surveille — jusqu’à ce que vous révoquiez cette autorisation.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Cliquez pour voir toutes les nouvelles ressources sur le Hub",
   "(no output)": "(pas de sortie)",

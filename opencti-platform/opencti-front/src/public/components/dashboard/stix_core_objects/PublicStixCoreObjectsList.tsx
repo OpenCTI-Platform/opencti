@@ -40,6 +40,11 @@ const publicStixCoreObjectsListQuery = graphql`
             max
             total
           }
+          x_opencti_graph_metrics {
+            degree
+            betweenness_approx
+            cluster_size
+          }
           creators {
             id
             name
