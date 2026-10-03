@@ -543,7 +543,8 @@ const createRecommendationTask = async (
     name: recommendation.text.slice(0, 250),
     description,
     objects: [anchor.internal_id],
-    objectMarking: markingIdsOf(anchor),
+    // The recommendation may quote what the run cites: the task carries the run markings too.
+    objectMarking: Array.from(new Set([...markingIdsOf(anchor), ...markingIdsOf(run)])),
   });
   return task.internal_id ?? task.id;
 };
