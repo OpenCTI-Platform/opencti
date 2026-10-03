@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import {
+  analyzeValidationPattern,
   extractIocFromIndicator,
   isIocValidationTestKind,
   isSummaryComplete,
@@ -71,6 +72,23 @@ describe('extractIocFromIndicator', () => {
     expect(extraction.ioc?.value).toEqual('abc123');
     expect(extraction.ioc?.file_name).toEqual('payload.exe');
     expect(extraction.ioc?.hashes).toEqual({ 'SHA-256': 'abc123' });
+  });
+  it('should only drop a file when a file AND pattern can be satisfied by the log injection', () => {
+    const pattern = "[file:name = 'payload.exe' AND file:hashes.'SHA-256' = 'abc123']";
+    expect(extractIocFromIndicator(indicator(pattern), ['file_drop']).reason).toEqual('No allowed test kind applies to this indicator');
+  });
+  it('should never test a value the indicator excludes or does not fully match', () => {
+    const unsupported = 'Only patterns made of equality comparisons joined by OR, or on a single file, can be validated';
+    expect(extractIocFromIndicator(indicator("[domain-name:value != 'allowed.example']"), ['dns_resolution']).reason).toEqual(unsupported);
+    expect(extractIocFromIndicator(indicator("[domain-name:value = 'a.example' AND ipv4-addr:value = '198.51.100.7']"), [...ALL_KINDS]).reason).toEqual(unsupported);
+    expect(extractIocFromIndicator(indicator("[domain-name:value = 'a.example'] FOLLOWEDBY [domain-name:value = 'b.example']"), ['dns_resolution']).reason).toEqual(unsupported);
+    expect(extractIocFromIndicator(indicator("[domain-name:value MATCHES '^evil']"), ['dns_resolution']).reason).toEqual(unsupported);
+    expect(extractIocFromIndicator(indicator("[domain-name:value = 'evil.example'] WITHIN 300 SECONDS"), ['dns_resolution']).reason).toEqual(unsupported);
+  });
+  it('should accept alternatives and ignore keywords inside values', () => {
+    expect(analyzeValidationPattern("[domain-name:value = 'evil.example' OR domain-name:value = 'bad.example']")).toEqual({ supported: true, conjunctiveFile: false });
+    expect(analyzeValidationPattern("[url:value = 'https://evil.example/?a=1&b=NOT IN']")).toEqual({ supported: true, conjunctiveFile: false });
+    expect(analyzeValidationPattern("[file:name = 'a.exe' AND file:hashes.MD5 = 'b']")).toEqual({ supported: true, conjunctiveFile: true });
   });
   it('should explain why an indicator cannot be validated', () => {
     expect(extractIocFromIndicator(indicator('title: x', 'sigma'), ['dns_resolution']).reason).toEqual('Only STIX patterns can be validated');

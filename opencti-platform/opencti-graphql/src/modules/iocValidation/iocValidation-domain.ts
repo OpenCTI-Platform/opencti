@@ -4,7 +4,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
 import conf, { logApp } from '../../config/conf';
-import { FunctionalError, ValidationError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
 import { patchAttribute, stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
@@ -14,7 +14,8 @@ import { createWork } from '../../domain/work';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import { SYSTEM_USER } from '../../utils/access';
+import { isBypassUser, SYSTEM_USER } from '../../utils/access';
+import type { BasicStoreEntityConnector } from '../../types/connector';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { addIocValidationRequestCreationCount } from '../../manager/telemetryManager';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
@@ -360,6 +361,19 @@ const isAllowedTransition = (current: IocValidationRequestStatus, next: IocValid
   return true;
 };
 
+// Only the service account of the connector the request was sent to may report its lifecycle.
+export const assertRequestConnectorUser = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  if (isBypassUser(user)) {
+    return;
+  }
+  const connector = request.connector_id
+    ? await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, request.connector_id, ENTITY_TYPE_CONNECTOR)
+    : undefined;
+  if (!connector || connector.connector_user_id !== user.id) {
+    throw ForbiddenAccess('Only the connector the IOC validation request was sent to can report its status', { id: request.internal_id });
+  }
+};
+
 export const updateIocValidationRequestStatus = async (context: AuthContext, user: AuthUser, id: string, input: IocValidationRequestStatusInput) => {
   const status = input.status as IocValidationRequestStatus;
   if (!OPENAEV_REPORTABLE_STATUSES.includes(status)) {
@@ -369,6 +383,7 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
   if (!request) {
     throw FunctionalError('IOC validation request not found', { id });
   }
+  await assertRequestConnectorUser(context, user, request);
   if (!isAllowedTransition(request.status, status)) {
     logApp.info('[IOC-VALIDATION] Ignoring out of order status update', { id, current: request.status, next: status });
     return request;
@@ -490,9 +505,24 @@ export const filterReadableIocs = async (context: AuthContext, user: AuthUser, r
   };
 };
 
+export const filterReadableIndicatorIds = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  const readable = await findReadableIndicatorIds(context, user, request.indicator_ids ?? []);
+  return (request.indicator_ids ?? []).filter((id) => readable.has(id));
+};
+
+export const filterReadablePlatformIds = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  const platforms = await loadRequestPlatforms(context, user, request);
+  const readable = new Set(platforms.map((p) => p.internal_id));
+  return (request.platform_ids ?? []).filter((id) => readable.has(id));
+};
+
 export const filterReadableSkipped = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = [...new Set((request.skipped ?? []).map((s) => s.indicator_id))];
-  const readable = await findReadableIndicatorIds(context, user, ids);
-  return (request.skipped ?? []).filter((s) => readable.has(s.indicator_id));
+  const [readable, readablePlatforms] = await Promise.all([
+    findReadableIndicatorIds(context, user, ids),
+    filterReadablePlatformIds(context, user, request),
+  ]);
+  const platforms = new Set(readablePlatforms);
+  return (request.skipped ?? []).filter((s) => readable.has(s.indicator_id) && (!s.platform_id || platforms.has(s.platform_id)));
 };
 // endregion

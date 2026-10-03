@@ -2,7 +2,9 @@ import type { Resolvers } from '../../generated/graphql';
 import { loadCreator, loadCreators } from '../../database/members';
 import {
   deleteIocValidationRequest,
+  filterReadableIndicatorIds,
   filterReadableIocs,
+  filterReadablePlatformIds,
   filterReadableSkipped,
   findIocValidationConnectors,
   findIocValidationRequest,
@@ -23,6 +25,8 @@ const iocValidationResolvers: Resolvers = {
   },
   IocValidationRequest: {
     creators: (request, _, context) => loadCreators(context, context.user!, request) as never,
+    platform_ids: (request, _, context) => filterReadablePlatformIds(context, context.user!, request as never),
+    indicator_ids: (request, _, context) => filterReadableIndicatorIds(context, context.user!, request as never),
     platforms: (request, _, context) => loadRequestPlatforms(context, context.user!, request as never) as never,
     indicators_count: (request) => (request.indicator_ids ?? []).length,
     results_summary: (request) => request.results_summary ?? emptyResultsSummary(),
