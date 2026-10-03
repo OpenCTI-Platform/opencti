@@ -32,6 +32,7 @@ import { capEvidences, cellForPlatform, computeValidationStatus, evaluateCoverag
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
 import { bumpDefenseCoverageVersion } from './defenseCoverage-state';
+import { collectDefenseLevelChanges, notifyDefenseLevelChanges } from './defenseCoverage-notification';
 import { generateStandardId } from '../../schema/identifier';
 
 const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
@@ -53,6 +54,8 @@ export interface DefensePlatform {
 export interface DefenseComputationResult {
   techniques: number;
   updated: number;
+  level_changes: number;
+  notified: number;
   gaps: number;
   closed_gaps: number;
   platforms: number;
@@ -550,6 +553,11 @@ export const computeDefenseCoverage = async (
     }
   }
   await bulkUpdateCoverages(context, updates);
+  const levelChanges = collectDefenseLevelChanges(updates.map(({ attackPattern, coverage }) => ({
+    attackPatternId: attackPattern.internal_id,
+    previous: (attackPattern as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage,
+    coverage,
+  })));
 
   // 6. Gap lifecycle records
   const { gaps, closed } = await storeGaps(context, user, entries, platforms, computedAt);
@@ -559,9 +567,18 @@ export const computeDefenseCoverage = async (
     await deleteGapsOfTechniques(revokedIds);
   }
   await bumpDefenseCoverageVersion();
+  // 7. Live triggers on level changes, once the new coverage is readable
+  let notified = 0;
+  try {
+    notified = await notifyDefenseLevelChanges(context, levelChanges);
+  } catch (error) {
+    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified', { cause: error, changes: levelChanges.length });
+  }
   const result = {
     techniques: activeAttackPatterns.length,
     updated: updates.length,
+    level_changes: levelChanges.length,
+    notified,
     gaps,
     closed_gaps: closed,
     platforms: platforms.length,

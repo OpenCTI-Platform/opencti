@@ -1378,6 +1378,8 @@
   "Defense coverage dashboard created": "방어 커버리지 대시보드가 생성되었습니다",
   "Defense gaps": "방어 격차",
   "Defense level": "방어 수준",
+  "Defense level decreased": "방어 수준 하락",
+  "Defense level increased": "방어 수준 상승",
   "Defense levels": "방어 수준",
   "Defense matrix": "방어 매트릭스",
   "Defense matrix widgets are not supported in public dashboards": "방어 매트릭스 위젯은 공개 대시보드에서 지원되지 않습니다",

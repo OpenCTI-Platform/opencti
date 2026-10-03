@@ -1378,6 +1378,8 @@
   "Defense coverage dashboard created": "Dashboard zur Abwehrabdeckung erstellt",
   "Defense gaps": "Abwehrlücken",
   "Defense level": "Abwehrstufe",
+  "Defense level decreased": "Abwehrstufe gesunken",
+  "Defense level increased": "Abwehrstufe gestiegen",
   "Defense levels": "Abwehrstufen",
   "Defense matrix": "Abwehrmatrix",
   "Defense matrix widgets are not supported in public dashboards": "Abwehrmatrix-Widgets werden in öffentlichen Dashboards nicht unterstützt",

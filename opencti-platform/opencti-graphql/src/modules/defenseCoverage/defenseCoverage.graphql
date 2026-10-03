@@ -26,6 +26,11 @@ enum DefenseThreatScopeMode {
   FILTERED
   NONE
 }
+# Live trigger events sent when the aggregate defense level of a technique changes
+extend enum TriggerEventType {
+  defense_level_decreased
+  defense_level_increased
+}
 input DefenseThreatScope {
   mode: DefenseThreatScopeMode!
   threatIds: [String!]

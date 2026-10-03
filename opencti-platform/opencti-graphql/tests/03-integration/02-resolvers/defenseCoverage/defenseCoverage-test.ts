@@ -1,10 +1,15 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+import { notifyDefenseLevelChanges } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
+import { addTrigger, triggerDelete } from '../../../../src/modules/notification/notification-domain';
+import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
+import { resetCacheForEntity } from '../../../../src/database/cache';
+import { TriggerEventType, TriggerType } from '../../../../src/generated/graphql';
 
 const SIGMA_RULE = `title: Defense matrix test rule
 id: 5f3c3f5a-1d2b-4c6e-9f0a-1234567890ab
@@ -418,6 +423,33 @@ describe('Threat-informed defense matrix', () => {
     expect(result.data?.defenseCoverageRecompute).toBe(true);
     const status = await queryAsAdminWithSuccess({ query: STATUS });
     expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
+  });
+
+  it('should notify the live triggers listening to a defense level change', async () => {
+    const filters = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    const trigger = await addTrigger(testContext, ADMIN_USER, {
+      name: 'Defense matrix test - level decreased',
+      event_types: [TriggerEventType.DefenseLevelDecreased],
+      instance_trigger: false,
+      recipients: [],
+      filters: JSON.stringify(filters),
+    }, TriggerType.Live);
+    resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+    try {
+      const decrease = { attack_pattern_id: created.attackPattern, previous_level: LEVEL_DETECTION_DEPLOYED, level: 1 };
+      expect(await notifyDefenseLevelChanges(testContext, [decrease])).toEqual(1);
+      // The trigger listens to decreases only
+      const increase = { attack_pattern_id: created.attackPattern, previous_level: 1, level: LEVEL_DETECTION_DEPLOYED };
+      expect(await notifyDefenseLevelChanges(testContext, [increase])).toEqual(0);
+      // A recomputation without any change notifies nobody
+      await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
+      const unchanged = await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
+      expect(unchanged.level_changes).toEqual(0);
+      expect(unchanged.notified).toEqual(0);
+    } finally {
+      await triggerDelete(testContext, ADMIN_USER, trigger.id);
+      resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+    }
   });
 
   it('should enforce the capabilities of every surface', async () => {

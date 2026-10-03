@@ -38794,6 +38794,8 @@ export enum TriggerEventType {
   Conflict = 'conflict',
   Corroboration = 'corroboration',
   Create = 'create',
+  DefenseLevelDecreased = 'defense_level_decreased',
+  DefenseLevelIncreased = 'defense_level_increased',
   Delete = 'delete',
   Update = 'update'
 }

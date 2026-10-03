@@ -74,6 +74,17 @@ Select gaps in the Gaps tab, or open a gap drawer, and click **Validate in OpenA
 
 When OpenAEV sends the results back, they update the validation layer. OpenAEV attributes each result to the security platform that produced it, so a validation is applied to the right platform.
 
+## Notifications
+
+A [live trigger](notifications.md#triggers) can listen to two defense events in addition to creation, modification and deletion:
+
+| Event | Sent when |
+|:------|:----------|
+| **Defense level decreased** | The aggregate defense level of a technique goes down, for example when a rule is removed from a platform, a platform stops providing a data component or the latest OpenAEV validation failed. |
+| **Defense level increased** | The aggregate defense level of a technique goes up, for example when a rule is deployed or a validation succeeds. |
+
+The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. A recipient is only notified about techniques they can access. The first computation of the matrix sets the levels without notifying, and a recomputation that leaves a level unchanged notifies nobody. Digests built on these triggers collect the events like any other live notification.
+
 ## Dashboards
 
 Two widgets are available in custom dashboards: **Defense coverage by tactic** and **Top uncovered techniques used by threats**. The `defense_level` attribute of attack patterns can also be used in the filters of any widget.
