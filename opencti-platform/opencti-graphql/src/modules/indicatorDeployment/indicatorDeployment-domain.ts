@@ -215,7 +215,7 @@ type ReportOutcome = 'created' | 'updated' | 'unchanged';
 
 // Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
-const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
+export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
 
 const applyDeploymentReport = async (
   context: AuthContext,

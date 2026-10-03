@@ -1,12 +1,18 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
-import conf, { logApp } from '../../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
-import { patchAttribute, stixLoadByIds } from '../../database/middleware';
+import { createRelation, patchAttribute, stixLoadByIds } from '../../database/middleware';
+import { notify } from '../../database/redis';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { lockResources } from '../../lock/master-lock';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
@@ -17,7 +23,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { resolveUserByIdFromCache } from '../user/user-domain';
-import { addIocValidationRequestCreationCount } from '../../manager/telemetryManager';
+import { addIocValidationPlatformResultCount, addIocValidationRequestCreationCount } from '../../manager/telemetryManager';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import {
@@ -25,11 +31,17 @@ import {
   LIVE_DEPLOYMENT_STATUSES,
   RELATION_DEPLOYED_ON,
   VALIDATION_STATUS_ERROR,
+  VALIDATION_STATUS_MISSED,
   VALIDATION_STATUS_NOT_REQUESTED,
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
-import { refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
-import type { IocValidationRequestStatusInput, MutationIndicatorsRequestValidationArgs, QueryIocValidationRequestsArgs } from '../../generated/graphql';
+import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
+import type {
+  IocValidationRequestStatusInput,
+  MutationIndicatorsRequestValidationArgs,
+  MutationIocValidationReportResultsArgs,
+  QueryIocValidationRequestsArgs,
+} from '../../generated/graphql';
 import { buildIocValidationRequestForOpenAEV, type IocValidationBundlePair } from './iocValidation-converter';
 import {
   type BasicStoreEntityIocValidationRequest,
@@ -408,6 +420,93 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
     patch.results_summary = summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
   }
   return patchRequest(context, user, request.internal_id, patch);
+};
+
+export const IOC_VALIDATION_RESULTS_MAX_SIZE = 500;
+const VALIDATION_RESULT_SIGHTING_NAMESPACE = uuidv5('opencti-ioc-validation-result', OPENCTI_NAMESPACE);
+
+// One sighting per request and pair: a replayed result never records the outcome twice.
+export const validationResultSightingStixId = (requestInternalId: string, indicatorInternalId: string, platformInternalId: string) => {
+  return `sighting--${uuidv5(`${requestInternalId}|${indicatorInternalId}|${platformInternalId}`, VALIDATION_RESULT_SIGHTING_NAMESPACE)}`;
+};
+
+const toObservedAt = (value: unknown, now: Date) => {
+  if (isEmptyField(value)) return now;
+  const date = new Date(value as string);
+  if (Number.isNaN(date.getTime())) {
+    throw ValidationError('Observation date is invalid', 'observedAt');
+  }
+  return date;
+};
+
+/**
+ * Validation results proven by a security platform from its own data (for example a SIEM that saw the benign test
+ * of a request). Only the pairs of the request on that platform still waiting for an answer are updated, so an
+ * OpenAEV verdict is never overwritten. Each result is recorded as a sighting of the indicator by the platform
+ * (negative for a miss) and refreshes the validated counters and the results summary of the request.
+ */
+export const reportIocValidationResults = async (context: AuthContext, user: AuthUser, args: MutationIocValidationReportResultsArgs) => {
+  if (args.results.length > IOC_VALIDATION_RESULTS_MAX_SIZE) {
+    throw ValidationError(`A report cannot exceed ${IOC_VALIDATION_RESULTS_MAX_SIZE} results`, 'results', { size: args.results.length });
+  }
+  args.results.forEach((result) => {
+    if (isNotEmptyField(result.hitCount) && (!Number.isInteger(result.hitCount) || (result.hitCount as number) < 1)) {
+      throw ValidationError('Hit count must be a positive integer', 'hitCount', { hitCount: result.hitCount });
+    }
+  });
+  const request = await findIocValidationRequest(context, user, args.id);
+  if (!request) {
+    throw FunctionalError('IOC validation request not found', { id: args.id });
+  }
+  const platform = await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, args.platformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+  if (!platform || !(request.platform_ids ?? []).includes(platform.internal_id)) {
+    throw FunctionalError('The security platform is not targeted by this IOC validation request', { id: args.id, platformId: args.platformId });
+  }
+  const now = new Date();
+  const updatedIndicatorIds: string[] = [];
+  await BluePromise.map(args.results, async (result) => {
+    const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, user, result.indicatorId, ENTITY_TYPE_INDICATOR);
+    if (!indicator || !(request.indicator_ids ?? []).includes(indicator.internal_id)) {
+      return;
+    }
+    const observedAt = toObservedAt(result.observedAt, now);
+    const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
+    try {
+      const deployment = await findDeployedOn(context, SYSTEM_USER, indicator.internal_id, platform.internal_id);
+      if (!deployment || deployment.validation_status !== VALIDATION_STATUS_REQUESTED || deployment.validation_run_id !== request.internal_id) {
+        return;
+      }
+      const { element } = await patchAttribute(context, user, deployment.internal_id, RELATION_DEPLOYED_ON, {
+        validation_status: result.status,
+        last_validation_at: observedAt,
+      });
+      await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
+      await createRelation(context, user, {
+        fromId: indicator.internal_id,
+        toId: platform.internal_id,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        stix_id: validationResultSightingStixId(request.internal_id, indicator.internal_id, platform.internal_id),
+        [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+        attribute_count: result.hitCount ?? 1,
+        first_seen: observedAt,
+        last_seen: observedAt,
+        x_opencti_negative: result.status === VALIDATION_STATUS_MISSED,
+        description: result.evidence || `IOC validation ${result.status} reported by ${platform.name}`,
+      });
+      updatedIndicatorIds.push(indicator.internal_id);
+    } finally {
+      await lock.unlock();
+    }
+  }, { concurrency: CONCURRENCY });
+  if (updatedIndicatorIds.length > 0) {
+    await addIocValidationPlatformResultCount(updatedIndicatorIds.length);
+    await refreshIndicatorDeploymentCounters(context, updatedIndicatorIds);
+    const deployments = await findRequestDeployments(context, request.internal_id);
+    await setRequestAttributes(context, request, {
+      results_summary: summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status)),
+    });
+  }
+  return findIocValidationRequest(context, user, request.internal_id);
 };
 
 export const deleteIocValidationRequest = async (context: AuthContext, user: AuthUser, id: string) => {

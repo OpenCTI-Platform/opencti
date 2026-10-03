@@ -140,6 +140,7 @@ export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
 export const TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT = 'indicatorDeploymentReportCount';
 export const TELEMETRY_GAUGE_INDICATOR_HITS_REPORT = 'indicatorHitsReportCount';
 export const TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION = 'iocValidationRequestCreationCount';
+export const TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT = 'iocValidationPlatformResultCount';
 export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
 export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
@@ -319,6 +320,10 @@ export const addIndicatorHitsReportCount = async (count = 1) => {
 
 export const addIocValidationRequestCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION, 1);
+};
+
+export const addIocValidationPlatformResultCount = async (count: number) => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT, count);
 };
 
 export const addUserLoginCount = () => {
@@ -811,6 +816,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIndicatorHitsReportCount(indicatorHitsReportCountInRedis);
     const iocValidationRequestCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION);
     manager.setIocValidationRequestCreationCount(iocValidationRequestCreationCountInRedis);
+    const iocValidationPlatformResultCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT);
+    manager.setIocValidationPlatformResultCount(iocValidationPlatformResultCountInRedis);
     const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
     const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);

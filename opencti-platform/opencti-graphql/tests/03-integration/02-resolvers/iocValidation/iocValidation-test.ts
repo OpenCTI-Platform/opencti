@@ -6,8 +6,11 @@ import { connectorDelete, registerConnector } from '../../../../src/domain/conne
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
-import { maintainIocValidationRequests } from '../../../../src/modules/iocValidation/iocValidation-domain';
+import { maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
+import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
+import type { BasicStoreRelation } from '../../../../src/types/store';
 
 const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
 
@@ -87,6 +90,11 @@ const CONNECTORS_LIST = gql`
 const STATUS_UPDATE = gql`
   mutation StatusUpdate($id: ID!, $input: IocValidationRequestStatusInput!) {
     iocValidationRequestStatusUpdate(id: $id, input: $input) { id status status_message openaev_simulation_id completed_at results_summary { total requested error skipped } }
+  }
+`;
+const REPORT_RESULTS = gql`
+  mutation ReportResults($id: ID!, $platformId: StixRef!, $results: [IocValidationPairResultInput!]!) {
+    iocValidationReportResults(id: $id, platformId: $platformId, results: $results) { id results_summary { total requested error skipped } }
   }
 `;
 const REQUEST_DELETE = gql`
@@ -243,6 +251,56 @@ describe('IOC validation requests', () => {
       variables: { id: requestId, input: { status: 'running' } },
     });
     expect(late.data?.iocValidationRequestStatusUpdate.status).toEqual('failed');
+  });
+
+  it('should record the results a security platform proves for the pairs still waiting', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: REQUEST_VALIDATION,
+      variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'SIEM proof' },
+    });
+    const id = created.data?.indicatorsRequestValidation.id;
+    // Validation of the input and of the target platform
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'missed', hitCount: 0 }] },
+    });
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId: liveIndicatorId, results: [{ indicatorId: liveIndicatorId, status: 'missed' }] },
+    });
+    // A miss on the waiting pair; the skipped indicator is not a pair of the request and is ignored
+    const observedAt = '2026-10-03T12:00:00.000Z';
+    const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: {
+        id,
+        platformId,
+        results: [
+          { indicatorId: liveIndicatorId, status: 'missed', observedAt, evidence: 'No DNS query seen in the window' },
+          { indicatorId: failedIndicatorId, status: 'detected' },
+        ],
+      },
+    });
+    expect(reported.data?.iocValidationReportResults.results_summary).toEqual({ total: 1, requested: 0, error: 0, skipped: 0 });
+    const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('missed');
+    const sightingId = validationResultSightingStixId(id, liveIndicatorId, platformId);
+    const sighting = await storeLoadById<BasicStoreRelation & { x_opencti_negative?: boolean; attribute_count?: number }>(
+      testContext,
+      ADMIN_USER,
+      sightingId,
+      STIX_SIGHTING_RELATIONSHIP,
+    );
+    expect(sighting?.x_opencti_negative).toEqual(true);
+    expect(sighting?.attribute_count).toEqual(1);
+    // A late result never overwrites the recorded verdict
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+    });
+    const unchanged = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(unchanged.data?.stixCoreRelationship.validation_status).toEqual('missed');
+    await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
   });
 
   it('should release the waiting pairs when a request is deleted', async () => {

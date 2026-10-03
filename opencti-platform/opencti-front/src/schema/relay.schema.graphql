@@ -10980,6 +10980,7 @@ type Mutation {
   indicatorDeploymentRemove(id: ID!): StixCoreRelationship
   indicatorsRequestValidation(platformIds: [StixRef!]!, indicatorIds: [StixRef!]!, testKinds: [IocValidationTestKind!]!, connectorId: ID, name: String, description: String): IocValidationRequest
   iocValidationRequestStatusUpdate(id: ID!, input: IocValidationRequestStatusInput!): IocValidationRequest
+  iocValidationReportResults(id: ID!, platformId: StixRef!, results: [IocValidationPairResultInput!]!): IocValidationRequest
   iocValidationRequestDelete(id: ID!): ID
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
@@ -15259,6 +15260,22 @@ input IocValidationRequestStatusInput {
 
   "*Constraints:*\n* Maximal length: `5000`\n"
   message: String
+}
+
+enum IocValidationResultStatus {
+  detected
+  prevented
+  missed
+}
+
+input IocValidationPairResultInput {
+  indicatorId: StixRef!
+  status: IocValidationResultStatus!
+  observedAt: DateTime
+  hitCount: Int
+
+  "*Constraints:*\n* Maximal length: `5000`\n"
+  evidence: String
 }
 
 enum VulnerabilitiesOrdering {

@@ -129,6 +129,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of indicator hits reported by connectors (one report can carry many hits)
 - The number of IOC validation requests
 - The number of IOC validation requests created
+- The number of IOC validation results reported by the security platforms themselves
 
 ### Email and notifications
 

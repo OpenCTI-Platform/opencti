@@ -107,6 +107,22 @@ input IocValidationRequestStatusInput {
   message: String @constraint(maxLength: 5000)
 }
 
+# Outcome of a validation test proven by the security platform itself (for example a SIEM search)
+enum IocValidationResultStatus {
+  detected
+  prevented
+  missed
+}
+
+input IocValidationPairResultInput {
+  indicatorId: StixRef!
+  status: IocValidationResultStatus!
+  # First matching event, or the end of the observation window for a miss
+  observedAt: DateTime
+  hitCount: Int
+  evidence: String @constraint(maxLength: 5000)
+}
+
 extend union StixObjectOrStixRelationshipOrCreator = IocValidationRequest
 extend union StixObjectOrStixRelationship = IocValidationRequest
 
@@ -133,5 +149,6 @@ type Mutation {
     description: String
   ): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
   iocValidationRequestStatusUpdate(id: ID!, input: IocValidationRequestStatusInput!): IocValidationRequest @auth(for: [CONNECTORAPI])
+  iocValidationReportResults(id: ID!, platformId: StixRef!, results: [IocValidationPairResultInput!]!): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
   iocValidationRequestDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

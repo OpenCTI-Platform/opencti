@@ -15270,6 +15270,14 @@ export type IocValidationIoc = {
   value: Scalars['String']['output'];
 };
 
+export type IocValidationPairResultInput = {
+  evidence?: InputMaybe<Scalars['String']['input']>;
+  hitCount?: InputMaybe<Scalars['Int']['input']>;
+  indicatorId: Scalars['StixRef']['input'];
+  observedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  status: IocValidationResultStatus;
+};
+
 export type IocValidationRequest = BasicObject & InternalObject & {
   __typename?: 'IocValidationRequest';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15344,6 +15352,12 @@ export enum IocValidationRequestsOrdering {
   Name = 'name',
   Status = 'status',
   UpdatedAt = 'updated_at'
+}
+
+export enum IocValidationResultStatus {
+  Detected = 'detected',
+  Missed = 'missed',
+  Prevented = 'prevented'
 }
 
 export type IocValidationResultsSummary = {
@@ -18208,6 +18222,7 @@ export type Mutation = {
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
   investigationDuplicate?: Maybe<Workspace>;
+  iocValidationReportResults?: Maybe<IocValidationRequest>;
   iocValidationRequestDelete?: Maybe<Scalars['ID']['output']>;
   iocValidationRequestStatusUpdate?: Maybe<IocValidationRequest>;
   jsonMapperAdd?: Maybe<JsonMapper>;
@@ -19757,6 +19772,13 @@ export type MutationIntrusionSetEditArgs = {
 
 export type MutationInvestigationDuplicateArgs = {
   input: InvestigationDuplicateInput;
+};
+
+
+export type MutationIocValidationReportResultsArgs = {
+  id: Scalars['ID']['input'];
+  platformId: Scalars['StixRef']['input'];
+  results: Array<IocValidationPairResultInput>;
 };
 
 
@@ -42540,12 +42562,14 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IocValidationIoc: ResolverTypeWrapper<IocValidationIoc>;
+  IocValidationPairResultInput: IocValidationPairResultInput;
   IocValidationRequest: ResolverTypeWrapper<BasicStoreEntityIocValidationRequest>;
   IocValidationRequestConnection: ResolverTypeWrapper<Omit<IocValidationRequestConnection, 'edges'> & { edges: Array<ResolversTypes['IocValidationRequestEdge']> }>;
   IocValidationRequestEdge: ResolverTypeWrapper<Omit<IocValidationRequestEdge, 'node'> & { node: ResolversTypes['IocValidationRequest'] }>;
   IocValidationRequestStatus: IocValidationRequestStatus;
   IocValidationRequestStatusInput: IocValidationRequestStatusInput;
   IocValidationRequestsOrdering: IocValidationRequestsOrdering;
+  IocValidationResultStatus: IocValidationResultStatus;
   IocValidationResultsSummary: ResolverTypeWrapper<IocValidationResultsSummary>;
   IocValidationSkipped: ResolverTypeWrapper<IocValidationSkipped>;
   IocValidationTestKind: IocValidationTestKind;
@@ -43684,6 +43708,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IocValidationIoc: IocValidationIoc;
+  IocValidationPairResultInput: IocValidationPairResultInput;
   IocValidationRequest: BasicStoreEntityIocValidationRequest;
   IocValidationRequestConnection: Omit<IocValidationRequestConnection, 'edges'> & { edges: Array<ResolversParentTypes['IocValidationRequestEdge']> };
   IocValidationRequestEdge: Omit<IocValidationRequestEdge, 'node'> & { node: ResolversParentTypes['IocValidationRequest'] };
@@ -50982,6 +51007,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
   investigationDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationInvestigationDuplicateArgs, 'input'>>;
+  iocValidationReportResults?: Resolver<Maybe<ResolversTypes['IocValidationRequest']>, ParentType, ContextType, RequireFields<MutationIocValidationReportResultsArgs, 'id' | 'platformId' | 'results'>>;
   iocValidationRequestDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIocValidationRequestDeleteArgs, 'id'>>;
   iocValidationRequestStatusUpdate?: Resolver<Maybe<ResolversTypes['IocValidationRequest']>, ParentType, ContextType, RequireFields<MutationIocValidationRequestStatusUpdateArgs, 'id' | 'input'>>;
   jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
