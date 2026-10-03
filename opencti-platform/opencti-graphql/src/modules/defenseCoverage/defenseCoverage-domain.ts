@@ -19,6 +19,7 @@ import type { BasicStoreEntityDataComponent } from '../dataComponent/dataCompone
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { addSecurityCoverage } from '../securityCoverage/securityCoverage-domain';
 import { addGrouping } from '../grouping/grouping-domain';
+import { addExternalReference } from '../../domain/externalReference';
 import { addDefenseGapExportCount, addDefenseValidationRequestCount } from '../../manager/telemetryManager';
 import { INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import type { DefenseGapsFilter, DefenseGapsOrdering, DefenseLogsourceInput, DefenseValidationInput, OrderingMode } from '../../generated/graphql';
@@ -868,16 +869,33 @@ const trackValidationRequest = async (
   return operations.length / 2;
 };
 
+const parseValidationReferenceUrl = (value: string | null | undefined): URL | undefined => {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  let url: URL | undefined;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    url = undefined;
+  }
+  if (!url || (url.protocol !== 'http:' && url.protocol !== 'https:')) {
+    throw FunctionalError('The external reference of a validation request must be an http or https URL');
+  }
+  return url;
+};
+
 /**
  * Validate a set of techniques through OpenAEV, with the existing Security Coverage flow:
  * a Grouping holds the chosen techniques (and the threat if any), a Security Coverage covers it, and the
  * OpenAEV enrichment generates a scenario restricted to these techniques. The request is tracked on the gaps.
+ * An optional external reference URL links the Security Coverage back to what asked for the validation.
  */
 export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, input: DefenseValidationInput): Promise<DefenseValidationResultView> => {
   const attackPatternIds = uniq(input.attackPatternIds ?? []);
   if (attackPatternIds.length === 0) {
     throw FunctionalError('Select at least one technique to validate');
   }
+  const referenceUrl = parseValidationReferenceUrl(input.external_reference_url);
   if (attackPatternIds.length > MAX_VALIDATION_TECHNIQUES) {
     throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatternIds.length });
   }
@@ -906,6 +924,9 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     context: 'defense-validation',
     objects: [...attackPatterns.map((ap) => ap.internal_id), ...(threat ? [threat.internal_id] : [])],
   });
+  const externalReference = referenceUrl
+    ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
+    : undefined;
   const securityCoverage = await addSecurityCoverage(context, user, {
     name,
     description: input.description,
@@ -915,6 +936,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     duration: input.duration,
     type_affinity: input.type_affinity,
     platforms_affinity: input.platforms_affinity,
+    ...(externalReference ? { externalReferences: [externalReference.id] } : {}),
   });
   const request: DefenseGapValidationRequest = {
     security_coverage_id: securityCoverage.id,
