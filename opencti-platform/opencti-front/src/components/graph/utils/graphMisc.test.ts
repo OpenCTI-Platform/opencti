@@ -6,6 +6,8 @@ import { buildGraphPalette } from './graphPalette';
 import { collisionForce } from './collisionForce';
 import { isOverlayOpen, shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
+import { graphNodeTitle } from './useGraphParser';
+import { graphNode } from '../../../utils/tests/graphTestData';
 import { glyphFromMarkup } from './graphIcons';
 import type { GraphState } from '../graph.types';
 
@@ -48,6 +50,21 @@ describe('shortcutOf', () => {
     expect(shortcutOf(key('x'))).toBeNull();
     expect(shortcutOf(key('f', { ctrlKey: true }))).toBeNull();
     expect(shortcutOf(key('f', { altKey: true }))).toBeNull();
+  });
+});
+
+describe('graphNodeTitle', () => {
+  type Raw = NonNullable<ReturnType<typeof graphNode>['raw']>;
+
+  it('gives the full name of an entity as plain text, whatever it contains', () => {
+    const raw = { id: 'x', entity_type: 'Intrusion-Set', name: 'Tools & <Techniques> of a very long named group' } as unknown as Raw;
+    expect(graphNodeTitle(graphNode({ label: 'Tools & <Techniques>...', name: 'Tools &amp; &lt;Techniques&gt;\n2025', raw }))).toBe('Tools & <Techniques> of a very long named group');
+  });
+
+  it('keeps the label of relationship nodes, groups and nodes without their object', () => {
+    expect(graphNodeTitle(graphNode({ label: 'Uses', relationship_type: 'uses', raw: { id: 'r' } as unknown as Raw }))).toBe('Uses');
+    expect(graphNodeTitle(graphNode({ label: '3 Malware', groupOf: { entityType: 'Malware', memberIds: ['a', 'b', 'c'] } }))).toBe('3 Malware');
+    expect(graphNodeTitle(graphNode({ label: 'Emotet', raw: undefined }))).toBe('Emotet');
   });
 });
 

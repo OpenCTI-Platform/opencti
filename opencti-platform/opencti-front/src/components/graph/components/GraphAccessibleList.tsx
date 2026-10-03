@@ -1,6 +1,7 @@
 import React, { KeyboardEvent, useId, useMemo, useState } from 'react';
 import { useFormatter } from '../../i18n';
 import type { GraphLink, GraphNode } from '../graph.types';
+import { graphNodeTitle } from '../utils/useGraphParser';
 
 /** Beyond this, links are left out of the list: the nodes and their own counts still describe them. */
 const MAX_LISTED_LINKS = 1000;
@@ -37,7 +38,7 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
     });
     const nodeEntries: Entry[] = nodes.map((node) => {
       const type = node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`);
-      const name = node.groupOf ? node.label : node.name.split('\n')[0].replace(/<[^>]*>/g, '');
+      const name = graphNodeTitle(node);
       const count = t_i18n('{count} relationships', { values: { count: degree.get(node.id) ?? 0 } });
       return { kind: 'node', node, text: `${type} ${name}, ${count}` };
     });

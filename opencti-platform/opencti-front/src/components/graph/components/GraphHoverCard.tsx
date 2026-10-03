@@ -17,7 +17,7 @@ import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { type GraphBadge, graphNodeActionsFor, useGraphNodeActionRegistryVersion } from '../badges';
-import { NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
+import { graphNodeTitle, NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
 import { buildGraphPalette } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 
@@ -53,8 +53,6 @@ export interface GraphHoverCardProps {
 
 const CARD_WIDTH = 300;
 const OFFSET = 16;
-
-const firstLine = (value: string) => value.split('\n')[0].replace(/<[^>]*>/g, '');
 
 const Action = ({ label, icon, onClick }: { label: string; icon: ReactNode; onClick: () => void }) => (
   <Tooltip>
@@ -140,7 +138,7 @@ const GraphHoverCard = ({
     const typeLabel = node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`);
     content = (
       <>
-        {header(node.relationship_type ? 'relationship' : node.entity_type, node.relationship_type ? node.label : firstLine(node.name), typeLabel, node.color)}
+        {header(node.relationship_type ? 'relationship' : node.entity_type, graphNodeTitle(node), typeLabel, node.color)}
         <div style={fact}>
           <span style={factLabel}>{t_i18n('Date')}</span>
           <span>{fldt(node.defaultDate)}</span>

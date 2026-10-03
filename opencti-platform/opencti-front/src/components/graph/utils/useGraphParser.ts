@@ -55,6 +55,15 @@ export interface ObjectToParse {
   linkedContainers?: ObjectToParse[];
 }
 
+/**
+ * The full name of a node as plain text. `name` is the HTML of the library tooltip and `label`
+ * is shortened, so the name is read again from the object received from the query.
+ */
+export const graphNodeTitle = (node: Pick<GraphNode, 'label' | 'raw' | 'relationship_type' | 'groupOf'>): string => {
+  if (node.groupOf || node.relationship_type || !node.raw) return node.label;
+  return getMainRepresentative(node.raw) || node.label;
+};
+
 /** Id of the placeholder marking of unmarked elements, which the marking filter lists as "None". */
 export const NO_MARKING_ID = 'abb8eb18-a02c-48e9-adae-08c92275c87e';
 /** Id of the placeholder author of elements without one, which the author filter lists as "None". */
