@@ -100,7 +100,7 @@ describe('Search engine fields limit on long-lived indices', () => {
     await removeFixtures();
     // Created through the platform template path, so the index gets the platform settings, normalizer and alias.
     await elCreateIndexWithMapping(LONG_LIVED_ALIAS, longLived.mapping);
-    // Platforms created before the limit followed the mapping size all run with the default limit.
+    // Before the fields limit was sized from the mapping, every index kept the default limit whatever it held.
     await putIndexFieldsLimit(LONG_LIVED_INDEX, ES_MAX_MAPPINGS);
     await elCreateIndex(FRESH_ALIAS);
   });
