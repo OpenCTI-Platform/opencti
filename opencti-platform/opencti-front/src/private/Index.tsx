@@ -33,10 +33,10 @@ const RootAnalyses = lazy(() => import('./components/analyses/Root'));
 const RootCases = lazy(() => import('./components/cases/Root'));
 const RootEvents = lazy(() => import('./components/events/Root'));
 const RootObservations = lazy(() => import('./components/observations/Root'));
+const RootDefense = lazy(() => import('./components/defense/Root'));
 const RootProfile = lazy(() => import('./components/profile/Root'));
 const RootSearch = lazy(() => import('@components/RootSearch'));
 const RootThreats = lazy(() => import('./components/threats/Root'));
-const RootHunts = lazy(() => import('./components/hunts/RootHunts'));
 const RootArsenal = lazy(() => import('./components/arsenal/Root'));
 const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
@@ -145,7 +145,6 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
                   <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
                   <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
-                  <Route path="/defense/hunts/*" element={boundaryWrapper(RootHunts)} />
                   <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
                   <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
                   <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
@@ -163,6 +162,7 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
                   <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                   <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+                  <Route path="/defense/*" element={boundaryWrapper(RootDefense)} />
                   <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
                   <Route path="/*" element={<NoMatch />} />
                 </Routes>

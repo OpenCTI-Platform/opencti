@@ -229,8 +229,33 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
 export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
-const ES_MAX_MAPPINGS = 3000;
+// Floor of the engine setting "index.mapping.total_fields.limit" applied to every platform index and template.
+// The effective limit of an index is computed from the mapping it must hold (computeMappingFieldsLimit): attributes
+// removed from the schema stay mapped forever in long-lived indices, so a fixed limit eventually fails a mapping update
+// at startup (the history index of a platform created years ago exceeded 3000 fields on 2026-10-03).
+export const ES_MAX_MAPPINGS: number = conf.get('elasticsearch:max_mappings') || 3000;
+// Free fields kept above the current mapping size, so a mapping update never fails because of the limit itself.
+export const ES_MAPPING_FIELDS_HEADROOM = 500;
 const MAX_AGGREGATION_SIZE = 100;
+
+// Count the fields of a mapping the way the engine does for total_fields: every property counts for one, including
+// object and nested containers, their sub-properties and the multi-fields declared under "fields".
+export const countMappingFields = (properties: Record<string, any> | undefined | null): number => {
+  if (!properties || typeof properties !== 'object') {
+    return 0;
+  }
+  return Object.values(properties).reduce((count: number, definition: any) => {
+    const subProperties = countMappingFields(definition?.properties);
+    const multiFields = countMappingFields(definition?.fields);
+    return count + 1 + subProperties + multiFields;
+  }, 0);
+};
+
+// Limit to apply to an index or a template holding the given mapping: never below the configured floor,
+// always leaving ES_MAPPING_FIELDS_HEADROOM free fields above the mapping size.
+export const computeMappingFieldsLimit = (properties: Record<string, any> | undefined | null): number => {
+  return Math.max(ES_MAX_MAPPINGS, countMappingFields(properties) + ES_MAPPING_FIELDS_HEADROOM);
+};
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -1169,7 +1194,7 @@ const updateCoreSettings = async (): Promise<void> => {
   }
 };
 
-const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
+const computeIndexSettings = (rolloverAlias: string | null | undefined, fieldsLimit: number = ES_MAX_MAPPINGS): any => {
   if (engine instanceof ElkClient) {
     // Rollover alias can be undefined for platform initialized <= 5.8
     const cycle = rolloverAlias ? {
@@ -1182,7 +1207,7 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
       index: {
         mapping: {
           total_fields: {
-            limit: ES_MAX_MAPPINGS,
+            limit: fieldsLimit,
           },
         },
         ...cycle,
@@ -1200,7 +1225,7 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
   return {
     mapping: {
       total_fields: {
-        limit: ES_MAX_MAPPINGS,
+        limit: fieldsLimit,
       },
     },
     ...cycle,
@@ -1217,7 +1242,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
     body: {
       index_patterns: [index_pattern],
       template: {
-        settings: computeIndexSettings(name),
+        settings: computeIndexSettings(name, computeMappingFieldsLimit(mapping_properties)),
         mappings: ES_IS_OLD_MAPPING ? {
           properties: getRetroCompatibleMappings(engine),
         } : {
@@ -1288,17 +1313,6 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
     const { index } = indices[indicesIndex];
     const { rollover_alias } = await elIndexSetting(index);
     const indexMappingProperties = await elPlatformMapping(index);
-    const platformSettings = computeIndexSettings(rollover_alias);
-    const putSettingsArgs = { index, body: platformSettings };
-    if (engine instanceof ElkClient) {
-      await engine.indices.putSettings(putSettingsArgs).catch((e) => {
-        throw DatabaseError('Updating index settings fail', { index, cause: e });
-      });
-    } else {
-      await engine.indices.putSettings(putSettingsArgs).catch((e) => {
-        throw DatabaseError('Updating index settings fail', { index, cause: e });
-      });
-    }
     // Type collision is not supported, mappingProperties must be forced to exist mapping in this case
     const indexMappingEntries = Object.entries(indexMappingProperties);
     for (let indexMapping = 0; indexMapping < indexMappingEntries.length; indexMapping += 1) {
@@ -1330,8 +1344,33 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
         const isObjectType = o.value.properties;
         return R.is(Object, o.value) && (isPropertiesCompletion || isDirectType || isObjectType);
       });
+    // The mapping the index holds after the update: the fields it already has (including the ones removed from the
+    // schema since the index was created) plus the new ones. The fields limit is derived from it, so the settings are
+    // updated before the mapping and the mapping update can never fail on "Limit of total fields has been exceeded".
+    const properties = addOperations.length > 0
+      ? jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument
+      : indexMappingProperties;
+    const fieldsLimit = computeMappingFieldsLimit(properties);
+    if (fieldsLimit > ES_MAX_MAPPINGS) {
+      logApp.warn('[SEARCH] Index mapping above the default fields limit, raising the limit of the index', {
+        index,
+        fields: countMappingFields(properties),
+        limit: fieldsLimit,
+        default_limit: ES_MAX_MAPPINGS,
+      });
+    }
+    const platformSettings = computeIndexSettings(rollover_alias, fieldsLimit);
+    const putSettingsArgs = { index, body: platformSettings };
+    if (engine instanceof ElkClient) {
+      await engine.indices.putSettings(putSettingsArgs).catch((e) => {
+        throw DatabaseError('Updating index settings fail', { index, cause: e });
+      });
+    } else {
+      await engine.indices.putSettings(putSettingsArgs).catch((e) => {
+        throw DatabaseError('Updating index settings fail', { index, cause: e });
+      });
+    }
     if (addOperations.length > 0) {
-      const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
       const putMappingArgs = { index, body };
       if (engine instanceof ElkClient) {
