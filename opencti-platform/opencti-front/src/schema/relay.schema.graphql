@@ -17185,6 +17185,8 @@ type SourceIntelligenceStatus {
   last_scan_truncated: Boolean!
   backfill_done: Boolean!
   backfill_next_day: String
+  backfill_days_done: Int
+  backfill_days_total: Int
   recompute_requested_at: DateTime
 }
 

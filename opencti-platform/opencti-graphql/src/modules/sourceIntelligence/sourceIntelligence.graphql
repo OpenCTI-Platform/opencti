@@ -418,6 +418,9 @@ type SourceIntelligenceStatus {
   last_scan_truncated: Boolean!
   backfill_done: Boolean!
   backfill_next_day: String
+  # History backfill progress, in days computed and planned
+  backfill_days_done: Int
+  backfill_days_total: Int
   recompute_requested_at: DateTime
 }
 

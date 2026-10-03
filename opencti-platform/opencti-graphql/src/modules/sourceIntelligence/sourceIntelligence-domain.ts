@@ -83,6 +83,9 @@ export interface SourceIntelligenceState {
   last_scan_truncated?: boolean | null;
   backfill_next_day?: string | null;
   backfill_done?: boolean | null;
+  // Planned range of the history backfill: first day, and day before which the days are already covered
+  backfill_from_day?: string | null;
+  backfill_until_day?: string | null;
   recompute_requested_at?: string | null;
   gaps_last_run_end?: string | null;
   recommendations_last_run_end?: string | null;
@@ -664,6 +667,23 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
 // endregion
 
 // region status
+const snapshotDayNumber = (day: string) => Math.floor(new Date(`${day}T00:00:00.000Z`).getTime() / DAY_MS);
+
+/**
+ * Progress of the history backfill in days, computed and planned, or null when no backfill was planned.
+ */
+export const backfillProgress = (state: SourceIntelligenceState): { done: number; total: number } | null => {
+  if (!state.backfill_from_day || !state.backfill_until_day) {
+    return null;
+  }
+  const from = snapshotDayNumber(state.backfill_from_day);
+  const total = Math.max(0, snapshotDayNumber(state.backfill_until_day) - from);
+  if (state.backfill_done || !state.backfill_next_day) {
+    return { done: total, total };
+  }
+  return { done: Math.min(total, Math.max(0, snapshotDayNumber(state.backfill_next_day) - from)), total };
+};
+
 export const getSourceIntelligenceStatus = async (context: AuthContext) => {
   const [state, sources, running, enterprise] = await Promise.all([
     getSourceIntelligenceState(),
@@ -672,6 +692,7 @@ export const getSourceIntelligenceStatus = async (context: AuthContext) => {
     isEnterpriseEdition(context),
   ]);
   const availability = resolveSoftJoinAvailability();
+  const backfill = backfillProgress(state);
   return {
     manager_running: running,
     enterprise_edition: enterprise,
@@ -687,6 +708,8 @@ export const getSourceIntelligenceStatus = async (context: AuthContext) => {
     last_scan_truncated: state.last_scan_truncated ?? false,
     backfill_done: state.backfill_done ?? false,
     backfill_next_day: state.backfill_next_day ?? null,
+    backfill_days_done: backfill?.done ?? null,
+    backfill_days_total: backfill?.total ?? null,
     recompute_requested_at: state.recompute_requested_at ?? null,
   };
 };
