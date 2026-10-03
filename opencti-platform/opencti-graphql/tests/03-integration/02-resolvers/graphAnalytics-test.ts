@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { v4 as uuidv4 } from 'uuid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
@@ -15,7 +16,7 @@ import {
   runInfrastructureClustering,
   startFullPass,
 } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
-import { deleteSimilarityRowsForEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
+import { addClusterPromotion, deleteSimilarityRowsForEntities, loadGraphClusters } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
 import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
 import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
@@ -352,6 +353,13 @@ describe('Graph analytics resolvers', () => {
     created.push({ id: investigation.data.graphClusterAddToInvestigation.id, type: ENTITY_TYPE_WORKSPACE });
     expect(investigation.data.graphClusterAddToInvestigation.type).toBe('investigation');
     expect(investigation.data.graphClusterAddToInvestigation.investigated_entities_ids).toEqual(expect.arrayContaining([ids.d1, ids.d2, ids.d3]));
+    // concurrent promotions from the same snapshot all remain linked
+    const [snapshot] = await loadGraphClusters(context, ADMIN_USER, [ids.cluster]);
+    const concurrentIds = [uuidv4(), uuidv4()];
+    await Promise.all(concurrentIds.map((promotedId) => addClusterPromotion(context, snapshot, promotedId)));
+    await addClusterPromotion(context, snapshot, grouping.id);
+    const [reloaded] = await loadGraphClusters(context, ADMIN_USER, [ids.cluster]);
+    expect([...(reloaded.promoted_to_ids ?? [])].sort()).toEqual([grouping.id, ...concurrentIds].sort());
   });
 
   it('should refuse to complete an analytics run from an account restricted by markings', async () => {
