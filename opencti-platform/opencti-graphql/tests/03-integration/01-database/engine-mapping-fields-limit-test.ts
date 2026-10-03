@@ -74,10 +74,12 @@ const deleteIndexTemplate = async (name: string) => {
   }
 };
 
-// The platform error only says "Updating index mapping fail": surface the index and the engine reason it carries.
-const updateIndicesMappings = async () => {
+// Restricted to the given indices: other test files leave indices under the test prefix that were not created through
+// the platform template. The platform error only says "Updating index mapping fail": surface the index and the engine
+// reason it carries.
+const updateIndicesMappings = async (indexNames: string[]) => {
   try {
-    await elUpdateIndicesMappings();
+    await elUpdateIndicesMappings(indexNames);
   } catch (e: any) {
     const { index, cause } = e.extensions?.data ?? {};
     throw new Error(`${e.message} on index ${index}: ${JSON.stringify(cause?.meta?.body?.error ?? cause?.message)}`, { cause: e });
@@ -121,7 +123,7 @@ describe('Search engine fields limit on long-lived indices', () => {
   it('should raise the fields limit of a long-lived index instead of failing the startup mapping update', async () => {
     const warnSpy = vi.spyOn(logApp, 'warn');
     try {
-      await updateIndicesMappings();
+      await updateIndicesMappings([LONG_LIVED_INDEX]);
       const mapping = await elPlatformMapping(LONG_LIVED_INDEX);
       const fields = countMappingFields(mapping);
       // The index now holds every attribute of the current schema and still keeps its legacy fields.
@@ -141,7 +143,7 @@ describe('Search engine fields limit on long-lived indices', () => {
     expect(await indexFieldsLimit(FRESH_INDEX)).toBe(ES_MAX_MAPPINGS);
     const warnSpy = vi.spyOn(logApp, 'warn');
     try {
-      await updateIndicesMappings();
+      await updateIndicesMappings([FRESH_INDEX]);
       const mapping = await elPlatformMapping(FRESH_INDEX);
       expect(computeMappingFieldsLimit(mapping)).toBe(ES_MAX_MAPPINGS);
       expect(await indexFieldsLimit(FRESH_INDEX)).toBe(ES_MAX_MAPPINGS);
