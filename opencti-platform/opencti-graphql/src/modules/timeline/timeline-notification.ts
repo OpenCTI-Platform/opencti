@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser, UserOrigin } from '../../types/user';
 import type { BasicStoreCommon } from '../../types/store';
 import { isUserCanAccessStixElement, isUserCanAccessStoreElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { stixLoadById } from '../../database/middleware';
+import { internalLoadById } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -43,6 +44,12 @@ const notifyTimelineTrigger = async (
   if (candidates.length === 0) return 0;
   const stix = await stixLoadById(context, SYSTEM_USER, containerId) as StixObject | undefined;
   if (!stix) return 0;
+  // Like the timeline reads, an event about an element is only visible to the users who can access that element
+  const describedElementId = describedEvent && (describedEvent as BasicStoreCommon & { element_id?: string | null }).element_id;
+  const describedElement = describedElementId && describedElementId !== containerId
+    ? await internalLoadById<BasicStoreCommon>(context, SYSTEM_USER, describedElementId)
+    : null;
+  if (describedElementId && describedElementId !== containerId && !describedElement) return 0;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const message = buildMessage(stix);
   let delivered = 0;
@@ -54,7 +61,8 @@ const notifyTimelineTrigger = async (
       const user: AuthUser = users[userIndex];
       const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
       const canAccess = await isUserCanAccessStixElement(userContext, user, stix)
-        && (!describedEvent || await isUserCanAccessStoreElement(userContext, user, describedEvent));
+        && (!describedEvent || await isUserCanAccessStoreElement(userContext, user, describedEvent))
+        && (!describedElement || await isUserCanAccessStoreElement(userContext, user, describedElement));
       if (canAccess && await isStixMatchFilterGroup(userContext, user, stix, filters)) {
         targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message });
       }

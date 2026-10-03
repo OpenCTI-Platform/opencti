@@ -96,6 +96,15 @@ def test_update_only_sends_editable_fields(local_api_client):
     }
 
 
+def test_update_clears_fields_passed_as_none(local_api_client):
+    local_api_client.query.return_value = {"data": {"timelineEventEdit": EVENT}}
+    local_api_client.timeline_event.update(id="e1", annotation=None, description=None)
+    assert sent_variables(local_api_client) == {
+        "id": "e1",
+        "input": {"annotation": None, "description": None},
+    }
+
+
 def test_update_without_fields_does_nothing(local_api_client):
     assert local_api_client.timeline_event.update(id="e1") is None
     local_api_client.query.assert_not_called()

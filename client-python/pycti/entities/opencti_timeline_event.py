@@ -358,7 +358,8 @@ class TimelineEvent:
 
         :param id: the id of the timeline event (required)
         :type id: str
-        :param kwargs: the fields to change (see TIMELINE_EDITABLE_FIELDS)
+        :param kwargs: the fields to change (see TIMELINE_EDITABLE_FIELDS); a field
+            passed as None is cleared, an omitted field is left unchanged
         :return: the updated timeline event or None
         :rtype: dict or None
         """
@@ -371,7 +372,7 @@ class TimelineEvent:
         edit_input = {
             field: kwargs[field]
             for field in TIMELINE_EDITABLE_FIELDS
-            if field in kwargs and kwargs[field] is not None
+            if field in kwargs
         }
         if len(edit_input) == 0:
             self.opencti.app_logger.error(

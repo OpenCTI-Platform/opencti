@@ -34,6 +34,7 @@ import {
   type TimelineAnchors,
   type TimelinePendingAnnotation,
 } from './timeline-types';
+import { enqueueTimelineRegeneration } from './timeline-queue';
 import {
   deriveTimelineEvents,
   type DerivedTimelineEvent,
@@ -613,7 +614,9 @@ export const regenerateContainerTimeline = async (
     return await regenerateLocked(context, container);
   } catch (error: any) {
     if (error?.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[TIMELINE] Regeneration already running', { containerId });
+      // The running regeneration may have started before the latest changes: another one is scheduled
+      await enqueueTimelineRegeneration([container.internal_id]);
+      logApp.debug('[TIMELINE] Regeneration already running, scheduled again', { containerId });
       return null;
     }
     throw error;

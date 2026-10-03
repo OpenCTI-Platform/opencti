@@ -94,15 +94,6 @@ const loadEditableTimelineContainer = async (context: AuthContext, user: AuthUse
   return container;
 };
 
-const loadEditableTimelineEvent = async (context: AuthContext, user: AuthUser, eventId: string) => {
-  const event = await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, eventId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent;
-  if (!event) {
-    throw FunctionalError('Timeline event cannot be found', { id: eventId });
-  }
-  const container = await loadEditableTimelineContainer(context, user, event.container_id);
-  return { event, container };
-};
-
 const validateMarkings = (user: AuthUser, markingIds: string[]) => {
   if (isBypassUser(user)) return;
   const allowed = new Set(user.allowed_marking.map((m) => m.internal_id));
@@ -235,11 +226,24 @@ const findInaccessibleElementIds = async (context: AuthContext, user: AuthUser, 
   return elementIds.filter((id) => !accessible[id]);
 };
 
+const excludeElements = (filters: ReturnType<typeof buildTimelineFilters>, hiddenElementIds: string[]) => {
+  if (hiddenElementIds.length === 0) return filters;
+  return {
+    ...filters,
+    filters: [...filters.filters, { key: ['element_id'], values: hiddenElementIds, operator: FilterOperator.NotEq, mode: FilterMode.And }],
+  };
+};
+
+/** Timeline filters restricted to the events of the elements the user can access, before any pagination or count. */
+const buildAccessibleTimelineFilters = async (context: AuthContext, user: AuthUser, containerId: string, args: TimelineFilterArgs) => {
+  return excludeElements(buildTimelineFilters(containerId, args), await findInaccessibleElementIds(context, user, containerId));
+};
+
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
   const connection = await pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
-    filters: buildTimelineFilters(container.internal_id, args) as any,
+    filters: await buildAccessibleTimelineFilters(context, user, container.internal_id, args) as any,
     first,
     after: args.after,
     orderBy: ['event_time', 'ordering_hint'],
@@ -257,6 +261,16 @@ export const findTimelineEvent = async (context: AuthContext, user: AuthUser, id
   if (!container) return null;
   const { items } = await filterAccessibleEvents(context, user, event.container_id, [event], (e) => e);
   return items[0] ?? null;
+};
+
+/** An event can only be changed by a user who can read it (event and element) and edit its container. */
+const loadEditableTimelineEvent = async (context: AuthContext, user: AuthUser, eventId: string) => {
+  const event = await findTimelineEvent(context, user, eventId);
+  if (!event) {
+    throw FunctionalError('Timeline event cannot be found', { id: eventId });
+  }
+  const container = await loadEditableTimelineContainer(context, user, event.container_id);
+  return { event, container };
 };
 
 export const findTimelineAnchors = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineAnchors | null> => {
@@ -287,12 +301,8 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
   const baseArgs = { types: [ENTITY_TYPE_TIMELINE_EVENT], noFiltersChecking: true };
   // Same visibility as the list: the events of elements the user cannot access are not counted
   const hiddenElementIds = await findInaccessibleElementIds(context, user, container.internal_id);
-  const restrict = (filters: ReturnType<typeof buildTimelineFilters>) => (hiddenElementIds.length === 0 ? filters : {
-    ...filters,
-    filters: [...filters.filters, { key: ['element_id'], values: hiddenElementIds, operator: FilterOperator.NotEq, mode: FilterMode.And }],
-  });
-  const visibleFilters = restrict(buildTimelineFilters(container.internal_id, {}));
-  const allFilters = restrict(buildTimelineFilters(container.internal_id, { includeHidden: true }));
+  const visibleFilters = excludeElements(buildTimelineFilters(container.internal_id, {}), hiddenElementIds);
+  const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { includeHidden: true }), hiddenElementIds);
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
   const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, firstEvents, lastEvents, settings] = await Promise.all([
@@ -452,6 +462,10 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   const existing = input.external_id
     ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
     : null;
+  // The idempotent upsert never lets a user overwrite (and unmark) an event he cannot read
+  if (existing && !(await findTimelineEvent(context, user, internalId))) {
+    throw ForbiddenAccess('A timeline event you cannot access already uses this external id');
+  }
   const access = containerAccessFields(container);
   const kind = input.kind ?? 'milestone';
   const doc = buildTimelineEventDoc({
@@ -643,15 +657,26 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
     const markingIds = (event.object_marking_refs ?? []).map((ref) => resolved[ref]?.internal_id);
     return markingIds.every((id) => !!id && (isBypassUser(user) || allowedMarkings.has(id))) ? markingIds as string[] : null;
   };
-  const candidates = events.filter((e) => e.title && e.event_time).map((event) => ({ event, markings: importableMarkings(event) }));
-  const skipped = candidates.filter((candidate) => candidate.markings === null).length;
-  if (skipped > 0) {
-    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed', { containerId: container.internal_id, skipped });
-  }
-  const docs = candidates.filter((candidate) => candidate.markings !== null).map(({ event, markings }) => {
-    validateWindow(event.event_time, event.event_end_time);
+  // Nor is a stored event the user cannot read ever overwritten by an imported one
+  const readableManual = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
+    filters: buildTimelineFilters(container.internal_id, { sources: ['manual'], includeHidden: true }) as any,
+    maxSize: TIMELINE_MAX_EVENTS,
+  } as any);
+  const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
+  const readableIds = new Set(readable.map((e) => e.internal_id));
+  const storedIds = new Set(storedManual.map((e) => e.internal_id));
+  const candidates = events.filter((e) => e.title && e.event_time).map((event) => {
     const existing = findKnownEvent(event);
     const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
+    const overwritesUnreadable = storedIds.has(internalId) && !readableIds.has(internalId);
+    return { event, existing, internalId, markings: overwritesUnreadable ? null : importableMarkings(event) };
+  });
+  const skipped = candidates.filter((candidate) => candidate.markings === null).length;
+  if (skipped > 0) {
+    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, or event not readable', { containerId: container.internal_id, skipped });
+  }
+  const docs = candidates.filter((candidate) => candidate.markings !== null).map(({ event, existing, internalId, markings }) => {
+    validateWindow(event.event_time, event.event_end_time);
     const element = event.element_ref ? resolved[event.element_ref] : null;
     return buildTimelineEventDoc({
       internal_id: internalId,
