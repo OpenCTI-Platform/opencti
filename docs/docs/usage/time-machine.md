@@ -36,6 +36,10 @@ The section, the period and the date are kept in the URL of the page, so you can
     - or jump between changes with **Previous change** and **Next change**.
 3. Click **Back to the current knowledge** to return to the overview of the entity.
 
+![View as of in the more actions menu of an entity](assets/time-machine-view-as-of-menu.png)
+
+![An intrusion set viewed as it was at a past date](assets/time-machine-view-as-of.png)
+
 The view shows:
 
 - the attributes of the entity at that date (name, description, aliases, confidence, score, markings, labels, author, external references, and so on),
@@ -66,6 +70,8 @@ The **Compare dates** section of the **Changes** tab shows everything that chang
     - **Relationships**: every relationship added, removed, revoked, unrevoked or whose confidence changed, with the related entity, the date and the author.
     - **Contained objects**: for containers (reports, groupings, cases...), the objects added to and removed from the container.
 
+![Compare dates: summary and attribute changes of an intrusion set over a custom period](assets/time-machine-compare-dates.png)
+
 !!! note "Long periods"
 
     The relationship list shows the 500 most recent changes, and the counters of the summary cover the whole period. When a period holds too many relationship changes to read them all, a warning says so: the list, and the counters of removed, revoked and confidence-changed relationships, then only cover the most recent part of the period, while the number of added relationships still covers all of it.
@@ -94,6 +100,8 @@ The **Landscape changes** page compares a whole set of entities between two date
 3. Optionally restrict the **Entity types** and choose how to **Group by** the results: entity type, relationship type or tactic.
 4. Choose the period.
 5. Click **Compute the landscape changes**.
+
+![Landscape changes of the intrusion sets over the last 90 days](assets/landscape-changes.png)
 
 The computation runs in the background and a progress bar shows the entities already processed. The result stays available for one hour: its identifier is kept in the URL of the page, so you can come back to it while it is valid. Once it has expired, **Compute again** runs it with the scope and period shown on the page.
 
@@ -130,6 +138,8 @@ Create them with the **Entities** perspective: the filters of the widget define 
 
 To start from a ready-made dashboard, go to **Dashboards > Custom dashboards**, click **Create from template** next to **Import dashboard** and choose **Threat landscape changes**. The dashboard shows the top changed threats (intrusion sets, threat actors and campaigns) with their new techniques by tactic and their new relationships by type, the top changed malware and tools with their new relationships, and the top changed vulnerabilities. Set the period of the dashboard to choose the dates compared; you can then edit every widget like any other.
 
+![Threat landscape changes dashboard created from its template](assets/landscape-changes-dashboard.png)
+
 !!! note "Public dashboards"
 
     Landscape widgets are not rendered in public dashboards: a landscape diff is an expensive computation that anonymous visitors must not be able to trigger.
@@ -141,13 +151,21 @@ When you open the overview of an entity, the platform records your visit. These 
 - On the overview, chips show what changed since your previous visit: new relationships, updates and, for containers, new contained objects. Hover the chips to see the date of your last visit.
 - In lists, a small dot appears on the rows of the entities that changed since your last visit. Hover it to see the details.
 
+![Chips on the overview of an entity changed by another analyst since the last visit](assets/time-machine-last-visit-chips.png)
+
+![Dots on the rows of the entities changed since the last visit](assets/time-machine-last-visit-list.png)
+
 A visit session lasts 30 minutes: reopening an entity within that time does not reset the reference date, so the chips stay meaningful while you work on the entity.
 
 You can purge your markers at any time from your profile (**Last visit markers** > **Purge my last visit markers**). Administrators with the capability to manage access can purge the markers of a user from **Settings > Security > Users**, in the menu of the user (**Purge the last visit markers**); this action is recorded in the audit log. Markers expire after one year and are removed when the user is deleted.
 
+![Last visit markers in the profile](assets/time-machine-last-visit-profile.png)
+
 ## Change digests
 
 A change digest sends you, at each period, the landscape changes of a set of entities: new relationships, removals, revocations, confidence and score changes. Change digests are created from the **Triggers** tab of your notifications. See [Change digests](notifications.md#change-digests).
+
+![Creation of a change digest](assets/change-digest-create.png)
 
 ## Access control
 
