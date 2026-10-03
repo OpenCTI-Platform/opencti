@@ -2159,12 +2159,43 @@ const EL_REMOVE_ENTITY_CONNECTION_SCRIPT = `if (ctx._source[params.key] != null)
   for (value in params.values) { int position = ctx._source[params.key].indexOf(value); if (position >= 0) { ctx._source[params.key].remove(position); } }
 }`;
 
+// Denormalized references hold one entry per relationship, except where a merge collapsed them: this gives one
+// reference exactly the number of entries of the relationships it stands for.
+const EL_SET_ENTITY_CONNECTION_COUNT_SCRIPT = `if (ctx._source[params.key] == null) { ctx._source[params.key] = new ArrayList(); }
+if (!(ctx._source[params.key] instanceof List)) { ctx._source[params.key] = [ctx._source[params.key]]; }
+def values = ctx._source[params.key];
+int count = 0;
+for (value in values) { if (value == params.value) { count++; } }
+while (count < params.expected) { values.add(params.value); count++; }
+while (count > params.expected) { values.remove(values.indexOf(params.value)); count--; }`;
+
+/**
+ * Entries `otherId` must have in the denormalized `relationType` references of `entityId`: one per relationship of
+ * that type between the two entities, inferred ones included, for each side whose role is denormalized.
+ */
+const expectedConnectionEntries = async (context: AuthContext, relationType: string, entityId: string, otherId: string) => {
+  const [outgoing, incoming] = await Promise.all([
+    fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, relationType, { fromId: entityId, toId: otherId, withInferences: true }),
+    fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, relationType, { fromId: otherId, toId: entityId, withInferences: true }),
+  ]);
+  return outgoing.filter((relation) => isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, ROLE_FROM)).length
+    + incoming.filter((relation) => isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, ROLE_TO)).length;
+};
+
+const reconcileConnectionEntries = async (context: AuthContext, entity: { internal_id: string; _index: string }, relationType: string, otherId: string) => {
+  const expected = await expectedConnectionEntries(context, relationType, entity.internal_id, otherId);
+  const params = { key: buildRefRelationKey(relationType, ID_INTERNAL), value: otherId, expected };
+  await elUpdate(context, entity._index, entity.internal_id, { script: { source: EL_SET_ENTITY_CONNECTION_COUNT_SCRIPT, lang: 'painless', params } });
+};
+
 /**
  * Re-point relationships from one entity to another, in place (same relationship ids, edits kept): the exact reverse
  * of the connection rewrite done by the merge. Denormalized references are maintained on the three impacted
  * elements and one update event is emitted per relationship so that stream consumers follow.
- * Relationships no longer pointing to the previous entity are skipped and reported; the ones already pointing to the
- * new entity (an interrupted operation being resumed) count as re-pointed.
+ * Relationships no longer pointing to the previous entity are skipped and reported. The ones already pointing to the
+ * new entity (an interrupted operation being resumed) count as re-pointed once their denormalized references are
+ * reconciled with the relationships they stand for and their update event is emitted again, since the interruption may
+ * have happened between the connection rewrite and those steps.
  */
 export const repointRelationships = async (
   context: AuthContext,
@@ -2182,12 +2213,14 @@ export const repointRelationships = async (
     const entityUpdates: any[] = [];
     const removals = new Map<string, { _index: string; id: string; key: string; values: string[] }>();
     const applied: Array<{ move: RelationshipRepoint; relation: StoreRelation }> = [];
+    const resumed: Array<{ move: RelationshipRepoint; relation: StoreRelation }> = [];
+    const previousEntriesToReconcile: Array<{ entity: BasicStoreBase; relationType: string; otherId: string }> = [];
     for (let moveIndex = 0; moveIndex < group.length; moveIndex += 1) {
       const move = group[moveIndex];
       const relation = beforeById.get(move.relationId);
       const currentSideId = move.side === 'from' ? relation?.fromId : relation?.toId;
       if (relation && currentSideId === move.newEntity.internal_id) {
-        repointed.push(move.relationId);
+        resumed.push({ move, relation });
         continue;
       }
       if (!relation || currentSideId !== move.previousEntityId || isInferredIndex(relation._index)) {
@@ -2210,14 +2243,17 @@ export const repointRelationships = async (
         data: { internal_id: move.newEntity.internal_id, name: move.newEntity.name },
       });
       if (otherSide && isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, otherRole)) {
+        // The other side gains one entry for the new entity; its entries for the previous entity are reconciled once
+        // the group is moved, as other relationships may still link it to the previous entity.
         entityUpdates.push({
           _index: (otherSide as BasicStoreBase)._index,
           id: otherId,
-          toReplace: move.previousEntityId,
+          toReplace: null,
           relationType,
           entity_type: (otherSide as BasicStoreBase).entity_type,
           data: { internal_id: move.newEntity.internal_id },
         });
+        previousEntriesToReconcile.push({ entity: otherSide as BasicStoreBase, relationType, otherId: move.previousEntityId });
       }
       if (isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, movedRole)) {
         entityUpdates.push({
@@ -2251,6 +2287,17 @@ export const repointRelationships = async (
       const { _index, id, key, values } = removalEntries[removalIndex];
       await elUpdate(context, _index, id, { script: { source: EL_REMOVE_ENTITY_CONNECTION_SCRIPT, lang: 'painless', params: { key, values } } });
     }
+    const reconciled = new Set<string>();
+    const reconcile = async (entity: { internal_id: string; _index: string } | undefined, relationType: string, otherId: string) => {
+      const reconcileKey = `${entity?.internal_id}|${relationType}|${otherId}`;
+      if (!entity || reconciled.has(reconcileKey)) return;
+      reconciled.add(reconcileKey);
+      await reconcileConnectionEntries(context, entity, relationType, otherId);
+    };
+    for (let reconcileIndex = 0; reconcileIndex < previousEntriesToReconcile.length; reconcileIndex += 1) {
+      const { entity, relationType, otherId } = previousEntriesToReconcile[reconcileIndex];
+      await reconcile(entity, relationType, otherId);
+    }
     const after = await storeLoadByIdsWithRefs<StoreRelation>(context, SYSTEM_USER, applied.map((a) => a.relation.internal_id));
     const afterById = new Map(after.map((relation) => [relation.internal_id, relation]));
     for (let appliedIndex = 0; appliedIndex < applied.length; appliedIndex += 1) {
@@ -2262,6 +2309,25 @@ export const repointRelationships = async (
         const previousName = previousSide?.name;
         const changes = [{ field: move.side === 'from' ? 'source_ref' : 'target_ref', previous: [previousName ?? move.previousEntityId], new: [move.newEntity.name] }];
         await storeUpdateEvent(context, user, relation as StoreObject, updated as StoreObject, changes);
+      }
+    }
+    for (let resumedIndex = 0; resumedIndex < resumed.length; resumedIndex += 1) {
+      const { move, relation } = resumed[resumedIndex];
+      const relationType = relation.entity_type;
+      const otherSide = (move.side === 'from' ? relation.to : relation.from) as BasicStoreBase | undefined;
+      const otherId = move.side === 'from' ? relation.toId : relation.fromId;
+      const previousEntity = await internalLoadById<BasicStoreBase>(context, SYSTEM_USER, move.previousEntityId);
+      await reconcile(otherSide, relationType, move.newEntity.internal_id);
+      await reconcile(otherSide, relationType, move.previousEntityId);
+      await reconcile(move.newEntity, relationType, otherId);
+      await reconcile(previousEntity, relationType, otherId);
+      repointed.push(relation.internal_id);
+      if (previousEntity) {
+        const previousSideKey = move.side === 'from' ? 'from' : 'to';
+        const previousState = { ...relation, [previousSideKey]: previousEntity, [`${previousSideKey}Id`]: previousEntity.internal_id };
+        const previousName = (previousEntity as { name?: string }).name;
+        const changes = [{ field: move.side === 'from' ? 'source_ref' : 'target_ref', previous: [previousName ?? move.previousEntityId], new: [move.newEntity.name] }];
+        await storeUpdateEvent(context, user, previousState as StoreObject, relation as StoreObject, changes);
       }
     }
   }

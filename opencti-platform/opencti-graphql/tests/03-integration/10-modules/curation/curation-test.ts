@@ -5,7 +5,9 @@ import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQu
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
 import { addMalware } from '../../../../src/domain/malware';
-import { createRelation, deleteElementById } from '../../../../src/database/middleware';
+import { createRelation, deleteElementById, repointRelationships } from '../../../../src/database/middleware';
+import { elRawGet, elUpdate } from '../../../../src/database/engine';
+import { buildRefRelationKey, ID_INTERNAL } from '../../../../src/schema/general';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
@@ -234,6 +236,21 @@ const openProposalsFor = async (entityId: string) => {
   return result.data?.curationProposalsForEntity as Array<Record<string, any>>;
 };
 
+const USES_ENTRIES_KEY = buildRefRelationKey(RELATION_USES, ID_INTERNAL);
+
+const usesEntriesOf = async (id: string, type: string): Promise<string[]> => {
+  const element = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, id, type);
+  const document = await elRawGet({ id: element.internal_id, index: element._index });
+  return (document._source[USES_ENTRIES_KEY] ?? []) as string[];
+};
+
+const setUsesEntries = async (element: BasicStoreEntity, values: string[]) => {
+  const source = 'ctx._source[params.key] = params.values;';
+  await elUpdate(testContext, element._index, element.internal_id, { script: { source, lang: 'painless', params: { key: USES_ENTRIES_KEY, values } } });
+};
+
+const occurrences = (values: string[], id: string) => values.filter((value) => value === id).length;
+
 const deleteAllOfType = async (type: string) => {
   const elements = await fullEntitiesList(testContext, ADMIN_USER, [type]);
   for (let index = 0; index < elements.length; index += 1) {
@@ -255,6 +272,14 @@ describe('Knowledge curation', () => {
     createdEntities.push({ id: malwareId, type: ENTITY_TYPE_MALWARE });
     const relation = await createRelation(testContext, ADMIN_USER, { fromId: entityB.id, toId: malwareId, relationship_type: RELATION_USES });
     usesFromB = relation.id;
+    // The surviving entity uses the same malware through its own relationship, which an unmerge must leave in place
+    await createRelation(testContext, ADMIN_USER, {
+      fromId: entityA.id,
+      toId: malwareId,
+      relationship_type: RELATION_USES,
+      start_time: '2021-01-01T00:00:00.000Z',
+      stop_time: '2021-06-01T00:00:00.000Z',
+    });
   });
 
   afterAll(async () => {
@@ -366,6 +391,32 @@ describe('Knowledge curation', () => {
     expect(restored.name).toBe(NAME_B);
     const restoredRelation = await storeLoadById(testContext, ADMIN_USER, usesFromB, RELATION_USES) as unknown as { fromId: string };
     expect(restoredRelation.fromId).toBe(entityB.id);
+    // One denormalized entry per relationship: the malware references both intrusion sets again, once each
+    const malwareUses = await usesEntriesOf(malwareId, ENTITY_TYPE_MALWARE);
+    expect(occurrences(malwareUses, entityA.id)).toBe(1);
+    expect(occurrences(malwareUses, entityB.id)).toBe(1);
+    expect(occurrences(await usesEntriesOf(entityB.id, ENTITY_TYPE_INTRUSION_SET), malwareId)).toBe(1);
+    expect(occurrences(await usesEntriesOf(entityA.id, ENTITY_TYPE_INTRUSION_SET), malwareId)).toBe(1);
+  });
+
+  it('should repair the references of a relationship already re-pointed when an interrupted unmerge resumes', async () => {
+    const malware = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    const restored = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, entityB.id, ENTITY_TYPE_INTRUSION_SET);
+    // State left by an interruption between the connection rewrite and the reference updates
+    await setUsesEntries(malware, [entityB.id, entityB.id]);
+    await setUsesEntries(restored, []);
+    const result = await repointRelationships(testContext, ADMIN_USER, [{
+      relationId: usesFromB,
+      side: 'from',
+      previousEntityId: entityA.id,
+      newEntity: { internal_id: restored.internal_id, entity_type: restored.entity_type, name: NAME_B, _index: restored._index },
+    }]);
+    expect(result).toEqual({ repointed: [usesFromB], skipped: [] });
+    const malwareUses = await usesEntriesOf(malwareId, ENTITY_TYPE_MALWARE);
+    expect(occurrences(malwareUses, entityA.id)).toBe(1);
+    expect(occurrences(malwareUses, entityB.id)).toBe(1);
+    expect(occurrences(await usesEntriesOf(entityB.id, ENTITY_TYPE_INTRUSION_SET), malwareId)).toBe(1);
+    expect(occurrences(await usesEntriesOf(entityA.id, ENTITY_TYPE_INTRUSION_SET), malwareId)).toBe(1);
   });
 
   it('should reject a proposal and suppress the same finding', async () => {

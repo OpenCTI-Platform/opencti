@@ -55,7 +55,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 148;
+testCreatedCounter.relationship = 149;
 testCreatedCounter.report = 52;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
@@ -70,7 +70,7 @@ testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 10;
+testUpdatedCounter.relationship = 11;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
