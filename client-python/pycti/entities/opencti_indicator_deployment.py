@@ -19,6 +19,7 @@ _DEPLOYMENT_PROPERTIES = """
     last_sync_at
     removed_at
     hit_count
+    first_hit_at
     last_hit_at
     validation_status
     last_validation_at

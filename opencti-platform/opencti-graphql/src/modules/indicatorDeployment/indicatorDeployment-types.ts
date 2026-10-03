@@ -49,6 +49,7 @@ export interface DeployedOnAttributes {
   last_sync_at?: Date | string | null;
   removed_at?: Date | string | null;
   hit_count: number;
+  first_hit_at?: Date | string | null;
   last_hit_at?: Date | string | null;
   validation_status: ValidationStatus;
   last_validation_at?: Date | string | null;

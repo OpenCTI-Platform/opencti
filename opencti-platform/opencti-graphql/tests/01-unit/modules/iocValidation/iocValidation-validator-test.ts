@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { carriesValidationProof, touchesValidationFields } from '../../../../src/modules/iocValidation/iocValidation-validator';
-import { getEntityValidatorCreation, getEntityValidatorUpdate } from '../../../../src/schema/validator-register';
+import {
+  carriesLifecycleState,
+  carriesValidationProof,
+  isLifecycleWriter,
+  touchesLifecycleFields,
+  touchesValidationFields,
+} from '../../../../src/modules/iocValidation/iocValidation-validator';
+import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
+import type { AuthUser } from '../../../../src/types/user';
+import { testContext } from '../../../utils/testQuery';
 
 describe('Deployment validation fields guard', () => {
   it('should be registered for creation and update of deployed-on relationships', () => {
@@ -24,5 +32,45 @@ describe('Deployment validation fields guard', () => {
     expect(touchesValidationFields({ deployment_status: ['active'] })).toEqual(false);
     expect(touchesValidationFields({ validation_status: ['not_requested'] })).toEqual(true);
     expect(touchesValidationFields({ validation_run_id: [null] })).toEqual(true);
+    expect(touchesValidationFields({ validation_status: undefined })).toEqual(false);
+  });
+});
+
+describe('Deployment lifecycle fields guard', () => {
+  const user = (capabilities: string[]) => ({ id: 'user-1', capabilities: capabilities.map((name) => ({ name })) }) as unknown as AuthUser;
+  const editor = user(['KNOWLEDGE_KNUPDATE']);
+  const connector = user(['KNOWLEDGE_KNUPDATE', 'CONNECTORAPI']);
+  const administrator = user(['BYPASS']);
+
+  it('should only see deployment state in values other than the defaults of a new deployment', () => {
+    expect(carriesLifecycleState({ description: 'manual' })).toEqual(false);
+    expect(carriesLifecycleState({ deployment_status: 'pending', hit_count: 0, error_message: '' })).toEqual(false);
+    expect(carriesLifecycleState({ deployment_status: ['active'] })).toEqual(true);
+    expect(carriesLifecycleState({ hit_count: 3 })).toEqual(true);
+    expect(carriesLifecycleState({ first_hit_at: '2026-10-03T12:00:00.000Z' })).toEqual(true);
+    expect(carriesLifecycleState({ external_id: 'vendor-1' })).toEqual(true);
+  });
+
+  it('should guard every change of a lifecycle field, resets included', () => {
+    expect(touchesLifecycleFields({ revoked: [true] })).toEqual(false);
+    expect(touchesLifecycleFields({ deployment_status: ['pending'] })).toEqual(true);
+    expect(touchesLifecycleFields({ hit_count: [0] })).toEqual(true);
+    expect(touchesLifecycleFields({ last_hit_at: [null] })).toEqual(true);
+  });
+
+  it('should leave the lifecycle to connector accounts and administrators', () => {
+    expect(isLifecycleWriter(editor)).toEqual(false);
+    expect(isLifecycleWriter(connector)).toEqual(true);
+    expect(isLifecycleWriter(administrator)).toEqual(true);
+  });
+
+  it('should refuse a regular editor writing deployment state on creation or edition', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    await expect(validatorCreation(testContext, editor, { deployment_status: 'active', hit_count: 9 })).rejects.toThrow('deployment state');
+    await expect(validatorUpdate(testContext, editor, { deployment_status: ['pending'] }, {})).rejects.toThrow('deployment state');
+    await expect(validatorUpdate(testContext, administrator, { deployment_status: ['pending'] }, {})).resolves.toEqual(true);
+    await expect(validatorUpdate(testContext, connector, { hit_count: [4] }, {})).resolves.toEqual(true);
+    await expect(validatorUpdate(testContext, editor, { description: ['notes'] }, {})).resolves.toEqual(true);
   });
 });

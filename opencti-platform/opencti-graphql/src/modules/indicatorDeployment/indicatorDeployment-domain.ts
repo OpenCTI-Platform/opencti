@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreRelation } from '../../types/store';
-import { createRelation, distributionRelations, patchAttribute } from '../../database/middleware';
+import { createRelation, distributionRelations, patchAttribute, patchAttributeFromLoadedWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import {
   fullEntitiesList,
   fullRelationsList,
@@ -46,6 +46,7 @@ import {
   LIVE_DEPLOYMENT_STATUSES,
   PROVEN_VALIDATION_STATUSES,
   RELATION_DEPLOYED_ON,
+  type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
 import { isDeploymentStatus } from './indicatorDeployment-utils';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
@@ -170,6 +171,52 @@ export const computeIndicatorDeploymentCounters = (relations: Array<Partial<Depl
 
 export const hitsSightingStixId = (indicatorInternalId: string, platformInternalId: string) => {
   return `sighting--${uuidv5(`${indicatorInternalId}|${platformInternalId}`, HITS_SIGHTING_NAMESPACE)}`;
+};
+
+export type HitsDeploymentState = Partial<Pick<DeployedOnAttributes, 'hit_count' | 'first_hit_at' | 'last_hit_at'>>;
+export interface HitsSightingState {
+  attribute_count?: number | null;
+  first_seen?: DateInput;
+  last_seen?: DateInput;
+}
+export interface HitsSightingValues {
+  attribute_count: number;
+  first_seen: Date;
+  last_seen: Date;
+}
+
+/**
+ * Values of the hits sighting, rebuilt from the deployment (the durable record of the hits) so that a sighting
+ * left behind by a failed write is repaired: the count never goes below the deployment hit count and never
+ * decreases, the dates only widen. `newHits` are the hits of the current report (0 for a replay, already counted).
+ */
+export const computeHitsSightingValues = (
+  sighting: HitsSightingState | undefined,
+  deployment: HitsDeploymentState,
+  newHits: number,
+  reportFirstHit: Date,
+  reportLastHit: Date,
+): HitsSightingValues => {
+  const deploymentCount = deployment.hit_count ?? 0;
+  const firstHit = toDate(deployment.first_hit_at, reportFirstHit);
+  const lastHit = toDate(deployment.last_hit_at, reportLastHit);
+  if (!sighting) {
+    return { attribute_count: Math.max(deploymentCount, newHits), first_seen: firstHit, last_seen: lastHit };
+  }
+  const sightingFirst = toDate(sighting.first_seen, firstHit);
+  const sightingLast = toDate(sighting.last_seen, lastHit);
+  return {
+    attribute_count: Math.max((sighting.attribute_count ?? 0) + newHits, deploymentCount),
+    first_seen: sightingFirst.getTime() <= firstHit.getTime() ? sightingFirst : firstHit,
+    last_seen: sightingLast.getTime() >= lastHit.getTime() ? sightingLast : lastHit,
+  };
+};
+
+export const isHitsSightingUpToDate = (sighting: HitsSightingState, values: HitsSightingValues) => {
+  const sameTime = (current: DateInput, expected: Date) => isNotEmptyField(current) && toDate(current, expected).getTime() === expected.getTime();
+  return (sighting.attribute_count ?? 0) === values.attribute_count
+    && sameTime(sighting.first_seen, values.first_seen)
+    && sameTime(sighting.last_seen, values.last_seen);
 };
 // endregion
 
@@ -370,17 +417,12 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       description: `Hits reported by the ${platform.name} integration`,
     });
     const lastKnownHit = existing?.last_hit_at ? new Date(existing.last_hit_at).getTime() : undefined;
-    if (existing && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit) {
-      // Replay of an already counted report: the hits are never counted twice. The deployment is
-      // written before the sighting, so a retry after a failed sighting write restores it.
-      if (existingSighting) {
-        return existingSighting;
-      }
-      return createHitsSighting(existing.hit_count ?? args.count, firstHit, new Date(lastKnownHit));
-    }
-    // 01. Deployment state: hits prove the indicator is live on the platform
+    // Replay of an already counted report: the hits are never counted twice.
+    const replay = existing !== undefined && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit;
+    let deployment: HitsDeploymentState | undefined = existing;
+    // 01. Deployment state, the durable record of the hits: hits prove the indicator is live on the platform
     if (!existing) {
-      await createRelation(context, user, {
+      deployment = await createRelation(context, user, {
         fromId: indicator.internal_id,
         toId: platform.internal_id,
         relationship_type: RELATION_DEPLOYED_ON,
@@ -389,10 +431,14 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
         deployed_at: firstHit,
         last_sync_at: now,
         hit_count: args.count,
+        first_hit_at: firstHit,
         last_hit_at: lastHit,
-      });
-    } else {
+      }) as unknown as HitsDeploymentState;
+    } else if (!replay) {
       const patch: Record<string, unknown> = { hit_count: (existing.hit_count ?? 0) + args.count, last_hit_at: lastHit, last_sync_at: now };
+      if (isEmptyField(existing.first_hit_at) || firstHit.getTime() < new Date(existing.first_hit_at as Date | string).getTime()) {
+        patch.first_hit_at = firstHit;
+      }
       const removedBeforeHit = existing.deployment_status === DEPLOYMENT_STATUS_REMOVED
         && (!existing.removed_at || new Date(existing.removed_at).getTime() < lastHit.getTime());
       const promotable = [DEPLOYMENT_STATUS_PENDING, DEPLOYMENT_STATUS_DEPLOYED, DEPLOYMENT_STATUS_FAILED].includes(existing.deployment_status as never);
@@ -404,23 +450,24 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       }
       const { element } = await patchAttribute(context, user, existing.internal_id, RELATION_DEPLOYED_ON, patch);
       await notifyRelationEdit(user, element);
+      deployment = element as unknown as HitsDeploymentState;
     }
-    // 02. Stable hits sighting Indicator -> Security Platform
+    // 02. Stable hits sighting Indicator -> Security Platform, always rebuilt from the deployment: the deployment
+    // is written first, so a retry after a failed sighting write (a replay) repairs the sighting.
+    const values = computeHitsSightingValues(existingSighting, deployment ?? {}, replay ? 0 : args.count, firstHit, lastHit);
     let sighting;
     if (!existingSighting) {
-      sighting = await createHitsSighting((existing?.hit_count ?? 0) + args.count, firstHit, lastHit);
-    } else {
-      const previousFirst = existingSighting.first_seen ? new Date(existingSighting.first_seen).getTime() : firstHit.getTime();
-      const previousLast = existingSighting.last_seen ? new Date(existingSighting.last_seen).getTime() : lastHit.getTime();
-      const { element } = await patchAttribute(context, user, existingSighting.internal_id, STIX_SIGHTING_RELATIONSHIP, {
-        attribute_count: (existingSighting.attribute_count ?? 0) + args.count,
-        first_seen: new Date(Math.min(previousFirst, firstHit.getTime())),
-        last_seen: new Date(Math.max(previousLast, lastHit.getTime())),
-      });
+      sighting = await createHitsSighting(values.attribute_count, values.first_seen, values.last_seen);
+    } else if (!isHitsSightingUpToDate(existingSighting, values)) {
+      const { element } = await patchAttribute(context, user, existingSighting.internal_id, STIX_SIGHTING_RELATIONSHIP, values);
       sighting = element;
       await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
+    } else {
+      sighting = existingSighting;
     }
-    await addIndicatorHitsReportCount(args.count);
+    if (!replay) {
+      await addIndicatorHitsReportCount(args.count);
+    }
     return sighting;
   } finally {
     await lock.unlock();
@@ -436,11 +483,15 @@ export const retryIndicatorDeployment = async (context: AuthContext, user: AuthU
   // Checked under the pair lock of the connector reports: a deployment confirmed meanwhile is never reset.
   const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
   try {
-    const current = await loadDeployedOnById(context, user, id);
+    const current = await storeLoadByIdWithRefs<StoreRelationDeployedOn>(context, user, id, { type: RELATION_DEPLOYED_ON });
+    if (!current) {
+      throw FunctionalError('Deployment not found or not accessible', { id });
+    }
     if (!RETRYABLE_DEPLOYMENT_STATUSES.includes(current.deployment_status as DeploymentStatus)) {
       throw FunctionalError('Only a failed, removed or expired deployment can be retried', { id, status: current.deployment_status });
     }
-    const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, {
+    // Lifecycle fields are refused to a regular edition (deployed-on validator): this action, checked above, writes its reset directly.
+    const { element } = await patchAttributeFromLoadedWithRefs(context, user, current, {
       deployment_status: DEPLOYMENT_STATUS_PENDING,
       error_message: null,
       revoked: false,

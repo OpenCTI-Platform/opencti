@@ -10,6 +10,7 @@ export interface StixDeployedOnExtension {
   last_sync_at?: StixDate;
   removed_at?: StixDate;
   hit_count?: number;
+  first_hit_at?: StixDate;
   last_hit_at?: StixDate;
   validation_status?: string;
   last_validation_at?: StixDate;

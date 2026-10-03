@@ -21,6 +21,7 @@ const OPTIONAL_DEPLOYED_ON_KEYS = [
   'deployed_at',
   'last_sync_at',
   'removed_at',
+  'first_hit_at',
   'last_hit_at',
   'last_validation_at',
   'validation_run_id',
