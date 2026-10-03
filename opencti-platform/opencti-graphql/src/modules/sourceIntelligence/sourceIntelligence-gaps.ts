@@ -431,7 +431,16 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
 // endregion
 
 // region queries
-export const findCollectionGaps = async (context: AuthContext, user: AuthUser, args: { pirId?: string | null; onlyGaps?: boolean | null; first?: number | null; after?: string | null; orderBy?: string | null; orderMode?: string | null }) => {
+interface CollectionGapsArgs {
+  pirId?: string | null;
+  onlyGaps?: boolean | null;
+  first?: number | null;
+  after?: string | null;
+  orderBy?: string | null;
+  orderMode?: string | null;
+}
+
+export const findCollectionGaps = async (context: AuthContext, user: AuthUser, args: CollectionGapsArgs) => {
   await checkEnterpriseEdition(context);
   let pirIds: string[];
   if (args.pirId) {

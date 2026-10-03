@@ -71,7 +71,9 @@ export const findLiveScorecards = async (context: AuthContext, period: Scorecard
   if (sourceIds && ids.length === 0) {
     return scorecards;
   }
-  const chunks = ids.length > 0 ? Array.from({ length: Math.ceil(ids.length / MAX_SCORECARDS_PAGE) }, (_, i) => ids.slice(i * MAX_SCORECARDS_PAGE, (i + 1) * MAX_SCORECARDS_PAGE)) : [undefined];
+  const chunks = ids.length > 0
+    ? Array.from({ length: Math.ceil(ids.length / MAX_SCORECARDS_PAGE) }, (_, i) => ids.slice(i * MAX_SCORECARDS_PAGE, (i + 1) * MAX_SCORECARDS_PAGE))
+    : [undefined];
   for (let i = 0; i < chunks.length; i += 1) {
     const page = await searchScorecards(context, { period, live: true, sourceIds: chunks[i], first: MAX_SCORECARDS_PAGE });
     scorecards.push(...page);
