@@ -51,7 +51,7 @@ const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
   const [open, setOpen] = useState(false);
   const [commit, inFlight] = useApiMutation<SourceCostEditorMutation>(sourceCostEditorMutation);
   const validation = Yup.object().shape({
-    amount: Yup.number().typeError(t_i18n('This field must be a number')).required(t_i18n('This field is required')).min(0, `${t_i18n('Minimum')} 0`),
+    amount: Yup.number().typeError(t_i18n('This field must be a number')).required(t_i18n('This field is required')).min(0, t_i18n('The minimum is {min}', { values: { min: 0 } })),
     currency: Yup.string().required(t_i18n('This field is required')).matches(/^[A-Za-z]{3}$/, t_i18n('ISO 4217 currency code, for example EUR or USD')),
     period: Yup.string().required(t_i18n('This field is required')).oneOf(Object.keys(COST_PERIOD_LABELS)),
   });

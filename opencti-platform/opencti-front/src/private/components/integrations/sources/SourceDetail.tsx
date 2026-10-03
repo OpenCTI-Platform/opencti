@@ -2,16 +2,18 @@ import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link, useParams } from 'react-router';
 import Grid from '@mui/material/Grid2';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@filigran/design-system';
+import { Chip, type ChipSeverity, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Tag from '@common/tag/Tag';
 import Chart from '@components/common/charts/Chart';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,19 +28,15 @@ import { SourceKindIcon, ValueScoreBar } from './SourcesLeaderboard';
 import { SourceRecommendationsList, sourceRecommendationsQuery } from './SourceRecommendations';
 import {
   buildTrendSerie,
-  COST_PERIOD_LABELS,
-  formatCost,
-  formatCount,
-  formatHours,
+  DECLARED_AMOUNT_LABELS,
   formatMetric,
-  formatRatio,
-  formatScore,
   REFERENCE_SCORECARD_PERIOD,
   ScorecardMetricType,
   ScorecardPeriod,
   scoreLevel,
   SOURCE_KIND_LABELS,
 } from './sourceIntelligenceUtils';
+import SourceMetricValue, { RelativeTime, useSourceMetricFormat } from './SourceMetricValue';
 import { SourceDetailQuery } from './__generated__/SourceDetailQuery.graphql';
 import { SourceRecommendationsQuery } from './__generated__/SourceRecommendationsQuery.graphql';
 
@@ -171,9 +169,15 @@ const TREND_METRICS: Array<{ key: string; label: string; type: ScorecardMetricTy
 ];
 const TREND_DAYS = 90;
 
+const SCORED_WINDOW_SENTENCES: Record<ScorecardPeriod, string> = {
+  LAST_7_DAYS: 'Scored over the last 7 days, refreshed {time}.',
+  LAST_30_DAYS: 'Scored over the last 30 days, refreshed {time}.',
+  LAST_90_DAYS: 'Scored over the last 90 days, refreshed {time}.',
+};
+
 interface MetricTileProps {
   label: string;
-  value: string;
+  value: React.ReactNode;
   hint?: string;
   level?: ReturnType<typeof scoreLevel>;
   testId?: string;
@@ -191,21 +195,21 @@ const MetricTile = ({ label, value, hint, level = 'unknown', testId }: MetricTil
     <Card padding="small" fullHeight>
       <Stack gap={0.5} data-testid={testId}>
         <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>{label}</Typography>
-        <Typography sx={{ fontSize: 24, fontWeight: 700, color: colors[level] }}>{value}</Typography>
+        <Typography variant="h2" component="div" sx={{ margin: 0, color: colors[level] }}>{value}</Typography>
         {hint && <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>{hint}</Typography>}
       </Stack>
     </Card>
   );
 };
 
-const BreakdownList = ({ rows }: { rows: Array<[string, string]> }) => {
+const BreakdownList = ({ rows }: { rows: Array<[string, React.ReactNode]> }) => {
   const theme = useTheme<Theme>();
   return (
     <Box component="dl" sx={{ margin: 0, display: 'grid', gridTemplateColumns: '1fr max-content', rowGap: 1 }}>
       {rows.map(([label, value]) => (
         <React.Fragment key={label}>
           <Typography component="dt" variant="body2" sx={{ color: theme.palette.text.secondary }}>{label}</Typography>
-          <Typography component="dd" variant="body2" sx={{ margin: 0, fontWeight: 600, textAlign: 'right' }}>{value}</Typography>
+          <Typography component="dd" variant="body2" sx={{ margin: 0, fontWeight: 'fontWeightMedium', textAlign: 'right' }}>{value}</Typography>
         </React.Fragment>
       ))}
     </Box>
@@ -220,10 +224,10 @@ const SourceRecommendationsSection = ({ sourceId }: { sourceId: string }) => {
     { count: 10, sourceId, status: ['proposed', 'applied', 'failed'] },
   );
   if (!queryRef) {
-    return <Loader variant={LoaderVariant.inElement} />;
+    return <Skeleton variant="rounded" height={96} aria-hidden />;
   }
   return (
-    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <Suspense fallback={<Skeleton variant="rounded" height={96} aria-hidden />}>
       <SourceRecommendationsList queryRef={queryRef} hideSource emptyMessage={t_i18n('No pending recommendation for this source.')} />
     </Suspense>
   );
@@ -235,8 +239,20 @@ interface SourceDetailComponentProps {
   onPeriodChange: (period: ScorecardPeriod) => void;
 }
 
+const SourceDetailSkeleton = () => (
+  <Stack gap={2} sx={{ padding: 3 }} aria-hidden data-testid="source-detail-loading">
+    <Skeleton variant="rounded" height={88} />
+    <Stack direction="row" gap={2}>
+      <Skeleton variant="rounded" height={180} sx={{ flex: 1 }} />
+      <Skeleton variant="rounded" height={180} sx={{ flex: 2 }} />
+    </Stack>
+    <Skeleton variant="rounded" height={280} />
+  </Stack>
+);
+
 const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetailComponentProps) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, rd, fldt } = useFormatter();
+  const format = useSourceMetricFormat();
   const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -268,6 +284,23 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
   setTitle(`${source.name} | ${t_i18n('Source Intelligence')}`);
   const scorecard = source.scorecard;
   const currency = scorecard?.cost_currency ?? source.cost?.currency;
+  const value = (formatted: string | null, reason?: string) => <SourceMetricValue value={formatted} reason={reason} />;
+  let sourceState: { label: string; severity: ChipSeverity } = { label: 'Scored', severity: 'low' };
+  let sourceStateSentence = scorecard
+    ? t_i18n(SCORED_WINDOW_SENTENCES[period], { values: { time: rd(scorecard.computed_at) } })
+    : t_i18n('No scorecard for this window yet: it appears after the next computation once the source has written knowledge.');
+  let sourceStateDate: string | null | undefined = scorecard?.computed_at;
+  if (!source.enabled) {
+    sourceState = { label: 'Disabled', severity: 'neutral' };
+    sourceStateSentence = t_i18n('Scoring is turned off for this source: its scorecards are not computed.');
+    sourceStateDate = null;
+  } else if (source.quarantined) {
+    sourceState = { label: 'Quarantined', severity: 'medium' };
+    sourceStateSentence = t_i18n('The new knowledge of this source goes to a review draft instead of the live knowledge.');
+    sourceStateDate = null;
+  } else if (!scorecard) {
+    sourceState = { label: 'Not scored yet', severity: 'neutral' };
+  }
 
   return (
     <div data-testid="source-detail-page">
@@ -284,19 +317,33 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
           <Box sx={{ minWidth: 0 }}>
             <Stack direction="row" gap={1} alignItems="center">
               <SourceKindIcon kind={source.source_kind} />
-              <Typography variant="h1" sx={{ fontWeight: 700, fontSize: 22, margin: 0 }}>{source.name}</Typography>
+              <Typography variant="h1" sx={{ margin: 0 }}>{source.name}</Typography>
+            </Stack>
+            <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ marginTop: 1 }} data-testid="source-detail-status">
+              <Chip severity={sourceState.severity} size="sm" label={t_i18n(sourceState.label)} />
+              {sourceStateDate ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Typography variant="body2" tabIndex={0}>{sourceStateSentence}</Typography>
+                  </TooltipTrigger>
+                  <TooltipContent>{fldt(sourceStateDate)}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Typography variant="body2">{sourceStateSentence}</Typography>
+              )}
+              {source.quarantined && source.quarantine_draft_id && (
+                <Button size="small" component={Link} to={`/dashboard/data/import/draft/${source.quarantine_draft_id}`}>
+                  {t_i18n('Open the quarantine draft')}
+                </Button>
+              )}
             </Stack>
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ marginTop: 1 }}>
-              <Tag label={t_i18n(SOURCE_KIND_LABELS[source.source_kind] ?? source.source_kind)} />
-              {source.quarantined && <Tag label={t_i18n('Quarantined')} color={theme.palette.warn.main} />}
+              <Tag label={t_i18n(SOURCE_KIND_LABELS[source.source_kind] ?? 'Source')} />
               {(source.tags ?? []).map((tag) => <Tag key={tag} label={tag} size="small" />)}
               {source.connector && (
                 <Link to={`/dashboard/integrations/connectors/${source.connector.id}`}>
-                  {`${t_i18n('Connector health and logs')}: ${source.connector.name}`}
+                  {t_i18n('Connector health and logs: {name}', { values: { name: source.connector.name } })}
                 </Link>
-              )}
-              {source.quarantined && source.quarantine_draft_id && (
-                <Link to={`/dashboard/data/import/draft/${source.quarantine_draft_id}`}>{t_i18n('Quarantine draft')}</Link>
               )}
             </Stack>
             {source.description && (
@@ -329,10 +376,12 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                 <Card padding="small" fullHeight>
                   <Stack gap={1} data-testid="source-detail-value-score">
                     <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>{t_i18n('Operational value score')}</Typography>
-                    <Typography sx={{ fontSize: 40, fontWeight: 700 }}>{formatScore(scorecard.value_score)}</Typography>
+                    <Typography variant="h1" component="div" sx={{ margin: 0 }}>{value(format.score(scorecard.value_score))}</Typography>
                     <ValueScoreBar value={scorecard.value_score} />
                     <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                      {`${t_i18n('Computed')} ${nsdt(scorecard.computed_at)} - ${scorecard.provenance_mode === 'assertions' ? t_i18n('Provenance: assertions') : t_i18n('Provenance: creators')}`}
+                      {scorecard.provenance_mode === 'assertions'
+                        ? t_i18n('Attribution from the sources recorded on every fact')
+                        : t_i18n('Attribution from creators and authors, lead time approximated')}
                     </Typography>
                   </Stack>
                 </Card>
@@ -340,39 +389,61 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 8 }}>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Volume')} value={formatCount(scorecard.volume_total)} hint={`${formatCount(scorecard.new_objects)} ${t_i18n('new')}`} testId="source-metric-volume" />
+                    <MetricTile
+                      label={t_i18n('Volume')}
+                      value={value(format.count(scorecard.volume_total))}
+                      hint={t_i18n('{count, plural, one {# new object} other {# new objects}}', { values: { count: scorecard.new_objects ?? 0 } })}
+                      testId="source-metric-volume"
+                    />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Unique contribution')} value={formatRatio(scorecard.unique_contribution)} level={scoreLevel(scorecard.unique_contribution)} hint={`${formatCount(scorecard.unique_count)} ${t_i18n('unique objects')}`} />
+                    <MetricTile
+                      label={t_i18n('Unique contribution')}
+                      value={value(format.ratio(scorecard.unique_contribution))}
+                      level={scoreLevel(scorecard.unique_contribution)}
+                      hint={t_i18n('{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}', { values: { count: scorecard.unique_count ?? 0 } })}
+                    />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Corroboration rate')} value={formatRatio(scorecard.corroboration_rate)} level={scoreLevel(scorecard.corroboration_rate)} />
+                    <MetricTile label={t_i18n('Corroboration rate')} value={value(format.ratio(scorecard.corroboration_rate))} level={scoreLevel(scorecard.corroboration_rate)} />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricTile
                       label={t_i18n('Lead time')}
-                      value={formatHours(scorecard.lead_time_hours)}
+                      value={value(format.hours(scorecard.lead_time_hours), t_i18n('No object shared with another source in the period.'))}
                       hint={scorecard.first_reporter_share !== null && scorecard.first_reporter_share !== undefined
-                        ? `${formatRatio(scorecard.first_reporter_share, 0)} ${t_i18n('reported first')}`
-                        : t_i18n('No shared object')}
+                        ? t_i18n('Reported first on {share} of the shared objects', { values: { share: format.ratio(scorecard.first_reporter_share, 0) } })
+                        : t_i18n('No object shared with another source')}
                     />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Accuracy')} value={formatRatio(scorecard.accuracy)} level={scoreLevel(scorecard.accuracy)} hint={`${formatCount(scorecard.evaluated_count)} ${t_i18n('evaluated')}`} />
+                    <MetricTile
+                      label={t_i18n('Accuracy')}
+                      value={value(format.ratio(scorecard.accuracy), t_i18n('No object of this source could be checked in the period.'))}
+                      level={scoreLevel(scorecard.accuracy)}
+                      hint={t_i18n('{count, plural, one {# object checked} other {# objects checked}}', { values: { count: scorecard.evaluated_count ?? 0 } })}
+                    />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricTile
                       label={t_i18n('Relevance')}
-                      value={isEnterpriseEdition ? formatRatio(scorecard.relevance) : t_i18n('Enterprise Edition')}
+                      value={isEnterpriseEdition ? value(format.ratio(scorecard.relevance)) : <EEChip />}
                       level={isEnterpriseEdition ? scoreLevel(scorecard.relevance) : 'unknown'}
-                      hint={isEnterpriseEdition ? `${formatCount(scorecard.pir_matched_count)} ${t_i18n('in a PIR')}` : undefined}
+                      hint={isEnterpriseEdition
+                        ? t_i18n('{count, plural, one {# object in a PIR} other {# objects in a PIR}}', { values: { count: scorecard.pir_matched_count ?? 0 } })
+                        : t_i18n('Share of the objects matching your PIRs')}
                     />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Impact')} value={formatScore(scorecard.impact_score)} level={scoreLevel(scorecard.impact_score, { scale: 100 })} hint={`${formatCount(scorecard.sightings_count)} ${t_i18n('sightings')}`} />
+                    <MetricTile
+                      label={t_i18n('Impact')}
+                      value={value(format.score(scorecard.impact_score))}
+                      level={scoreLevel(scorecard.impact_score, { scale: 100 })}
+                      hint={t_i18n('{count, plural, one {# sighting} other {# sightings}}', { values: { count: scorecard.sightings_count ?? 0 } })}
+                    />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <MetricTile label={t_i18n('Noise')} value={formatRatio(scorecard.noise)} level={scoreLevel(scorecard.noise, { higherIsBetter: false })} />
+                    <MetricTile label={t_i18n('Noise')} value={value(format.ratio(scorecard.noise))} level={scoreLevel(scorecard.noise, { higherIsBetter: false })} />
                   </Grid>
                 </Grid>
               </Grid>
@@ -408,13 +479,17 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 4 }}>
                 <Card title={t_i18n('Cost and freshness')} fullHeight>
                   <BreakdownList rows={[
-                    [t_i18n('Declared cost'), source.cost ? `${source.cost.amount} ${source.cost.currency} - ${t_i18n(COST_PERIOD_LABELS[source.cost.period] ?? source.cost.period)}` : t_i18n('None')],
-                    [t_i18n('Actionable objects'), formatCount(scorecard.actionable_count)],
-                    [t_i18n('Cost per actionable object'), formatCost(scorecard.cost_per_actionable_object, currency)],
-                    [t_i18n('Last assertion'), scorecard.last_asserted_at ? nsdt(scorecard.last_asserted_at) : '-'],
-                    [t_i18n('Time since last assertion'), formatHours(scorecard.freshness_hours)],
-                    [t_i18n('Median publication latency'), formatHours(scorecard.median_latency_hours)],
-                    [t_i18n('Community uniqueness'), formatRatio(scorecard.community_uniqueness)],
+                    [t_i18n('Declared cost'), source.cost
+                      ? t_i18n(DECLARED_AMOUNT_LABELS[source.cost.period] ?? DECLARED_AMOUNT_LABELS.month, {
+                          values: { amount: format.cost(source.cost.amount, source.cost.currency) },
+                        })
+                      : value(null, t_i18n('No cost declared for this source. Set it with the cost editor above.'))],
+                    [t_i18n('Actionable objects'), value(format.count(scorecard.actionable_count))],
+                    [t_i18n('Cost per actionable object'), value(format.cost(scorecard.cost_per_actionable_object, currency), t_i18n('Needs a declared cost and at least one actionable object.'))],
+                    [t_i18n('Last assertion'), scorecard.last_asserted_at ? <RelativeTime date={scorecard.last_asserted_at} /> : t_i18n('Not recorded')],
+                    [t_i18n('Time since last assertion'), value(format.hours(scorecard.freshness_hours))],
+                    [t_i18n('Median publication latency'), value(format.hours(scorecard.median_latency_hours))],
+                    [t_i18n('Community uniqueness'), value(format.ratio(scorecard.community_uniqueness), t_i18n('Available when Threat Pulse data is joined to the indicators of this source.'))],
                   ]}
                   />
                 </Card>
@@ -424,11 +499,11 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 3 }}>
                 <Card title={t_i18n('Volume')} fullHeight>
                   <BreakdownList rows={[
-                    [t_i18n('Entities'), formatCount(scorecard.volume_entities)],
-                    [t_i18n('Relationships'), formatCount(scorecard.volume_relationships)],
-                    [t_i18n('Indicators'), formatCount(scorecard.volume_indicators)],
-                    [t_i18n('Observables'), formatCount(scorecard.volume_observables)],
-                    [t_i18n('Last 24 hours'), formatCount(scorecard.volume_last_day)],
+                    [t_i18n('Entities'), value(format.count(scorecard.volume_entities))],
+                    [t_i18n('Relationships'), value(format.count(scorecard.volume_relationships))],
+                    [t_i18n('Indicators'), value(format.count(scorecard.volume_indicators))],
+                    [t_i18n('Observables'), value(format.count(scorecard.volume_observables))],
+                    [t_i18n('Last 24 hours'), value(format.count(scorecard.volume_last_day))],
                   ]}
                   />
                 </Card>
@@ -436,10 +511,10 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 3 }}>
                 <Card title={t_i18n('Accuracy')} fullHeight>
                   <BreakdownList rows={[
-                    [t_i18n('Revoked'), formatCount(scorecard.revoked_count)],
-                    [t_i18n('Negative sightings'), formatCount(scorecard.negative_sightings_count)],
-                    [t_i18n('False positives'), formatCount(scorecard.false_positive_count)],
-                    [t_i18n('Decay exclusions'), formatCount(scorecard.decay_excluded_count)],
+                    [t_i18n('Revoked'), value(format.count(scorecard.revoked_count))],
+                    [t_i18n('Negative sightings'), value(format.count(scorecard.negative_sightings_count))],
+                    [t_i18n('False positives'), value(format.count(scorecard.false_positive_count))],
+                    [t_i18n('Decay exclusions'), value(format.count(scorecard.decay_excluded_count))],
                   ]}
                   />
                 </Card>
@@ -447,10 +522,10 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 3 }}>
                 <Card title={t_i18n('Impact')} fullHeight>
                   <BreakdownList rows={[
-                    [t_i18n('Sightings'), formatCount(scorecard.sightings_count)],
-                    [t_i18n('Security platform sightings'), formatCount(scorecard.security_platform_sightings_count)],
-                    [t_i18n('Hunt true positives'), formatCount(scorecard.hunt_true_positives_count)],
-                    [t_i18n('Incidents referencing'), formatCount(scorecard.incidents_count)],
+                    [t_i18n('Sightings'), value(format.count(scorecard.sightings_count))],
+                    [t_i18n('Security platform sightings'), value(format.count(scorecard.security_platform_sightings_count))],
+                    [t_i18n('Hunt true positives'), value(format.count(scorecard.hunt_true_positives_count))],
+                    [t_i18n('Incidents referencing'), value(format.count(scorecard.incidents_count))],
                   ]}
                   />
                 </Card>
@@ -458,10 +533,10 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
               <Grid size={{ xs: 12, md: 3 }}>
                 <Card title={t_i18n('Noise')} fullHeight>
                   <BreakdownList rows={[
-                    [t_i18n('Never referenced'), formatCount(scorecard.unreferenced_count)],
-                    [t_i18n('Never sighted'), formatCount(scorecard.unsighted_count)],
-                    [t_i18n('Expired'), formatCount(scorecard.expired_count)],
-                    [t_i18n('Noisy objects'), formatCount(scorecard.noise_count)],
+                    [t_i18n('Never referenced'), value(format.count(scorecard.unreferenced_count))],
+                    [t_i18n('Never sighted'), value(format.count(scorecard.unsighted_count))],
+                    [t_i18n('Expired'), value(format.count(scorecard.expired_count))],
+                    [t_i18n('Noisy objects'), value(format.count(scorecard.noise_count))],
                   ]}
                   />
                 </Card>
@@ -477,10 +552,12 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                       <Box sx={{ width: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {share.source
                           ? <Link to={`/dashboard/integrations/sources/source/${share.source.id}`}>{share.source.name}</Link>
-                          : t_i18n('Restricted')}
+                          : t_i18n('Restricted source')}
                       </Box>
                       <Box sx={{ flex: 1 }}><ValueScoreBar value={share.share * 100} /></Box>
-                      <Typography variant="caption" sx={{ width: 140, textAlign: 'right' }}>{`${formatCount(share.shared_count)} ${t_i18n('shared objects')}`}</Typography>
+                      <Typography variant="caption" sx={{ minWidth: 140, textAlign: 'right' }}>
+                        {t_i18n('{count, plural, one {# shared object} other {# shared objects}}', { values: { count: share.shared_count } })}
+                      </Typography>
                     </Stack>
                   ))}
                 </Stack>
@@ -489,9 +566,7 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
           </>
         )}
         <Card title={t_i18n('Recommendations')}>
-          {!isEnterpriseEdition && (
-            <Typography variant="body2">{t_i18n('Recommendations and autonomous tuning are available with the Enterprise Edition.')}</Typography>
-          )}
+          {!isEnterpriseEdition && <EnterpriseEdition feature={t_i18n('Source Intelligence recommendations')} />}
           {isEnterpriseEdition && <SourceRecommendationsSection sourceId={source.id} />}
         </Card>
       </PageContainer>
@@ -505,10 +580,10 @@ const SourceDetail = () => {
   const trendStart = useMemo(() => new Date(Date.now() - TREND_DAYS * 24 * 3600 * 1000).toISOString(), []);
   const queryRef = useQueryLoading<SourceDetailQuery>(sourceDetailQuery, { id: sourceId, period, trendStart });
   if (!queryRef) {
-    return <Loader variant={LoaderVariant.container} />;
+    return <SourceDetailSkeleton />;
   }
   return (
-    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+    <Suspense fallback={<SourceDetailSkeleton />}>
       <SourceDetailComponent queryRef={queryRef} period={period} onPeriodChange={setPeriod} />
     </Suspense>
   );

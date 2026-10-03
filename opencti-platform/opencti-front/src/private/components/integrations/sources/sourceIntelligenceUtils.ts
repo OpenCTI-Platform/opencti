@@ -25,6 +25,8 @@ export const SOURCE_KIND_LABELS: Record<string, string> = {
 // Settings of the computation, weights, thresholds, tuning, autonomy and gaps, under Settings > Customization
 export const SOURCE_INTELLIGENCE_SETTINGS_PATH = '/dashboard/settings/customization/source_intelligence';
 
+export const SOURCE_INTELLIGENCE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/source-intelligence/';
+
 // Provenance assertion kinds and the source kind scoring them, as the backend joins them (inference and emulation are not sources)
 export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, string> = {
   connector: 'connector',
@@ -67,6 +69,18 @@ export const COST_PERIOD_LABELS: Record<string, string> = {
   month: 'Per month',
   quarter: 'Per quarter',
   year: 'Per year',
+};
+
+export const DECLARED_AMOUNT_LABELS: Record<string, string> = {
+  month: '{amount} per month',
+  quarter: '{amount} per quarter',
+  year: '{amount} per year',
+};
+
+export const DECLARED_COST_LABELS: Record<string, string> = {
+  month: 'Declared cost: {amount} per month',
+  quarter: 'Declared cost: {amount} per quarter',
+  year: 'Declared cost: {amount} per year',
 };
 
 export type ScorecardMetricType = 'count' | 'ratio' | 'hours' | 'cost' | 'score';

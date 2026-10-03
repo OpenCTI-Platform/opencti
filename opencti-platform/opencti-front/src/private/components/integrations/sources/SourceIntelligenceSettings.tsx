@@ -110,10 +110,10 @@ const GAP_FIELDS: NumericFieldDefinition[] = [
 ];
 const ALL_NUMERIC_FIELDS = [...GENERAL_FIELDS, ...WEIGHT_FIELDS, ...THRESHOLD_FIELDS, ...TUNING_FIELDS, ...AUTONOMY_FIELDS, ...GAP_FIELDS];
 
-const numberSchema = (field: NumericFieldDefinition, t_i18n: (s: string) => string) => {
+const numberSchema = (field: NumericFieldDefinition, t_i18n: (s: string, options?: { values?: Record<string, unknown> }) => string) => {
   let schema = Yup.number().typeError(t_i18n('This field must be a number')).required(t_i18n('This field is required'))
-    .min(field.min, `${t_i18n('Minimum')} ${field.min}`)
-    .max(field.max, `${t_i18n('Maximum')} ${field.max}`);
+    .min(field.min, t_i18n('The minimum is {min}', { values: { min: field.min } }))
+    .max(field.max, t_i18n('The maximum is {max}', { values: { max: field.max } }));
   if (field.integer) schema = schema.integer(t_i18n('This field must be an integer'));
   return schema;
 };

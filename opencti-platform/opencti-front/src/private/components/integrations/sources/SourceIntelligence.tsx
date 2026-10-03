@@ -1,16 +1,14 @@
 import React, { Suspense, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
+import { Alert, Chip, type ChipSeverity, Hero, HeroBody, HeroHeader, Tabs, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { DashboardOutlined, RefreshOutlined, SettingsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import Tag from '@common/tag/Tag';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -24,8 +22,10 @@ import SourcesLeaderboard from './SourcesLeaderboard';
 import SourcesOverlap from './SourcesOverlap';
 import CollectionGaps from './CollectionGaps';
 import SourceRecommendations from './SourceRecommendations';
-import { SOURCE_INTELLIGENCE_SETTINGS_PATH } from './sourceIntelligenceUtils';
+import { SOURCE_INTELLIGENCE_DOCUMENTATION_URL, SOURCE_INTELLIGENCE_SETTINGS_PATH } from './sourceIntelligenceUtils';
+import SourceIntelligenceKpis, { QUARANTINED_SOURCES_FILTERS, sourceIntelligenceKpisQuery, SourceIntelligenceKpisSkeleton } from './SourceIntelligenceKpis';
 import { SourceIntelligenceStatusQuery } from './__generated__/SourceIntelligenceStatusQuery.graphql';
+import { SourceIntelligenceKpisQuery } from './__generated__/SourceIntelligenceKpisQuery.graphql';
 
 export const sourceIntelligenceStatusQuery = graphql`
   query SourceIntelligenceStatusQuery {
@@ -66,12 +66,34 @@ const sourceIntelligenceDashboardCreateMutation = graphql`
 export type SourceIntelligenceView = 'leaderboard' | 'overlap' | 'gaps' | 'recommendations';
 const SOURCE_INTELLIGENCE_VIEWS: SourceIntelligenceView[] = ['leaderboard', 'overlap', 'gaps', 'recommendations'];
 
+type RunState = 'stopped' | 'requested' | 'running' | 'failed' | 'never' | 'ok';
+
+const RUN_STATES: Record<RunState, { label: string; severity: ChipSeverity }> = {
+  stopped: { label: 'Manager stopped', severity: 'medium' },
+  requested: { label: 'Recompute requested', severity: 'info' },
+  running: { label: 'Computing', severity: 'info' },
+  failed: { label: 'Failed', severity: 'high' },
+  never: { label: 'Not computed yet', severity: 'neutral' },
+  ok: { label: 'Up to date', severity: 'low' },
+};
+
+export const sourceIntelligenceRunState = (
+  status: Pick<SourceIntelligenceStatusQuery['response']['sourceIntelligenceStatus'], 'manager_running' | 'last_full_run_start' | 'last_full_run_end' | 'last_run_success'>,
+  recomputePending: boolean,
+): RunState => {
+  if (!status.manager_running) return 'stopped';
+  if (status.last_full_run_start && (!status.last_full_run_end || status.last_full_run_start > status.last_full_run_end)) return 'running';
+  if (recomputePending) return 'requested';
+  if (!status.last_full_run_end) return 'never';
+  return status.last_run_success === false ? 'failed' : 'ok';
+};
+
 interface SourceIntelligenceHeaderProps {
   queryRef: PreloadedQuery<SourceIntelligenceStatusQuery>;
 }
 
 const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, rd, fldt, fsd } = useFormatter();
   const theme = useTheme<Theme>();
   const surfaceTheme = useTheme();
   const navigate = useNavigate();
@@ -108,13 +130,38 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
 
   const isPending = recomputeRequested || (!!status.recompute_requested_at
     && (!status.last_full_run_start || status.recompute_requested_at > status.last_full_run_start));
-  let runLabel = t_i18n('Never computed');
-  if (status.last_full_run_end) {
-    runLabel = `${t_i18n('Last computation')}: ${nsdt(status.last_full_run_end)}`;
-  }
+  const runState = sourceIntelligenceRunState(status, isPending);
+  const { label: stateLabel, severity: stateSeverity } = RUN_STATES[runState];
+  const statusSentence = {
+    stopped: t_i18n('The source intelligence manager is not running, so the scorecards are not refreshed.'),
+    requested: t_i18n('A computation of the scorecards starts in the next minutes.'),
+    running: t_i18n('The scorecards are being computed, started {time}.', { values: { time: rd(status.last_full_run_start) } }),
+    failed: t_i18n('The last computation of the scorecards failed {time}.', { values: { time: rd(status.last_full_run_end) } }),
+    never: t_i18n('The scorecards have not been computed yet. They are computed every day, or now on request.'),
+    ok: t_i18n('The scorecards of {count, plural, one {# source} other {# sources}} were refreshed {time}.', {
+      values: { count: status.sources_count, time: rd(status.last_full_run_end) },
+    }),
+  }[runState];
+  const statusDate = runState === 'running' ? status.last_full_run_start : status.last_full_run_end;
+  const recomputeLabel = {
+    failed: t_i18n('Retry the computation'),
+    never: t_i18n('Compute now'),
+  }[runState as 'failed' | 'never'] ?? t_i18n('Recompute');
+  const showRecompute = canManage && ['ok', 'failed', 'never'].includes(runState);
+  const captions = [
+    status.provenance_mode === 'assertions'
+      ? t_i18n('Attribution from the sources recorded on every fact')
+      : t_i18n('Attribution from creators and authors, lead time approximated'),
+    !status.backfill_done && status.backfill_next_day
+      ? t_i18n('History backfill in progress, next day {day}', { values: { day: fsd(status.backfill_next_day) } })
+      : null,
+    status.pulse_available ? t_i18n('Community uniqueness from Threat Pulse') : null,
+  ].filter((caption): caption is string => !!caption);
 
   return (
     <Box
+      component="section"
+      aria-labelledby="source-intelligence-title"
       sx={{
         borderRadius: 1,
         border: `1px solid ${paperBorder(surfaceTheme)}`,
@@ -122,16 +169,16 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
         padding: 3,
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
-        <Box>
-          <Typography variant="h1" sx={{ fontWeight: 700, fontSize: 22, marginBottom: 0.5 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2} flexWrap="wrap">
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography id="source-intelligence-title" variant="h1" sx={{ marginBottom: 0.5 }}>
             {t_i18n('Source Intelligence')}
           </Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 760 }}>
             {t_i18n('Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.')}
           </Typography>
         </Box>
-        <Stack direction="row" gap={1} flexShrink={0}>
+        <Stack direction="row" gap={1} flexShrink={0} flexWrap="wrap">
           {canCreateDashboard && (
             <Button
               variant="secondary"
@@ -140,62 +187,103 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
               disabled={creatingDashboard}
               data-testid="source-intelligence-create-dashboard"
             >
-              {t_i18n('Create the Intelligence ROI dashboard')}
+              {t_i18n('Create ROI dashboard')}
             </Button>
           )}
           {canCustomize && (
             <Button
-              variant="secondary"
+              variant={runState === 'stopped' ? undefined : 'secondary'}
               startIcon={<SettingsOutlined />}
               component={Link}
               to={SOURCE_INTELLIGENCE_SETTINGS_PATH}
               data-testid="source-intelligence-settings"
             >
-              {t_i18n('Settings')}
+              {t_i18n('Open settings')}
             </Button>
           )}
-          {canManage && (
+          {showRecompute && (
             <Button
               startIcon={<RefreshOutlined />}
               onClick={handleRecompute}
-              disabled={recomputing || isPending || !status.manager_running}
+              disabled={recomputing}
               data-testid="source-intelligence-recompute"
             >
-              {isPending ? t_i18n('Recomputation requested') : t_i18n('Recompute')}
+              {recomputeLabel}
             </Button>
           )}
         </Stack>
       </Stack>
-      <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center" sx={{ marginTop: 2 }} data-testid="source-intelligence-status">
-        <Tag
-          label={status.manager_running ? t_i18n('Manager running') : t_i18n('Manager stopped')}
-          color={status.manager_running ? theme.palette.success.main : theme.palette.warn.main}
-        />
-        <Tag
-          label={status.provenance_mode === 'assertions' ? t_i18n('Provenance: assertions') : t_i18n('Provenance: creators')}
-          tooltipTitle={status.provenance_mode === 'assertions'
-            ? t_i18n('Scorecards use the sources recorded on every fact (first and last assertion per source).')
-            : t_i18n('Scorecards use the creators and authors of the objects, lead time is approximated.')}
-        />
-        <Tag label={`${status.sources_count} ${t_i18n('sources')}`} />
-        <Tag
-          label={runLabel}
-          color={status.last_run_success === false ? theme.palette.error.main : undefined}
-          tooltipTitle={status.last_run_message ?? undefined}
-        />
-        {status.last_scan_truncated && (
-          <Tag
-            label={t_i18n('Scan truncated')}
-            color={theme.palette.warn.main}
-            tooltipTitle={t_i18n('The number of scanned objects reached the configured maximum, increase it in the settings for exhaustive scorecards.')}
-          />
+      <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ marginTop: 2 }} data-testid="source-intelligence-status">
+        <Chip severity={stateSeverity} size="sm" label={t_i18n(stateLabel)} />
+        {statusDate ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Typography variant="body2" aria-live="polite" tabIndex={0}>{statusSentence}</Typography>
+            </TooltipTrigger>
+            <TooltipContent>{fldt(statusDate)}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Typography variant="body2" aria-live="polite">{statusSentence}</Typography>
         )}
-        {!status.backfill_done && status.backfill_next_day && (
-          <Tag label={`${t_i18n('History backfill in progress')} (${status.backfill_next_day})`} />
-        )}
-        {status.pulse_available && <Tag label={t_i18n('Threat Pulse joined')} />}
       </Stack>
+      <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, marginBottom: 0 }}>
+        {captions.join(' - ')}
+      </Typography>
+      {runState === 'failed' && (
+        <Box sx={{ marginTop: 2 }}>
+          <Alert
+            severity="error"
+            title={t_i18n('The scorecards could not be computed.')}
+            description={status.last_run_message ?? t_i18n('The platform logs of the source intelligence manager give the cause.')}
+          />
+        </Box>
+      )}
+      {status.last_scan_truncated && (
+        <Box sx={{ marginTop: 2 }}>
+          <Alert
+            severity="warning"
+            title={t_i18n('The scorecards cover the first {count, plural, one {# object} other {# objects}} only.', { values: { count: status.last_scanned_objects ?? 0 } })}
+            description={t_i18n('The scan reached the maximum number of objects set in the settings.')}
+            action={canCustomize ? (
+              <Button variant="secondary" size="small" component={Link} to={SOURCE_INTELLIGENCE_SETTINGS_PATH}>
+                {t_i18n('Raise the limit')}
+              </Button>
+            ) : undefined}
+          />
+        </Box>
+      )}
     </Box>
+  );
+};
+
+export const SourceIntelligenceHeaderSkeleton = () => (
+  <Skeleton variant="rounded" height={148} aria-hidden data-testid="source-intelligence-header-loading" />
+);
+
+// First use: what feeds the scorecards, how to get the first ones and where to read more
+const SourceIntelligenceFirstUse = ({ queryRef }: SourceIntelligenceHeaderProps) => {
+  const { t_i18n } = useFormatter();
+  const { sourceIntelligenceStatus: status } = usePreloadedQuery(sourceIntelligenceStatusQuery, queryRef);
+  if (status.sources_count > 0) {
+    return null;
+  }
+  return (
+    <Hero data-testid="source-intelligence-first-use">
+      <HeroHeader
+        action={(
+          <Button variant="secondary" component="a" href={SOURCE_INTELLIGENCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+            {t_i18n('Read the documentation')}
+          </Button>
+        )}
+      >
+        <Typography variant="h2" sx={{ margin: 0 }}>{t_i18n('No source scored yet')}</Typography>
+      </HeroHeader>
+      <HeroBody>
+        <Typography variant="body2">
+          {t_i18n('Every connector, ingestion feed, significant author and analyst writing knowledge becomes a source. Its scorecard appears after the first computation, once it has written knowledge.')}
+        </Typography>
+      </HeroBody>
+    </Hero>
   );
 };
 
@@ -210,6 +298,10 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
   setTitle(t_i18n('Source Intelligence'));
   const isEnterpriseEdition = useEnterpriseEdition();
   const statusQueryRef = useQueryLoading<SourceIntelligenceStatusQuery>(sourceIntelligenceStatusQuery, {});
+  const kpisQueryRef = useQueryLoading<SourceIntelligenceKpisQuery>(sourceIntelligenceKpisQuery, {
+    quarantinedFilters: QUARANTINED_SOURCES_FILTERS,
+    enterprise: isEnterpriseEdition,
+  } as unknown as SourceIntelligenceKpisQuery['variables']);
   const view = (forcedView ?? viewParam ?? 'leaderboard') as SourceIntelligenceView;
 
   // The settings moved to Settings > Customization
@@ -248,8 +340,18 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
           </TabsList>
         </Tabs>
         {statusQueryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <Suspense fallback={<SourceIntelligenceHeaderSkeleton />}>
             <SourceIntelligenceHeader queryRef={statusQueryRef} />
+          </Suspense>
+        )}
+        {kpisQueryRef && (
+          <Suspense fallback={<SourceIntelligenceKpisSkeleton />}>
+            <SourceIntelligenceKpis queryRef={kpisQueryRef} />
+          </Suspense>
+        )}
+        {statusQueryRef && view === 'leaderboard' && (
+          <Suspense fallback={null}>
+            <SourceIntelligenceFirstUse queryRef={statusQueryRef} />
           </Suspense>
         )}
         <Tabs value={view} panels="external">
@@ -278,7 +380,7 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        <Suspense fallback={<Skeleton variant="rounded" height={320} aria-hidden />}>
           {view === 'leaderboard' && <SourcesLeaderboard />}
           {view === 'overlap' && <SourcesOverlap />}
           {view === 'gaps' && <CollectionGaps />}

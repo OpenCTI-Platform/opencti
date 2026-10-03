@@ -2,9 +2,9 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { CableOutlined, PersonOutlined, RssFeedOutlined, TravelExploreOutlined } from '@mui/icons-material';
-import Tag from '@common/tag/Tag';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,7 +13,8 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
-import { COST_PERIOD_LABELS, formatCost, formatCount, formatHours, formatRatio, formatScore, scoreLevel, SOURCE_KIND_LABELS } from './sourceIntelligenceUtils';
+import { DECLARED_COST_LABELS, scoreLevel, SOURCE_KIND_LABELS } from './sourceIntelligenceUtils';
+import SourceMetricValue, { useSourceMetricFormat } from './SourceMetricValue';
 import { SourcesLeaderboardLinesQuery, SourcesLeaderboardLinesQuery$variables } from './__generated__/SourcesLeaderboardLinesQuery.graphql';
 import { SourcesLeaderboard_sources$data } from './__generated__/SourcesLeaderboard_sources.graphql';
 import { SourcesLeaderboard_source$data } from './__generated__/SourcesLeaderboard_source.graphql';
@@ -117,6 +118,8 @@ export const SourceKindIcon = ({ kind }: { kind: string }) => SOURCE_KIND_ICONS[
 
 export const ValueScoreBar = ({ value }: { value: number | null | undefined }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const format = useSourceMetricFormat();
   const level = scoreLevel(value, { scale: 100 });
   const colors = {
     good: theme.palette.success.main,
@@ -124,11 +127,21 @@ export const ValueScoreBar = ({ value }: { value: number | null | undefined }) =
     poor: theme.palette.error.main,
     unknown: theme.palette.text.disabled,
   };
-  const width = typeof value === 'number' ? Math.max(4, Math.min(100, value)) : 0;
+  if (typeof value !== 'number') {
+    return <SourceMetricValue value={null} reason={t_i18n('No scorecard for this source in the reference period yet.')} />;
+  }
+  const width = Math.max(4, Math.min(100, value));
   return (
     <Stack direction="row" alignItems="center" gap={1} sx={{ width: '100%' }}>
-      <Box sx={{ width: 28, fontWeight: 600 }}>{formatScore(value)}</Box>
-      <Box sx={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: theme.palette.background.accent, overflow: 'hidden' }}>
+      <Box component="span" sx={{ minWidth: theme.spacing(3.5), fontWeight: 'fontWeightMedium' }}>{format.score(value)}</Box>
+      <Box
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value)}
+        aria-label={t_i18n('Value score')}
+        sx={{ flex: 1, height: theme.spacing(0.75), borderRadius: 1, backgroundColor: theme.palette.background.accent, overflow: 'hidden' }}
+      >
         <Box sx={{ width: `${width}%`, height: '100%', backgroundColor: colors[level] }} />
       </Box>
     </Stack>
@@ -137,6 +150,7 @@ export const ValueScoreBar = ({ value }: { value: number | null | undefined }) =
 
 const SourcesLeaderboard = () => {
   const { t_i18n } = useFormatter();
+  const format = useSourceMetricFormat();
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const initialValues = {
@@ -157,7 +171,7 @@ const SourcesLeaderboard = () => {
   } as unknown as SourcesLeaderboardLinesQuery$variables;
   const queryRef = useQueryLoading<SourcesLeaderboardLinesQuery>(sourcesLeaderboardLinesQuery, queryPaginationOptions);
 
-  const ratioCell = (value: number | null | undefined) => formatRatio(value);
+  const ratioCell = (value: number | null | undefined) => <SourceMetricValue value={format.ratio(value)} />;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
@@ -167,8 +181,8 @@ const SourcesLeaderboard = () => {
       render: ({ name, enabled, quarantined }: SourcesLeaderboard_source$data) => (
         <Stack direction="row" alignItems="center" gap={1} sx={{ overflow: 'hidden' }}>
           <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</Box>
-          {quarantined && <Tag label={t_i18n('Quarantined')} size="small" />}
-          {!enabled && <Tag label={t_i18n('Disabled')} size="small" />}
+          {quarantined && <Chip severity="medium" size="sm" label={t_i18n('Quarantined')} />}
+          {!enabled && <Chip severity="neutral" size="sm" label={t_i18n('Disabled')} />}
         </Stack>
       ),
     },
@@ -191,7 +205,7 @@ const SourcesLeaderboard = () => {
       label: 'Volume',
       percentWidth: 6,
       isSortable: true,
-      render: ({ latest_volume }: SourcesLeaderboard_source$data) => formatCount(latest_volume),
+      render: ({ latest_volume }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.count(latest_volume)} />,
     },
     latest_unique_contribution: {
       id: 'latest_unique_contribution',
@@ -212,7 +226,9 @@ const SourcesLeaderboard = () => {
       label: 'Lead time',
       percentWidth: 7,
       isSortable: true,
-      render: ({ latest_lead_time_hours }: SourcesLeaderboard_source$data) => formatHours(latest_lead_time_hours),
+      render: ({ latest_lead_time_hours }: SourcesLeaderboard_source$data) => (
+        <SourceMetricValue value={format.hours(latest_lead_time_hours)} reason={t_i18n('No object shared with another source in the period.')} />
+      ),
     },
     latest_accuracy: {
       id: 'latest_accuracy',
@@ -226,14 +242,14 @@ const SourcesLeaderboard = () => {
       label: 'Relevance',
       percentWidth: 6,
       isSortable: isEnterpriseEdition,
-      render: ({ latest_relevance }: SourcesLeaderboard_source$data) => (isEnterpriseEdition ? ratioCell(latest_relevance) : '-'),
+      render: ({ latest_relevance }: SourcesLeaderboard_source$data) => (isEnterpriseEdition ? ratioCell(latest_relevance) : <EEChip />),
     },
     latest_impact_score: {
       id: 'latest_impact_score',
       label: 'Impact',
       percentWidth: 6,
       isSortable: true,
-      render: ({ latest_impact_score }: SourcesLeaderboard_source$data) => formatScore(latest_impact_score),
+      render: ({ latest_impact_score }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.score(latest_impact_score)} />,
     },
     latest_noise: {
       id: 'latest_noise',
@@ -247,23 +263,28 @@ const SourcesLeaderboard = () => {
       label: 'Last seen',
       percentWidth: 7,
       isSortable: true,
-      render: ({ latest_freshness_hours }: SourcesLeaderboard_source$data) => formatHours(latest_freshness_hours),
+      render: ({ latest_freshness_hours }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.hours(latest_freshness_hours)} />,
     },
     latest_cost_per_actionable: {
       id: 'latest_cost_per_actionable',
       label: 'Cost / actionable',
       percentWidth: 8,
       isSortable: true,
-      render: ({ latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>{formatCost(latest_cost_per_actionable, cost?.currency)}</span>
-          </TooltipTrigger>
-          <TooltipContent>
-            {cost ? `${cost.amount} ${cost.currency} - ${t_i18n(COST_PERIOD_LABELS[cost.period] ?? cost.period)}` : t_i18n('No cost declared')}
-          </TooltipContent>
-        </Tooltip>
-      ),
+      render: ({ latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => {
+        if (!cost) {
+          return <SourceMetricValue value={null} reason={t_i18n('No cost declared for this source. Set it on its scorecard page.')} />;
+        }
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0}><SourceMetricValue value={format.cost(latest_cost_per_actionable, cost.currency)} /></span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t_i18n(DECLARED_COST_LABELS[cost.period] ?? DECLARED_COST_LABELS.month, { values: { amount: format.cost(cost.amount, cost.currency) } })}
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
     },
   };
 
@@ -292,7 +313,7 @@ const SourcesLeaderboard = () => {
           searchContextFinal={{ entityTypes: ['Source'] }}
           icon={(source: SourcesLeaderboard_source$data) => <SourceKindIcon kind={source.source_kind} />}
           getComputeLink={(source: SourcesLeaderboard_source$data) => `/dashboard/integrations/sources/source/${source.id}`}
-          emptyStateMessage={t_i18n('No source has been scored yet. Sources are discovered and scored by the source intelligence manager.')}
+          emptyStateMessage={t_i18n('No source matches these filters.')}
         />
       )}
     </div>

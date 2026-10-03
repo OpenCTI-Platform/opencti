@@ -155,7 +155,7 @@ const SourcesBubble = ({ variant, height, dataSelection, parameters = {}, popove
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title || `${t_i18n(xMetric.label)} / ${t_i18n(yMetric.label)}`}
+      title={parameters.title || t_i18n('{x} against {y}', { values: { x: t_i18n(xMetric.label), y: t_i18n(yMetric.label) } })}
       variant={variant}
       chart={chart}
       action={popover}
