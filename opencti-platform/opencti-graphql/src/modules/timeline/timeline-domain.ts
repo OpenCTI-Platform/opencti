@@ -60,6 +60,7 @@ import {
   type StoredTimelineSettings,
   TIMELINE_MAX_EVENTS,
   TIMELINE_MAX_MANUAL_EVENTS,
+  TIMELINE_MAX_STORED_EVENTS,
   type TimelineRegenerationResult,
   upsertTimelineSettings,
   withTimelineLock,
@@ -241,7 +242,7 @@ const findInaccessibleElementIds = async (context: AuthContext, user: AuthUser, 
     filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
     baseData: true,
     baseFields: ['element_id'],
-    maxSize: TIMELINE_MAX_EVENTS * 2,
+    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const elementIds = Array.from(new Set(references.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId)));
   if (elementIds.length === 0) return [];
@@ -415,8 +416,7 @@ const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, 
     filters: { ...baseFilters, filters: [...baseFilters.filters, ...ceilingFilters] } as any,
     orderBy: ['event_time', 'ordering_hint'],
     orderMode: OrderingMode.Asc,
-    // Derived events and analyst milestones have separate caps: an export carries every retained event
-    maxSize: TIMELINE_MAX_EVENTS + TIMELINE_MAX_MANUAL_EVENTS,
+    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
   const withinCeiling = items.filter((event) => {
@@ -789,7 +789,7 @@ const writeImportedContributions = async (
   // Nor is a stored event the user cannot read ever overwritten by an imported one
   const readableManual = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: buildTimelineFilters(container.internal_id, { sources: ['manual'], includeHidden: true }) as any,
-    maxSize: TIMELINE_MAX_EVENTS,
+    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
   const readableIds = new Set(readable.map((e) => e.internal_id));

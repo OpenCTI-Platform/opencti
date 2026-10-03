@@ -40,6 +40,8 @@ describe('Timeline manager impact collection', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({ type: 'sighting', extensions: { [STIX_EXT_OCTI]: { id: 's-1', type: 'stix-sighting-relationship', sighting_of_ref: 'ind-1' } } }), collector);
     expect(Array.from(collector.contained).sort()).toEqual(['ind-1', 's-1']);
+    // Incidents load the platform sightings of their related indicators
+    expect(Array.from(collector.related)).toEqual(['ind-1']);
   });
 
   it('should look for the cases and incidents of any other updated entity', () => {

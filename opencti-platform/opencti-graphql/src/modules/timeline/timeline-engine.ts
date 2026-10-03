@@ -62,6 +62,8 @@ import { addTimelineDerivedEventCount } from '../../manager/telemetryManager';
 export const TIMELINE_MAX_EVENTS: number = conf.get('timeline_manager:max_events') ?? 10000;
 // Analyst milestones per case, added through the API or imported: kept apart from the derived events cap
 export const TIMELINE_MAX_MANUAL_EVENTS: number = conf.get('timeline_manager:max_manual_events') ?? 1000;
+// Bound of every full read of a timeline: both caps, with room for timelines built before the caps were lowered
+export const TIMELINE_MAX_STORED_EVENTS: number = 2 * (TIMELINE_MAX_EVENTS + TIMELINE_MAX_MANUAL_EVENTS);
 
 type AnyStoreElement = BasicStoreBase & Record<string, any>;
 export type StoredTimelineEvent = BasicStoreEntityTimelineEvent & { _index: string } & Record<string, any>;
@@ -115,7 +117,7 @@ export const loadStoredTimelineEvents = async (context: AuthContext, containerId
     noFiltersChecking: true,
     // Events are rewritten from what is loaded here: their author must come along with them
     withoutRels: false,
-    maxSize: TIMELINE_MAX_EVENTS * 2,
+    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
 };
 

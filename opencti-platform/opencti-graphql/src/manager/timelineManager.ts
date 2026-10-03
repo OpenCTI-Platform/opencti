@@ -90,8 +90,11 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     collector.contained.add(id);
-    // Sightings of contained indicators by security platforms are detections of the case
-    if (extension.sighting_of_ref) collector.contained.add(extension.sighting_of_ref);
+    // Sightings by security platforms are detections of the cases containing the indicator and of the incidents related to it
+    if (extension.sighting_of_ref) {
+      collector.contained.add(extension.sighting_of_ref);
+      collector.related.add(extension.sighting_of_ref);
+    }
     return;
   }
   // Soft-check sources: Case Autopilot runs point to their subject, hunt runs to their hunt
