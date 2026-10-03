@@ -59,7 +59,7 @@ const ProvenanceSettingsContent = () => {
           <SelectTrigger aria-label={t_i18n('Description of the relationship')}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Description of the relationship')}>
             <SelectItem value="longest">{t_i18n('Longest procedure')}</SelectItem>
             <SelectItem value="most_recent">{t_i18n('Most recent procedure')}</SelectItem>
           </SelectContent>
