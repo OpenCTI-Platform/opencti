@@ -25,6 +25,10 @@ Graph analytics are part of the Community Edition and do not use any AI.
 4. Click **Find paths**. The shortest paths are listed first, each one as a chain of entities and relationship types. Longer paths are only listed when they reach each of their entities by its shortest route: a detour through an entity already reached by a shorter path is not listed.
 5. Select the paths you are interested in and click **Start an investigation with the selected paths** to open them in a new investigation.
 
+![Connect to... dialog listing the paths between an intrusion set and an IP address](assets/graph-analytics-connect-to.png)
+
+![Investigation opened with the selected paths](assets/graph-analytics-investigation.png)
+
 The search is bounded in time and in explored entities. When a limit is reached, a warning tells you that longer paths may exist: narrow the search with relationship or entity types.
 
 ### In an investigation
@@ -42,7 +46,11 @@ Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, do
 - a flag when an existing **OpenAEV scenario** covers the similar threat (through its Security Coverage), with a filter to only list those,
 - actions to **compare side by side** or open the entity in a new tab.
 
+![Similar tab of an intrusion set with the score and the shared evidence of each look-alike](assets/graph-analytics-similar-tab.png)
+
 The **Investigate these similar entities** button starts an investigation with the entity, its look-alikes and the shared evidence.
+
+![Side by side comparison of two similar intrusion sets](assets/graph-analytics-compare.png)
 
 ### How similarity is computed
 
@@ -63,6 +71,8 @@ Similarities are computed in the background by the [graph analytics manager](../
 - **Expand by similarity**: select entities in the investigation graph to list their look-alikes, then add the ones you choose to the graph.
 - **Similarity matrix**: select up to 25 entities to compare them pairwise in a heat map.
 
+![Expand by similarity in an investigation](assets/graph-analytics-expand-similarity.png)
+
 ## Clusters
 
 The **Analyses > Clusters** page lists clusters of entities that belong together:
@@ -75,13 +85,17 @@ The **Analyses > Clusters** page lists clusters of entities that belong together
 
 The platform computes infrastructure clusters from shared features. On large platforms, the optional analytics process detects communities in the whole graph and computes the three kinds.
 
-The page shows who computes the clusters (the platform, or the optional analytics process on large platforms), when the knowledge was last analyzed, and the growth of the largest clusters.
+The page shows who computes the clusters (the platform, or the optional analytics process on large platforms), when the knowledge was last analyzed, and the growth of the largest clusters since they appeared.
+
+![Clusters page with the analytics status, the growth of the largest clusters and the cluster list](assets/graph-analytics-clusters.png)
 
 The detail of a cluster shows its members (most connected first), its shared features, its representative entities and the growth of its membership. From there:
 
 - **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features.
 - **Create Campaign** creates a Campaign related to the members you can access.
 - **Add to investigation** opens the members and shared features in a new investigation.
+
+![Detail of an infrastructure cluster sharing a certificate and a hosting address](assets/graph-analytics-cluster-detail.png)
 
 A Grouping, a Campaign or an investigation always holds every member you can access: a cluster with more than 2,000 accessible members cannot be promoted or added to an investigation, and the cluster page says so.
 
@@ -122,6 +136,8 @@ Three widgets are dedicated to graph analytics (see [widget creation](widgets.md
 All three are available in public dashboards. Like any ranking on graph metrics, the top hubs are only shown to users who can read every relationship of the platform; in a public dashboard, this depends on the access of its author and on the markings the dashboard shares.
 
 To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the cluster size over time, the similarity of the most connected threats, two lists ranked by graph degree (the threat and malware hubs and the infrastructure hubs) and the top hubs of the whole knowledge graph. Like any dashboard, it can then be edited, shared or made public.
+
+![Dashboard created from the Graph analytics template](assets/graph-analytics-dashboard.png)
 
 ## What's next?
 
