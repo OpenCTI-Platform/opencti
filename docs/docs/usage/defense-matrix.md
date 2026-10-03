@@ -24,7 +24,9 @@ Mitigations (courses of action that `mitigate` the technique) are shown as a sep
 
 !!! note "Access to evidences"
 
-    Levels are recomputed for each reader from the evidences this reader can access (markings and organizations). A rule, a data component or a validation result you cannot see never contributes to the levels displayed to you.
+    Levels are recomputed for each reader from the evidences this reader can access (markings and organizations). A rule, a data component or a validation result you cannot see never contributes to the levels displayed to you, in the matrix, the backlog, the widgets and the notifications alike. The levels are therefore not attributes of the attack patterns: they cannot be used in the filters of lists or knowledge widgets. A change of your groups, organizations or markings applies to the next page you load.
+
+Revoked techniques leave the matrix: their stored levels and gaps are removed at the next computation, and come back if the technique is no longer revoked.
 
 ## Declare the telemetry of a security platform
 
@@ -82,15 +84,17 @@ A [live trigger](notifications.md#triggers) can listen to two defense events in 
 
 | Event | Sent when |
 |:------|:----------|
-| **Defense level decreased** | The aggregate defense level of a technique goes down, for example when a rule is removed from a platform, a platform stops providing a data component or the latest OpenAEV validation failed. |
-| **Defense level increased** | The aggregate defense level of a technique goes up, for example when a rule is deployed or a validation succeeds. |
+| **Defense level decreased** | The aggregated defense level of a technique, as the recipient sees it, goes down: for example a rule is removed from a platform, a platform stops providing a data component or the latest OpenAEV validation failed. |
+| **Defense level increased** | The aggregated defense level of a technique, as the recipient sees it, goes up: for example a rule is deployed or a validation succeeds. |
 
-The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. A recipient is only notified about techniques they can access. The first computation of the matrix sets the levels without notifying, and a recomputation that leaves a level unchanged notifies nobody. Digests built on these triggers collect the events like any other live notification.
+The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label.
+
+Each recipient is told about the level they see: both levels are computed from the evidences the recipient can access, so a change caused only by a rule, a relationship or a result they cannot see sends them nothing, and a change they can see is reported even when other evidences keep the overall level unchanged. An evidence deleted since the previous computation counts with the markings and organizations it had, as kept in the [trash](delete-restore.md#trash); once it is no longer in the trash, it no longer counts for anyone but the users who bypass access restrictions. A recipient is only notified about techniques they can access. The first computation of the matrix sets the levels without notifying, and a recomputation that leaves a level unchanged notifies nobody. Digests built on these triggers collect the events like any other live notification.
 
 ## Dashboards
 
-Two widgets are available in custom dashboards: **Defense coverage by tactic** and **Top uncovered techniques used by threats**. The `defense_level` attribute of attack patterns can also be used in the filters of any widget.
+Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** and **Techniques by defense level** (the number of techniques with a deployed detection, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
 
-Click **Create the defense coverage dashboard** in the defense matrix header to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, deployed and validated techniques, techniques by defense level and detection rules. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
+Click **Create the defense coverage dashboard** in the defense matrix header to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
 The defense widgets are not available in public dashboards and in the custom views of entities.
