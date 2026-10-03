@@ -29,7 +29,7 @@ export const isPreviewBannerWindowOpen = (previewSince: string | null | undefine
 };
 
 const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: PreloadedQuery<ThreatPulsePreviewBannerQuery>; dismissKey: string }) => {
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isAdministrator = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { trackCtaClick } = useThreatPulseTelemetry('banner');
@@ -49,20 +49,18 @@ const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: P
 
   if (!isVisible) return null;
 
-  const bannerText = (
-    <>
-      <strong>{t_i18n('Threat Pulse preview is live:')}</strong>
-      {` ${n(pulseStatus.preview_entities)} ${t_i18n('of your objects are seen across the community.')} `}
-      {isAdministrator
-        ? t_i18n('Contribute to unlock the full picture.')
-        : t_i18n('Ask your administrator to enable the Threat Pulse contribution in Settings > Filigran Experience.')}
-    </>
+  const seen = t_i18n(
+    'Threat Pulse preview: {count, plural, one {# of your objects is} other {# of your objects are}} seen across the community.',
+    { values: { count: pulseStatus.preview_entities } },
   );
+  const bannerText = isAdministrator
+    ? seen
+    : `${seen} ${t_i18n('Ask your administrator to turn on contribution in Settings > Filigran Experience.')}`;
   return (
     <TopBanner
       bannerColor="gradient_blue"
       bannerText={bannerText}
-      buttonText={isAdministrator ? t_i18n('Unlock the full Threat Pulse') : undefined}
+      buttonText={isAdministrator ? t_i18n('Set up contribution') : undefined}
       onButtonClick={isAdministrator ? () => {
         trackCtaClick();
         navigate(THREAT_PULSE_SETTINGS_PATH);

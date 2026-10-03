@@ -114,7 +114,7 @@ test('Show the Threat Pulse card in its preview, full and not connected states',
   const card = page.getByTestId('threat-pulse-card');
   await expect(card).toBeVisible();
   await expect(card.getByTestId('threat-pulse-prevalence-gauge')).toHaveAttribute('aria-valuetext', 'Common');
-  await expect(card.getByText('25-49')).toBeVisible();
+  await expect(card.getByText('25 to 49 platforms')).toBeVisible();
   await expect(page.getByTestId('threat-pulse-preview-chip')).toHaveCount(0);
   await expect(card.getByTestId('threat-pulse-locked-row')).toHaveCount(0);
 
@@ -181,13 +181,14 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
   await page.getByTestId('threat-pulse-dashboard-template').click();
   await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
 
-  // Trending in your sector: the first ranks named, the next ones locked, one step to unlock them
+  // Trending in your sector: the first ranks named, the next ones folded into one locked row, one step to unlock them
   const trending = page.getByTestId('threat-pulse-trending-preview');
   await expect(trending).toBeVisible();
   await expect(trending.getByText('Threat Pulse e2e first')).toBeVisible();
   await expect(trending.getByText('#3')).toBeVisible();
-  await expect(trending.getByTestId('threat-pulse-locked-row')).toHaveCount(7);
-  await expect(trending.getByTestId('threat-pulse-unlock-cta')).toBeVisible();
+  await expect(trending.getByTestId('threat-pulse-locked-row')).toHaveCount(0);
+  await expect(trending.getByTestId('threat-pulse-locked-ranks')).toHaveText('7 more trending objects - available when your platform contributes');
+  await expect(trending.getByTestId('threat-pulse-unlock-cta')).toHaveText('Set up contribution');
 
   // Sector benchmark: each tile names what it would show once the platform contributes
   const benchmark = page.getByTestId('threat-pulse-benchmark-locked');

@@ -38,6 +38,28 @@ export const PULSE_TREND_SEVERITIES: Record<string, ChipSeverity> = {
   falling: 'low',
 };
 
+type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
+
+// The coarse platforms range XTM Hub publishes ("10-24", "250+", "<5"), in words: never the raw bucket on screen.
+export const pulsePlatformsBucketLabel = (t_i18n: Translate, bucket: string | null | undefined): string | null => {
+  if (!bucket) {
+    return null;
+  }
+  const below = /^<(\d+)$/.exec(bucket);
+  if (below) {
+    return t_i18n('Fewer than {count} platforms', { values: { count: Number(below[1]) } });
+  }
+  const range = /^(\d+)-(\d+)$/.exec(bucket);
+  if (range) {
+    return t_i18n('{min} to {max} platforms', { values: { min: Number(range[1]), max: Number(range[2]) } });
+  }
+  const atLeast = /^(\d+)\+$/.exec(bucket);
+  if (atLeast) {
+    return t_i18n('{count} platforms or more', { values: { count: Number(atLeast[1]) } });
+  }
+  return null;
+};
+
 export const PULSE_PERIOD_LABELS: Record<PulsePeriodValue, string> = {
   last_7_days: '7 days',
   last_30_days: '30 days',

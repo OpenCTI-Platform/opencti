@@ -97,8 +97,12 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-benchmark">
       <Text variant="content-compact" style={secondary}>
-        {`${t_i18n('Sector')}: ${t_i18n(PULSE_SECTOR_LABELS[pulseBenchmark.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')}`}
-        {pulseBenchmark.sector_platforms_bucket ? ` - ${pulseBenchmark.sector_platforms_bucket} ${t_i18n('platforms')}` : ` - ${t_i18n('Below the anonymity threshold')}`}
+        {t_i18n('Sector: {sector} - {platforms}', {
+          values: {
+            sector: t_i18n(PULSE_SECTOR_LABELS[pulseBenchmark.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed'),
+            platforms: pulsePlatformsBucketLabel(t_i18n, pulseBenchmark.sector_platforms_bucket) ?? t_i18n('below the anonymity threshold'),
+          },
+        })}
       </Text>
       <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', '& th, & td': { textAlign: 'left', paddingY: 0.75, paddingRight: 2 } }}>
         <thead>

@@ -38,31 +38,34 @@ describe('ThreatPulsePreviewBanner', () => {
 
   it('should announce the preview with the local count and the unlock step to an administrator', async () => {
     renderBanner({ access: 'preview', preview_entities: 42, preview_since: hoursAgo(2) });
-    expect(await screen.findByText('Threat Pulse preview is live:')).toBeDefined();
-    expect(screen.getByText(/42 of your objects are seen across the community\./)).toBeDefined();
-    expect(screen.getByText(/Contribute to unlock the full picture\./)).toBeDefined();
-    expect(screen.getByText('Unlock the full Threat Pulse')).toBeDefined();
+    expect(await screen.findByText('Threat Pulse preview: 42 of your objects are seen across the community.')).toBeDefined();
+    expect(screen.getByText('Set up contribution')).toBeDefined();
   });
 
-  it('should tell a non-administrator whom to ask, without the unlock button', async () => {
+  it('should use the singular for one matched object', async () => {
+    renderBanner({ access: 'preview', preview_entities: 1, preview_since: hoursAgo(2) });
+    expect(await screen.findByText('Threat Pulse preview: 1 of your objects is seen across the community.')).toBeDefined();
+  });
+
+  it('should tell a non-administrator whom to ask, without the button', async () => {
     renderBanner({ access: 'preview', preview_entities: 3, preview_since: hoursAgo(1) }, analyst);
-    expect(await screen.findByText(/Ask your administrator to enable the Threat Pulse contribution/)).toBeDefined();
-    expect(screen.queryByText('Unlock the full Threat Pulse')).toBeNull();
+    expect(await screen.findByText(/Ask your administrator to turn on contribution in Settings > Filigran Experience\./)).toBeDefined();
+    expect(screen.queryByText('Set up contribution')).toBeNull();
   });
 
   it('should stay hidden after the first day, without a match, or outside the preview', () => {
     renderBanner({ access: 'preview', preview_entities: 42, preview_since: hoursAgo(30) });
-    expect(screen.queryByText('Threat Pulse preview is live:')).toBeNull();
+    expect(screen.queryByText(/Threat Pulse preview:/)).toBeNull();
     renderBanner({ access: 'preview', preview_entities: 0, preview_since: null });
-    expect(screen.queryByText('Threat Pulse preview is live:')).toBeNull();
+    expect(screen.queryByText(/Threat Pulse preview:/)).toBeNull();
     renderBanner({ access: 'full', preview_entities: 0, preview_since: null });
-    expect(screen.queryByText('Threat Pulse preview is live:')).toBeNull();
+    expect(screen.queryByText(/Threat Pulse preview:/)).toBeNull();
   });
 
   it('should never load once the user dismissed it', () => {
     localStorage.setItem(threatPulsePreviewBannerDismissKey('admin'), 'true');
     const { relayEnv } = testRender(<ThreatPulsePreviewBanner />, { userContext: administrator });
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
-    expect(screen.queryByText('Threat Pulse preview is live:')).toBeNull();
+    expect(screen.queryByText(/Threat Pulse preview:/)).toBeNull();
   });
 });

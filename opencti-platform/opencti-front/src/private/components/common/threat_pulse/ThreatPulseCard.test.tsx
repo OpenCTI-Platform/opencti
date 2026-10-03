@@ -82,10 +82,11 @@ describe('ThreatPulseCard', () => {
     const gauge = screen.getByTestId('threat-pulse-prevalence-gauge');
     expect(gauge.getAttribute('aria-valuetext')).toBe('Common');
     expect(gauge.getAttribute('aria-valuenow')).toBe('2');
-    expect(screen.getByText('25-49')).toBeDefined();
+    expect(screen.getByText('25 to 49 platforms')).toBeDefined();
+    expect(screen.getByText('5 to 9 platforms')).toBeDefined();
     expect(screen.getByTestId('threat-pulse-sparkline')).toBeDefined();
     expect(screen.getAllByText('Rising').length).toBe(2);
-    expect(screen.getByText('40 / 100')).toBeDefined();
+    expect(screen.getByText('40 out of 100')).toBeDefined();
     expect(screen.getByText('Sector trend (Finance)')).toBeDefined();
     expect(screen.queryByTestId('threat-pulse-preview-chip')).toBeNull();
   });
@@ -98,13 +99,23 @@ describe('ThreatPulseCard', () => {
     expect(await screen.findByText(/Fewer platforms than the anonymity threshold/)).toBeDefined();
     expect(screen.queryByText('Contributing platforms')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-sparkline')).toBeNull();
-    expect(screen.getByText('100 / 100')).toBeDefined();
+    expect(screen.getByText('100 out of 100')).toBeDefined();
+  });
+
+  it('should leave out a fact the card does not have instead of a placeholder', async () => {
+    renderCard(FULL, { ...PUBLISHED, platforms_bucket: null, first_seen_network: null, last_seen_network: null, community_uniqueness: null });
+    expect(await screen.findByTestId('threat-pulse-card')).toBeDefined();
+    expect(screen.queryByText('Contributing platforms')).toBeNull();
+    expect(screen.queryByText('Network first seen')).toBeNull();
+    expect(screen.queryByText('Network last seen')).toBeNull();
+    expect(screen.queryByText('Community uniqueness')).toBeNull();
+    expect(screen.queryByText('-')).toBeNull();
   });
 
   it('should keep the last known information when XTM Hub is unreachable', async () => {
     renderCard({ ...FULL, unavailable_reason: 'hub_unreachable' }, PUBLISHED);
     expect(await screen.findByText(/XTM Hub is unreachable/)).toBeDefined();
-    expect(screen.getByText('25-49')).toBeDefined();
+    expect(screen.getByText('25 to 49 platforms')).toBeDefined();
   });
 
   it('should show the coarse preview signal, the locked rows and the unlock step to an administrator', async () => {
@@ -115,12 +126,12 @@ describe('ThreatPulseCard', () => {
     expect(screen.getByText('Rising')).toBeDefined();
     const locked = screen.getAllByTestId('threat-pulse-locked-row').map((row) => row.textContent);
     expect(locked).toEqual([
-      'Contributing platformsLocked',
-      'Network first seenLocked',
-      'Community trend over 12 weeksLocked',
-      'Sector trendLocked',
+      'Contributing platformsAvailable when your platform contributes',
+      'Network first seenAvailable when your platform contributes',
+      'Community trend over 12 weeksAvailable when your platform contributes',
+      'Sector trendAvailable when your platform contributes',
     ]);
-    expect(screen.getByTestId('threat-pulse-unlock-cta')).toBeDefined();
+    expect(screen.getByTestId('threat-pulse-unlock-cta').textContent).toBe('Set up contribution');
     expect(screen.queryByTestId('threat-pulse-sparkline')).toBeNull();
   });
 

@@ -15,11 +15,22 @@ import {
   PULSE_TREND_SEVERITIES,
   PULSE_UNAVAILABLE_MESSAGES,
   prevalenceGaugeValue,
+  pulsePlatformsBucketLabel,
   pulseRatioSeverity,
 } from './threatPulseUtils';
 import { buildPulseBriefingContext } from './ThreatPulseBriefing';
 
 describe('Threat Pulse utils', () => {
+  it('should put the platforms range XTM Hub publishes in words, never the raw range', () => {
+    const translate = (message: string, options?: { values?: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [name, value]) => text.replace(`{${name}}`, String(value)), message);
+    expect(pulsePlatformsBucketLabel(translate, '<5')).toBe('Fewer than 5 platforms');
+    expect(pulsePlatformsBucketLabel(translate, '10-24')).toBe('10 to 24 platforms');
+    expect(pulsePlatformsBucketLabel(translate, '250+')).toBe('250 platforms or more');
+    expect(pulsePlatformsBucketLabel(translate, null)).toBeNull();
+    expect(pulsePlatformsBucketLabel(translate, 'unexpected')).toBeNull();
+  });
+
   it('should label every value of the API enums', () => {
     expect(Object.keys(PULSE_PREVALENCE_LABELS)).toEqual([...PULSE_PREVALENCE_ORDER]);
     expect(Object.keys(PULSE_PREVALENCE_SEVERITIES)).toEqual([...PULSE_PREVALENCE_ORDER]);

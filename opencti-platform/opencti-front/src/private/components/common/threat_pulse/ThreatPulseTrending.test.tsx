@@ -42,16 +42,38 @@ describe('ThreatPulseTrending', () => {
       entries: [entry('m1', 'LockBit', 'rising', 3.2), entry('m2', 'Qakbot', 'stable', 1)],
     });
     expect(await screen.findByTestId('threat-pulse-trending-list')).toBeDefined();
-    expect(screen.getByText('Sector: Finance')).toBeDefined();
+    expect(screen.getByText('Sector: Finance - last 7 days')).toBeDefined();
     expect(screen.getByText('LockBit').closest('a')?.getAttribute('href')).toBe('/dashboard/arsenal/malwares/m1');
     expect(screen.getByText('x3.2')).toBeDefined();
     expect(screen.getByText('Rising')).toBeDefined();
-    expect(screen.getByText('3 more items trend in the sector, but this platform does not hold them.')).toBeDefined();
+    expect(screen.getAllByText('10 to 24 platforms')).toHaveLength(2);
+    expect(screen.getAllByText('Network first seen on Sep 21, 2026')).toHaveLength(2);
+    expect(screen.getByText('3 of the first ranks trend in the community, but this platform does not hold them.')).toBeDefined();
+  });
+
+  it('should leave out the facts a trending entry does not carry instead of a placeholder', async () => {
+    renderTrending({
+      ...BASE,
+      sector_bucket: 'finance',
+      region_bucket: null,
+      network_items_count: 1,
+      entries: [entry('m1', 'LockBit', 'rising', null)],
+    });
+    expect(await screen.findByTestId('threat-pulse-trending-list')).toBeDefined();
+    expect(screen.queryByText('-')).toBeNull();
+    expect(screen.queryByText(/platforms/)).toBeNull();
+    expect(screen.queryByText(/Network first seen/)).toBeNull();
   });
 
   it('should say when nothing the platform holds is trending', async () => {
     renderTrending({ ...BASE, sector_bucket: 'finance', region_bucket: null, network_items_count: 0, entries: [] });
     expect(await screen.findByText('Nothing this platform holds is trending in its sector for this period.')).toBeDefined();
+  });
+
+  it('should say why the preview list is empty', async () => {
+    renderTrending({ ...BASE, preview: true, sector_bucket: 'finance', region_bucket: null, network_items_count: 0, locked_count: 0, entries: [] });
+    expect(await screen.findByText('Nothing this platform holds is trending in its sector this week.')).toBeDefined();
+    expect(screen.queryByTestId('threat-pulse-locked-ranks')).toBeNull();
   });
 
   it('should name the first ranks of the preview, lock the next ones and offer the unlock step', async () => {
@@ -66,15 +88,13 @@ describe('ThreatPulseTrending', () => {
     });
     expect(await screen.findByTestId('threat-pulse-trending-preview')).toBeDefined();
     expect(screen.getByTestId('threat-pulse-preview-chip')).toBeDefined();
-    expect(screen.getByText('Sector: Every sector - Last 7 days')).toBeDefined();
+    expect(screen.getByText('Sector: Every sector - last 7 days')).toBeDefined();
     expect(screen.getByText('#1')).toBeDefined();
     expect(screen.getByText('#3')).toBeDefined();
-    expect(screen.getByText('1 of the first ranks trend in the community, but this platform does not hold them.')).toBeDefined();
-    const locked = screen.getAllByTestId('threat-pulse-locked-row').map((row) => row.textContent);
-    expect(locked).toHaveLength(7);
-    expect(locked[0]).toBe('#4 Trending objectLocked');
-    expect(locked[6]).toBe('#10 Trending objectLocked');
-    expect(screen.getByTestId('threat-pulse-unlock-cta')).toBeDefined();
+    expect(screen.getByText('1 of the first ranks trends in the community, but this platform does not hold them.')).toBeDefined();
+    expect(screen.queryByTestId('threat-pulse-locked-row')).toBeNull();
+    expect(screen.getByTestId('threat-pulse-locked-ranks').textContent).toBe('7 more trending objects - available when your platform contributes');
+    expect(screen.getByTestId('threat-pulse-unlock-cta').textContent).toBe('Set up contribution');
     expect(screen.queryByText('x3.2')).toBeNull();
   });
 

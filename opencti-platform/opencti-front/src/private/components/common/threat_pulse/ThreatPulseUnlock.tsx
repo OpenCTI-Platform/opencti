@@ -81,16 +81,30 @@ export const ThreatPulseLockedRow = ({ label }: ThreatPulseLockedRowProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const secondary = { color: theme.palette.text.secondary };
+  const availability = t_i18n('Available when your platform contributes');
   return (
     <Box
       data-testid="threat-pulse-locked-row"
       sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 32 }}
     >
       <Text variant="content-compact" style={secondary}>{label}</Text>
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }} aria-label={`${label}: ${t_i18n('Locked')}`}>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }} aria-label={`${label}: ${availability}`}>
         <LockOutlined fontSize="small" color="disabled" />
-        <Text variant="content-compact" style={secondary}>{t_i18n('Locked')}</Text>
+        <Text variant="content-compact" style={secondary}>{availability}</Text>
       </Box>
+    </Box>
+  );
+};
+
+// The ranks of a ranking that contributing would name, folded into one row.
+export const ThreatPulseLockedRanksRow = ({ count }: { count: number }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const label = t_i18n('{count, plural, one {# more trending object} other {# more trending objects}} - available when your platform contributes', { values: { count } });
+  return (
+    <Box data-testid="threat-pulse-locked-ranks" aria-label={label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minHeight: 32 }}>
+      <LockOutlined fontSize="small" color="disabled" />
+      <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{label}</Text>
     </Box>
   );
 };
@@ -115,11 +129,7 @@ export const ThreatPulseUnlockCta = ({ surface }: ThreatPulseCtaProps) => {
   const isAdministrator = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { trackCtaClick } = useThreatPulseTelemetry(surface);
   if (!isAdministrator) {
-    return (
-      <AskAdministrator>
-        {t_i18n('Ask your administrator to enable the Threat Pulse contribution in Settings > Filigran Experience.')}
-      </AskAdministrator>
-    );
+    return <AskAdministrator>{t_i18n('Ask your administrator to turn on contribution in Settings > Filigran Experience.')}</AskAdministrator>;
   }
   return (
     <Button
@@ -130,7 +140,7 @@ export const ThreatPulseUnlockCta = ({ surface }: ThreatPulseCtaProps) => {
       }}
       data-testid="threat-pulse-unlock-cta"
     >
-      {t_i18n('Unlock the full Threat Pulse by contributing')}
+      {t_i18n('Set up contribution')}
     </Button>
   );
 };

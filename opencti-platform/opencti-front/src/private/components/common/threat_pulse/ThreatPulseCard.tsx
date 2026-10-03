@@ -19,6 +19,7 @@ import {
   PULSE_TREND_LABELS,
   PULSE_TREND_SEVERITIES,
   PULSE_UNAVAILABLE_MESSAGES,
+  pulsePlatformsBucketLabel,
 } from './threatPulseUtils';
 
 export const threatPulseCardQuery = graphql`
@@ -185,11 +186,11 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
           {information ? (
             <>
               <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
-              <DetailRow label={t_i18n('Community trend')}>
-                {information.trend && (
+              {information.trend && (
+                <DetailRow label={t_i18n('Community trend')}>
                   <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
-                )}
-              </DetailRow>
+                </DetailRow>
+              )}
             </>
           ) : (
             <Text variant="content-compact" style={secondary} data-testid="threat-pulse-preview-not-listed">
@@ -205,7 +206,7 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
           </Box>
           {information?.updated_at && (
             <Text variant="content-compact" style={secondary}>
-              {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
+              {t_i18n('Updated {date}', { values: { date: fldt(information.updated_at) } })}
             </Text>
           )}
         </Box>
@@ -236,6 +237,8 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   const secondary = { color: theme.palette.text.secondary };
   const reason = pulseEntity.unavailable_reason;
   const title = <ThreatPulseCardTitle />;
+  const platforms = pulsePlatformsBucketLabel(t_i18n, information.platforms_bucket);
+  const sectorPlatforms = pulsePlatformsBucketLabel(t_i18n, information.sector_platforms_bucket);
   return (
     <Box sx={{ flex: '0 0 auto' }}>
       <Card title={title} fullHeight={false}>
@@ -253,25 +256,31 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
           )}
           {information.published && (
             <>
-              <DetailRow label={t_i18n('Contributing platforms')}>
-                <Chip label={information.platforms_bucket ?? '-'} severity="info" />
-              </DetailRow>
-              <DetailRow label={t_i18n('Network first seen')}>
-                <Text variant="content-compact">{information.first_seen_network ? fsd(information.first_seen_network) : '-'}</Text>
-              </DetailRow>
-              <DetailRow label={t_i18n('Network last seen')}>
-                <Text variant="content-compact">{information.last_seen_network ? fsd(information.last_seen_network) : '-'}</Text>
-              </DetailRow>
+              {platforms && (
+                <DetailRow label={t_i18n('Contributing platforms')}>
+                  <Chip label={platforms} severity="info" />
+                </DetailRow>
+              )}
+              {information.first_seen_network && (
+                <DetailRow label={t_i18n('Network first seen')}>
+                  <Text variant="content-compact">{fsd(information.first_seen_network)}</Text>
+                </DetailRow>
+              )}
+              {information.last_seen_network && (
+                <DetailRow label={t_i18n('Network last seen')}>
+                  <Text variant="content-compact">{fsd(information.last_seen_network)}</Text>
+                </DetailRow>
+              )}
               <DetailRow label={t_i18n('Community trend')}>
                 <PulseSparkline series={information.trend_series} label={t_i18n('Contributing platforms per week, last 12 weeks')} />
                 {information.trend && (
                   <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
                 )}
               </DetailRow>
-              <DetailRow label={`${t_i18n('Sector trend')} (${t_i18n(PULSE_SECTOR_LABELS[pulseEntity.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')})`}>
+              <DetailRow label={t_i18n('Sector trend ({sector})', { values: { sector: t_i18n(PULSE_SECTOR_LABELS[pulseEntity.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed') } })}>
                 {information.sector_trend ? (
                   <>
-                    <Text variant="content-compact" style={secondary}>{information.sector_platforms_bucket}</Text>
+                    {sectorPlatforms && <Text variant="content-compact" style={secondary}>{sectorPlatforms}</Text>}
                     <Chip label={t_i18n(PULSE_TREND_LABELS[information.sector_trend])} severity={PULSE_TREND_SEVERITIES[information.sector_trend]} />
                   </>
                 ) : (
@@ -280,14 +289,14 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
               </DetailRow>
             </>
           )}
-          <DetailRow label={t_i18n('Community uniqueness')}>
-            <Text variant="content-compact">
-              {information.community_uniqueness !== null && information.community_uniqueness !== undefined ? `${information.community_uniqueness} / 100` : '-'}
-            </Text>
-          </DetailRow>
+          {information.community_uniqueness !== null && information.community_uniqueness !== undefined && (
+            <DetailRow label={t_i18n('Community uniqueness')}>
+              <Text variant="content-compact">{t_i18n('{score} out of 100', { values: { score: information.community_uniqueness } })}</Text>
+            </DetailRow>
+          )}
           {information.updated_at && (
             <Text variant="content-compact" style={secondary}>
-              {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
+              {t_i18n('Updated {date}', { values: { date: fldt(information.updated_at) } })}
             </Text>
           )}
         </Box>
