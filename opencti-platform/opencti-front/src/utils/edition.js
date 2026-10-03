@@ -117,6 +117,12 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
+// Provenance events of live knowledge triggers, opt-in
+export const provenanceEventTypesOptions = [
+  { value: 'corroboration', label: 'Corroboration reached' },
+  { value: 'conflict', label: 'Source conflict detected' },
+];
+
 // Incident and case timeline events: offered by the trigger forms, never selected by default
 export const timelineEventTypesOptions = [
   { value: 'timeline_anchor_changed', label: 'Timeline anchor changed' },
@@ -124,5 +130,5 @@ export const timelineEventTypesOptions = [
 ];
 
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return [...filterEventTypesOptions, ...timelineEventTypesOptions].find((o) => o.value === event_type);
-}).filter((option) => !!option);
+  return [...filterEventTypesOptions, ...provenanceEventTypesOptions, ...timelineEventTypesOptions].find((o) => o.value === event_type);
+}).filter((option) => option !== undefined);

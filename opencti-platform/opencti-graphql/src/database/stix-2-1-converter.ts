@@ -127,6 +127,7 @@ import { assertType, cleanObject, convertObjectReferences, convertToStixDate, is
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
+import { withProvenanceStixExtension } from '../modules/provenance/provenance-stix';
 import { buildStixTimelineExtension } from '../modules/timeline/timeline-extension';
 import { ATTRIBUTE_TIMELINE_EXCHANGE, type StoreTimelineExchange } from '../modules/timeline/timeline-types';
 
@@ -1733,7 +1734,7 @@ export const convertStoreToStix_2_1 = (instance: StoreCommon): S.StixObject => {
   if (isEmptyField(instance.standard_id) || isEmptyField(instance.entity_type)) {
     throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
   }
-  const converted = convertToStix_2_1(instance);
+  const converted = withProvenanceStixExtension(instance as StoreObject, convertToStix_2_1(instance));
   const stix = cleanObject(converted);
   if (!isValidStix(stix)) {
     throw FunctionalError('Invalid stix data conversion', { id: instance.standard_id, type: instance.entity_type });

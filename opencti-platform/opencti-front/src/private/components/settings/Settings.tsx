@@ -40,6 +40,7 @@ import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsMapSource from './settings_map_source/SettingsMapSource';
+import SettingsProcedures from './settings_procedures/SettingsProcedures';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const AI_TYPE_MAP: Record<string, string> = {
@@ -698,6 +699,9 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               <SettingsMapSource
                 settings={settings}
               />
+            </Grid>
+            <Grid size={12}>
+              <SettingsProcedures />
             </Grid>
           </Grid>
         </Grid>

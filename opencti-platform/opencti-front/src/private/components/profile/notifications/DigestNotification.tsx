@@ -29,9 +29,12 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
         const getChipOperationSeverity = () => {
           switch (operation) {
             case 'update':
+            case 'corroboration':
               return 'info' as const;
             case 'delete':
               return 'critical' as const;
+            case 'conflict':
+              return 'medium' as const;
             default:
               return 'low' as const;
           }
