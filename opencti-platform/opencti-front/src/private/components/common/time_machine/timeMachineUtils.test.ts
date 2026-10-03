@@ -95,6 +95,7 @@ const landscapeDiff: LandscapeDiffData = {
   entities: [
     {
       entity_id: 'intrusion-set-id',
+      standard_id: 'intrusion-set--4e7c3b44-8c39-5f3d-9b6e-1b2c3d4e5f60',
       entity_type: 'Intrusion-Set',
       name: '=HYPERLINK("http://evil")',
       created_in_period: false,
@@ -223,7 +224,8 @@ describe('landscape diff exports', () => {
   it('builds one CSV row per changed entity and neutralizes formulas', () => {
     const lines = landscapeDiffToCsv(landscapeDiff, t).split('\n');
     expect(lines).toHaveLength(2);
-    expect(lines[1]).toBe('"\'=HYPERLINK(""http://evil"")",Intrusion-Set,false,false,2,8,1,0,50 -> 80,,21');
+    expect(lines[0].split(',')[2]).toBe('Standard STIX ID');
+    expect(lines[1]).toBe('"\'=HYPERLINK(""http://evil"")",Intrusion-Set,intrusion-set--4e7c3b44-8c39-5f3d-9b6e-1b2c3d4e5f60,false,false,2,8,1,0,50 -> 80,,21');
   });
 
   it('builds the HTML report with the non-empty aggregates only', () => {

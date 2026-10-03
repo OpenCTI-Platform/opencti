@@ -252,17 +252,19 @@ const processBatch = async (
   // already counted from another batch can be read once more, so the read is sized to let it through.
   const budget = LANDSCAPE_MAX_RELATIONSHIPS - acc.relationshipsFetched;
   const maxSize = budget > 0 ? budget + acc.countedRelationships.size : 0;
-  const relations = maxSize > 0 ? await fullRelationsList<BasicStoreRelation>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
+  // One extra relationship is read to know whether some were left out (only that one once the budget is spent)
+  const fetched = await fullRelationsList<BasicStoreRelation>(context, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     startDate: from,
     endDate: to,
     dateAttribute: 'created_at',
-    maxSize,
+    maxSize: maxSize + 1,
     baseData: true,
     baseFields: ['created_at'],
-  } as any) : [];
-  if (maxSize <= 0 || relations.length >= maxSize) acc.truncated = true;
+  } as any);
+  if (fetched.length > maxSize) acc.truncated = true;
+  const relations = fetched.slice(0, maxSize);
   let newRelationships = 0;
   relations.forEach((relation) => {
     if (!acc.countedRelationships.has(relation.internal_id)) {
@@ -287,14 +289,15 @@ const processBatch = async (
   });
   acc.relationshipsFetched += newRelationships;
   // 2. Relationships removed or revoked in the period
-  const relationshipEvents = await fetchRelationshipsHistoryEvents(context, user, ids, {
+  const fetchedEvents = await fetchRelationshipsHistoryEvents(context, user, ids, {
     from,
     to,
     scopes: ['create', 'delete', 'update'],
     entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
-    max: LANDSCAPE_MAX_EVENTS_PER_BATCH,
+    max: LANDSCAPE_MAX_EVENTS_PER_BATCH + 1,
   });
-  if (relationshipEvents.length >= LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
+  if (fetchedEvents.length > LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
+  const relationshipEvents = fetchedEvents.slice(0, LANDSCAPE_MAX_EVENTS_PER_BATCH);
   buildRelationshipStates(relationshipEvents).forEach((state, relationshipId) => {
     if (state.created) return; // Created in the period: counted with the new relationships (or no net change)
     const sides = [state.from_id, state.to_id].filter((id): id is string => !!id && idSet.has(id));

@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useSearchParams } from 'react-router';
 import { Chip, Text } from '@filigran/design-system';
@@ -358,19 +358,25 @@ const EntityDiffTab = ({ entityId }: EntityDiffTabProps) => {
       to: isValidDate(to) ? to : fallback.to,
     };
   }, [searchParams]);
-  const hasExplicitRange = isValidDate(searchParams.get(FROM_SEARCH_PARAM));
-  const handleChange = (next: DateRange) => {
+  const hasCompleteRange = isValidDate(searchParams.get(FROM_SEARCH_PARAM)) && isValidDate(searchParams.get(TO_SEARCH_PARAM));
+  // A link carrying its period opens it as a custom period, otherwise the last 30 days preset stays selected
+  const [initialPreset] = useState(hasCompleteRange ? 'custom' : '30d');
+  const handleChange = useCallback((next: DateRange) => {
     setSearchParams((current) => {
       const params = new URLSearchParams(current);
       params.set(FROM_SEARCH_PARAM, next.from);
       params.set(TO_SEARCH_PARAM, next.to);
       return params;
     }, { replace: true });
-  };
+  }, [setSearchParams]);
+  // The period opened by default is written in the URL, so the comparison can be shared or reloaded as is
+  useEffect(() => {
+    if (!hasCompleteRange) handleChange(range);
+  }, [hasCompleteRange, range, handleChange]);
   return (
     <Box>
       <Box sx={{ marginBottom: 2 }}>
-        <TimeMachinePeriodSelector value={range} onChange={handleChange} initialPreset={hasExplicitRange ? 'custom' : '30d'} />
+        <TimeMachinePeriodSelector value={range} onChange={handleChange} initialPreset={initialPreset} />
       </Box>
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <EntityDiffContent entityId={entityId} range={range} />

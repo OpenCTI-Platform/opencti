@@ -67,19 +67,20 @@ const landscapeChangesPollQuery = graphql`
         confidence_changes
         score_changes
         new_techniques_by_tactic { key label count }
-        new_techniques { id entity_type name count }
-        new_malware { id entity_type name count }
-        new_tools { id entity_type name count }
+        new_techniques { id standard_id entity_type name x_mitre_id count }
+        new_malware { id standard_id entity_type name count }
+        new_tools { id standard_id entity_type name count }
         new_victims_by_sector { key label count }
         new_victims_by_country { key label count }
         new_victims_by_region { key label count }
-        new_infrastructure { id entity_type name count }
+        new_infrastructure { id standard_id entity_type name count }
         new_infrastructure_count
         new_indicators_count
         groups { key label count }
       }
       entities {
         entity_id
+        standard_id
         entity_type
         name
         created_in_period

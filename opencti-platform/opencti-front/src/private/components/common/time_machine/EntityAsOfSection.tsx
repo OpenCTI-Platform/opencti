@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Alert, Box } from '@mui/material';
 import Button from '@common/button/Button';
@@ -11,13 +11,14 @@ import { AS_OF_SEARCH_PARAM, isValidDate, presetRange } from './timeMachineUtils
 
 /**
  * Date of the as-of view, kept in the URL so the view can be shared and survives a reload.
- * Without a date in the URL, the view opens 30 days back.
+ * Without a date in the URL, the view opens 30 days back and writes that date in the URL.
  */
 const useAsOfDate = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const rawDate = searchParams.get(AS_OF_SEARCH_PARAM);
   const defaultDate = useMemo(() => presetRange('30d').from, []);
-  const asOfDate = isValidDate(rawDate) ? rawDate : defaultDate;
+  const hasDate = isValidDate(rawDate);
+  const asOfDate = hasDate ? rawDate : defaultDate;
   const setAsOfDate = useCallback((date: string) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -25,6 +26,9 @@ const useAsOfDate = () => {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
+  useEffect(() => {
+    if (!hasDate) setAsOfDate(defaultDate);
+  }, [hasDate, defaultDate, setAsOfDate]);
   return { asOfDate, setAsOfDate };
 };
 
