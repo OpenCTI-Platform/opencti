@@ -44,7 +44,7 @@ import {
 import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvailable, revertAppliedPatch } from './curation-apply';
 import { unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
-import { adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
+import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
 import { canUserApplyProposal } from './curation-access';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
@@ -237,9 +237,10 @@ export const rejectProposal = async (context: AuthContext, user: AuthUser, id: s
 };
 
 /**
- * Decision of an adjudicator (XTM One agent through the decide tool, or any API client). Without apply, the decision
- * is only recorded. With apply: merge and alias decisions apply the proposal, distinct rejects it (and the pair is
- * never proposed again), skip leaves it open.
+ * Decision of an adjudicator (XTM One agent through the decide tool, or any API client). Decisions resolve entities,
+ * so only duplicate proposals (merge and alias) take one; the other kinds are accepted or rejected in the inbox.
+ * Without apply, the decision is only recorded. With apply: merge and alias decisions apply the proposal, distinct
+ * rejects it (and the pair is never proposed again), skip leaves it open.
  */
 export const decideProposal = async (
   context: AuthContext,
@@ -248,6 +249,12 @@ export const decideProposal = async (
   input: { decision: CurationDecision; rationale: string; apply?: boolean | null; agent_slug?: string | null; model?: string | null; target_id?: string | null },
 ) => {
   const proposal = await loadOpenProposal(context, user, id);
+  if (!ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind)) {
+    throw FunctionalError('Only merge and alias proposals take a curation decision: accept or reject this proposal instead', {
+      id: proposal.internal_id,
+      proposal_kind: proposal.proposal_kind,
+    });
+  }
   const rationale = (input.rationale ?? '').trim();
   if (rationale.length === 0) {
     throw FunctionalError('A rationale is required to decide a curation proposal');

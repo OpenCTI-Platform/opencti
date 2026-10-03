@@ -84,6 +84,15 @@ const REJECT_MUTATION = gql`
   }
 `;
 
+const DECIDE_MUTATION = gql`
+  mutation CurationProposalDecide($id: ID!, $input: CurationProposalDecideInput!) {
+    curationProposalDecide(id: $id, input: $input) {
+      id
+      proposal_status
+    }
+  }
+`;
+
 const REVERT_MUTATION = gql`
   mutation CurationProposalRevert($id: ID!) {
     curationProposalRevert(id: $id) {
@@ -452,6 +461,15 @@ describe('Knowledge curation', () => {
     const [contradiction] = (await openProposalsFor(inverted.id)).filter((proposal) => proposal.recommended_action === 'fix_dates');
     expect(contradiction).toBeDefined();
     expect(contradiction.proposal_kind).toBe('contradiction');
+
+    // Decisions resolve duplicates: an adjudicator cannot apply a date fix by labelling it a merge.
+    const decided = await queryAsAdmin({
+      query: DECIDE_MUTATION,
+      variables: { id: contradiction.id, input: { decision: 'merge', rationale: 'Not a duplicate', apply: true } },
+    });
+    expect(decided.errors?.[0]?.message).toContain('Only merge and alias proposals take a curation decision');
+    const stillInverted = await storeLoadById(testContext, ADMIN_USER, inverted.id, ENTITY_TYPE_INTRUSION_SET) as unknown as { first_seen: string; last_seen: string };
+    expect(new Date(stillInverted.first_seen).getTime()).toBeGreaterThan(new Date(stillInverted.last_seen).getTime());
 
     await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id: contradiction.id } });
     const fixed = await storeLoadById(testContext, ADMIN_USER, inverted.id, ENTITY_TYPE_INTRUSION_SET) as unknown as { first_seen: string; last_seen: string };
