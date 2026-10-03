@@ -176,6 +176,7 @@ import {
   isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
@@ -282,7 +283,13 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
-import { transformCustomFieldValueAddInput, validateCustomFieldValues, validateCustomFieldValuesEditInput } from '../modules/customField/custom-field-validator';
+import {
+  normalizeCustomFieldValuesDates,
+  transformCustomFieldValueAddInput,
+  validateCustomFieldValues,
+  validateCustomFieldValuesEditInput,
+  validateMandatoryCustomFieldValues,
+} from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -3018,16 +3025,19 @@ export const updateAttribute = async <T extends StoreObject>(
   if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
     throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
   }
+  let finalInputs = inputs;
   const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
   if (customFieldValuesInput) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(customFieldValuesInput.value ?? []) };
+      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
+      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }
   }
   // Continue update
-  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
@@ -3225,6 +3235,11 @@ const validateEntityAndRelationCreation = async (
     await validateInputCreation(context, user, type, input, entitySetting, {
       bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
     });
+    // Same rules as mandatory standard attributes: after default values, and bypassable
+    const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) && !isAllowedToBypassMandatory) {
+      await validateMandatoryCustomFieldValues(context, user, input.custom_field_values, type);
+    }
   }
 };
 
@@ -3440,7 +3455,8 @@ export const createRelationRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType);
+    // Mandatory custom fields are checked once default values are filled (see validateEntityAndRelationCreation)
+    await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType, { checkMandatory: false });
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;
@@ -3773,7 +3789,8 @@ const internalCreateEntityRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, type);
+    // Mandatory custom fields are checked once default values are filled (see validateEntityAndRelationCreation)
+    await validateCustomFieldValues(context, user, customFieldValuesFromInput, type, { checkMandatory: false });
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;

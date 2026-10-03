@@ -1,11 +1,32 @@
 import * as R from 'ramda';
-import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
+import { GraphQLDateTime } from 'graphql-scalars';
+import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CustomFieldValueAddInput, type EditInput, EditOperation } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { customFieldValues } from '../../schema/attribute-definition';
+import { now } from '../../utils/format';
+
+// Custom field values are typed `[Any]` in the API, so dates don't go through the GraphQL DateTime scalar.
+// Apply the same rule as standard date attributes: RFC 3339 date-time only, normalized to ISO UTC.
+export const normalizeCustomFieldDate = (value: unknown): string | undefined => {
+  try {
+    return (GraphQLDateTime.parseValue(value) as Date).toISOString();
+  } catch {
+    return undefined;
+  }
+};
+
+// Normalize the date values of stored-format entries (edit path); invalid dates are left as is for validation to reject.
+export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
+  if (value.date_value === undefined || value.date_value === null) {
+    return value;
+  }
+  const normalizedDate = normalizeCustomFieldDate(value.date_value);
+  return normalizedDate ? { ...value, date_value: normalizedDate } : value;
+});
 
 const verifyAddInputValueType = (
   customFieldValueAddInputValue: any[],
@@ -34,7 +55,7 @@ const verifyAddInputValueType = (
       }
       break;
     case 'date':
-      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
+      if (customFieldValueAddInputValue.length != 1 || normalizeCustomFieldDate(customFieldValueAddInputValue[0]) === undefined) {
         logApp.warn('Invalid value type for date custom field', { field_name: customFieldDefinition.label });
         return false;
       }
@@ -83,7 +104,7 @@ const extractCustomFieldValueFromAddInputValue = (
       customFieldValue.boolean_value = customFieldValueAddInputValue[0] as boolean;
       break;
     case 'date':
-      customFieldValue.date_value = customFieldValueAddInputValue[0] as string;
+      customFieldValue.date_value = normalizeCustomFieldDate(customFieldValueAddInputValue[0]);
       break;
     case 'select':
       customFieldValue.select_value = customFieldValueAddInputValue[0] as string;
@@ -138,8 +159,11 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
         return { ...customFieldDefaultValue, string_value: defaultValue };
       case 'select':
         return { ...customFieldDefaultValue, select_value: defaultValue };
-      case 'date':
-        return { ...customFieldDefaultValue, date_value: defaultValue };
+      case 'date': {
+        // @now is resolved when the value is filled; an invalid default is ignored rather than failing indexing
+        const dateValue = defaultValue === CUSTOM_FIELD_NOW_TOKEN ? now() : normalizeCustomFieldDate(defaultValue);
+        return dateValue ? { ...customFieldDefaultValue, date_value: dateValue } : undefined;
+      }
       case 'multi_select':
         return { ...customFieldDefaultValue, select_values: [defaultValue] };
       case 'boolean':
@@ -194,15 +218,32 @@ export const extractStringifiedCustomFieldValueFromStoreEntity = async (
   if (rawValue === undefined || rawValue === null) return undefined;
   return Array.isArray(rawValue) ? rawValue.join(',') : String(rawValue);
 };
+const checkMandatoryCustomFieldValues = (
+  values: CustomFieldValue[],
+  definitions: BasicStoreEntityCustomFieldDefinition[],
+  entityType: string,
+): void => {
+  // Runs even when no values are provided, so an omitted mandatory field is rejected.
+  const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
+  for (const def of mandatoryDefs) {
+    const valueEntry = values.find((v) => v.field_name === def.name);
+    if (!valueEntry) {
+      throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
+    }
+  }
+};
+
 /**
  * Validates an array of custom field values against the definitions for a given entity type.
  * Throws FunctionalError if any validation fails.
+ * On creation, mandatory fields are checked separately (checkMandatory: false), once default values are filled.
  */
 export const validateCustomFieldValues = async (
   context: AuthContext,
   user: AuthUser,
   customFieldValues: CustomFieldValue[],
   entityType: string,
+  opts: { checkMandatory?: boolean } = {},
 ): Promise<void> => {
   const values = customFieldValues ?? [];
   const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
@@ -232,15 +273,23 @@ export const validateCustomFieldValues = async (
     }
   }
 
-  // Check mandatory fields are present.
-  // Runs even when no values are provided, so an omitted mandatory field is rejected.
-  const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
-  for (const def of mandatoryDefs) {
-    const valueEntry = values.find((v) => v.field_name === def.name);
-    if (!valueEntry) {
-      throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
-    }
+  if (opts.checkMandatory !== false) {
+    checkMandatoryCustomFieldValues(values, definitions, entityType);
   }
+};
+
+/**
+ * Checks that the mandatory custom fields of an entity type are present, on creation.
+ * Must run once default values are filled, like the mandatory check of standard attributes.
+ */
+export const validateMandatoryCustomFieldValues = async (
+  context: AuthContext,
+  user: AuthUser,
+  customFieldValues: CustomFieldValue[] | undefined,
+  entityType: string,
+): Promise<void> => {
+  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
+  checkMandatoryCustomFieldValues(customFieldValues ?? [], definitions, entityType);
 };
 
 // When validating a replace, check consistency of the new values coming in
@@ -356,9 +405,8 @@ const validateDateField = (value: CustomFieldValue): void => {
   if (value.date_value === undefined || value.date_value === null) {
     throw FunctionalError('date_value is required for date type custom field', { field_name: value.field_name });
   }
-  // Validate ISO date format
-  const date = new Date(value.date_value);
-  if (Number.isNaN(date.getTime())) {
+  // Validate ISO date format (same rule as standard date attributes)
+  if (normalizeCustomFieldDate(value.date_value) === undefined) {
     throw FunctionalError('date_value must be a valid ISO date string', { field_name: value.field_name, value: value.date_value });
   }
 };

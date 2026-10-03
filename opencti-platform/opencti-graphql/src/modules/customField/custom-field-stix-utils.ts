@@ -140,6 +140,7 @@ export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicSto
     const customFieldStixValue = getStixCustomFieldValue(stix, name, aliases);
     switch (field_type) {
       case 'string':
+      case 'markdown':
       case 'select':
       case 'multi_select':
         // testStringFilter always expects an array of candidates; multi_select values are already arrays,
