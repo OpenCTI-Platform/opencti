@@ -4,6 +4,7 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import {
   backfillIndicatorDeploymentCounters,
+  COUNTER_FIELDS,
   flagExpiredDeployments,
   reconcileAllIndicatorDeploymentCounters,
   reconcileIndicatorDeploymentCounters,
@@ -358,6 +359,18 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(backfilled).toBeGreaterThanOrEqual(1);
     const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
     expect(indicator.data?.indicator.deployments_count).toEqual(1);
+  });
+
+  it('should backfill a deployed indicator without any counter from its deployments, never with zeros', async () => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+    const removeAll = COUNTER_FIELDS.map((field) => `ctx._source.remove('${field}');`).join(' ');
+    await elUpdate(testContext, stored._index, indicatorId, setCounterScript(removeAll));
+    const backfilled = await backfillIndicatorDeploymentCounters(testContext, 1000);
+    expect(backfilled).toBeGreaterThanOrEqual(1);
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployments_count).toEqual(1);
+    expect(indicator.data?.indicator.deployment_expired_count).toEqual(1);
+    expect(indicator.data?.indicator.deployment_platforms_count).toEqual(0);
   });
 
   it('should reconcile stale counters, as after a security platform deletion cascading to its deployments', async () => {

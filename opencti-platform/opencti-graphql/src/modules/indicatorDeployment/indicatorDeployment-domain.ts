@@ -667,41 +667,53 @@ export const COUNTER_FIELDS = [
 /**
  * Indicators created before dissemination assurance (or before a counter was added) lack counters
  * (new ones get 0 by default value). They are backfilled in bounded batches by the deployment manager
- * instead of a blocking startup migration: with 0 when the indicator has no counter at all, otherwise by
- * a recomputation from its relationships, since a newer counter of a deployed indicator is not 0.
- * Idempotent: only documents missing a counter are touched, no stream event, no history.
+ * instead of a blocking startup migration. A missing counter says nothing about the deployments: an older
+ * indicator can get a deployed-on relationship (bundle import, manager stopped) before its first backfill.
+ * Each batch is therefore checked against its relationships: indicators without any get 0 in one bulk
+ * update, the others are recomputed from their relationships.
+ * Idempotent: only documents missing a counter are touched, a counter already set is never overwritten,
+ * no stream event, no history.
  */
 export const backfillIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number) => {
-  const result = await elRawUpdateByQuery({
-    index: READ_INDEX_STIX_DOMAIN_OBJECTS,
-    refresh: true,
-    conflicts: 'proceed',
-    max_docs: batchSize,
-    body: {
-      script: { source: COUNTERS_BACKFILL_SOURCE, lang: 'painless', params: { fields: COUNTER_FIELDS } },
-      query: {
-        bool: {
-          must: [{ term: { 'entity_type.keyword': { value: ENTITY_TYPE_INDICATOR } } }],
-          must_not: [{ exists: { field: INDICATOR_DEPLOYMENT_PLATFORMS_COUNT } }],
-        },
-      },
-    },
-  }) as { updated?: number };
-  const partial = await fullEntitiesList<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
+  const missing = await fullEntitiesList<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
     filters: {
-      mode: 'and' as never,
-      filters: [{ key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [], operator: 'not_nil' as never }],
-      filterGroups: [{
-        mode: 'or' as never,
-        filters: COUNTER_FIELDS.map((field) => ({ key: [field], values: [], operator: 'nil' as never })),
-        filterGroups: [],
-      }],
+      mode: 'or' as never,
+      filters: COUNTER_FIELDS.map((field) => ({ key: [field], values: [], operator: 'nil' as never })),
+      filterGroups: [],
     },
     noFiltersChecking: true,
+    baseData: true,
     maxSize: batchSize,
   } as never);
-  const recomputed = await refreshIndicatorDeploymentCounters(context, partial.map((indicator) => indicator.internal_id));
-  return (result?.updated ?? 0) + recomputed;
+  if (missing.length === 0) {
+    return 0;
+  }
+  const missingIds = missing.map((indicator) => indicator.internal_id);
+  const relations = await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { fromId: missingIds });
+  const deployedIds = new Set(relations.map((relation) => relation.fromId));
+  const withoutDeployment = missingIds.filter((id) => !deployedIds.has(id));
+  let initialized = 0;
+  if (withoutDeployment.length > 0) {
+    const result = await elRawUpdateByQuery({
+      index: READ_INDEX_STIX_DOMAIN_OBJECTS,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: COUNTERS_BACKFILL_SOURCE, lang: 'painless', params: { fields: COUNTER_FIELDS } },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: ENTITY_TYPE_INDICATOR } } },
+              { terms: { 'internal_id.keyword': withoutDeployment } },
+            ],
+          },
+        },
+      },
+    }) as { updated?: number };
+    initialized = result?.updated ?? 0;
+  }
+  const recomputed = await refreshIndicatorDeploymentCounters(context, [...deployedIds]);
+  return initialized + recomputed;
 };
 
 const RECONCILIATION_CURSOR_STATE = 'indicator_deployment_counters_reconciliation';
