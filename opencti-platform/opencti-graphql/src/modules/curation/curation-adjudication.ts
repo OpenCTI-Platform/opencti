@@ -36,7 +36,8 @@ export interface ParsedAdjudication {
 
 /**
  * Extract the first JSON object of an agent answer (tolerating one markdown fence) and validate it strictly.
- * Returns null when the answer is not a valid adjudication, which callers treat as "skip".
+ * Returns null when the answer is not a valid adjudication, which callers treat as "skip": among others when it
+ * names a `target_id` that is not one of the proposal subjects, whatever agent is bound to the intent.
  */
 export const parseAdjudicationResponse = (content: string | null | undefined, subjectIds: string[]): ParsedAdjudication | null => {
   if (!content || typeof content !== 'string') return null;
@@ -75,8 +76,10 @@ export const parseAdjudicationResponse = (content: string | null | undefined, su
   const decision = typeof parsed?.decision === 'string' ? parsed.decision.trim().toLowerCase() : '';
   const rationale = typeof parsed?.rationale === 'string' ? parsed.rationale.trim() : '';
   if (!(CURATION_DECISIONS as readonly string[]).includes(decision) || rationale.length === 0) return null;
-  const targetId = typeof parsed?.target_id === 'string' && subjectIds.includes(parsed.target_id) ? parsed.target_id : null;
-  return { decision: decision as CurationDecision, rationale: rationale.slice(0, MAX_RATIONALE_LENGTH), target_id: targetId };
+  const rawTarget = parsed?.target_id;
+  const hasTarget = rawTarget !== undefined && rawTarget !== null && rawTarget !== '';
+  if (hasTarget && (typeof rawTarget !== 'string' || !subjectIds.includes(rawTarget))) return null;
+  return { decision: decision as CurationDecision, rationale: rationale.slice(0, MAX_RATIONALE_LENGTH), target_id: hasTarget ? rawTarget : null };
 };
 
 const describeSubject = (entity: BasicStoreEntity & Record<string, any>) => {
@@ -182,7 +185,7 @@ export const adjudicateProposal = async (
   }
   const adjudication: CurationAdjudication = {
     decision: parsed?.decision ?? DECISION_SKIP,
-    rationale: parsed?.rationale ?? 'The agent answer was not a valid adjudication (expected one JSON object with decision and rationale).',
+    rationale: parsed?.rationale ?? 'The agent answer was not a valid adjudication (expected one JSON object with a decision, a rationale and, when it names one, a target among the proposal subjects).',
     agent_slug: agentSlug,
     model: null,
     adjudicated_at: now(),
