@@ -61,6 +61,7 @@ import {
   Timetable,
 } from 'mdi-material-ui';
 import React from 'react';
+import { CURATION_TABS, PATH_CURATION } from '@components/data/curation/curationTabs';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -367,6 +368,7 @@ const useNavMenu = (): NavGroup[] => {
           subItems: [
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
+            { granted: CURATION_TABS.length > 0 && isGrantedToKnowledge && !inDraft, link: PATH_CURATION, label: t_i18n('Curation') },
             { granted: isGrantedToImport && !inDraft, link: '/dashboard/data/import', label: t_i18n('Import') },
             { granted: isGrantedToProcessing && !inDraft, link: '/dashboard/data/processing', label: t_i18n('Processing') },
             { granted: isGrantedToSharing && !inDraft, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },

@@ -41,6 +41,7 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../database/utils';
 import type { BasicStoreEntity } from '../types/store';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
@@ -57,7 +58,8 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { FilterMode } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
+import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -151,6 +153,10 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION = 'knowledgeDecayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED = 'knowledgeStaleFlaggedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED = 'provenanceConflictDetectedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION = 'provenanceConflictAdoptionCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
@@ -260,6 +266,26 @@ export const addFormIntakeSubmittedCount = async () => {
 
 export const addDecayRuleCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeDecayRuleCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeStaleFlaggedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED, count);
+  }
+};
+
+export const addProvenanceConflictDetectedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED, count);
+  }
+};
+
+export const addProvenanceConflictAdoptionCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -523,6 +549,27 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region Provenance and knowledge freshness information
+    const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DECAY_RULE);
+    manager.setActiveKnowledgeDecayRulesCount(decayRules.filter((rule) => rule.active && (rule.target_scope ?? 'indicator') !== 'indicator').length);
+    const provenanceFilter = (key: string, values: string[], operator = FilterOperator.Eq) => ({
+      mode: FilterMode.And,
+      filters: [{ key: [key], values, operator }],
+      filterGroups: [],
+    });
+    const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+    const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),
+      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('freshness_stale', ['true']) }),
+      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('has_conflicts', ['true']) }),
+    ]);
+    manager.setProvenanceTrackedRelationshipsCount(trackedRelationships);
+    manager.setProvenanceCorroboratedRelationshipsCount(corroboratedRelationships);
+    manager.setProvenanceStaleKnowledgeCount(staleKnowledge);
+    manager.setProvenanceConflictingKnowledgeCount(conflictingKnowledge);
+    // endregion
+
     // region History retention rule status
     const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
     const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
@@ -766,6 +813,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
+    manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
+    const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
+    manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
+    const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
+    manager.setProvenanceConflictDetectedCount(provenanceConflictDetectedCountInRedis);
+    const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
+    manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

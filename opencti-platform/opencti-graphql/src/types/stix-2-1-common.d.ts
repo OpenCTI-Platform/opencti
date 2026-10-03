@@ -1,5 +1,5 @@
 import { v4, v5 } from 'uuid';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
 import type { StixRelation, StixSighting } from './stix-2-1-sro';
 import type { StixInternalExternalReference } from './stix-2-1-smo';
 import { AuthorizedMember } from '../utils/access';
@@ -84,6 +84,20 @@ interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
   extension_type: 'new-sdo';
 }
 
+// Summary only: counts, dates and flags, never source names nor user emails
+interface StixProvenanceExtension {
+  extension_type: 'property-extension';
+  corroboration_count: number;
+  assertions_count: number;
+  first_asserted?: StixDate;
+  last_asserted?: StixDate;
+  single_sourced: boolean;
+  has_conflicts: boolean;
+  conflicting_fields: Array<string>;
+  freshness_stale: boolean;
+  sources_by_kind: Record<string, number>;
+}
+
 interface StixObject {
   id: StixId;
   type: string;
@@ -93,6 +107,7 @@ interface StixObject {
   // TODO Implement granular_markings
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_PROVENANCE]?: StixProvenanceExtension;
   };
 }
 
@@ -144,6 +159,7 @@ interface StixCyberObject extends StixObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
     [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
+    [STIX_EXT_OCTI_PROVENANCE]?: StixProvenanceExtension;
   };
 }
 
