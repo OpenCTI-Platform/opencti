@@ -33,11 +33,19 @@ import {
   replayBackward,
   replayForward,
 } from './timeMachine-replay';
-import { fetchElementHistoryEvents, fetchOldestHistoryDate, fetchRelationshipsHistoryEvents } from './timeMachine-history';
+import { fetchElementHistoryEvents, fetchElementsHistoryEvents, fetchOldestHistoryDate, fetchRelationshipsHistoryEvents } from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
 import { buildRelationshipStates, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
-import type { AttributeValues, BasicStoreEntityUserVisit, ContainerObjectChange, RelationshipChange, ReplayResult, TimeMachineHistoryEvent } from './timeMachine-types';
+import type {
+  AttributeValues,
+  BasicStoreEntityKnowledgeSnapshot,
+  BasicStoreEntityUserVisit,
+  ContainerObjectChange,
+  RelationshipChange,
+  ReplayResult,
+  TimeMachineHistoryEvent,
+} from './timeMachine-types';
 
 export const MAX_REPLAY_EVENTS: number = conf.get('time_machine:max_replay_events') || 5000;
 export const MAX_REPLAY_DAYS: number = conf.get('time_machine:max_replay_days') || 90;
@@ -361,6 +369,8 @@ interface Reconstruction {
   direction: 'backward' | 'forward';
   // Number of objects of a container in the anchor, null when the anchor does not know it
   anchorContainerObjectsCount: number | null;
+  // The snapshot used as anchor, null when the anchor is the current document
+  anchorSnapshot: BasicStoreEntityKnowledgeSnapshot | null;
 }
 
 /**
@@ -392,6 +402,7 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       events,
       direction: 'forward',
       anchorContainerObjectsCount: before.snapshot_document.container_objects_count ?? null,
+      anchorSnapshot: before,
     };
   }
   const anchorDocument = after ? after.snapshot_document.attributes : extractAttributeValues(element as any);
@@ -403,7 +414,15 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
   });
   const replay = replayBackward(anchorDocument, element.entity_type, events, date, MAX_REPLAY_EVENTS);
   flagReplayBeyondWindow(replay, backwardAnchorDate, date, MAX_REPLAY_DAYS);
-  return { replay, anchor: after ? 'snapshot' : 'current', anchorDate: backwardAnchorDate, events, direction: 'backward', anchorContainerObjectsCount };
+  return {
+    replay,
+    anchor: after ? 'snapshot' : 'current',
+    anchorDate: backwardAnchorDate,
+    events,
+    direction: 'backward',
+    anchorContainerObjectsCount,
+    anchorSnapshot: after ?? null,
+  };
 };
 
 // Relationships of an element by type, optionally restricted to the ones created after `startDate` or up to `endDate`
@@ -425,7 +444,62 @@ export const countRelationshipsByType = async (
   return counts;
 };
 
-const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elementId: string, date: string) => {
+const toSortedCounts = (byType: Map<string, number>): TimeMachineRelationshipCount[] => [...byType.entries()]
+  .filter(([, count]) => count > 0)
+  .map(([relationship_type, count]) => ({ relationship_type, count }))
+  .sort((a, b) => b.count - a.count);
+
+/**
+ * Relationship counts at `date` from a snapshot whose relationship lists are complete: its relationship set is moved
+ * to the date with the creations and deletions between the two only, read with the rights of the user, then counted
+ * with the current rights of the user - the relationships deleted since only through the deletions the user can see.
+ * Null when a list of the snapshot is capped: its relationship set is not fully known.
+ */
+const relationshipCountsFromSnapshot = async (context: AuthContext, user: AuthUser, elementId: string, date: string, snapshot: BasicStoreEntityKnowledgeSnapshot) => {
+  const { relationships, relationships_count: snapshotCounts } = snapshot.snapshot_document;
+  if (Object.entries(snapshotCounts).some(([type, count]) => (relationships[type]?.length ?? 0) < count)) return null;
+  const anchorDate = snapshot.history_cursor;
+  const forward = utcDate(anchorDate).isBefore(utcDate(date));
+  const fetchedEvents = await fetchRelationshipsHistoryEvents(context, user, [elementId], {
+    from: forward ? anchorDate : date,
+    to: forward ? date : anchorDate,
+    scopes: ['create', 'delete'],
+    entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
+    max: MAX_REPLAY_EVENTS + 1,
+  });
+  const complete = fetchedEvents.length <= MAX_REPLAY_EVENTS;
+  const events = fetchedEvents.slice(0, MAX_REPLAY_EVENTS);
+  const types = new Map<string, string>();
+  Object.entries(relationships).forEach(([type, ids]) => ids.forEach((id) => types.set(id, type)));
+  events.forEach((event) => types.set(event.context_id, event.context_entity_type));
+  const created = new Set(events.filter((event) => event.event_scope === 'create').map((event) => event.context_id));
+  const deleted = events.filter((event) => event.event_scope === 'delete').map((event) => event.context_id);
+  const atDate = new Set(Object.values(relationships).flat());
+  if (forward) {
+    created.forEach((id) => atDate.add(id));
+    deleted.forEach((id) => atDate.delete(id));
+  } else {
+    created.forEach((id) => atDate.delete(id));
+    deleted.filter((id) => !created.has(id)).forEach((id) => atDate.add(id));
+  }
+  const ids = [...atDate];
+  const present = ids.length > 0
+    ? await internalFindByIdsMapped<BasicStoreObject>(context, user, ids, { baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED })
+    : {};
+  const missing = ids.filter((id) => !present[id]);
+  const visibleDeletions = missing.length > 0 ? await fetchElementsHistoryEvents(context, user, missing, { scopes: ['delete'], max: missing.length }) : [];
+  const countable = new Set([...ids.filter((id) => !!present[id]), ...visibleDeletions.map((event) => event.context_id)]);
+  const byType = new Map<string, number>();
+  countable.forEach((id) => {
+    const type = types.get(id);
+    if (type) byType.set(type, (byType.get(type) ?? 0) + 1);
+  });
+  return { counts: toSortedCounts(byType), complete };
+};
+
+const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elementId: string, date: string, anchorSnapshot: BasicStoreEntityKnowledgeSnapshot | null) => {
+  const fromSnapshot = anchorSnapshot ? await relationshipCountsFromSnapshot(context, user, elementId, date, anchorSnapshot) : null;
+  if (fromSnapshot) return fromSnapshot;
   const [current, createdAfter, fetchedEvents] = await Promise.all([
     countRelationshipsByType(context, user, elementId),
     countRelationshipsByType(context, user, elementId, { startDate: date }),
@@ -445,12 +519,11 @@ const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elemen
     deletedExistingAtDate.set(e.context_entity_type, (deletedExistingAtDate.get(e.context_entity_type) ?? 0) + 1);
   });
   const types = new Set([...current.keys(), ...deletedExistingAtDate.keys()]);
-  const counts: TimeMachineRelationshipCount[] = [];
+  const byType = new Map<string, number>();
   types.forEach((type) => {
-    const count = (current.get(type) ?? 0) - (createdAfter.get(type) ?? 0) + (deletedExistingAtDate.get(type) ?? 0);
-    if (count > 0) counts.push({ relationship_type: type, count });
+    byType.set(type, (current.get(type) ?? 0) - (createdAfter.get(type) ?? 0) + (deletedExistingAtDate.get(type) ?? 0));
   });
-  return { counts: counts.sort((a, b) => b.count - a.count), complete };
+  return { counts: toSortedCounts(byType), complete };
 };
 
 // endregion
@@ -486,7 +559,7 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       container_objects_count: null,
     };
   }
-  const { replay, anchor, anchorDate, events, direction, anchorContainerObjectsCount } = await reconstructAt(context, element, date);
+  const { replay, anchor, anchorDate, events, direction, anchorContainerObjectsCount, anchorSnapshot } = await reconstructAt(context, element, date);
   const historyStart = await fetchOldestHistoryDate(context, user, element.internal_id);
   const base = {
     entity_id: element.internal_id,
@@ -535,7 +608,7 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
     ...definitionInfo(element.entity_type, key),
     values: humanize(key, document[key]),
   }));
-  const { counts: relationships, complete: relationshipsComplete } = await relationshipCountsAt(context, user, element.internal_id, date);
+  const { counts: relationships, complete: relationshipsComplete } = await relationshipCountsAt(context, user, element.internal_id, date, anchorSnapshot);
   const warnings = relationshipsComplete ? base.warnings : [...base.warnings, RELATIONSHIP_HISTORY_TRUNCATED];
   let containerObjectsCount: number | null = null;
   if (isStixDomainObjectContainer(element.entity_type) && anchorContainerObjectsCount !== null) {
