@@ -5185,6 +5185,7 @@
   "Token generated successfully": "토큰이 성공적으로 생성되었습니다",
   "Token revoked successfully": "토큰이 성공적으로 취소되었습니다",
   "Tone": "톤",
+  "Too many members to create a Grouping or a Campaign, maximum": "멤버가 너무 많아 그룹 또는 캠페인을 만들 수 없습니다. 최대",
   "Too many objects": "너무 많은 객체",
   "Tool": "도구",
   "Tool definitions": "도구 정의",

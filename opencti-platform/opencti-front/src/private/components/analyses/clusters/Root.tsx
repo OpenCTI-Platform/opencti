@@ -38,6 +38,7 @@ const graphClusterQuery = graphql`
       cluster_kind
       cluster_source
       members_count
+      promotion_max_members
       last_computed_at
       created_at
       representatives {
@@ -94,6 +95,7 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
   const { graphCluster: cluster } = usePreloadedQuery(graphClusterQuery, queryRef);
   if (!cluster) return <ErrorNotFound />;
   setTitle(`${cluster.name} | ${t_i18n('Graph clusters')}`);
+  const tooLargeToPromote = cluster.members_count > cluster.promotion_max_members;
 
   const addToInvestigation = () => {
     commitInvestigation({
@@ -126,10 +128,10 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
         )}
         {canPromote && (
           <>
-            <Button variant="secondary" onClick={() => setPromotion('Campaign')} data-testid="graph-cluster-create-campaign">
+            <Button variant="secondary" onClick={() => setPromotion('Campaign')} disabled={tooLargeToPromote} data-testid="graph-cluster-create-campaign">
               {t_i18n('Create Campaign')}
             </Button>
-            <Button onClick={() => setPromotion('Grouping')} data-testid="graph-cluster-create-grouping">
+            <Button onClick={() => setPromotion('Grouping')} disabled={tooLargeToPromote} data-testid="graph-cluster-create-grouping">
               {t_i18n('Create Grouping')}
             </Button>
           </>
@@ -139,6 +141,11 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
         <Card title={t_i18n('Details')}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Text variant="content-compact">{`${t_i18n('Members you can access')}: ${n(cluster.members_count)}`}</Text>
+            {canPromote && tooLargeToPromote && (
+              <Text variant="content-compact">
+                {`${t_i18n('Too many members to create a Grouping or a Campaign, maximum')}: ${n(cluster.promotion_max_members)}`}
+              </Text>
+            )}
             <Text variant="content-compact">{`${t_i18n('Last computation')}: ${fldt(cluster.last_computed_at)}`}</Text>
             <Text variant="content-compact">{`${t_i18n('First detected')}: ${fldt(cluster.created_at)}`}</Text>
             <Text variant="content-compact">{t_i18n('Clusters are computed from the knowledge graph and never create relationships. Creating a Grouping or a Campaign is an explicit action.')}</Text>

@@ -31,7 +31,7 @@ While the analytics process wrote results in the last `analytics_process_grace_h
 | `graph_analytics_manager:max_entities_per_tick` | `GRAPH_ANALYTICS_MANAGER__MAX_ENTITIES_PER_TICK` | `200` | Entities recomputed per run |
 | `graph_analytics_manager:full_pass_hour` | `GRAPH_ANALYTICS_MANAGER__FULL_PASS_HOUR` | `2` | Hour (UTC) of the nightly full pass |
 | `graph_analytics_manager:full_pass_batch_size` | `GRAPH_ANALYTICS_MANAGER__FULL_PASS_BATCH_SIZE` | `1000` | Entities read per step of the full pass |
-| `graph_analytics_manager:full_pass_max_entities` | `GRAPH_ANALYTICS_MANAGER__FULL_PASS_MAX_ENTITIES` | `2000000` | Maximum number of entities of a full pass |
+| `graph_analytics_manager:full_pass_max_entities` | `GRAPH_ANALYTICS_MANAGER__FULL_PASS_MAX_ENTITIES` | `2000000` | Maximum number of entities of a full pass; on larger platforms the next pass resumes where the previous one stopped |
 | `graph_analytics_manager:similarity_top_n` | `GRAPH_ANALYTICS_MANAGER__SIMILARITY_TOP_N` | `20` | Similar entities kept per entity |
 | `graph_analytics_manager:similarity_min_score` | `GRAPH_ANALYTICS_MANAGER__SIMILARITY_MIN_SCORE` | `0.05` | Minimum score of a kept similarity |
 | `graph_analytics_manager:similarity_max_candidates` | `GRAPH_ANALYTICS_MANAGER__SIMILARITY_MAX_CANDIDATES` | `200` | Candidates scored per entity |

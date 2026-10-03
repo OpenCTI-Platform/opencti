@@ -66,8 +66,8 @@ import {
 
 const SIMILARITY_MAX_RESULTS: number = conf.get('graph_analytics:similarity_max_results') ?? 100;
 const MATRIX_MAX_ENTITIES: number = conf.get('graph_analytics:matrix_max_entities') ?? 25;
-const CLUSTER_LIST_MAX_BUCKETS = 10000;
-const PROMOTION_MAX_MEMBERS = 500;
+const CLUSTER_AGGREGATION_PAGE_SIZE = 5000;
+export const PROMOTION_MAX_MEMBERS = 2000;
 const INVESTIGATION_MAX_ELEMENTS = 2000;
 const UPSERT_MAX_METRICS = 5000;
 const UPSERT_MAX_CLUSTERS = 1000;
@@ -266,11 +266,22 @@ const visibleMembersPerCluster = async (
     ],
     filterGroups: convertedMemberFilters ? [convertedMemberFilters] : [],
   };
-  const aggregations = await elAggregationSearch(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, noFiltersChecking: true }, {
-    clusters: { terms: { field: `${GRAPH_METRICS_ATTRIBUTE}.cluster_id.keyword`, size: CLUSTER_LIST_MAX_BUCKETS } },
-  });
   const counts = new Map<string, number>();
-  (aggregations.clusters?.buckets ?? []).forEach((bucket: any) => counts.set(String(bucket.key), bucket.doc_count));
+  let after: Record<string, unknown> | undefined;
+  do {
+    const aggregations = await elAggregationSearch(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, noFiltersChecking: true }, {
+      clusters: {
+        composite: {
+          size: CLUSTER_AGGREGATION_PAGE_SIZE,
+          sources: [{ cluster_id: { terms: { field: `${GRAPH_METRICS_ATTRIBUTE}.cluster_id.keyword` } } }],
+          ...(after ? { after } : {}),
+        },
+      },
+    });
+    const buckets: any[] = aggregations.clusters?.buckets ?? [];
+    buckets.forEach((bucket) => counts.set(String(bucket.key.cluster_id), bucket.doc_count));
+    after = buckets.length === CLUSTER_AGGREGATION_PAGE_SIZE ? aggregations.clusters?.after_key : undefined;
+  } while (after);
   return counts;
 };
 
@@ -459,6 +470,10 @@ const loadClusterOrFail = async (context: AuthContext, user: AuthUser, id: strin
 /** Explicit analyst action: create a Grouping or a Campaign from the visible members of a cluster. */
 export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, id: string, input: GraphClusterPromoteInput) => {
   const cluster = await loadClusterOrFail(context, user, id);
+  // the created knowledge must hold every accessible member, never a silent subset
+  if (cluster.members_count > PROMOTION_MAX_MEMBERS) {
+    throw FunctionalError('Graph cluster has too many accessible members to be promoted', { id, members: cluster.members_count, max: PROMOTION_MAX_MEMBERS });
+  }
   const members = await loadVisibleMemberIds(context, user, cluster.internal_id, PROMOTION_MAX_MEMBERS);
   const featureIds = input.include_features
     ? (await graphClusterFeatures(context, user, cluster)).flatMap((f) => f.entities.map((e) => e.internal_id))

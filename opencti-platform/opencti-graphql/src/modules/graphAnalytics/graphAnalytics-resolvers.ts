@@ -13,6 +13,7 @@ import {
   graphClusterTimeline,
   graphSimilarityMatrix,
   listGraphAnalyticsEdges,
+  PROMOTION_MAX_MEMBERS,
   promoteGraphCluster,
   recordGraphAnalyticsPivot,
   requestGraphAnalyticsRecompute,
@@ -41,6 +42,7 @@ const graphAnalyticsResolvers: Resolvers = {
     graphAnalyticsEdges: (_, args, context) => listGraphAnalyticsEdges(context, context.user!, args),
   },
   GraphCluster: {
+    promotion_max_members: () => PROMOTION_MAX_MEMBERS,
     representatives: (cluster, _, context) => graphClusterRepresentatives(context, context.user!, cluster as BasicStoreEntityGraphCluster) as any,
     features: (cluster, _, context) => graphClusterFeatures(context, context.user!, cluster as BasicStoreEntityGraphCluster) as any,
     promotedTo: (cluster, _, context) => graphClusterPromotedTo(context, context.user!, cluster as BasicStoreEntityGraphCluster) as any,

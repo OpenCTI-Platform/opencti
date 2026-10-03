@@ -17354,6 +17354,11 @@ type GraphCluster implements InternalObject & BasicObject {
 
   """Number of members the current user can access"""
   members_count: Int!
+
+  """
+  Maximum number of accessible members of a cluster that can be promoted to a Grouping or a Campaign
+  """
+  promotion_max_members: Int!
   representatives: [StixCoreObject!]!
   features: [GraphClusterFeature!]!
   promotedTo: [StixDomainObject!]!

@@ -5185,6 +5185,7 @@
   "Token generated successfully": "トークンが正常に生成されました",
   "Token revoked successfully": "トークンが正常に取り消されました",
   "Tone": "トーン",
+  "Too many members to create a Grouping or a Campaign, maximum": "メンバーが多すぎるため、グルーピングまたはキャンペーンを作成できません。最大",
   "Too many objects": "オブジェクトが多すぎます",
   "Tool": "ツール",
   "Tool definitions": "ツールの定義",
