@@ -172,13 +172,18 @@ export interface LandscapeDiffBucket {
 
 export interface LandscapeDiffNamedItem {
   id: string;
+  // Optional: results computed before these fields existed are still served from the cache
+  standard_id?: string | null;
   entity_type: string;
   name: string;
+  // ATT&CK external id, techniques only
+  x_mitre_id?: string | null;
   count: number;
 }
 
 export interface LandscapeDiffEntitySummary {
   entity_id: string;
+  standard_id?: string | null;
   entity_type: string;
   name: string;
   created_in_period: boolean;

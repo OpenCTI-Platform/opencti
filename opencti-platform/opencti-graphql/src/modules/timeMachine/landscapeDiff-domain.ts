@@ -348,8 +348,8 @@ const changeScore = (entity: EntityAccumulator) => {
     + Math.round((confidenceDelta + scoreDelta) / 10);
 };
 
-const buildNamedItems = (
-  acc: GlobalAccumulator,
+export const buildNamedItems = (
+  acc: Pick<GlobalAccumulator, 'targets'>,
   resolved: Record<string, BasicStoreObject>,
   predicate: (target: TargetAccumulator) => boolean,
 ): LandscapeDiffNamedItem[] => {
@@ -357,7 +357,14 @@ const buildNamedItems = (
   acc.targets.forEach((target, id) => {
     const element = resolved[id];
     if (element && predicate(target)) {
-      items.push({ id, entity_type: element.entity_type, name: extractEntityRepresentativeName(element), count: target.entityIds.size });
+      items.push({
+        id,
+        standard_id: element.standard_id ?? null,
+        entity_type: element.entity_type,
+        name: extractEntityRepresentativeName(element),
+        x_mitre_id: element.entity_type === ENTITY_TYPE_ATTACK_PATTERN ? ((element as any).x_mitre_id ?? null) : null,
+        count: target.entityIds.size,
+      });
     }
   });
   return items.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
@@ -453,6 +460,7 @@ const buildEntitySummaries = (acc: GlobalAccumulator): LandscapeDiffEntitySummar
   return [...acc.entities.values()]
     .map((e) => ({
       entity_id: e.entity.internal_id,
+      standard_id: e.entity.standard_id ?? null,
       entity_type: e.entity.entity_type,
       name: extractEntityRepresentativeName(e.entity),
       created_in_period: e.created_in_period,

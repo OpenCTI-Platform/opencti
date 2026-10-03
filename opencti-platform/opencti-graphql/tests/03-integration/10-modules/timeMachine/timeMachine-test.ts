@@ -16,12 +16,12 @@ const HISTORY_BUDGET_MS = 60000;
 
 const CREATE_INTRUSION_SET = gql`
   mutation TimeMachineIntrusionSetAdd($input: IntrusionSetAddInput!) {
-    intrusionSetAdd(input: $input) { id name }
+    intrusionSetAdd(input: $input) { id standard_id name }
   }
 `;
 const CREATE_MALWARE = gql`
   mutation TimeMachineMalwareAdd($input: MalwareAddInput!) {
-    malwareAdd(input: $input) { id name }
+    malwareAdd(input: $input) { id standard_id name }
   }
 `;
 const UPDATE_INTRUSION_SET = gql`
@@ -119,8 +119,8 @@ const LANDSCAPE_SUMMARY = gql`
   query TimeMachineLandscapeSummary($input: LandscapeDiffInput!) {
     landscapeDiffSummary(input: $input) {
       scope_entity_types
-      aggregates { entities_in_scope entities_changed new_relationships new_malware { name count } new_relationships_by_type { key count } groups { key count } }
-      entities { entity_id name relationships_added attributes_changed change_score }
+      aggregates { entities_in_scope entities_changed new_relationships new_malware { name standard_id x_mitre_id count } new_relationships_by_type { key count } groups { key count } }
+      entities { entity_id standard_id name relationships_added attributes_changed change_score }
     }
   }
 `;
@@ -159,6 +159,8 @@ describe('Knowledge time machine', () => {
   const testName = `Time machine intrusion set ${Date.now()}`;
   let intrusionSetId: string;
   let malwareId: string;
+  let intrusionSetStandardId: string;
+  let malwareStandardId: string;
   let createdAt: string;
   let updatedAt: string;
   let relationAddedAt: string;
@@ -169,11 +171,13 @@ describe('Knowledge time machine', () => {
       variables: { input: { name: testName, description: 'first description', confidence: 50 } },
     });
     intrusionSetId = intrusionSet.data.intrusionSetAdd.id;
+    intrusionSetStandardId = intrusionSet.data.intrusionSetAdd.standard_id;
     const malware = await queryAsAdminWithSuccess({
       query: CREATE_MALWARE,
       variables: { input: { name: `${testName} malware`, description: 'malware for the time machine', is_family: true } },
     });
     malwareId = malware.data.malwareAdd.id;
+    malwareStandardId = malware.data.malwareAdd.standard_id;
     [createdAt] = await waitForHistory(intrusionSetId, 'create');
     await queryAsAdminWithSuccess({
       query: UPDATE_INTRUSION_SET,
@@ -345,6 +349,10 @@ describe('Knowledge time machine', () => {
     expect(summary.aggregates.new_malware.map((m: any) => m.name)).toEqual([`${testName} malware`]);
     expect(summary.entities[0].entity_id).toEqual(intrusionSetId);
     expect(summary.entities[0].relationships_added).toEqual(1);
+    // STIX ids let external consumers link the changes to their own copy of the knowledge
+    expect(summary.entities[0].standard_id).toEqual(intrusionSetStandardId);
+    expect(summary.aggregates.new_malware[0].standard_id).toEqual(malwareStandardId);
+    expect(summary.aggregates.new_malware[0].x_mitre_id).toBeNull();
   });
 
   it('should run a landscape diff in the background and report its progress', async () => {
