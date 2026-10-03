@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { testRenderHook } from '../../../utils/tests/test-render';
 import { DEFENSE_AREAS, type DefenseArea } from '../defense/defenseAreas';
 import { CURATION_TABS, type CurationTab } from '../data/curation/curationTabs';
@@ -34,10 +34,17 @@ const knowledgeIds = (groups: NavGroup[]) => groups.find((g) => g.id === 'knowle
 const dataLinks = (groups: NavGroup[]) => groups
   .find((g) => g.id === 'data')?.items.find((i) => i.id === 'data')?.subItems?.map((s) => s.link);
 
-// The registries are module-level arrays every innovation appends to, so the tests fill them in place.
+// The registries are module-level arrays the product registers its areas and tabs into: each test
+// starts from empty ones and gets the registered entries back afterwards.
+let registeredAreas: DefenseArea[] = [];
+let registeredTabs: CurationTab[] = [];
+beforeEach(() => {
+  registeredAreas = DEFENSE_AREAS.splice(0);
+  registeredTabs = CURATION_TABS.splice(0);
+});
 afterEach(() => {
-  DEFENSE_AREAS.length = 0;
-  CURATION_TABS.length = 0;
+  DEFENSE_AREAS.splice(0, DEFENSE_AREAS.length, ...registeredAreas);
+  CURATION_TABS.splice(0, CURATION_TABS.length, ...registeredTabs);
   hidden.entities = [];
 });
 
