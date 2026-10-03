@@ -2,7 +2,7 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, GRAPH_ANALYTICS_MANAGER_USER } from '../utils/access';
 import type { DataEvent, MergeEvent, SseEvent } from '../types/event';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/utils';
@@ -18,6 +18,7 @@ import {
 import { deleteSimilarityRowsForEntities } from '../modules/graphAnalytics/graphAnalytics-store';
 import {
   getGraphAnalyticsComputeConfig,
+  type GraphAnalyticsComputeConfig,
   isFullPassInProgress,
   processDirtyEntities,
   runFullPassStep,
@@ -145,6 +146,23 @@ const consumeStream = async () => {
   }
 };
 
+/**
+ * Recompute the entities whose last change is older than the debounce delay (and the explicit requests).
+ * The batch is popped before the computation: when it fails, it is queued again and retried after the debounce delay.
+ */
+export const processReadyEntities = async (context: AuthContext, user: AuthUser, config: GraphAnalyticsComputeConfig) => {
+  const ready = await redisGraphAnalyticsPopReady(Date.now() - config.debounceMs, GRAPH_ANALYTICS_MAX_ENTITIES_PER_TICK);
+  if (ready.length === 0) return { processed: 0, removed: 0 };
+  try {
+    const result = await processDirtyEntities(context, user, ready, config);
+    await redisGraphAnalyticsSetState({ [GRAPH_STATE_LAST_INCREMENTAL_RUN]: new Date().toISOString() });
+    return result;
+  } catch (err) {
+    await redisGraphAnalyticsMarkDirty(ready);
+    throw err;
+  }
+};
+
 export const graphAnalyticsManagerHandler = async () => {
   const context: AuthContext = executionContext(GRAPH_ANALYTICS_MANAGER_CONTEXT, GRAPH_ANALYTICS_MANAGER_USER);
   const user = GRAPH_ANALYTICS_MANAGER_USER;
@@ -152,10 +170,8 @@ export const graphAnalyticsManagerHandler = async () => {
   // 1. Mark entities touched since the last tick
   await consumeStream();
   // 2. Recompute entities whose last change is older than the debounce delay
-  const ready = await redisGraphAnalyticsPopReady(Date.now() - config.debounceMs, GRAPH_ANALYTICS_MAX_ENTITIES_PER_TICK);
-  if (ready.length > 0) {
-    const { processed, removed } = await processDirtyEntities(context, user, ready, config);
-    await redisGraphAnalyticsSetState({ [GRAPH_STATE_LAST_INCREMENTAL_RUN]: new Date().toISOString() });
+  const { processed, removed } = await processReadyEntities(context, user, config);
+  if (processed > 0 || removed > 0) {
     logApp.debug('[OPENCTI-MODULE] Graph analytics incremental recompute', { processed, removed });
   }
   // 3. Nightly sweep (degree metrics refresh and similarity backfill), then clustering

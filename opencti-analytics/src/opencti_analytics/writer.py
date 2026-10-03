@@ -1,10 +1,10 @@
 """Write-back of a run through graphAnalyticsUpsertMetrics.
 
 Every node of the analyzed graph gets exactly one entry carrying all its
-run-owned metrics: an entity outside any cluster has no cluster fields, so the
-platform detaches it from the cluster it belonged to. All the calls share the
-run id; the last one carries `complete: true`, which makes the platform drop the
-clusters and assignments of older runs.
+run-owned metrics: an entity outside any cluster carries explicit null cluster
+fields, so the platform detaches it from the cluster it belonged to. All the
+calls share the run id; the last one carries `complete: true`, which makes the
+platform drop the clusters and assignments of older runs.
 """
 
 import threading
@@ -51,10 +51,9 @@ def metric_entries(
         if result.betweenness is not None:
             entry["betweenness_approx"] = result.betweenness[node]
         cluster = result.cluster_of.get(node)
-        if cluster is not None:
-            entry["cluster_id"] = cluster.cluster_id
-            entry["cluster_size"] = cluster.members_count
-            entry["cluster_kind"] = cluster.kind
+        entry["cluster_id"] = cluster.cluster_id if cluster else None
+        entry["cluster_size"] = cluster.members_count if cluster else None
+        entry["cluster_kind"] = cluster.kind if cluster else None
         entries.append(entry)
     return entries
 

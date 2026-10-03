@@ -1,9 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
-import { collectPathElementIds, formatSimilarityScore, GRAPH_FEATURE_FAMILY_LABELS, isGraphSimilarEntityType, similarityScoreSeverity } from './graphAnalyticsUtils';
+import {
+  collectPathElementIds,
+  formatSimilarityScore,
+  GRAPH_FEATURE_FAMILY_LABELS,
+  isGraphSimilarEntityType,
+  reportPayloadErrors,
+  similarityScoreSeverity,
+} from './graphAnalyticsUtils';
 
+const { notifyError } = vi.hoisted(() => ({ notifyError: vi.fn() }));
 vi.mock('../../../../relay/environment', () => ({
   commitMutation: vi.fn(),
   defaultCommitMutation: {},
+  MESSAGING$: { notifyError },
 }));
 
 describe('graphAnalyticsUtils', () => {
@@ -34,6 +43,14 @@ describe('graphAnalyticsUtils', () => {
   it('labels every evidence family returned by the platform', () => {
     ['techniques', 'tools', 'malware', 'infrastructure', 'victims', 'certificates', 'asn', 'registrar', 'nameservers', 'hosting', 'reports', 'objects']
       .forEach((family) => expect(GRAPH_FEATURE_FAMILY_LABELS[family]).toBeTruthy());
+  });
+
+  it('reports payload errors so failed actions stop before success handling', () => {
+    expect(reportPayloadErrors(null)).toBe(false);
+    expect(reportPayloadErrors([])).toBe(false);
+    expect(notifyError).not.toHaveBeenCalled();
+    expect(reportPayloadErrors([{ message: 'Graph cluster not found' }])).toBe(true);
+    expect(notifyError).toHaveBeenCalledWith('Graph cluster not found');
   });
 
   it('collects the entities and relationships of paths without duplicates', () => {

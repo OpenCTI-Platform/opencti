@@ -18,7 +18,13 @@ import useGranted, { INVESTIGATION_INUPDATE, KNOWLEDGE_KNUPDATE } from '../../..
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { resolveLink } from '../../../../utils/Entity';
 import GraphSimilarityEvidence from '../../common/graph_analytics/GraphSimilarityEvidence';
-import { GRAPH_CLUSTER_KIND_LABELS, GRAPH_CLUSTER_SOURCE_LABELS, GRAPH_CLUSTERS_PATH, recordGraphAnalyticsPivot } from '../../common/graph_analytics/graphAnalyticsUtils';
+import {
+  GRAPH_CLUSTER_KIND_LABELS,
+  GRAPH_CLUSTER_SOURCE_LABELS,
+  GRAPH_CLUSTERS_PATH,
+  recordGraphAnalyticsPivot,
+  reportPayloadErrors,
+} from '../../common/graph_analytics/graphAnalyticsUtils';
 import GraphClusterPromoteDialog from './GraphClusterPromoteDialog';
 import GraphClusterMembers from './GraphClusterMembers';
 import type { RootGraphClusterQuery } from './__generated__/RootGraphClusterQuery.graphql';
@@ -92,11 +98,10 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
   const addToInvestigation = () => {
     commitInvestigation({
       variables: { id: cluster.id },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (reportPayloadErrors(errors) || !response.graphClusterAddToInvestigation?.id) return;
         recordGraphAnalyticsPivot('cluster_investigation');
-        if (response.graphClusterAddToInvestigation?.id) {
-          navigate(`/dashboard/workspaces/investigations/${response.graphClusterAddToInvestigation.id}`);
-        }
+        navigate(`/dashboard/workspaces/investigations/${response.graphClusterAddToInvestigation.id}`);
       },
     });
   };

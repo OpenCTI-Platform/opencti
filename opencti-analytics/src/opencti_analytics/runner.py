@@ -157,12 +157,28 @@ class AnalyticsRunner:  # pylint: disable=too-few-public-methods
                     "duration_seconds": round(time.monotonic() - started, 3),
                 },
             )
-        if capped:
-            self.logger.warning(
-                "Graph analytics max_edges reached, the graph is truncated",
-                {"run_id": run_id, "max_edges": settings.max_edges},
-            )
         return builder.build(), fetched, capped
+
+    def _too_large(self, run_id: str, edges: int, fetched: int) -> RunReport:
+        # Completing a run on a truncated graph would detach every entity and
+        # remove every cluster outside the loaded part: never write it.
+        self.logger.error(
+            "Graph analytics run aborted: the graph exceeds analytics.max_edges, "
+            "raise it or narrow analytics.relationship_types",
+            {
+                "run_id": run_id,
+                "edges": edges,
+                "fetched_edges": fetched,
+                "max_edges": self.settings.max_edges,
+            },
+        )
+        return RunReport(
+            run_id=run_id,
+            status=STATUS_FAILED,
+            reason="max_edges_reached",
+            platform_edges=edges,
+            fetched_edges=fetched,
+        )
 
     def _run(self, run_id: str) -> RunReport:
         settings = self.settings
@@ -194,15 +210,20 @@ class AnalyticsRunner:  # pylint: disable=too-few-public-methods
                 platform_edges=total,
             )
 
+        if total > settings.max_edges:
+            return self._too_large(run_id, total, 0)
+
         started = time.monotonic()
         graph, fetched, capped = self._fetch(run_id, counts)
+        if capped:
+            # the graph grew between the count and the fetch
+            return self._too_large(run_id, total, fetched)
         stats = graph.stats
         self.logger.info(
             "Graph analytics graph built",
             {
                 "run_id": run_id,
                 "fetched_edges": fetched,
-                "truncated": capped,
                 "nodes": graph.node_count,
                 "edges": graph.edge_count,
                 "self_loops": stats.self_loops,

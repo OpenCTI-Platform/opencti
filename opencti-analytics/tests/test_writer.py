@@ -86,7 +86,10 @@ class TestMetricEntries:
             assert "betweenness_approx" in entry
             cluster = result.cluster_of.get(node)
             if cluster is None:
-                assert not {"cluster_id", "cluster_kind", "cluster_size"} & set(entry)
+                # explicit nulls: the platform detaches the entity from its old cluster
+                assert entry["cluster_id"] is None
+                assert entry["cluster_kind"] is None
+                assert entry["cluster_size"] is None
             else:
                 assert entry["cluster_id"] == cluster.cluster_id
                 assert entry["cluster_kind"] == cluster.kind
