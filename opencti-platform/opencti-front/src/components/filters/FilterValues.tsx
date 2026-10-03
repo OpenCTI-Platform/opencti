@@ -7,7 +7,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -309,7 +309,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               );
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
-                if (!isFilterGroupNotEmpty(dynamicValue)) {
+                if (!isFilterGroupNotEmptyShallow(dynamicValue)) {
                   return <div key={val.key} />;
                 }
                 return (

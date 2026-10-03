@@ -506,6 +506,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                       redirection
                       searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                      availableFilterKeys={stixFilters}
                     />
                   )
               }

@@ -172,12 +172,14 @@ describe('dashboard serialization', () => {
       const normalizedFilterGroup = normalizeFilterGroupForFrontend(filterGroup);
       const expectedFilterGroup = {
         ...normalizedFilterGroup,
+        id: expect.any(String),
         filters: normalizedFilterGroup.filters.map((f) => ({
           ...f,
           id: expect.any(String),
         })),
         filterGroups: normalizedFilterGroup.filterGroups.map((fg) => ({
           ...fg,
+          id: expect.any(String),
           filters: fg.filters.map((f) => ({ ...f, id: expect.any(String) })),
         })),
       };

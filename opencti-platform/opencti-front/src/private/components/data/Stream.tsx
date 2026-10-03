@@ -221,7 +221,6 @@ const Stream = () => {
           ? (
               <FilterIconButton
                 filters={deserializedFilters}
-                dataColumns={dataColumns}
                 variant="small"
                 entityTypes={['Stix-Filtering']}
               />

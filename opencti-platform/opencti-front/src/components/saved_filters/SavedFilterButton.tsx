@@ -4,6 +4,8 @@ import { SaveOutlined } from '@mui/icons-material';
 import { useFormatter } from 'src/components/i18n';
 import Tooltip from '@mui/material/Tooltip';
 import SavedFilterCreateDialog from 'src/components/saved_filters/SavedFilterCreateDialog';
+import { hasSameSavedFilters, serializeSavedFilterGroup } from 'src/components/saved_filters/savedFiltersUtils';
+import { isFilterGroupNotEmpty } from 'src/utils/filters/filtersUtils';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { graphql } from 'react-relay';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -39,8 +41,8 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
     },
   } = useDataTableContext();
 
-  const isEmptyFilters = !filters?.filters.length && !filters?.filterGroups.length;
-  const hasSameFilters = currentSavedFilter?.filters === JSON.stringify(filters);
+  const isEmptyFilters = !isFilterGroupNotEmpty(filters);
+  const hasSameFilters = hasSameSavedFilters(currentSavedFilter?.filters, filters);
 
   const [commit] = useApiMutation(
     savedFilterButtonEditMutation,
@@ -52,7 +54,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
     if (!currentSavedFilter) return;
     const input = {
       key: 'filters',
-      value: [JSON.stringify(filters)],
+      value: [serializeSavedFilterGroup(filters)],
     };
     commit({
       variables: {
@@ -62,7 +64,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
       onCompleted: () => {
         const newValue = {
           ...currentSavedFilter,
-          filters: JSON.stringify(filters),
+          filters: serializeSavedFilterGroup(filters),
         };
         setCurrentSavedFilter(newValue);
         helpers.handleChangeSavedFilters(newValue);

@@ -140,9 +140,9 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
             {data.trigger_type === 'live' && filters && (
               <FilterIconButton
                 filters={filters}
-                dataColumns={dataColumns}
                 variant="small"
                 redirection
+                showGroupsSummaryButtonOnReadOnly
               />
             )}
             {data.trigger_type === 'digest' && (
