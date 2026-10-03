@@ -9441,9 +9441,11 @@ type Query {
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   investigationRun(id: ID!): InvestigationRun
   investigationRuns(first: Int, after: ID, orderBy: InvestigationRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, subjectId: String, caseId: String): InvestigationRunConnection
+  investigationRunEnrichmentWave(id: ID!, waveId: ID!): InvestigationEnrichmentWave
   investigationPolicy(id: ID!): InvestigationPolicy
   investigationPolicies(first: Int, after: ID, orderBy: InvestigationPoliciesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): InvestigationPolicyConnection
   investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]!
+  investigationPacks: InvestigationPackCatalog!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -10370,14 +10372,13 @@ type Mutation {
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
-  investigationRunAdd(subjectId: ID!, policyId: ID): InvestigationRun
+  investigationRunAdd(subjectId: ID!, policyId: ID, caseId: ID): InvestigationRun
   investigationRunCancel(id: ID!): InvestigationRun
+  investigationRunContinue(id: ID!): InvestigationRun
   investigationRunDelete(id: ID!): ID
   investigationRunFeedback(id: ID!, input: InvestigationRunFeedbackInput!): InvestigationRun
   investigationRunRecommendationApply(id: ID!, recommendationId: String!, mode: InvestigationRecommendationApplyMode!): InvestigationRun
   investigationRunEnrichmentRequest(id: ID!, input: InvestigationRunEnrichmentRequestInput!): InvestigationRunEnrichmentRequestResult
-  investigationRunStepRecord(id: ID!, input: InvestigationRunStepInput!): InvestigationLedgerEntry
-  investigationRunHypothesesPropose(id: ID!, input: [InvestigationHypothesisInput!]!): [InvestigationHypothesis!]
   investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy
   investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy
   investigationPolicyDelete(id: ID!): ID
@@ -15757,40 +15758,29 @@ enum InvestigationRunTrigger {
 
 enum InvestigationRunPhase {
   initializing
-  planning
-  enriching
-  waiting_enrichment
-  iterating
-  concluding
-  finalizing
+  starting
+  investigating
+  ingesting
   awaiting_validation
   validating
   done
 }
 
-enum InvestigationPlanStepKind {
-  enrichment
-  pivot
-  correlation
-  timeline
-  attribution
-  recommendation
-  report
-}
-
-enum InvestigationPlanStepStatus {
+enum InvestigationStepStatus {
   pending
-  running
-  done
+  active
+  completed
+  empty
+  degraded
+  error
   skipped
-  failed
-  awaiting_approval
 }
 
-enum InvestigationLedgerStatus {
-  done
-  failed
-  skipped
+enum InvestigationEvidenceKind {
+  url
+  document
+  tool_result
+  opencti_object
 }
 
 enum InvestigationEvidenceCategory {
@@ -15801,13 +15791,6 @@ enum InvestigationEvidenceCategory {
   temporal
   source_reliability
   language_timezone
-}
-
-enum InvestigationEvidenceOrigin {
-  subject
-  context
-  enrichment
-  agent
 }
 
 enum InvestigationConfidenceLabel {
@@ -15868,6 +15851,16 @@ enum InvestigationEnrichmentRequestStatus {
   skipped
 }
 
+enum InvestigationEnrichmentWaveStatus {
+  queued
+  running
+  completed
+  partial
+  awaiting_approval
+  rejected
+  timeout
+}
+
 enum InvestigationFeedbackItemType {
   hypothesis
   recommendation
@@ -15891,38 +15884,31 @@ enum InvestigationRecommendationApplyMode {
   course_of_action
 }
 
-type InvestigationPlanStep {
+type InvestigationStep {
   id: String!
-  kind: InvestigationPlanStepKind!
-  description: String!
-  status: InvestigationPlanStepStatus!
-  approval_required: Boolean!
-}
-
-type InvestigationLedgerEntry {
-  id: String!
-  step_id: String
-  iteration: Int!
-  tool: String!
-  description: String!
-  input_ref: String
-  output_ref: String
-  status: InvestigationLedgerStatus!
-  started_at: DateTime!
-  duration_ms: Int!
-  cost_units: Int!
-  work_id: String
-  error: String
+  investigation_id: String!
+  position: Int!
+  action: String
+  source_name: String!
+  status: InvestigationStepStatus!
+  detail_code: String
+  detail_params: JSON
+  findings_count: Int!
+  evidence_count: Int!
+  started_at: DateTime
+  completed_at: DateTime
 }
 
 type InvestigationEvidence {
   id: String!
-  standard_id: String
-  entity_type: String!
-  name: String
-  origin: InvestigationEvidenceOrigin!
+  n: Int
+  kind: InvestigationEvidenceKind!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
   in_draft: Boolean!
-  element: StixObjectOrStixRelationship
 }
 
 type InvestigationEvidenceCell {
@@ -15935,7 +15921,6 @@ type InvestigationEvidenceCell {
   weight: Float!
   diagnosticity: Float!
   rationale: String
-  element: StixObjectOrStixRelationship
 }
 
 type InvestigationHypothesis {
@@ -15988,10 +15973,10 @@ type InvestigationFeedback {
 }
 
 type InvestigationBudget {
-  max_tool_calls: Int!
+  max_iterations: Int!
   max_enrichment_jobs: Int!
   max_minutes: Int!
-  used_tool_calls: Int!
+  used_iterations: Int!
   used_enrichment_jobs: Int!
   used_minutes: Float!
 }
@@ -16013,16 +15998,49 @@ type InvestigationApproval {
 
 type InvestigationEnrichmentRequest {
   id: String!
+  wave_id: String
   entity_id: String!
   connector_id: String!
   connector_name: String
   reason: String
   status: InvestigationEnrichmentRequestStatus!
   requested_by: String!
-  iteration: Int!
   work_id: String
   created_at: DateTime!
   completed_at: DateTime
+}
+
+type InvestigationEnrichmentJob {
+  connector_id: String!
+  connector_name: String!
+  entity_id: String!
+  work_id: String
+  status: String!
+  error: String
+}
+
+type InvestigationDeltaObject {
+  id: String!
+  standard_id: String
+  entity_type: String!
+  representative: String
+  connector_name: String
+  action: String!
+}
+
+type InvestigationEnrichmentWave {
+  id: ID!
+  status: InvestigationEnrichmentWaveStatus!
+  requested_at: DateTime!
+  completed_at: DateTime
+  jobs: [InvestigationEnrichmentJob!]!
+  delta: [InvestigationDeltaObject!]!
+}
+
+type InvestigationReportSource {
+  n: Int!
+  label: String!
+  href: String
 }
 
 type InvestigationAcceptance {
@@ -16035,6 +16053,7 @@ type InvestigationAcceptance {
 
 type InvestigationRunReport {
   executive_summary: String!
+  report: String!
   timeline: String!
   hypotheses: String!
   recommendations: String!
@@ -16067,18 +16086,21 @@ type InvestigationRun implements InternalObject & BasicObject {
   policy: InvestigationPolicy
   agent_slug: String
   pack_id: String
-  goal_plan: JSON
+  xtm_investigation_id: String
+  xtm_investigation_ids: [String!]!
+  xtm_revision: Int!
+  xtm_status: String
   run_trigger: InvestigationRunTrigger!
   run_status: InvestigationRunStatus!
   run_phase: InvestigationRunPhase!
   status_reason: String
-  iteration: Int!
+  end_reason_code: String
   started_at: DateTime
   completed_at: DateTime
   run_as_id: String!
   runAs: Creator
-  plan: [InvestigationPlanStep!]!
-  steps: [InvestigationLedgerEntry!]!
+  goal_plan: JSON
+  steps: [InvestigationStep!]!
   evidence: [InvestigationEvidence!]!
   hypotheses: [InvestigationHypothesis!]!
   timeline: [InvestigationTimelineEvent!]!
@@ -16088,8 +16110,12 @@ type InvestigationRun implements InternalObject & BasicObject {
   enrichment_requests: [InvestigationEnrichmentRequest!]!
   budget: InvestigationBudget!
   summary: String
+  report: String
+  report_sources: [InvestigationReportSource!]!
+  report_id: String
+  can_continue: Boolean!
   acceptance: InvestigationAcceptance!
-  report: InvestigationRunReport!
+  report_sections: InvestigationRunReport!
 }
 
 type InvestigationPolicy implements InternalObject & BasicObject {
@@ -16108,13 +16134,14 @@ type InvestigationPolicy implements InternalObject & BasicObject {
   is_default: Boolean!
   agent_slug: String
   pack_id: String
+  pack_options: JSON
   allowed_actions: [InvestigationAutonomousAction!]!
   enrichment_connector_ids: [String!]!
   approval_connector_ids: [String!]!
   auto_approve_low_risk: Boolean!
   auto_approve_min_confidence: Int!
   attribution_min_confidence: Int!
-  max_tool_calls: Int!
+  max_iterations: Int!
   max_enrichment_jobs: Int!
   max_minutes: Int!
   trigger_on_case_rfi_creation: Boolean!
@@ -16173,6 +16200,7 @@ type InvestigationRunEnrichmentRejected {
 }
 
 type InvestigationRunEnrichmentRequestResult {
+  wave_id: ID
   accepted: [InvestigationRunEnrichmentAccepted!]!
   rejected: [InvestigationRunEnrichmentRejected!]!
 }
@@ -16182,6 +16210,37 @@ type InvestigationEnrichmentConnector {
   name: String!
   active: Boolean!
   connector_scope: [String!]!
+}
+
+type InvestigationPackChoice {
+  value: String!
+  label: String!
+  description: String
+}
+
+type InvestigationPackOption {
+  key: String!
+  label: String!
+  description: String
+  default: String
+  choices: [InvestigationPackChoice!]!
+}
+
+type InvestigationPack {
+  slug: String!
+  label: String!
+  description: String
+  recommended: Boolean!
+  applicable_source_count: Int!
+  total_source_count: Int!
+  max_iterations: Int
+  options: [InvestigationPackOption!]!
+}
+
+type InvestigationPackCatalog {
+  available: Boolean!
+  reason: String
+  packs: [InvestigationPack!]!
 }
 
 input InvestigationRunFeedbackInput {
@@ -16201,44 +16260,6 @@ input InvestigationRunEnrichmentRequestInput {
   reason: String
 }
 
-input InvestigationRunStepInput {
-  "*Constraints:*\n* Minimal length: `1`\n* Maximal length: `200`\n"
-  tool: String!
-
-  "*Constraints:*\n* Minimal length: `1`\n* Maximal length: `2000`\n"
-  description: String!
-
-  "*Constraints:*\n* Maximal length: `500`\n"
-  input_ref: String
-
-  "*Constraints:*\n* Maximal length: `500`\n"
-  output_ref: String
-  status: InvestigationLedgerStatus
-}
-
-input InvestigationEvidenceCellInput {
-  evidence_id: String!
-  category: InvestigationEvidenceCategory!
-  consistency: Int!
-
-  "*Constraints:*\n* Maximal length: `2000`\n"
-  rationale: String
-}
-
-input InvestigationHypothesisInput {
-  candidate_id: String!
-
-  "*Constraints:*\n* Maximal length: `500`\n"
-  candidate_name: String
-
-  "*Constraints:*\n* Maximal length: `100`\n"
-  candidate_type: String
-
-  "*Constraints:*\n* Maximal length: `4000`\n"
-  rationale: String
-  evidence: [InvestigationEvidenceCellInput!]!
-}
-
 input InvestigationPolicyAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -16250,6 +16271,7 @@ input InvestigationPolicyAddInput {
 
   "*Constraints:*\n* Maximal length: `200`\n"
   pack_id: String
+  pack_options: JSON
   allowed_actions: [InvestigationAutonomousAction!]
   enrichment_connector_ids: [String!]
   approval_connector_ids: [String!]
@@ -16261,8 +16283,8 @@ input InvestigationPolicyAddInput {
   "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
   attribution_min_confidence: Int
 
-  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `500`\n"
-  max_tool_calls: Int
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `50`\n"
+  max_iterations: Int
 
   "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `200`\n"
   max_enrichment_jobs: Int

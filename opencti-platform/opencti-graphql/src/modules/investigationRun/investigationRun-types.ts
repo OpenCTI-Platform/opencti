@@ -21,28 +21,29 @@ import {
   InvestigationAutonomousAction,
   InvestigationConfidenceLabel,
   InvestigationEnrichmentRequestStatus,
+  InvestigationEnrichmentWaveStatus,
   InvestigationEvidenceCategory,
-  InvestigationEvidenceOrigin,
+  InvestigationEvidenceKind,
   InvestigationFeedbackDecision,
   InvestigationFeedbackItemType,
-  InvestigationLedgerStatus,
-  InvestigationPlanStepKind,
-  InvestigationPlanStepStatus,
   InvestigationRecommendationActionKind,
   InvestigationRecommendationPriority,
   InvestigationRecommendationStatus,
   InvestigationRunPhase,
   InvestigationRunStatus,
   InvestigationRunTrigger,
+  InvestigationStepStatus,
 } from '../../generated/graphql';
 
 export const ENTITY_TYPE_INVESTIGATION_RUN = 'InvestigationRun';
 export const ENTITY_TYPE_INVESTIGATION_POLICY = 'InvestigationPolicy';
 
-// The XTM One intent the Case Autopilot agent is bound to (declared in xtm-one.ts).
+// The XTM One intent the investigation engine answers OpenCTI case runs on
+// (declared in xtm-one.ts), and the engine contract (XTM One dev-docs/investigations.md).
 export const INVESTIGATION_INTENT = 'cti.autonomous_investigation';
-export const INVESTIGATION_DEFAULT_AGENT_SLUG = 'opencti-case-autopilot';
-export const INVESTIGATION_REQUEST_SCHEMA = 'opencti.case_autopilot.request/v1';
+export const INVESTIGATION_DEFAULT_AGENT_SLUG = 'deep-investigation-agent';
+export const INVESTIGATION_DEFAULT_PACK = 'opencti-case-investigation';
+export const INVESTIGATION_START_SCHEMA = 'opencti.investigation.start/v1';
 
 export const INVESTIGATION_RUN_STATUSES = Object.values(InvestigationRunStatus);
 export const INVESTIGATION_RUN_TRIGGERS = Object.values(InvestigationRunTrigger);
@@ -65,17 +66,28 @@ export const TERMINAL_RUN_STATUSES: InvestigationRunStatus[] = [
 // Subject types an investigation can start from. Observables are matched on
 // the abstract type at validation time.
 export const INVESTIGATION_CASE_SUBJECT_TYPES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
-export const INVESTIGATION_SUBJECT_TYPES = [...INVESTIGATION_CASE_SUBJECT_TYPES, 'Incident', 'Indicator'];
+// Entities with an Autopilot tab of their own; indicators and observables are
+// investigated inside a case.
+export const INVESTIGATION_TAB_SUBJECT_TYPES = [...INVESTIGATION_CASE_SUBJECT_TYPES, 'Incident'];
+export const INVESTIGATION_SUBJECT_TYPES = [...INVESTIGATION_TAB_SUBJECT_TYPES, 'Indicator'];
+
+// Why an investigation could not run on the engine (end_reason_code of the run).
+export const ENGINE_NOT_CONFIGURED = 'engine_not_configured';
+export const ENGINE_DISABLED = 'engine_disabled';
+export const ENGINE_UNAVAILABLE = 'engine_unavailable';
+export const ENGINE_NO_AGENT = 'engine_no_agent';
+export const ENGINE_UNREACHABLE = 'engine_unreachable';
 
 // Hard caps applied to every list stored on a run, whatever the policy says,
 // so a run document stays bounded.
 export const INVESTIGATION_LIMITS = {
-  planSteps: 20,
-  ledgerEntries: 500,
+  steps: 300,
   hypotheses: 6,
   evidencePerHypothesis: 30,
   recommendations: 10,
   enrichmentRequestsPerCall: 20,
+  enrichmentWaves: 100,
+  waveDelta: 200,
   evidence: 400,
   timeline: 300,
   contextEntities: 150,
@@ -84,44 +96,52 @@ export const INVESTIGATION_LIMITS = {
   coursesOfAction: 40,
   approvals: 200,
   feedback: 500,
+  reportSources: 100,
+  externalReferences: 50,
+  knowledgeObservables: 120,
+  knowledgeRelationships: 200,
+  knowledgeNotes: 50,
   textLength: 2000,
+  quoteLength: 1000,
   summaryLength: 20000,
+  reportLength: 100000,
   goalPlanLength: 65536,
-  agentRetries: 2,
+  detailParamsLength: 2000,
+  // Consecutive manager ticks the engine may fail to answer before the run fails.
+  engineFailures: 30,
 };
 
-export interface InvestigationPlanStep {
+export interface InvestigationStep {
   id: string;
-  kind: InvestigationPlanStepKind;
-  description: string;
-  status: InvestigationPlanStepStatus;
-  approval_required: boolean;
-}
-
-export interface InvestigationLedgerEntry {
-  id: string;
-  step_id?: string | null;
-  iteration: number;
-  tool: string;
-  description: string;
-  input_ref?: string | null;
-  output_ref?: string | null;
-  status: InvestigationLedgerStatus;
-  started_at: string;
-  duration_ms: number;
-  cost_units: number;
-  work_id?: string | null;
-  error?: string | null;
+  // The engine run the step belongs to (a continuation adds a new one).
+  investigation_id: string;
+  position: number;
+  action?: string | null;
+  source_name: string;
+  status: InvestigationStepStatus;
+  detail_code?: string | null;
+  detail_params?: Record<string, unknown> | null;
+  findings_count: number;
+  evidence_count: number;
+  started_at?: string | null;
+  completed_at?: string | null;
 }
 
 export interface InvestigationEvidence {
+  // The OpenCTI id of an OpenCTI object, else `<investigation id>:<n>` or a
+  // stable hash of the cited passage.
   id: string;
+  investigation_id?: string | null;
+  n?: number | null;
+  kind: InvestigationEvidenceKind;
+  label: string;
+  href?: string | null;
+  quote?: string | null;
+  opencti_id?: string | null;
+  entity_type?: string | null;
   standard_id?: string | null;
-  entity_type: string;
-  name?: string | null;
-  origin: InvestigationEvidenceOrigin;
   in_draft: boolean;
-  // Attributes the ACH helper reads to weight the evidence; never shown raw.
+  // Attributes the ACH helper reads to weight an OpenCTI object; never shown raw.
   confidence?: number | null;
   author_reliability?: string | null;
   created?: string | null;
@@ -188,10 +208,10 @@ export interface InvestigationFeedback {
 }
 
 export interface InvestigationBudget {
-  max_tool_calls: number;
+  max_iterations: number;
   max_enrichment_jobs: number;
   max_minutes: number;
-  used_tool_calls: number;
+  used_iterations: number;
   used_enrichment_jobs: number;
   used_minutes: number;
 }
@@ -213,17 +233,60 @@ export interface InvestigationApproval {
 
 export interface InvestigationEnrichmentRequest {
   id: string;
+  wave_id?: string | null;
   entity_id: string;
   connector_id: string;
   connector_name?: string | null;
   reason?: string | null;
   status: InvestigationEnrichmentRequestStatus;
   requested_by: string;
-  iteration: number;
   work_id?: string | null;
+  error?: string | null;
   created_at: string;
+  dispatched_at?: string | null;
   completed_at?: string | null;
 }
+
+export interface InvestigationDeltaObject {
+  id: string;
+  standard_id?: string | null;
+  entity_type: string;
+  representative?: string | null;
+  connector_name?: string | null;
+  action: 'created' | 'updated';
+}
+
+// One call of the engine's enrichment querier: the jobs it asked for, and
+// what they brought into the run's Draft once they ended.
+export interface InvestigationEnrichmentWave {
+  id: string;
+  status: InvestigationEnrichmentWaveStatus;
+  requested_at: string;
+  completed_at?: string | null;
+  request_ids: string[];
+  delta: InvestigationDeltaObject[];
+  delta_computed: boolean;
+}
+
+export interface InvestigationReportSource {
+  n: number;
+  label: string;
+  href?: string | null;
+}
+
+// Objects the run wrote into its Draft, updated (not duplicated) when a
+// continuation concludes again.
+export interface InvestigationOutputs {
+  note_id?: string | null;
+  note_standard_id?: string | null;
+  report_id?: string | null;
+  report_standard_id?: string | null;
+  attributed_candidate_ids: string[];
+  // Observables of the engine's knowledge list, by value.
+  observable_ids: Record<string, string>;
+}
+
+export const EMPTY_OUTPUTS: InvestigationOutputs = { attributed_candidate_ids: [], observable_ids: {} };
 
 export interface InvestigationAcceptance {
   hypotheses_accepted: number;
@@ -241,33 +304,44 @@ interface InvestigationRunAttributes {
   // internal id. Case pages look runs up by any of them.
   case_id?: string | null;
   case_ids: string[];
+  // A new Case-Incident is created in the run Draft for an indicator or an
+  // observable investigated without an existing case.
+  create_case: boolean;
   workspace_id?: string | null;
   draft_id?: string | null;
   policy_id?: string | null;
   agent_slug?: string | null;
-  // Investigation pack of the XTM One investigation engine the run uses, and
-  // the engine's goal plan as it last answered it.
   pack_id?: string | null;
-  goal_plan?: Record<string, unknown> | null;
+  // The engine runs of this investigation: the latest, every one (continuations)
+  // and the revision of the latest the run mirrors.
+  xtm_investigation_id?: string | null;
+  xtm_investigation_ids: string[];
+  xtm_revision: number;
+  xtm_status?: string | null;
+  xtm_completed_at?: string | null;
+  // Set while a continuation waits to start: the engine run it continues.
+  continues_investigation_id?: string | null;
+  // The time budget made OpenCTI cancel the engine run: its results are kept.
+  budget_cancelled: boolean;
   run_trigger: InvestigationRunTrigger;
   run_status: InvestigationRunStatus;
   run_phase: InvestigationRunPhase;
   status_reason?: string | null;
-  iteration: number;
+  end_reason_code?: string | null;
   started_at?: string | null;
   completed_at?: string | null;
   // Wall-clock time spent running (approval pauses excluded) and the moment
   // the current running slice started, so budgets ignore human think time.
   active_ms: number;
   running_since?: string | null;
-  // Works the manager is waiting for during an enrichment wave, and when the wave started.
+  // Enrichment works not finished yet.
   pending_work_ids: string[];
   wave_started_at?: string | null;
   validation_work_id?: string | null;
-  agent_failures: number;
+  engine_failures: number;
   run_as_id: string;
-  plan: InvestigationPlanStep[];
-  steps: InvestigationLedgerEntry[];
+  goal_plan?: Record<string, unknown> | null;
+  steps: InvestigationStep[];
   evidence: InvestigationEvidence[];
   hypotheses: InvestigationHypothesis[];
   timeline: InvestigationTimelineEvent[];
@@ -275,16 +349,12 @@ interface InvestigationRunAttributes {
   analyst_feedback: InvestigationFeedback[];
   approvals: InvestigationApproval[];
   enrichment_requests: InvestigationEnrichmentRequest[];
+  enrichment_waves: InvestigationEnrichmentWave[];
   budget: InvestigationBudget;
   summary?: string | null;
-  // What the last enrichment wave brought, sent to the agent on its next call.
-  last_delta?: InvestigationDelta | null;
-}
-
-export interface InvestigationDelta {
-  new_entity_ids: string[];
-  new_relationship_ids: string[];
-  enrichments: Array<{ entity_id: string; connector_id: string; status: string; new_object_ids: string[] }>;
+  report?: string | null;
+  report_sources: InvestigationReportSource[];
+  outputs: InvestigationOutputs;
 }
 
 export interface BasicStoreEntityInvestigationRun extends BasicStoreEntity, InvestigationRunAttributes {}
@@ -303,13 +373,15 @@ interface InvestigationPolicyAttributes {
   is_default: boolean;
   agent_slug?: string | null;
   pack_id?: string | null;
+  // Choices of the pack (`pack_options` of the start body), by option key.
+  pack_options?: Record<string, string> | null;
   allowed_actions: InvestigationAutonomousAction[];
   enrichment_connector_ids: string[];
   approval_connector_ids: string[];
   auto_approve_low_risk: boolean;
   auto_approve_min_confidence: number;
   attribution_min_confidence: number;
-  max_tool_calls: number;
+  max_iterations: number;
   max_enrichment_jobs: number;
   max_minutes: number;
   trigger_on_case_rfi_creation: boolean;
@@ -344,10 +416,10 @@ export const DEFAULT_POLICY_VALUES = {
   auto_approve_low_risk: false,
   auto_approve_min_confidence: 80,
   attribution_min_confidence: 55,
-  max_tool_calls: 40,
+  max_iterations: 10,
   max_enrichment_jobs: 20,
-  max_minutes: 60,
+  max_minutes: 30,
   trigger_on_case_rfi_creation: false,
 };
 
-export const DEFAULT_POLICY_NAME = 'Default Case Autopilot policy';
+export const DEFAULT_POLICY_NAME = 'Default investigation policy';

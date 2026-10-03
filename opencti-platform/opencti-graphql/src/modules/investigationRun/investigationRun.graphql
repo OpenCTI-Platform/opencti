@@ -1,4 +1,6 @@
-# Case Autopilot: autonomous, auditable investigation runs (Enterprise Edition).
+# Case Autopilot: the OpenCTI, case-bound face of the XTM One investigation
+# engine (Enterprise Edition). OpenCTI owns the run, the policy, the budget,
+# the Draft, the approvals and every write; the engine investigates.
 
 enum InvestigationRunStatus {
   planned
@@ -17,40 +19,30 @@ enum InvestigationRunTrigger {
 
 enum InvestigationRunPhase {
   initializing
-  planning
-  enriching
-  waiting_enrichment
-  iterating
-  concluding
-  finalizing
+  starting
+  investigating
+  ingesting
   awaiting_validation
   validating
   done
 }
 
-enum InvestigationPlanStepKind {
-  enrichment
-  pivot
-  correlation
-  timeline
-  attribution
-  recommendation
-  report
-}
-
-enum InvestigationPlanStepStatus {
+# The seven step states of the investigation engine.
+enum InvestigationStepStatus {
   pending
-  running
-  done
+  active
+  completed
+  empty
+  degraded
+  error
   skipped
-  failed
-  awaiting_approval
 }
 
-enum InvestigationLedgerStatus {
-  done
-  failed
-  skipped
+enum InvestigationEvidenceKind {
+  url
+  document
+  tool_result
+  opencti_object
 }
 
 enum InvestigationEvidenceCategory {
@@ -61,13 +53,6 @@ enum InvestigationEvidenceCategory {
   temporal
   source_reliability
   language_timezone
-}
-
-enum InvestigationEvidenceOrigin {
-  subject
-  context
-  enrichment
-  agent
 }
 
 enum InvestigationConfidenceLabel {
@@ -128,6 +113,16 @@ enum InvestigationEnrichmentRequestStatus {
   skipped
 }
 
+enum InvestigationEnrichmentWaveStatus {
+  queued
+  running
+  completed
+  partial
+  awaiting_approval
+  rejected
+  timeout
+}
+
 enum InvestigationFeedbackItemType {
   hypothesis
   recommendation
@@ -151,38 +146,33 @@ enum InvestigationRecommendationApplyMode {
   course_of_action
 }
 
-type InvestigationPlanStep {
+# One source query of the engine, mirrored from its run.
+type InvestigationStep {
   id: String!
-  kind: InvestigationPlanStepKind!
-  description: String!
-  status: InvestigationPlanStepStatus!
-  approval_required: Boolean!
+  investigation_id: String!
+  position: Int!
+  action: String
+  source_name: String!
+  status: InvestigationStepStatus!
+  detail_code: String
+  detail_params: JSON
+  findings_count: Int!
+  evidence_count: Int!
+  started_at: DateTime
+  completed_at: DateTime
 }
 
-type InvestigationLedgerEntry {
-  id: String!
-  step_id: String
-  iteration: Int!
-  tool: String!
-  description: String!
-  input_ref: String
-  output_ref: String
-  status: InvestigationLedgerStatus!
-  started_at: DateTime!
-  duration_ms: Int!
-  cost_units: Int!
-  work_id: String
-  error: String
-}
-
+# A cited passage, document, tool result or OpenCTI object (shared shape).
 type InvestigationEvidence {
   id: String!
-  standard_id: String
-  entity_type: String!
-  name: String
-  origin: InvestigationEvidenceOrigin!
+  n: Int
+  kind: InvestigationEvidenceKind!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
   in_draft: Boolean!
-  element: StixObjectOrStixRelationship
 }
 
 type InvestigationEvidenceCell {
@@ -195,7 +185,6 @@ type InvestigationEvidenceCell {
   weight: Float!
   diagnosticity: Float!
   rationale: String
-  element: StixObjectOrStixRelationship
 }
 
 type InvestigationHypothesis {
@@ -248,10 +237,10 @@ type InvestigationFeedback {
 }
 
 type InvestigationBudget {
-  max_tool_calls: Int!
+  max_iterations: Int!
   max_enrichment_jobs: Int!
   max_minutes: Int!
-  used_tool_calls: Int!
+  used_iterations: Int!
   used_enrichment_jobs: Int!
   used_minutes: Float!
 }
@@ -273,16 +262,49 @@ type InvestigationApproval {
 
 type InvestigationEnrichmentRequest {
   id: String!
+  wave_id: String
   entity_id: String!
   connector_id: String!
   connector_name: String
   reason: String
   status: InvestigationEnrichmentRequestStatus!
   requested_by: String!
-  iteration: Int!
   work_id: String
   created_at: DateTime!
   completed_at: DateTime
+}
+
+type InvestigationEnrichmentJob {
+  connector_id: String!
+  connector_name: String!
+  entity_id: String!
+  work_id: String
+  status: String!
+  error: String
+}
+
+type InvestigationDeltaObject {
+  id: String!
+  standard_id: String
+  entity_type: String!
+  representative: String
+  connector_name: String
+  action: String!
+}
+
+type InvestigationEnrichmentWave {
+  id: ID!
+  status: InvestigationEnrichmentWaveStatus!
+  requested_at: DateTime!
+  completed_at: DateTime
+  jobs: [InvestigationEnrichmentJob!]!
+  delta: [InvestigationDeltaObject!]!
+}
+
+type InvestigationReportSource {
+  n: Int!
+  label: String!
+  href: String
 }
 
 type InvestigationAcceptance {
@@ -295,6 +317,7 @@ type InvestigationAcceptance {
 
 type InvestigationRunReport {
   executive_summary: String!
+  report: String!
   timeline: String!
   hypotheses: String!
   recommendations: String!
@@ -328,18 +351,21 @@ type InvestigationRun implements InternalObject & BasicObject {
   policy: InvestigationPolicy
   agent_slug: String
   pack_id: String
-  goal_plan: JSON
+  xtm_investigation_id: String
+  xtm_investigation_ids: [String!]!
+  xtm_revision: Int!
+  xtm_status: String
   run_trigger: InvestigationRunTrigger!
   run_status: InvestigationRunStatus!
   run_phase: InvestigationRunPhase!
   status_reason: String
-  iteration: Int!
+  end_reason_code: String
   started_at: DateTime
   completed_at: DateTime
   run_as_id: String!
   runAs: Creator
-  plan: [InvestigationPlanStep!]!
-  steps: [InvestigationLedgerEntry!]!
+  goal_plan: JSON
+  steps: [InvestigationStep!]!
   evidence: [InvestigationEvidence!]!
   hypotheses: [InvestigationHypothesis!]!
   timeline: [InvestigationTimelineEvent!]!
@@ -349,8 +375,12 @@ type InvestigationRun implements InternalObject & BasicObject {
   enrichment_requests: [InvestigationEnrichmentRequest!]!
   budget: InvestigationBudget!
   summary: String
+  report: String
+  report_sources: [InvestigationReportSource!]!
+  report_id: String
+  can_continue: Boolean!
   acceptance: InvestigationAcceptance!
-  report: InvestigationRunReport!
+  report_sections: InvestigationRunReport!
 }
 
 type InvestigationPolicy implements InternalObject & BasicObject {
@@ -370,13 +400,14 @@ type InvestigationPolicy implements InternalObject & BasicObject {
   is_default: Boolean!
   agent_slug: String
   pack_id: String
+  pack_options: JSON
   allowed_actions: [InvestigationAutonomousAction!]!
   enrichment_connector_ids: [String!]!
   approval_connector_ids: [String!]!
   auto_approve_low_risk: Boolean!
   auto_approve_min_confidence: Int!
   attribution_min_confidence: Int!
-  max_tool_calls: Int!
+  max_iterations: Int!
   max_enrichment_jobs: Int!
   max_minutes: Int!
   trigger_on_case_rfi_creation: Boolean!
@@ -435,6 +466,7 @@ type InvestigationRunEnrichmentRejected {
 }
 
 type InvestigationRunEnrichmentRequestResult {
+  wave_id: ID
   accepted: [InvestigationRunEnrichmentAccepted!]!
   rejected: [InvestigationRunEnrichmentRejected!]!
 }
@@ -444,6 +476,38 @@ type InvestigationEnrichmentConnector {
   name: String!
   active: Boolean!
   connector_scope: [String!]!
+}
+
+type InvestigationPackChoice {
+  value: String!
+  label: String!
+  description: String
+}
+
+type InvestigationPackOption {
+  key: String!
+  label: String!
+  description: String
+  default: String
+  choices: [InvestigationPackChoice!]!
+}
+
+type InvestigationPack {
+  slug: String!
+  label: String!
+  description: String
+  recommended: Boolean!
+  applicable_source_count: Int!
+  total_source_count: Int!
+  max_iterations: Int
+  options: [InvestigationPackOption!]!
+}
+
+# Whether the connected XTM One runs investigations, and the packs a policy may name.
+type InvestigationPackCatalog {
+  available: Boolean!
+  reason: String
+  packs: [InvestigationPack!]!
 }
 
 extend interface Case {
@@ -477,6 +541,7 @@ type Query {
     subjectId: String
     caseId: String
   ): InvestigationRunConnection @auth(for: [KNOWLEDGE])
+  investigationRunEnrichmentWave(id: ID!, waveId: ID!): InvestigationEnrichmentWave @auth(for: [KNOWLEDGE])
   investigationPolicy(id: ID!): InvestigationPolicy @auth(for: [KNOWLEDGE])
   investigationPolicies(
     first: Int
@@ -487,6 +552,7 @@ type Query {
     search: String
   ): InvestigationPolicyConnection @auth(for: [KNOWLEDGE])
   investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  investigationPacks: InvestigationPackCatalog! @auth(for: [KNOWLEDGE])
 }
 
 input InvestigationRunFeedbackInput {
@@ -502,42 +568,20 @@ input InvestigationRunEnrichmentRequestInput {
   reason: String @constraint(maxLength: 2000)
 }
 
-input InvestigationRunStepInput {
-  tool: String! @constraint(minLength: 1, maxLength: 200)
-  description: String! @constraint(minLength: 1, maxLength: 2000)
-  input_ref: String @constraint(maxLength: 500)
-  output_ref: String @constraint(maxLength: 500)
-  status: InvestigationLedgerStatus
-}
-
-input InvestigationEvidenceCellInput {
-  evidence_id: String!
-  category: InvestigationEvidenceCategory!
-  consistency: Int!
-  rationale: String @constraint(maxLength: 2000)
-}
-
-input InvestigationHypothesisInput {
-  candidate_id: String!
-  candidate_name: String @constraint(maxLength: 500)
-  candidate_type: String @constraint(maxLength: 100)
-  rationale: String @constraint(maxLength: 4000)
-  evidence: [InvestigationEvidenceCellInput!]!
-}
-
 input InvestigationPolicyAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   is_default: Boolean
   agent_slug: String @constraint(maxLength: 200)
   pack_id: String @constraint(maxLength: 200)
+  pack_options: JSON
   allowed_actions: [InvestigationAutonomousAction!]
   enrichment_connector_ids: [String!]
   approval_connector_ids: [String!]
   auto_approve_low_risk: Boolean
   auto_approve_min_confidence: Int @constraint(min: 0, max: 100)
   attribution_min_confidence: Int @constraint(min: 0, max: 100)
-  max_tool_calls: Int @constraint(min: 1, max: 500)
+  max_iterations: Int @constraint(min: 1, max: 50)
   max_enrichment_jobs: Int @constraint(min: 0, max: 200)
   max_minutes: Int @constraint(min: 1, max: 1440)
   trigger_on_case_rfi_creation: Boolean
@@ -545,14 +589,13 @@ input InvestigationPolicyAddInput {
 }
 
 type Mutation {
-  investigationRunAdd(subjectId: ID!, policyId: ID): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
+  investigationRunAdd(subjectId: ID!, policyId: ID, caseId: ID): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
   investigationRunCancel(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationRunContinue(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
   investigationRunDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   investigationRunFeedback(id: ID!, input: InvestigationRunFeedbackInput!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunRecommendationApply(id: ID!, recommendationId: String!, mode: InvestigationRecommendationApplyMode!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunEnrichmentRequest(id: ID!, input: InvestigationRunEnrichmentRequestInput!): InvestigationRunEnrichmentRequestResult @auth(for: [KNOWLEDGE_KNUPDATE])
-  investigationRunStepRecord(id: ID!, input: InvestigationRunStepInput!): InvestigationLedgerEntry @auth(for: [KNOWLEDGE_KNUPDATE])
-  investigationRunHypothesesPropose(id: ID!, input: [InvestigationHypothesisInput!]!): [InvestigationHypothesis!] @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
   investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
   investigationPolicyDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])

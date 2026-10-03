@@ -15,8 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 // Markdown rendering of an investigation run, used for the summary Note the
 // run writes into its Draft and for the "Autonomous investigation summary"
-// fintel template. Every value coming from the agent or the graph is escaped:
-// the front end renders it through marked + DOMPurify.
+// fintel template. Every value coming from the engine or the graph is escaped,
+// except the engine's summary and cited report, markdown by contract: the
+// front end renders them through marked + DOMPurify.
 
 import { confidenceLabelText, evidenceCategoryText } from './investigationRun-ach';
 import type { BasicStoreEntityInvestigationRun, InvestigationEvidence } from './investigationRun-types';
@@ -25,6 +26,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 export interface InvestigationReportSections {
   executive_summary: string;
+  report: string;
   timeline: string;
   hypotheses: string;
   recommendations: string;
@@ -49,14 +51,14 @@ const formatDate = (value: string) => {
 };
 
 const isIocEvidence = (evidence: InvestigationEvidence) => {
-  return evidence.entity_type === ENTITY_TYPE_INDICATOR || isStixCyberObservable(evidence.entity_type);
+  return !!evidence.entity_type && (evidence.entity_type === ENTITY_TYPE_INDICATOR || isStixCyberObservable(evidence.entity_type));
 };
 
 const buildExecutiveSummary = (run: BasicStoreEntityInvestigationRun) => {
   const leading = run.hypotheses.find((hypothesis) => hypothesis.rank === 1);
   const lines: string[] = [];
   if (run.summary) {
-    // The agent summary is markdown by contract: kept as is, sanitized at render time.
+    // The engine summary is markdown by contract: kept as is, sanitized at render time.
     lines.push(run.summary);
   } else {
     lines.push(`Investigation of ${escapeMarkdown(run.subject_type)} ${escapeMarkdown(run.name)}.`);
@@ -69,7 +71,7 @@ const buildExecutiveSummary = (run: BasicStoreEntityInvestigationRun) => {
   }
   lines.push('');
   lines.push(`Evidence items: ${run.evidence.length}. Enrichment jobs: ${run.budget.used_enrichment_jobs}. `
-    + `Tool calls: ${run.budget.used_tool_calls}.`);
+    + `Iterations: ${run.budget.used_iterations}.`);
   return lines.join('\n');
 };
 
@@ -124,12 +126,22 @@ const buildIocs = (run: BasicStoreEntityInvestigationRun) => {
   if (iocs.length === 0) {
     return 'No indicator or observable was collected.';
   }
-  const rows = iocs.map((evidence) => `| ${escapeMarkdown(evidence.entity_type)} | ${escapeMarkdown(evidence.name ?? evidence.id)} | ${evidence.origin} |`);
-  return ['| Type | Value | Origin |', '| --- | --- | --- |', ...rows].join('\n');
+  const rows = iocs.map((evidence) => `| ${escapeMarkdown(evidence.entity_type)} | ${escapeMarkdown(evidence.label)} | ${evidence.n ? `[${evidence.n}]` : '-'} |`);
+  return ['| Type | Value | Citation |', '| --- | --- | --- |', ...rows].join('\n');
+};
+
+// The engine's cited report, followed by the sources it cites.
+const buildReport = (run: BasicStoreEntityInvestigationRun) => {
+  if (!run.report) {
+    return 'No report was written.';
+  }
+  const sources = (run.report_sources ?? []).map((source) => `${source.n}. ${escapeMarkdown(source.label)}${source.href ? ` - <${encodeURI(source.href)}>` : ''}`);
+  return sources.length > 0 ? [run.report, '', '**Sources**', '', ...sources].join('\n') : run.report;
 };
 
 export const buildInvestigationReportSections = (run: BasicStoreEntityInvestigationRun): InvestigationReportSections => ({
   executive_summary: buildExecutiveSummary(run),
+  report: buildReport(run),
   timeline: buildTimeline(run),
   hypotheses: buildHypotheses(run),
   recommendations: buildRecommendations(run),

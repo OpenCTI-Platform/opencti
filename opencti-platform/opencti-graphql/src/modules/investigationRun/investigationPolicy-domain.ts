@@ -56,7 +56,8 @@ const EDITABLE_POLICY_KEYS = [
   'auto_approve_low_risk',
   'auto_approve_min_confidence',
   'attribution_min_confidence',
-  'max_tool_calls',
+  'max_iterations',
+  'pack_options',
   'max_enrichment_jobs',
   'max_minutes',
   'trigger_on_case_rfi_creation',
@@ -67,7 +68,7 @@ const EDITABLE_POLICY_KEYS = [
 const NUMERIC_BOUNDS: Record<string, [number, number]> = {
   auto_approve_min_confidence: [0, 100],
   attribution_min_confidence: [0, 100],
-  max_tool_calls: [1, 500],
+  max_iterations: [1, 50],
   max_enrichment_jobs: [0, 200],
   max_minutes: [1, 1440],
 };
@@ -79,6 +80,37 @@ const assertNumericBounds = (key: string, value: unknown) => {
   if (!Number.isInteger(numeric) || numeric < bounds[0] || numeric > bounds[1]) {
     throw FunctionalError('Invalid investigation policy value', { key, min: bounds[0], max: bounds[1] });
   }
+};
+
+const MAX_PACK_OPTIONS = 20;
+const MAX_PACK_OPTION_LENGTH = 100;
+
+// The choices of a pack: option key -> chosen value, short strings only. The
+// engine validates them against the pack; OpenCTI only bounds what it stores.
+export const sanitizePackOptions = (value: unknown): Record<string, string> | null => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = typeof value === 'string' ? (() => {
+    try {
+      return JSON.parse(value) as unknown;
+    } catch {
+      return null;
+    }
+  })() : value;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw FunctionalError('Pack options map an option to a value');
+  }
+  const entries = Object.entries(parsed as Record<string, unknown>);
+  if (entries.length > MAX_PACK_OPTIONS) {
+    throw FunctionalError('Too many pack options', { max: MAX_PACK_OPTIONS });
+  }
+  const options: Record<string, string> = {};
+  entries.forEach(([key, optionValue]) => {
+    if (typeof optionValue !== 'string' || key.length === 0 || key.length > MAX_PACK_OPTION_LENGTH || optionValue.length > MAX_PACK_OPTION_LENGTH) {
+      throw FunctionalError('Invalid pack option', { key });
+    }
+    options[key] = optionValue;
+  });
+  return Object.keys(options).length > 0 ? options : null;
 };
 
 // Connectors referenced by a policy must be enrichment connectors.
@@ -140,13 +172,14 @@ const buildPolicyInput = (input: Partial<InvestigationPolicyAddInput>) => ({
   is_default: input.is_default ?? false,
   agent_slug: input.agent_slug?.trim() || null,
   pack_id: input.pack_id?.trim() || null,
+  pack_options: sanitizePackOptions(input.pack_options),
   allowed_actions: input.allowed_actions ?? DEFAULT_POLICY_VALUES.allowed_actions,
   enrichment_connector_ids: input.enrichment_connector_ids ?? DEFAULT_POLICY_VALUES.enrichment_connector_ids,
   approval_connector_ids: input.approval_connector_ids ?? DEFAULT_POLICY_VALUES.approval_connector_ids,
   auto_approve_low_risk: input.auto_approve_low_risk ?? DEFAULT_POLICY_VALUES.auto_approve_low_risk,
   auto_approve_min_confidence: input.auto_approve_min_confidence ?? DEFAULT_POLICY_VALUES.auto_approve_min_confidence,
   attribution_min_confidence: input.attribution_min_confidence ?? DEFAULT_POLICY_VALUES.attribution_min_confidence,
-  max_tool_calls: input.max_tool_calls ?? DEFAULT_POLICY_VALUES.max_tool_calls,
+  max_iterations: input.max_iterations ?? DEFAULT_POLICY_VALUES.max_iterations,
   max_enrichment_jobs: input.max_enrichment_jobs ?? DEFAULT_POLICY_VALUES.max_enrichment_jobs,
   max_minutes: input.max_minutes ?? DEFAULT_POLICY_VALUES.max_minutes,
   trigger_on_case_rfi_creation: input.trigger_on_case_rfi_creation ?? DEFAULT_POLICY_VALUES.trigger_on_case_rfi_creation,
@@ -209,7 +242,7 @@ export const editInvestigationPolicy = async (context: AuthContext, user: AuthUs
       throw FunctionalError('Promote another policy to default instead of removing the default flag', { id });
     }
   }
-  const finalInput = [...input];
+  const finalInput = input.map((entry) => (entry.key === 'pack_options' ? { ...entry, value: [sanitizePackOptions(entry.value?.[0])] } : entry));
   const hookInput = input.find(({ key }) => key === 'trigger_on_case_rfi_creation');
   if (hookInput && String(hookInput.value?.[0]) === 'true') {
     // Enabling the hook starts from now, never replays the past.

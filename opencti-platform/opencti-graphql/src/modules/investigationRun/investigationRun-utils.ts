@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { InvestigationEvidenceOrigin } from '../../generated/graphql';
+import { InvestigationEvidenceKind } from '../../generated/graphql';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
@@ -75,19 +75,30 @@ export const isElementInDraft = (element: object, draftId: string | null | undef
   return !!draftId && Array.isArray(record.draft_ids) && record.draft_ids.includes(draftId);
 };
 
+export const representativeNameOf = (element: object): string | null => {
+  const name = extractEntityRepresentativeName(element as RefElement) as string | undefined;
+  return name ? String(name).slice(0, 500) : null;
+};
+
+// An OpenCTI object as evidence (shared shape), with the attributes the ACH
+// helper weights it by.
 export const evidenceFromElement = (
   element: object,
-  opts: { origin?: InvestigationEvidenceOrigin; draftId?: string | null; authorReliability?: string | null } = {},
+  opts: { draftId?: string | null; authorReliability?: string | null; investigationId?: string | null } = {},
 ): InvestigationEvidence => {
   const record = element as RefElement;
-  const name = extractEntityRepresentativeName(record) as string | undefined;
   const confidence = typeof record.confidence === 'number' ? record.confidence : null;
   return {
     id: record.internal_id,
+    investigation_id: opts.investigationId ?? null,
+    n: null,
+    kind: InvestigationEvidenceKind.OpenctiObject,
+    label: representativeNameOf(record) ?? record.internal_id,
+    href: null,
+    quote: null,
+    opencti_id: record.internal_id,
     standard_id: record.standard_id ?? null,
     entity_type: record.entity_type,
-    name: name ? String(name).slice(0, 500) : null,
-    origin: opts.origin ?? InvestigationEvidenceOrigin.Context,
     in_draft: isElementInDraft(record, opts.draftId),
     confidence,
     author_reliability: opts.authorReliability ?? null,

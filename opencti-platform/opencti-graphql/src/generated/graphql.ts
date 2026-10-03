@@ -14763,11 +14763,11 @@ export enum InvestigationAutonomousAction {
 export type InvestigationBudget = {
   __typename?: 'InvestigationBudget';
   max_enrichment_jobs: Scalars['Int']['output'];
+  max_iterations: Scalars['Int']['output'];
   max_minutes: Scalars['Int']['output'];
-  max_tool_calls: Scalars['Int']['output'];
   used_enrichment_jobs: Scalars['Int']['output'];
+  used_iterations: Scalars['Int']['output'];
   used_minutes: Scalars['Float']['output'];
-  used_tool_calls: Scalars['Int']['output'];
 };
 
 export enum InvestigationConfidenceLabel {
@@ -14779,6 +14779,16 @@ export enum InvestigationConfidenceLabel {
   VeryLikely = 'very_likely',
   VeryUnlikely = 'very_unlikely'
 }
+
+export type InvestigationDeltaObject = {
+  __typename?: 'InvestigationDeltaObject';
+  action: Scalars['String']['output'];
+  connector_name?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  representative?: Maybe<Scalars['String']['output']>;
+  standard_id?: Maybe<Scalars['String']['output']>;
+};
 
 export type InvestigationDuplicateInput = {
   id: Scalars['ID']['input'];
@@ -14793,6 +14803,16 @@ export type InvestigationEnrichmentConnector = {
   name: Scalars['String']['output'];
 };
 
+export type InvestigationEnrichmentJob = {
+  __typename?: 'InvestigationEnrichmentJob';
+  connector_id: Scalars['String']['output'];
+  connector_name: Scalars['String']['output'];
+  entity_id: Scalars['String']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  work_id?: Maybe<Scalars['String']['output']>;
+};
+
 export type InvestigationEnrichmentRequest = {
   __typename?: 'InvestigationEnrichmentRequest';
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14801,10 +14821,10 @@ export type InvestigationEnrichmentRequest = {
   created_at: Scalars['DateTime']['output'];
   entity_id: Scalars['String']['output'];
   id: Scalars['String']['output'];
-  iteration: Scalars['Int']['output'];
   reason?: Maybe<Scalars['String']['output']>;
   requested_by: Scalars['String']['output'];
   status: InvestigationEnrichmentRequestStatus;
+  wave_id?: Maybe<Scalars['String']['output']>;
   work_id?: Maybe<Scalars['String']['output']>;
 };
 
@@ -14819,15 +14839,37 @@ export enum InvestigationEnrichmentRequestStatus {
   Timeout = 'timeout'
 }
 
+export type InvestigationEnrichmentWave = {
+  __typename?: 'InvestigationEnrichmentWave';
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  delta: Array<InvestigationDeltaObject>;
+  id: Scalars['ID']['output'];
+  jobs: Array<InvestigationEnrichmentJob>;
+  requested_at: Scalars['DateTime']['output'];
+  status: InvestigationEnrichmentWaveStatus;
+};
+
+export enum InvestigationEnrichmentWaveStatus {
+  AwaitingApproval = 'awaiting_approval',
+  Completed = 'completed',
+  Partial = 'partial',
+  Queued = 'queued',
+  Rejected = 'rejected',
+  Running = 'running',
+  Timeout = 'timeout'
+}
+
 export type InvestigationEvidence = {
   __typename?: 'InvestigationEvidence';
-  element?: Maybe<StixObjectOrStixRelationship>;
-  entity_type: Scalars['String']['output'];
+  entity_type?: Maybe<Scalars['String']['output']>;
+  href?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   in_draft: Scalars['Boolean']['output'];
-  name?: Maybe<Scalars['String']['output']>;
-  origin: InvestigationEvidenceOrigin;
-  standard_id?: Maybe<Scalars['String']['output']>;
+  kind: InvestigationEvidenceKind;
+  label: Scalars['String']['output'];
+  n?: Maybe<Scalars['Int']['output']>;
+  opencti_id?: Maybe<Scalars['String']['output']>;
+  quote?: Maybe<Scalars['String']['output']>;
 };
 
 export enum InvestigationEvidenceCategory {
@@ -14845,7 +14887,6 @@ export type InvestigationEvidenceCell = {
   category: InvestigationEvidenceCategory;
   consistency: Scalars['Int']['output'];
   diagnosticity: Scalars['Float']['output'];
-  element?: Maybe<StixObjectOrStixRelationship>;
   evidence_id: Scalars['String']['output'];
   evidence_name?: Maybe<Scalars['String']['output']>;
   evidence_standard_id?: Maybe<Scalars['String']['output']>;
@@ -14854,18 +14895,11 @@ export type InvestigationEvidenceCell = {
   weight: Scalars['Float']['output'];
 };
 
-export type InvestigationEvidenceCellInput = {
-  category: InvestigationEvidenceCategory;
-  consistency: Scalars['Int']['input'];
-  evidence_id: Scalars['String']['input'];
-  rationale?: InputMaybe<Scalars['String']['input']>;
-};
-
-export enum InvestigationEvidenceOrigin {
-  Agent = 'agent',
-  Context = 'context',
-  Enrichment = 'enrichment',
-  Subject = 'subject'
+export enum InvestigationEvidenceKind {
+  Document = 'document',
+  OpenctiObject = 'opencti_object',
+  ToolResult = 'tool_result',
+  Url = 'url'
 }
 
 export type InvestigationFeedback = {
@@ -14907,64 +14941,40 @@ export type InvestigationHypothesis = {
   score: Scalars['Float']['output'];
 };
 
-export type InvestigationHypothesisInput = {
-  candidate_id: Scalars['String']['input'];
-  candidate_name?: InputMaybe<Scalars['String']['input']>;
-  candidate_type?: InputMaybe<Scalars['String']['input']>;
-  evidence: Array<InvestigationEvidenceCellInput>;
-  rationale?: InputMaybe<Scalars['String']['input']>;
+export type InvestigationPack = {
+  __typename?: 'InvestigationPack';
+  applicable_source_count: Scalars['Int']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
+  max_iterations?: Maybe<Scalars['Int']['output']>;
+  options: Array<InvestigationPackOption>;
+  recommended: Scalars['Boolean']['output'];
+  slug: Scalars['String']['output'];
+  total_source_count: Scalars['Int']['output'];
 };
 
-export type InvestigationLedgerEntry = {
-  __typename?: 'InvestigationLedgerEntry';
-  cost_units: Scalars['Int']['output'];
-  description: Scalars['String']['output'];
-  duration_ms: Scalars['Int']['output'];
-  error?: Maybe<Scalars['String']['output']>;
-  id: Scalars['String']['output'];
-  input_ref?: Maybe<Scalars['String']['output']>;
-  iteration: Scalars['Int']['output'];
-  output_ref?: Maybe<Scalars['String']['output']>;
-  started_at: Scalars['DateTime']['output'];
-  status: InvestigationLedgerStatus;
-  step_id?: Maybe<Scalars['String']['output']>;
-  tool: Scalars['String']['output'];
-  work_id?: Maybe<Scalars['String']['output']>;
+export type InvestigationPackCatalog = {
+  __typename?: 'InvestigationPackCatalog';
+  available: Scalars['Boolean']['output'];
+  packs: Array<InvestigationPack>;
+  reason?: Maybe<Scalars['String']['output']>;
 };
 
-export enum InvestigationLedgerStatus {
-  Done = 'done',
-  Failed = 'failed',
-  Skipped = 'skipped'
-}
-
-export type InvestigationPlanStep = {
-  __typename?: 'InvestigationPlanStep';
-  approval_required: Scalars['Boolean']['output'];
-  description: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  kind: InvestigationPlanStepKind;
-  status: InvestigationPlanStepStatus;
+export type InvestigationPackChoice = {
+  __typename?: 'InvestigationPackChoice';
+  description?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
-export enum InvestigationPlanStepKind {
-  Attribution = 'attribution',
-  Correlation = 'correlation',
-  Enrichment = 'enrichment',
-  Pivot = 'pivot',
-  Recommendation = 'recommendation',
-  Report = 'report',
-  Timeline = 'timeline'
-}
-
-export enum InvestigationPlanStepStatus {
-  AwaitingApproval = 'awaiting_approval',
-  Done = 'done',
-  Failed = 'failed',
-  Pending = 'pending',
-  Running = 'running',
-  Skipped = 'skipped'
-}
+export type InvestigationPackOption = {
+  __typename?: 'InvestigationPackOption';
+  choices: Array<InvestigationPackChoice>;
+  default?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
 
 export enum InvestigationPoliciesOrdering {
   Score = '_score',
@@ -14990,11 +15000,12 @@ export type InvestigationPolicy = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   is_default: Scalars['Boolean']['output'];
   max_enrichment_jobs: Scalars['Int']['output'];
+  max_iterations: Scalars['Int']['output'];
   max_minutes: Scalars['Int']['output'];
-  max_tool_calls: Scalars['Int']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   pack_id?: Maybe<Scalars['String']['output']>;
+  pack_options?: Maybe<Scalars['JSON']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -15017,10 +15028,11 @@ export type InvestigationPolicyAddInput = {
   enrichment_connector_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   is_default?: InputMaybe<Scalars['Boolean']['input']>;
   max_enrichment_jobs?: InputMaybe<Scalars['Int']['input']>;
+  max_iterations?: InputMaybe<Scalars['Int']['input']>;
   max_minutes?: InputMaybe<Scalars['Int']['input']>;
-  max_tool_calls?: InputMaybe<Scalars['Int']['input']>;
   name: Scalars['String']['input'];
   pack_id?: InputMaybe<Scalars['String']['input']>;
+  pack_options?: InputMaybe<Scalars['JSON']['input']>;
   run_as_id?: InputMaybe<Scalars['String']['input']>;
   trigger_on_case_rfi_creation?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -15082,6 +15094,13 @@ export enum InvestigationRecommendationStatus {
   TaskCreated = 'task_created'
 }
 
+export type InvestigationReportSource = {
+  __typename?: 'InvestigationReportSource';
+  href?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
+  n: Scalars['Int']['output'];
+};
+
 export type InvestigationRun = BasicObject & InternalObject & {
   __typename?: 'InvestigationRun';
   acceptance: InvestigationAcceptance;
@@ -15089,6 +15108,7 @@ export type InvestigationRun = BasicObject & InternalObject & {
   analyst_feedback: Array<InvestigationFeedback>;
   approvals: Array<InvestigationApproval>;
   budget: InvestigationBudget;
+  can_continue: Scalars['Boolean']['output'];
   case?: Maybe<Case>;
   case_id?: Maybe<Scalars['String']['output']>;
   completed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15096,24 +15116,26 @@ export type InvestigationRun = BasicObject & InternalObject & {
   creators?: Maybe<Array<Creator>>;
   draft?: Maybe<DraftWorkspace>;
   draft_id?: Maybe<Scalars['String']['output']>;
+  end_reason_code?: Maybe<Scalars['String']['output']>;
   enrichment_requests: Array<InvestigationEnrichmentRequest>;
   entity_type: Scalars['String']['output'];
   evidence: Array<InvestigationEvidence>;
   goal_plan?: Maybe<Scalars['JSON']['output']>;
   hypotheses: Array<InvestigationHypothesis>;
   id: Scalars['ID']['output'];
-  iteration: Scalars['Int']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   pack_id?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  plan: Array<InvestigationPlanStep>;
   policy?: Maybe<InvestigationPolicy>;
   policy_id?: Maybe<Scalars['String']['output']>;
   recommendations: Array<InvestigationRecommendation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
-  report: InvestigationRunReport;
+  report?: Maybe<Scalars['String']['output']>;
+  report_id?: Maybe<Scalars['String']['output']>;
+  report_sections: InvestigationRunReport;
+  report_sources: Array<InvestigationReportSource>;
   representative: Representative;
   runAs?: Maybe<Creator>;
   run_as_id: Scalars['String']['output'];
@@ -15123,7 +15145,7 @@ export type InvestigationRun = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   started_at?: Maybe<Scalars['DateTime']['output']>;
   status_reason?: Maybe<Scalars['String']['output']>;
-  steps: Array<InvestigationLedgerEntry>;
+  steps: Array<InvestigationStep>;
   subject?: Maybe<StixCoreObject>;
   subject_id: Scalars['String']['output'];
   subject_type: Scalars['String']['output'];
@@ -15132,6 +15154,10 @@ export type InvestigationRun = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
   workspace?: Maybe<Workspace>;
   workspace_id?: Maybe<Scalars['String']['output']>;
+  xtm_investigation_id?: Maybe<Scalars['String']['output']>;
+  xtm_investigation_ids: Array<Scalars['String']['output']>;
+  xtm_revision: Scalars['Int']['output'];
+  xtm_status?: Maybe<Scalars['String']['output']>;
 };
 
 export type InvestigationRunConnection = {
@@ -15170,6 +15196,7 @@ export type InvestigationRunEnrichmentRequestResult = {
   __typename?: 'InvestigationRunEnrichmentRequestResult';
   accepted: Array<InvestigationRunEnrichmentAccepted>;
   rejected: Array<InvestigationRunEnrichmentRejected>;
+  wave_id?: Maybe<Scalars['ID']['output']>;
 };
 
 export type InvestigationRunFeedbackInput = {
@@ -15181,15 +15208,12 @@ export type InvestigationRunFeedbackInput = {
 
 export enum InvestigationRunPhase {
   AwaitingValidation = 'awaiting_validation',
-  Concluding = 'concluding',
   Done = 'done',
-  Enriching = 'enriching',
-  Finalizing = 'finalizing',
+  Ingesting = 'ingesting',
   Initializing = 'initializing',
-  Iterating = 'iterating',
-  Planning = 'planning',
-  Validating = 'validating',
-  WaitingEnrichment = 'waiting_enrichment'
+  Investigating = 'investigating',
+  Starting = 'starting',
+  Validating = 'validating'
 }
 
 export type InvestigationRunReport = {
@@ -15198,6 +15222,7 @@ export type InvestigationRunReport = {
   hypotheses: Scalars['String']['output'];
   iocs: Scalars['String']['output'];
   recommendations: Scalars['String']['output'];
+  report: Scalars['String']['output'];
   timeline: Scalars['String']['output'];
 };
 
@@ -15209,14 +15234,6 @@ export enum InvestigationRunStatus {
   Planned = 'planned',
   Running = 'running'
 }
-
-export type InvestigationRunStepInput = {
-  description: Scalars['String']['input'];
-  input_ref?: InputMaybe<Scalars['String']['input']>;
-  output_ref?: InputMaybe<Scalars['String']['input']>;
-  status?: InputMaybe<InvestigationLedgerStatus>;
-  tool: Scalars['String']['input'];
-};
 
 export enum InvestigationRunTrigger {
   CaseRfiCreation = 'case_rfi_creation',
@@ -15231,6 +15248,32 @@ export enum InvestigationRunsOrdering {
   RunStatus = 'run_status',
   StartedAt = 'started_at',
   UpdatedAt = 'updated_at'
+}
+
+export type InvestigationStep = {
+  __typename?: 'InvestigationStep';
+  action?: Maybe<Scalars['String']['output']>;
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  detail_code?: Maybe<Scalars['String']['output']>;
+  detail_params?: Maybe<Scalars['JSON']['output']>;
+  evidence_count: Scalars['Int']['output'];
+  findings_count: Scalars['Int']['output'];
+  id: Scalars['String']['output'];
+  investigation_id: Scalars['String']['output'];
+  position: Scalars['Int']['output'];
+  source_name: Scalars['String']['output'];
+  started_at?: Maybe<Scalars['DateTime']['output']>;
+  status: InvestigationStepStatus;
+};
+
+export enum InvestigationStepStatus {
+  Active = 'active',
+  Completed = 'completed',
+  Degraded = 'degraded',
+  Empty = 'empty',
+  Error = 'error',
+  Pending = 'pending',
+  Skipped = 'skipped'
 }
 
 export type InvestigationTimelineEvent = {
@@ -18001,12 +18044,11 @@ export type Mutation = {
   investigationPolicyFieldPatch?: Maybe<InvestigationPolicy>;
   investigationRunAdd?: Maybe<InvestigationRun>;
   investigationRunCancel?: Maybe<InvestigationRun>;
+  investigationRunContinue?: Maybe<InvestigationRun>;
   investigationRunDelete?: Maybe<Scalars['ID']['output']>;
   investigationRunEnrichmentRequest?: Maybe<InvestigationRunEnrichmentRequestResult>;
   investigationRunFeedback?: Maybe<InvestigationRun>;
-  investigationRunHypothesesPropose?: Maybe<Array<InvestigationHypothesis>>;
   investigationRunRecommendationApply?: Maybe<InvestigationRun>;
-  investigationRunStepRecord?: Maybe<InvestigationLedgerEntry>;
   jsonMapperAdd?: Maybe<JsonMapper>;
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
   jsonMapperFieldPatch?: Maybe<JsonMapper>;
@@ -19524,12 +19566,18 @@ export type MutationInvestigationPolicyFieldPatchArgs = {
 
 
 export type MutationInvestigationRunAddArgs = {
+  caseId?: InputMaybe<Scalars['ID']['input']>;
   policyId?: InputMaybe<Scalars['ID']['input']>;
   subjectId: Scalars['ID']['input'];
 };
 
 
 export type MutationInvestigationRunCancelArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationInvestigationRunContinueArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -19551,22 +19599,10 @@ export type MutationInvestigationRunFeedbackArgs = {
 };
 
 
-export type MutationInvestigationRunHypothesesProposeArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<InvestigationHypothesisInput>;
-};
-
-
 export type MutationInvestigationRunRecommendationApplyArgs = {
   id: Scalars['ID']['input'];
   mode: InvestigationRecommendationApplyMode;
   recommendationId: Scalars['String']['input'];
-};
-
-
-export type MutationInvestigationRunStepRecordArgs = {
-  id: Scalars['ID']['input'];
-  input: InvestigationRunStepInput;
 };
 
 
@@ -25533,9 +25569,11 @@ export type Query = {
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
   investigationEnrichmentConnectors: Array<InvestigationEnrichmentConnector>;
+  investigationPacks: InvestigationPackCatalog;
   investigationPolicies?: Maybe<InvestigationPolicyConnection>;
   investigationPolicy?: Maybe<InvestigationPolicy>;
   investigationRun?: Maybe<InvestigationRun>;
+  investigationRunEnrichmentWave?: Maybe<InvestigationEnrichmentWave>;
   investigationRuns?: Maybe<InvestigationRunConnection>;
   isWorkAlive?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper?: Maybe<JsonMapper>;
@@ -27068,6 +27106,12 @@ export type QueryInvestigationPolicyArgs = {
 
 export type QueryInvestigationRunArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryInvestigationRunEnrichmentWaveArgs = {
+  id: Scalars['ID']['input'];
+  waveId: Scalars['ID']['input'];
 };
 
 
@@ -41736,25 +41780,26 @@ export type ResolversTypes = ResolversObject<{
   InvestigationAutonomousAction: InvestigationAutonomousAction;
   InvestigationBudget: ResolverTypeWrapper<InvestigationBudget>;
   InvestigationConfidenceLabel: InvestigationConfidenceLabel;
+  InvestigationDeltaObject: ResolverTypeWrapper<InvestigationDeltaObject>;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   InvestigationEnrichmentConnector: ResolverTypeWrapper<InvestigationEnrichmentConnector>;
+  InvestigationEnrichmentJob: ResolverTypeWrapper<InvestigationEnrichmentJob>;
   InvestigationEnrichmentRequest: ResolverTypeWrapper<InvestigationEnrichmentRequest>;
   InvestigationEnrichmentRequestStatus: InvestigationEnrichmentRequestStatus;
-  InvestigationEvidence: ResolverTypeWrapper<Omit<InvestigationEvidence, 'element'> & { element?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
+  InvestigationEnrichmentWave: ResolverTypeWrapper<InvestigationEnrichmentWave>;
+  InvestigationEnrichmentWaveStatus: InvestigationEnrichmentWaveStatus;
+  InvestigationEvidence: ResolverTypeWrapper<InvestigationEvidence>;
   InvestigationEvidenceCategory: InvestigationEvidenceCategory;
-  InvestigationEvidenceCell: ResolverTypeWrapper<Omit<InvestigationEvidenceCell, 'element'> & { element?: Maybe<ResolversTypes['StixObjectOrStixRelationship']> }>;
-  InvestigationEvidenceCellInput: InvestigationEvidenceCellInput;
-  InvestigationEvidenceOrigin: InvestigationEvidenceOrigin;
+  InvestigationEvidenceCell: ResolverTypeWrapper<InvestigationEvidenceCell>;
+  InvestigationEvidenceKind: InvestigationEvidenceKind;
   InvestigationFeedback: ResolverTypeWrapper<Omit<InvestigationFeedback, 'user'> & { user?: Maybe<ResolversTypes['Creator']> }>;
   InvestigationFeedbackDecision: InvestigationFeedbackDecision;
   InvestigationFeedbackItemType: InvestigationFeedbackItemType;
-  InvestigationHypothesis: ResolverTypeWrapper<Omit<InvestigationHypothesis, 'candidate' | 'evidence'> & { candidate?: Maybe<ResolversTypes['StixCoreObject']>, evidence: Array<ResolversTypes['InvestigationEvidenceCell']> }>;
-  InvestigationHypothesisInput: InvestigationHypothesisInput;
-  InvestigationLedgerEntry: ResolverTypeWrapper<InvestigationLedgerEntry>;
-  InvestigationLedgerStatus: InvestigationLedgerStatus;
-  InvestigationPlanStep: ResolverTypeWrapper<InvestigationPlanStep>;
-  InvestigationPlanStepKind: InvestigationPlanStepKind;
-  InvestigationPlanStepStatus: InvestigationPlanStepStatus;
+  InvestigationHypothesis: ResolverTypeWrapper<Omit<InvestigationHypothesis, 'candidate'> & { candidate?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  InvestigationPack: ResolverTypeWrapper<InvestigationPack>;
+  InvestigationPackCatalog: ResolverTypeWrapper<InvestigationPackCatalog>;
+  InvestigationPackChoice: ResolverTypeWrapper<InvestigationPackChoice>;
+  InvestigationPackOption: ResolverTypeWrapper<InvestigationPackOption>;
   InvestigationPoliciesOrdering: InvestigationPoliciesOrdering;
   InvestigationPolicy: ResolverTypeWrapper<BasicStoreEntityInvestigationPolicy>;
   InvestigationPolicyAddInput: InvestigationPolicyAddInput;
@@ -41765,6 +41810,7 @@ export type ResolversTypes = ResolversObject<{
   InvestigationRecommendationApplyMode: InvestigationRecommendationApplyMode;
   InvestigationRecommendationPriority: InvestigationRecommendationPriority;
   InvestigationRecommendationStatus: InvestigationRecommendationStatus;
+  InvestigationReportSource: ResolverTypeWrapper<InvestigationReportSource>;
   InvestigationRun: ResolverTypeWrapper<BasicStoreEntityInvestigationRun>;
   InvestigationRunConnection: ResolverTypeWrapper<Omit<InvestigationRunConnection, 'edges'> & { edges: Array<ResolversTypes['InvestigationRunEdge']> }>;
   InvestigationRunEdge: ResolverTypeWrapper<Omit<InvestigationRunEdge, 'node'> & { node: ResolversTypes['InvestigationRun'] }>;
@@ -41776,9 +41822,10 @@ export type ResolversTypes = ResolversObject<{
   InvestigationRunPhase: InvestigationRunPhase;
   InvestigationRunReport: ResolverTypeWrapper<InvestigationRunReport>;
   InvestigationRunStatus: InvestigationRunStatus;
-  InvestigationRunStepInput: InvestigationRunStepInput;
   InvestigationRunTrigger: InvestigationRunTrigger;
   InvestigationRunsOrdering: InvestigationRunsOrdering;
+  InvestigationStep: ResolverTypeWrapper<InvestigationStep>;
+  InvestigationStepStatus: InvestigationStepStatus;
   InvestigationTimelineEvent: ResolverTypeWrapper<InvestigationTimelineEvent>;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
@@ -42895,22 +42942,26 @@ export type ResolversParentTypes = ResolversObject<{
   InvestigationAcceptance: InvestigationAcceptance;
   InvestigationApproval: InvestigationApproval;
   InvestigationBudget: InvestigationBudget;
+  InvestigationDeltaObject: InvestigationDeltaObject;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   InvestigationEnrichmentConnector: InvestigationEnrichmentConnector;
+  InvestigationEnrichmentJob: InvestigationEnrichmentJob;
   InvestigationEnrichmentRequest: InvestigationEnrichmentRequest;
-  InvestigationEvidence: Omit<InvestigationEvidence, 'element'> & { element?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
-  InvestigationEvidenceCell: Omit<InvestigationEvidenceCell, 'element'> & { element?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
-  InvestigationEvidenceCellInput: InvestigationEvidenceCellInput;
+  InvestigationEnrichmentWave: InvestigationEnrichmentWave;
+  InvestigationEvidence: InvestigationEvidence;
+  InvestigationEvidenceCell: InvestigationEvidenceCell;
   InvestigationFeedback: Omit<InvestigationFeedback, 'user'> & { user?: Maybe<ResolversParentTypes['Creator']> };
-  InvestigationHypothesis: Omit<InvestigationHypothesis, 'candidate' | 'evidence'> & { candidate?: Maybe<ResolversParentTypes['StixCoreObject']>, evidence: Array<ResolversParentTypes['InvestigationEvidenceCell']> };
-  InvestigationHypothesisInput: InvestigationHypothesisInput;
-  InvestigationLedgerEntry: InvestigationLedgerEntry;
-  InvestigationPlanStep: InvestigationPlanStep;
+  InvestigationHypothesis: Omit<InvestigationHypothesis, 'candidate'> & { candidate?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  InvestigationPack: InvestigationPack;
+  InvestigationPackCatalog: InvestigationPackCatalog;
+  InvestigationPackChoice: InvestigationPackChoice;
+  InvestigationPackOption: InvestigationPackOption;
   InvestigationPolicy: BasicStoreEntityInvestigationPolicy;
   InvestigationPolicyAddInput: InvestigationPolicyAddInput;
   InvestigationPolicyConnection: Omit<InvestigationPolicyConnection, 'edges'> & { edges: Array<ResolversParentTypes['InvestigationPolicyEdge']> };
   InvestigationPolicyEdge: Omit<InvestigationPolicyEdge, 'node'> & { node: ResolversParentTypes['InvestigationPolicy'] };
   InvestigationRecommendation: Omit<InvestigationRecommendation, 'courseOfAction'> & { courseOfAction?: Maybe<ResolversParentTypes['CourseOfAction']> };
+  InvestigationReportSource: InvestigationReportSource;
   InvestigationRun: BasicStoreEntityInvestigationRun;
   InvestigationRunConnection: Omit<InvestigationRunConnection, 'edges'> & { edges: Array<ResolversParentTypes['InvestigationRunEdge']> };
   InvestigationRunEdge: Omit<InvestigationRunEdge, 'node'> & { node: ResolversParentTypes['InvestigationRun'] };
@@ -42920,7 +42971,7 @@ export type ResolversParentTypes = ResolversObject<{
   InvestigationRunEnrichmentRequestResult: InvestigationRunEnrichmentRequestResult;
   InvestigationRunFeedbackInput: InvestigationRunFeedbackInput;
   InvestigationRunReport: InvestigationRunReport;
-  InvestigationRunStepInput: InvestigationRunStepInput;
+  InvestigationStep: InvestigationStep;
   InvestigationTimelineEvent: InvestigationTimelineEvent;
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
@@ -48466,11 +48517,20 @@ export type InvestigationApprovalResolvers<ContextType = any, ParentType extends
 
 export type InvestigationBudgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationBudget'] = ResolversParentTypes['InvestigationBudget']> = ResolversObject<{
   max_enrichment_jobs?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_iterations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  max_tool_calls?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   used_enrichment_jobs?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  used_iterations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   used_minutes?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  used_tool_calls?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type InvestigationDeltaObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationDeltaObject'] = ResolversParentTypes['InvestigationDeltaObject']> = ResolversObject<{
+  action?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  connector_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type InvestigationEnrichmentConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEnrichmentConnector'] = ResolversParentTypes['InvestigationEnrichmentConnector']> = ResolversObject<{
@@ -48480,6 +48540,15 @@ export type InvestigationEnrichmentConnectorResolvers<ContextType = any, ParentT
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type InvestigationEnrichmentJobResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEnrichmentJob'] = ResolversParentTypes['InvestigationEnrichmentJob']> = ResolversObject<{
+  connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  connector_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type InvestigationEnrichmentRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEnrichmentRequest'] = ResolversParentTypes['InvestigationEnrichmentRequest']> = ResolversObject<{
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48487,28 +48556,38 @@ export type InvestigationEnrichmentRequestResolvers<ContextType = any, ParentTyp
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  iteration?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   requested_by?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['InvestigationEnrichmentRequestStatus'], ParentType, ContextType>;
+  wave_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
+export type InvestigationEnrichmentWaveResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEnrichmentWave'] = ResolversParentTypes['InvestigationEnrichmentWave']> = ResolversObject<{
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  delta?: Resolver<Array<ResolversTypes['InvestigationDeltaObject']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  jobs?: Resolver<Array<ResolversTypes['InvestigationEnrichmentJob']>, ParentType, ContextType>;
+  requested_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['InvestigationEnrichmentWaveStatus'], ParentType, ContextType>;
+}>;
+
 export type InvestigationEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEvidence'] = ResolversParentTypes['InvestigationEvidence']> = ResolversObject<{
-  element?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   in_draft?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  origin?: Resolver<ResolversTypes['InvestigationEvidenceOrigin'], ParentType, ContextType>;
-  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['InvestigationEvidenceKind'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  n?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  opencti_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type InvestigationEvidenceCellResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEvidenceCell'] = ResolversParentTypes['InvestigationEvidenceCell']> = ResolversObject<{
   category?: Resolver<ResolversTypes['InvestigationEvidenceCategory'], ParentType, ContextType>;
   consistency?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   diagnosticity?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  element?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
   evidence_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   evidence_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   evidence_standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48544,28 +48623,35 @@ export type InvestigationHypothesisResolvers<ContextType = any, ParentType exten
   score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
-export type InvestigationLedgerEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationLedgerEntry'] = ResolversParentTypes['InvestigationLedgerEntry']> = ResolversObject<{
-  cost_units?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  duration_ms?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  input_ref?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  iteration?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  output_ref?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['InvestigationLedgerStatus'], ParentType, ContextType>;
-  step_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  tool?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type InvestigationPackResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPack'] = ResolversParentTypes['InvestigationPack']> = ResolversObject<{
+  applicable_source_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  max_iterations?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  options?: Resolver<Array<ResolversTypes['InvestigationPackOption']>, ParentType, ContextType>;
+  recommended?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  total_source_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
-export type InvestigationPlanStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPlanStep'] = ResolversParentTypes['InvestigationPlanStep']> = ResolversObject<{
-  approval_required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  kind?: Resolver<ResolversTypes['InvestigationPlanStepKind'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['InvestigationPlanStepStatus'], ParentType, ContextType>;
+export type InvestigationPackCatalogResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPackCatalog'] = ResolversParentTypes['InvestigationPackCatalog']> = ResolversObject<{
+  available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  packs?: Resolver<Array<ResolversTypes['InvestigationPack']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type InvestigationPackChoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPackChoice'] = ResolversParentTypes['InvestigationPackChoice']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type InvestigationPackOptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPackOption'] = ResolversParentTypes['InvestigationPackOption']> = ResolversObject<{
+  choices?: Resolver<Array<ResolversTypes['InvestigationPackChoice']>, ParentType, ContextType>;
+  default?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type InvestigationPolicyResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationPolicy'] = ResolversParentTypes['InvestigationPolicy']> = ResolversObject<{
@@ -48584,11 +48670,12 @@ export type InvestigationPolicyResolvers<ContextType = any, ParentType extends R
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_default?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   max_enrichment_jobs?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_iterations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  max_tool_calls?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pack_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pack_options?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -48625,12 +48712,19 @@ export type InvestigationRecommendationResolvers<ContextType = any, ParentType e
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type InvestigationReportSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationReportSource'] = ResolversParentTypes['InvestigationReportSource']> = ResolversObject<{
+  href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  n?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type InvestigationRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationRun'] = ResolversParentTypes['InvestigationRun']> = ResolversObject<{
   acceptance?: Resolver<ResolversTypes['InvestigationAcceptance'], ParentType, ContextType>;
   agent_slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   analyst_feedback?: Resolver<Array<ResolversTypes['InvestigationFeedback']>, ParentType, ContextType>;
   approvals?: Resolver<Array<ResolversTypes['InvestigationApproval']>, ParentType, ContextType>;
   budget?: Resolver<ResolversTypes['InvestigationBudget'], ParentType, ContextType>;
+  can_continue?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   case?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType>;
   case_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48638,24 +48732,26 @@ export type InvestigationRunResolvers<ContextType = any, ParentType extends Reso
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   draft?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType>;
   draft_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  end_reason_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enrichment_requests?: Resolver<Array<ResolversTypes['InvestigationEnrichmentRequest']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   evidence?: Resolver<Array<ResolversTypes['InvestigationEvidence']>, ParentType, ContextType>;
   goal_plan?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   hypotheses?: Resolver<Array<ResolversTypes['InvestigationHypothesis']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  iteration?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   pack_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  plan?: Resolver<Array<ResolversTypes['InvestigationPlanStep']>, ParentType, ContextType>;
   policy?: Resolver<Maybe<ResolversTypes['InvestigationPolicy']>, ParentType, ContextType>;
   policy_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   recommendations?: Resolver<Array<ResolversTypes['InvestigationRecommendation']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  report?: Resolver<ResolversTypes['InvestigationRunReport'], ParentType, ContextType>;
+  report?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  report_sections?: Resolver<ResolversTypes['InvestigationRunReport'], ParentType, ContextType>;
+  report_sources?: Resolver<Array<ResolversTypes['InvestigationReportSource']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   runAs?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   run_as_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48665,7 +48761,7 @@ export type InvestigationRunResolvers<ContextType = any, ParentType extends Reso
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   status_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  steps?: Resolver<Array<ResolversTypes['InvestigationLedgerEntry']>, ParentType, ContextType>;
+  steps?: Resolver<Array<ResolversTypes['InvestigationStep']>, ParentType, ContextType>;
   subject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   subject_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subject_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48674,6 +48770,10 @@ export type InvestigationRunResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   workspace_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  xtm_investigation_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  xtm_investigation_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  xtm_revision?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  xtm_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -48702,6 +48802,7 @@ export type InvestigationRunEnrichmentRejectedResolvers<ContextType = any, Paren
 export type InvestigationRunEnrichmentRequestResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationRunEnrichmentRequestResult'] = ResolversParentTypes['InvestigationRunEnrichmentRequestResult']> = ResolversObject<{
   accepted?: Resolver<Array<ResolversTypes['InvestigationRunEnrichmentAccepted']>, ParentType, ContextType>;
   rejected?: Resolver<Array<ResolversTypes['InvestigationRunEnrichmentRejected']>, ParentType, ContextType>;
+  wave_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
 }>;
 
 export type InvestigationRunReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationRunReport'] = ResolversParentTypes['InvestigationRunReport']> = ResolversObject<{
@@ -48709,7 +48810,23 @@ export type InvestigationRunReportResolvers<ContextType = any, ParentType extend
   hypotheses?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   iocs?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   recommendations?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  report?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   timeline?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type InvestigationStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationStep'] = ResolversParentTypes['InvestigationStep']> = ResolversObject<{
+  action?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  detail_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  detail_params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  evidence_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  findings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  investigation_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  position?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['InvestigationStepStatus'], ParentType, ContextType>;
 }>;
 
 export type InvestigationTimelineEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationTimelineEvent'] = ResolversParentTypes['InvestigationTimelineEvent']> = ResolversObject<{
@@ -49958,12 +50075,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   investigationPolicyFieldPatch?: Resolver<Maybe<ResolversTypes['InvestigationPolicy']>, ParentType, ContextType, RequireFields<MutationInvestigationPolicyFieldPatchArgs, 'id' | 'input'>>;
   investigationRunAdd?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<MutationInvestigationRunAddArgs, 'subjectId'>>;
   investigationRunCancel?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<MutationInvestigationRunCancelArgs, 'id'>>;
+  investigationRunContinue?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<MutationInvestigationRunContinueArgs, 'id'>>;
   investigationRunDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationInvestigationRunDeleteArgs, 'id'>>;
   investigationRunEnrichmentRequest?: Resolver<Maybe<ResolversTypes['InvestigationRunEnrichmentRequestResult']>, ParentType, ContextType, RequireFields<MutationInvestigationRunEnrichmentRequestArgs, 'id' | 'input'>>;
   investigationRunFeedback?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<MutationInvestigationRunFeedbackArgs, 'id' | 'input'>>;
-  investigationRunHypothesesPropose?: Resolver<Maybe<Array<ResolversTypes['InvestigationHypothesis']>>, ParentType, ContextType, RequireFields<MutationInvestigationRunHypothesesProposeArgs, 'id' | 'input'>>;
   investigationRunRecommendationApply?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<MutationInvestigationRunRecommendationApplyArgs, 'id' | 'mode' | 'recommendationId'>>;
-  investigationRunStepRecord?: Resolver<Maybe<ResolversTypes['InvestigationLedgerEntry']>, ParentType, ContextType, RequireFields<MutationInvestigationRunStepRecordArgs, 'id' | 'input'>>;
   jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
   jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
@@ -51842,9 +51958,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   investigationEnrichmentConnectors?: Resolver<Array<ResolversTypes['InvestigationEnrichmentConnector']>, ParentType, ContextType>;
+  investigationPacks?: Resolver<ResolversTypes['InvestigationPackCatalog'], ParentType, ContextType>;
   investigationPolicies?: Resolver<Maybe<ResolversTypes['InvestigationPolicyConnection']>, ParentType, ContextType, Partial<QueryInvestigationPoliciesArgs>>;
   investigationPolicy?: Resolver<Maybe<ResolversTypes['InvestigationPolicy']>, ParentType, ContextType, RequireFields<QueryInvestigationPolicyArgs, 'id'>>;
   investigationRun?: Resolver<Maybe<ResolversTypes['InvestigationRun']>, ParentType, ContextType, RequireFields<QueryInvestigationRunArgs, 'id'>>;
+  investigationRunEnrichmentWave?: Resolver<Maybe<ResolversTypes['InvestigationEnrichmentWave']>, ParentType, ContextType, RequireFields<QueryInvestigationRunEnrichmentWaveArgs, 'id' | 'waveId'>>;
   investigationRuns?: Resolver<Maybe<ResolversTypes['InvestigationRunConnection']>, ParentType, ContextType, Partial<QueryInvestigationRunsArgs>>;
   isWorkAlive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsWorkAliveArgs, 'id'>>;
   jsonMapper?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<QueryJsonMapperArgs, 'id'>>;
@@ -56241,18 +56359,24 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   InvestigationAcceptance?: InvestigationAcceptanceResolvers<ContextType>;
   InvestigationApproval?: InvestigationApprovalResolvers<ContextType>;
   InvestigationBudget?: InvestigationBudgetResolvers<ContextType>;
+  InvestigationDeltaObject?: InvestigationDeltaObjectResolvers<ContextType>;
   InvestigationEnrichmentConnector?: InvestigationEnrichmentConnectorResolvers<ContextType>;
+  InvestigationEnrichmentJob?: InvestigationEnrichmentJobResolvers<ContextType>;
   InvestigationEnrichmentRequest?: InvestigationEnrichmentRequestResolvers<ContextType>;
+  InvestigationEnrichmentWave?: InvestigationEnrichmentWaveResolvers<ContextType>;
   InvestigationEvidence?: InvestigationEvidenceResolvers<ContextType>;
   InvestigationEvidenceCell?: InvestigationEvidenceCellResolvers<ContextType>;
   InvestigationFeedback?: InvestigationFeedbackResolvers<ContextType>;
   InvestigationHypothesis?: InvestigationHypothesisResolvers<ContextType>;
-  InvestigationLedgerEntry?: InvestigationLedgerEntryResolvers<ContextType>;
-  InvestigationPlanStep?: InvestigationPlanStepResolvers<ContextType>;
+  InvestigationPack?: InvestigationPackResolvers<ContextType>;
+  InvestigationPackCatalog?: InvestigationPackCatalogResolvers<ContextType>;
+  InvestigationPackChoice?: InvestigationPackChoiceResolvers<ContextType>;
+  InvestigationPackOption?: InvestigationPackOptionResolvers<ContextType>;
   InvestigationPolicy?: InvestigationPolicyResolvers<ContextType>;
   InvestigationPolicyConnection?: InvestigationPolicyConnectionResolvers<ContextType>;
   InvestigationPolicyEdge?: InvestigationPolicyEdgeResolvers<ContextType>;
   InvestigationRecommendation?: InvestigationRecommendationResolvers<ContextType>;
+  InvestigationReportSource?: InvestigationReportSourceResolvers<ContextType>;
   InvestigationRun?: InvestigationRunResolvers<ContextType>;
   InvestigationRunConnection?: InvestigationRunConnectionResolvers<ContextType>;
   InvestigationRunEdge?: InvestigationRunEdgeResolvers<ContextType>;
@@ -56260,6 +56384,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   InvestigationRunEnrichmentRejected?: InvestigationRunEnrichmentRejectedResolvers<ContextType>;
   InvestigationRunEnrichmentRequestResult?: InvestigationRunEnrichmentRequestResultResolvers<ContextType>;
   InvestigationRunReport?: InvestigationRunReportResolvers<ContextType>;
+  InvestigationStep?: InvestigationStepResolvers<ContextType>;
   InvestigationTimelineEvent?: InvestigationTimelineEventResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   JsonAttributeBasedOn?: JsonAttributeBasedOnResolvers<ContextType>;

@@ -28,12 +28,14 @@ import {
   addInvestigationRun,
   addInvestigationRunFeedback,
   applyInvestigationRecommendation,
+  canContinueInvestigationRun,
   cancelInvestigationRun,
+  continueInvestigationRun,
   deleteInvestigationRun,
+  findInvestigationPackCatalog,
   findInvestigationRunById,
+  findInvestigationRunEnrichmentWave,
   findInvestigationRunsPaginated,
-  proposeInvestigationHypotheses,
-  recordInvestigationStep,
   requestInvestigationEnrichment,
 } from './investigationRun-domain';
 import {
@@ -60,6 +62,8 @@ const investigationRunResolvers: Resolvers = {
   Query: {
     investigationRun: (_, { id }, context) => findInvestigationRunById(context, context.user, id),
     investigationRuns: (_, args, context) => findInvestigationRunsPaginated(context, context.user, args),
+    investigationRunEnrichmentWave: (_, { id, waveId }, context) => findInvestigationRunEnrichmentWave(context, context.user, id, waveId),
+    investigationPacks: (_, __, context) => findInvestigationPackCatalog(context, context.user),
     investigationPolicy: (_, { id }, context) => findInvestigationPolicyById(context, context.user, id),
     investigationPolicies: (_, args, context) => findInvestigationPoliciesPaginated(context, context.user, args),
     investigationEnrichmentConnectors: (_, __, context) => listInvestigationEnrichmentConnectors(context, context.user),
@@ -78,9 +82,9 @@ const investigationRunResolvers: Resolvers = {
     draft: (run, _, context) => (run.draft_id ? findDraftById(context, context.user, run.draft_id) : null),
     policy: (run, _, context) => (run.policy_id ? internalLoadById(context, context.user, run.policy_id, { type: ENTITY_TYPE_INVESTIGATION_POLICY }) : null) as any,
     runAs: (run, _, context) => context.batch.creatorBatchLoader.load(run.run_as_id),
-    iteration: (run) => run.iteration ?? 0,
-    plan: (run) => run.plan ?? [],
-    steps: (run) => [...(run.steps ?? [])].reverse(),
+    xtm_investigation_ids: (run) => run.xtm_investigation_ids ?? [],
+    xtm_revision: (run) => run.xtm_revision ?? -1,
+    steps: (run) => run.steps ?? [],
     evidence: (run) => run.evidence ?? [],
     hypotheses: (run) => [...(run.hypotheses ?? [])].sort((a, b) => a.rank - b.rank),
     timeline: (run) => run.timeline ?? [],
@@ -88,18 +92,15 @@ const investigationRunResolvers: Resolvers = {
     analyst_feedback: (run) => run.analyst_feedback ?? [],
     approvals: (run) => run.approvals ?? [],
     enrichment_requests: (run) => run.enrichment_requests ?? [],
+    report_sources: (run) => run.report_sources ?? [],
+    report_id: (run) => run.outputs?.report_id ?? null,
+    can_continue: (run) => canContinueInvestigationRun(run),
     budget: (run) => ({ ...run.budget, used_minutes: computeUsedMinutes(run, new Date()) }),
     acceptance: (run) => {
       const acceptance = computeAcceptance(run.analyst_feedback ?? []);
       return { ...acceptance, rate: acceptanceRate(acceptance) };
     },
-    report: (run) => buildInvestigationReportSections(run),
-  },
-  InvestigationEvidence: {
-    element: (evidence, _, context) => loadElement(context, evidence.id, evidence.entity_type),
-  },
-  InvestigationEvidenceCell: {
-    element: (cell, _, context) => loadElement(context, cell.evidence_id, cell.evidence_type),
+    report_sections: (run) => buildInvestigationReportSections(run),
   },
   InvestigationHypothesis: {
     candidate: (hypothesis, _, context) => loadElement(context, hypothesis.candidate_id, hypothesis.candidate_type),
@@ -133,14 +134,13 @@ const investigationRunResolvers: Resolvers = {
   Feedback: { latestInvestigationRun: (entity, _, context) => latestRun(entity, context) },
   Incident: { latestInvestigationRun: (entity, _, context) => latestRun(entity, context) },
   Mutation: {
-    investigationRunAdd: (_, { subjectId, policyId }, context) => addInvestigationRun(context, context.user, subjectId, policyId),
+    investigationRunAdd: (_, { subjectId, policyId, caseId }, context) => addInvestigationRun(context, context.user, subjectId, policyId, { caseId }),
     investigationRunCancel: (_, { id }, context) => cancelInvestigationRun(context, context.user, id),
+    investigationRunContinue: (_, { id }, context) => continueInvestigationRun(context, context.user, id),
     investigationRunDelete: (_, { id }, context) => deleteInvestigationRun(context, context.user, id),
     investigationRunFeedback: (_, { id, input }, context) => addInvestigationRunFeedback(context, context.user, id, input),
     investigationRunRecommendationApply: (_, { id, recommendationId, mode }, context) => applyInvestigationRecommendation(context, context.user, id, recommendationId, mode),
     investigationRunEnrichmentRequest: (_, { id, input }, context) => requestInvestigationEnrichment(context, context.user, id, input),
-    investigationRunStepRecord: (_, { id, input }, context) => recordInvestigationStep(context, context.user, id, input),
-    investigationRunHypothesesPropose: (_, { id, input }, context) => proposeInvestigationHypotheses(context, context.user, id, input),
     investigationPolicyAdd: (_, { input }, context) => addInvestigationPolicy(context, context.user, input),
     investigationPolicyFieldPatch: (_, { id, input }, context) => editInvestigationPolicy(context, context.user, id, input),
     investigationPolicyDelete: (_, { id }, context) => deleteInvestigationPolicy(context, context.user, id),

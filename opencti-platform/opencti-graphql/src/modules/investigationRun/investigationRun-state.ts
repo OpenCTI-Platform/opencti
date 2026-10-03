@@ -17,13 +17,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // gates, timeline reconstruction, auto-approval and acceptance accounting.
 // The manager and the domain apply them; nothing here touches the database.
 
-import { v4 as uuidv4 } from 'uuid';
 import {
   InvestigationAutonomousAction,
   InvestigationEnrichmentRequestStatus,
   InvestigationFeedbackDecision,
+  InvestigationEnrichmentWaveStatus,
   InvestigationFeedbackItemType,
-  InvestigationLedgerStatus,
   InvestigationRunPhase,
   InvestigationRunStatus,
 } from '../../generated/graphql';
@@ -33,13 +32,13 @@ import {
   type BasicStoreEntityInvestigationRun,
   type InvestigationAcceptance,
   type InvestigationBudget,
+  type InvestigationEnrichmentRequest,
   type InvestigationFeedback,
-  type InvestigationLedgerEntry,
   type InvestigationTimelineEvent,
 } from './investigationRun-types';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../schema/stixDomainObject';
 
-// Longest wait for an enrichment wave before the run moves on with what it has.
+// Longest wait for an enrichment job before it counts as timed out.
 export const ENRICHMENT_WAVE_TIMEOUT_MS = 10 * 60 * 1000;
 // Longest wait for the validation work of an approved draft.
 export const VALIDATION_TIMEOUT_MS = 30 * 60 * 1000;
@@ -70,7 +69,7 @@ export const remainingMinutes = (run: BasicStoreEntityInvestigationRun, now: Dat
 };
 
 export const isBudgetExhausted = (run: BasicStoreEntityInvestigationRun, now: Date): boolean => {
-  return run.budget.used_tool_calls >= run.budget.max_tool_calls || remainingMinutes(run, now) <= 0;
+  return remainingMinutes(run, now) <= 0;
 };
 
 export const remainingEnrichmentJobs = (run: BasicStoreEntityInvestigationRun): number => {
@@ -79,11 +78,11 @@ export const remainingEnrichmentJobs = (run: BasicStoreEntityInvestigationRun): 
   return Math.max(0, run.budget.max_enrichment_jobs - run.budget.used_enrichment_jobs - reserved);
 };
 
-export const buildBudget = (policy: Pick<BasicStoreEntityInvestigationPolicy, 'max_tool_calls' | 'max_enrichment_jobs' | 'max_minutes'>): InvestigationBudget => ({
-  max_tool_calls: policy.max_tool_calls,
+export const buildBudget = (policy: Pick<BasicStoreEntityInvestigationPolicy, 'max_iterations' | 'max_enrichment_jobs' | 'max_minutes'>): InvestigationBudget => ({
+  max_iterations: policy.max_iterations,
   max_enrichment_jobs: policy.max_enrichment_jobs,
   max_minutes: policy.max_minutes,
-  used_tool_calls: 0,
+  used_iterations: 0,
   used_enrichment_jobs: 0,
   used_minutes: 0,
 });
@@ -145,30 +144,35 @@ export const isEnrichmentRejection = (value: InvestigationEnrichmentRequestStatu
   return !Object.values(InvestigationEnrichmentRequestStatus).includes(value as InvestigationEnrichmentRequestStatus);
 };
 
-export const buildLedgerEntry = (
-  run: Pick<BasicStoreEntityInvestigationRun, 'iteration'>,
-  entry: Partial<InvestigationLedgerEntry> & Pick<InvestigationLedgerEntry, 'tool' | 'description'>,
-  now: Date,
-): InvestigationLedgerEntry => ({
-  id: uuidv4(),
-  step_id: entry.step_id ?? null,
-  iteration: run.iteration,
-  tool: entry.tool,
-  description: entry.description.slice(0, INVESTIGATION_LIMITS.textLength),
-  input_ref: entry.input_ref ?? null,
-  output_ref: entry.output_ref ?? null,
-  status: entry.status ?? InvestigationLedgerStatus.Done,
-  started_at: entry.started_at ?? now.toISOString(),
-  duration_ms: Math.max(0, Math.round(entry.duration_ms ?? 0)),
-  cost_units: Math.max(0, Math.round(entry.cost_units ?? 0)),
-  work_id: entry.work_id ?? null,
-  error: entry.error ? entry.error.slice(0, INVESTIGATION_LIMITS.textLength) : null,
-});
+const TERMINAL_REQUEST_STATUSES: InvestigationEnrichmentRequestStatus[] = [
+  InvestigationEnrichmentRequestStatus.Completed,
+  InvestigationEnrichmentRequestStatus.Failed,
+  InvestigationEnrichmentRequestStatus.Rejected,
+  InvestigationEnrichmentRequestStatus.Timeout,
+  InvestigationEnrichmentRequestStatus.Skipped,
+];
 
-// Append ledger entries, keeping the most recent ones within the cap.
-export const appendLedger = (steps: InvestigationLedgerEntry[], entries: InvestigationLedgerEntry[]) => {
-  const all = [...steps, ...entries];
-  return all.length > INVESTIGATION_LIMITS.ledgerEntries ? all.slice(all.length - INVESTIGATION_LIMITS.ledgerEntries) : all;
+export const isTerminalRequest = (request: Pick<InvestigationEnrichmentRequest, 'status'>) => TERMINAL_REQUEST_STATUSES.includes(request.status);
+
+/**
+ * Status of an enrichment wave from the status of its jobs: still queued or
+ * running, held for an approval, or ended (completed, partial, rejected,
+ * timed out). A wave with no job at all was rejected as a whole.
+ */
+export const computeWaveStatus = (requests: Array<Pick<InvestigationEnrichmentRequest, 'status'>>): InvestigationEnrichmentWaveStatus => {
+  if (requests.length === 0) return InvestigationEnrichmentWaveStatus.Rejected;
+  const count = (status: InvestigationEnrichmentRequestStatus) => requests.filter((request) => request.status === status).length;
+  if (count(InvestigationEnrichmentRequestStatus.Dispatched) > 0) return InvestigationEnrichmentWaveStatus.Running;
+  if (count(InvestigationEnrichmentRequestStatus.Queued) > 0) return InvestigationEnrichmentWaveStatus.Queued;
+  const completed = count(InvestigationEnrichmentRequestStatus.Completed);
+  if (count(InvestigationEnrichmentRequestStatus.AwaitingApproval) > 0) {
+    return completed > 0 ? InvestigationEnrichmentWaveStatus.Partial : InvestigationEnrichmentWaveStatus.AwaitingApproval;
+  }
+  if (completed === requests.length) return InvestigationEnrichmentWaveStatus.Completed;
+  if (completed > 0) return InvestigationEnrichmentWaveStatus.Partial;
+  if (count(InvestigationEnrichmentRequestStatus.Rejected) === requests.length) return InvestigationEnrichmentWaveStatus.Rejected;
+  if (count(InvestigationEnrichmentRequestStatus.Timeout) > 0) return InvestigationEnrichmentWaveStatus.Timeout;
+  return InvestigationEnrichmentWaveStatus.Partial;
 };
 
 export interface TimelineSource {

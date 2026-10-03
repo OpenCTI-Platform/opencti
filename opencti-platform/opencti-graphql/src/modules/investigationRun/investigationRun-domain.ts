@@ -21,10 +21,8 @@ import {
   InvestigationApprovalKind,
   InvestigationApprovalStatus,
   InvestigationEnrichmentRequestStatus,
-  InvestigationEvidenceOrigin,
   InvestigationFeedbackDecision,
   InvestigationFeedbackItemType,
-  InvestigationLedgerStatus,
   InvestigationRecommendationActionKind,
   InvestigationRecommendationApplyMode,
   InvestigationRecommendationStatus,
@@ -32,10 +30,8 @@ import {
   InvestigationRunStatus,
   InvestigationRunTrigger,
   OrderingMode,
-  type InvestigationHypothesisInput,
   type InvestigationRunEnrichmentRequestInput,
   type InvestigationRunFeedbackInput,
-  type InvestigationRunStepInput,
   type QueryInvestigationRunsArgs,
 } from '../../generated/graphql';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -63,36 +59,37 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
 import {
   ACTIVE_RUN_STATUSES,
+  EMPTY_OUTPUTS,
+  ENGINE_NOT_CONFIGURED,
   ENTITY_TYPE_INVESTIGATION_RUN,
   INVESTIGATION_CASE_SUBJECT_TYPES,
   INVESTIGATION_DEFAULT_AGENT_SLUG,
   INVESTIGATION_LIMITS,
   INVESTIGATION_SUBJECT_TYPES,
+  INVESTIGATION_TAB_SUBJECT_TYPES,
   TERMINAL_RUN_STATUSES,
   type BasicStoreEntityInvestigationPolicy,
   type BasicStoreEntityInvestigationRun,
   type InvestigationApproval,
   type InvestigationEnrichmentRequest,
-  type InvestigationEvidence,
+  type InvestigationEnrichmentWave,
   type InvestigationFeedback,
   type InvestigationRecommendation,
   type StoreEntityInvestigationRun,
 } from './investigationRun-types';
 import { applyInvestigationPolicyAcceptanceDelta, getDefaultInvestigationPolicy, loadInvestigationPolicy } from './investigationPolicy-domain';
 import {
-  appendLedger,
   buildBudget,
-  buildLedgerEntry,
+  computeWaveStatus,
   evaluateEnrichmentRequest,
   feedbackCounterDelta,
   isEnrichmentRejection,
+  remainingMinutes,
   statusTransition,
   upsertFeedback,
 } from './investigationRun-state';
-import { groundHypotheses, type AllowedIds } from './investigationRun-agent';
-import { scoreAchMatrix, type AchEvidenceMeta } from './investigationRun-ach';
-import { pushInvestigationFeedback } from './investigationRun-xtm';
-import { ATTRIBUTION_CANDIDATE_TYPES, evidenceFromElement, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
+import { markingIdsOf, organizationIdsOf } from './investigationRun-utils';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
 
@@ -225,6 +222,9 @@ export interface InvestigationRunAddOptions {
   trigger?: InvestigationRunTrigger;
   // Identity the run acts as when it is not the caller (playbooks, hooks).
   runAsUserId?: string | null;
+  // The case an indicator or an observable is investigated in; without one,
+  // a new Case-Incident is created in the run's Draft.
+  caseId?: string | null;
 }
 
 export const findActiveInvestigationRunForSubject = async (context: AuthContext, subjectId: string) => {
@@ -287,33 +287,54 @@ export const addInvestigationRun = async (
   }
   const isCase = INVESTIGATION_CASE_SUBJECT_TYPES.includes(subject.entity_type);
   const subjectName = extractEntityRepresentativeName(subject) || subject.internal_id;
-  const subjectEvidence: InvestigationEvidence = { ...evidenceFromElement(subject), origin: InvestigationEvidenceOrigin.Subject };
+  // Indicators and observables are investigated inside a case, so the results
+  // always live in an Autopilot tab.
+  let targetCase: BasicStoreEntity | null = null;
+  if (!isCase && opts.caseId) {
+    targetCase = await internalLoadById<BasicStoreEntity>(liveContext, runUser, opts.caseId, { type: ENTITY_TYPE_CONTAINER_CASE });
+    const callerSeesCase = targetCase && (runUser.id === user.id || await internalLoadById(liveContext, user, targetCase.internal_id));
+    if (!targetCase || !callerSeesCase) {
+      throw FunctionalError('The case of the investigation cannot be found', { caseId: opts.caseId });
+    }
+  }
+  const needsCase = !INVESTIGATION_TAB_SUBJECT_TYPES.includes(subject.entity_type);
+  let caseIds: string[] = [];
+  if (isCase) {
+    caseIds = [subject.internal_id, subject.standard_id];
+  } else if (targetCase) {
+    caseIds = [targetCase.internal_id, targetCase.standard_id];
+  }
   const runInput = {
     name: `Case Autopilot - ${subjectName}`.slice(0, 250),
     subject_id: subject.internal_id,
     subject_type: subject.entity_type,
-    case_id: isCase ? subject.internal_id : null,
-    case_ids: isCase ? [subject.internal_id, subject.standard_id] : [],
+    case_id: (isCase ? subject.internal_id : targetCase?.internal_id) ?? null,
+    case_ids: caseIds,
+    create_case: needsCase && !targetCase,
     policy_id: policy.internal_id,
     agent_slug: policy.agent_slug || INVESTIGATION_DEFAULT_AGENT_SLUG,
     pack_id: policy.pack_id || null,
+    xtm_investigation_ids: [],
+    xtm_revision: -1,
+    budget_cancelled: false,
     run_trigger: trigger,
     run_status: InvestigationRunStatus.Planned,
     run_phase: InvestigationRunPhase.Initializing,
-    iteration: 0,
     active_ms: 0,
-    agent_failures: 0,
+    engine_failures: 0,
     run_as_id: runUser.id,
     pending_work_ids: [],
-    plan: [],
     steps: [],
-    evidence: [subjectEvidence],
+    evidence: [],
     hypotheses: [],
     timeline: [],
     recommendations: [],
     analyst_feedback: [],
     approvals: [],
     enrichment_requests: [],
+    enrichment_waves: [],
+    report_sources: [],
+    outputs: EMPTY_OUTPUTS,
     budget: buildBudget(policy),
     objectMarking: markingIdsOf(subject),
     objectOrganization: organizationIdsOf(subject),
@@ -361,6 +382,10 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   });
   if (updated.run_status === InvestigationRunStatus.Cancelled) {
     addInvestigationRunOutcomeCount(InvestigationRunStatus.Cancelled);
+    if (run.xtm_investigation_id && run.run_phase === InvestigationRunPhase.Investigating) {
+      const result = await cancelInvestigation({ id: user.id, user_email: user.user_email }, run.xtm_investigation_id);
+      if (!result.ok) logApp.warn('[CASE AUTOPILOT] Engine run not cancelled', { runId: id, failure: result.failure });
+    }
   }
   return updated;
 };
@@ -706,12 +731,12 @@ export const decideInvestigationApprovals = async (
 
 // endregion
 
-// region agent tools (called by XTM One with the run identity)
+// region engine queries (the investigation engine calls them as the run identity)
 
-const loadRunForAgent = async (context: AuthContext, user: AuthUser, id: string) => {
+const loadRunForEngine = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
   if (run.run_as_id !== user.id) {
-    throw ForbiddenAccess('Only the identity of the investigation can act for its agent');
+    throw ForbiddenAccess('Only the identity of the investigation can act for its engine');
   }
   return run;
 };
@@ -727,8 +752,15 @@ export const listPolicyEnrichmentConnectors = async (context: AuthContext, user:
   return connectors.filter((connector) => allowList.length === 0 || allowList.includes(connector.internal_id));
 };
 
+/**
+ * Enrichment jobs the engine's `opencti_enrichment` querier asks for. Each
+ * call is one wave the engine then follows with
+ * `investigationRunEnrichmentWave`. The policy allow-list, the budget and the
+ * paid-connector approvals apply; a job already asked for by this run is
+ * reused rather than run twice.
+ */
 export const requestInvestigationEnrichment = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunEnrichmentRequestInput) => {
-  const run = await loadRunForAgent(context, user, id);
+  const run = await loadRunForEngine(context, user, id);
   const policy = run.policy_id ? await loadInvestigationPolicy(outOfDraft(context), run.policy_id) : null;
   if (!policy) {
     throw FunctionalError('The policy of the investigation cannot be found', { id });
@@ -747,10 +779,12 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
   });
   const accepted: Array<{ entity_id: string; connector_id: string; status: InvestigationEnrichmentRequestStatus }> = [];
   const rejected: Array<{ entity_id: string; connector_id: string; reason: string }> = [];
+  const waveId = uuidv4();
   const now = new Date();
   await updateInvestigationRun(context, id, (current) => {
     const newRequests: InvestigationEnrichmentRequest[] = [];
     const newApprovals: InvestigationApproval[] = [];
+    const waveRequestIds: string[] = [];
     const allowedEntityIds = new Set(resolvedIds.values());
     entityIds.forEach((rawEntityId) => {
       connectorIds.forEach((connectorId) => {
@@ -764,24 +798,36 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
           connectorId,
           alreadyAccepted: 0,
         });
+        if (verdict === 'duplicate') {
+          const existing = current.enrichment_requests.find((request) => request.entity_id === entityId && request.connector_id === connectorId
+            && request.status !== InvestigationEnrichmentRequestStatus.Rejected && request.status !== InvestigationEnrichmentRequestStatus.Failed);
+          if (existing) {
+            waveRequestIds.push(existing.id);
+            accepted.push({ entity_id: rawEntityId, connector_id: connectorId, status: existing.status });
+            return;
+          }
+        }
         if (isEnrichmentRejection(verdict)) {
           rejected.push({ entity_id: rawEntityId, connector_id: connectorId, reason: verdict });
           return;
         }
         const request: InvestigationEnrichmentRequest = {
           id: uuidv4(),
+          wave_id: waveId,
           entity_id: entityId,
           connector_id: connectorId,
           connector_name: connectorNames.get(connectorId) ?? null,
           reason: input.reason?.slice(0, INVESTIGATION_LIMITS.textLength) ?? null,
           status: verdict,
-          requested_by: 'agent',
-          iteration: current.iteration,
+          requested_by: 'engine',
           work_id: null,
+          error: null,
           created_at: now.toISOString(),
+          dispatched_at: null,
           completed_at: null,
         };
         newRequests.push(request);
+        waveRequestIds.push(request.id);
         if (verdict === InvestigationEnrichmentRequestStatus.AwaitingApproval) {
           newApprovals.push({
             id: uuidv4(),
@@ -798,99 +844,95 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
         accepted.push({ entity_id: rawEntityId, connector_id: connectorId, status: verdict });
       });
     });
-    const ledgerEntry = buildLedgerEntry(current, {
-      tool: 'request_opencti_enrichment',
-      description: `${accepted.length} enrichment request(s) accepted, ${rejected.length} rejected`,
-      input_ref: entityIds.join(',').slice(0, 500),
-      cost_units: 1,
-    }, now);
+    const allRequests = [...current.enrichment_requests, ...newRequests];
+    const wave: InvestigationEnrichmentWave = {
+      id: waveId,
+      status: computeWaveStatus(allRequests.filter((request) => waveRequestIds.includes(request.id))),
+      requested_at: now.toISOString(),
+      completed_at: null,
+      request_ids: waveRequestIds,
+      delta: [],
+      delta_computed: waveRequestIds.length === 0,
+    };
     return {
-      enrichment_requests: [...current.enrichment_requests, ...newRequests],
+      enrichment_requests: allRequests,
+      enrichment_waves: [...(current.enrichment_waves ?? []), wave].slice(-INVESTIGATION_LIMITS.enrichmentWaves),
       approvals: [...current.approvals, ...newApprovals].slice(-INVESTIGATION_LIMITS.approvals),
-      steps: appendLedger(current.steps, [ledgerEntry]),
-      budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
     };
   });
-  return { accepted, rejected };
+  return { wave_id: waveId, accepted, rejected };
 };
 
-export const recordInvestigationStep = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunStepInput) => {
-  const run = await loadRunForAgent(context, user, id);
-  if (run.run_status !== InvestigationRunStatus.Running) {
-    throw FunctionalError('The investigation is not running', { id, status: run.run_status });
-  }
-  const now = new Date();
-  const entry = buildLedgerEntry(run, {
-    tool: `agent.${input.tool}`.slice(0, 200),
-    description: input.description,
-    input_ref: input.input_ref ?? null,
-    output_ref: input.output_ref ?? null,
-    status: input.status ?? InvestigationLedgerStatus.Done,
-    cost_units: 1,
-  }, now);
-  await updateInvestigationRun(context, id, (current) => ({
-    steps: appendLedger(current.steps, [entry]),
-    budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
-  }));
-  return entry;
-};
-
-/**
- * Score an ACH matrix proposed by the agent. Candidates and evidence are
- * grounded against what the identity of the run can see; the scores the
- * agent gets back are OpenCTI's, never its own.
- */
-export const proposeInvestigationHypotheses = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationHypothesisInput[]) => {
-  const run = await loadRunForAgent(context, user, id);
-  if (run.run_status !== InvestigationRunStatus.Running) {
-    throw FunctionalError('The investigation is not running', { id, status: run.run_status });
-  }
-  const citedIds = Array.from(new Set([
-    ...input.map((hypothesis) => hypothesis.candidate_id),
-    ...input.flatMap((hypothesis) => hypothesis.evidence.map((cell) => cell.evidence_id)),
-  ])).slice(0, INVESTIGATION_LIMITS.evidence);
-  const elements = await elFindByIds<BasicStoreEntity>(runContextFor(context, run), user, citedIds, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
-  const allowed: AllowedIds = {
-    evidence: new Set<string>(),
-    candidates: new Set<string>(),
-    coursesOfAction: new Set<string>(),
-    entities: new Set<string>(),
-    connectors: new Set<string>(),
-    aliases: new Map<string, string>(),
+/** One wave of enrichment jobs: their status and what they brought into the run's Draft. */
+export const findInvestigationRunEnrichmentWave = async (context: AuthContext, user: AuthUser, id: string, waveId: string) => {
+  const run = await findAccessibleRun(context, user, id);
+  const wave = (run.enrichment_waves ?? []).find((item) => item.id === waveId);
+  if (!wave) return null;
+  const jobs = run.enrichment_requests.filter((request) => wave.request_ids.includes(request.id));
+  return {
+    id: wave.id,
+    status: wave.delta_computed ? wave.status : computeWaveStatus(jobs),
+    requested_at: wave.requested_at,
+    completed_at: wave.completed_at ?? null,
+    jobs: jobs.map((job) => ({
+      connector_id: job.connector_id,
+      connector_name: job.connector_name ?? job.connector_id,
+      entity_id: job.entity_id,
+      work_id: job.work_id ?? null,
+      status: job.status,
+      error: job.error ?? null,
+    })),
+    delta: wave.delta ?? [],
   };
-  const candidateInfo = new Map<string, { name?: string | null; entity_type?: string | null; standard_id?: string | null }>();
-  const evidenceMeta = new Map<string, AchEvidenceMeta>();
-  const newEvidence: InvestigationEvidence[] = [];
-  const knownEvidence = new Set(run.evidence.map((e) => e.id));
-  elements.forEach((element) => {
-    allowed.aliases.set(element.internal_id, element.internal_id);
-    if (element.standard_id) allowed.aliases.set(element.standard_id, element.internal_id);
-    const evidence = evidenceFromElement(element, { origin: InvestigationEvidenceOrigin.Agent, draftId: run.draft_id });
-    allowed.evidence.add(element.internal_id);
-    evidenceMeta.set(element.internal_id, run.evidence.find((known) => known.id === element.internal_id) ?? evidence);
-    if (ATTRIBUTION_CANDIDATE_TYPES.includes(element.entity_type)) {
-      allowed.candidates.add(element.internal_id);
-      candidateInfo.set(element.internal_id, { name: evidence.name, entity_type: element.entity_type, standard_id: element.standard_id });
-    }
-    if (!knownEvidence.has(element.internal_id)) {
-      newEvidence.push(evidence);
-    }
-  });
-  const { hypotheses } = groundHypotheses(input as unknown[], allowed, candidateInfo);
-  const scored = scoreAchMatrix(hypotheses, evidenceMeta);
+};
+
+// endregion
+
+// region continuation and engine catalog
+
+// An analyst may continue an investigation whose engine run ended, while its
+// draft is still open: typically after approving an enrichment it held.
+export const canContinueInvestigationRun = (run: BasicStoreEntityInvestigationRun) => {
+  if (!run.xtm_investigation_id || !run.draft_id) return false;
+  const awaitingDraft = run.run_status === InvestigationRunStatus.AwaitingApproval && run.run_phase === InvestigationRunPhase.AwaitingValidation;
+  return awaitingDraft && remainingMinutes(run, new Date()) > 0;
+};
+
+export const continueInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
+  const run = await findAccessibleRun(context, user, id);
+  if (!canContinueInvestigationRun(run)) {
+    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
+  }
   const now = new Date();
-  await updateInvestigationRun(context, id, (current) => ({
-    hypotheses: scored,
-    evidence: [...current.evidence, ...newEvidence.filter((e) => !current.evidence.some((known) => known.id === e.id))].slice(0, INVESTIGATION_LIMITS.evidence),
-    steps: appendLedger(current.steps, [buildLedgerEntry(current, {
-      tool: 'propose_investigation_hypotheses',
-      description: `${scored.length} hypothesis(es) scored`,
-      output_ref: scored[0]?.candidate_id ?? null,
-      cost_units: 1,
-    }, now)]),
-    budget: { ...current.budget, used_tool_calls: current.budget.used_tool_calls + 1 },
-  }));
-  return scored;
+  const updated = await updateInvestigationRun(context, id, (current) => {
+    if (!canContinueInvestigationRun(current)) return null;
+    return {
+      ...statusTransition(current, InvestigationRunStatus.Running, InvestigationRunPhase.Starting, now, null),
+      continues_investigation_id: current.xtm_investigation_id,
+      approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending && approval.kind === InvestigationApprovalKind.DraftValidation
+        ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Investigation continued' }
+        : approval)),
+    };
+  });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `continues Case Autopilot investigation \`${run.name}\``,
+    context_data: { id: run.subject_id, entity_type: run.subject_type, input: { run_id: id, continues_investigation_id: run.xtm_investigation_id } },
+  });
+  return updated;
+};
+
+/** Whether the connected XTM One runs investigations, and the packs the caller may name in a policy. */
+export const findInvestigationPackCatalog = async (context: AuthContext, user: AuthUser) => {
+  await checkEnterpriseEdition(context);
+  const result = await listInvestigationPacks({ id: user.id, user_email: user.user_email });
+  if (!result.ok) {
+    return { available: false, reason: result.failure ?? ENGINE_NOT_CONFIGURED, packs: [] };
+  }
+  return { available: true, reason: null, packs: result.value };
 };
 
 // endregion

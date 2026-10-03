@@ -9,12 +9,11 @@ import {
 } from '../../../../src/generated/graphql';
 import {
   acceptanceRate,
-  appendLedger,
-  buildLedgerEntry,
   buildTimeline,
   canAutoApproveDraft,
   computeAcceptance,
   computeUsedMinutes,
+  computeWaveStatus,
   evaluateEnrichmentRequest,
   feedbackCounterDelta,
   isBudgetExhausted,
@@ -23,7 +22,7 @@ import {
   statusTransition,
   upsertFeedback,
 } from '../../../../src/modules/investigationRun/investigationRun-state';
-import { INVESTIGATION_LIMITS, type InvestigationFeedback } from '../../../../src/modules/investigationRun/investigationRun-types';
+import { type InvestigationFeedback } from '../../../../src/modules/investigationRun/investigationRun-types';
 import { buildPolicy, buildRun } from './investigationRun-fixtures';
 
 const NOW = new Date('2026-10-01T10:30:00.000Z');
@@ -35,9 +34,9 @@ describe('Case Autopilot budgets', () => {
     expect(computeUsedMinutes(buildRun({ active_ms: 5 * 60000, running_since: null }), NOW)).toBe(5);
   });
 
-  it('is exhausted by tool calls or time', () => {
+  it('is exhausted by time, the engine enforcing the iterations it is given', () => {
     expect(isBudgetExhausted(buildRun(), NOW)).toBe(false);
-    expect(isBudgetExhausted(buildRun({ budget: { ...buildRun().budget, used_tool_calls: 40 } }), NOW)).toBe(true);
+    expect(isBudgetExhausted(buildRun({ budget: { ...buildRun().budget, used_iterations: 10 } }), NOW)).toBe(false);
     expect(isBudgetExhausted(buildRun({ active_ms: 61 * 60000 }), NOW)).toBe(true);
   });
 
@@ -45,8 +44,8 @@ describe('Case Autopilot budgets', () => {
     const run = buildRun({
       budget: { ...buildRun().budget, max_enrichment_jobs: 3, used_enrichment_jobs: 1 },
       enrichment_requests: [
-        { id: 'q', entity_id: 'a', connector_id: 'c', status: InvestigationEnrichmentRequestStatus.Queued, requested_by: 'agent', iteration: 0, created_at: NOW.toISOString() },
-        { id: 'd', entity_id: 'b', connector_id: 'c', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'agent', iteration: 0, created_at: NOW.toISOString() },
+        { id: 'q', entity_id: 'a', connector_id: 'c', status: InvestigationEnrichmentRequestStatus.Queued, requested_by: 'engine', created_at: NOW.toISOString() },
+        { id: 'd', entity_id: 'b', connector_id: 'c', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'engine', created_at: NOW.toISOString() },
       ],
     });
     expect(remainingEnrichmentJobs(run)).toBe(1);
@@ -92,20 +91,26 @@ describe('Case Autopilot enrichment gate', () => {
     const exhausted = buildRun({ budget: { ...buildRun().budget, max_enrichment_jobs: 1, used_enrichment_jobs: 1 } });
     expect(evaluateEnrichmentRequest({ ...base, run: exhausted, entityId: 'ip-1', connectorId: 'connector-free' })).toBe('budget_exhausted');
     const duplicate = buildRun({
-      enrichment_requests: [{ id: 'x', entity_id: 'ip-1', connector_id: 'connector-free', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'agent', iteration: 0, created_at: NOW.toISOString() }],
+      enrichment_requests: [{ id: 'x', entity_id: 'ip-1', connector_id: 'connector-free', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'engine', created_at: NOW.toISOString() }],
     });
     expect(evaluateEnrichmentRequest({ ...base, run: duplicate, entityId: 'ip-1', connectorId: 'connector-free' })).toBe('duplicate');
   });
 });
 
-describe('Case Autopilot ledger and timeline', () => {
-  it('builds bounded ledger entries', () => {
-    const entry = buildLedgerEntry(buildRun({ iteration: 2 }), { tool: 'opencti.enrichment', description: 'x'.repeat(5000), duration_ms: 12.6, cost_units: 1 }, NOW);
-    expect(entry.iteration).toBe(2);
-    expect(entry.description).toHaveLength(INVESTIGATION_LIMITS.textLength);
-    expect(entry.duration_ms).toBe(13);
-    const steps = appendLedger([], Array.from({ length: INVESTIGATION_LIMITS.ledgerEntries + 10 }, () => entry));
-    expect(steps).toHaveLength(INVESTIGATION_LIMITS.ledgerEntries);
+describe('Case Autopilot enrichment waves and timeline', () => {
+  const request = (status: InvestigationEnrichmentRequestStatus) => ({ status });
+
+  it('derives the status of a wave from its jobs', () => {
+    expect(computeWaveStatus([])).toBe('rejected');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Queued)])).toBe('queued');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Queued), request(InvestigationEnrichmentRequestStatus.Dispatched)])).toBe('running');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.AwaitingApproval)])).toBe('awaiting_approval');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.AwaitingApproval), request(InvestigationEnrichmentRequestStatus.Completed)])).toBe('partial');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Completed), request(InvestigationEnrichmentRequestStatus.Completed)])).toBe('completed');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Completed), request(InvestigationEnrichmentRequestStatus.Timeout)])).toBe('partial');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Rejected)])).toBe('rejected');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Timeout), request(InvestigationEnrichmentRequestStatus.Rejected)])).toBe('timeout');
+    expect(computeWaveStatus([request(InvestigationEnrichmentRequestStatus.Failed)])).toBe('partial');
   });
 
   it('rebuilds a sorted, deduplicated timeline without placeholder dates', () => {
