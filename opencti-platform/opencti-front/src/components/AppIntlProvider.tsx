@@ -1,5 +1,5 @@
-import React, { FunctionComponent, ReactNode, useContext } from 'react';
-import { IntlProvider } from 'react-intl';
+import React, { FunctionComponent, ReactNode, useContext, useMemo } from 'react';
+import { IntlConfig, IntlProvider } from 'react-intl';
 import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -78,11 +78,23 @@ interface AppIntlProviderProps {
   children: ReactNode;
 }
 
+const onIntlError: IntlConfig['onError'] = (err) => {
+  if (err.code === 'MISSING_TRANSLATION') {
+    return;
+  }
+  throw err;
+};
+
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { locale } = useContext(UserContext);
-  const baseMessages = i18n.messages[locale] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
-  const translation = JSON.parse(settings.platform_translations ?? '{}');
-  const messages = { ...baseMessages, ...(translation[locale] ?? {}) };
+  // The private root re-renders this provider on every route change, and
+  // IntlProvider builds a new `intl` (re-rendering every consumer) whenever
+  // `messages` or `onError` is a new object.
+  const messages = useMemo(() => {
+    const baseMessages = i18n.messages[locale] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
+    const translation = JSON.parse(settings.platform_translations ?? '{}');
+    return { ...baseMessages, ...(translation[locale] ?? {}) };
+  }, [locale, settings.platform_translations]);
   moment.locale(locale);
   useDocumentLangModifier(locale.split('-')[0]);
   return (
@@ -90,12 +102,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
       locale={locale}
       key={locale}
       messages={messages}
-      onError={(err) => {
-        if (err.code === 'MISSING_TRANSLATION') {
-          return;
-        }
-        throw err;
-      }}
+      onError={onIntlError}
     >
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={localeMap[locale]}>
         {children}

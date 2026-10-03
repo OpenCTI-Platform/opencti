@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
-import { ChatPanel, ChatMode } from '@filigran/chatbot';
+import { ChatPanel, ChatMode, ApiEndpoints } from '@filigran/chatbot';
 import { useLocation, useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
@@ -14,6 +14,39 @@ import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
 
 const TOP_BAR_HEIGHT = 64;
+
+// Module level so its identity never changes: the chat panel refetches its
+// agent list whenever `apiEndpoints` is a new object.
+const CHATBOT_API_ENDPOINTS: ApiEndpoints = {
+  agents: '/agents',
+  messages: '/messages',
+  // Mid-run steering — must be set explicitly because the chatbot
+  // default ('/chat/messages/steer') assumes XTM One-style paths,
+  // while the OpenCTI proxy exposes '/messages/steer'.
+  steer: '/messages/steer',
+  // Human-in-the-loop tool approval. Setting `approve` is what makes the
+  // widget advertise `supports_tool_approval`, and that flag is a promise
+  // to answer — XTM One pauses the turn and waits indefinitely — so it
+  // must name a route the OpenCTI proxy actually serves
+  // (`httpPlatform.js`), never XTM One's own path.
+  approve: '/messages/approve',
+  // Reload recovery: `approval_required` arrives once on the SSE stream,
+  // so a refresh loses the prompt (and the `tool_call_id`s a decision has
+  // to name) while the turn goes on waiting. Read as
+  // `{apiBaseUrl}/conversations/{conversation_id}/pending-approvals`.
+  pendingApprovals: '/conversations',
+  sessions: '/sessions',
+  upload: '/upload',
+  download: '/files',
+  // Composer prompt picker and quota indicator. The chatbot defaults
+  // ('/chat/prompts', '/chat/quota') are XTM One-style paths the proxy
+  // does not serve, which left both affordances hidden.
+  prompts: '/prompts',
+  quota: '/quota',
+  // Persisted thumbs rating of an answer, sent as POST / DELETE
+  // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
+  feedback: '/conversations',
+};
 
 interface AskArianePanelProps {
   mode: ChatMode;
@@ -69,28 +102,36 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     + topBannerHeight
     + settingsMessagesBannerHeight;
 
+  // Every object and callback handed to `ChatPanel` must keep its identity
+  // across renders: the panel memoizes its message rows and keys its fetches
+  // on them (a new `requestHeaders` downloads every host-relative image again).
   const firstName = me.user_email?.split('@')[0] ?? 'User';
+  const user = useMemo(() => ({ firstName }), [firstName]);
 
   const accentColor = theme.palette.ai?.main ?? '#7b5cff';
 
-  const logoIcon = (
+  const logoIcon = useMemo(() => (
     <FiligranIcon
       icon={LogoXtmOneIcon}
       size="small"
       style={{ color: 'inherit' }}
     />
-  );
+  ), []);
 
   const isDarkMode = theme.palette.mode === 'dark';
 
-  const promptSuggestions = [
+  // `t_i18n` is a new function on every render; `intl` is what it reads.
+  const promptSuggestions = useMemo(() => [
     t_i18n('What are the latest threats?'),
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
-  ];
+  ], [intl]);
 
   const draftId = me.draftContext?.id;
-  const requestHeaders = draftId ? { 'opencti-draft-id': draftId } : undefined;
+  const requestHeaders = useMemo(
+    () => (draftId ? { 'opencti-draft-id': draftId } : undefined),
+    [draftId],
+  );
   const draftBorderColor = draftId
     ? theme.palette.designSystem.alert.warning.primary
     : undefined;
@@ -104,14 +145,25 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   // bloat the payload and could leak more than the agent needs. The shape is
   // extensible — more context (page title, selected entity, etc.) can be
   // added here later.
-  const pageContext = { url: location.pathname };
+  const pageContext = useMemo(() => ({ url: location.pathname }), [location.pathname]);
 
-  const handleRelativeLinkClick = (href: string) => {
+  // `navigate` is a new function after every route change, so the handler
+  // reads the current one through a ref rather than depending on it.
+  const navigateRef = useRef(navigate);
+  useLayoutEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
+  const handleRelativeLinkClick = useCallback((href: string) => {
     const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
       ? href.slice(APP_BASE_PATH.length) || '/'
       : href;
-    navigate(normalizedHref);
-  };
+    navigateRef.current(normalizedHref);
+  }, []);
+
+  const handleTaskComplete = useCallback(
+    (_title: string, body: string) => MESSAGING$.notifySuccess(body),
+    [],
+  );
 
   useEffect(() => {
     fetch(`${APP_BASE_PATH}/chatbot/config`)
@@ -152,38 +204,9 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       topOffset={topOffset}
       backendType="rest"
       apiBaseUrl={`${APP_BASE_PATH}/chatbot`}
-      apiEndpoints={{
-        agents: '/agents',
-        messages: '/messages',
-        // Mid-run steering — must be set explicitly because the chatbot
-        // default ('/chat/messages/steer') assumes XTM One-style paths,
-        // while the OpenCTI proxy exposes '/messages/steer'.
-        steer: '/messages/steer',
-        // Human-in-the-loop tool approval. Setting `approve` is what makes the
-        // widget advertise `supports_tool_approval`, and that flag is a promise
-        // to answer — XTM One pauses the turn and waits indefinitely — so it
-        // must name a route the OpenCTI proxy actually serves
-        // (`httpPlatform.js`), never XTM One's own path.
-        approve: '/messages/approve',
-        // Reload recovery: `approval_required` arrives once on the SSE stream,
-        // so a refresh loses the prompt (and the `tool_call_id`s a decision has
-        // to name) while the turn goes on waiting. Read as
-        // `{apiBaseUrl}/conversations/{conversation_id}/pending-approvals`.
-        pendingApprovals: '/conversations',
-        sessions: '/sessions',
-        upload: '/upload',
-        download: '/files',
-        // Composer prompt picker and quota indicator. The chatbot defaults
-        // ('/chat/prompts', '/chat/quota') are XTM One-style paths the proxy
-        // does not serve, which left both affordances hidden.
-        prompts: '/prompts',
-        quota: '/quota',
-        // Persisted thumbs rating of an answer, sent as POST / DELETE
-        // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
-        feedback: '/conversations',
-      }}
+      apiEndpoints={CHATBOT_API_ENDPOINTS}
       locale={chatbotLocale}
-      user={{ firstName }}
+      user={user}
       disableFileManagement={false}
       t={tChatbot}
       accentColor={accentColor}
@@ -198,7 +221,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       requestHeaders={requestHeaders}
       pageContext={pageContext}
       onRelativeLinkClick={handleRelativeLinkClick}
-      onTaskComplete={(_title, body) => MESSAGING$.notifySuccess(body)}
+      onTaskComplete={handleTaskComplete}
     />,
     container,
   );
