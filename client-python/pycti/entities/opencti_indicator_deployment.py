@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import threading
+from datetime import datetime, timezone
 from typing import Dict, Iterator, List, Optional
 
 DEPLOYMENT_STATUSES = ["pending", "deployed", "active", "failed", "removed"]
@@ -361,12 +362,13 @@ class IndicatorDeployment:
         """Report new hits of an indicator on a security platform.
 
         Creates or increments the stable Indicator -> Security Platform sighting.
-        A report whose ``last_hit`` is not after the last known hit is ignored by the platform.
+        A report whose ``last_hit`` is not after the last known hit is ignored by the platform,
+        so ``last_hit`` is the idempotency watermark of the report.
 
         :param indicator_id: id of the indicator
         :param platform_id: id of the security platform
         :param count: number of new hits (>= 1)
-        :param last_hit: ISO date of the most recent hit, defaults to now on the platform
+        :param last_hit: ISO date of the most recent hit, defaults to the time of this call
         :param first_hit: ISO date of the oldest new hit, defaults to last_hit
         :return: the hits sighting, or None
         :rtype: dict or None
@@ -379,7 +381,9 @@ class IndicatorDeployment:
             "indicatorId": indicator_id,
             "platformId": platform_id,
             "count": count,
-            "lastHit": last_hit,
+            # Set once here so that a retried query carries the same watermark and stays a replay
+            "lastHit": last_hit
+            or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "firstHit": first_hit,
         }
         try:

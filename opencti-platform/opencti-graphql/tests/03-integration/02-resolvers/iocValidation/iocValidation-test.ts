@@ -38,7 +38,7 @@ const REPORT_DEPLOYMENT = gql`
 `;
 const DEPLOYMENT_READ = gql`
   query DeploymentRead($id: String!) {
-    stixCoreRelationship(id: $id) { id validation_status }
+    stixCoreRelationship(id: $id) { id validation_status validation_run_id }
   }
 `;
 const REQUEST_FIELDS = `
@@ -184,6 +184,15 @@ describe('IOC validation requests', () => {
     expect(request.results_summary).toEqual({ total: 1, requested: 1, detected: 0, prevented: 0, missed: 0, error: 0, skipped: 1 });
     const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('requested');
+  });
+
+  it('should not take over a pair waiting for another request', async () => {
+    await queryAsAdminWithError({
+      query: REQUEST_VALIDATION,
+      variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'] },
+    });
+    const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(deployment.data?.stixCoreRelationship.validation_run_id).toEqual(requestId);
   });
 
   it('should read and list the request', async () => {

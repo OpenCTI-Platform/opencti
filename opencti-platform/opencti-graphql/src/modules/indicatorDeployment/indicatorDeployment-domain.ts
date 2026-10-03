@@ -593,9 +593,20 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
   let flagged = 0;
   await BluePromise.map([...toFlag.values()], async (relation) => {
     try {
-      const { element } = await patchAttribute(context, user, relation.internal_id, RELATION_DEPLOYED_ON, { deployment_status: DEPLOYMENT_STATUS_EXPIRED });
-      await notifyRelationEdit(user, element);
-      flagged += 1;
+      // A report can land between the scan and this write: recheck under the pair lock of the report path.
+      // A relation changed since the scan is left to the next run, which sees its new state.
+      const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
+      try {
+        const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
+        const unchanged = current && String(current.updated_at) === String(relation.updated_at);
+        if (current && unchanged && LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
+          const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, { deployment_status: DEPLOYMENT_STATUS_EXPIRED });
+          await notifyRelationEdit(user, element);
+          flagged += 1;
+        }
+      } finally {
+        await lock.unlock();
+      }
     } catch (error) {
       logApp.error('[DISSEMINATION] Cannot flag deployment as expired', { cause: error, id: relation.internal_id });
     }

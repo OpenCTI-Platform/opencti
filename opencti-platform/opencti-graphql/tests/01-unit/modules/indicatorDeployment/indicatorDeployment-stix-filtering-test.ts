@@ -51,4 +51,10 @@ describe('Dissemination assurance stix filter testers (triggers)', () => {
     expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'not_eq'))).toEqual(false);
     expect(testers.testRevoked(indicator(true, 2), filter('revoked', ['true']))).toEqual(true);
   });
+
+  it('should not give a deployment counter to other types', () => {
+    const malware = { id: 'malware--4b1d3f5a-4444-4c4d-9e5f-fedcbafedcba', type: 'malware', extensions: { [EXT]: {} } } as unknown as ReadonlyStix;
+    expect(testers.testDeploymentPlatformsCount(malware, filter('deployment_platforms_count', ['0'], 'eq'))).toEqual(false);
+    expect(testers.testDeploymentPlatformsCount(malware, filter('deployment_platforms_count', ['0'], 'lte'))).toEqual(false);
+  });
 });
