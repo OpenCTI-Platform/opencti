@@ -66,6 +66,7 @@ const PublicDashboardComponent = ({
     relationshipWidget,
     rawWidget,
     auditWidget,
+    sourcesWidget,
   } = usePublicDashboardWidgets(uriKey, config);
 
   const onChangeRelativeDate = () => {};
@@ -116,6 +117,7 @@ const PublicDashboardComponent = ({
                   {widget.perspective === 'entities' && entityWidget(widget)}
                   {widget.perspective === 'relationships' && relationshipWidget(widget)}
                   {widget.perspective === 'audits' && auditWidget(widget)}
+                  {widget.perspective === 'sources' && sourcesWidget()}
                   {widget.perspective === null && rawWidget(widget)}
                 </ErrorBoundary>
               </div>

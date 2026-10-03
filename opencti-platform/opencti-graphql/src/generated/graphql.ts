@@ -40445,7 +40445,8 @@ export type WidgetParameters = {
 export enum WidgetPerspective {
   Audits = 'audits',
   Entities = 'entities',
-  Relationships = 'relationships'
+  Relationships = 'relationships',
+  Sources = 'sources'
 }
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {

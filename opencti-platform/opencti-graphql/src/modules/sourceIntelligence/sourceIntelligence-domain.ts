@@ -208,9 +208,13 @@ export const buildResolverFromSources = (sources: BasicStoreEntitySource[]): Sou
 // region scorecards queries
 export const findSourceScorecards = async (
   context: AuthContext,
-  _user: AuthUser,
+  user: AuthUser,
   args: { sourceId: string; period?: ScorecardPeriodValue | null; startDate?: string | null; endDate?: string | null; first?: number | null },
 ) => {
+  const source = await storeLoadById<BasicStoreEntitySource>(context, user, args.sourceId, ENTITY_TYPE_SOURCE);
+  if (!source) {
+    return [];
+  }
   return searchScorecards(context, {
     sourceIds: [args.sourceId],
     period: args.period ?? REFERENCE_SCORECARD_PERIOD,

@@ -875,6 +875,7 @@ enum WidgetPerspective {
   entities
   relationships
   audits
+  sources
 }
 
 type WidgetColumn {
