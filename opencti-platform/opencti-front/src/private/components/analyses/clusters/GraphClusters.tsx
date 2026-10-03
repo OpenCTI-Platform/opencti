@@ -16,7 +16,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { monthsAgo, now } from '../../../../utils/Time';
 import GraphAnalyticsStatus from './GraphAnalyticsStatus';
-import { GRAPH_CLUSTER_KIND_LABELS, GRAPH_CLUSTER_SOURCE_LABELS, GRAPH_CLUSTERS_PATH } from '../../common/graph_analytics/graphAnalyticsUtils';
+import { GRAPH_CLUSTER_KIND_LABELS, GRAPH_CLUSTER_SOURCE_LABELS, GRAPH_CLUSTERS_PATH, trimLeadingEmptyPeriods } from '../../common/graph_analytics/graphAnalyticsUtils';
 import type { GraphClustersListQuery, GraphClustersListQuery$variables } from './__generated__/GraphClustersListQuery.graphql';
 import type { GraphClusters_clusters$data } from './__generated__/GraphClusters_clusters.graphql';
 import type { GraphClusters_cluster$data } from './__generated__/GraphClusters_cluster.graphql';
@@ -117,11 +117,12 @@ const clustersSizeQuery = graphql`
 const ClustersSizeChart = ({ queryRef }: { queryRef: PreloadedQuery<GraphClustersSizeQuery> }) => {
   const { graphClustersSizeTimeSeries } = usePreloadedQuery(clustersSizeQuery, queryRef);
   if (graphClustersSizeTimeSeries.length === 0) return <WidgetNoData />;
+  const points = trimLeadingEmptyPeriods(graphClustersSizeTimeSeries.map((serie) => serie.data));
   return (
     <WidgetMultiAreas
-      series={graphClustersSizeTimeSeries.map((serie) => ({
+      series={graphClustersSizeTimeSeries.map((serie, index) => ({
         name: serie.cluster.name,
-        data: serie.data.map((entry) => ({ x: new Date(entry.date), y: entry.value })),
+        data: points[index].map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval="month"
       hasLegend

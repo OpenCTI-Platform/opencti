@@ -17,6 +17,7 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { fetchQuery } from '../../../relay/environment';
 import Loader, { LoaderVariant } from '../../Loader';
 import ItemIcon from '../../ItemIcon';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import type { ObjectToParse } from '../utils/useGraphParser';
 import type { GraphToolbarExpandToolsRelationshipsQuery, GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import type { GraphToolbarAnalyticsToolsSimilarQuery, GraphToolbarAnalyticsToolsSimilarQuery$data } from './__generated__/GraphToolbarAnalyticsToolsSimilarQuery.graphql';
@@ -279,8 +280,13 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
   const [similarFailed, setSimilarFailed] = useState(false);
   const [matrixFailed, setMatrixFailed] = useState(false);
 
-  const nodeLabel = (node: { id: string; label?: string; name?: string }) => node.name || node.label || node.id;
-  const existingIds = new Set(rawObjects.map((o) => o.id));
+  const rawById = new Map(rawObjects.map((o) => [o.id, o]));
+  // the node name carries a second line with the date of the object
+  const nodeLabel = (node: { id: string; label?: string }) => {
+    const raw = rawById.get(node.id);
+    return raw ? getMainRepresentative(raw, node.label || node.id) : (node.label || node.id);
+  };
+  const existingIds = new Set(rawById.keys());
 
   // Each request only applies its result while it is the latest one, and a failure is shown in place of the loader
   useEffect(() => {
