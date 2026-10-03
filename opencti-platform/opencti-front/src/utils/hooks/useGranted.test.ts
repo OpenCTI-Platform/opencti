@@ -149,6 +149,10 @@ describe('isGrantedTo', () => {
     expect(isGrantedTo(user([KNOWLEDGE]), [KNOWLEDGE, KNOWLEDGE_KNUPDATE], true)).toBe(false);
   });
 
+  it('refuses the legacy SETTINGS capability, as useGranted does', () => {
+    expect(() => isGrantedTo(user([BYPASS]), [SETTINGS])).toThrow('The SETTINGS capability should not be used');
+  });
+
   it('adds the draft capabilities only inside a draft', () => {
     expect(isGrantedTo(user([KNOWLEDGE], [KNOWLEDGE_KNUPDATE]), [KNOWLEDGE_KNUPDATE])).toBe(false);
     expect(isGrantedTo(user([KNOWLEDGE], [KNOWLEDGE_KNUPDATE], true), [KNOWLEDGE_KNUPDATE])).toBe(true);

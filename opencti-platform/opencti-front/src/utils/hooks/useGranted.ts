@@ -100,6 +100,10 @@ interface GrantedUser {
  * capabilities together in a draft context.
  */
 export const isGrantedTo = (me: GrantedUser, capabilities: string[], matchAll = false): boolean => {
+  // Prevent use of the old SETTINGS capability for future uses
+  if (capabilities.includes(SETTINGS)) {
+    throw new Error('The SETTINGS capability should not be used');
+  }
   if (isBypassUser(me)) {
     return true;
   }
@@ -120,11 +124,6 @@ const useGranted = (
 ): boolean => {
   const { me } = useAuth();
   const { capabilitiesInDraft } = options;
-
-  // Prevent use of the old SETTINGS capability for future uses
-  if (capabilities.includes(SETTINGS)) {
-    throw new Error('The SETTINGS capability should not be used');
-  }
 
   if (isGrantedTo(me, capabilities, matchAll)) {
     return true;
