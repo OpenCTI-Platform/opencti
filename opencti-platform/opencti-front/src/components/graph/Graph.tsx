@@ -15,6 +15,7 @@ import type { Theme } from '../Theme';
 import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
 import GraphControls from './components/GraphControls';
+import GraphCounters, { type GraphCounter } from './components/GraphCounters';
 import GraphLegend, { type GraphLegendBadge } from './components/GraphLegend';
 import GraphHoverCard, { type GraphHoverCardTarget } from './components/GraphHoverCard';
 import GraphAccessibleList from './components/GraphAccessibleList';
@@ -166,10 +167,12 @@ const Graph = ({
     if (highlightedPath && !drawablePath) clearHighlightedPath();
   }, [highlightedPath, drawablePath]);
 
-  // --- Badges drawn in the graph, for the legend: one entry per badge with the entities carrying it.
+  // --- Badges drawn in the graph, for the legend: one entry per badge with the entities carrying it,
+  // and the entities whose badges call for attention (a warning or an error), for the counter row.
   const badgeRegistryVersion = useGraphBadgeRegistryVersion();
-  const legendBadges = useMemo(() => {
+  const { legendBadges, attentionIds } = useMemo(() => {
     const entries = new Map<string, GraphLegendBadge & { nodeIds: Set<string> }>();
+    const attention = new Set<string>();
     shownNodes.forEach((node) => {
       if (node.groupOf || node.disabled) return;
       badgesOfNode(node, { t_i18n }).forEach((badge) => {
@@ -178,9 +181,10 @@ const Graph = ({
         entry.count += 1;
         entry.nodeIds.add(node.id);
         entries.set(badge.key, entry);
+        if (badge.tone === 'warning' || badge.tone === 'error') attention.add(node.id);
       });
     });
-    return [...entries.values()];
+    return { legendBadges: [...entries.values()], attentionIds: attention };
   }, [shownNodes, badgeRegistryVersion, filterToken]);
 
   // --- Hover: focus on the canvas at once, card after a short delay.
@@ -339,6 +343,52 @@ const Graph = ({
     const carriers = legendBadges.find((entry) => entry.key === key)?.nodeIds;
     if (carriers) selectNodes(shownNodes.filter((node) => carriers.has(node.id)));
   };
+
+  // --- Counter row: the entities (members of collapsed groups included, as in the legend), the
+  // relationships, the restricted entities and those needing attention, each selecting what it counts.
+  const counters = useMemo<GraphCounter[]>(() => {
+    const entityNodes = shownNodes.filter((node) => !node.groupOf && !node.relationship_type);
+    const entityCount = entityNodes.length + shownNodes.reduce((sum, node) => sum + (node.groupOf?.memberIds.length ?? 0), 0);
+    const relationshipLinks = shownLinks.filter((link) => !!link.label);
+    const restrictedNodes = entityNodes.filter((node) => node.isRestricted);
+    const attentionNodes = entityNodes.filter((node) => attentionIds.has(node.id));
+    const all: (GraphCounter & { count: number })[] = [
+      {
+        key: 'entities',
+        count: entityCount,
+        label: t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: entityCount } }),
+        action: t_i18n('Select the entities'),
+        onSelect: () => selectNodes(entityNodes),
+      },
+      {
+        key: 'relationships',
+        count: relationshipLinks.length,
+        label: t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: relationshipLinks.length } }),
+        action: t_i18n('Select the relationships'),
+        onSelect: () => {
+          setSelectedNodes([]);
+          setSelectedLinks(relationshipLinks);
+        },
+      },
+      {
+        key: 'restricted',
+        count: restrictedNodes.length,
+        label: t_i18n('{count, plural, one {# restricted} other {# restricted}}', { values: { count: restrictedNodes.length } }),
+        action: t_i18n('Select the entities you do not have access to'),
+        tone: 'neutral',
+        onSelect: () => selectNodes(restrictedNodes),
+      },
+      {
+        key: 'attention',
+        count: attentionNodes.length,
+        label: t_i18n('{count, plural, one {# needs attention} other {# need attention}}', { values: { count: attentionNodes.length } }),
+        action: t_i18n('Select the entities with a warning or an error badge'),
+        tone: 'warning',
+        onSelect: () => selectNodes(attentionNodes),
+      },
+    ];
+    return all.filter(({ key, count }) => key === 'entities' || count > 0);
+  }, [shownNodes, shownLinks, attentionIds, filterToken]);
   const otherSelected = (node: GraphNode) => (selectedNodes.length === 1 && selectedNodes[0].id !== node.id ? selectedNodes[0] : null);
 
   const togglePin = (node: GraphNode) => {
@@ -558,23 +608,39 @@ const Graph = ({
             />
           </>
         )}
-        <GraphControls
-          hasSelection={selectedNodes.length > 0}
-          is3D={mode3D}
-          isFullscreen={isFullscreen}
-          showLegend={showLegend}
-          onZoomIn={zoomIn}
-          onZoomOut={zoomOut}
-          onFit={zoomToFit}
-          onFitSelection={() => zoomToSelection()}
-          onLocate={() => locateNode()}
-          onToggleLegend={toggleLegend}
-          onToggleFullscreen={toggleFullscreen}
-          onExport={() => {
-            exportImage();
+        {/* The row only spans its panels: the canvas around them keeps its gestures. */}
+        <div
+          style={{
+            position: 'absolute',
+            left: theme.spacing(1.5),
+            top: theme.spacing(1.5),
+            right: theme.spacing(1.5),
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: theme.spacing(1),
+            pointerEvents: 'none',
           }}
-          onShowShortcuts={() => setShortcutsOpen(true)}
-        />
+        >
+          <GraphControls
+            hasSelection={selectedNodes.length > 0}
+            is3D={mode3D}
+            isFullscreen={isFullscreen}
+            showLegend={showLegend}
+            onZoomIn={zoomIn}
+            onZoomOut={zoomOut}
+            onFit={zoomToFit}
+            onFitSelection={() => zoomToSelection()}
+            onLocate={() => locateNode()}
+            onToggleLegend={toggleLegend}
+            onToggleFullscreen={toggleFullscreen}
+            onExport={() => {
+              exportImage();
+            }}
+            onShowShortcuts={() => setShortcutsOpen(true)}
+          />
+          {shownNodes.length > 0 && <GraphCounters counters={counters} />}
+        </div>
         {!mode3D && showLegend && shownNodes.length > 0 && (
           <GraphLegend
             nodes={shownNodes}

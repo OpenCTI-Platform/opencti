@@ -65,7 +65,8 @@ export interface GraphControlsProps {
 
 /**
  * The navigation controls floating over the canvas: zoom, framing, legend, full screen, export
- * and the keyboard shortcuts, each also reachable from the keyboard.
+ * and the keyboard shortcuts, each also reachable from the keyboard. The graph places them in its
+ * top left corner, next to the counter row.
  */
 const GraphControls = ({
   hasSelection,
@@ -93,7 +94,7 @@ const GraphControls = ({
       aria-orientation="vertical"
       aria-label={t_i18n('Graph view controls')}
       data-graph-panel=""
-      style={{ position: 'absolute', left: theme.spacing(1.5), top: theme.spacing(1.5), zIndex: 2 }}
+      style={{ pointerEvents: 'auto' }}
       onMouseDown={(event) => event.stopPropagation()}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: theme.spacing(0.5) }}>

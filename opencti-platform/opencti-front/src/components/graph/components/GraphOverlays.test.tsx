@@ -5,6 +5,7 @@ import testRender from '../../../utils/tests/test-render';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import GraphLegend from './GraphLegend';
 import GraphControls from './GraphControls';
+import GraphCounters from './GraphCounters';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
 import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
@@ -62,6 +63,31 @@ describe('GraphLegend', () => {
     unmount();
     testRender(<GraphLegend {...props} />);
     expect(screen.queryByText('Badges')).toBeNull();
+  });
+});
+
+describe('GraphCounters', () => {
+  it('names each counter with what it selects and runs the selection', async () => {
+    const onSelectEntities = vi.fn();
+    const onSelectRestricted = vi.fn();
+    const { user } = testRender(
+      <GraphCounters
+        counters={[
+          { key: 'entities', label: '124 entities', action: 'Select the entities', onSelect: onSelectEntities },
+          { key: 'restricted', label: '3 restricted', action: 'Select the entities you do not have access to', tone: 'neutral', onSelect: onSelectRestricted },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('toolbar', { name: 'Graph summary' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '124 entities - Select the entities' }));
+    await user.click(screen.getByRole('button', { name: /^3 restricted/ }));
+    expect(onSelectEntities).toHaveBeenCalledTimes(1);
+    expect(onSelectRestricted).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws nothing without a counter', () => {
+    testRender(<GraphCounters counters={[]} />);
+    expect(screen.queryByRole('toolbar', { name: 'Graph summary' })).toBeNull();
   });
 });
 
