@@ -40,6 +40,7 @@ import {
   runScheduledHunts,
 } from '../../../src/modules/hunt/hunt-automation';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
+import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 
 const CONNECTOR_ID = '6d2f4c1e-8a3b-4f6e-9c7d-2b5a1e0f3d02';
 const SIGMA_RULE = `title: Hunt manager test encoded command
@@ -393,7 +394,7 @@ describe('Hunt manager', () => {
         name: 'Run hunts',
         component_id: PLAYBOOK_HUNT_COMPONENT.id,
         configuration: {
-          applyToElements: 'onlyMain',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
           hunt_ids: [raceHuntId],
           security_platform_ids: [],
           time_window_hours: 0,
