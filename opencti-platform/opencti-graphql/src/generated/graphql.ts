@@ -15183,6 +15183,7 @@ export type InvestigationApproval = {
   created_at: Scalars['DateTime']['output'];
   decided_at?: Maybe<Scalars['DateTime']['output']>;
   decided_by?: Maybe<Scalars['String']['output']>;
+  decider?: Maybe<Creator>;
   description: Scalars['String']['output'];
   entity_id?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
@@ -15312,6 +15313,13 @@ export enum InvestigationEnrichmentWaveStatus {
   Timeout = 'timeout'
 }
 
+export type InvestigationEntityReference = {
+  __typename?: 'InvestigationEntityReference';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
 export type InvestigationEvidence = {
   __typename?: 'InvestigationEvidence';
   entity_type?: Maybe<Scalars['String']['output']>;
@@ -15323,6 +15331,7 @@ export type InvestigationEvidence = {
   n?: Maybe<Scalars['Int']['output']>;
   opencti_id?: Maybe<Scalars['String']['output']>;
   quote?: Maybe<Scalars['String']['output']>;
+  step_id?: Maybe<Scalars['String']['output']>;
 };
 
 export enum InvestigationEvidenceCategory {
@@ -15570,6 +15579,7 @@ export type InvestigationRun = BasicObject & InternalObject & {
   draft?: Maybe<DraftWorkspace>;
   draft_id?: Maybe<Scalars['String']['output']>;
   end_reason_code?: Maybe<Scalars['String']['output']>;
+  enrichment_entities: Array<InvestigationEntityReference>;
   enrichment_requests: Array<InvestigationEnrichmentRequest>;
   entity_type: Scalars['String']['output'];
   evidence: Array<InvestigationEvidence>;
@@ -42903,7 +42913,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationAcceptance: ResolverTypeWrapper<InvestigationAcceptance>;
-  InvestigationApproval: ResolverTypeWrapper<InvestigationApproval>;
+  InvestigationApproval: ResolverTypeWrapper<Omit<InvestigationApproval, 'decider'> & { decider?: Maybe<ResolversTypes['Creator']> }>;
   InvestigationApprovalKind: InvestigationApprovalKind;
   InvestigationApprovalStatus: InvestigationApprovalStatus;
   InvestigationAutonomousAction: InvestigationAutonomousAction;
@@ -42917,6 +42927,7 @@ export type ResolversTypes = ResolversObject<{
   InvestigationEnrichmentRequestStatus: InvestigationEnrichmentRequestStatus;
   InvestigationEnrichmentWave: ResolverTypeWrapper<InvestigationEnrichmentWave>;
   InvestigationEnrichmentWaveStatus: InvestigationEnrichmentWaveStatus;
+  InvestigationEntityReference: ResolverTypeWrapper<InvestigationEntityReference>;
   InvestigationEvidence: ResolverTypeWrapper<InvestigationEvidence>;
   InvestigationEvidenceCategory: InvestigationEvidenceCategory;
   InvestigationEvidenceCell: ResolverTypeWrapper<InvestigationEvidenceCell>;
@@ -44082,7 +44093,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationAcceptance: InvestigationAcceptance;
-  InvestigationApproval: InvestigationApproval;
+  InvestigationApproval: Omit<InvestigationApproval, 'decider'> & { decider?: Maybe<ResolversParentTypes['Creator']> };
   InvestigationBudget: InvestigationBudget;
   InvestigationDeltaObject: InvestigationDeltaObject;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
@@ -44090,6 +44101,7 @@ export type ResolversParentTypes = ResolversObject<{
   InvestigationEnrichmentJob: InvestigationEnrichmentJob;
   InvestigationEnrichmentRequest: InvestigationEnrichmentRequest;
   InvestigationEnrichmentWave: InvestigationEnrichmentWave;
+  InvestigationEntityReference: InvestigationEntityReference;
   InvestigationEvidence: InvestigationEvidence;
   InvestigationEvidenceCell: InvestigationEvidenceCell;
   InvestigationFeedback: Omit<InvestigationFeedback, 'user'> & { user?: Maybe<ResolversParentTypes['Creator']> };
@@ -50024,6 +50036,7 @@ export type InvestigationApprovalResolvers<ContextType = any, ParentType extends
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decided_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   decided_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  decider?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50091,6 +50104,12 @@ export type InvestigationEnrichmentWaveResolvers<ContextType = any, ParentType e
   status?: Resolver<ResolversTypes['InvestigationEnrichmentWaveStatus'], ParentType, ContextType>;
 }>;
 
+export type InvestigationEntityReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEntityReference'] = ResolversParentTypes['InvestigationEntityReference']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type InvestigationEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEvidence'] = ResolversParentTypes['InvestigationEvidence']> = ResolversObject<{
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50101,6 +50120,7 @@ export type InvestigationEvidenceResolvers<ContextType = any, ParentType extends
   n?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   opencti_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   quote?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  step_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type InvestigationEvidenceCellResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvestigationEvidenceCell'] = ResolversParentTypes['InvestigationEvidenceCell']> = ResolversObject<{
@@ -50252,6 +50272,7 @@ export type InvestigationRunResolvers<ContextType = any, ParentType extends Reso
   draft?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType>;
   draft_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_reason_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enrichment_entities?: Resolver<Array<ResolversTypes['InvestigationEntityReference']>, ParentType, ContextType>;
   enrichment_requests?: Resolver<Array<ResolversTypes['InvestigationEnrichmentRequest']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   evidence?: Resolver<Array<ResolversTypes['InvestigationEvidence']>, ParentType, ContextType>;
@@ -58371,6 +58392,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   InvestigationEnrichmentJob?: InvestigationEnrichmentJobResolvers<ContextType>;
   InvestigationEnrichmentRequest?: InvestigationEnrichmentRequestResolvers<ContextType>;
   InvestigationEnrichmentWave?: InvestigationEnrichmentWaveResolvers<ContextType>;
+  InvestigationEntityReference?: InvestigationEntityReferenceResolvers<ContextType>;
   InvestigationEvidence?: InvestigationEvidenceResolvers<ContextType>;
   InvestigationEvidenceCell?: InvestigationEvidenceCellResolvers<ContextType>;
   InvestigationFeedback?: InvestigationFeedbackResolvers<ContextType>;

@@ -18,7 +18,6 @@ import {
   isRunActive,
   rememberGraphAutoOpen,
   runStatusSeverity,
-  stepDetail,
   stepStatusLabel,
   stepStatusSeverity,
 } from './investigationRunUtils';
@@ -159,11 +158,7 @@ describe('Case Autopilot run helpers', () => {
     expect(isEngineRunOver({ run_status: 'cancelled', run_phase: 'investigating' })).toBe(true);
   });
 
-  it('renders machine-readable step details and engine reasons', () => {
-    const translate = (value: string) => `t(${value})`;
-    expect(stepDetail('source.timed_out', { seconds: 30, ignored: { a: 1 } }, translate)).toBe('t(The source did not answer in time) (seconds: 30)');
-    expect(stepDetail('source.new_code', null, translate)).toBe('new code');
-    expect(stepDetail(null, null, translate)).toBeNull();
+  it('renders the engine reasons in words', () => {
     expect(engineReasonLabel('engine_disabled')).toContain('Deep Investigation');
     expect(engineReasonLabel('other')).toBeNull();
     expect(engineReasonLabel(null)).toBeNull();

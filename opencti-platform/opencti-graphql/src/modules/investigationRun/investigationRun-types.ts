@@ -95,6 +95,7 @@ export const INVESTIGATION_LIMITS = {
   candidates: 40,
   coursesOfAction: 40,
   approvals: 200,
+  enrichmentEntities: 300,
   feedback: 500,
   reportSources: 100,
   externalReferences: 50,
@@ -141,6 +142,8 @@ export interface InvestigationEvidence {
   entity_type?: string | null;
   standard_id?: string | null;
   in_draft: boolean;
+  // The engine step that found it; null for the context OpenCTI collected itself.
+  step_id?: string | null;
   // Attributes the ACH helper reads to weight an OpenCTI object; never shown raw.
   confidence?: number | null;
   author_reliability?: string | null;

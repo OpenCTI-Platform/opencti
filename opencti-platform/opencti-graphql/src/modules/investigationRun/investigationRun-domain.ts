@@ -52,7 +52,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
-import { validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { connectorsForEnrichment } from '../../database/repository';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -958,6 +958,27 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
     })),
     delta: wave.delta ?? [],
   };
+};
+
+/**
+ * The entities the enrichment jobs and the approvals of a run name, as the
+ * reader sees them: in the run draft when the reader may open it, else live.
+ * An entity the reader cannot see is left out, never named.
+ */
+export const findInvestigationRunEnrichmentEntities = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
+  const ids = Array.from(new Set([
+    ...(run.enrichment_requests ?? []).map((request) => request.entity_id),
+    ...(run.approvals ?? []).flatMap((approval) => (approval.entity_id ? [approval.entity_id] : [])),
+  ])).slice(0, INVESTIGATION_LIMITS.enrichmentEntities);
+  if (ids.length === 0) return [];
+  const draft = run.draft_id ? await findDraftById(outOfDraft(context), user, run.draft_id) : null;
+  const readContext = draft ? runContextFor(context, run) : outOfDraft(context);
+  const elements = await elFindByIds<BasicStoreEntity>(readContext, user, ids, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
+  return elements.map((element) => ({
+    id: element.internal_id,
+    entity_type: element.entity_type,
+    name: extractEntityRepresentativeName(element),
+  }));
 };
 
 // endregion

@@ -383,6 +383,7 @@ const toEvidence = (raw: Record<string, unknown>, investigationId: string): Inve
     entity_type: asString(raw.entity_type, 100),
     standard_id: null,
     in_draft: false,
+    step_id: asString(raw.step_id, 200),
   };
   if (!isObject) item.id = passageId(investigationId, item);
   return item;
@@ -395,7 +396,9 @@ const toEvidence = (raw: Record<string, unknown>, investigationId: string): Inve
  */
 export const mirrorEvidence = (current: InvestigationEvidence[], engine: EngineInvestigation): InvestigationEvidence[] => {
   const raw = engine.evidence ?? [
-    ...engine.steps.flatMap((step) => asArray(step.evidence).map(asRecord).filter((item): item is Record<string, unknown> => item !== null)),
+    ...engine.steps.flatMap((step) => asArray(step.evidence).map(asRecord)
+      .filter((item): item is Record<string, unknown> => item !== null)
+      .map((item) => ({ step_id: step.step_id ?? step.id, ...item }))),
     ...engine.report_sources,
   ];
   const byId = new Map(current.map((item) => [item.id, item]));
@@ -406,7 +409,13 @@ export const mirrorEvidence = (current: InvestigationEvidence[], engine: EngineI
     const known = byId.get(item.id);
     if (known) {
       // Keep the metadata OpenCTI attached; take the citation number the report gave.
-      byId.set(item.id, { ...known, n: item.n ?? known.n, quote: known.quote ?? item.quote, investigation_id: known.investigation_id ?? engine.id });
+      byId.set(item.id, {
+        ...known,
+        n: item.n ?? known.n,
+        quote: known.quote ?? item.quote,
+        investigation_id: known.investigation_id ?? engine.id,
+        step_id: known.step_id ?? item.step_id,
+      });
       return;
     }
     byId.set(item.id, item);

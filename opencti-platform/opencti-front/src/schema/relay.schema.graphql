@@ -16853,6 +16853,13 @@ type InvestigationEvidence {
   opencti_id: String
   entity_type: String
   in_draft: Boolean!
+  step_id: String
+}
+
+type InvestigationEntityReference {
+  id: String!
+  entity_type: String!
+  name: String!
 }
 
 type InvestigationEvidenceCell {
@@ -16937,6 +16944,7 @@ type InvestigationApproval {
   created_at: DateTime!
   decided_at: DateTime
   decided_by: String
+  decider: Creator
   rejection_reason: String
 }
 
@@ -17052,6 +17060,7 @@ type InvestigationRun implements InternalObject & BasicObject {
   analyst_feedback: [InvestigationFeedback!]!
   approvals: [InvestigationApproval!]!
   enrichment_requests: [InvestigationEnrichmentRequest!]!
+  enrichment_entities: [InvestigationEntityReference!]!
   budget: InvestigationBudget!
   summary: String
   report: String

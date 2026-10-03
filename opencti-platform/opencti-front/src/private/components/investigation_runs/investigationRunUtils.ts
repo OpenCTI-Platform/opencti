@@ -55,18 +55,6 @@ export const runStatusLabel = (status: string) => RUN_STATUS_LABELS[status as In
 
 export const runStatusSeverity = (status: string): ChipSeverity => RUN_STATUS_SEVERITIES[status as InvestigationRunStatusValue] ?? 'neutral';
 
-export const RUN_PHASE_LABELS: Record<string, string> = {
-  initializing: 'Collecting the context',
-  starting: 'Starting the investigation',
-  investigating: 'Investigating',
-  ingesting: 'Writing the results to the draft',
-  awaiting_validation: 'Waiting for the draft approval',
-  validating: 'Validating the draft',
-  done: 'Done',
-};
-
-export const runPhaseLabel = (phase: string) => RUN_PHASE_LABELS[phase] ?? phase;
-
 // The built-in pack of the investigation engine for OpenCTI cases.
 export const DEFAULT_PACK = 'opencti-case-investigation';
 
@@ -114,45 +102,6 @@ export const ENGINE_REASON_LABELS: Record<string, string> = {
 };
 
 export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);
-
-// Machine-readable step details of the engine, rendered in the reader's
-// language; a code without a label here falls back to its parameters.
-export const STEP_DETAIL_LABELS: Record<string, string> = {
-  'run.all_sources_queried': 'Every source was queried',
-  'run.budget_spent': 'The budget of the investigation was spent',
-  'run.no_covering_source': 'No source of the pack covers this subject',
-  'run.cancelled': 'The investigation was cancelled',
-  'run.interrupted': 'The investigation was interrupted',
-  'source.timed_out': 'The source did not answer in time',
-  'source.http_status': 'The source answered with an error',
-  'source.truncated': 'The answer was truncated',
-  'source.thin_response': 'The source answered with very little content',
-  'source.querier_error': 'The source could not be queried',
-  'source.opencti_unavailable': 'OpenCTI could not be read',
-  'source.opencti_known': 'Known in OpenCTI',
-  'source.opencti_none_known': 'Nothing known in OpenCTI',
-  'source.case_context': 'Case context read',
-  'source.case_context_empty': 'The case holds no context yet',
-  'source.case_run_missing': 'The investigation of this case is not available',
-  'source.enrichment_wave': 'Enrichment jobs ran through the connectors',
-  'source.enrichment_nothing_to_enrich': 'Nothing to enrich',
-  'source.enrichment_awaiting_approval': 'Enrichment jobs are waiting for an approval',
-  'source.enrichment_refused': 'Enrichment jobs were refused by the policy',
-  'source.enrichment_timed_out': 'The enrichment jobs did not end in time',
-};
-
-/** The detail of a step in the reader's language: its label and its parameters. */
-export const stepDetail = (code: string | null | undefined, params: unknown, translate: (text: string) => string) => {
-  if (!code) return null;
-  const label = STEP_DETAIL_LABELS[code];
-  const values = params && typeof params === 'object' && !Array.isArray(params)
-    ? Object.entries(params as Record<string, unknown>)
-        .filter(([, value]) => typeof value === 'string' || typeof value === 'number')
-        .map(([key, value]) => `${key.replace(/_/g, ' ')}: ${value}`)
-    : [];
-  const text = label ? translate(label) : code.replace(/^(run|source)\./, '').replace(/_/g, ' ');
-  return values.length > 0 ? `${text} (${values.join(', ')})` : text;
-};
 
 // Analysis of Competing Hypotheses notation, from strongly inconsistent to
 // strongly consistent.
@@ -222,6 +171,29 @@ const PRIORITY_SEVERITIES: Record<string, ChipSeverity> = {
 };
 
 export const prioritySeverity = (priority: string): ChipSeverity => PRIORITY_SEVERITIES[priority] ?? 'neutral';
+
+export const PRIORITY_LABELS: Record<string, string> = {
+  P1: 'Critical priority',
+  P2: 'High priority',
+  P3: 'Medium priority',
+  P4: 'Low priority',
+};
+
+export const SEVERITY_LABELS: Record<string, string> = {
+  critical: 'Critical',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+};
+
+// Done is a success, waiting needs attention, the rest is informational.
+const RECOMMENDATION_STATUS_SEVERITIES: Record<string, ChipSeverity> = {
+  awaiting_approval: 'medium',
+  task_created: 'low',
+  applied: 'low',
+};
+
+export const recommendationStatusSeverity = (status: string): ChipSeverity => RECOMMENDATION_STATUS_SEVERITIES[status] ?? 'neutral';
 
 export const APPROVAL_KIND_LABELS: Record<string, string> = {
   enrichment: 'Paid or restricted enrichment',

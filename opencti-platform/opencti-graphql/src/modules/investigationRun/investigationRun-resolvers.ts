@@ -35,6 +35,7 @@ import {
   deleteInvestigationRun,
   findInvestigationPackCatalog,
   findInvestigationRunById,
+  findInvestigationRunEnrichmentEntities,
   findInvestigationRunEnrichmentWave,
   findInvestigationRunsPaginated,
   requestInvestigationEnrichment,
@@ -93,6 +94,7 @@ const investigationRunResolvers: Resolvers = {
     analyst_feedback: (run) => run.analyst_feedback ?? [],
     approvals: (run) => run.approvals ?? [],
     enrichment_requests: (run) => run.enrichment_requests ?? [],
+    enrichment_entities: (run, _, context) => findInvestigationRunEnrichmentEntities(context, context.user, run),
     report_sources: (run) => run.report_sources ?? [],
     report_id: (run) => run.outputs?.report_id ?? null,
     can_continue: (run) => canContinueInvestigationRun(run),
@@ -111,6 +113,9 @@ const investigationRunResolvers: Resolvers = {
   },
   InvestigationFeedback: {
     user: (feedback, _, context) => context.batch.creatorBatchLoader.load(feedback.user_id),
+  },
+  InvestigationApproval: {
+    decider: (approval, _, context) => (approval.decided_by ? context.batch.creatorBatchLoader.load(approval.decided_by) : null),
   },
   InvestigationPolicy: {
     creators: (policy, _, context) => loadCreators(context, context.user, policy),

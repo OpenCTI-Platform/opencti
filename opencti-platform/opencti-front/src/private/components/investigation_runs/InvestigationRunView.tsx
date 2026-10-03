@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { graphql, useFragment, useLazyLoadQuery, useSubscription } from 'react-relay';
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useNavigate } from 'react-router';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery } from '../../../relay/environment';
@@ -27,8 +28,11 @@ import InvestigationRunEvidence from './InvestigationRunEvidence';
 import InvestigationRunHypotheses from './InvestigationRunHypotheses';
 import InvestigationRunRecommendations from './InvestigationRunRecommendations';
 import InvestigationRunReport from './InvestigationRunReport';
-import { consumeGraphAutoOpen, investigationGraphPath, isRunActive } from './investigationRunUtils';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { consumeGraphAutoOpen, investigationGraphPath, isRunActive, reportMutationOutcome } from './investigationRunUtils';
 import { InvestigationRunView_run$key } from './__generated__/InvestigationRunView_run.graphql';
+import { InvestigationRunViewRunAgainMutation } from './__generated__/InvestigationRunViewRunAgainMutation.graphql';
 import { InvestigationRunViewQuery } from './__generated__/InvestigationRunViewQuery.graphql';
 import { InvestigationRunViewSubscription } from './__generated__/InvestigationRunViewSubscription.graphql';
 
@@ -57,6 +61,9 @@ export const investigationRunViewFragment = graphql`
       id
       name
       draft_status
+      objectsCount {
+        totalCount
+      }
     }
     policy {
       id
@@ -104,6 +111,7 @@ export const investigationRunViewFragment = graphql`
       opencti_id
       entity_type
       in_draft
+      step_id
     }
     hypotheses {
       candidate_id
@@ -167,6 +175,10 @@ export const investigationRunViewFragment = graphql`
       created_at
       decided_at
       rejection_reason
+      decider {
+        id
+        name
+      }
     }
     enrichment_requests {
       id
@@ -179,6 +191,11 @@ export const investigationRunViewFragment = graphql`
       work_id
       created_at
       completed_at
+    }
+    enrichment_entities {
+      id
+      entity_type
+      name
     }
     budget {
       max_iterations
@@ -216,6 +233,14 @@ export const investigationRunViewQuery = graphql`
   }
 `;
 
+const investigationRunViewRunAgainMutation = graphql`
+  mutation InvestigationRunViewRunAgainMutation($subjectId: ID!, $policyId: ID, $caseId: ID) {
+    investigationRunAdd(subjectId: $subjectId, policyId: $policyId, caseId: $caseId) {
+      id
+    }
+  }
+`;
+
 const investigationRunViewSubscription = graphql`
   subscription InvestigationRunViewSubscription($id: ID!) {
     investigationRun(id: $id) {
@@ -229,12 +254,24 @@ interface InvestigationRunContentProps {
   data: InvestigationRunView_run$key;
   currentEntityId?: string;
   onDeleted?: () => void;
+  onRunStarted?: (runId: string) => void;
 }
 
-const InvestigationRunContent = ({ data, currentEntityId, onDeleted }: InvestigationRunContentProps) => {
+// Move the reader to a section and give it the focus, without stealing it from a control.
+const reveal = (element: HTMLElement | null) => {
+  if (!element) return;
+  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  element.focus({ preventScroll: true });
+};
+
+const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarted }: InvestigationRunContentProps) => {
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const run = useFragment(investigationRunViewFragment, data);
   const previousStatus = useRef(run.run_status);
+  const approvalsRef = useRef<HTMLDivElement>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const hypothesesRef = useRef<HTMLDivElement>(null);
   const refresh = useCallback(() => {
     fetchQuery(investigationRunViewQuery, { id: run.id }, { fetchPolicy: 'network-only' }).toPromise();
   }, [run.id]);
@@ -245,16 +282,40 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted }: Investiga
       navigate(investigationGraphPath(run.workspace_id));
     }
   }, [run.run_status, run.workspace_id, run.id]);
-  const pendingApprovals = run.approvals.filter((approval) => approval.status === 'pending');
+  const entityNames = useMemo(() => new Map(run.enrichment_entities.map((entity) => [entity.id, entity.name])), [run.enrichment_entities]);
+  const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
+  const [commitRunAgain, launching] = useApiMutation<InvestigationRunViewRunAgainMutation>(investigationRunViewRunAgainMutation);
+  // Same subject and policy; the case is kept when it is live, else a new one is created in the new draft.
+  const runAgain = () => commitRunAgain({
+    variables: { subjectId: run.subject_id, policyId: run.policy?.id ?? null, caseId: run.case && run.case.id !== run.subject_id ? run.case.id : null },
+    onCompleted: (response, errors) => {
+      const started = response.investigationRunAdd;
+      if (!started || !reportMutationOutcome(errors, t_i18n('Case Autopilot has started the investigation'))) return;
+      onRunStarted?.(started.id);
+    },
+  });
+  const handlers = {
+    // A run that is still going cannot be launched again.
+    onRunAgain: canLaunch && !isRunActive(run.run_status) && !launching ? runAgain : undefined,
+    onReviewApprovals: () => reveal(approvalsRef.current),
+  };
   return (
     <Stack spacing={3} data-testid="investigation-run-view">
-      <InvestigationRunHeader run={run} currentEntityId={currentEntityId} onDecided={refresh} onDeleted={onDeleted} />
-      {pendingApprovals.length > 0 && <InvestigationRunApprovals runId={run.id} approvals={run.approvals} onDecided={refresh} />}
-      <InvestigationRunGoalPlan run={run} />
+      <InvestigationRunHeader
+        run={run}
+        currentEntityId={currentEntityId}
+        handlers={handlers}
+        onOpenReport={() => reveal(reportRef.current)}
+        onGiveFeedback={() => reveal(hypothesesRef.current)}
+        launching={launching}
+        onDeleted={onDeleted}
+      />
+      <InvestigationRunApprovals ref={approvalsRef} run={run} entityNames={entityNames} onDecided={refresh} />
+      <InvestigationRunGoalPlan run={run} handlers={handlers} entityNames={entityNames} />
       <InvestigationRunEvidence run={run} />
-      <InvestigationRunHypotheses run={run} />
+      <Box ref={hypothesesRef} tabIndex={-1} sx={{ outline: 'none' }}><InvestigationRunHypotheses run={run} /></Box>
       <InvestigationRunRecommendations run={run} />
-      <InvestigationRunReport run={run} />
+      <Box ref={reportRef} tabIndex={-1} sx={{ outline: 'none' }}><InvestigationRunReport run={run} /></Box>
     </Stack>
   );
 };
@@ -263,10 +324,11 @@ interface InvestigationRunViewProps {
   runId: string;
   currentEntityId?: string;
   onDeleted?: () => void;
+  onRunStarted?: (runId: string) => void;
 }
 
 /** One investigation, live: every change of the run reaches the page through the subscription. */
-const InvestigationRunView = ({ runId, currentEntityId, onDeleted }: InvestigationRunViewProps) => {
+const InvestigationRunView = ({ runId, currentEntityId, onDeleted, onRunStarted }: InvestigationRunViewProps) => {
   const { t_i18n } = useFormatter();
   const subscriptionConfig = useMemo<GraphQLSubscriptionConfig<InvestigationRunViewSubscription>>(() => ({
     subscription: investigationRunViewSubscription,
@@ -277,7 +339,7 @@ const InvestigationRunView = ({ runId, currentEntityId, onDeleted }: Investigati
   if (!investigationRun) {
     return <span>{t_i18n('This investigation is no longer available.')}</span>;
   }
-  return <InvestigationRunContent data={investigationRun} currentEntityId={currentEntityId} onDeleted={onDeleted} />;
+  return <InvestigationRunContent data={investigationRun} currentEntityId={currentEntityId} onDeleted={onDeleted} onRunStarted={onRunStarted} />;
 };
 
 export default InvestigationRunView;

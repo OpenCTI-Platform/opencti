@@ -16,14 +16,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useSearchParams } from 'react-router';
+import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Card from '@common/card/Card';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../components/Loader';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import InvestigationRunView from './InvestigationRunView';
-import { runStatusLabel } from './investigationRunUtils';
+import RunCaseAutopilotDialog from './RunCaseAutopilotDialog';
+import { INVESTIGATION_LAUNCHED$, RUN_TRIGGER_LABELS, runStatusLabel } from './investigationRunUtils';
+import { CASE_AUTOPILOT_DOCS_URL } from './investigationRunOutcomes';
 import { InvestigationRunsTabQuery } from './__generated__/InvestigationRunsTabQuery.graphql';
 
 const investigationRunsTabQuery = graphql`
@@ -53,6 +58,34 @@ const investigationRunsTabQuery = graphql`
   }
 `;
 
+/** The shape of an investigation while it loads: header, progress, metadata and the first steps. */
+export const InvestigationRunSkeleton = () => (
+  <Stack spacing={3} data-testid="investigation-run-skeleton" aria-busy>
+    <Card title={<Skeleton variant="text" width={160} />}>
+      <Stack spacing={2}>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Skeleton variant="rounded" width={96} height={24} />
+          <Skeleton variant="text" width="40%" />
+        </Stack>
+        <Skeleton variant="rounded" height={8} />
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' } }}>
+          {[0, 1, 2, 3].map((key) => <Skeleton key={key} variant="text" height={40} />)}
+        </Box>
+      </Stack>
+    </Card>
+    <Card title={<Skeleton variant="text" width={220} />}>
+      <Stack spacing={1.5}>
+        {[0, 1, 2].map((key) => (
+          <Stack key={key} direction="row" spacing={1.5} alignItems="center">
+            <Skeleton variant="circular" width={20} height={20} />
+            <Skeleton variant="text" width={`${60 - key * 10}%`} />
+          </Stack>
+        ))}
+      </Stack>
+    </Card>
+  </Stack>
+);
+
 interface InvestigationRunsTabProps {
   entityId: string;
   entityType: string;
@@ -63,6 +96,8 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
   const { t_i18n, fldt } = useFormatter();
   const [searchParams, setSearchParams] = useSearchParams();
   const [fetchKey, setFetchKey] = useState(0);
+  const [launching, setLaunching] = useState(false);
+  const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
   const requestedRunId = searchParams.get('run');
   // A case holds the runs attached to it; an incident, the runs that investigated it.
   const isIncident = entityType === 'Incident';
@@ -86,6 +121,10 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
     setSearchParams({}, { replace: true });
     setFetchKey(fetchKey + 1);
   };
+  const onRunStarted = (runId: string) => {
+    setSearchParams({ run: runId }, { replace: true });
+    setFetchKey(fetchKey + 1);
+  };
   const requestedMissing = !!requestedRunId && !requestedRun;
   return (
     <Stack spacing={3} data-testid="case-autopilot-tab">
@@ -97,7 +136,7 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
           <SelectContent aria-label={t_i18n('Investigation')}>
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
-                {`${fldt(run.created_at)} - ${t_i18n(runStatusLabel(run.run_status))}`}
+                {`${fldt(run.created_at)} - ${t_i18n(runStatusLabel(run.run_status))} - ${t_i18n(RUN_TRIGGER_LABELS[run.run_trigger] ?? 'Manual')}`}
               </SelectItem>
             ))}
           </SelectContent>
@@ -111,17 +150,37 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
         </Card>
       )}
       {!requestedMissing && selectedRun && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <InvestigationRunView key={selectedRun.id} runId={selectedRun.id} currentEntityId={entityId} onDeleted={onDeleted} />
+        <Suspense fallback={<InvestigationRunSkeleton />}>
+          <InvestigationRunView key={selectedRun.id} runId={selectedRun.id} currentEntityId={entityId} onDeleted={onDeleted} onRunStarted={onRunStarted} />
         </Suspense>
       )}
       {!requestedMissing && !selectedRun && (
         <Card title={t_i18n('Case Autopilot')}>
-          <Typography variant="body2" data-testid="case-autopilot-empty">
-            {t_i18n('No investigation yet. Choose Run Case Autopilot in the Ask AI menu: Case Autopilot investigates with the XTM One investigation engine and the connectors of this platform, scores the hypotheses, proposes recommendations and writes its results to a draft you approve.')}
-          </Typography>
+          <Stack spacing={1.5} data-testid="case-autopilot-empty">
+            <Typography variant="body1">{t_i18n('No investigation yet')}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t_i18n('Case Autopilot investigates with the XTM One investigation engine and the connectors of this platform, scores the hypotheses, proposes recommendations and writes its results to a draft you approve.')}
+            </Typography>
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+              {canLaunch && (
+                <Button intent="ai" onClick={() => setLaunching(true)} data-testid="case-autopilot-empty-run">{t_i18n('Run Case Autopilot')}</Button>
+              )}
+              <a href={CASE_AUTOPILOT_DOCS_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
+            </Stack>
+          </Stack>
         </Card>
       )}
+      <RunCaseAutopilotDialog
+        open={launching}
+        subjectId={entityId}
+        subjectType={entityType}
+        onClose={() => setLaunching(false)}
+        onStarted={({ runId }) => {
+          setLaunching(false);
+          INVESTIGATION_LAUNCHED$.next(entityId);
+          onRunStarted(runId);
+        }}
+      />
     </Stack>
   );
 };

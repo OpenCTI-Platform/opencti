@@ -13,27 +13,30 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
+import React, { forwardRef, Suspense, useState } from 'react';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
-import { Chip, Textarea } from '@filigran/design-system';
+import { CheckCircleOutlined, HighlightOffOutlined } from '@mui/icons-material';
+import { Chip, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import InvestigationRunDraftPreview from './InvestigationRunDraftPreview';
 import { APPROVAL_KIND_LABELS, decideInvestigationApprovals, type InvestigationApprovalDecision } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
-type Approval = InvestigationRunView_run$data['approvals'][number];
+type Run = InvestigationRunView_run$data;
+type Approval = Run['approvals'][number];
 
-interface InvestigationRunApprovalsProps {
-  runId: string;
-  approvals: InvestigationRunView_run$data['approvals'];
-  onDecided: () => void;
-}
+// Decided gates kept visible, one line each, under the pending ones.
+const DECIDED_VISIBLE = 3;
 
 const requiredCapability = (kind: string) => {
   if (kind === 'enrichment') return KNOWLEDGE_KNENRICHMENT;
@@ -41,8 +44,55 @@ const requiredCapability = (kind: string) => {
   return KNOWLEDGE_KNUPDATE;
 };
 
-const ApprovalRow = ({ approval, runId, onDecided }: { approval: Approval; runId: string; onDecided: () => void }) => {
-  const { t_i18n, fldt } = useFormatter();
+const RelativeTime = ({ date, template }: { date: string; template: string }) => {
+  const { t_i18n, rd, fldt } = useFormatter();
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Typography variant="caption" color="text.secondary" component="span" tabIndex={0}>
+          {t_i18n(template, { values: { time: rd(date) } })}
+        </Typography>
+      </TooltipTrigger>
+      <TooltipContent>{fldt(date)}</TooltipContent>
+    </Tooltip>
+  );
+};
+
+/** The title of a gate and what approving it changes, in words. */
+const useGateText = (run: Run, approval: Approval, entityNames: Map<string, string>) => {
+  const { t_i18n, n } = useFormatter();
+  if (approval.kind === 'enrichment') {
+    const connector = run.enrichment_requests.find((request) => request.connector_id === approval.connector_id)?.connector_name
+      ?? t_i18n('An enrichment connector');
+    const entity = (approval.entity_id && entityNames.get(approval.entity_id)) || t_i18n('a restricted entity');
+    const remaining = Math.max(0, run.budget.max_enrichment_jobs - run.budget.used_enrichment_jobs);
+    return {
+      title: t_i18n('Run {connector} on {entity}', { values: { connector, entity } }),
+      change: t_i18n('The connector queries its service about this entity and adds what it finds to the investigation draft. It uses 1 of the {remaining} enrichment jobs left.', { values: { remaining: n(remaining) } }),
+    };
+  }
+  const recommendation = run.recommendations.find((item) => item.id === approval.recommendation_id);
+  if (recommendation?.action_kind === 'severity_change' && recommendation.severity) {
+    return {
+      title: recommendation.text,
+      change: t_i18n('The severity of the case changes to {severity}.', { values: { severity: t_i18n(recommendation.severity) } }),
+    };
+  }
+  return {
+    title: recommendation?.text ?? approval.description,
+    change: t_i18n('A task is created on the case for an analyst to carry out: Case Autopilot never shares, notifies or closes by itself.'),
+  };
+};
+
+interface DecisionControlsProps {
+  run: Run;
+  approval: Approval;
+  approveLabel: string;
+  onDecided: () => void;
+}
+
+const DecisionControls = ({ run, approval, approveLabel, onDecided }: DecisionControlsProps) => {
+  const { t_i18n } = useFormatter();
   const canDecide = useGranted([requiredCapability(approval.kind)]);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState(false);
@@ -50,71 +100,157 @@ const ApprovalRow = ({ approval, runId, onDecided }: { approval: Approval; runId
   const decide = async (decision: InvestigationApprovalDecision, rejectionReason: string | null = null) => {
     setBusy(true);
     try {
-      await decideInvestigationApprovals(runId, [{ tool_call_id: approval.id, decision, rejection_reason: rejectionReason }]);
+      await decideInvestigationApprovals(run.id, [{ tool_call_id: approval.id, decision, rejection_reason: rejectionReason }]);
       MESSAGING$.notifySuccess(decision === 'reject' ? t_i18n('The request was rejected') : t_i18n('The request was approved'));
       setRejecting(false);
       setReason('');
       onDecided();
     } catch (error) {
-      MESSAGING$.notifyError(`${t_i18n('The approval was not recorded')}: ${(error as Error).message}`);
+      MESSAGING$.notifyError(t_i18n('The approval was not recorded: {reason}', { values: { reason: (error as Error).message } }));
     } finally {
       setBusy(false);
     }
   };
+  if (!canDecide) {
+    return <Typography variant="body2" color="text.secondary">{t_i18n('You are not allowed to decide this request')}</Typography>;
+  }
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }} justifyContent="space-between" data-testid={`investigation-approval-${approval.kind}`}>
-      <Stack spacing={0.5} sx={{ flex: 1 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Chip label={t_i18n(APPROVAL_KIND_LABELS[approval.kind] ?? approval.kind)} severity="medium" size="sm" />
-          <Typography variant="body1">{approval.description}</Typography>
-        </Stack>
-        {approval.reason && <Typography variant="body2" color="text.secondary">{approval.reason}</Typography>}
-        <Typography variant="caption" color="text.secondary">{fldt(approval.created_at)}</Typography>
-      </Stack>
-      {canDecide ? (
-        <Stack direction="row" spacing={1}>
-          <Button size="small" onClick={() => decide('approve')} disabled={busy}>{t_i18n('Approve')}</Button>
-          {approval.kind === 'enrichment' && (
-            <Button size="small" variant="secondary" onClick={() => decide('approve_always')} disabled={busy}>
-              {t_i18n('Approve for this connector')}
-            </Button>
-          )}
-          <Button size="small" variant="secondary" intent="destructive" onClick={() => setRejecting(true)} disabled={busy}>
-            {t_i18n('Reject')}
+    <>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Button size="small" onClick={() => decide('approve')} disabled={busy} data-testid={`investigation-approve-${approval.kind}`}>{approveLabel}</Button>
+        {approval.kind === 'enrichment' && (
+          <Button size="small" variant="secondary" onClick={() => decide('approve_always')} disabled={busy}>
+            {t_i18n('Approve for this connector')}
           </Button>
-        </Stack>
-      ) : (
-        <Typography variant="body2" color="text.secondary">{t_i18n('You are not allowed to decide this request')}</Typography>
-      )}
+        )}
+        <Button size="small" variant="secondary" onClick={() => setRejecting(true)} disabled={busy} data-testid={`investigation-reject-${approval.kind}`}>
+          {t_i18n('Reject')}
+        </Button>
+      </Stack>
       <Dialog open={rejecting} onClose={() => setRejecting(false)} title={t_i18n('Reject the request')} size="small">
-        <Textarea
-          label={t_i18n('Reason (optional)')}
-          value={reason}
-          maxLength={2000}
-          onChange={(event) => setReason(event.target.value)}
-        />
+        <Stack spacing={2}>
+          <Typography variant="body2">{t_i18n('The reason is kept with the investigation as analyst feedback.')}</Typography>
+          <Textarea
+            label={t_i18n('Reason (optional)')}
+            value={reason}
+            maxLength={2000}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </Stack>
         <DialogActions>
           <Button variant="secondary" onClick={() => setRejecting(false)} disabled={busy}>{t_i18n('Cancel')}</Button>
           <Button intent="destructive" onClick={() => decide('reject', reason.trim() || null)} disabled={busy}>{t_i18n('Reject')}</Button>
         </DialogActions>
       </Dialog>
+    </>
+  );
+};
+
+const DraftApproval = ({ run, approval, onDecided }: { run: Run; approval: Approval; onDecided: () => void }) => {
+  const { t_i18n, n } = useFormatter();
+  const [count, setCount] = useState<number | null>(null);
+  const title = count && count > 0
+    ? t_i18n(run.case ? 'Approve {count} changes to this case' : 'Approve {count} changes', { values: { count: n(count) } })
+    : t_i18n('Approve the investigation draft');
+  return (
+    <Stack spacing={1.5} data-testid="investigation-approval-draft_validation">
+      <Stack spacing={0.25}>
+        <Typography variant="h3" component="h3">{title}</Typography>
+        <RelativeTime date={approval.created_at} template="Proposed by Case Autopilot {time}" />
+      </Stack>
+      {run.draft_id && (
+        <Suspense fallback={<Stack spacing={1}>{[0, 1, 2].map((key) => <Skeleton key={key} variant="text" width={`${70 - key * 15}%`} />)}</Stack>}>
+          <InvestigationRunDraftPreview draftId={run.draft_id} onCount={setCount} />
+        </Suspense>
+      )}
+      <DecisionControls
+        run={run}
+        approval={approval}
+        approveLabel={count && count > 0 ? t_i18n('Approve {count} changes', { values: { count: n(count) } }) : t_i18n('Approve the draft')}
+        onDecided={onDecided}
+      />
     </Stack>
   );
 };
 
-/** Approval gates the run is waiting for: paid enrichments, sensitive recommendations, the investigation draft. */
-const InvestigationRunApprovals = ({ runId, approvals, onDecided }: InvestigationRunApprovalsProps) => {
+const GateApproval = ({ run, approval, entityNames, onDecided }: { run: Run; approval: Approval; entityNames: Map<string, string>; onDecided: () => void }) => {
   const { t_i18n } = useFormatter();
-  const pending = approvals.filter((approval) => approval.status === 'pending');
+  const text = useGateText(run, approval, entityNames);
   return (
-    <Card title={`${t_i18n('Waiting for your approval')} (${pending.length})`}>
-      <Stack spacing={2}>
-        {pending.map((approval) => (
-          <ApprovalRow key={approval.id} approval={approval} runId={runId} onDecided={onDecided} />
-        ))}
+    <Stack spacing={1} data-testid={`investigation-approval-${approval.kind}`}>
+      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+        <Chip label={t_i18n(APPROVAL_KIND_LABELS[approval.kind] ?? 'Sensitive recommendation')} severity="medium" size="sm" />
+        <Typography variant="body1" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{text.title}</Typography>
       </Stack>
-    </Card>
+      <Typography variant="body2">{text.change}</Typography>
+      {approval.reason && <Typography variant="body2" color="text.secondary">{approval.reason}</Typography>}
+      <RelativeTime date={approval.created_at} template="Requested by Case Autopilot {time}" />
+      <DecisionControls run={run} approval={approval} approveLabel={t_i18n('Approve')} onDecided={onDecided} />
+    </Stack>
   );
 };
+
+const DecidedLine = ({ run, approval, entityNames }: { run: Run; approval: Approval; entityNames: Map<string, string> }) => {
+  const { t_i18n } = useFormatter();
+  const text = useGateText(run, approval, entityNames);
+  const approved = approval.status === 'approved';
+  const who = approval.decider?.name ?? t_i18n('an analyst');
+  const subject = approval.kind === 'draft_validation'
+    ? t_i18n(approved ? 'the changes were written to the case' : 'the draft stays open for review')
+    : text.title;
+  return (
+    <Stack component="li" direction="row" spacing={1} alignItems="center" sx={{ paddingY: 0.25 }} data-testid="investigation-approval-decided">
+      {approved
+        ? <CheckCircleOutlined fontSize="small" color="success" titleAccess={t_i18n('Approved')} />
+        : <HighlightOffOutlined fontSize="small" color="action" titleAccess={t_i18n('Rejected')} />}
+      <Typography variant="body2" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+        {t_i18n(approved ? 'Approved by {user}: {subject}' : 'Rejected by {user}: {subject}', { values: { user: who, subject } })}
+        {!approved && approval.rejection_reason ? ` - ${approval.rejection_reason}` : ''}
+      </Typography>
+      {approval.decided_at && <RelativeTime date={approval.decided_at} template="{time}" />}
+    </Stack>
+  );
+};
+
+interface InvestigationRunApprovalsProps {
+  run: Run;
+  entityNames: Map<string, string>;
+  onDecided: () => void;
+}
+
+/**
+ * The gates of an investigation: what approving each one changes, next to
+ * Approve and Reject. Decided gates fold into one line each.
+ */
+const InvestigationRunApprovals = forwardRef<HTMLDivElement, InvestigationRunApprovalsProps>(({ run, entityNames, onDecided }, ref) => {
+  const { t_i18n } = useFormatter();
+  const pending = run.approvals.filter((approval) => approval.status === 'pending');
+  const decided = run.approvals
+    .filter((approval) => approval.status !== 'pending' && approval.decided_at)
+    .sort((a, b) => (b.decided_at ?? '').localeCompare(a.decided_at ?? ''))
+    .slice(0, DECIDED_VISIBLE);
+  if (pending.length === 0 && decided.length === 0) return null;
+  const draftGate = pending.find((approval) => approval.kind === 'draft_validation');
+  const otherGates = pending.filter((approval) => approval.kind !== 'draft_validation');
+  return (
+    <Box ref={ref} tabIndex={-1} id="investigation-run-approvals" sx={{ outline: 'none' }} aria-label={t_i18n('Approvals')}>
+      <Card title={pending.length > 0 ? t_i18n('Waiting for your approval ({count})', { values: { count: pending.length } }) : t_i18n('Approvals')}>
+        <Stack spacing={2} divider={<Divider flexItem />}>
+          {draftGate && <DraftApproval run={run} approval={draftGate} onDecided={onDecided} />}
+          {otherGates.map((approval) => (
+            <GateApproval key={approval.id} run={run} approval={approval} entityNames={entityNames} onDecided={onDecided} />
+          ))}
+          {decided.length > 0 && (
+            <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0 }} aria-label={t_i18n('Decided approvals')}>
+              {decided.map((approval) => <DecidedLine key={approval.id} run={run} approval={approval} entityNames={entityNames} />)}
+            </Box>
+          )}
+        </Stack>
+      </Card>
+    </Box>
+  );
+});
+
+InvestigationRunApprovals.displayName = 'InvestigationRunApprovals';
 
 export default InvestigationRunApprovals;

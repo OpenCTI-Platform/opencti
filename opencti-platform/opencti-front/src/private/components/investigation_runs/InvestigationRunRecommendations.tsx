@@ -33,10 +33,13 @@ import {
   elementPath,
   feedbackDecisionFor,
   isRunActive,
+  PRIORITY_LABELS,
   prioritySeverity,
   RECOMMENDATION_ACTION_LABELS,
   RECOMMENDATION_STATUS_LABELS,
+  recommendationStatusSeverity,
   reportMutationOutcome,
+  SEVERITY_LABELS,
 } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 import { InvestigationRunRecommendationsApplyMutation } from './__generated__/InvestigationRunRecommendationsApplyMutation.graphql';
@@ -85,14 +88,19 @@ const InvestigationRunRecommendations = ({ run }: InvestigationRunRecommendation
             >
               <Stack spacing={0.75} sx={{ flex: 1 }}>
                 <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-                  <Chip label={recommendation.priority} severity={prioritySeverity(recommendation.priority)} size="sm" />
-                  <Chip label={t_i18n(RECOMMENDATION_ACTION_LABELS[recommendation.action_kind] ?? recommendation.action_kind)} size="sm" />
+                  <Chip label={t_i18n(PRIORITY_LABELS[recommendation.priority] ?? 'Medium priority')} severity={prioritySeverity(recommendation.priority)} size="sm" />
+                  <Chip label={t_i18n(RECOMMENDATION_ACTION_LABELS[recommendation.action_kind] ?? 'Other')} size="sm" />
                   <Chip
-                    label={t_i18n(RECOMMENDATION_STATUS_LABELS[recommendation.status] ?? recommendation.status)}
-                    severity={recommendation.status === 'awaiting_approval' ? 'medium' : 'neutral'}
+                    label={t_i18n(RECOMMENDATION_STATUS_LABELS[recommendation.status] ?? 'Proposed')}
+                    severity={recommendationStatusSeverity(recommendation.status)}
                     size="sm"
                   />
-                  {recommendation.severity && <Chip label={`${t_i18n('Severity')}: ${recommendation.severity}`} size="sm" />}
+                  {recommendation.severity && (
+                    <Chip
+                      label={t_i18n('Severity: {severity}', { values: { severity: t_i18n(SEVERITY_LABELS[recommendation.severity] ?? 'Medium') } })}
+                      size="sm"
+                    />
+                  )}
                 </Stack>
                 <Typography variant="body1">{recommendation.text}</Typography>
                 {recommendation.rationale && <Typography variant="body2" color="text.secondary">{recommendation.rationale}</Typography>}

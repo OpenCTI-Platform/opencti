@@ -121,7 +121,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
         <Stack spacing={2}>
           {threshold !== undefined && threshold !== null && (
             <Typography variant="body2" color="text.secondary">
-              {`${t_i18n('An attribution is written to the draft when the leading hypothesis reaches this confidence')}: ${threshold}%`}
+              {t_i18n('An attribution is written to the draft when the leading hypothesis reaches {threshold}% confidence.', { values: { threshold } })}
             </Typography>
           )}
           <Box sx={{ overflowX: 'auto' }}>
@@ -162,7 +162,9 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                       const cell = hypothesis.evidence.find((item) => item.evidence_id === row.id);
                       return (
                         <TableCell key={hypothesis.candidate_id} align="center">
-                          {cell ? <ConsistencyCell cell={cell} /> : <span aria-label={t_i18n('Not assessed')}>-</span>}
+                          {cell ? <ConsistencyCell cell={cell} /> : (
+                            <Typography component="span" variant="caption" color="text.disabled">{t_i18n('Not assessed')}</Typography>
+                          )}
                         </TableCell>
                       );
                     })}

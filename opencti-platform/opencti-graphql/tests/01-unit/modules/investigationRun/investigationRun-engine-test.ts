@@ -155,6 +155,23 @@ describe('Case Autopilot engine state', () => {
     expect(mirrorReportSources(engine)).toEqual([{ n: 2, label: 'Vendor write-up', href: 'https://vendor.example/apt28' }, { n: 3, label: 'Unsafe', href: null }]);
   });
 
+  it('keeps the step that found each piece of evidence', () => {
+    const flat = engineAnswer({
+      evidence: [{ n: 1, kind: 'url', label: 'Vendor write-up', href: 'https://vendor.example/apt28', step_id: 's2' }],
+    }) as NonNullable<ReturnType<typeof engineAnswer>>;
+    expect(mirrorEvidence([], flat)[0].step_id).toBe('s2');
+    // An older answer without the flat list: the evidence is read from its step.
+    const nested = engineAnswer({
+      evidence: undefined,
+      report_sources: [],
+      steps: [{ step_id: 's1', position: 1, step_status: 'completed', source_name: 'Web', evidence: [{ kind: 'url', label: 'Blog', href: 'https://blog.example/a' }] }],
+    }) as NonNullable<ReturnType<typeof engineAnswer>>;
+    expect(mirrorEvidence([], nested)[0]).toMatchObject({ label: 'Blog', step_id: 's1' });
+    // Evidence collected by OpenCTI keeps no step; a known item keeps the step it was found by.
+    const known = mirrorEvidence([{ ...mirrorEvidence([], flat)[0], step_id: null }], flat);
+    expect(known[0].step_id).toBe('s2');
+  });
+
   it('keeps the engine goal plan as a bounded JSON object', () => {
     const goalPlan = { actions: [{ slug: 'enrich' }] };
     expect(boundGoalPlan(goalPlan)).toEqual(goalPlan);
