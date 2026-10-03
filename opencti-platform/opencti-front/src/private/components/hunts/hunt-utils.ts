@@ -209,6 +209,13 @@ export const hasHuntLogic = (hunt: {
 export const isHuntPendingReview = (hunt: { hunt_source_kind?: string | null; hunt_status?: string | null }) => {
   return (hunt.hunt_source_kind === 'agent' || hunt.hunt_source_kind === 'hub') && hunt.hunt_status === 'draft';
 };
+
+/** The platform refuses to run (or retry) draft and retired hunts, and any hunt from inside a draft workspace; previews stay allowed. */
+export const canStartHuntRun = (huntStatus: string | null | undefined, inDraftWorkspace: boolean) => {
+  return !inDraftWorkspace && (huntStatus === 'active' || huntStatus === 'paused');
+};
+
+export const huntDraftWorkspacePath = (draftId: string) => `/dashboard/data/import/draft/${draftId}`;
 // endregion
 
 // region runs
@@ -377,6 +384,12 @@ export const buildHuntSchedule = (mode: HuntScheduleMode, cron: string): string 
   return HUNT_SCHEDULE_MANUAL;
 };
 
+/** Form fields of a stored schedule, the inverse of buildHuntSchedule. */
+export const huntScheduleFormValues = (schedule?: string | null): { schedule_mode: HuntScheduleMode; schedule_cron: string } => {
+  const mode = huntScheduleMode(schedule);
+  return { schedule_mode: mode, schedule_cron: mode === 'cron' ? (schedule ?? '').trim() : '' };
+};
+
 /** One benign pattern per line, blank lines ignored, duplicates removed. */
 export const parseBenignPatterns = (text: string): string[] => {
   return Array.from(new Set(text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0)));
@@ -431,6 +444,48 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string) =
     objectLabel: optionValues(values.objectLabel),
     externalReferences: optionValues(values.externalReferences),
   };
+};
+
+/** Attributes of the edition drawer; the status and the logic have their own controls. */
+export const HUNT_EDITABLE_KEYS = [
+  'name',
+  'description',
+  'hypothesis',
+  'hunt_type',
+  'hunt_scope',
+  'hunt_schedule',
+  'trigger_filters',
+  'hunt_pir_activation',
+  'time_window_hours',
+  'expected_observables',
+  'benign_patterns',
+  'escalation_threshold',
+  'hunt_max_results',
+  'huntTargets',
+  'huntTechniques',
+  'huntSources',
+  'createdBy',
+  'objectMarking',
+] as const;
+
+const toEditValue = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined) return [];
+  return [value];
+};
+
+/** Field patches turning the initial edition values into the submitted ones, changed attributes only. */
+export const buildHuntEditPatch = (
+  initial: HuntFormValues,
+  initialTriggerFilters: string,
+  values: HuntFormValues,
+  triggerFilters: string,
+): { key: string; value: unknown[] }[] => {
+  const before = toHuntAddInput(initial, initialTriggerFilters) as Record<string, unknown>;
+  const after = toHuntAddInput(values, triggerFilters) as Record<string, unknown>;
+  return HUNT_EDITABLE_KEYS
+    .filter((key) => JSON.stringify(before[key] ?? null) !== JSON.stringify(after[key] ?? null))
+    .map((key) => ({ key, value: toEditValue(after[key]) }));
 };
 // endregion
 

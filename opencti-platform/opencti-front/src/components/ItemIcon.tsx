@@ -311,6 +311,7 @@ const iconSelector = (
     case 'hunt':
       return <Crosshairs style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'hunt-run':
+    case 'hunt-result':
       return <CrosshairsGps style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'channel':
       return (
