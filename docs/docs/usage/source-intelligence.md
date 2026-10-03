@@ -66,6 +66,8 @@ The **Sources** card of an entity, an observable or a relationship (see [Provena
 
 Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page. The cost is normalized to each window to compute the cost per actionable object.
 
+Costs are never converted between currencies. A widget showing a cost metric (number, list, bubble or trend) only aggregates the sources using the currency declared by most of the selected sources; filter the widget on a set of sources to look at another currency.
+
 ### Overlap
 
 The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects, the share of each source and the Jaccard index. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement.
