@@ -7,6 +7,7 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
@@ -57,6 +58,7 @@ interface RetentionFormValues {
   name: string;
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
+  scope: 'knowledge' | 'conflicts';
   filters: string;
 }
 
@@ -73,7 +75,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
       filters: jsonFilters,
     };
     commitMutation({
@@ -105,7 +106,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
       filters: jsonFilters,
     };
     commitMutation({
@@ -116,7 +116,9 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       onCompleted: (data: RetentionCreationCheckMutation$data) => {
         setVerified(true);
         MESSAGING$.notifySuccess(
-          t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+          values.scope === 'conflicts'
+            ? t_i18n('Retention policy will purge outdated conflicting values on {count} elements', { values: { count: data.retentionRuleCheck } })
+            : t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
         );
       },
       onError: () => {
@@ -199,10 +201,16 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-                disabled={true}
+                onChange={() => setVerified(false)}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
+                <SelectItem value="conflicts">{t_i18n('Source conflicts')}</SelectItem>
               </Field>
+              {formValues.scope === 'conflicts' && (
+                <Alert severity="info" style={{ marginTop: 15 }}>
+                  {t_i18n('Elements are kept: only the conflicting values that no source re-asserted during the retention period are purged.')}
+                </Alert>
+              )}
               <Box sx={{
                 paddingTop: 4,
                 display: 'flex',

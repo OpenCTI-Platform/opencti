@@ -37,6 +37,13 @@ class ThreatActor:
             spec_version
             created_at
             updated_at
+            ... on StixCoreObject {
+                corroboration_count
+                last_asserted_at
+                freshness_days
+                has_conflicts
+                freshness_stale
+            }
             creators {
                 id
                 name

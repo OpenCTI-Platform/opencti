@@ -47,6 +47,7 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
     .min(1, t('Minimum one event type'))
     .required(t('This field is required')),
   notifiers: Yup.array().nullable(),
+  corroboration_threshold: Yup.number().integer().min(2, t('The threshold must be between 2 and 200')).max(200, t('The threshold must be between 2 and 200')),
 });
 
 export const instanceTriggerDescription = 'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
@@ -57,6 +58,7 @@ interface TriggerLiveAddInput {
   event_types: { value: TriggerEventType; label: string }[];
   notifiers: { value: string; label: string }[];
   recipients: string[];
+  corroboration_threshold: number;
 }
 
 interface TriggerLiveCreationProps {
@@ -99,6 +101,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
+  // Provenance events are opt-in: available, never selected by default
+  const provenanceEventTypesOptions: { value: TriggerEventType; label: string }[] = [
+    { value: 'corroboration', label: t_i18n('Corroboration reached') },
+    { value: 'conflict', label: t_i18n('Source conflict detected') },
+  ];
   const onReset = () => {
     handleClose?.();
     setInstanceTrigger(false);
@@ -132,20 +139,23 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       : eventTypesOptions,
     notifiers: [],
     recipients: recipientId ? [recipientId] : [],
+    corroboration_threshold: 2,
   };
   const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
     const jsonFilters = instance_trigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
+    const eventTypes = values.event_types.map((n) => n.value);
     const finalValues = {
       name: values.name,
-      event_types: values.event_types.map((n) => n.value),
+      event_types: eventTypes,
       notifiers: values.notifiers.map((n) => n.value),
       description: values.description,
       filters: jsonFilters,
       recipients: values.recipients,
       instance_trigger,
+      ...(eventTypes.includes('corroboration') ? { corroboration_threshold: parseInt(String(values.corroboration_threshold), 10) } : {}),
     };
     commitLive({
       variables: {
@@ -187,9 +197,20 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           multiple={true}
           label={t_i18n('Triggering on')}
           options={
-            instance_trigger ? instanceEventTypesOptions : eventTypesOptions
+            [...(instance_trigger ? instanceEventTypesOptions : eventTypesOptions), ...provenanceEventTypesOptions]
           }
         />
+        {values.event_types.some((eventType) => eventType.value === 'corroboration') && (
+          <Field
+            component={TextField}
+            variant="outlined"
+            type="number"
+            name="corroboration_threshold"
+            label={t_i18n('Corroboration threshold (distinct sources)')}
+            fullWidth={true}
+            style={fieldSpacingContainerStyle}
+          />
+        )}
         <NotifierField name="notifiers" onChange={setFieldValue} />
         <Field
           component={SwitchField}

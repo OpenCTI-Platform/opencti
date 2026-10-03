@@ -6,6 +6,13 @@ SCO_PROPERTIES = """
     spec_version
     created_at
     updated_at
+    ... on StixCoreObject {
+        corroboration_count
+        last_asserted_at
+        freshness_days
+        has_conflicts
+        freshness_stale
+    }
     objectOrganization {
         id
         standard_id
@@ -340,6 +347,13 @@ SCO_PROPERTIES_WITH_FILES = """
     spec_version
     created_at
     updated_at
+    ... on StixCoreObject {
+        corroboration_count
+        last_asserted_at
+        freshness_days
+        has_conflicts
+        freshness_stale
+    }
     objectOrganization {
         id
         standard_id

@@ -34,6 +34,10 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
     start_time
     stop_time
     description
+    corroboration_count
+    freshness_days
+    freshness_stale
+    has_conflicts
     fromRole
     toRole
     created_at
@@ -313,7 +317,8 @@ const Relationships = () => {
     toName: {},
     createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
     creator: { percentWidth: 7, isSortable: isRuntimeSort },
-    created_at: { percentWidth: 12 },
+    corroboration_count: { percentWidth: 8 },
+    created_at: { percentWidth: 10 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 

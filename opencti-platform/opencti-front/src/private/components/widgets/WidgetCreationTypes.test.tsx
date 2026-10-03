@@ -19,6 +19,8 @@ const ALL_VISUALIZATION_TYPES = [
   'heatmap',
   'tree',
   'map',
+  'provenance-freshness',
+  'provenance-single-sourced',
   'bookmark',
   'wordcloud',
 ];

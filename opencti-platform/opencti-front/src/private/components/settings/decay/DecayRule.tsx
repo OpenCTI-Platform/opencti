@@ -10,6 +10,7 @@ import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRu
 import { useTheme } from '@mui/styles';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
+import KnowledgeDecayRuleView from './KnowledgeDecayRuleView';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,6 +29,7 @@ const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
     decayRule(id: $id) {
       ...DecayRule_decayRule
+      ...KnowledgeDecayRuleView_decayRule
     }
   }
 `;
@@ -48,6 +50,7 @@ const decayRuleFragment = graphql`
     decay_filters
     active
     order
+    target_scope
     decaySettingsChartData {
       live_score_serie {
         updated_at
@@ -80,6 +83,28 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   }
 
   const decayFilters = decayRule?.decay_filters ? JSON.parse(decayRule.decay_filters) : null;
+
+  if (decayRule.target_scope !== 'indicator' && queryResult.decayRule) {
+    return (
+      <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Decay rules'), link: '/dashboard/settings/customization/decay' },
+          { label: decayRule.name, current: true },
+        ]}
+        />
+        <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
+          <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
+            <TitleMainEntity>{decayRule.name}</TitleMainEntity>
+            <ItemBoolean status={decayRule.active ?? false} label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')} />
+          </div>
+          <DecayRulePopover decayRule={decayRule} />
+        </div>
+        <KnowledgeDecayRuleView decayRule={queryResult.decayRule} />
+      </div>
+    );
+  }
 
   return (
     <div style={{

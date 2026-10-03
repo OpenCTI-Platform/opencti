@@ -29,6 +29,10 @@ enum TriggerEventType {
     create
     update
     delete
+    # Provenance: the element reached the corroboration threshold (distinct sources)
+    corroboration
+    # Provenance: a source proposed an alternative value for a field of the element
+    conflict
 }
 input TriggerLiveAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
@@ -38,6 +42,7 @@ input TriggerLiveAddInput {
     instance_trigger: Boolean!
     filters: String
     recipients: [String!]
+    corroboration_threshold: Int @constraint(min: 2, max: 200)
 }
 input TriggerDigestAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
@@ -75,6 +80,7 @@ type Trigger implements InternalObject & BasicObject {
     isDirectAdministrator: Boolean
     currentUserAccessRight: String
     instance_trigger: Boolean
+    corroboration_threshold: Int
 }
 type TriggerConnection {
     pageInfo: PageInfo!

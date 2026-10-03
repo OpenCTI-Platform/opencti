@@ -140,6 +140,20 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of PIRs
 - The number of decay rules created
 
+### Provenance and corroboration
+
+- The number of active knowledge decay rules
+- The number of knowledge decay rules created
+- The number of relationships with provenance
+- The number of corroborated relationships (asserted by 2 or more sources)
+- The number of stale knowledge elements
+- The number of elements flagged as stale by the knowledge decay rules
+- The number of knowledge elements with source conflicts
+- The number of source conflicts detected
+- The number of conflicting values adopted
+
+No source and no knowledge content is ever collected, only counts.
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform

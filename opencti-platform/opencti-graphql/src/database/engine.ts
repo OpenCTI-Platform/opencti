@@ -201,6 +201,7 @@ import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-map
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { PROVENANCE_SIDE_CHANNEL_FIELDS } from '../modules/provenance/provenance-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3934,6 +3935,7 @@ export const elUpdate = async (
   documentId: string,
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
+  opts: { refresh?: boolean } = {},
 ) => {
   const updateOperation = async () => {
     const entityType = documentBody.entity_type ? documentBody.entity_type : '';
@@ -3942,7 +3944,7 @@ export const elUpdate = async (
       index: indexName,
       retry_on_conflict: retry,
       timeout: BULK_TIMEOUT,
-      refresh: true,
+      refresh: opts.refresh ?? true,
       body: documentBody,
     };
     try {
@@ -4959,7 +4961,8 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
   const instanceToUse = await getInstanceToUpdate(context, user, instance);
   const esData = await prepareElementForIndexing(instanceToUse);
   validateDataBeforeIndexing(esData);
-  const dataToReplace = R.pipe(R.dissoc('representative'), R.dissoc('_id'))(esData);
+  // Provenance fields are only written by their side channel, a full replace must never restore a stale copy
+  const dataToReplace = R.omit(['representative', '_id', ...PROVENANCE_SIDE_CHANNEL_FIELDS], esData);
   const replacePromise = elReplace(context, instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();

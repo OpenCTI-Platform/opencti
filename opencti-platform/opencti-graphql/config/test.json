@@ -110,6 +110,15 @@
     "enabled": true,
     "interval": 6000000
   },
+  "provenance": {
+    "refresh_on_write": true
+  },
+  "knowledge_freshness_manager": {
+    "enabled": false
+  },
+  "provenance_backfill_manager": {
+    "enabled": false
+  },
   "ingestion_manager": {
     "enabled": false
   },

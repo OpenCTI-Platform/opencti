@@ -1,3 +1,15 @@
+enum DecayRuleTargetScope {
+  indicator
+  relationship
+  entity
+}
+
+enum KnowledgeFreshnessPolicy {
+  flag
+  lower_confidence
+  revoke
+}
+
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -22,6 +34,13 @@ type DecayRule implements InternalObject & BasicObject {
   decay_revoke_score: Int!
   decaySettingsChartData: DecayData
   decay_filters: String
+  # Knowledge decay (relationship and entity scopes), indicator scores are never affected
+  target_scope: DecayRuleTargetScope!
+  target_types: [String!]
+  freshness_policy: KnowledgeFreshnessPolicy
+  stale_after_days: Int
+  freshness_confidence_step: Int
+  staleElementsCount: Int!
 }
 
 type DecayData {
@@ -71,8 +90,23 @@ input DecayRuleAddInput {
   decay_filters: String
 }
 
+input KnowledgeDecayRuleAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  order: Int!
+  active: Boolean!
+  target_scope: DecayRuleTargetScope!
+  # Relationship types (relationship scope) or entity types (entity scope), empty means every relationship type
+  target_types: [String!]
+  decay_filters: String
+  freshness_policy: KnowledgeFreshnessPolicy!
+  stale_after_days: Int! @constraint(min: 1)
+  freshness_confidence_step: Int @constraint(min: 1, max: 100)
+}
+
 type Mutation {
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  knowledgeDecayRuleAdd(input: KnowledgeDecayRuleAddInput!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   decayRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

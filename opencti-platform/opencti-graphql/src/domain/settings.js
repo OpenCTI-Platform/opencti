@@ -245,6 +245,8 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'enterprise_license',
   'platform_trash_enabled',
   'platform_reference_attachment',
+  'platform_procedures_preservation',
+  'platform_procedures_description_policy',
 ];
 
 const SETTINGS_SET_CUSTOMIZATION_KEYS = [
