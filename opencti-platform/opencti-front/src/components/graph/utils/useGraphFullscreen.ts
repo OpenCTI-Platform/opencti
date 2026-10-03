@@ -19,6 +19,18 @@ const useGraphFullscreen = (
   background: string,
 ) => {
   const savedStyle = useRef<string | null>(null);
+  /** Whether the document full screen was requested by this graph, and so is its to leave. */
+  const ownsDocumentFullscreen = useRef(false);
+
+  const leaveDocumentFullscreen = useCallback(() => {
+    const owned = ownsDocumentFullscreen.current;
+    ownsDocumentFullscreen.current = false;
+    if (owned && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {
+        // Already left by the browser itself.
+      });
+    }
+  }, []);
 
   const restore = useCallback(() => {
     const container = containerRef.current;
@@ -43,8 +55,10 @@ const useGraphFullscreen = (
     });
     setIsFullscreen(true);
     if (document.fullscreenEnabled && !document.fullscreenElement) {
+      ownsDocumentFullscreen.current = true;
       document.documentElement.requestFullscreen().catch(() => {
         // Refused by the browser (for example outside a user gesture): the overlay alone is kept.
+        ownsDocumentFullscreen.current = false;
       });
     }
   }, [containerRef, background, setIsFullscreen]);
@@ -52,12 +66,8 @@ const useGraphFullscreen = (
   const exit = useCallback(() => {
     restore();
     setIsFullscreen(false);
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {
-        // Already left by the browser itself.
-      });
-    }
-  }, [restore, setIsFullscreen]);
+    leaveDocumentFullscreen();
+  }, [restore, setIsFullscreen, leaveDocumentFullscreen]);
 
   const toggle = useCallback(() => {
     if (isFullscreen) exit();
@@ -67,6 +77,7 @@ const useGraphFullscreen = (
   useEffect(() => {
     const onChange = () => {
       if (!document.fullscreenElement && savedStyle.current !== null) {
+        ownsDocumentFullscreen.current = false;
         restore();
         setIsFullscreen(false);
       }
@@ -75,8 +86,12 @@ const useGraphFullscreen = (
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, [restore, setIsFullscreen]);
 
-  // Leaving the page while in full screen gives the container back its own style.
-  useEffect(() => () => restore(), [restore]);
+  // Leaving the page while in full screen gives the container back its own style and the browser
+  // leaves the full screen the graph asked for, so the next page does not open in it.
+  useEffect(() => () => {
+    restore();
+    leaveDocumentFullscreen();
+  }, [restore, leaveDocumentFullscreen]);
 
   return { toggle, exit };
 };
