@@ -17,9 +17,8 @@ import {
   convertEventTypes,
   convertNotifiers,
   convertTriggers,
-  filterEventTypesOptions,
   instanceEventTypesOptions,
-  INVESTIGATION_TRIGGER_EVENT_TYPES,
+  knowledgeEventTypesOptions,
   provenanceEventTypesOptions,
 } from '../../../../utils/edition';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -115,12 +114,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
     ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
-  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
-    { value: 'create', label: t_i18n('Creation') },
-    { value: 'update', label: t_i18n('Modification') },
-    { value: 'delete', label: t_i18n('Deletion') },
-    ...(isEnterpriseEdition ? INVESTIGATION_TRIGGER_EVENT_TYPES.map(({ value, label }) => ({ value: value as TriggerEventType, label: t_i18n(label) })) : []),
-  ];
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = knowledgeEventTypesOptions(isEnterpriseEdition)
+    .map(({ value, label }) => ({ value: value as TriggerEventType, label: t_i18n(label) }));
 
   useEffect(() => {
     commitFieldPatch({
@@ -375,7 +370,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               multiple={true}
               label={t_i18n('Triggering on')}
               options={
-                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...provenanceEventTypesOptions]
+                [...(trigger.instance_trigger ? instanceEventTypesOptions : knowledgeEventTypesOptions(isEnterpriseEdition)), ...provenanceEventTypesOptions]
                   .map((option) => ({ ...option, label: t_i18n(option.label) }))
               }
               onChange={asMultiValue<{ value: string; label: string }>((

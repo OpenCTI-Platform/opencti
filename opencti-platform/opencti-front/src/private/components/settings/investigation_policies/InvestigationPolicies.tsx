@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import type { PayloadError } from 'relay-runtime';
 import type { FormikHelpers } from 'formik';
 import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
@@ -45,7 +46,7 @@ import {
   toPolicyEditInputs,
   toPolicyInput,
 } from './investigationPolicyUtils';
-import { formatProbability } from '../../investigation_runs/investigationRunUtils';
+import { formatProbability, reportMutationOutcome } from '../../investigation_runs/investigationRunUtils';
 import { InvestigationPoliciesQuery, InvestigationPoliciesQuery$data } from './__generated__/InvestigationPoliciesQuery.graphql';
 import { InvestigationPoliciesAddMutation } from './__generated__/InvestigationPoliciesAddMutation.graphql';
 import { InvestigationPoliciesEditMutation } from './__generated__/InvestigationPoliciesEditMutation.graphql';
@@ -193,16 +194,24 @@ const InvestigationPoliciesContent = () => {
   const [deleting, setDeleting] = useState<Policy | null>(null);
   const data = useLazyLoadQuery<InvestigationPoliciesQuery>(investigationPoliciesQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
   const policies = (data.investigationPolicies?.edges ?? []).map((edge) => edge.node);
-  const [commitAdd] = useApiMutation<InvestigationPoliciesAddMutation>(investigationPoliciesAddMutation, undefined, { successMessage: t_i18n('The policy was created') });
-  const [commitEdit] = useApiMutation<InvestigationPoliciesEditMutation>(investigationPoliciesEditMutation, undefined, { successMessage: t_i18n('The policy was updated') });
-  const [commitDelete, deleteInFlight] = useApiMutation<InvestigationPoliciesDeleteMutation>(investigationPoliciesDeleteMutation, undefined, { successMessage: t_i18n('The policy was deleted') });
+  const [commitAdd] = useApiMutation<InvestigationPoliciesAddMutation>(investigationPoliciesAddMutation);
+  const [commitEdit] = useApiMutation<InvestigationPoliciesEditMutation>(investigationPoliciesEditMutation);
+  const [commitDelete, deleteInFlight] = useApiMutation<InvestigationPoliciesDeleteMutation>(investigationPoliciesDeleteMutation);
   const refresh = () => setFetchKey((key) => key + 1);
   const onSubmit = (values: InvestigationPolicyFormValues, { setSubmitting, setErrors }: FormikHelpers<InvestigationPolicyFormValues>) => {
     if (!editing) return;
-    const done = () => {
+    const close = () => {
       setSubmitting(false);
       setEditing(null);
       refresh();
+    };
+    // A rejected mutation keeps the drawer open with what was typed.
+    const completeWith = (successMessage: string) => (_: unknown, errors: readonly PayloadError[] | null) => {
+      if (reportMutationOutcome(errors, successMessage)) {
+        close();
+      } else {
+        setSubmitting(false);
+      }
     };
     const fail = (error: Error) => {
       handleErrorInForm(error, setErrors);
@@ -211,12 +220,12 @@ const InvestigationPoliciesContent = () => {
     if (editing.id) {
       const input = toPolicyEditInputs(editing.policy, values);
       if (input.length === 0) {
-        done();
+        close();
         return;
       }
-      commitEdit({ variables: { id: editing.id, input }, onCompleted: done, onError: fail });
+      commitEdit({ variables: { id: editing.id, input }, onCompleted: completeWith(t_i18n('The policy was updated')), onError: fail });
     } else {
-      commitAdd({ variables: { input: toPolicyInput(values) }, onCompleted: done, onError: fail });
+      commitAdd({ variables: { input: toPolicyInput(values) }, onCompleted: completeWith(t_i18n('The policy was created')), onError: fail });
     }
   };
   return (
@@ -261,7 +270,9 @@ const InvestigationPoliciesContent = () => {
             disabled={deleteInFlight}
             onClick={() => deleting && commitDelete({
               variables: { id: deleting.id },
-              onCompleted: () => {
+              onCompleted: (_, errors) => {
+                // A policy that investigations in progress depend on is refused: the dialog stays open.
+                if (!reportMutationOutcome(errors, t_i18n('The policy was deleted'))) return;
                 setDeleting(null);
                 refresh();
               },

@@ -16,7 +16,7 @@ import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { isStixObject } from '../schema/stixCoreObject';
-import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
@@ -855,6 +855,10 @@ export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreC
 };
 
 const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
+  // Same exceptions as the search engine restrictions: these types are restricted although their parent is not.
+  if (STIX_ORGANIZATIONS_RESTRICTED.includes(entityType)) {
+    return false;
+  }
   const types = [entityType, ...getParentTypes(entityType)];
   if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
     return true;

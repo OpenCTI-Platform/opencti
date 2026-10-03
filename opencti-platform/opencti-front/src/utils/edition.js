@@ -117,7 +117,12 @@ export const filterEventTypesOptions = [
   { value: 'create', label: 'Creation' },
   { value: 'update', label: 'Modification' },
   { value: 'delete', label: 'Deletion' },
-  ...INVESTIGATION_TRIGGER_EVENT_TYPES,
+];
+
+// Selectable events of a knowledge live trigger: the Case Autopilot events only exist in Enterprise Edition.
+export const knowledgeEventTypesOptions = (isEnterpriseEdition) => [
+  ...filterEventTypesOptions,
+  ...(isEnterpriseEdition ? INVESTIGATION_TRIGGER_EVENT_TYPES : []),
 ];
 
 export const instanceEventTypesOptions = [
@@ -132,5 +137,5 @@ export const provenanceEventTypesOptions = [
 ];
 
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return [...filterEventTypesOptions, ...provenanceEventTypesOptions].find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...INVESTIGATION_TRIGGER_EVENT_TYPES, ...provenanceEventTypesOptions].find((o) => o.value === event_type);
 }).filter((option) => option !== undefined);

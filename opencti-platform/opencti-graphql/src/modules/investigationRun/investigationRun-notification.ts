@@ -25,7 +25,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getLiveNotifications, type KnowledgeNotificationEvent } from '../../manager/notificationManager';
 import { logApp } from '../../config/conf';
-import { InvestigationRunStatus, TriggerEventType } from '../../generated/graphql';
+import { InvestigationApprovalStatus, InvestigationRunStatus, TriggerEventType } from '../../generated/graphql';
 import type { BasicStoreEntityInvestigationRun } from './investigationRun-types';
 
 export const INVESTIGATION_TRIGGER_AWAITING_APPROVAL = TriggerEventType.InvestigationAwaitingApproval;
@@ -39,6 +39,24 @@ export const investigationTriggerEventFor = (previous: string, next: string): Tr
   if (next === InvestigationRunStatus.Completed) return INVESTIGATION_TRIGGER_COMPLETED;
   if (next === InvestigationRunStatus.Failed) return INVESTIGATION_TRIGGER_FAILED;
   return null;
+};
+
+const pendingApprovalIds = (run: BasicStoreEntityInvestigationRun) => (run.approvals ?? [])
+  .filter((approval) => approval.status === InvestigationApprovalStatus.Pending)
+  .map((approval) => approval.id);
+
+/**
+ * The trigger event an update of a run raises, if any. A gate held while the
+ * engine keeps investigating (an enrichment through a connector that requires
+ * approval) waits for an analyst as much as a paused run does: the run stays
+ * running so the engine can go on with its other sources, and the analysts
+ * are told when the gate appears.
+ */
+export const investigationRunEventFor = (previous: BasicStoreEntityInvestigationRun, run: BasicStoreEntityInvestigationRun): TriggerEventType | null => {
+  const statusEvent = investigationTriggerEventFor(previous.run_status, run.run_status);
+  if (statusEvent || run.run_status !== InvestigationRunStatus.Running) return statusEvent;
+  const before = new Set(pendingApprovalIds(previous));
+  return pendingApprovalIds(run).some((id) => !before.has(id)) ? INVESTIGATION_TRIGGER_AWAITING_APPROVAL : null;
 };
 
 export const investigationNotificationMessage = (eventType: TriggerEventType, run: BasicStoreEntityInvestigationRun, representative: string, onCase: boolean) => {
@@ -64,7 +82,7 @@ export const notifyInvestigationRunStatus = async (
   previous: BasicStoreEntityInvestigationRun,
   run: BasicStoreEntityInvestigationRun,
 ) => {
-  const eventType = investigationTriggerEventFor(previous.run_status, run.run_status);
+  const eventType = investigationRunEventFor(previous, run);
   if (!eventType) return 0;
   try {
     const liveNotifications = await getLiveNotifications(context);
