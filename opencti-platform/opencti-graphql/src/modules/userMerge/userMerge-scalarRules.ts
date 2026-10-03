@@ -4,6 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
 import { ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../sourceIntelligence/sourceIntelligence-types';
 import type { UserMergeScalarCondition, UserMergeScalarTarget } from './userMerge-scalarTargets';
 
 /**
@@ -55,6 +56,11 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
+  [`${ENTITY_TYPE_SOURCE}.owner_id`]: { kind: 'covered', registerRow: 'source.owner-id' },
+  [`${ENTITY_TYPE_SOURCE}.source_user_ids`]: { kind: 'covered', registerRow: 'source.source-user-ids' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.applied_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.applied-by-id' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.dismissed_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.dismissed-by-id' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.reverted_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.reverted-by-id' },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {
     kind: 'excluded',
     reason: 'not-a-platform-user',
