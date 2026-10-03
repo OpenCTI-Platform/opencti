@@ -1,0 +1,216 @@
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { StixInternal } from '../../types/stix-2-1-common';
+import type { AuthorizedMember } from '../../utils/access';
+import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+
+export { ENTITY_TYPE_TIMELINE_EVENT, ENTITY_TYPE_TIMELINE_SETTINGS } from './timeline-entity-types';
+
+// Incident is a domain object whose knowledge is held by its relationships,
+// the three case types are containers whose knowledge is held by their object refs.
+export const TIMELINE_CONTAINER_TYPES = [
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
+];
+export const isTimelineContainerType = (type: string | undefined | null): boolean => {
+  return !!type && TIMELINE_CONTAINER_TYPES.includes(type);
+};
+
+export const TIMELINE_LANES = ['adversary', 'evidence', 'response', 'knowledge', 'detection', 'custom'] as const;
+export type TimelineLaneValue = typeof TIMELINE_LANES[number];
+
+export const TIMELINE_PRECISIONS = ['exact', 'hour', 'day', 'approximate'] as const;
+export type TimelinePrecisionValue = typeof TIMELINE_PRECISIONS[number];
+
+export const TIMELINE_SOURCES = ['derived', 'manual'] as const;
+export type TimelineSourceValue = typeof TIMELINE_SOURCES[number];
+
+export const TIMELINE_MILESTONE_KINDS = ['milestone', 'containment', 'eradication', 'recovery', 'notification'] as const;
+
+export const TIMELINE_KINDS = [
+  // adversary
+  'technique_used',
+  'observed_window',
+  'sighting',
+  'infrastructure_seen',
+  'malware_seen',
+  'threat_seen',
+  'incident_seen',
+  // evidence
+  'indicator_valid',
+  'report_published',
+  'reference_published',
+  'file_uploaded',
+  // response
+  'case_opened',
+  'task_created',
+  'task_due',
+  'task_completed',
+  'status_changed',
+  'assigned',
+  'note_added',
+  'opinion_added',
+  'autopilot_step',
+  // knowledge
+  'object_added',
+  'relation_created',
+  'merged',
+  // detection and validation
+  'coverage_result',
+  'hunt_run',
+  'deployment',
+  // analyst milestones
+  ...TIMELINE_MILESTONE_KINDS,
+] as const;
+export type TimelineKindValue = typeof TIMELINE_KINDS[number];
+
+export const TIMELINE_GROUPINGS = ['hour', 'day', 'week'] as const;
+export type TimelineGroupingValue = typeof TIMELINE_GROUPINGS[number];
+
+export const TIMELINE_ZOOM_WINDOWS = ['fit', 'day', 'week', 'month', 'quarter', 'year'] as const;
+export type TimelineZoomWindowValue = typeof TIMELINE_ZOOM_WINDOWS[number];
+
+// Fields an analyst can set on any event, derived or manual. A regeneration of the
+// derived events keeps the value of every field listed in `analyst_fields`.
+export const TIMELINE_ANALYST_FIELDS = ['pinned', 'hidden', 'annotation', 'ordering_hint'] as const;
+export type TimelineAnalystField = typeof TIMELINE_ANALYST_FIELDS[number];
+
+export const TIMELINE_ANCHOR_KEYS = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'] as const;
+export type TimelineAnchorKey = typeof TIMELINE_ANCHOR_KEYS[number];
+
+export const ATTRIBUTE_TIMELINE_ANCHORS = 'x_opencti_timeline_anchors';
+export const ATTRIBUTE_TIMELINE_EXCHANGE = 'x_opencti_timeline';
+
+export interface TimelineAnchors {
+  first_adversary_activity: string | null;
+  first_detection: string | null;
+  first_response: string | null;
+  containment: string | null;
+  closure: string | null;
+  computed_at: string;
+}
+
+// region store
+// The event title is stored in `name` so that the generic representative and
+// full text search apply. description, confidence and external_id are
+// inherited from BasicStoreEntity.
+export interface BasicStoreEntityTimelineEvent extends BasicStoreEntity {
+  container_id: string;
+  event_time: string;
+  event_end_time?: string | null;
+  time_precision: TimelinePrecisionValue;
+  lane: TimelineLaneValue;
+  kind: TimelineKindValue;
+  event_source: TimelineSourceValue;
+  rule_id?: string | null;
+  element_id?: string | null;
+  element_type?: string | null;
+  pinned: boolean;
+  hidden: boolean;
+  annotation?: string | null;
+  ordering_hint?: number | null;
+  analyst_fields?: TimelineAnalystField[];
+  restricted_members?: Array<AuthorizedMember>;
+}
+
+export interface StoreEntityTimelineEvent extends StoreEntity, BasicStoreEntityTimelineEvent {
+}
+
+export interface TimelinePendingAnnotation {
+  event_id: string;
+  pinned?: boolean;
+  hidden?: boolean;
+  annotation?: string | null;
+  ordering_hint?: number | null;
+}
+
+export interface BasicStoreEntityTimelineSettings extends BasicStoreEntity {
+  container_id: string;
+  enabled_lanes: TimelineLaneValue[];
+  default_grouping: TimelineGroupingValue;
+  default_zoom_window: TimelineZoomWindowValue;
+  hidden_kinds: TimelineKindValue[];
+  pending_annotations?: TimelinePendingAnnotation[];
+  derivation_truncated?: boolean;
+  generated_at?: string | null;
+}
+
+export const TIMELINE_DEFAULT_SETTINGS = {
+  enabled_lanes: [...TIMELINE_LANES] as TimelineLaneValue[],
+  default_grouping: 'day' as TimelineGroupingValue,
+  default_zoom_window: 'fit' as TimelineZoomWindowValue,
+  hidden_kinds: [] as TimelineKindValue[],
+};
+
+export interface StoreEntityTimelineSettings extends StoreEntity, BasicStoreEntityTimelineSettings {
+}
+// endregion
+
+// region stix
+export interface StixTimelineEvent extends StixInternal {
+  container_ref: string;
+  event_time: string;
+  event_end_time?: string;
+  precision: TimelinePrecisionValue;
+  lane: TimelineLaneValue;
+  kind: TimelineKindValue;
+  title: string;
+  description?: string;
+  source: TimelineSourceValue;
+}
+
+export interface StixTimelineSettings extends StixInternal {
+  container_ref: string;
+}
+
+// Content of the timeline STIX extension carried by the timeline containers.
+// Only analyst contributions travel: manual events and the annotations put on
+// derived events. Derived events are recomputed by the receiving platform.
+export interface StixTimelineExtensionEvent {
+  id: string;
+  external_id?: string;
+  event_time: string;
+  event_end_time?: string;
+  precision: TimelinePrecisionValue;
+  lane: TimelineLaneValue;
+  kind: TimelineKindValue;
+  title: string;
+  description?: string;
+  element_ref?: string;
+  confidence?: number;
+  ordering_hint?: number;
+  pinned?: boolean;
+  hidden?: boolean;
+  annotation?: string;
+  object_marking_refs?: string[];
+  created_by_ref?: string;
+}
+
+export interface StixTimelineExtensionAnnotation {
+  rule_id: string;
+  kind: TimelineKindValue;
+  element_ref: string;
+  pinned?: boolean;
+  hidden?: boolean;
+  annotation?: string;
+  ordering_hint?: number;
+}
+
+export interface StixTimelineExtension {
+  extension_type: 'property-extension';
+  events: StixTimelineExtensionEvent[];
+  annotations: StixTimelineExtensionAnnotation[];
+}
+
+// Denormalized copy of the timeline STIX extension stored on the container
+// (side channel, no stream event) so that every STIX conversion of the container
+// carries the analyst contributions without an extra query.
+export interface StoreTimelineExchange {
+  events: StixTimelineExtensionEvent[];
+  annotations: StixTimelineExtensionAnnotation[];
+}
+// endregion

@@ -86,6 +86,7 @@ import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
 import './user/user';
+import './timeline/timeline';
 
 // incomplete modules
 import './report/report';
@@ -177,6 +178,7 @@ import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './timeline/timeline-graphql';
 // endregion
 
 // region modules static init

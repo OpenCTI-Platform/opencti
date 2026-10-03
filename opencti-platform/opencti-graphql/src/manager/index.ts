@@ -8,6 +8,7 @@ import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';
 import './telemetryManager';
+import './timelineManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';
 import './dataSanityManager';
