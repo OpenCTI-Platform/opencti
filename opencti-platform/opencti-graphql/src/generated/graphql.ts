@@ -17919,6 +17919,7 @@ export type Mutation = {
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
+  collectionGapDeployConnector?: Maybe<SourceRecommendation>;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -18727,6 +18728,12 @@ export type MutationCityEditArgs = {
 
 export type MutationClearWorkflowPendingStateArgs = {
   entityId: Scalars['String']['input'];
+};
+
+
+export type MutationCollectionGapDeployConnectorArgs = {
+  id: Scalars['ID']['input'];
+  slug: Scalars['String']['input'];
 };
 
 
@@ -51207,6 +51214,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
+  collectionGapDeployConnector?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationCollectionGapDeployConnectorArgs, 'id' | 'slug'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;

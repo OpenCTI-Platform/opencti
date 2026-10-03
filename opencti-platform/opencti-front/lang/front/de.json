@@ -840,6 +840,7 @@
   "Connector catalog | Ingestion | Data": "Verbinderkatalog | Ingestion | Daten",
   "Connector catalogs": "Kataloge für Steckverbinder",
   "Connector configuration": "Konfiguration des Anschlusses",
+  "Connector deployed through XTM Composer": "Connector über XTM Composer bereitgestellt",
   "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "Für die Bereitstellung des Connectors ist die OpenCTI Enterprise Edition erforderlich. In der Community Edition ist diese Konfiguration schreibgeschützt.",
   "Connector health and logs": "Zustand und Protokolle des Konnektors",
   "Connector name": "Name des Anschlusses",

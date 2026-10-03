@@ -840,6 +840,7 @@
   "Connector catalog | Ingestion | Data": "Connector catalog | Ingestion | Data",
   "Connector catalogs": "Connector catalogs",
   "Connector configuration": "Connector configuration",
+  "Connector deployed through XTM Composer": "Connector deployed through XTM Composer",
   "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.",
   "Connector health and logs": "Connector health and logs",
   "Connector name": "Connector name",

@@ -11054,6 +11054,7 @@ type Mutation {
   applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation
   revertSourceRecommendation(id: ID!): SourceRecommendation
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation
+  collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation
   sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings
   sourceIntelligenceRecompute: Boolean
   sourceIntelligenceDashboardCreate(name: String): Workspace
