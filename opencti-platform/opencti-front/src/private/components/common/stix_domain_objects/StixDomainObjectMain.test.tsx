@@ -20,6 +20,7 @@ const TABS_TEST_DATA = [
   ['Entities', 'entities'],
   ['Observables', 'observables'],
   ['Data', 'files'],
+  ['Changes', 'changes'],
   ['History', 'history'],
 ] as const satisfies [string, StixDomainObjectTabsBoxTab][];
 

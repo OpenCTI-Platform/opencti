@@ -43,7 +43,6 @@ const triggerChangeDigestCreationSavedFiltersQuery = graphql`
         node {
           id
           name
-          filters
         }
       }
     }
@@ -70,7 +69,6 @@ interface TriggerChangeDigestFormValues {
   description: string;
   scope_entity_type: string;
   saved_filter: string;
-  saved_filter_filters: string | null;
   period: string;
   day: string;
   time: string;
@@ -87,7 +85,7 @@ const changeDigestValidation = (t: (message: string) => string) => Yup.object().
   time: Yup.string().nullable(),
 });
 
-const SavedFilterField = ({ onSelect }: { onSelect: (filters: string | null) => void }) => {
+const SavedFilterField = () => {
   const { t_i18n } = useFormatter();
   const data = useLazyLoadQuery<TriggerChangeDigestCreationSavedFiltersQuery>(triggerChangeDigestCreationSavedFiltersQuery, {}, { fetchPolicy: 'store-and-network' });
   const savedFilters = (data.savedFilters?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node);
@@ -99,7 +97,6 @@ const SavedFilterField = ({ onSelect }: { onSelect: (filters: string | null) => 
       label={t_i18n('Saved filter')}
       fullWidth={true}
       containerstyle={fieldSpacingContainerStyle}
-      onChange={(_: string, value: string) => onSelect(savedFilters.find((savedFilter) => savedFilter.id === value)?.filters ?? null)}
     >
       <SelectItem value={NO_SAVED_FILTER}>{t_i18n('No saved filter (use the filters below)')}</SelectItem>
       {savedFilters.map((savedFilter) => (
@@ -129,7 +126,6 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
     description: '',
     scope_entity_type: 'Intrusion-Set',
     saved_filter: NO_SAVED_FILTER,
-    saved_filter_filters: null,
     period: 'week',
     day: '1',
     time: dayStartDate().toISOString(),
@@ -141,21 +137,19 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
       const day = values.day && values.day.length > 0 ? values.day : '1';
       triggerTime = `${day}-${triggerTime}`;
     }
-    // A saved filter is copied in the digest, so its recipients do not need access to the saved filter
+    // A saved filter is copied in the digest with the entity types of its list, so the digest keeps its scope
+    // when the saved filter changes and its recipients do not need access to the saved filter
+    const withSavedFilter = values.saved_filter !== NO_SAVED_FILTER;
     const hasFilters = filters.filters.length + filters.filterGroups.length > 0;
-    let finalFilters: string | null = null;
-    if (values.saved_filter !== NO_SAVED_FILTER && values.saved_filter_filters) {
-      finalFilters = values.saved_filter_filters;
-    } else if (hasFilters) {
-      finalFilters = serializeFilterGroupForBackend(filters);
-    }
+    const scope = withSavedFilter
+      ? { saved_filter_id: values.saved_filter }
+      : { filters: hasFilters ? serializeFilterGroupForBackend(filters) : null, scope_entity_types: [values.scope_entity_type] };
     commit({
       variables: {
         input: {
           name: values.name,
           description: values.description,
-          filters: finalFilters,
-          scope_entity_types: [values.scope_entity_type],
+          ...scope,
           period: values.period,
           trigger_time: triggerTime,
           notifiers: values.notifiers.map(({ value }) => value),
@@ -200,21 +194,23 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               rows="4"
               style={{ marginTop: 20 }}
             />
-            <Field
-              component={SelectFieldFds}
-              variant="outlined"
-              name="scope_entity_type"
-              label={t_i18n('Entity types')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
-            >
-              {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
-              ))}
-            </Field>
             <Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-              <SavedFilterField onSelect={(savedFilterFilters) => setFieldValue('saved_filter_filters', savedFilterFilters)} />
+              <SavedFilterField />
             </Suspense>
+            {values.saved_filter === NO_SAVED_FILTER && (
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="scope_entity_type"
+                label={t_i18n('Entity types')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+              >
+                {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
+                ))}
+              </Field>
+            )}
             {values.saved_filter === NO_SAVED_FILTER && (
               <Box sx={{ marginTop: '20px' }}>
                 <Filters availableFilterKeys={availableFilterKeys} helpers={helpers} searchContext={{ entityTypes: ['Stix-Domain-Object'] }} />

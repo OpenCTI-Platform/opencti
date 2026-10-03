@@ -17,7 +17,7 @@ export type StixDomainObjectTabsBoxTab
     | 'entities'
     | 'observables'
     | 'files'
-    | 'diff'
+    | 'changes'
     | 'history';
 
 interface StixDomainObjectTabsBoxProps {
@@ -75,9 +75,9 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'files',
   label: 'Data',
 }, {
-  tab: 'diff',
-  path: 'diff',
-  label: 'Diff',
+  tab: 'changes',
+  path: 'changes',
+  label: 'Changes',
 }, {
   tab: 'history',
   path: 'history',

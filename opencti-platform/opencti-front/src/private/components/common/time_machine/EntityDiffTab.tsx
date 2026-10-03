@@ -13,7 +13,7 @@ import TimeMachineValues from './TimeMachineValues';
 import TimeMachinePeriodSelector from './TimeMachinePeriodSelector';
 import TimeMachineExportMenu from './TimeMachineExportMenu';
 import { useTimeMachineWarningMessage } from './EntityAsOfView';
-import { DateRange, entityDiffToCsv, entityDiffToHtml, entityDiffToJson, exportFileName, isValidDate, presetRange } from './timeMachineUtils';
+import { DateRange, entityDiffToCsv, entityDiffToHtml, entityDiffToJson, exportFileName, FROM_SEARCH_PARAM, isValidDate, presetRange, TO_SEARCH_PARAM } from './timeMachineUtils';
 import { EntityDiffTabQuery, EntityDiffTabQuery$data } from './__generated__/EntityDiffTabQuery.graphql';
 
 const entityDiffTabQuery = graphql`
@@ -94,9 +94,6 @@ const entityDiffTabQuery = graphql`
 `;
 
 type EntityDiff = NonNullable<EntityDiffTabQuery$data['entityDiff']>;
-
-export const FROM_SEARCH_PARAM = 'from';
-export const TO_SEARCH_PARAM = 'to';
 
 const actionSeverity = (action: string) => {
   switch (action) {
@@ -343,7 +340,7 @@ interface EntityDiffTabProps {
 }
 
 /**
- * Diff tab of an entity: what changed between two dates (attributes, relationships, contained objects).
+ * "Compare dates" section of the Changes tab: what changed between two dates (attributes, relationships, contained objects).
  * The period is kept in the URL so a diff can be shared or opened from the landscape changes.
  */
 const EntityDiffTab = ({ entityId }: EntityDiffTabProps) => {

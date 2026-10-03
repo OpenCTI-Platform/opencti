@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   actionLabel,
+  CHANGES_SECTION_AS_OF,
+  CHANGES_SECTION_COMPARE,
+  changesSearch,
   clampDate,
+  comparePeriodSearch,
   entityDiffToCsv,
   entityDiffToHtml,
   entityDiffToJson,
@@ -15,6 +19,7 @@ import {
   type LandscapeDiffData,
   presetLabel,
   presetRange,
+  resolveChangesSection,
   TIME_MACHINE_PRESETS,
   valuesToText,
 } from './timeMachineUtils';
@@ -245,5 +250,28 @@ describe('exportFileName', () => {
   it('keeps unicode letters and falls back when nothing is left', () => {
     expect(exportFileName('Lazarus été', '2026-07-01', '2026-10-01', 'json')).toBe('Lazarus_été_2026-07-01_2026-10-01.json');
     expect(exportFileName('///', '2026-07-01', '2026-10-01', 'pdf')).toBe('diff_2026-07-01_2026-10-01.pdf');
+  });
+});
+
+describe('Changes tab links', () => {
+  const sections = [CHANGES_SECTION_COMPARE, CHANGES_SECTION_AS_OF, 'merges'];
+
+  it('opens the requested section when it exists', () => {
+    expect(resolveChangesSection(sections, 'merges', null)).toBe('merges');
+    expect(resolveChangesSection(sections, CHANGES_SECTION_AS_OF, null)).toBe(CHANGES_SECTION_AS_OF);
+  });
+
+  it('opens the as-of view for a link carrying a date, the comparison otherwise', () => {
+    expect(resolveChangesSection(sections, null, '2026-07-01T00:00:00.000Z')).toBe(CHANGES_SECTION_AS_OF);
+    expect(resolveChangesSection(sections, 'unknown', 'not a date')).toBe(CHANGES_SECTION_COMPARE);
+    expect(resolveChangesSection([CHANGES_SECTION_COMPARE], null, '2026-07-01T00:00:00.000Z')).toBe(CHANGES_SECTION_COMPARE);
+  });
+
+  it('builds the search of a section with its own parameters', () => {
+    expect(changesSearch(CHANGES_SECTION_AS_OF)).toBe('section=as-of');
+    const search = new URLSearchParams(comparePeriodSearch({ from: '2026-07-01T00:00:00.000Z', to: '2026-10-01T00:00:00.000Z' }));
+    expect(search.get('section')).toBe(CHANGES_SECTION_COMPARE);
+    expect(search.get('from')).toBe('2026-07-01T00:00:00.000Z');
+    expect(search.get('to')).toBe('2026-10-01T00:00:00.000Z');
   });
 });

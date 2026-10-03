@@ -119,6 +119,7 @@ const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
               </Security>
             )}
             enableSuggestions={false}
+            enableTimeMachine
             redirectToContent={true}
             disableAuthorizedMembers={true}
             enableEnrollPlaybook={true}

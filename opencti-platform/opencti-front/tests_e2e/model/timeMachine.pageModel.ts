@@ -1,17 +1,19 @@
 import { Page } from '@playwright/test';
 
 /**
- * Time machine of an entity (overview "View as of" mode and Diff tab) and the landscape changes page.
+ * Time machine of an entity (Changes tab: compare dates and view as of) and the landscape changes page.
  */
 export default class TimeMachinePage {
   constructor(private page: Page) {}
 
-  getAsOfToggle() {
-    return this.page.getByTestId('time-machine-toggle');
+  async openViewAsOfFromMenu() {
+    // The header popover comes first in the page
+    await this.page.getByRole('button', { name: 'Popover of actions' }).first().click();
+    return this.page.getByRole('menuitem', { name: 'View as of' }).click();
   }
 
-  getAsOfOverview() {
-    return this.page.getByTestId('time-machine-overview');
+  getAsOfSection() {
+    return this.page.getByTestId('time-machine-as-of');
   }
 
   getSlider() {
@@ -27,11 +29,19 @@ export default class TimeMachinePage {
   }
 
   backToCurrentKnowledge() {
-    return this.getAsOfOverview().getByRole('button', { name: 'Back to the current knowledge' }).click();
+    return this.getAsOfSection().getByRole('button', { name: 'Back to the current knowledge' }).click();
   }
 
-  goToDiffTab() {
-    return this.page.getByRole('tab', { name: 'Diff' }).click();
+  goToChangesTab() {
+    return this.page.getByRole('tab', { name: 'Changes', exact: true }).click();
+  }
+
+  getChangesTab() {
+    return this.page.getByTestId('time-machine-changes');
+  }
+
+  goToChangesSection(name: 'Compare dates' | 'View as of') {
+    return this.getChangesTab().getByRole('tab', { name, exact: true }).click();
   }
 
   getDiff() {

@@ -2,8 +2,7 @@
 
 OpenCTI records every change made to the knowledge in its history: each update stores the patch applied to the entity and the reverse patch that undoes it. The knowledge time machine uses this history to answer "what did we know, and what changed since?":
 
-- **View as of**: display any entity as it was at a past date.
-- **Diff**: compare an entity between two dates.
+- **Changes** tab of every entity: compare the entity between two dates (**Compare dates**) or display it as it was at a past date (**View as of**).
 - **Landscape changes**: compare a whole set of entities (for example every intrusion set targeting a sector) between two dates.
 - **New since your last visit**: see what changed on an entity since you last opened it.
 - **Change digests**: receive the landscape changes of a set of entities on a schedule.
@@ -19,17 +18,23 @@ Strategic analysts regularly need to answer questions such as "what changed abou
 - Focus your daily review on the entities that changed since your last visit.
 - Get the landscape changes delivered to your notifications or your mailbox every week or every month.
 
+## The Changes tab
+
+Every entity with a **History** tab also has a **Changes** tab, the single place for its evolution over time. It has two sections:
+
+- **Compare dates** (the default section): everything that changed between two dates.
+- **View as of**: the entity as it was at a past date.
+
+The section, the period and the date are kept in the URL of the page, so you can share any of these views with a colleague, who sees it with their own rights.
+
 ## View an entity as of a date
 
-Every entity with a **History** tab can be displayed as it was at a past date.
-
-1. Open the **Overview** of the entity.
-2. Click the clock icon **View as of** next to the tabs. The overview switches to a read-only view, and a banner reminds you of the date being displayed.
-3. Pick the date:
+1. Open the **Changes** tab of the entity and select **View as of**, or choose **View as of** in the more actions menu of the entity header (the button with three dots). The view opens 30 days back, in read-only mode, and a banner reminds you of the date being displayed.
+2. Pick the date:
     - type it in the **View as of** date field,
     - drag the slider, which shows a mark for every recorded change of the entity,
     - or jump between changes with **Previous change** and **Next change**.
-4. Click **Back to the current knowledge** to leave the read-only view.
+3. Click **Back to the current knowledge** to return to the overview of the entity.
 
 The view shows:
 
@@ -49,11 +54,11 @@ When the entity did not exist yet at the selected date, the view says so. When t
     - the date is older than the replay window between two knowledge snapshots: the reconstruction relies on a long history replay,
     - too many relationship changes happened after the date (or during the period of a diff): relationship counts and changes only cover the most recent part of the history.
 
-## Compare two dates with the Diff tab
+## Compare two dates
 
-The **Diff** tab of an entity shows everything that changed between two dates.
+The **Compare dates** section of the **Changes** tab shows everything that changed on an entity between two dates.
 
-1. Open the **Diff** tab of the entity.
+1. Open the **Changes** tab of the entity: **Compare dates** is the section displayed by default.
 2. Choose the period: last 7 days, last 30 days, last 90 days, last year, quarter to date, previous quarter, or a custom period with the **From** and **To** dates.
 3. Review the changes:
     - **Summary**: number of changed attributes, relationships added, removed and revoked, confidence and score evolution, confidence changes on relationships and, for containers, objects added and removed.
@@ -61,15 +66,13 @@ The **Diff** tab of an entity shows everything that changed between two dates.
     - **Relationships**: every relationship added, removed, revoked, unrevoked or whose confidence changed, with the related entity, the date and the author.
     - **Contained objects**: for containers (reports, groupings, cases...), the objects added to and removed from the container.
 
-The period is kept in the URL of the page, so you can share a diff with a colleague, who sees it with their own rights.
-
 !!! note "Long periods"
 
     The relationship list shows the 500 most recent changes. The counters of the summary always cover the whole period.
 
 ### Export a diff
 
-Click **Export** on the Diff tab to download the diff:
+Click **Export** in the **Compare dates** section to download the diff:
 
 | Format | Content |
 |--------|---------|
@@ -106,7 +109,7 @@ The result contains:
 | New relationships by type | All relationships created in the period, by relationship type. |
 | Top changed entities | The changed entities, ranked by a change score that weighs new, removed and revoked relationships, changed attributes, creation and revocation in the period, and confidence and score shifts. |
 
-Click an entity in **Top changed entities** to open its **Diff** tab on the same period. Click **Export** to download the landscape changes in JSON, CSV or PDF.
+Click an entity in **Top changed entities** to open its **Changes** tab on the same period. Click **Export** to download the landscape changes in JSON, CSV or PDF.
 
 !!! note "Limits"
 
@@ -163,7 +166,7 @@ To keep the reconstruction fast, the [knowledge snapshot manager](../deployment/
 
 !!! warning "Retention and the time machine"
 
-    Shortening the History retention also shortens how far back the time machine, the Diff tab, the landscape changes and the change digests can look. Choose a History retention covering the periods your analysts compare (for example at least one year for year-over-year landscape changes).
+    Shortening the History retention also shortens how far back the Changes tab of the entities, the landscape changes and the change digests can look. Choose a History retention covering the periods your analysts compare (for example at least one year for year-over-year landscape changes).
 
 ## Configuration
 
