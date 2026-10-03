@@ -169,6 +169,14 @@ export const persistProposalDraft = async (
     logApp.debug('[CURATION] Proposal subjects disappeared before persistence, skipping', { subjectIds });
     return { proposal: null, created: false, suppressed: false };
   }
+  // `subject_ids` always holds internal ids (consumers match proposals to entities by internal id), whatever id a
+  // detector used to name a subject.
+  const subjectsById = new Map<string, BasicStoreBase>();
+  subjects.forEach((subject) => {
+    subjectsById.set(subject.internal_id, subject);
+    subjectsById.set(subject.standard_id, subject);
+  });
+  const subjectInternalIds = subjectIds.map((id) => subjectsById.get(id)?.internal_id ?? id);
   const settingsEntity = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const { markingIds, organizationIds } = computeSubjectRestrictions(subjects, settingsEntity?.platform_organization);
   const input = {
@@ -180,7 +188,7 @@ export const persistProposalDraft = async (
     confidence_score: draft.confidence,
     in_ambiguous_band: inBand,
     detector: draft.detector,
-    subject_ids: subjectIds,
+    subject_ids: subjectInternalIds,
     subject_types: draft.subjects.map((subject) => subject.entity_type),
     subject_names: draft.subjects.map((subject) => subject.name || subject.id),
     target_id: draft.target_id ?? null,
