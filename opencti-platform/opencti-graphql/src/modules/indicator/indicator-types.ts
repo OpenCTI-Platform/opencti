@@ -19,6 +19,7 @@ export interface StixIndicatorExtension extends StixOpenctiExtension {
   score: number;
   main_observable_type: string;
   observable_values: ObservableValues[];
+  deployment_platforms_count?: number;
 }
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 export interface StixIndicator extends StixDomainObject {

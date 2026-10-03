@@ -53,6 +53,7 @@ export const SCORE_FILTER = 'x_opencti_score';
 export const DETECTION_FILTER = 'x_opencti_detection';
 export const DEPLOYMENT_STATUS_FILTER = 'deployment_status';
 export const VALIDATION_STATUS_FILTER = 'validation_status';
+export const DEPLOYMENT_PLATFORMS_COUNT_FILTER = 'deployment_platforms_count';
 export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
 export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';

@@ -1559,5 +1559,6 @@ describe('stixFilters', () => {
   it('should include the dissemination assurance filter keys used by triggers', () => {
     expect(stixFilters).toContain('deployment_status');
     expect(stixFilters).toContain('validation_status');
+    expect(stixFilters).toContain('deployment_platforms_count');
   });
 });
