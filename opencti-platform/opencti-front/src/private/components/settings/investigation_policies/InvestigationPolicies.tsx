@@ -275,11 +275,11 @@ const InvestigationPoliciesContent = () => {
   );
 };
 
-/** Settings > Customization > Case Autopilot policies. */
+/** Settings > Customization > Investigation policies. */
 const InvestigationPolicies = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Case Autopilot policies | Customization | Settings'));
+  setTitle(t_i18n('Investigation policies | Customization | Settings'));
   const isEnterpriseEdition = useEnterpriseEdition();
   return (
     <div data-testid="investigation-policies-page">
@@ -289,7 +289,7 @@ const InvestigationPolicies = () => {
           elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Customization') },
-            { label: t_i18n('Case Autopilot policies'), current: true },
+            { label: t_i18n('Investigation policies'), current: true },
           ]}
         />
         {!isEnterpriseEdition ? (

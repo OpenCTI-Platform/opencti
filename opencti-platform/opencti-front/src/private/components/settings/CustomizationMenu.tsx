@@ -30,7 +30,7 @@ const CustomizationMenu: FunctionComponent = () => {
     },
     {
       path: '/dashboard/settings/customization/case_autopilot',
-      label: 'Case Autopilot policies',
+      label: 'Investigation policies',
       isEE: true,
     },
     {
