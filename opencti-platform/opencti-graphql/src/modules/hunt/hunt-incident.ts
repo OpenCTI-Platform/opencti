@@ -12,6 +12,7 @@ import type { BasicStoreEntityHuntRun } from './huntRun/huntRun-types';
 import { truncate } from './hunt-utils';
 
 const INCIDENT_SEVERITIES = ['low', 'medium', 'high', 'critical'];
+export const HUNT_INCIDENT_RECOMMENDATION = 'Recommendation: Run Case Autopilot on this incident once the draft is validated, to investigate the hits and their attribution.';
 
 export interface HuntIncidentProposal {
   name?: string | null;
@@ -48,11 +49,13 @@ export const createHuntIncidentDraft = async (
   const draftContext: AuthContext = { ...context, draft_context: draft.id };
   const severity = proposal?.severity && INCIDENT_SEVERITIES.includes(proposal.severity) ? proposal.severity : 'medium';
   const name = proposal?.name?.trim() || `${hunt.name} - ${run.hits_count ?? 0} hits`;
-  const description = proposal?.description?.trim()
+  const summary = proposal?.description?.trim()
     || [
       `Hunt hypothesis: ${hunt.hypothesis ?? 'not provided'}`,
       `The hunt matched ${run.hits_count ?? 0} events (${run.distinct_entities ?? 0} distinct entities) between ${run.time_window_start} and ${run.time_window_end}.`,
     ].join('\n\n');
+  // Hunts never investigate: the deeper look is the job of Case Autopilot, run by the analyst or a playbook
+  const description = `${summary}\n\n${HUNT_INCIDENT_RECOMMENDATION}`;
   const incidentInput: Record<string, unknown> = {
     name: truncate(name, 250),
     description,

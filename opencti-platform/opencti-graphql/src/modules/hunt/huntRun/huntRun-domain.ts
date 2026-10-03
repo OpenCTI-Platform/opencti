@@ -19,6 +19,7 @@ import {
   OrderingMode,
   type FilterGroup,
   type HuntConnectorRegisterInput,
+  type HuntRunEvidenceAddInput,
   type HuntRunReportInput,
   type HuntRunVerdictInput,
 } from '../../../generated/graphql';
@@ -498,6 +499,73 @@ export const expireHuntRun = async (context: AuthContext, run: BasicStoreEntityH
     updated = await finalizeHuntRun(context, updated, hunt);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, HUNT_MANAGER_USER);
+};
+// endregion
+
+// region late evidence
+const EVIDENCE_IDS_PER_CALL = 1000;
+const EVIDENCE_SOURCE_MAX_LENGTH = 128;
+const EVIDENCE_SOURCES_MAX = 20;
+
+/**
+ * Evidence found outside the dispatch of a run (a SIEM alert action, a follow-up search, a late result), on any run
+ * status: result objects are merged, hits are added, the evidence sample is merged under the platform caps. The status
+ * and the verdict are never changed, an analyst or an agent reviews the run.
+ */
+export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunEvidenceAddInput) => {
+  const run = await findHuntRunById(context, user, runId);
+  if (!run) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
+  }
+  const hunt = await loadHuntForRun(context, user, run);
+  if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
+    throw FunctionalError('A translation preview holds no evidence', { runId });
+  }
+  const requestedIds = Array.from(new Set((input.result_ids ?? [])
+    .filter((id) => typeof id === 'string' && id.trim().length > 0)
+    .map((id) => id.trim())));
+  if (requestedIds.length === 0 || requestedIds.length > EVIDENCE_IDS_PER_CALL) {
+    throw FunctionalError(`Evidence is attached by 1 to ${EVIDENCE_IDS_PER_CALL} result objects`, { count: requestedIds.length });
+  }
+  // Only objects the caller can read are attached, by their standard ids like the connector reports
+  const results = await findByIds<BasicStoreObject>(context, user, requestedIds);
+  const knownIds = new Set<string>(results.flatMap((result) => [result.internal_id, result.standard_id, ...(result.x_opencti_stix_ids ?? [])]));
+  const unresolved = requestedIds.filter((id) => !knownIds.has(id));
+  if (unresolved.length > 0) {
+    throw FunctionalError('Evidence objects cannot be found or are not accessible', { unresolved: unresolved.slice(0, 10), count: unresolved.length });
+  }
+  if (input.security_platform_id) {
+    const platform = await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, input.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+    if (!platform) {
+      throw ResourceNotFoundError('The security platform of the evidence cannot be found', { securityPlatformId: input.security_platform_id });
+    }
+    if (run.security_platform_id && run.security_platform_id !== platform.internal_id) {
+      throw FunctionalError('The evidence was observed on another security platform than the one of the run', { runId });
+    }
+  }
+  const observedAt = input.observed_at ? new Date(input.observed_at) : new Date();
+  if (Number.isNaN(observedAt.getTime())) {
+    throw FunctionalError('The evidence observation date is invalid', { observedAt: input.observed_at });
+  }
+  const source = typeof input.source === 'string' && input.source.trim().length > 0 ? truncate(input.source.trim(), EVIDENCE_SOURCE_MAX_LENGTH) : null;
+  const sources = Array.from(new Set([...(run.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX);
+  const addedHits = Math.max(0, Math.round(input.hits_count ?? 0));
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, {
+    result_ids: Array.from(new Set([...(run.result_ids ?? []), ...results.map((result) => result.standard_id)])).slice(0, RESULT_IDS_MAX),
+    hits_count: (run.hits_count ?? 0) + addedHits,
+    evidence_sample: sanitizeEvidence([...(run.evidence_sample ?? []), ...(input.evidence_sample ?? [])]),
+    evidence_sources: sources,
+    last_evidence_at: observedAt.toISOString(),
+  });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `adds ${results.length} evidence object(s) to a run of hunt \`${hunt.name}\``,
+    context_data: { id: hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input: { run_id: run.internal_id, hits_count: addedHits, source } },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, element, user);
 };
 // endregion
 

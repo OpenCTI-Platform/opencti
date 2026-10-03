@@ -48,6 +48,9 @@ export const HUNT_VERDICT_SOURCE_AGENT = 'agent';
 export const HUNT_VERDICT_SOURCES = [HUNT_VERDICT_SOURCE_AUTO, HUNT_VERDICT_SOURCE_ANALYST, HUNT_VERDICT_SOURCE_AGENT];
 // endregion
 
+// Kind of a telemetry hit in the program-wide evidence shape (url | document | tool_result | opencti_object)
+export const HUNT_EVIDENCE_KIND_TOOL_RESULT = 'tool_result';
+
 export interface HuntEvidence {
   field: string;
   value_hash: string;
@@ -100,6 +103,8 @@ interface HuntRunAttributes {
   playbook_leader?: boolean | null;
   playbook_context?: string | null;
   playbook_resumed_at?: string | null;
+  evidence_sources?: string[];
+  last_evidence_at?: string | null;
 }
 
 /**

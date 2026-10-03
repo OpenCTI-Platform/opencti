@@ -30,7 +30,15 @@ enum HuntVerdictSource {
   agent
 }
 
+# Program-wide evidence shape (kind, label, href, quote, opencti_id, entity_type) on top of the hunt fields:
+# a telemetry hit is a tool_result labelled by its field, quoting its truncated preview
 type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
   field: String!
   value_hash: String!
   value_preview: String
@@ -92,6 +100,8 @@ type HuntRun implements BasicObject & InternalObject {
   error_message: String
   playbook_id: String
   playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
   objectMarking: [MarkingDefinition!]
 }
 
@@ -168,6 +178,16 @@ input HuntRunReportInput {
   error: String
 }
 
+# Evidence found outside the run dispatch (a SIEM alert action, a follow-up search), attached to any run status
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  observed_at: DateTime
+  source: String @constraint(maxLength: 128)
+}
+
 input HuntConnectorRegisterInput {
   connector_id: ID!
   platform: String!
@@ -183,5 +203,6 @@ type Mutation {
   huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
   huntRunTriage(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
   huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun @auth(for: [CONNECTORAPI])
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
   huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector @auth(for: [CONNECTORAPI])
 }

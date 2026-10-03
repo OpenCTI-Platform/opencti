@@ -3,7 +3,9 @@ import { storeLoadById } from '../../../database/middleware-loader';
 import { loadCreator, loadCreators } from '../../../database/members';
 import { ENTITY_TYPE_HUNT } from '../hunt-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
+import { HUNT_EVIDENCE_KIND_TOOL_RESULT } from './huntRun-types';
 import {
+  addHuntRunEvidence,
   findHuntConnectors,
   findHuntRunById,
   findHuntRunResults,
@@ -31,6 +33,15 @@ const huntRunResolvers: Resolvers = {
     objectMarking: (run, _, context) => context.batch.markingsBatchLoader.load(run),
     results: (run, { first }, context) => findHuntRunResults(context, context.user, run, first ?? 50) as any,
   },
+  // A telemetry hit in the program-wide evidence shape: a tool result labelled by its field, quoting its preview
+  HuntEvidence: {
+    kind: () => HUNT_EVIDENCE_KIND_TOOL_RESULT,
+    label: (evidence) => evidence.field,
+    quote: (evidence) => evidence.value_preview ?? null,
+    href: () => null,
+    opencti_id: () => null,
+    entity_type: () => null,
+  },
   HuntConnector: {
     securityPlatform: (connector, _, context) => (connector.security_platform_id
       ? storeLoadById(context, context.user, connector.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
@@ -41,6 +52,7 @@ const huntRunResolvers: Resolvers = {
     huntRunSetVerdict: (_, { id, input }, context) => setHuntRunVerdict(context, context.user, id, input),
     huntRunTriage: (_, { id }, context) => triageHuntRun(context, context.user, id),
     huntRunReport: (_, { id, input }, context) => reportHuntRun(context, context.user, id, input),
+    huntRunEvidenceAdd: (_, { id, input }, context) => addHuntRunEvidence(context, context.user, id, input),
     huntConnectorRegister: (_, { input }, context) => registerHuntConnector(context, context.user, input),
   },
 };

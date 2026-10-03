@@ -11494,7 +11494,13 @@ export type HuntEdge = {
 export type HuntEvidence = {
   __typename?: 'HuntEvidence';
   count: Scalars['Int']['output'];
+  entity_type?: Maybe<Scalars['String']['output']>;
   field: Scalars['String']['output'];
+  href?: Maybe<Scalars['String']['output']>;
+  kind: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  opencti_id?: Maybe<Scalars['String']['output']>;
+  quote?: Maybe<Scalars['String']['output']>;
   value_hash: Scalars['String']['output'];
   value_preview?: Maybe<Scalars['String']['output']>;
 };
@@ -11557,6 +11563,7 @@ export type HuntRun = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   error_message?: Maybe<Scalars['String']['output']>;
   evidence_sample?: Maybe<Array<HuntEvidence>>;
+  evidence_sources?: Maybe<Array<Scalars['String']['output']>>;
   hits_count?: Maybe<Scalars['Int']['output']>;
   hunt?: Maybe<Hunt>;
   hunt_id: Scalars['String']['output'];
@@ -11566,6 +11573,7 @@ export type HuntRun = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   incident_id?: Maybe<Scalars['String']['output']>;
   incident_proposal?: Maybe<Scalars['String']['output']>;
+  last_evidence_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   next_retry_at?: Maybe<Scalars['DateTime']['output']>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
@@ -11613,6 +11621,15 @@ export type HuntRunEdge = {
   __typename?: 'HuntRunEdge';
   cursor: Scalars['String']['output'];
   node: HuntRun;
+};
+
+export type HuntRunEvidenceAddInput = {
+  evidence_sample?: InputMaybe<Array<HuntEvidenceInput>>;
+  hits_count?: InputMaybe<Scalars['Int']['input']>;
+  observed_at?: InputMaybe<Scalars['DateTime']['input']>;
+  result_ids: Array<Scalars['String']['input']>;
+  security_platform_id?: InputMaybe<Scalars['StixRef']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum HuntRunMode {
@@ -18082,6 +18099,7 @@ export type Mutation = {
   huntProposalAdd?: Maybe<HuntProposal>;
   huntRelationAdd?: Maybe<StixRefRelationship>;
   huntRelationDelete?: Maybe<Hunt>;
+  huntRunEvidenceAdd?: Maybe<HuntRun>;
   huntRunReport?: Maybe<HuntRun>;
   huntRunRetry?: Maybe<HuntRun>;
   huntRunSetVerdict?: Maybe<HuntRun>;
@@ -19457,6 +19475,12 @@ export type MutationHuntRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationHuntRunEvidenceAddArgs = {
+  id: Scalars['ID']['input'];
+  input: HuntRunEvidenceAddInput;
 };
 
 
@@ -22697,6 +22721,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
+  x_opencti_hunt_run_id?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -22914,6 +22939,7 @@ export type ObservedDataAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
+  x_opencti_hunt_run_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -34597,6 +34623,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_hunt_run_id?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_negative: Scalars['Boolean']['output'];
@@ -34663,6 +34690,7 @@ export type StixSightingRelationshipAddInput = {
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
+  x_opencti_hunt_run_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_negative?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -41832,6 +41860,7 @@ export type ResolversTypes = ResolversObject<{
   HuntRun: ResolverTypeWrapper<BasicStoreEntityHuntRun>;
   HuntRunConnection: ResolverTypeWrapper<Omit<HuntRunConnection, 'edges'> & { edges: Array<ResolversTypes['HuntRunEdge']> }>;
   HuntRunEdge: ResolverTypeWrapper<Omit<HuntRunEdge, 'node'> & { node: ResolversTypes['HuntRun'] }>;
+  HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
   HuntRunMode: HuntRunMode;
   HuntRunReportInput: HuntRunReportInput;
   HuntRunStartInput: HuntRunStartInput;
@@ -42997,6 +43026,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRun: BasicStoreEntityHuntRun;
   HuntRunConnection: Omit<HuntRunConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntRunEdge']> };
   HuntRunEdge: Omit<HuntRunEdge, 'node'> & { node: ResolversParentTypes['HuntRun'] };
+  HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
   HuntRunReportInput: HuntRunReportInput;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
@@ -47577,7 +47607,13 @@ export type HuntEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type HuntEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEvidence'] = ResolversParentTypes['HuntEvidence']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opencti_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value_preview?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
@@ -47615,6 +47651,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   evidence_sample?: Resolver<Maybe<Array<ResolversTypes['HuntEvidence']>>, ParentType, ContextType>;
+  evidence_sources?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
   hunt_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47624,6 +47661,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   incident_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   incident_proposal?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_evidence_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   next_retry_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
@@ -50056,6 +50094,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   huntProposalAdd?: Resolver<Maybe<ResolversTypes['HuntProposal']>, ParentType, ContextType, RequireFields<MutationHuntProposalAddArgs, 'input'>>;
   huntRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationHuntRelationAddArgs, 'id' | 'input'>>;
   huntRelationDelete?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  huntRunEvidenceAdd?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunEvidenceAddArgs, 'id' | 'input'>>;
   huntRunReport?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunReportArgs, 'id' | 'input'>>;
   huntRunRetry?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunRetryArgs, 'id'>>;
   huntRunSetVerdict?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunSetVerdictArgs, 'id' | 'input'>>;
@@ -50881,6 +50920,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_hunt_run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -54028,6 +54068,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_hunt_run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_negative?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

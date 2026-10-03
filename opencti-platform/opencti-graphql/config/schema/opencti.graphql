@@ -3934,6 +3934,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   name: String!
   # Technical
   creators: [Creator!]
@@ -3972,6 +3973,7 @@ input ObservedDataAddInput {
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -14126,6 +14128,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
+  x_opencti_hunt_run_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -14161,6 +14164,7 @@ input StixSightingRelationshipAddInput {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
+  x_opencti_hunt_run_id: String
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]

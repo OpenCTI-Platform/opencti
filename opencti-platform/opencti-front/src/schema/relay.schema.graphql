@@ -3412,6 +3412,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   name: String!
   creators: [Creator!]
   toStix(version: Version): String
@@ -3435,6 +3436,7 @@ input ObservedDataAddInput {
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -8894,6 +8896,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
+  x_opencti_hunt_run_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -8927,6 +8930,7 @@ input StixSightingRelationshipAddInput {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
+  x_opencti_hunt_run_id: String
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]
@@ -10412,6 +10416,7 @@ type Mutation {
   huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun
   huntRunTriage(id: ID!): HuntRun
   huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun
   huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
@@ -16527,6 +16532,12 @@ enum HuntVerdictSource {
 }
 
 type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
   field: String!
   value_hash: String!
   value_preview: String
@@ -16587,6 +16598,8 @@ type HuntRun implements BasicObject & InternalObject {
   error_message: String
   playbook_id: String
   playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
   objectMarking: [MarkingDefinition!]
 }
 
@@ -16647,6 +16660,17 @@ input HuntRunReportInput {
   result_ids: [String!]
   cost_ms: Int
   error: String
+}
+
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  observed_at: DateTime
+
+  "*Constraints:*\n* Maximal length: `128`\n"
+  source: String
 }
 
 input HuntConnectorRegisterInput {
