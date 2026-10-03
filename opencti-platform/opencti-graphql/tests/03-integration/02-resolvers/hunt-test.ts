@@ -1,0 +1,432 @@
+import gql from 'graphql-tag';
+import { Readable } from 'node:stream';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
+import { deleteElementById } from '../../../src/database/middleware';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { importHuntPack } from '../../../src/modules/hunt/hunt-domain';
+import { HUNT_INCIDENT_RECOMMENDATION } from '../../../src/modules/hunt/hunt-incident';
+import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
+
+const CONNECTOR_ID = '0b7e4b54-1f4f-4bde-9e93-8d0f1d6a3c01';
+const SECURITY_PLATFORM_NAME = 'Hunt test Splunk';
+const TECHNIQUE_MITRE_ID = 'T1999.001';
+const SIGMA_RULE = `title: Hunt test encoded command
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains: ' -enc '
+  condition: selection
+tags:
+  - attack.t1999.001
+`;
+
+const HUNT_FIELDS = `
+  id
+  standard_id
+  name
+  hunt_type
+  hunt_status
+  hunt_source_kind
+  hunt_schedule
+  escalation_threshold
+  next_run_at
+  sigmaValidation { valid errors title detection_fields attack_techniques }
+  huntTechniques { id x_mitre_id }
+  huntTargets { id }
+  native_queries { platform language query }
+`;
+const RUN_FIELDS = `
+  id
+  hunt_id
+  hunt_run_status
+  hunt_run_trigger
+  hunt_run_mode
+  connector_id
+  security_platform_id
+  work_id
+  hits_count
+  translated_query
+  verdict
+  verdict_source
+  incident_id
+  draft_id
+  result_ids
+  evidence_sample { kind label quote field value_hash value_preview count }
+  evidence_sources
+  attempt
+`;
+
+const REGISTER_CONNECTOR = gql`
+  mutation RegisterConnector($input: RegisterConnectorInput) {
+    registerConnector(input: $input) { id connector_type }
+  }
+`;
+const HUNT_CONNECTOR_REGISTER = gql`
+  mutation HuntConnectorRegister($input: HuntConnectorRegisterInput!) {
+    huntConnectorRegister(input: $input) { id platform languages active supports_preview securityPlatform { id name } }
+  }
+`;
+const HUNT_CONNECTORS = gql`
+  query HuntConnectors { huntConnectors(onlyAlive: false) { id platform languages } }
+`;
+const SIGMA_VALIDATE = gql`
+  query HuntSigmaValidate($sigma_rule: String!) { huntSigmaValidate(sigma_rule: $sigma_rule) { valid errors title } }
+`;
+const HUNT_ADD = gql`
+  mutation HuntAdd($input: HuntAddInput!) { huntAdd(input: $input) { ${HUNT_FIELDS} } }
+`;
+const HUNT_READ = gql`
+  query Hunt($id: String!) { hunt(id: $id) { ${HUNT_FIELDS} last_run_status last_hits_count } }
+`;
+const HUNT_FIELD_PATCH = gql`
+  mutation HuntFieldPatch($id: ID!, $input: [EditInput]!) { huntFieldPatch(id: $id, input: $input) { id hunt_status hunt_schedule next_run_at } }
+`;
+const HUNT_RUN_START = gql`
+  mutation HuntRunStart($id: ID!, $input: HuntRunStartInput) { huntRunStart(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_TEST_QUERY = gql`
+  mutation HuntTestQuery($id: ID!, $securityPlatformId: ID) { huntTestQuery(id: $id, securityPlatformId: $securityPlatformId) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_REPORT = gql`
+  mutation HuntRunReport($id: ID!, $input: HuntRunReportInput!) { huntRunReport(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_VERDICT = gql`
+  mutation HuntRunSetVerdict($id: ID!, $input: HuntRunVerdictInput!) { huntRunSetVerdict(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_EVIDENCE = gql`
+  mutation HuntRunEvidenceAdd($id: ID!, $input: HuntRunEvidenceAddInput!) { huntRunEvidenceAdd(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUNS = gql`
+  query HuntRuns($filters: FilterGroup) { huntRuns(filters: $filters, first: 50) { edges { node { id hunt_run_mode verdict } } pageInfo { globalCount } } }
+`;
+const HUNT_STATISTICS = gql`
+  query HuntStatistics($huntId: ID) {
+    huntStatistics(huntId: $huntId) { runs_count completed_runs_count hits_total benign_count true_positive_count runs_per_platform { label value } }
+  }
+`;
+const HUNT_PACK_EXPORT = gql`
+  query HuntPackExport($ids: [ID!]!) { huntPackExport(ids: $ids) }
+`;
+const HUNT_VALIDATE_EMULATION = gql`
+  mutation HuntValidateFromEmulation($input: HuntValidateFromEmulationInput!) {
+    huntValidateFromEmulation(input: $input) { hunts_count runs { id hunt_run_trigger aev_inject_id technique_id } }
+  }
+`;
+const HUNT_DELETE = gql`
+  mutation HuntDelete($id: ID!) { huntDelete(id: $id) }
+`;
+const DRAFT_DELETE = gql`
+  mutation DraftWorkspaceDelete($id: ID!) { draftWorkspaceDelete(id: $id) }
+`;
+
+const runFilters = (huntId: string) => ({ mode: 'and', filters: [{ key: ['hunt_id'], values: [huntId] }], filterGroups: [] });
+
+describe('Hunt resolvers', () => {
+  let techniqueId: string;
+  let intrusionSetId: string;
+  let intrusionSetStandardId: string;
+  let securityPlatformId: string;
+  let huntId: string;
+  let firstRunId: string;
+  let secondRunId: string;
+  const draftIds: string[] = [];
+  const huntIds: string[] = [];
+
+  beforeAll(async () => {
+    const technique = await queryAsAdminWithSuccess({
+      query: gql`mutation AttackPatternAdd($input: AttackPatternAddInput!) { attackPatternAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Hunt test technique', x_mitre_id: TECHNIQUE_MITRE_ID } },
+    });
+    techniqueId = technique.data?.attackPatternAdd.id;
+    const intrusionSet = await queryAsAdminWithSuccess({
+      query: gql`mutation IntrusionSetAdd($input: IntrusionSetAddInput!) { intrusionSetAdd(input: $input) { id standard_id } }`,
+      variables: { input: { name: 'Hunt test intrusion set' } },
+    });
+    intrusionSetId = intrusionSet.data?.intrusionSetAdd.id;
+    intrusionSetStandardId = intrusionSet.data?.intrusionSetAdd.standard_id;
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REGISTER_CONNECTOR,
+      variables: { input: { id: CONNECTOR_ID, name: 'Hunt test connector', type: 'INTERNAL_HUNT', scope: ['splunk'], auto: false, only_contextual: false } },
+    });
+  });
+
+  afterAll(async () => {
+    for (let index = 0; index < huntIds.length; index += 1) {
+      await queryAsAdmin({ query: HUNT_DELETE, variables: { id: huntIds[index] } });
+    }
+    for (let index = 0; index < draftIds.length; index += 1) {
+      await queryAsAdmin({ query: DRAFT_DELETE, variables: { id: draftIds[index] } });
+    }
+    await queryAsAdmin({ query: gql`mutation DeleteConnector($id: ID!) { deleteConnector(id: $id) }`, variables: { id: CONNECTOR_ID } });
+    if (securityPlatformId) {
+      await deleteElementById(testContext, ADMIN_USER, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+    }
+    await deleteElementById(testContext, ADMIN_USER, techniqueId, ENTITY_TYPE_ATTACK_PATTERN);
+    await deleteElementById(testContext, ADMIN_USER, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
+    vi.restoreAllMocks();
+  });
+
+  it('should register a hunt connector and its security platform', async () => {
+    const registration = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: HUNT_CONNECTOR_REGISTER,
+      variables: { input: { connector_id: CONNECTOR_ID, platform: 'Splunk', languages: ['SPL', 'spl'], security_platform_name: SECURITY_PLATFORM_NAME } },
+    });
+    const connector = registration.data?.huntConnectorRegister;
+    expect(connector.platform).toEqual('splunk');
+    expect(connector.languages).toEqual(['spl']);
+    expect(connector.supports_preview).toBe(true);
+    expect(connector.securityPlatform.name).toEqual(SECURITY_PLATFORM_NAME);
+    securityPlatformId = connector.securityPlatform.id;
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const list = await queryAsAdminWithSuccess({ query: HUNT_CONNECTORS });
+    expect(list.data?.huntConnectors.map((c: { id: string }) => c.id)).toContain(CONNECTOR_ID);
+  });
+
+  it('should refuse an unknown platform and a telemetry connector without security platform', async () => {
+    const unknown = await queryAsAdmin({ query: HUNT_CONNECTOR_REGISTER, variables: { input: { connector_id: CONNECTOR_ID, platform: 'nowhere', languages: ['x'] } } });
+    expect(unknown.errors?.[0].message).toContain('Hunt platform must be one of');
+    const noPlatform = await queryAsAdmin({ query: HUNT_CONNECTOR_REGISTER, variables: { input: { connector_id: CONNECTOR_ID, platform: 'splunk', languages: ['spl'] } } });
+    expect(noPlatform.errors?.[0].message).toContain('must declare the security platform');
+  });
+
+  it('should validate Sigma rules', async () => {
+    const valid = await queryAsAdminWithSuccess({ query: SIGMA_VALIDATE, variables: { sigma_rule: SIGMA_RULE } });
+    expect(valid.data?.huntSigmaValidate).toEqual({ valid: true, errors: [], title: 'Hunt test encoded command' });
+    const invalid = await queryAsAdminWithSuccess({ query: SIGMA_VALIDATE, variables: { sigma_rule: 'title: broken' } });
+    expect(invalid.data?.huntSigmaValidate.valid).toBe(false);
+  });
+
+  it('should create a manual hunt linked to the techniques of its Sigma rule', async () => {
+    const hunt = await queryAsAdminWithSuccess({
+      query: HUNT_ADD,
+      variables: {
+        input: {
+          name: 'Hunt test manual hunt',
+          hypothesis: 'If the intrusion set is active, encoded commands run on endpoints',
+          sigma_rule: SIGMA_RULE,
+          huntTargets: [intrusionSetId],
+          escalation_threshold: 2,
+          native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
+        },
+      },
+    });
+    const created = hunt.data?.huntAdd;
+    huntId = created.id;
+    huntIds.push(huntId);
+    expect(created.hunt_type).toEqual('telemetry');
+    expect(created.hunt_status).toEqual('active');
+    expect(created.hunt_source_kind).toEqual('analyst');
+    expect(created.hunt_schedule).toEqual('manual');
+    expect(created.next_run_at).toBeNull();
+    expect(created.sigmaValidation.valid).toBe(true);
+    expect(created.huntTechniques.map((t: { x_mitre_id: string }) => t.x_mitre_id)).toEqual([TECHNIQUE_MITRE_ID]);
+    expect(created.huntTargets.map((t: { id: string }) => t.id)).toEqual([intrusionSetId]);
+  });
+
+  it('should refuse an invalid Sigma rule and a schedule firing too often', async () => {
+    const invalid = await queryAsAdmin({ query: HUNT_ADD, variables: { input: { name: 'Hunt test invalid', sigma_rule: 'title: broken' } } });
+    expect(invalid.errors?.length).toBeGreaterThan(0);
+    const tooOften = await queryAsAdmin({ query: HUNT_ADD, variables: { input: { name: 'Hunt test too often', sigma_rule: SIGMA_RULE, hunt_schedule: '* * * * *' } } });
+    expect(tooOften.errors?.length).toBeGreaterThan(0);
+  });
+
+  it('should gate autonomous schedules with Enterprise Edition', async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockRejectedValueOnce(new Error('Enterprise edition is not enabled'));
+    const refused = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: huntId, input: [{ key: 'hunt_schedule', value: ['0 */6 * * *'] }] } });
+    expect(refused.errors?.length).toBeGreaterThan(0);
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+    const scheduled = await queryAsAdminWithSuccess({ query: HUNT_FIELD_PATCH, variables: { id: huntId, input: [{ key: 'hunt_schedule', value: ['0 */6 * * *'] }] } });
+    expect(scheduled.data?.huntFieldPatch.hunt_schedule).toEqual('0 */6 * * *');
+    const read = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
+    expect(read.data?.hunt.next_run_at).not.toBeNull();
+    await queryAsAdminWithSuccess({ query: HUNT_FIELD_PATCH, variables: { id: huntId, input: [{ key: 'hunt_schedule', value: ['manual'] }] } });
+  });
+
+  it('should start a run on the hunt connector of the security platform', async () => {
+    const runs = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId, input: { time_window_hours: 48 } } });
+    expect(runs.data?.huntRunStart).toHaveLength(1);
+    const [run] = runs.data?.huntRunStart ?? [];
+    firstRunId = run.id;
+    expect(run.hunt_run_status).toEqual('queued');
+    expect(run.hunt_run_trigger).toEqual('manual');
+    expect(run.connector_id).toEqual(CONNECTOR_ID);
+    expect(run.security_platform_id).toEqual(securityPlatformId);
+    expect(run.verdict).toEqual('pending');
+  });
+
+  it('should only accept reports from the hunt connector', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'running' } } });
+    const queued = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'queued' } } });
+    expect(queued.errors?.[0].message).toContain('can only report a running, completed or failed status');
+  });
+
+  it('should complete a run without hits as benign', async () => {
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'running', translated_query: 'index=edr', query_language: 'spl' } } });
+    const completed = await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed', hits_count: 0, cost_ms: 120 } } });
+    const run = completed.data?.huntRunReport;
+    expect(run.hunt_run_status).toEqual('completed');
+    expect(run.verdict).toEqual('benign');
+    expect(run.verdict_source).toEqual('auto');
+    const again = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed' } } });
+    expect(again.errors?.[0].message).toContain('already terminated');
+    const hunt = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
+    expect(hunt.data?.hunt.last_run_status).toEqual('completed');
+    expect(hunt.data?.hunt.last_hits_count).toEqual(0);
+  });
+
+  it('should open an Incident draft above the escalation threshold and store hashed evidence only', async () => {
+    const runs = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId } });
+    secondRunId = runs.data?.huntRunStart[0].id;
+    const completed = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: HUNT_RUN_REPORT,
+      variables: {
+        id: secondRunId,
+        input: {
+          status: 'completed',
+          hits_count: 5,
+          distinct_entities: 2,
+          result_ids: [intrusionSetStandardId],
+          evidence_sample: [{ field: 'process.command_line', value_hash: 'powershell -enc AAAA', value_preview: 'powershell -enc AAAA', count: 5 }],
+        },
+      },
+    });
+    const run = completed.data?.huntRunReport;
+    expect(run.verdict).toEqual('pending');
+    expect(run.incident_id).toBeTruthy();
+    expect(run.draft_id).toBeTruthy();
+    draftIds.push(run.draft_id);
+    // A raw value sent as a hash is hashed again by the platform
+    expect(run.evidence_sample[0].value_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(run.evidence_sample[0]).toMatchObject({ kind: 'tool_result', label: 'process.command_line', quote: 'powershell -enc AAAA', count: 5 });
+    // Draft-first: the incident only exists in its draft workspace
+    const live = await queryAsAdmin({ query: gql`query Incident($id: String!) { incident(id: $id) { id } }`, variables: { id: run.incident_id } });
+    expect(live.data?.incident).toBeNull();
+    const inDraft = await queryAsAdmin({ query: gql`query Incident($id: String!) { incident(id: $id) { id description } }`, variables: { id: run.incident_id } }, run.draft_id);
+    expect(inDraft.data?.incident.description).toContain(HUNT_INCIDENT_RECOMMENDATION);
+  });
+
+  it('should record the verdict of an analyst without opening a second incident', async () => {
+    const verdict = await queryAsAdminWithSuccess({
+      query: HUNT_RUN_VERDICT,
+      variables: { id: secondRunId, input: { verdict: 'true_positive', analyst_feedback: 'Confirmed on two hosts' } },
+    });
+    const run = verdict.data?.huntRunSetVerdict;
+    expect(run.verdict).toEqual('true_positive');
+    expect(run.verdict_source).toEqual('analyst');
+    const preview = await queryAsAdminWithSuccess({ query: HUNT_TEST_QUERY, variables: { id: huntId, securityPlatformId } });
+    const auto = await queryAsAdmin({ query: HUNT_RUN_VERDICT, variables: { id: preview.data?.huntTestQuery.id, input: { verdict: 'benign' } } });
+    expect(auto.errors?.[0].message).toContain('A translation preview has no verdict');
+  });
+
+  it('should attach late evidence to a completed run without changing its verdict', async () => {
+    const evidence = await queryAsAdminWithSuccess({
+      query: HUNT_RUN_EVIDENCE,
+      variables: { id: firstRunId, input: { result_ids: [intrusionSetId], hits_count: 3, source: 'splunk-alert-action', security_platform_id: securityPlatformId } },
+    });
+    const run = evidence.data?.huntRunEvidenceAdd;
+    expect(run.hits_count).toEqual(3);
+    expect(run.verdict).toEqual('benign');
+    expect(run.result_ids).toEqual([intrusionSetStandardId]);
+    expect(run.evidence_sources).toEqual(['splunk-alert-action']);
+    const unknown = await queryAsAdmin({ query: HUNT_RUN_EVIDENCE, variables: { id: firstRunId, input: { result_ids: ['sighting--00000000-0000-4000-8000-000000000000'] } } });
+    expect(unknown.errors?.[0].message).toContain('cannot be found or are not accessible');
+  });
+
+  it('should translate without executing for a preview', async () => {
+    const preview = await queryAsAdminWithSuccess({ query: HUNT_TEST_QUERY, variables: { id: huntId } });
+    const run = preview.data?.huntTestQuery;
+    expect(run.hunt_run_mode).toEqual('preview');
+    expect(run.hunt_run_trigger).toEqual('preview');
+    const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: HUNT_RUN_REPORT,
+      variables: { id: run.id, input: { status: 'completed', translated_query: 'index=edr CommandLine="* -enc *"', query_language: 'spl', hits_count: 99 } },
+    });
+    expect(reported.data?.huntRunReport.translated_query).toEqual('index=edr CommandLine="* -enc *"');
+    // Previews never count hits nor get a verdict
+    expect(reported.data?.huntRunReport.hits_count).toBeNull();
+    expect(reported.data?.huntRunReport.verdict).toEqual('pending');
+  });
+
+  it('should list the runs of the hunt and compute its statistics on executed runs', async () => {
+    const runs = await queryAsAdminWithSuccess({ query: HUNT_RUNS, variables: { filters: runFilters(huntId) } });
+    const modes = runs.data?.huntRuns.edges.map((edge: { node: { hunt_run_mode: string } }) => edge.node.hunt_run_mode);
+    expect(modes.filter((mode: string) => mode === 'execute')).toHaveLength(2);
+    expect(modes.filter((mode: string) => mode === 'preview')).toHaveLength(2);
+    const statistics = await queryAsAdminWithSuccess({ query: HUNT_STATISTICS, variables: { huntId } });
+    expect(statistics.data?.huntStatistics).toMatchObject({ runs_count: 2, completed_runs_count: 2, hits_total: 8, benign_count: 1, true_positive_count: 1 });
+    expect(statistics.data?.huntStatistics.runs_per_platform).toEqual([{ label: SECURITY_PLATFORM_NAME, value: 2 }]);
+  });
+
+  it('should export a self-describing hunt pack and import it back as a hub draft', async () => {
+    const pack = await queryAsAdminWithSuccess({ query: HUNT_PACK_EXPORT, variables: { ids: [huntId] } });
+    const bundle = JSON.parse(pack.data?.huntPackExport);
+    expect(bundle.type).toEqual('bundle');
+    const types = bundle.objects.map((object: { type: string }) => object.type);
+    expect(types).toEqual(expect.arrayContaining(['extension-definition', 'hunt', 'attack-pattern', 'intrusion-set']));
+    expect(bundle.objects.find((object: { id: string }) => object.id === STIX_EXT_OCTI_HUNT)).toBeTruthy();
+    const exported = bundle.objects.find((object: { type: string }) => object.type === 'hunt');
+    expect(exported.hunt_status).toEqual('draft');
+    expect(exported.hunt_source_kind).toEqual('hub');
+    const toUpload = (content: object) => Promise.resolve({
+      filename: 'hunt-pack.json',
+      mimetype: 'application/json',
+      encoding: 'utf-8',
+      createReadStream: () => Readable.from([Buffer.from(JSON.stringify(content))]),
+    } as any);
+    // Importing the pack of a hunt that exists here updates its definition, never how it runs here
+    const sameHunt = await importHuntPack(testContext, ADMIN_USER, toUpload(bundle));
+    expect(sameHunt.hunts.map((hunt) => hunt.internal_id)).toEqual([huntId]);
+    const unchanged = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
+    expect(unchanged.data?.hunt.hunt_status).toEqual('active');
+    expect(unchanged.data?.hunt.hunt_source_kind).toEqual('analyst');
+    // A new hunt of a pack lands in draft with the hub origin
+    const renamed = {
+      ...bundle,
+      objects: bundle.objects.map((object: { type: string }) => (object.type === 'hunt' ? { ...object, id: 'hunt--5d1c0a5a-6e0f-5a8f-9d3c-6b8b3f7f0a01', name: 'Hunt test pack hunt' } : object)),
+    };
+    const imported = await importHuntPack(testContext, ADMIN_USER, toUpload(renamed));
+    expect(imported.hunts).toHaveLength(1);
+    const [newHunt] = imported.hunts;
+    huntIds.push(newHunt.internal_id);
+    expect(newHunt.hunt_status).toEqual('draft');
+    expect(newHunt.hunt_source_kind).toEqual('hub');
+    const draftRun = await queryAsAdmin({ query: HUNT_RUN_START, variables: { id: newHunt.internal_id } });
+    expect(draftRun.errors?.[0].message).toContain('does not run');
+  });
+
+  it('should validate hunts from an OpenAEV emulation, idempotently per inject', async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+    const input = {
+      technique_id: TECHNIQUE_MITRE_ID,
+      security_platform_name: SECURITY_PLATFORM_NAME,
+      inject_id: 'hunt-test-inject',
+      window_start: new Date(Date.now() - 3600 * 1000).toISOString(),
+      window_end: new Date().toISOString(),
+    };
+    const first = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
+    const validation = first.data?.huntValidateFromEmulation;
+    expect(validation.hunts_count).toEqual(1);
+    expect(validation.runs).toHaveLength(1);
+    expect(validation.runs[0]).toMatchObject({ hunt_run_trigger: 'emulation', aev_inject_id: 'hunt-test-inject', technique_id: techniqueId });
+    const second = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
+    expect(second.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
+    const invalidWindow = await queryAsAdmin({ query: HUNT_VALIDATE_EMULATION, variables: { input: { ...input, window_start: input.window_end } } });
+    expect(invalidWindow.errors?.[0].message).toContain('The emulation window is invalid');
+  });
+
+  it('should delete a hunt', async () => {
+    const pack = huntIds.pop() as string;
+    const deleted = await queryAsAdminWithSuccess({ query: HUNT_DELETE, variables: { id: pack } });
+    expect(deleted.data?.huntDelete).toEqual(pack);
+    const read = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: pack } });
+    expect(read.data?.hunt).toBeNull();
+  });
+});

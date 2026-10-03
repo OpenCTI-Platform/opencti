@@ -390,6 +390,8 @@ export const huntValidateFromEmulation = async (context: AuthContext, user: Auth
 // endregion
 
 // region hunt packs
+const HUNT_PACK_LOCAL_FIELDS = ['hunt_status', 'hunt_source_kind', 'hunt_schedule', 'hunt_scope', 'trigger_filters', 'hunt_pir_activation'] as const;
+
 export const importHuntPack = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const { hunts, objects } = await parseHuntPack(file);
   const imported: BasicStoreEntityHunt[] = [];
@@ -400,7 +402,15 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
     if (plan.blocked) {
       logApp.warn('[OPENCTI-MODULE] Hunt pack hunt skipped, its markings are unknown on this platform', { hunt: hunts[index].id });
     } else {
-      imported.push(await addHunt(context, user, plan.input as unknown as HuntAddInput));
+      // A pack updates the definition of a hunt that exists here, never how it runs here (status, origin, schedule)
+      const [existing] = await findByIds<BasicStoreEntityHunt>(context, user, [hunts[index].id], { type: ENTITY_TYPE_HUNT });
+      const input = { ...plan.input };
+      if (existing) {
+        HUNT_PACK_LOCAL_FIELDS.forEach((field) => {
+          input[field] = existing[field];
+        });
+      }
+      imported.push(await addHunt(context, user, input as unknown as HuntAddInput));
     }
   }
   await publishUserAction({
