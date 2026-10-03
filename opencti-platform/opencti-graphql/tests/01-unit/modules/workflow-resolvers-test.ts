@@ -1,4 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { graphql, Kind, parse } from 'graphql';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import workflowResolvers from '../../../src/modules/workflow/api/workflow-resolvers';
 import type { AuthContext } from '../../../src/types/user';
 import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
@@ -555,6 +558,46 @@ describe('workflow-resolvers', () => {
   });
 
   describe('WorkflowTransition type resolvers', () => {
+    it.each([null, undefined])('serializes a terminal transition with toState=%s without losing the workflow instance', async (toState) => {
+      const workflowSchema = parse(readFileSync(new URL('../../../src/modules/workflow/api/workflow.graphql', import.meta.url), 'utf8'));
+      const schema = makeExecutableSchema({
+        typeDefs: [
+          {
+            kind: Kind.DOCUMENT,
+            definitions: workflowSchema.definitions.filter((definition) => definition.kind === Kind.OBJECT_TYPE_DEFINITION
+              && definition.name.value === 'WorkflowTransition'),
+          },
+          `
+            type Query { workflowInstance: WorkflowInstance }
+            type WorkflowInstance { currentState: String!, allowedTransitions: [WorkflowTransition!]! }
+            type Status { id: ID! }
+          `,
+        ],
+        resolvers: {
+          Query: {
+            workflowInstance: () => ({
+              currentState: 'ready',
+              allowedTransitions: [{ event: 'Validate', toState, actions: ['validateDraft'] }],
+            }),
+          },
+          WorkflowTransition: workflowResolvers.WorkflowTransition,
+        },
+      });
+
+      const result = await graphql({
+        schema,
+        source: '{ workflowInstance { currentState allowedTransitions { event toState toStatus { id } actions } } }',
+      });
+
+      expect(result.errors).toBeUndefined();
+      expect(result.data).toEqual({
+        workflowInstance: {
+          currentState: 'ready',
+          allowedTransitions: [{ event: 'Validate', toState: null, toStatus: null, actions: ['validateDraft'] }],
+        },
+      });
+    });
+
     describe('toStatus', () => {
       it('should return status object from toState', () => {
         const transition = { toState: 'closed' };

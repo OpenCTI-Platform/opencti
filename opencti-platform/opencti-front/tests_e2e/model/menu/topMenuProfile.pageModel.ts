@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { expect } from '../../fixtures/baseFixtures';
 
 export default class TopMenuProfilePage {
   constructor(private page: Page) {}
@@ -12,7 +13,12 @@ export default class TopMenuProfilePage {
   }
 
   async logout(timeout?: number) {
-    await this.getMenuProfile().click({ timeout });
-    return this.getLogoutButton().click({ timeout });
+    const profileButton = this.getMenuProfile();
+    const loginPage = this.page.getByTestId('login-page');
+    await expect(profileButton.or(loginPage)).toBeVisible({ timeout });
+    if (await loginPage.isVisible()) return;
+    await profileButton.click({ timeout });
+    await this.getLogoutButton().click({ timeout });
+    await expect(loginPage).toBeVisible({ timeout });
   }
 }
