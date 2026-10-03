@@ -80,7 +80,8 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await card.getByRole('button', { name: 'Hide from the view' }).click();
     await expect(elements(page).getByRole('option', { name: new RegExp(fixture.intrusionSet.name) })).toHaveCount(0);
     await legend(page).getByRole('button', { name: /Show the hidden entities/ }).click();
-    await expect(elements(page).getByRole('option', { name: new RegExp(`^[^,]*${fixture.intrusionSet.name}`) })).toHaveCount(1);
+    // The entity option ends with its relationship count; the options of its relationships also name it.
+    await expect(elements(page).getByRole('option', { name: new RegExp(`${fixture.intrusionSet.name}, \\d+ relationships?$`) })).toHaveCount(1);
   });
 
   test('starts an investigation from the hover card of an entity', async ({ page, playwright }) => {
