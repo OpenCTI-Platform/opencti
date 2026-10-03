@@ -12,7 +12,8 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
@@ -287,6 +288,26 @@ describe('Threat Pulse manager and API', () => {
     computeStableKeys(redEntity).forEach((key) => expect(contributedKeys).not.toContain(key));
     expect(sharedEntity.pulse_keys).toEqual(computeStableKeys(sharedEntity));
     expect(redEntity.pulse_keys).toBeUndefined();
+  });
+
+  it('should keep the hunt activity of a run that failed before pushing it, and contribute it with the next run', async () => {
+    const today = utcDay();
+    const malwareEntity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    const malwareKeys = computeStableKeys(malwareEntity);
+    const huntedCount = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && row.eventKind === 'hunted' && row.day === today && malwareKeys.includes(row.key))
+      .reduce((total, row) => total + row.count, 0);
+    expect(await recordPulseActivity(testContext, malwareId, 'hunted', 2)).toBe(true);
+    // A run takes the activity, then fails before its batches are pushed or kept in the outbox
+    expect(await redisTakePulseActivity(today)).toEqual([{ entityId: malwareId, eventKind: 'hunted', count: 2 }]);
+    expect(await recordPulseActivity(testContext, malwareId, 'hunted', 1)).toBe(true);
+
+    await runPulseContribution(testContext);
+    // Both hunts are contributed once, the activity is acknowledged
+    expect(huntedCount()).toBe(3 * malwareKeys.length);
+    expect(await redisTakePulseActivity(today)).toEqual([]);
+    await runPulseContribution(testContext);
+    expect(huntedCount()).toBe(3 * malwareKeys.length);
   });
 
   it('should hide the network signal below the anonymity threshold', async () => {

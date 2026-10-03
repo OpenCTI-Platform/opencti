@@ -25,13 +25,14 @@ import {
   PulseContributionStatus,
   PulseMode,
   PulsePeriod,
+  PulseRegionBucket,
   PulseSectorBucket,
   type PulseSurface,
   type PulseTelemetryEvent,
   PulseUnavailableReason,
 } from '../../../generated/graphql';
 import { PulseHubError, type PulseHubPlatform, xtmHubPulseClient } from '../hub/xtm-hub-pulse-client';
-import { aggregatePulseActivity, buildPulseBatches, collectPulseActivity, countPulseActivity, loadPulseEntities, mergePulseActivity } from './pulse-collector';
+import { aggregatePulseActivity, buildPulseBatches, collectPulseActivity, countPulseActivity, loadPulseEntities, mergePulseActivity, type PulseActivity } from './pulse-collector';
 import { computeStableKeys, computeTransportHash, decodeTransportHash, isValidPulseHash } from './pulse-hashing';
 import {
   buildPulseDocument,
@@ -57,7 +58,9 @@ import {
   suggestPulseBuckets,
 } from './pulse-settings';
 import {
+  redisAckPulseActivity,
   redisAddPulseActivity,
+  redisDiscardPulseActivity,
   redisAddPulseContributionStats,
   redisClearPulseContributionState,
   redisGetPulseContributionStats,
@@ -119,6 +122,8 @@ const REFRESH_INTERVAL_MS = conf.get('pulse_manager:refresh_interval') ?? ONE_DA
 const REFRESH_MAX_ENTITIES = conf.get('pulse_manager:refresh_max_entities') ?? 200000;
 const PREVIEW_MAX_ENTITIES = conf.get('pulse_manager:preview_max_entities') ?? 1000000;
 const STATS_DAYS = 30;
+// Days of external activity kept in Redis (the salt days XTM Hub keeps).
+const ACTIVITY_DAYS = 3;
 const DEFAULT_TRENDING_SIZE = 50;
 const MAX_TRENDING_SIZE = 200;
 
@@ -129,6 +134,19 @@ export const previousUtcDay = (day: string) => utcDay(new Date(Date.parse(`${day
 
 export const lastUtcDays = (count: number, from = new Date()) => {
   return Array.from({ length: count }, (_, index) => utcDay(new Date(from.getTime() - (count - 1 - index) * ONE_DAY_MS)));
+};
+
+// [since, until) cut at every UTC midnight, each part with its day.
+export const utcDaySegments = (since: Date, until: Date) => {
+  const segments: Array<{ day: string; since: Date; until: Date }> = [];
+  let start = since;
+  while (start.getTime() < until.getTime()) {
+    const day = utcDay(start);
+    const end = new Date(Math.min(until.getTime(), Date.parse(`${day}T00:00:00.000Z`) + ONE_DAY_MS));
+    segments.push({ day, since: start, until: end });
+    start = end;
+  }
+  return segments;
 };
 // endregion
 
@@ -345,7 +363,7 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
     await redisPopPulseOutbox();
-    await redisTakePulseActivity();
+    await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
   }
   const modeChanged = mode !== current.mode;
   if (modeChanged && (currentAccess === PulseAccess.Full || currentAccess === PulseAccess.Preview)) {
@@ -459,9 +477,14 @@ export const runPulseContribution = async (context: AuthContext) => {
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
   }
-  const salt = await getPulseSalt(platform, today);
   const cursor = await redisGetPulseCursor();
-  const since = new Date(Math.min(now.getTime(), Date.parse(cursor ?? '') || new Date(values.consentDate ?? now).getTime()));
+  let since = new Date(Math.min(now.getTime(), Date.parse(cursor ?? '') || new Date(values.consentDate ?? now).getTime()));
+  // XTM Hub serves the salts of today and yesterday only: older activity can never be contributed.
+  const oldestAccepted = new Date(`${yesterday}T00:00:00.000Z`);
+  if (since.getTime() < oldestAccepted.getTime()) {
+    logApp.warn('[THREAT PULSE] Activity older than the accepted salt days is not contributed', { since: since.toISOString(), until: oldestAccepted.toISOString() });
+    since = oldestAccepted;
+  }
   let until = new Date(Math.min(now.getTime(), since.getTime() + MAX_WINDOW_HOURS * 3600 * 1000));
   if (until.getTime() <= since.getTime()) {
     return { pushedRecords };
@@ -471,20 +494,52 @@ export const runPulseContribution = async (context: AuthContext) => {
     const span = Math.max(60 * 1000, Math.floor(((until.getTime() - since.getTime()) * MAX_EVENTS_PER_RUN) / activityCount));
     until = new Date(since.getTime() + span);
   }
-  const activity = await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, since, until);
-  mergePulseActivity(activity, await redisTakePulseActivity());
-  const entities = await loadPulseEntities(context, PULSE_MANAGER_USER, Array.from(activity.keys()));
-  const policy = await buildPulseMarkingPolicy(context, values);
-  const aggregation = aggregatePulseActivity(activity, entities, policy, values.scopes);
-  let lastError: string | undefined;
-  if (aggregation.records.length > 0) {
-    const batches = buildPulseBatches(aggregation.records, salt, today, getPulseBuckets(values));
-    const outcome = await pushPulseBatches(platform, batches);
-    pushedRecords += outcome.pushedRecords;
-    lastError = outcome.error?.code;
-    await storePulseKeys(context, aggregation.contributedEntities);
-    await redisAddPulseContributionStats(today, outcome.pushedRecords, aggregation.contributedEntities.length, aggregation.recordsByEntityType);
+  // Each record carries the UTC day of its activity and is hashed with the salt of that day.
+  const activityByDay = new Map<string, PulseActivity>();
+  const segments = utcDaySegments(since, until);
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, segment.since, segment.until));
   }
+  const acceptedDays = [yesterday, today];
+  for (let index = 0; index < acceptedDays.length; index += 1) {
+    const day = acceptedDays[index];
+    const external = await redisTakePulseActivity(day);
+    if (external.length > 0) {
+      activityByDay.set(day, mergePulseActivity(activityByDay.get(day) ?? new Map(), external));
+    }
+  }
+  const policy = await buildPulseMarkingPolicy(context, values);
+  const buckets = getPulseBuckets(values);
+  let lastError: string | undefined;
+  let records = 0;
+  let excluded = 0;
+  const days = Array.from(activityByDay.keys()).sort();
+  for (let index = 0; index < days.length; index += 1) {
+    const day = days[index];
+    const activity = activityByDay.get(day) as PulseActivity;
+    const entities = await loadPulseEntities(context, PULSE_MANAGER_USER, Array.from(activity.keys()));
+    const aggregation = aggregatePulseActivity(activity, entities, policy, values.scopes);
+    records += aggregation.records.length;
+    excluded += aggregation.excludedCount;
+    if (aggregation.records.length > 0) {
+      const batches = buildPulseBatches(aggregation.records, await getPulseSalt(platform, day), day, buckets);
+      let dayPushed = 0;
+      if (lastError) {
+        // XTM Hub just refused or failed: the batches of the next days wait in the outbox for the next run.
+        await redisPushPulseOutbox(batches);
+      } else {
+        const outcome = await pushPulseBatches(platform, batches);
+        dayPushed = outcome.pushedRecords;
+        lastError = outcome.error?.code;
+      }
+      pushedRecords += dayPushed;
+      await storePulseKeys(context, aggregation.contributedEntities);
+      await redisAddPulseContributionStats(day, dayPushed, aggregation.contributedEntities.length, aggregation.recordsByEntityType);
+    }
+  }
+  // Pushed or kept in the outbox: the activity taken from Redis is no longer needed.
+  await redisAckPulseActivity(acceptedDays);
   await redisSetPulseCursor(until.toISOString());
   await redisSetPulseState({ last_push_at: now.toISOString(), last_error: lastError });
   await recoverFromContributionLapse(lapsed, pushedRecords);
@@ -492,9 +547,10 @@ export const runPulseContribution = async (context: AuthContext) => {
   logApp.info('[THREAT PULSE] Contribution done', {
     since: since.toISOString(),
     until: until.toISOString(),
-    records: aggregation.records.length,
+    days,
+    records,
     pushedRecords,
-    excluded: aggregation.excludedCount,
+    excluded,
   });
   return { pushedRecords };
 };
@@ -507,7 +563,7 @@ export const recordPulseActivity = async (context: AuthContext, entityId: string
   if (!isPulseContributing(values)) {
     return false;
   }
-  await redisAddPulseActivity(entityId, eventKind, Math.max(1, Math.floor(count)));
+  await redisAddPulseActivity(utcDay(), entityId, eventKind, Math.max(1, Math.floor(count)));
   return true;
 };
 // endregion
@@ -597,13 +653,23 @@ const digestSectorBucket = (sectorBucket: PulseSectorBucketValue | null | undefi
   return sectorBucket && sectorBucket !== PulseSectorBucket.Undisclosed ? sectorBucket : null;
 };
 
-const getHubDigest = async (platform: PulseHubPlatform, day: string, sectorBucket: PulseSectorBucketValue | null): Promise<PulseHubDigest> => {
-  const cacheKey = `digest:${platform.platformId}:${day}:${sectorBucket ?? '*'}`;
+// The trending of the digest covers every region when the platform discloses none.
+const digestRegionBucket = (regionBucket: PulseRegionBucketValue | null | undefined) => {
+  return regionBucket && regionBucket !== PulseRegionBucket.Undisclosed ? regionBucket : null;
+};
+
+const getHubDigest = async (
+  platform: PulseHubPlatform,
+  day: string,
+  sectorBucket: PulseSectorBucketValue | null,
+  regionBucket: PulseRegionBucketValue | null,
+): Promise<PulseHubDigest> => {
+  const cacheKey = `digest:${platform.platformId}:${day}:${sectorBucket ?? '*'}:${regionBucket ?? '*'}`;
   const cached = await redisGetPulseResponse<PulseHubDigest>(cacheKey);
   if (cached) {
     return cached;
   }
-  const digest = await xtmHubPulseClient.digest(platform, { day, sector_bucket: sectorBucket, region_bucket: null });
+  const digest = await xtmHubPulseClient.digest(platform, { day, sector_bucket: sectorBucket, region_bucket: regionBucket });
   await redisSetPulseResponse(cacheKey, digest, RESPONSE_CACHE_TTL_SECONDS);
   return digest;
 };
@@ -638,7 +704,7 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   }
   const day = utcDay();
   const salt = await getPulseSalt(platform, day);
-  const digest = await getHubDigest(platform, day, digestSectorBucket(values.sectorBucket));
+  const digest = await getHubDigest(platform, day, digestSectorBucket(values.sectorBucket), digestRegionBucket(values.regionBucket));
   const signals = new Map<string, PulsePreviewSignal>();
   decodeHubItems(salt, digest.items).forEach(({ item, key }) => {
     signals.set(`${item.object_type}|${key}`, { prevalence: item.prevalence_bucket, trend: item.trend });
@@ -844,7 +910,9 @@ export const getPulseTrending = async (context: AuthContext, user: AuthUser, arg
     if (!args.include_preview) {
       return { ...base, unavailable_reason: PulseUnavailableReason.ContributionRequired };
     }
-    return getPulsePreviewTrending(context, user, platform, digestSectorBucket(sectorBucket), entityTypes);
+    // The digest of the preview pass, which stored the keys of the trending objects held here, unless another region is asked.
+    const previewRegion = digestRegionBucket(args.region_bucket ?? values.regionBucket);
+    return getPulsePreviewTrending(context, user, platform, digestSectorBucket(sectorBucket), previewRegion, entityTypes);
   }
   const first = Math.min(MAX_TRENDING_SIZE, Math.max(1, args.first ?? DEFAULT_TRENDING_SIZE));
   try {
@@ -881,6 +949,7 @@ const getPulsePreviewTrending = async (
   user: AuthUser,
   platform: PulseHubPlatform,
   sectorBucket: PulseSectorBucketValue | null,
+  regionBucket: PulseRegionBucketValue | null,
   entityTypes: string[],
 ) => {
   const day = utcDay();
@@ -890,14 +959,14 @@ const getPulsePreviewTrending = async (
     day: null,
     period: PulsePeriod.Last_7Days,
     sector_bucket: sectorBucket,
-    region_bucket: null,
+    region_bucket: regionBucket,
     network_items_count: 0,
     locked_count: 0,
     entries: [],
   };
   try {
     const salt = await getPulseSalt(platform, day);
-    const digest = await getHubDigest(platform, day, sectorBucket);
+    const digest = await getHubDigest(platform, day, sectorBucket, regionBucket);
     const keyedItems = decodeHubItems(salt, digest.trending.items);
     const entities = await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key));
     const entries = matchHubItemsToEntities(keyedItems, entities, (item) => -item.rank)

@@ -11,10 +11,13 @@ const OUTBOX_KEY = '{pulse}:outbox';
 const STATE_KEY = '{pulse}:state';
 const STATS_DAY_PREFIX = '{pulse}:stats:day:';
 const STATS_TYPE_KEY = '{pulse}:stats:types';
-const ACTIVITY_KEY = '{pulse}:activity';
+const ACTIVITY_PREFIX = '{pulse}:activity:';
+const TAKEN_SUFFIX = ':taken';
 const TRENDING_NOTIFIED_KEY = '{pulse}:trending:notified';
 
 const SALT_TTL_SECONDS = 3 * 24 * 3600;
+// The activity of a day can only be contributed with the salt of that day, which XTM Hub keeps for 3 days.
+const ACTIVITY_TTL_SECONDS = 3 * 24 * 3600;
 const STATS_TTL_SECONDS = 31 * 24 * 3600;
 const OUTBOX_MAX_BATCHES = 500;
 
@@ -139,31 +142,70 @@ export const redisGetPulseContributionStats = async (days: string[]) => {
   };
 };
 
+const activityKeys = (days: string[]) => days.flatMap((day) => [`${ACTIVITY_PREFIX}${day}`, `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`]);
+
 export const redisClearPulseContributionState = async (days: string[]) => {
   const client = getClientBase();
-  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, CURSOR_KEY, ACTIVITY_KEY, TRENDING_NOTIFIED_KEY, ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
+  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, CURSOR_KEY, TRENDING_NOTIFIED_KEY, ...activityKeys(days), ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
 };
 // endregion
 
-// region external activity (hunts and other integrations)
-export const redisAddPulseActivity = async (entityId: string, eventKind: PulseEventKind, count: number) => {
-  await getClientBase().hincrby(ACTIVITY_KEY, `${entityId}|${eventKind}`, count);
+// region external activity (hunts and other integrations), kept per UTC day
+export interface PulseExternalActivity {
+  entityId: string;
+  eventKind: PulseEventKind;
+  count: number;
+}
+
+export const redisAddPulseActivity = async (day: string, entityId: string, eventKind: PulseEventKind, count: number) => {
+  const client = getClientBase();
+  const key = `${ACTIVITY_PREFIX}${day}`;
+  await client.hincrby(key, `${entityId}|${eventKind}`, count);
+  await client.expire(key, ACTIVITY_TTL_SECONDS);
 };
 
-export const redisTakePulseActivity = async (): Promise<Array<{ entityId: string; eventKind: PulseEventKind; count: number }>> => {
-  const client = getClientBase();
-  const takenKey = `${ACTIVITY_KEY}:taken`;
-  const exists = await client.exists(ACTIVITY_KEY);
-  if (exists !== 1) {
-    return [];
+// Atomically moves the activity of a day into its taken set, adding it to what a run that failed before its
+// acknowledgement left there, and returns the whole taken set (RENAME keeps the expiry of the activity key).
+const TAKE_ACTIVITY_SCRIPT = `
+local activity = KEYS[1]
+local taken = KEYS[2]
+if redis.call('EXISTS', activity) == 1 then
+  if redis.call('EXISTS', taken) == 1 then
+    local values = redis.call('HGETALL', activity)
+    for index = 1, #values, 2 do
+      redis.call('HINCRBY', taken, values[index], values[index + 1])
+    end
+    redis.call('DEL', activity)
+  else
+    redis.call('RENAME', activity, taken)
+  end
+end
+return redis.call('HGETALL', taken)
+`;
+
+// The activity recorded on *day* and not acknowledged yet. It stays in Redis until redisAckPulseActivity: hunts and
+// detections cannot be rebuilt from the database, so a run that fails before pushing them hands them to the next run.
+export const redisTakePulseActivity = async (day: string): Promise<PulseExternalActivity[]> => {
+  const key = `${ACTIVITY_PREFIX}${day}`;
+  const flat = ((await getClientBase().eval(TAKE_ACTIVITY_SCRIPT, 2, key, `${key}${TAKEN_SUFFIX}`)) as string[] | null) ?? [];
+  const activity: PulseExternalActivity[] = [];
+  for (let index = 0; index + 1 < flat.length; index += 2) {
+    const [entityId, eventKind] = flat[index].split('|');
+    activity.push({ entityId, eventKind: eventKind as PulseEventKind, count: Number(flat[index + 1]) });
   }
-  await client.rename(ACTIVITY_KEY, takenKey);
-  const values = await client.hgetall(takenKey);
-  await client.del(takenKey);
-  return Object.entries(values ?? {}).map(([field, count]) => {
-    const [entityId, eventKind] = field.split('|');
-    return { entityId, eventKind: eventKind as PulseEventKind, count: Number(count) };
-  });
+  return activity;
+};
+
+// Once the records built from the taken activity are pushed or kept in the outbox.
+export const redisAckPulseActivity = async (days: string[]) => {
+  if (days.length > 0) {
+    await getClientBase().del(...days.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`));
+  }
+};
+
+// Opting out: nothing recorded before may leave afterwards.
+export const redisDiscardPulseActivity = async (days: string[]) => {
+  await getClientBase().del(...activityKeys(days));
 };
 // endregion
 
