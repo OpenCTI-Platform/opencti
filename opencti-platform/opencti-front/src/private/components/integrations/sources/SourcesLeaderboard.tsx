@@ -4,7 +4,6 @@ import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { CableOutlined, PersonOutlined, RssFeedOutlined, TravelExploreOutlined } from '@mui/icons-material';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
@@ -176,7 +175,7 @@ const SourcesLeaderboard = () => {
     name: {
       id: 'name',
       label: 'Name',
-      percentWidth: 16,
+      percentWidth: 18,
       isSortable: true,
       render: ({ name, enabled, quarantined }: SourcesLeaderboard_source$data) => (
         <Stack direction="row" alignItems="center" gap={1} sx={{ overflow: 'hidden' }}>
@@ -196,35 +195,36 @@ const SourcesLeaderboard = () => {
     latest_value_score: {
       id: 'latest_value_score',
       label: 'Value',
-      percentWidth: 9,
+      percentWidth: 12,
       isSortable: true,
       render: ({ latest_value_score }: SourcesLeaderboard_source$data) => <ValueScoreBar value={latest_value_score} />,
     },
     latest_volume: {
       id: 'latest_volume',
       label: 'Volume',
-      percentWidth: 6,
+      percentWidth: 7,
       isSortable: true,
       render: ({ latest_volume }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.count(latest_volume)} />,
     },
     latest_unique_contribution: {
       id: 'latest_unique_contribution',
       label: 'Unique',
-      percentWidth: 7,
+      percentWidth: 8,
       isSortable: true,
       render: ({ latest_unique_contribution }: SourcesLeaderboard_source$data) => ratioCell(latest_unique_contribution),
     },
     latest_corroboration_rate: {
       id: 'latest_corroboration_rate',
       label: 'Corroborated',
-      percentWidth: 7,
+      percentWidth: 8,
+      visible: false,
       isSortable: true,
       render: ({ latest_corroboration_rate }: SourcesLeaderboard_source$data) => ratioCell(latest_corroboration_rate),
     },
     latest_lead_time_hours: {
       id: 'latest_lead_time_hours',
       label: 'Lead time',
-      percentWidth: 7,
+      percentWidth: 8,
       isSortable: true,
       render: ({ latest_lead_time_hours }: SourcesLeaderboard_source$data) => (
         <SourceMetricValue value={format.hours(latest_lead_time_hours)} reason={t_i18n('No object shared with another source in the period.')} />
@@ -233,42 +233,46 @@ const SourcesLeaderboard = () => {
     latest_accuracy: {
       id: 'latest_accuracy',
       label: 'Accuracy',
-      percentWidth: 7,
+      percentWidth: 8,
       isSortable: true,
       render: ({ latest_accuracy }: SourcesLeaderboard_source$data) => ratioCell(latest_accuracy),
     },
-    latest_relevance: {
-      id: 'latest_relevance',
-      label: 'Relevance',
-      percentWidth: 6,
-      isSortable: isEnterpriseEdition,
-      render: ({ latest_relevance }: SourcesLeaderboard_source$data) => (isEnterpriseEdition ? ratioCell(latest_relevance) : <EEChip />),
-    },
+    // PIR relevance is an Enterprise Edition measure: the column only exists there
+    ...(isEnterpriseEdition ? {
+      latest_relevance: {
+        id: 'latest_relevance',
+        label: 'Relevance',
+        percentWidth: 7,
+        isSortable: true,
+        render: ({ latest_relevance }: SourcesLeaderboard_source$data) => ratioCell(latest_relevance),
+      },
+    } : {}),
     latest_impact_score: {
       id: 'latest_impact_score',
       label: 'Impact',
-      percentWidth: 6,
+      percentWidth: 7,
       isSortable: true,
       render: ({ latest_impact_score }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.score(latest_impact_score)} />,
     },
     latest_noise: {
       id: 'latest_noise',
       label: 'Noise',
-      percentWidth: 6,
+      percentWidth: 7,
       isSortable: true,
       render: ({ latest_noise }: SourcesLeaderboard_source$data) => ratioCell(latest_noise),
     },
     latest_freshness_hours: {
       id: 'latest_freshness_hours',
       label: 'Last seen',
-      percentWidth: 7,
+      percentWidth: 8,
+      visible: false,
       isSortable: true,
       render: ({ latest_freshness_hours }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.hours(latest_freshness_hours)} />,
     },
     latest_cost_per_actionable: {
       id: 'latest_cost_per_actionable',
       label: 'Cost / actionable',
-      percentWidth: 8,
+      percentWidth: 10,
       isSortable: true,
       render: ({ latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => {
         if (!cost) {

@@ -17,7 +17,7 @@ A source is created automatically by the source intelligence manager for:
 - each **author** (`created_by`) with a significant volume of knowledge over the last 90 days,
 - each **analyst** writing knowledge directly, outside of any connector or feed.
 
-The minimum volume and the maximum number of author and analyst sources are configurable. When a connector or a feed is deleted, its source and its scorecards are removed. What you set on a source (cost, description, tags, owner, enabled) is kept across computations.
+The built-in platform connectors (background tasks, playbooks, synchronization, draft validation and file mapping) are not sources: they run work on behalf of analysts, and what they write is attributed to its authors and analysts. The minimum volume and the maximum number of author and analyst sources are configurable. When a connector or a feed is deleted, its source and its scorecards are removed. What you set on a source (cost, description, tags, owner, enabled) is kept across computations.
 
 Connector health (status, queue, errors) is not duplicated here: the scorecard page links to the connector or feed in the integrations monitoring screens.
 
