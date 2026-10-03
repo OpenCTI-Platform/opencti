@@ -837,6 +837,39 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - graph analytics
+// Sorted set of entity ids waiting for a recompute, scored by the time of their last change.
+// Re-marking an id moves its score forward, which is what debounces bursts of events on the same entity.
+const GRAPH_ANALYTICS_DIRTY_KEY = 'graph_analytics_dirty';
+const GRAPH_ANALYTICS_STATE_KEY = 'graph_analytics_state';
+export const redisGraphAnalyticsMarkDirty = async (ids: string[], timestamp = Date.now()) => {
+  if (ids.length === 0) return;
+  const members = ids.flatMap((id) => [timestamp, id]);
+  await getClientBase().zadd(GRAPH_ANALYTICS_DIRTY_KEY, ...members);
+};
+export const redisGraphAnalyticsPopReady = async (readyBefore: number, limit: number): Promise<string[]> => {
+  const ids = await getClientBase().zrangebyscore(GRAPH_ANALYTICS_DIRTY_KEY, '-inf', readyBefore, 'LIMIT', 0, limit);
+  if (ids.length > 0) {
+    await getClientBase().zrem(GRAPH_ANALYTICS_DIRTY_KEY, ...ids);
+  }
+  return ids;
+};
+export const redisGraphAnalyticsPendingCount = async (): Promise<number> => {
+  return getClientBase().zcard(GRAPH_ANALYTICS_DIRTY_KEY);
+};
+export const redisGraphAnalyticsGetState = async (): Promise<Record<string, string>> => {
+  return getClientBase().hgetall(GRAPH_ANALYTICS_STATE_KEY);
+};
+export const redisGraphAnalyticsSetState = async (state: Record<string, string>) => {
+  if (Object.keys(state).length === 0) return;
+  await getClientBase().hset(GRAPH_ANALYTICS_STATE_KEY, state);
+};
+export const redisGraphAnalyticsDeleteState = async (fields: string[]) => {
+  if (fields.length === 0) return;
+  await getClientBase().hdel(GRAPH_ANALYTICS_STATE_KEY, ...fields);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

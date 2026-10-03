@@ -1,0 +1,4 @@
+black==26.5.1
+flake8==7.4.1
+isort==8.0.1
+pytest==9.0.3
