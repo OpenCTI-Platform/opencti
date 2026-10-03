@@ -221,6 +221,27 @@ export class TelemetryMeterManager {
   // Number of IOC validation results reported by the security platforms themselves
   iocValidationPlatformResultCount = 0;
 
+  // Number of provides relationships (security platform or system providing a data component)
+  relationshipsProvidesCount = 0;
+
+  // Number of techniques with a defense level above none
+  defenseCoveredTechniquesCount = 0;
+
+  // Number of techniques whose detection or prevention is validated by OpenAEV
+  defenseValidatedTechniquesCount = 0;
+
+  // Number of open defense gaps over all security platforms
+  defenseOpenGapsCount = 0;
+
+  // Number of defense validation requests created from gaps
+  defenseValidationRequestCount = 0;
+
+  // Number of defense gaps closed
+  defenseGapClosedCount = 0;
+
+  // Number of defense gap backlog exports
+  defenseGapExportCount = 0;
+
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
@@ -596,6 +617,34 @@ export class TelemetryMeterManager {
     this.iocValidationPlatformResultCount = n;
   }
 
+  setRelationshipsProvidesCount(n: number) {
+    this.relationshipsProvidesCount = n;
+  }
+
+  setDefenseCoveredTechniquesCount(n: number) {
+    this.defenseCoveredTechniquesCount = n;
+  }
+
+  setDefenseValidatedTechniquesCount(n: number) {
+    this.defenseValidatedTechniquesCount = n;
+  }
+
+  setDefenseOpenGapsCount(n: number) {
+    this.defenseOpenGapsCount = n;
+  }
+
+  setDefenseValidationRequestCount(n: number) {
+    this.defenseValidationRequestCount = n;
+  }
+
+  setDefenseGapClosedCount(n: number) {
+    this.defenseGapClosedCount = n;
+  }
+
+  setDefenseGapExportCount(n: number) {
+    this.defenseGapExportCount = n;
+  }
+
   setDecayRuleCreationCount(n: number) {
     this.decayRuleCreationCount = n;
   }
@@ -864,6 +913,13 @@ export class TelemetryMeterManager {
     this.registerGauge('ioc_validation_requests_count', 'Number of IOC validation requests', 'iocValidationRequestsCount');
     this.registerGauge('ioc_validation_request_creation_count', 'Number of IOC validation requests created', 'iocValidationRequestCreationCount');
     this.registerGauge('ioc_validation_platform_result_count', 'Number of IOC validation results reported by security platforms', 'iocValidationPlatformResultCount');
+    this.registerGauge('relationships_provides_count', 'Number of relationships provides', 'relationshipsProvidesCount');
+    this.registerGauge('defense_covered_techniques_count', 'Number of techniques with a defense level above none', 'defenseCoveredTechniquesCount');
+    this.registerGauge('defense_validated_techniques_count', 'Number of techniques validated by OpenAEV', 'defenseValidatedTechniquesCount');
+    this.registerGauge('defense_open_gaps_count', 'Number of open defense gaps', 'defenseOpenGapsCount');
+    this.registerGauge('defense_validation_request_count', 'Number of defense validation requests created from gaps', 'defenseValidationRequestCount');
+    this.registerGauge('defense_gap_closed_count', 'Number of defense gaps closed', 'defenseGapClosedCount');
+    this.registerGauge('defense_gap_export_count', 'Number of defense gap backlog exports', 'defenseGapExportCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('knowledge_decay_rule_creation_count', 'Number of knowledge decay rules created', 'knowledgeDecayRuleCreationCount');
     this.registerGauge('active_knowledge_decay_rules_count', 'Number of active knowledge decay rules', 'activeKnowledgeDecayRulesCount');

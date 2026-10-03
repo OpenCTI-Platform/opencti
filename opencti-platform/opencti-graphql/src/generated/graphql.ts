@@ -46,6 +46,9 @@ import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatfo
 import type { BasicStoreEntityIocValidationRequest } from '../modules/iocValidation/iocValidation-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import type { DefenseMatrixView, DefenseMatrixCellView, DefenseCellPlatformView, DefensePlatformView, DefenseTechniqueView, DefenseDataComponentEvidenceView, DefenseRuleEvidenceView, DefenseRuleDeploymentView, DefenseValidationEvidenceView, DefenseValidationPlatformScoreView, DefenseThreatEvidenceView, DefenseProvidesResultView, DefenseValidationResultView, DefenseGapView } from '../modules/defenseCoverage/defenseCoverage-domain';
+import type { DefenseGapValidationRequest } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
+import type { BasicStoreEntityDefenseLogsourceMapping } from '../modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-types';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityForm } from '../modules/form/form-types';
 import type { BasicStoreEntityAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-types';
@@ -1004,6 +1007,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   dataComponents?: Maybe<DataComponentConnection>;
+  defense_level?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -1383,6 +1387,7 @@ export enum AttackPatternsOrdering {
   CorroborationCount = 'corroboration_count',
   Created = 'created',
   CreatedAt = 'created_at',
+  DefenseLevel = 'defense_level',
   FreshnessDays = 'freshness_days',
   LastAssertedAt = 'last_asserted_at',
   Modified = 'modified',
@@ -5855,6 +5860,13 @@ export enum CoursesOfActionOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type CoveragePlatformResult = {
+  __typename?: 'CoveragePlatformResult';
+  coverage_name: Scalars['String']['output'];
+  coverage_score: Scalars['Int']['output'];
+  platform_ref: Scalars['String']['output'];
+};
+
 export type CoverageResult = {
   __typename?: 'CoverageResult';
   coverage_name: Scalars['String']['output'];
@@ -7642,6 +7654,340 @@ export type DefaultValueAttribute = {
   name: Scalars['String']['output'];
   type: Scalars['String']['output'];
 };
+
+export type DefenseCellPlatform = {
+  __typename?: 'DefenseCellPlatform';
+  data_components_count: Scalars['Int']['output'];
+  detection: DefenseDetectionStatus;
+  inferred_data_components_count: Scalars['Int']['output'];
+  last_result_at?: Maybe<Scalars['DateTime']['output']>;
+  level: Scalars['Int']['output'];
+  platform_id: Scalars['String']['output'];
+  recommended_action: DefenseRecommendedAction;
+  results_count: Scalars['Int']['output'];
+  rules_count: Scalars['Int']['output'];
+  telemetry: Scalars['Boolean']['output'];
+  validated: DefenseValidationStatus;
+};
+
+export type DefenseCoverageStatus = {
+  __typename?: 'DefenseCoverageStatus';
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  full_computation_requested: Scalars['Boolean']['output'];
+  last_full_computation?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type DefenseDataComponentEvidence = {
+  __typename?: 'DefenseDataComponentEvidence';
+  dataComponent: DataComponent;
+  inferredBy: Array<DefensePlatform>;
+  providedBy: Array<DefensePlatform>;
+};
+
+export enum DefenseDetectionStatus {
+  Active = 'active',
+  Available = 'available',
+  Deployed = 'deployed',
+  None = 'none'
+}
+
+export type DefenseGap = BasicObject & InternalObject & {
+  __typename?: 'DefenseGap';
+  attackPattern?: Maybe<AttackPattern>;
+  attack_pattern_id: Scalars['String']['output'];
+  attack_pattern_name: Scalars['String']['output'];
+  detection: DefenseDetectionStatus;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  kill_chain_phase_ids: Array<Scalars['String']['output']>;
+  last_result_at?: Maybe<Scalars['DateTime']['output']>;
+  last_validation_requested_at?: Maybe<Scalars['DateTime']['output']>;
+  level: Scalars['Int']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  opened_at?: Maybe<Scalars['DateTime']['output']>;
+  parent_types: Array<Scalars['String']['output']>;
+  platform?: Maybe<DefensePlatform>;
+  platform_id: Scalars['String']['output'];
+  priority: Scalars['Int']['output'];
+  recommended_action: DefenseRecommendedAction;
+  representative: Representative;
+  requiredDataComponents: Array<DataComponent>;
+  ruleCandidates: Array<Indicator>;
+  standard_id: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  telemetry: Scalars['Boolean']['output'];
+  threat_weight: Scalars['Float']['output'];
+  threats_count: Scalars['Int']['output'];
+  validated: DefenseValidationStatus;
+  validation_requests: Array<DefenseValidationRequest>;
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type DefenseGapRuleCandidatesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type DefenseGapConnection = {
+  __typename?: 'DefenseGapConnection';
+  edges: Array<DefenseGapEdge>;
+  pageInfo: PageInfo;
+};
+
+export type DefenseGapEdge = {
+  __typename?: 'DefenseGapEdge';
+  cursor: Scalars['String']['output'];
+  node: DefenseGap;
+};
+
+export type DefenseGapsFilter = {
+  killChainPhaseIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  levels?: InputMaybe<Array<Scalars['Int']['input']>>;
+  onlyUsedByThreats?: InputMaybe<Scalars['Boolean']['input']>;
+  recommended_actions?: InputMaybe<Array<DefenseRecommendedAction>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+export enum DefenseGapsOrdering {
+  Level = 'level',
+  Name = 'name',
+  Platform = 'platform',
+  Priority = 'priority',
+  ThreatWeight = 'threat_weight',
+  XMitreId = 'x_mitre_id'
+}
+
+export type DefenseLogsourceInput = {
+  category?: InputMaybe<Scalars['String']['input']>;
+  product?: InputMaybe<Scalars['String']['input']>;
+  service?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type DefenseLogsourceMapping = BasicObject & InternalObject & {
+  __typename?: 'DefenseLogsourceMapping';
+  active: Scalars['Boolean']['output'];
+  built_in: Scalars['Boolean']['output'];
+  created_at: Scalars['DateTime']['output'];
+  data_components: Array<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  logsource_category?: Maybe<Scalars['String']['output']>;
+  logsource_product?: Maybe<Scalars['String']['output']>;
+  logsource_service?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
+  resolvedDataComponents: Array<DataComponent>;
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type DefenseLogsourceMappingAddInput = {
+  active?: InputMaybe<Scalars['Boolean']['input']>;
+  data_components: Array<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  logsource_category?: InputMaybe<Scalars['String']['input']>;
+  logsource_product?: InputMaybe<Scalars['String']['input']>;
+  logsource_service?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type DefenseLogsourceMappingConnection = {
+  __typename?: 'DefenseLogsourceMappingConnection';
+  edges: Array<DefenseLogsourceMappingEdge>;
+  pageInfo: PageInfo;
+};
+
+export type DefenseLogsourceMappingEdge = {
+  __typename?: 'DefenseLogsourceMappingEdge';
+  cursor: Scalars['String']['output'];
+  node: DefenseLogsourceMapping;
+};
+
+export enum DefenseLogsourceMappingOrdering {
+  Score = '_score',
+  Active = 'active',
+  BuiltIn = 'built_in',
+  CreatedAt = 'created_at',
+  LogsourceCategory = 'logsource_category',
+  LogsourceProduct = 'logsource_product',
+  LogsourceService = 'logsource_service',
+  Name = 'name',
+  UpdatedAt = 'updated_at'
+}
+
+export type DefenseMatrix = {
+  __typename?: 'DefenseMatrix';
+  cells: Array<DefenseMatrixCell>;
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  levels: Array<Scalars['Int']['output']>;
+  platforms: Array<DefensePlatform>;
+  tactics: Array<DefenseTacticCoverage>;
+  techniques_count: Scalars['Int']['output'];
+  threat_levels: Array<Scalars['Int']['output']>;
+  threats_count: Scalars['Int']['output'];
+};
+
+export type DefenseMatrixCell = {
+  __typename?: 'DefenseMatrixCell';
+  attack_pattern_id: Scalars['String']['output'];
+  data_components_count: Scalars['Int']['output'];
+  detection: DefenseDetectionStatus;
+  kill_chain_phase_ids: Array<Scalars['String']['output']>;
+  last_result_at?: Maybe<Scalars['DateTime']['output']>;
+  level: Scalars['Int']['output'];
+  mitigated: Scalars['Boolean']['output'];
+  mitigations_count: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  parent_attack_pattern_id?: Maybe<Scalars['String']['output']>;
+  platforms: Array<DefenseCellPlatform>;
+  recommended_action: DefenseRecommendedAction;
+  results_count: Scalars['Int']['output'];
+  rules_count: Scalars['Int']['output'];
+  telemetry: Scalars['Boolean']['output'];
+  threat_weight: Scalars['Float']['output'];
+  threats_count: Scalars['Int']['output'];
+  validated: DefenseValidationStatus;
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type DefensePlatform = {
+  __typename?: 'DefensePlatform';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  security_platform_type?: Maybe<Scalars['String']['output']>;
+};
+
+export type DefenseProvidesResult = {
+  __typename?: 'DefenseProvidesResult';
+  created_count: Scalars['Int']['output'];
+  dataComponents: Array<DataComponent>;
+  unmatched_data_components: Array<Scalars['String']['output']>;
+};
+
+export enum DefenseRecommendedAction {
+  ActivateRule = 'activate_rule',
+  AddTelemetry = 'add_telemetry',
+  DeployRule = 'deploy_rule',
+  FixDetection = 'fix_detection',
+  ImportRule = 'import_rule',
+  None = 'none',
+  Validate = 'validate'
+}
+
+export type DefenseRuleDeployment = {
+  __typename?: 'DefenseRuleDeployment';
+  platform: DefensePlatform;
+  status: Scalars['String']['output'];
+};
+
+export type DefenseRuleEvidence = {
+  __typename?: 'DefenseRuleEvidence';
+  deployments: Array<DefenseRuleDeployment>;
+  indicator: Indicator;
+  required_data_components: Array<Scalars['String']['output']>;
+};
+
+export type DefenseTacticCoverage = {
+  __typename?: 'DefenseTacticCoverage';
+  kill_chain_name: Scalars['String']['output'];
+  kill_chain_phase_id: Scalars['String']['output'];
+  levels: Array<Scalars['Int']['output']>;
+  phase_name: Scalars['String']['output'];
+  techniques_count: Scalars['Int']['output'];
+  threat_levels: Array<Scalars['Int']['output']>;
+  threat_techniques_count: Scalars['Int']['output'];
+  x_opencti_order: Scalars['Int']['output'];
+};
+
+export type DefenseTechnique = {
+  __typename?: 'DefenseTechnique';
+  attackPattern: AttackPattern;
+  cell: DefenseMatrixCell;
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  dataComponents: Array<DefenseDataComponentEvidence>;
+  gaps: Array<DefenseGap>;
+  mitigations: Array<CourseOfAction>;
+  rules: Array<DefenseRuleEvidence>;
+  threats: Array<DefenseThreatEvidence>;
+  validations: Array<DefenseValidationEvidenceResult>;
+};
+
+export type DefenseThreatEvidence = {
+  __typename?: 'DefenseThreatEvidence';
+  confidence: Scalars['Int']['output'];
+  relationship_id: Scalars['String']['output'];
+  threat: StixDomainObject;
+};
+
+export type DefenseThreatScope = {
+  filters?: InputMaybe<FilterGroup>;
+  mode: DefenseThreatScopeMode;
+  threatIds?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum DefenseThreatScopeMode {
+  All = 'ALL',
+  Filtered = 'FILTERED',
+  None = 'NONE',
+  Selected = 'SELECTED'
+}
+
+export type DefenseValidationEvidenceResult = {
+  __typename?: 'DefenseValidationEvidenceResult';
+  last_result_at?: Maybe<Scalars['DateTime']['output']>;
+  platforms: Array<DefenseValidationPlatformScore>;
+  result: SecurityCoverageResult;
+  scores: Array<CoverageResult>;
+  securityCoverage?: Maybe<SecurityCoverage>;
+  status: DefenseValidationStatus;
+};
+
+export type DefenseValidationInput = {
+  attackPatternIds: Array<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  duration?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  periodicity?: InputMaybe<Scalars['String']['input']>;
+  platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  platforms_affinity?: InputMaybe<Array<Scalars['String']['input']>>;
+  threatId?: InputMaybe<Scalars['String']['input']>;
+  type_affinity?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type DefenseValidationPlatformScore = {
+  __typename?: 'DefenseValidationPlatformScore';
+  platform: DefensePlatform;
+  scores: Array<CoverageResult>;
+  status: DefenseValidationStatus;
+};
+
+export type DefenseValidationRequest = {
+  __typename?: 'DefenseValidationRequest';
+  grouping_id: Scalars['String']['output'];
+  requested_at: Scalars['DateTime']['output'];
+  requested_by: Scalars['String']['output'];
+  securityCoverage?: Maybe<SecurityCoverage>;
+  security_coverage_id: Scalars['String']['output'];
+  threat_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type DefenseValidationResult = {
+  __typename?: 'DefenseValidationResult';
+  gaps_count: Scalars['Int']['output'];
+  grouping: Grouping;
+  securityCoverage: SecurityCoverage;
+};
+
+export enum DefenseValidationStatus {
+  Detected = 'detected',
+  Failed = 'failed',
+  None = 'none',
+  Prevented = 'prevented'
+}
 
 export type DefinitionRefRelationship = {
   __typename?: 'DefinitionRefRelationship';
@@ -13432,6 +13778,9 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_observable_values?: Maybe<Array<ObservablesValues>>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
+  x_opencti_rule_level?: Maybe<Scalars['String']['output']>;
+  x_opencti_rule_logsource?: Maybe<IndicatorRuleLogsource>;
+  x_opencti_rule_status?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -13639,6 +13988,9 @@ export type IndicatorAddInput = {
   x_opencti_main_observable_type?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_rule_level?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_rule_logsource?: InputMaybe<IndicatorRuleLogsourceInput>;
+  x_opencti_rule_status?: InputMaybe<Scalars['String']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<Scalars['StixId']['input']>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -13717,6 +14069,19 @@ export enum IndicatorFormat {
   Yara = 'yara'
 }
 
+export type IndicatorRuleLogsource = {
+  __typename?: 'IndicatorRuleLogsource';
+  category?: Maybe<Scalars['String']['output']>;
+  product?: Maybe<Scalars['String']['output']>;
+  service?: Maybe<Scalars['String']['output']>;
+};
+
+export type IndicatorRuleLogsourceInput = {
+  category?: InputMaybe<Scalars['String']['input']>;
+  product?: InputMaybe<Scalars['String']['input']>;
+  service?: InputMaybe<Scalars['String']['input']>;
+};
+
 export enum IndicatorValidationStatus {
   Detected = 'detected',
   Error = 'error',
@@ -13753,6 +14118,8 @@ export enum IndicatorsOrdering {
   ValidUntil = 'valid_until',
   ValidatedPlatformsCount = 'validated_platforms_count',
   XOpenctiDetection = 'x_opencti_detection',
+  XOpenctiRuleLevel = 'x_opencti_rule_level',
+  XOpenctiRuleStatus = 'x_opencti_rule_status',
   XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -18119,6 +18486,13 @@ export type Mutation = {
   decayRuleAdd?: Maybe<DecayRule>;
   decayRuleDelete?: Maybe<Scalars['ID']['output']>;
   decayRuleFieldPatch?: Maybe<DecayRule>;
+  defenseCoverageRecompute?: Maybe<Scalars['Boolean']['output']>;
+  defenseGapsValidate?: Maybe<DefenseValidationResult>;
+  defenseLogsourceMappingAdd?: Maybe<DefenseLogsourceMapping>;
+  defenseLogsourceMappingDelete?: Maybe<Scalars['ID']['output']>;
+  defenseLogsourceMappingFieldPatch?: Maybe<DefenseLogsourceMapping>;
+  defenseLogsourceMappingsReset?: Maybe<Scalars['Int']['output']>;
+  defensePlatformProvidesFromLogsources?: Maybe<DefenseProvidesResult>;
   deleteBackgroundTask: Scalars['ID']['output'];
   deleteConnector: Scalars['ID']['output'];
   deleteImport?: Maybe<Scalars['ID']['output']>;
@@ -19156,6 +19530,33 @@ export type MutationDecayRuleDeleteArgs = {
 export type MutationDecayRuleFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationDefenseGapsValidateArgs = {
+  input: DefenseValidationInput;
+};
+
+
+export type MutationDefenseLogsourceMappingAddArgs = {
+  input: DefenseLogsourceMappingAddInput;
+};
+
+
+export type MutationDefenseLogsourceMappingDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDefenseLogsourceMappingFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationDefensePlatformProvidesFromLogsourcesArgs = {
+  id: Scalars['ID']['input'];
+  logsources: Array<DefenseLogsourceInput>;
 };
 
 
@@ -25887,6 +26288,13 @@ export type Query = {
   decayRule?: Maybe<DecayRule>;
   decayRules?: Maybe<DecayRuleConnection>;
   defaultIngestionGroupCount?: Maybe<Scalars['Int']['output']>;
+  defenseCoverageStatus?: Maybe<DefenseCoverageStatus>;
+  defenseGapExport?: Maybe<Scalars['String']['output']>;
+  defenseGaps?: Maybe<DefenseGapConnection>;
+  defenseLogsourceMapping?: Maybe<DefenseLogsourceMapping>;
+  defenseLogsourceMappings?: Maybe<DefenseLogsourceMappingConnection>;
+  defenseMatrix?: Maybe<DefenseMatrix>;
+  defenseTechnique?: Maybe<DefenseTechnique>;
   deleteOperation?: Maybe<DeleteOperation>;
   deleteOperations?: Maybe<DeleteOperationConnection>;
   disseminationAssuranceMetrics?: Maybe<DisseminationAssuranceMetrics>;
@@ -26817,6 +27225,54 @@ export type QueryDecayRulesArgs = {
   orderBy?: InputMaybe<DecayRuleOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDefenseGapExportArgs = {
+  filter?: InputMaybe<DefenseGapsFilter>;
+  orderBy?: InputMaybe<DefenseGapsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  threatScope?: InputMaybe<DefenseThreatScope>;
+};
+
+
+export type QueryDefenseGapsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filter?: InputMaybe<DefenseGapsFilter>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DefenseGapsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  threatScope?: InputMaybe<DefenseThreatScope>;
+};
+
+
+export type QueryDefenseLogsourceMappingArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryDefenseLogsourceMappingsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DefenseLogsourceMappingOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDefenseMatrixArgs = {
+  platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  threatScope?: InputMaybe<DefenseThreatScope>;
+};
+
+
+export type QueryDefenseTechniqueArgs = {
+  id: Scalars['String']['input'];
+  platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  threatScope?: InputMaybe<DefenseThreatScope>;
 };
 
 
@@ -31730,6 +32186,12 @@ export enum SecurityCoverageOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export type SecurityCoveragePlatformExpectation = {
+  coverage_name: Scalars['String']['input'];
+  coverage_score: Scalars['Int']['input'];
+  platform_ref: Scalars['String']['input'];
+};
+
 export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'SecurityCoverageResult';
   avatar?: Maybe<OpenCtiFile>;
@@ -33330,6 +33792,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   containersNumber?: Maybe<Number>;
   corroboration_count?: Maybe<Scalars['Int']['output']>;
   coverage_information?: Maybe<Array<CoverageResult>>;
+  coverage_platforms_information?: Maybe<Array<CoveragePlatformResult>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -33470,6 +33933,7 @@ export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_platforms_information?: InputMaybe<Array<SecurityCoveragePlatformExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   deployed_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -41559,6 +42023,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityDataSource )
     | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
+    | ( DefenseGapView )
+    | ( BasicStoreEntityDefenseLogsourceMapping )
     | ( BasicStoreEntityDeleteOperation )
     | ( Omit<Directory, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( DisseminationList )
@@ -41708,6 +42174,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
+    | ( DefenseGapView )
+    | ( BasicStoreEntityDefenseLogsourceMapping )
     | ( BasicStoreEntityDeleteOperation )
     | ( DisseminationList )
     | ( BasicStoreEntityDraftWorkspace )
@@ -42220,6 +42688,7 @@ export type ResolversTypes = ResolversObject<{
   CourseOfActionEdge: ResolverTypeWrapper<Omit<CourseOfActionEdge, 'node'> & { node: ResolversTypes['CourseOfAction'] }>;
   CourseOfActionEditMutations: ResolverTypeWrapper<Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['CourseOfAction']> }>;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
+  CoveragePlatformResult: ResolverTypeWrapper<CoveragePlatformResult>;
   CoverageResult: ResolverTypeWrapper<CoverageResult>;
   Creator: ResolverTypeWrapper<BasicStoreMember>;
   CreatorConnection: ResolverTypeWrapper<Omit<CreatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CreatorEdge']>>> }>;
@@ -42301,6 +42770,39 @@ export type ResolversTypes = ResolversObject<{
   DefaultMarkingInput: DefaultMarkingInput;
   DefaultValue: ResolverTypeWrapper<DefaultValue>;
   DefaultValueAttribute: ResolverTypeWrapper<DefaultValueAttribute>;
+  DefenseCellPlatform: ResolverTypeWrapper<DefenseCellPlatformView>;
+  DefenseCoverageStatus: ResolverTypeWrapper<DefenseCoverageStatus>;
+  DefenseDataComponentEvidence: ResolverTypeWrapper<DefenseDataComponentEvidenceView>;
+  DefenseDetectionStatus: DefenseDetectionStatus;
+  DefenseGap: ResolverTypeWrapper<DefenseGapView>;
+  DefenseGapConnection: ResolverTypeWrapper<Omit<DefenseGapConnection, 'edges'> & { edges: Array<ResolversTypes['DefenseGapEdge']> }>;
+  DefenseGapEdge: ResolverTypeWrapper<Omit<DefenseGapEdge, 'node'> & { node: ResolversTypes['DefenseGap'] }>;
+  DefenseGapsFilter: DefenseGapsFilter;
+  DefenseGapsOrdering: DefenseGapsOrdering;
+  DefenseLogsourceInput: DefenseLogsourceInput;
+  DefenseLogsourceMapping: ResolverTypeWrapper<BasicStoreEntityDefenseLogsourceMapping>;
+  DefenseLogsourceMappingAddInput: DefenseLogsourceMappingAddInput;
+  DefenseLogsourceMappingConnection: ResolverTypeWrapper<Omit<DefenseLogsourceMappingConnection, 'edges'> & { edges: Array<ResolversTypes['DefenseLogsourceMappingEdge']> }>;
+  DefenseLogsourceMappingEdge: ResolverTypeWrapper<Omit<DefenseLogsourceMappingEdge, 'node'> & { node: ResolversTypes['DefenseLogsourceMapping'] }>;
+  DefenseLogsourceMappingOrdering: DefenseLogsourceMappingOrdering;
+  DefenseMatrix: ResolverTypeWrapper<DefenseMatrixView>;
+  DefenseMatrixCell: ResolverTypeWrapper<DefenseMatrixCellView>;
+  DefensePlatform: ResolverTypeWrapper<DefensePlatformView>;
+  DefenseProvidesResult: ResolverTypeWrapper<DefenseProvidesResultView>;
+  DefenseRecommendedAction: DefenseRecommendedAction;
+  DefenseRuleDeployment: ResolverTypeWrapper<DefenseRuleDeploymentView>;
+  DefenseRuleEvidence: ResolverTypeWrapper<DefenseRuleEvidenceView>;
+  DefenseTacticCoverage: ResolverTypeWrapper<DefenseTacticCoverage>;
+  DefenseTechnique: ResolverTypeWrapper<DefenseTechniqueView>;
+  DefenseThreatEvidence: ResolverTypeWrapper<DefenseThreatEvidenceView>;
+  DefenseThreatScope: DefenseThreatScope;
+  DefenseThreatScopeMode: DefenseThreatScopeMode;
+  DefenseValidationEvidenceResult: ResolverTypeWrapper<DefenseValidationEvidenceView>;
+  DefenseValidationInput: DefenseValidationInput;
+  DefenseValidationPlatformScore: ResolverTypeWrapper<DefenseValidationPlatformScoreView>;
+  DefenseValidationRequest: ResolverTypeWrapper<DefenseGapValidationRequest>;
+  DefenseValidationResult: ResolverTypeWrapper<DefenseValidationResultView>;
+  DefenseValidationStatus: DefenseValidationStatus;
   DefinitionRefRelationship: ResolverTypeWrapper<Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversTypes['StixObjectOrStixRelationshipOrCreator'] }>;
   DeleteOperation: ResolverTypeWrapper<BasicStoreEntityDeleteOperation>;
   DeleteOperationConnection: ResolverTypeWrapper<Omit<DeleteOperationConnection, 'edges'> & { edges: Array<ResolversTypes['DeleteOperationEdge']> }>;
@@ -42510,6 +43012,8 @@ export type ResolversTypes = ResolversObject<{
   IndicatorDeploymentStatus: IndicatorDeploymentStatus;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
   IndicatorFormat: IndicatorFormat;
+  IndicatorRuleLogsource: ResolverTypeWrapper<IndicatorRuleLogsource>;
+  IndicatorRuleLogsourceInput: IndicatorRuleLogsourceInput;
   IndicatorValidationStatus: IndicatorValidationStatus;
   IndicatorsOrdering: IndicatorsOrdering;
   Individual: ResolverTypeWrapper<Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, organizations?: Maybe<ResolversTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, workflowInstance?: Maybe<ResolversTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -42941,6 +43445,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityCoverageEdge: ResolverTypeWrapper<Omit<SecurityCoverageEdge, 'node'> & { node: ResolversTypes['SecurityCoverage'] }>;
   SecurityCoverageExpectation: SecurityCoverageExpectation;
   SecurityCoverageOrdering: SecurityCoverageOrdering;
+  SecurityCoveragePlatformExpectation: SecurityCoveragePlatformExpectation;
   SecurityCoverageResult: ResolverTypeWrapper<BasicStoreEntitySecurityCoverageResult>;
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: ResolverTypeWrapper<Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityCoverageResultEdge']> }>;
@@ -43422,6 +43927,7 @@ export type ResolversParentTypes = ResolversObject<{
   CourseOfActionConnection: Omit<CourseOfActionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CourseOfActionEdge']>>> };
   CourseOfActionEdge: Omit<CourseOfActionEdge, 'node'> & { node: ResolversParentTypes['CourseOfAction'] };
   CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
+  CoveragePlatformResult: CoveragePlatformResult;
   CoverageResult: CoverageResult;
   Creator: BasicStoreMember;
   CreatorConnection: Omit<CreatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CreatorEdge']>>> };
@@ -43493,6 +43999,33 @@ export type ResolversParentTypes = ResolversObject<{
   DefaultMarkingInput: DefaultMarkingInput;
   DefaultValue: DefaultValue;
   DefaultValueAttribute: DefaultValueAttribute;
+  DefenseCellPlatform: DefenseCellPlatformView;
+  DefenseCoverageStatus: DefenseCoverageStatus;
+  DefenseDataComponentEvidence: DefenseDataComponentEvidenceView;
+  DefenseGap: DefenseGapView;
+  DefenseGapConnection: Omit<DefenseGapConnection, 'edges'> & { edges: Array<ResolversParentTypes['DefenseGapEdge']> };
+  DefenseGapEdge: Omit<DefenseGapEdge, 'node'> & { node: ResolversParentTypes['DefenseGap'] };
+  DefenseGapsFilter: DefenseGapsFilter;
+  DefenseLogsourceInput: DefenseLogsourceInput;
+  DefenseLogsourceMapping: BasicStoreEntityDefenseLogsourceMapping;
+  DefenseLogsourceMappingAddInput: DefenseLogsourceMappingAddInput;
+  DefenseLogsourceMappingConnection: Omit<DefenseLogsourceMappingConnection, 'edges'> & { edges: Array<ResolversParentTypes['DefenseLogsourceMappingEdge']> };
+  DefenseLogsourceMappingEdge: Omit<DefenseLogsourceMappingEdge, 'node'> & { node: ResolversParentTypes['DefenseLogsourceMapping'] };
+  DefenseMatrix: DefenseMatrixView;
+  DefenseMatrixCell: DefenseMatrixCellView;
+  DefensePlatform: DefensePlatformView;
+  DefenseProvidesResult: DefenseProvidesResultView;
+  DefenseRuleDeployment: DefenseRuleDeploymentView;
+  DefenseRuleEvidence: DefenseRuleEvidenceView;
+  DefenseTacticCoverage: DefenseTacticCoverage;
+  DefenseTechnique: DefenseTechniqueView;
+  DefenseThreatEvidence: DefenseThreatEvidenceView;
+  DefenseThreatScope: DefenseThreatScope;
+  DefenseValidationEvidenceResult: DefenseValidationEvidenceView;
+  DefenseValidationInput: DefenseValidationInput;
+  DefenseValidationPlatformScore: DefenseValidationPlatformScoreView;
+  DefenseValidationRequest: DefenseGapValidationRequest;
+  DefenseValidationResult: DefenseValidationResultView;
   DefinitionRefRelationship: Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] };
   DeleteOperation: BasicStoreEntityDeleteOperation;
   DeleteOperationConnection: Omit<DeleteOperationConnection, 'edges'> & { edges: Array<ResolversParentTypes['DeleteOperationEdge']> };
@@ -43670,6 +44203,8 @@ export type ResolversParentTypes = ResolversObject<{
   IndicatorDeploymentReportError: IndicatorDeploymentReportError;
   IndicatorDeploymentReportInput: IndicatorDeploymentReportInput;
   IndicatorEdge: Omit<IndicatorEdge, 'node'> & { node: ResolversParentTypes['Indicator'] };
+  IndicatorRuleLogsource: IndicatorRuleLogsource;
+  IndicatorRuleLogsourceInput: IndicatorRuleLogsourceInput;
   Individual: Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, organizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, workflowInstance?: Maybe<ResolversParentTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   IndividualAddInput: IndividualAddInput;
   IndividualConnection: Omit<IndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndividualEdge']>>> };
@@ -44039,6 +44574,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityCoverageConnection: Omit<SecurityCoverageConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageEdge']> };
   SecurityCoverageEdge: Omit<SecurityCoverageEdge, 'node'> & { node: ResolversParentTypes['SecurityCoverage'] };
   SecurityCoverageExpectation: SecurityCoverageExpectation;
+  SecurityCoveragePlatformExpectation: SecurityCoveragePlatformExpectation;
   SecurityCoverageResult: BasicStoreEntitySecurityCoverageResult;
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageResultEdge']> };
@@ -44690,6 +45226,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
+  defense_level?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -45099,7 +45636,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'IocValidationRequest' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DefenseGap' | 'DefenseLogsourceMapping' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'IocValidationRequest' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -46312,6 +46849,12 @@ export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType e
   relationDelete?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type CoveragePlatformResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CoveragePlatformResult'] = ResolversParentTypes['CoveragePlatformResult']> = ResolversObject<{
+  coverage_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  coverage_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  platform_ref?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type CoverageResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CoverageResult'] = ResolversParentTypes['CoverageResult']> = ResolversObject<{
   coverage_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   coverage_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -47000,6 +47543,222 @@ export type DefaultValueAttributeResolvers<ContextType = any, ParentType extends
   defaultValues?: Resolver<Array<ResolversTypes['DefaultValue']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type DefenseCellPlatformResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseCellPlatform'] = ResolversParentTypes['DefenseCellPlatform']> = ResolversObject<{
+  data_components_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  detection?: Resolver<ResolversTypes['DefenseDetectionStatus'], ParentType, ContextType>;
+  inferred_data_components_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  last_result_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  level?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  platform_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recommended_action?: Resolver<ResolversTypes['DefenseRecommendedAction'], ParentType, ContextType>;
+  results_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rules_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  telemetry?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  validated?: Resolver<ResolversTypes['DefenseValidationStatus'], ParentType, ContextType>;
+}>;
+
+export type DefenseCoverageStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseCoverageStatus'] = ResolversParentTypes['DefenseCoverageStatus']> = ResolversObject<{
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  full_computation_requested?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_full_computation?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type DefenseDataComponentEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseDataComponentEvidence'] = ResolversParentTypes['DefenseDataComponentEvidence']> = ResolversObject<{
+  dataComponent?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
+  inferredBy?: Resolver<Array<ResolversTypes['DefensePlatform']>, ParentType, ContextType>;
+  providedBy?: Resolver<Array<ResolversTypes['DefensePlatform']>, ParentType, ContextType>;
+}>;
+
+export type DefenseGapResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseGap'] = ResolversParentTypes['DefenseGap']> = ResolversObject<{
+  attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType>;
+  attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  attack_pattern_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  detection?: Resolver<ResolversTypes['DefenseDetectionStatus'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  kill_chain_phase_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  last_result_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_validation_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  level?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opened_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  platform?: Resolver<Maybe<ResolversTypes['DefensePlatform']>, ParentType, ContextType>;
+  platform_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  priority?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recommended_action?: Resolver<ResolversTypes['DefenseRecommendedAction'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  requiredDataComponents?: Resolver<Array<ResolversTypes['DataComponent']>, ParentType, ContextType>;
+  ruleCandidates?: Resolver<Array<ResolversTypes['Indicator']>, ParentType, ContextType, Partial<DefenseGapRuleCandidatesArgs>>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  telemetry?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  threat_weight?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  threats_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  validated?: Resolver<ResolversTypes['DefenseValidationStatus'], ParentType, ContextType>;
+  validation_requests?: Resolver<Array<ResolversTypes['DefenseValidationRequest']>, ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DefenseGapConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseGapConnection'] = ResolversParentTypes['DefenseGapConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['DefenseGapEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type DefenseGapEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseGapEdge'] = ResolversParentTypes['DefenseGapEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['DefenseGap'], ParentType, ContextType>;
+}>;
+
+export type DefenseLogsourceMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseLogsourceMapping'] = ResolversParentTypes['DefenseLogsourceMapping']> = ResolversObject<{
+  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  built_in?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  data_components?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  logsource_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logsource_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logsource_service?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  resolvedDataComponents?: Resolver<Array<ResolversTypes['DataComponent']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DefenseLogsourceMappingConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseLogsourceMappingConnection'] = ResolversParentTypes['DefenseLogsourceMappingConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['DefenseLogsourceMappingEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type DefenseLogsourceMappingEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseLogsourceMappingEdge'] = ResolversParentTypes['DefenseLogsourceMappingEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['DefenseLogsourceMapping'], ParentType, ContextType>;
+}>;
+
+export type DefenseMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseMatrix'] = ResolversParentTypes['DefenseMatrix']> = ResolversObject<{
+  cells?: Resolver<Array<ResolversTypes['DefenseMatrixCell']>, ParentType, ContextType>;
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  levels?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  platforms?: Resolver<Array<ResolversTypes['DefensePlatform']>, ParentType, ContextType>;
+  tactics?: Resolver<Array<ResolversTypes['DefenseTacticCoverage']>, ParentType, ContextType>;
+  techniques_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  threat_levels?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  threats_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type DefenseMatrixCellResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseMatrixCell'] = ResolversParentTypes['DefenseMatrixCell']> = ResolversObject<{
+  attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  data_components_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  detection?: Resolver<ResolversTypes['DefenseDetectionStatus'], ParentType, ContextType>;
+  kill_chain_phase_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  last_result_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  level?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  mitigated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  mitigations_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_attack_pattern_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platforms?: Resolver<Array<ResolversTypes['DefenseCellPlatform']>, ParentType, ContextType>;
+  recommended_action?: Resolver<ResolversTypes['DefenseRecommendedAction'], ParentType, ContextType>;
+  results_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rules_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  telemetry?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  threat_weight?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  threats_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  validated?: Resolver<ResolversTypes['DefenseValidationStatus'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DefensePlatformResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefensePlatform'] = ResolversParentTypes['DefensePlatform']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  security_platform_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DefenseProvidesResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseProvidesResult'] = ResolversParentTypes['DefenseProvidesResult']> = ResolversObject<{
+  created_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  dataComponents?: Resolver<Array<ResolversTypes['DataComponent']>, ParentType, ContextType>;
+  unmatched_data_components?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DefenseRuleDeploymentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseRuleDeployment'] = ResolversParentTypes['DefenseRuleDeployment']> = ResolversObject<{
+  platform?: Resolver<ResolversTypes['DefensePlatform'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type DefenseRuleEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseRuleEvidence'] = ResolversParentTypes['DefenseRuleEvidence']> = ResolversObject<{
+  deployments?: Resolver<Array<ResolversTypes['DefenseRuleDeployment']>, ParentType, ContextType>;
+  indicator?: Resolver<ResolversTypes['Indicator'], ParentType, ContextType>;
+  required_data_components?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DefenseTacticCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseTacticCoverage'] = ResolversParentTypes['DefenseTacticCoverage']> = ResolversObject<{
+  kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kill_chain_phase_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  levels?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  techniques_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  threat_levels?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  threat_techniques_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type DefenseTechniqueResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseTechnique'] = ResolversParentTypes['DefenseTechnique']> = ResolversObject<{
+  attackPattern?: Resolver<ResolversTypes['AttackPattern'], ParentType, ContextType>;
+  cell?: Resolver<ResolversTypes['DefenseMatrixCell'], ParentType, ContextType>;
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  dataComponents?: Resolver<Array<ResolversTypes['DefenseDataComponentEvidence']>, ParentType, ContextType>;
+  gaps?: Resolver<Array<ResolversTypes['DefenseGap']>, ParentType, ContextType>;
+  mitigations?: Resolver<Array<ResolversTypes['CourseOfAction']>, ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['DefenseRuleEvidence']>, ParentType, ContextType>;
+  threats?: Resolver<Array<ResolversTypes['DefenseThreatEvidence']>, ParentType, ContextType>;
+  validations?: Resolver<Array<ResolversTypes['DefenseValidationEvidenceResult']>, ParentType, ContextType>;
+}>;
+
+export type DefenseThreatEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseThreatEvidence'] = ResolversParentTypes['DefenseThreatEvidence']> = ResolversObject<{
+  confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  threat?: Resolver<ResolversTypes['StixDomainObject'], ParentType, ContextType>;
+}>;
+
+export type DefenseValidationEvidenceResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseValidationEvidenceResult'] = ResolversParentTypes['DefenseValidationEvidenceResult']> = ResolversObject<{
+  last_result_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  platforms?: Resolver<Array<ResolversTypes['DefenseValidationPlatformScore']>, ParentType, ContextType>;
+  result?: Resolver<ResolversTypes['SecurityCoverageResult'], ParentType, ContextType>;
+  scores?: Resolver<Array<ResolversTypes['CoverageResult']>, ParentType, ContextType>;
+  securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['DefenseValidationStatus'], ParentType, ContextType>;
+}>;
+
+export type DefenseValidationPlatformScoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseValidationPlatformScore'] = ResolversParentTypes['DefenseValidationPlatformScore']> = ResolversObject<{
+  platform?: Resolver<ResolversTypes['DefensePlatform'], ParentType, ContextType>;
+  scores?: Resolver<Array<ResolversTypes['CoverageResult']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['DefenseValidationStatus'], ParentType, ContextType>;
+}>;
+
+export type DefenseValidationRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseValidationRequest'] = ResolversParentTypes['DefenseValidationRequest']> = ResolversObject<{
+  grouping_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requested_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  requested_by?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
+  security_coverage_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  threat_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DefenseValidationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseValidationResult'] = ResolversParentTypes['DefenseValidationResult']> = ResolversObject<{
+  gaps_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  grouping?: Resolver<ResolversTypes['Grouping'], ParentType, ContextType>;
+  securityCoverage?: Resolver<ResolversTypes['SecurityCoverage'], ParentType, ContextType>;
 }>;
 
 export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefinitionRefRelationship'] = ResolversParentTypes['DefinitionRefRelationship']> = ResolversObject<{
@@ -49029,6 +49788,9 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_observable_values?: Resolver<Maybe<Array<ResolversTypes['ObservablesValues']>>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_rule_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_rule_logsource?: Resolver<Maybe<ResolversTypes['IndicatorRuleLogsource']>, ParentType, ContextType>;
+  x_opencti_rule_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -49070,6 +49832,12 @@ export type IndicatorDeploymentReportErrorResolvers<ContextType = any, ParentTyp
 export type IndicatorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorEdge'] = ResolversParentTypes['IndicatorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Indicator'], ParentType, ContextType>;
+}>;
+
+export type IndicatorRuleLogsourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorRuleLogsource'] = ResolversParentTypes['IndicatorRuleLogsource']> = ResolversObject<{
+  category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  service?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type IndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['Individual'] = ResolversParentTypes['Individual']> = ResolversObject<{
@@ -49543,7 +50311,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IocValidationRequest' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DefenseGap' | 'DefenseLogsourceMapping' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IocValidationRequest' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -50920,6 +51688,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   decayRuleAdd?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationDecayRuleAddArgs, 'input'>>;
   decayRuleDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDecayRuleDeleteArgs, 'id'>>;
   decayRuleFieldPatch?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationDecayRuleFieldPatchArgs, 'id' | 'input'>>;
+  defenseCoverageRecompute?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  defenseGapsValidate?: Resolver<Maybe<ResolversTypes['DefenseValidationResult']>, ParentType, ContextType, RequireFields<MutationDefenseGapsValidateArgs, 'input'>>;
+  defenseLogsourceMappingAdd?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMapping']>, ParentType, ContextType, RequireFields<MutationDefenseLogsourceMappingAddArgs, 'input'>>;
+  defenseLogsourceMappingDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDefenseLogsourceMappingDeleteArgs, 'id'>>;
+  defenseLogsourceMappingFieldPatch?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMapping']>, ParentType, ContextType, RequireFields<MutationDefenseLogsourceMappingFieldPatchArgs, 'id' | 'input'>>;
+  defenseLogsourceMappingsReset?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  defensePlatformProvidesFromLogsources?: Resolver<Maybe<ResolversTypes['DefenseProvidesResult']>, ParentType, ContextType, RequireFields<MutationDefensePlatformProvidesFromLogsourcesArgs, 'id' | 'logsources'>>;
   deleteBackgroundTask?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteBackgroundTaskArgs, 'id'>>;
   deleteConnector?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteConnectorArgs, 'id'>>;
   deleteImport?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
@@ -52975,6 +53750,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   decayRule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<QueryDecayRuleArgs, 'id'>>;
   decayRules?: Resolver<Maybe<ResolversTypes['DecayRuleConnection']>, ParentType, ContextType, Partial<QueryDecayRulesArgs>>;
   defaultIngestionGroupCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  defenseCoverageStatus?: Resolver<Maybe<ResolversTypes['DefenseCoverageStatus']>, ParentType, ContextType>;
+  defenseGapExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryDefenseGapExportArgs>>;
+  defenseGaps?: Resolver<Maybe<ResolversTypes['DefenseGapConnection']>, ParentType, ContextType, Partial<QueryDefenseGapsArgs>>;
+  defenseLogsourceMapping?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMapping']>, ParentType, ContextType, RequireFields<QueryDefenseLogsourceMappingArgs, 'id'>>;
+  defenseLogsourceMappings?: Resolver<Maybe<ResolversTypes['DefenseLogsourceMappingConnection']>, ParentType, ContextType, Partial<QueryDefenseLogsourceMappingsArgs>>;
+  defenseMatrix?: Resolver<Maybe<ResolversTypes['DefenseMatrix']>, ParentType, ContextType, Partial<QueryDefenseMatrixArgs>>;
+  defenseTechnique?: Resolver<Maybe<ResolversTypes['DefenseTechnique']>, ParentType, ContextType, RequireFields<QueryDefenseTechniqueArgs, 'id'>>;
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   disseminationAssuranceMetrics?: Resolver<Maybe<ResolversTypes['DisseminationAssuranceMetrics']>, ParentType, ContextType, Partial<QueryDisseminationAssuranceMetricsArgs>>;
@@ -54655,6 +55437,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   corroboration_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  coverage_platforms_information?: Resolver<Maybe<Array<ResolversTypes['CoveragePlatformResult']>>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -57553,6 +58336,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CourseOfActionConnection?: CourseOfActionConnectionResolvers<ContextType>;
   CourseOfActionEdge?: CourseOfActionEdgeResolvers<ContextType>;
   CourseOfActionEditMutations?: CourseOfActionEditMutationsResolvers<ContextType>;
+  CoveragePlatformResult?: CoveragePlatformResultResolvers<ContextType>;
   CoverageResult?: CoverageResultResolvers<ContextType>;
   Creator?: CreatorResolvers<ContextType>;
   CreatorConnection?: CreatorConnectionResolvers<ContextType>;
@@ -57605,6 +58389,28 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DefaultMarkingDefinition?: DefaultMarkingDefinitionResolvers<ContextType>;
   DefaultValue?: DefaultValueResolvers<ContextType>;
   DefaultValueAttribute?: DefaultValueAttributeResolvers<ContextType>;
+  DefenseCellPlatform?: DefenseCellPlatformResolvers<ContextType>;
+  DefenseCoverageStatus?: DefenseCoverageStatusResolvers<ContextType>;
+  DefenseDataComponentEvidence?: DefenseDataComponentEvidenceResolvers<ContextType>;
+  DefenseGap?: DefenseGapResolvers<ContextType>;
+  DefenseGapConnection?: DefenseGapConnectionResolvers<ContextType>;
+  DefenseGapEdge?: DefenseGapEdgeResolvers<ContextType>;
+  DefenseLogsourceMapping?: DefenseLogsourceMappingResolvers<ContextType>;
+  DefenseLogsourceMappingConnection?: DefenseLogsourceMappingConnectionResolvers<ContextType>;
+  DefenseLogsourceMappingEdge?: DefenseLogsourceMappingEdgeResolvers<ContextType>;
+  DefenseMatrix?: DefenseMatrixResolvers<ContextType>;
+  DefenseMatrixCell?: DefenseMatrixCellResolvers<ContextType>;
+  DefensePlatform?: DefensePlatformResolvers<ContextType>;
+  DefenseProvidesResult?: DefenseProvidesResultResolvers<ContextType>;
+  DefenseRuleDeployment?: DefenseRuleDeploymentResolvers<ContextType>;
+  DefenseRuleEvidence?: DefenseRuleEvidenceResolvers<ContextType>;
+  DefenseTacticCoverage?: DefenseTacticCoverageResolvers<ContextType>;
+  DefenseTechnique?: DefenseTechniqueResolvers<ContextType>;
+  DefenseThreatEvidence?: DefenseThreatEvidenceResolvers<ContextType>;
+  DefenseValidationEvidenceResult?: DefenseValidationEvidenceResultResolvers<ContextType>;
+  DefenseValidationPlatformScore?: DefenseValidationPlatformScoreResolvers<ContextType>;
+  DefenseValidationRequest?: DefenseValidationRequestResolvers<ContextType>;
+  DefenseValidationResult?: DefenseValidationResultResolvers<ContextType>;
   DefinitionRefRelationship?: DefinitionRefRelationshipResolvers<ContextType>;
   DeleteOperation?: DeleteOperationResolvers<ContextType>;
   DeleteOperationConnection?: DeleteOperationConnectionResolvers<ContextType>;
@@ -57730,6 +58536,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IndicatorDeploymentBatchResult?: IndicatorDeploymentBatchResultResolvers<ContextType>;
   IndicatorDeploymentReportError?: IndicatorDeploymentReportErrorResolvers<ContextType>;
   IndicatorEdge?: IndicatorEdgeResolvers<ContextType>;
+  IndicatorRuleLogsource?: IndicatorRuleLogsourceResolvers<ContextType>;
   Individual?: IndividualResolvers<ContextType>;
   IndividualConnection?: IndividualConnectionResolvers<ContextType>;
   IndividualEdge?: IndividualEdgeResolvers<ContextType>;

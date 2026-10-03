@@ -55,6 +55,40 @@ class Indicator:
         """
         return Indicator.generate_id(data["pattern"])
 
+    @staticmethod
+    def _clean_rule_logsource(logsource):
+        """Keep only the supported keys of a detection rule log source.
+
+        :param logsource: the log source ({"category", "product", "service"})
+        :type logsource: dict or None
+        :return: the cleaned log source, or None when nothing is set
+        :rtype: dict or None
+        """
+        if not isinstance(logsource, dict):
+            return None
+        cleaned = {
+            key: str(logsource[key])
+            for key in ["category", "product", "service"]
+            if logsource.get(key) not in [None, ""]
+        }
+        return cleaned if len(cleaned) > 0 else None
+
+    @staticmethod
+    def _rule_metadata_input(rule_status, rule_level, rule_logsource):
+        """Detection rule metadata of the indicator input, only the values that are set.
+
+        Omitting the unset keys keeps the client compatible with platforms that do not know them.
+
+        :return: the input keys to add
+        :rtype: dict
+        """
+        metadata = {
+            "x_opencti_rule_status": rule_status,
+            "x_opencti_rule_level": rule_level,
+            "x_opencti_rule_logsource": rule_logsource,
+        }
+        return {key: value for key, value in metadata.items() if value is not None}
+
     def list(self, **kwargs):
         """List Indicator objects.
 
@@ -270,6 +304,12 @@ class Indicator:
         :type x_opencti_main_observable_type: str
         :param x_mitre_platforms: (optional) list of MITRE platforms
         :type x_mitre_platforms: list
+        :param x_opencti_rule_status: (optional) detection rule status (Sigma status: stable, test, experimental, deprecated, unsupported)
+        :type x_opencti_rule_status: str
+        :param x_opencti_rule_level: (optional) detection rule level (informational, low, medium, high, critical)
+        :type x_opencti_rule_level: str
+        :param x_opencti_rule_logsource: (optional) detection rule log source ({"category", "product", "service"})
+        :type x_opencti_rule_logsource: dict
         :param killChainPhases: (optional) list of kill chain phase IDs
         :type killChainPhases: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
@@ -315,6 +355,11 @@ class Indicator:
             "x_opencti_main_observable_type", None
         )
         x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
+        x_opencti_rule_status = kwargs.get("x_opencti_rule_status", None)
+        x_opencti_rule_level = kwargs.get("x_opencti_rule_level", None)
+        x_opencti_rule_logsource = self._clean_rule_logsource(
+            kwargs.get("x_opencti_rule_logsource", None)
+        )
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         create_observables = kwargs.get("x_opencti_create_observables", False)
@@ -383,6 +428,11 @@ class Indicator:
                         "x_opencti_detection": x_opencti_detection,
                         "x_opencti_main_observable_type": x_opencti_main_observable_type,
                         "x_mitre_platforms": x_mitre_platforms,
+                        **self._rule_metadata_input(
+                            x_opencti_rule_status,
+                            x_opencti_rule_level,
+                            x_opencti_rule_logsource,
+                        ),
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "killChainPhases": kill_chain_phases,
                         "createObservables": create_observables,
@@ -570,6 +620,13 @@ class Indicator:
                         "opencti_upsert_operations", stix_object
                     )
                 )
+            for rule_attribute in ["rule_status", "rule_level", "rule_logsource"]:
+                if "x_opencti_" + rule_attribute not in stix_object:
+                    stix_object["x_opencti_" + rule_attribute] = (
+                        self.opencti.get_attribute_in_extension(
+                            rule_attribute, stix_object
+                        )
+                    )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -643,6 +700,9 @@ class Indicator:
                     if "x_mitre_platforms" in stix_object
                     else None
                 ),
+                x_opencti_rule_status=stix_object.get("x_opencti_rule_status"),
+                x_opencti_rule_level=stix_object.get("x_opencti_rule_level"),
+                x_opencti_rule_logsource=stix_object.get("x_opencti_rule_logsource"),
                 x_opencti_main_observable_type=(
                     stix_object["x_opencti_main_observable_type"]
                     if "x_opencti_main_observable_type" in stix_object

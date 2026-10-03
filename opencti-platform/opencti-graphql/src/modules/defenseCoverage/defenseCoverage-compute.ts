@@ -1,0 +1,568 @@
+import * as R from 'ramda';
+import conf, { logApp } from '../../config/conf';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
+import { elBulk, elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
+import { buildEntityData } from '../../database/data-builder';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
+import { RELATION_DEPLOYED_ON, RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES, RELATION_MITIGATES, RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
+import { doYield } from '../../utils/eventloop-utils';
+import { now } from '../../utils/format';
+import { FilterMode } from '../../generated/graphql';
+import {
+  DEFENSE_AGGREGATE_PLATFORM,
+  DEFENSE_LEVEL_VALIDATED,
+  DEFENSE_RULE_PATTERN_TYPES,
+  type DefenseCoverage,
+  type DefenseDeploymentEvidence,
+  type DefenseEvidence,
+  type DefensePlatformVector,
+  type DefenseScore,
+  type DefenseTelemetryEvidence,
+  type DefenseValidationEvidence,
+} from './defenseCoverage-types';
+import { capEvidences, cellForPlatform, computeValidationStatus, evaluateCoverage, type LogsourceCondition, mapLogsourceToDataComponents } from './defenseCoverage-utils';
+import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
+import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
+import { bumpDefenseCoverageVersion } from './defenseCoverage-state';
+import { generateStandardId } from '../../schema/identifier';
+
+const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
+const MAX_EVIDENCES = conf.get('defense_coverage_manager:max_evidences') ?? 250;
+const BULK_SIZE = 500;
+const IDS_CHUNK_SIZE = 5000;
+
+const AP_BASE_FIELDS = ['name', 'x_mitre_id', 'revoked', 'x_opencti_defense_coverage', 'defense_level'];
+const INDICATOR_BASE_FIELDS = ['name', 'pattern_type', 'revoked', 'x_opencti_rule_logsource', 'x_opencti_rule_status', 'x_opencti_rule_level'];
+
+export interface DefensePlatform {
+  id: string;
+  name: string;
+  entity_type: string;
+  security_platform_type?: string;
+  stix_ids: string[];
+}
+
+export interface DefenseComputationResult {
+  techniques: number;
+  updated: number;
+  gaps: number;
+  closed_gaps: number;
+  platforms: number;
+  duration: number;
+}
+
+const chunkIds = (ids: string[]) => R.splitEvery(IDS_CHUNK_SIZE, ids);
+
+const findByIdsChunked = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, any>) => {
+  const results: T[] = [];
+  const chunks = chunkIds(R.uniq(ids));
+  for (let index = 0; index < chunks.length; index += 1) {
+    const found = await internalFindByIds<T>(context, user, chunks[index], opts) as T[];
+    results.push(...found);
+  }
+  return results;
+};
+
+const groupBy = <T>(items: T[], key: (item: T) => string) => {
+  const map = new Map<string, T[]>();
+  items.forEach((item) => {
+    const k = key(item);
+    const list = map.get(k);
+    if (list) list.push(item);
+    else map.set(k, [item]);
+  });
+  return map;
+};
+
+// region loading
+export const loadDefensePlatforms = async (context: AuthContext, user: AuthUser): Promise<DefensePlatform[]> => {
+  const securityPlatforms = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
+    baseData: true,
+    baseFields: ['name', 'x_opencti_stix_ids', 'security_platform_type'],
+  });
+  const systemProvides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
+    fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    baseData: true,
+  });
+  const systemIds = R.uniq(systemProvides.map((r) => r.fromId));
+  const systems = systemIds.length > 0
+    ? await findByIdsChunked<BasicStoreEntity>(context, user, systemIds, { type: ENTITY_TYPE_IDENTITY_SYSTEM, baseData: true, baseFields: ['name', 'x_opencti_stix_ids'] })
+    : [];
+  return [...securityPlatforms, ...systems].map((p) => ({
+    id: p.internal_id,
+    name: p.name,
+    entity_type: p.entity_type,
+    security_platform_type: (p as unknown as { security_platform_type?: string }).security_platform_type,
+    stix_ids: [p.standard_id, ...(p.x_opencti_stix_ids ?? [])],
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+};
+
+const loadAttackPatterns = async (context: AuthContext, user: AuthUser, attackPatternIds?: string[]) => {
+  const opts = {
+    indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+    baseData: true,
+    baseFields: AP_BASE_FIELDS,
+  };
+  if (attackPatternIds) {
+    return findByIdsChunked<BasicStoreEntity>(context, user, attackPatternIds, { ...opts, type: ENTITY_TYPE_ATTACK_PATTERN });
+  }
+  return fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_ATTACK_PATTERN], opts);
+};
+
+const loadRelationsToTechniques = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipType: string,
+  fromTypes: string[],
+  attackPatternIds: string[] | undefined,
+  baseFields: string[] = [],
+) => {
+  const args = { fromTypes, toTypes: [ENTITY_TYPE_ATTACK_PATTERN], baseData: true, baseFields };
+  if (!attackPatternIds) {
+    return fullRelationsList<BasicStoreRelation>(context, user, relationshipType, args);
+  }
+  const relations: BasicStoreRelation[] = [];
+  const chunks = chunkIds(attackPatternIds);
+  for (let index = 0; index < chunks.length; index += 1) {
+    const found = await fullRelationsList<BasicStoreRelation>(context, user, relationshipType, { ...args, toId: chunks[index] });
+    relations.push(...found);
+  }
+  return relations;
+};
+
+const loadDeployments = async (context: AuthContext, user: AuthUser, ruleIds: string[]) => {
+  if (ruleIds.length === 0) {
+    return [];
+  }
+  const relations: BasicStoreRelation[] = [];
+  const chunks = chunkIds(ruleIds);
+  for (let index = 0; index < chunks.length; index += 1) {
+    const found = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_DEPLOYED_ON, {
+      fromId: chunks[index],
+      toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM],
+      baseData: true,
+      baseFields: ['deployment_status'],
+    });
+    relations.push(...found);
+  }
+  return relations;
+};
+// endregion
+
+// region vector building
+interface ComputationGraph {
+  platforms: DefensePlatform[];
+  platformIdByStixId: Map<string, string>;
+  detectsByTechnique: Map<string, BasicStoreRelation[]>;
+  providesByDataComponent: Map<string, BasicStoreRelation[]>;
+  indicatesByTechnique: Map<string, BasicStoreRelation[]>;
+  rulesById: Map<string, BasicStoreEntityIndicator>;
+  deploymentsByRule: Map<string, BasicStoreRelation[]>;
+  mitigatesByTechnique: Map<string, BasicStoreRelation[]>;
+  hasCoveredByTechnique: Map<string, BasicStoreRelation[]>;
+  resultsById: Map<string, BasicStoreEntity>;
+  dataComponentIdsByName: Map<string, string[]>;
+  mappings: LogsourceCondition[];
+}
+
+const relationScores = (relation: BasicStoreRelation): DefenseScore[] => {
+  const information = (relation as unknown as { coverage_information?: { coverage_name: string; coverage_score: number }[] }).coverage_information ?? [];
+  return information.map((c) => ({ name: c.coverage_name, score: c.coverage_score }));
+};
+
+const relationPlatformScores = (relation: BasicStoreRelation) => {
+  const information = (relation as unknown as { coverage_platforms_information?: { platform_ref: string; coverage_name: string; coverage_score: number }[] })
+    .coverage_platforms_information ?? [];
+  return groupBy(information, (c) => c.platform_ref);
+};
+
+const resultDate = (result: BasicStoreEntity | undefined, relation: BasicStoreRelation) => {
+  const lastResult = (result as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result;
+  return lastResult ?? (relation as unknown as { updated_at?: string }).updated_at ?? undefined;
+};
+
+const resultCoverageId = (result: BasicStoreEntity | undefined) => {
+  const refs = (result as unknown as Record<string, string[] | undefined> | undefined)?.[RELATION_RESULT_OF];
+  return refs?.[0];
+};
+
+export const buildTechniqueCoverage = (attackPatternId: string, graph: ComputationGraph, computedAt: string): DefenseCoverage => {
+  const detects = graph.detectsByTechnique.get(attackPatternId) ?? [];
+  const indicates = (graph.indicatesByTechnique.get(attackPatternId) ?? []).filter((r) => graph.rulesById.has(r.fromId));
+  const mitigates = graph.mitigatesByTechnique.get(attackPatternId) ?? [];
+  const hasCovered = graph.hasCoveredByTechnique.get(attackPatternId) ?? [];
+  const detectsByDataComponent = groupBy(detects, (d) => d.fromId);
+
+  const dataComponents: DefenseEvidence[] = detects.map((d) => ({ id: d.fromId, rel: d.id }));
+  const rules: DefenseEvidence[] = indicates.map((i) => ({ id: i.fromId, rel: i.id }));
+  const mitigations: DefenseEvidence[] = mitigates.map((m) => ({ id: m.fromId, rel: m.id }));
+  const validations: DefenseValidationEvidence[] = hasCovered.map((h) => {
+    const result = graph.resultsById.get(h.fromId);
+    const scores = relationScores(h);
+    return {
+      id: h.fromId,
+      rel: h.id,
+      coverage_id: resultCoverageId(result),
+      status: computeValidationStatus(scores, VALIDATION_SUCCESS_THRESHOLD),
+      last_result_at: resultDate(result, h),
+      scores,
+    };
+  });
+
+  const vectors = new Map<string, DefensePlatformVector>();
+  const vectorOf = (platformId: string) => {
+    let vector = vectors.get(platformId);
+    if (!vector) {
+      vector = { platform_id: platformId, telemetry: [], deployments: [], validations: [], level: 0 };
+      vectors.set(platformId, vector);
+    }
+    return vector;
+  };
+  const platformIds = new Set(graph.platforms.map((p) => p.id));
+
+  // Telemetry declared through provides
+  detects.forEach((detect) => {
+    const provides = graph.providesByDataComponent.get(detect.fromId) ?? [];
+    provides.filter((p) => platformIds.has(p.fromId)).forEach((p) => {
+      vectorOf(p.fromId).telemetry.push({ id: detect.fromId, rel: p.id, detects: detect.id } as DefenseTelemetryEvidence);
+    });
+  });
+
+  // Deployed rules, and the telemetry they imply through their log source
+  indicates.forEach((indicate) => {
+    const rule = graph.rulesById.get(indicate.fromId) as BasicStoreEntityIndicator;
+    const deployments = graph.deploymentsByRule.get(indicate.fromId) ?? [];
+    const requiredNames = mapLogsourceToDataComponents(rule.x_opencti_rule_logsource, graph.mappings);
+    const requiredIds = new Set(requiredNames.flatMap((name) => graph.dataComponentIdsByName.get(name.toLowerCase()) ?? []));
+    deployments.filter((d) => platformIds.has(d.toId)).forEach((deployment) => {
+      const vector = vectorOf(deployment.toId);
+      const status = (deployment as unknown as { deployment_status?: string }).deployment_status ?? 'deployed';
+      vector.deployments.push({ id: indicate.fromId, rel: deployment.id, status, indicates: indicate.id } as DefenseDeploymentEvidence);
+      requiredIds.forEach((dataComponentId) => {
+        (detectsByDataComponent.get(dataComponentId) ?? []).forEach((detect) => {
+          vector.telemetry.push({ id: dataComponentId, rel: deployment.id, detects: detect.id, inferred_from: indicate.fromId });
+        });
+      });
+    });
+  });
+
+  // OpenAEV results attributed to a security platform
+  hasCovered.forEach((h, index) => {
+    const result = graph.resultsById.get(h.fromId);
+    relationPlatformScores(h).forEach((entries, platformRef) => {
+      const platformId = graph.platformIdByStixId.get(platformRef) ?? (platformIds.has(platformRef) ? platformRef : undefined);
+      if (!platformId) return;
+      const scores = entries.map((e) => ({ name: e.coverage_name, score: e.coverage_score }));
+      vectorOf(platformId).validations.push({
+        id: h.fromId,
+        rel: h.id,
+        coverage_id: resultCoverageId(result),
+        status: computeValidationStatus(scores, VALIDATION_SUCCESS_THRESHOLD),
+        last_result_at: validations[index].last_result_at,
+        scores,
+      });
+    });
+  });
+
+  const platforms = Array.from(vectors.values()).map((vector) => ({
+    ...vector,
+    telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES),
+    deployments: capEvidences(vector.deployments, MAX_EVIDENCES),
+    validations: capEvidences(vector.validations, MAX_EVIDENCES),
+  }));
+  const coverage: DefenseCoverage = {
+    computed_at: computedAt,
+    data_components: capEvidences(dataComponents, MAX_EVIDENCES),
+    rules: capEvidences(rules, MAX_EVIDENCES),
+    mitigations: capEvidences(mitigations, MAX_EVIDENCES),
+    validations: capEvidences(validations, MAX_EVIDENCES),
+    platforms,
+    level: 0,
+  };
+  // Stored levels are the system view, every evidence being visible
+  const cell = evaluateCoverage(attackPatternId, coverage, () => true);
+  coverage.level = cell.level;
+  coverage.platforms = platforms.map((p) => ({ ...p, level: cellForPlatform(cell, p.platform_id).level }));
+  return coverage;
+};
+// endregion
+
+// region storage
+const COVERAGE_UPDATE_SCRIPT = 'ctx._source.x_opencti_defense_coverage = params.coverage; ctx._source.defense_level = params.level;';
+
+const coverageSignature = (coverage: DefenseCoverage | undefined | null) => {
+  if (!coverage) return '';
+  const { computed_at: _computedAt, ...content } = coverage;
+  return JSON.stringify(content);
+};
+
+/**
+ * Store the coverage of one technique directly in the engine: no stream event, no history, no updated_at change.
+ */
+export const updateAttackPatternDefenseCoverage = async (context: AuthContext, attackPattern: BasicStoreEntity, coverage: DefenseCoverage) => {
+  return elUpdate(context, attackPattern._index, attackPattern.internal_id, {
+    script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage, level: coverage.level } },
+  });
+};
+
+const bulkUpdateCoverages = async (context: AuthContext, updates: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }>) => {
+  if (updates.length <= 1) {
+    for (let index = 0; index < updates.length; index += 1) {
+      await updateAttackPatternDefenseCoverage(context, updates[index].attackPattern, updates[index].coverage);
+    }
+    return;
+  }
+  const groups = R.splitEvery(BULK_SIZE, updates);
+  for (let index = 0; index < groups.length; index += 1) {
+    const body = groups[index].flatMap(({ attackPattern, coverage }) => [
+      { update: { _index: attackPattern._index, _id: attackPattern.internal_id, retry_on_conflict: 5 } },
+      { script: { source: COVERAGE_UPDATE_SCRIPT, lang: 'painless', params: { coverage, level: coverage.level } } },
+    ]);
+    await elBulk(context, { refresh: true, body });
+  }
+};
+
+export const defenseGapId = (attackPatternId: string, platformId: string) => {
+  const standardId = generateStandardId(ENTITY_TYPE_DEFENSE_GAP, { attack_pattern_id: attackPatternId, platform_id: platformId });
+  return { standardId, internalId: standardId.split('--')[1] };
+};
+
+const storeGaps = async (
+  context: AuthContext,
+  user: AuthUser,
+  entries: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }>,
+  platforms: DefensePlatform[],
+  computedAt: string,
+) => {
+  const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...platforms.map((p) => p.id)];
+  const platformNames = new Map(platforms.map((p) => [p.id, p.name]));
+  const wanted = entries.flatMap(({ attackPattern, coverage }) => {
+    const cell = evaluateCoverage(attackPattern.internal_id, coverage, () => true);
+    return platformKeys.map((platformId) => ({
+      attackPattern,
+      platformId,
+      cellPlatform: cellForPlatform(cell, platformId),
+      ...defenseGapId(attackPattern.internal_id, platformId),
+    }));
+  });
+  const existing = await findByIdsChunked<BasicStoreEntityDefenseGap>(context, user, wanted.map((w) => w.internalId), {
+    type: ENTITY_TYPE_DEFENSE_GAP,
+    indices: [READ_INDEX_INTERNAL_OBJECTS],
+  });
+  const existingById = new Map(existing.map((e) => [e.internal_id, e]));
+  let closed = 0;
+  const docs = [];
+  for (let index = 0; index < wanted.length; index += 1) {
+    await doYield();
+    const { attackPattern, platformId, cellPlatform, standardId, internalId } = wanted[index];
+    const previous = existingById.get(internalId);
+    const isClosed = cellPlatform.level >= DEFENSE_LEVEL_VALIDATED;
+    const wasClosed = previous?.status === DEFENSE_GAP_STATUS_CLOSED;
+    if (isClosed && !wasClosed) closed += 1;
+    const platformName = platformId === DEFENSE_AGGREGATE_PLATFORM ? 'All platforms' : (platformNames.get(platformId) ?? platformId);
+    const input = {
+      internal_id: internalId,
+      standard_id: standardId,
+      name: `${attackPattern.x_mitre_id ? `[${attackPattern.x_mitre_id}] ` : ''}${attackPattern.name} - ${platformName}`,
+      attack_pattern_id: attackPattern.internal_id,
+      platform_id: platformId,
+      x_mitre_id: attackPattern.x_mitre_id,
+      level: cellPlatform.level,
+      recommended_action: cellPlatform.recommended_action,
+      status: isClosed ? DEFENSE_GAP_STATUS_CLOSED : DEFENSE_GAP_STATUS_OPEN,
+      opened_at: previous?.opened_at ?? computedAt,
+      closed_at: isClosed ? (previous?.closed_at ?? computedAt) : undefined,
+      computed_at: computedAt,
+      validation_requests: previous?.validation_requests ?? [],
+      last_validation_requested_at: previous?.last_validation_requested_at,
+      created_at: previous?.created_at ?? computedAt,
+      updated_at: computedAt,
+    };
+    const { element } = await buildEntityData(context, user, R.reject(R.isNil, input), ENTITY_TYPE_DEFENSE_GAP);
+    docs.push(element);
+  }
+  const groups = R.splitEvery(BULK_SIZE, docs);
+  for (let index = 0; index < groups.length; index += 1) {
+    await elIndexElements(context, user, ENTITY_TYPE_DEFENSE_GAP, groups[index]);
+  }
+  return { gaps: docs.length, closed };
+};
+
+const deleteStaleGaps = async (computedAt: string) => {
+  await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    wait_for_completion: true,
+    body: {
+      query: {
+        bool: {
+          filter: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
+            { range: { computed_at: { lt: computedAt } } },
+          ],
+        },
+      },
+    },
+  });
+};
+
+const deleteGapsOfTechniques = async (attackPatternIds: string[]) => {
+  if (attackPatternIds.length === 0) return;
+  await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    wait_for_completion: true,
+    body: {
+      query: {
+        bool: {
+          filter: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
+            { terms: { 'attack_pattern_id.keyword': attackPatternIds } },
+          ],
+        },
+      },
+    },
+  });
+};
+// endregion
+
+/**
+ * Compute and store the defense coverage of every technique (full run) or of the given techniques (incremental run).
+ * The computation runs with the given user (the manager uses the system user) and stores only ids:
+ * readers re-evaluate the coverage with their own access.
+ */
+export const computeDefenseCoverage = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: { attackPatternIds?: string[] } = {},
+): Promise<DefenseComputationResult> => {
+  const start = Date.now();
+  const computedAt = now();
+  const isFull = !opts.attackPatternIds;
+  const targetIds = opts.attackPatternIds ? R.uniq(opts.attackPatternIds) : undefined;
+
+  // 1. Techniques and platforms
+  const attackPatterns = await loadAttackPatterns(context, user, targetIds);
+  const activeAttackPatterns = attackPatterns.filter((ap) => !ap.revoked);
+  const revokedIds = attackPatterns.filter((ap) => ap.revoked).map((ap) => ap.internal_id);
+  const techniqueIds = activeAttackPatterns.map((ap) => ap.internal_id);
+  const scopedIds = isFull ? undefined : techniqueIds;
+  const platforms = await loadDefensePlatforms(context, user);
+  const platformIdByStixId = new Map<string, string>();
+  platforms.forEach((p) => p.stix_ids.forEach((stixId) => platformIdByStixId.set(stixId, p.id)));
+
+  // 2. Telemetry layer
+  const detects = await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds);
+  const provides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, { toTypes: [ENTITY_TYPE_DATA_COMPONENT], baseData: true });
+  const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name'] });
+  const dataComponentIdsByName = new Map<string, string[]>();
+  dataComponents.forEach((dc) => {
+    const key = (dc.name ?? '').trim().toLowerCase();
+    dataComponentIdsByName.set(key, [...(dataComponentIdsByName.get(key) ?? []), dc.internal_id]);
+  });
+  const mappings = (await listAllDefenseLogsourceMappings(context, user)).filter((m) => m.active);
+
+  // 3. Detection layer: rule indicators and their deployments
+  const indicates = await loadRelationsToTechniques(context, user, RELATION_INDICATES, [ENTITY_TYPE_INDICATOR], scopedIds);
+  const indicators = await findByIdsChunked<BasicStoreEntityIndicator>(context, user, indicates.map((i) => i.fromId), {
+    type: ENTITY_TYPE_INDICATOR,
+    baseData: true,
+    baseFields: INDICATOR_BASE_FIELDS,
+  });
+  const rules = indicators.filter((i) => !i.revoked && DEFENSE_RULE_PATTERN_TYPES.includes((i.pattern_type ?? '').toLowerCase()));
+  const rulesById = new Map(rules.map((r) => [r.internal_id, r]));
+  const deployments = await loadDeployments(context, user, Array.from(rulesById.keys()));
+
+  // 4. Mitigation and validation layers
+  const mitigates = await loadRelationsToTechniques(context, user, RELATION_MITIGATES, [ENTITY_TYPE_COURSE_OF_ACTION], scopedIds);
+  const hasCovered = await loadRelationsToTechniques(context, user, RELATION_HAS_COVERED, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], scopedIds, [
+    'coverage_information',
+    'coverage_platforms_information',
+    'updated_at',
+  ]);
+  const results = await findByIdsChunked<BasicStoreEntity>(context, user, hasCovered.map((h) => h.fromId), { type: ENTITY_TYPE_SECURITY_COVERAGE_RESULT });
+
+  const graph: ComputationGraph = {
+    platforms,
+    platformIdByStixId,
+    detectsByTechnique: groupBy(detects, (r) => r.toId),
+    providesByDataComponent: groupBy(provides, (r) => r.toId),
+    indicatesByTechnique: groupBy(indicates, (r) => r.toId),
+    rulesById,
+    deploymentsByRule: groupBy(deployments, (r) => r.fromId),
+    mitigatesByTechnique: groupBy(mitigates, (r) => r.toId),
+    hasCoveredByTechnique: groupBy(hasCovered, (r) => r.toId),
+    resultsById: new Map(results.map((r) => [r.internal_id, r])),
+    dataComponentIdsByName,
+    mappings,
+  };
+
+  // 5. Vectors, written only when they changed
+  const entries: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }> = [];
+  const updates: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }> = [];
+  for (let index = 0; index < activeAttackPatterns.length; index += 1) {
+    await doYield();
+    const attackPattern = activeAttackPatterns[index];
+    const coverage = buildTechniqueCoverage(attackPattern.internal_id, graph, computedAt);
+    entries.push({ attackPattern, coverage });
+    const previous = (attackPattern as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage;
+    if (coverageSignature(previous) !== coverageSignature(coverage)) {
+      updates.push({ attackPattern, coverage });
+    }
+  }
+  await bulkUpdateCoverages(context, updates);
+
+  // 6. Gap lifecycle records
+  const { gaps, closed } = await storeGaps(context, user, entries, platforms, computedAt);
+  if (isFull) {
+    await deleteStaleGaps(computedAt);
+  } else {
+    await deleteGapsOfTechniques(revokedIds);
+  }
+  await bumpDefenseCoverageVersion();
+  const result = {
+    techniques: activeAttackPatterns.length,
+    updated: updates.length,
+    gaps,
+    closed_gaps: closed,
+    platforms: platforms.length,
+    duration: Date.now() - start,
+  };
+  logApp.info(`[DEFENSE-COVERAGE] ${isFull ? 'Full' : 'Incremental'} computation done`, result);
+  return result;
+};
+
+/**
+ * Techniques impacted by a change on some data components (detects them) or rule indicators (indicate them).
+ */
+export const findTechniquesOfSources = async (context: AuthContext, user: AuthUser, relationshipType: string, sourceIds: string[]) => {
+  if (sourceIds.length === 0) return [];
+  const techniques: string[] = [];
+  const chunks = chunkIds(R.uniq(sourceIds));
+  for (let index = 0; index < chunks.length; index += 1) {
+    const relations = await fullRelationsList<BasicStoreRelation>(context, user, relationshipType, {
+      fromId: chunks[index],
+      toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
+      baseData: true,
+    });
+    techniques.push(...relations.map((r) => r.toId));
+  }
+  return R.uniq(techniques);
+};
+
+/**
+ * Kill chain phases (tactics) of the techniques, for the coverage per tactic.
+ */
+export const loadKillChainPhases = async (context: AuthContext, user: AuthUser) => {
+  return fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], {
+    indices: [READ_INDEX_STIX_META_OBJECTS],
+    filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
+  });
+};

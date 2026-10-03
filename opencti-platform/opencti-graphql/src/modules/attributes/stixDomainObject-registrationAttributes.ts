@@ -132,6 +132,9 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'x_mitre_detection', label: 'Detection', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_id', label: 'External ID', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: false },
     { ...revoked, isFilterable: true },
+    // Computed by the defense coverage manager, written directly in the engine (no stream event, no history)
+    { name: 'x_opencti_defense_coverage', label: 'Defense coverage', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
+    { name: 'defense_level', label: 'Defense level', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   ],
   [ENTITY_TYPE_CAMPAIGN]: [
     aliases,

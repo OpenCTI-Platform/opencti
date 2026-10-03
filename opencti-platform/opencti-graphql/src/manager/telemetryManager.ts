@@ -73,8 +73,11 @@ import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { RELATION_DEPLOYED_ON, RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { RELATION_DEPLOYED_ON, RELATION_HAS_COVERED, RELATION_PROVIDES } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../modules/iocValidation/iocValidation-types';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
+import { DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
+import { DEFENSE_AGGREGATE_PLATFORM } from '../modules/defenseCoverage/defenseCoverage-types';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -163,6 +166,9 @@ export const TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION = 'knowledgeDecayRule
 export const TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED = 'knowledgeStaleFlaggedCount';
 export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED = 'provenanceConflictDetectedCount';
 export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION = 'provenanceConflictAdoptionCount';
+export const TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST = 'defenseValidationRequestCount';
+export const TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED = 'defenseGapClosedCount';
+export const TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT = 'defenseGapExportCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
@@ -292,6 +298,20 @@ export const addProvenanceConflictDetectedCount = async (count: number) => {
 
 export const addProvenanceConflictAdoptionCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION, 1);
+};
+
+export const addDefenseValidationRequestCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST, 1);
+};
+
+export const addDefenseGapClosedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED, count);
+  }
+};
+
+export const addDefenseGapExportCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -644,6 +664,37 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIocValidationRequestsCount(iocValidationRequestsCount);
     // endregion
 
+    // region Defense coverage
+    const [
+      relationshipsProvidesCount,
+      defenseCoveredTechniquesCount,
+      defenseValidatedTechniquesCount,
+      defenseOpenGapsCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_PROVIDES] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_ATTACK_PATTERN],
+        filters: { mode: FilterMode.And, filters: [{ key: ['defense_level'], values: ['1'], operator: 'gte' }], filterGroups: [] },
+      }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_ATTACK_PATTERN],
+        filters: { mode: FilterMode.And, filters: [{ key: ['defense_level'], values: ['4'], operator: 'gte' }], filterGroups: [] },
+      }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+        types: [ENTITY_TYPE_DEFENSE_GAP],
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['status'], values: [DEFENSE_GAP_STATUS_OPEN] }, { key: ['platform_id'], values: [DEFENSE_AGGREGATE_PLATFORM] }],
+          filterGroups: [],
+        },
+      }),
+    ]);
+    manager.setRelationshipsProvidesCount(relationshipsProvidesCount);
+    manager.setDefenseCoveredTechniquesCount(defenseCoveredTechniquesCount);
+    manager.setDefenseValidatedTechniquesCount(defenseValidatedTechniquesCount);
+    manager.setDefenseOpenGapsCount(defenseOpenGapsCount);
+    // endregion
+
     // region Shared saved filters
     const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
       context,
@@ -865,6 +916,12 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
       manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
     }
+    const defenseValidationRequestCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST);
+    manager.setDefenseValidationRequestCount(defenseValidationRequestCountInRedis);
+    const defenseGapClosedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED);
+    manager.setDefenseGapClosedCount(defenseGapClosedCountInRedis);
+    const defenseGapExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT);
+    manager.setDefenseGapExportCount(defenseGapExportCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

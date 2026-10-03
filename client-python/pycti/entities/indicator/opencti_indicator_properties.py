@@ -110,6 +110,13 @@ INDICATOR_PROPERTIES = """
         }
     }
     x_mitre_platforms
+    x_opencti_rule_status
+    x_opencti_rule_level
+    x_opencti_rule_logsource {
+        category
+        product
+        service
+    }
     observables {
         edges {
             node {
@@ -255,6 +262,13 @@ INDICATOR_PROPERTIES_WITH_FILES = """
         }
     }
     x_mitre_platforms
+    x_opencti_rule_status
+    x_opencti_rule_level
+    x_opencti_rule_logsource {
+        category
+        product
+        service
+    }
     observables {
         edges {
             node {
