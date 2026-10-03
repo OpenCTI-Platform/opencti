@@ -105,3 +105,22 @@ export const collectPathElementIds = (paths: ReadonlyArray<{ readonly node_ids: 
   });
   return Array.from(ids);
 };
+
+export const GRAPH_TOP_HUBS_DEFAULT = 10;
+export const GRAPH_TOP_HUBS_MAX = 50;
+
+export interface GraphTopHubNode {
+  readonly id: string;
+  readonly entity_type: string;
+  readonly representative: { readonly main: string };
+  readonly x_opencti_graph_metrics: { readonly degree: number | null | undefined } | null | undefined;
+}
+
+/** Bars of the top hubs widget, in the order of the ranking; entities without any relationship are not hubs. */
+export const buildGraphTopHubsChart = (nodes: ReadonlyArray<GraphTopHubNode>, seriesName: string) => {
+  const hubs = nodes.filter((node) => (node.x_opencti_graph_metrics?.degree ?? 0) > 0);
+  return {
+    series: [{ name: seriesName, data: hubs.map((node) => ({ x: node.representative.main, y: node.x_opencti_graph_metrics?.degree ?? 0 })) }],
+    redirectionUtils: hubs.map((node) => ({ id: node.id, entity_type: node.entity_type })),
+  };
+};

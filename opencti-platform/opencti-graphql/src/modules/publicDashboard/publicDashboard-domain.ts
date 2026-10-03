@@ -60,6 +60,9 @@ import type { BasicStoreSettings } from '../../types/settings';
 // Sorts of public lists: the values of the StixCoreObjectsOrdering enum, mapped to their fields like by the private API
 const STIX_CORE_OBJECTS_ORDERINGS: string[] = Object.values(StixCoreObjectsOrdering);
 const STIX_CORE_OBJECTS_ORDERING_FIELDS: Record<string, string> = stixCoreObjectOptions.StixCoreObjectsOrdering;
+const GRAPH_TOP_HUBS_WIDGET = 'graph-top-hubs';
+const GRAPH_TOP_HUBS_DEFAULT = 10;
+const GRAPH_TOP_HUBS_MAX = 50;
 
 export const findById = (
   context: AuthContext,
@@ -337,12 +340,12 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, type, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  return { user, type, dataSelection, parameters };
 };
 
 // heatmap & vertical-bar & line & area
@@ -647,12 +650,17 @@ export const publicStixCoreObjectsPaginated = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, type, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
-  // a list keeps its configured sort (a timeline has none); graph metrics sorts are checked by the engine like for any user
-  const sortBy = selection.sort_by && STIX_CORE_OBJECTS_ORDERINGS.includes(selection.sort_by) ? selection.sort_by : null;
+  // a list keeps its configured sort (a timeline has none), top hubs are ranked by graph degree;
+  // graph metrics sorts are checked by the engine like for any user
+  const isTopHubs = type === GRAPH_TOP_HUBS_WIDGET;
+  const topHubsCount = typeof selection.number === 'number' && selection.number > 0 ? Math.min(selection.number, GRAPH_TOP_HUBS_MAX) : GRAPH_TOP_HUBS_DEFAULT;
+  const configuredSort = selection.sort_by && STIX_CORE_OBJECTS_ORDERINGS.includes(selection.sort_by) ? selection.sort_by : null;
+  const sortBy = isTopHubs ? StixCoreObjectsOrdering.GraphDegree : configuredSort;
+  const sortMode = isTopHubs ? 'desc' : (selection.sort_mode ?? 'asc');
 
   const parameters = {
     startDate: args.startDate,
@@ -660,8 +668,8 @@ export const publicStixCoreObjectsPaginated = async (
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
     orderBy: sortBy ? (STIX_CORE_OBJECTS_ORDERING_FIELDS[sortBy] ?? sortBy) : selection.date_attribute,
-    orderMode: sortBy ? (selection.sort_mode ?? 'asc') : 'desc',
-    first: selection.number ?? 10,
+    orderMode: sortBy ? sortMode : 'desc',
+    first: isTopHubs ? topHubsCount : (selection.number ?? 10),
   };
 
   // Use standard API

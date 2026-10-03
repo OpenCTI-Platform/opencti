@@ -107,4 +107,18 @@ export default class GraphAnalyticsPage {
     return this.page.getByTestId('graph-cluster-promote-submit');
   }
   // endregion
+
+  // region Dashboards
+  gotoDashboards() {
+    return this.page.goto('/dashboard/workspaces/dashboards');
+  }
+
+  getCreateDashboardFromTemplateButton() {
+    return this.page.getByTestId('CreateDashboardFromTemplate');
+  }
+
+  getDashboardTemplate(templateId: string) {
+    return this.page.getByTestId(`dashboard-template-${templateId}`);
+  }
+  // endregion
 }

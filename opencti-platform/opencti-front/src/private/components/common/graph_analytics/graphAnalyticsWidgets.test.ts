@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildGraphClustersSizeVariables } from './GraphClustersSizeWidget';
 import { buildGraphSimilarityMatrixVariables } from './GraphSimilarityMatrixWidget';
+import { buildGraphTopHubsVariables } from './GraphTopHubsWidget';
 import type { WidgetDataSelection } from '../../../../utils/widget/widget';
 
 const selection = (number?: number): WidgetDataSelection => ({
@@ -36,5 +37,16 @@ describe('graph analytics widgets query variables', () => {
     expect(JSON.stringify(variables.filters)).toContain('Intrusion-Set');
     expect(JSON.stringify(variables.filters)).not.toContain('2026-01-01');
     expect(buildGraphClustersSizeVariables([selection()], {}).limit).toBe(5);
+  });
+
+  it('bounds the number of top hubs and filters them on the dashboard period', () => {
+    const config = { startDate: '2026-01-01T00:00:00.000Z', endDate: '2026-06-01T00:00:00.000Z' };
+    const variables = buildGraphTopHubsVariables([selection(80)], config);
+    expect(variables.first).toBe(50);
+    expect(variables.types).toEqual(['Stix-Core-Object']);
+    expect(JSON.stringify(variables.filters)).toContain('Intrusion-Set');
+    expect(JSON.stringify(variables.filters)).toContain('2026-01-01');
+    expect(buildGraphTopHubsVariables([selection()], {}).first).toBe(10);
+    expect(buildGraphTopHubsVariables([selection(0)], {}).first).toBe(10);
   });
 });

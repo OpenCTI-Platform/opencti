@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { BubbleChartOutlined, Checklist, FormatShapesOutlined, GridOnOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { BubbleChartOutlined, Checklist, FormatShapesOutlined, GridOnOutlined, HubOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -224,6 +224,16 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: false,
   },
+  {
+    key: 'graph-top-hubs',
+    name: 'Top hubs',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: ['distributed'],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -335,6 +345,8 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <GridOnOutlined fontSize={fontSize} color="primary" />;
     case 'graph-clusters-size':
       return <BubbleChartOutlined fontSize={fontSize} color="primary" />;
+    case 'graph-top-hubs':
+      return <HubOutlined fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }
@@ -349,6 +361,8 @@ export const getMaxResultCount = (type: string) => {
     maxResultCount = 25;
   } else if (type === 'graph-clusters-size') {
     maxResultCount = 20;
+  } else if (type === 'graph-top-hubs') {
+    maxResultCount = 50;
   }
 
   return maxResultCount;
@@ -367,6 +381,7 @@ export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDa
     || type === 'wordcloud'
     || type === 'graph-similarity-matrix'
     || type === 'graph-clusters-size'
+    || type === 'graph-top-hubs'
   ) {
     return dataSelection.every((selection) => !selection.number || selection.number <= getMaxResultCount(type));
   }

@@ -18,10 +18,12 @@ describe('graph analytics dashboard template', () => {
     expect(exported.type).toBe('dashboard');
     expect(exported.configuration.name).toBe('[Graph analytics]');
     const manifest = decodeManifest(exported.configuration.manifest);
-    expect(Object.keys(manifest.widgets)).toHaveLength(4);
+    expect(Object.keys(manifest.widgets)).toHaveLength(5);
     const clusters = manifest.widgets['0a07d150-0001-4d1a-9a07-000000000001'];
     expect(clusters).toMatchObject({ type: 'graph-clusters-size', parameters: { title: '[Cluster size over time]', interval: 'month' } });
     expect(clusters.layout).toMatchObject({ i: clusters.id, w: 6, h: 4 });
+    const topHubs = manifest.widgets['0a07d150-0001-4d1a-9a07-000000000005'];
+    expect(topHubs).toMatchObject({ type: 'graph-top-hubs', parameters: { title: '[Top hubs]' } });
   });
 
   it('only uses widgets of the dashboard catalog', () => {

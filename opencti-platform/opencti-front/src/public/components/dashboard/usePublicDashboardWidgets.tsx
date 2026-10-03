@@ -37,6 +37,7 @@ import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRel
 import Card from '../../../components/common/card/Card';
 import PublicGraphSimilarityMatrix from './graph_analytics/PublicGraphSimilarityMatrix';
 import PublicGraphClustersSize from './graph_analytics/PublicGraphClustersSize';
+import PublicGraphTopHubs from './graph_analytics/PublicGraphTopHubs';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => {
   const { t_i18n } = useFormatter();
@@ -204,6 +205,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
       case 'graph-clusters-size':
         return (
           <PublicGraphClustersSize
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'graph-top-hubs':
+        return (
+          <PublicGraphTopHubs
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}

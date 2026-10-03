@@ -8,6 +8,7 @@ import {
   addRelationship,
   addSector,
   deleteStixCoreObject,
+  deleteWorkspace,
   requestGraphRecompute,
   upsertAnalyticsCluster,
 } from '../dataForTesting/graphAnalytics.data';
@@ -144,5 +145,28 @@ test('Graph analytics: clusters list, detail and promotion to a grouping', { tag
     for (let i = 0; i < created.length; i += 1) {
       await deleteStixCoreObject(request, created[i]);
     }
+  }
+});
+
+/**
+ * Content of the test
+ * -------------------
+ * Create from template > Graph analytics creates a dashboard holding the graph analytics widgets
+ */
+test('Graph analytics: dashboard template', { tag: ['@ce', '@graphAnalytics'] }, async ({ page, request }) => {
+  const graphPage = new GraphAnalyticsPage(page);
+  let dashboardId: string | undefined;
+  try {
+    await graphPage.gotoDashboards();
+    await graphPage.getCreateDashboardFromTemplateButton().click();
+    await graphPage.getDashboardTemplate('graph-analytics').click();
+    await page.waitForURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]{36}/);
+    [dashboardId] = page.url().split('/dashboards/')[1].split(/[/?#]/);
+    const titles = ['Cluster size over time', 'Similarity of the most connected threats', 'Threat and malware hubs', 'Infrastructure hubs', 'Top hubs'];
+    for (let i = 0; i < titles.length; i += 1) {
+      await expect(page.getByText(titles[i], { exact: true }).first()).toBeVisible();
+    }
+  } finally {
+    if (dashboardId) await deleteWorkspace(request, dashboardId);
   }
 });

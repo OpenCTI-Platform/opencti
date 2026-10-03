@@ -23,6 +23,7 @@ const ALL_VISUALIZATION_TYPES = [
   'wordcloud',
   'graph-similarity-matrix',
   'graph-clusters-size',
+  'graph-top-hubs',
 ];
 
 describe('getVisualizationTypes', () => {

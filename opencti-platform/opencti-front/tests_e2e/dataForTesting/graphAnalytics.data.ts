@@ -94,6 +94,12 @@ export const upsertAnalyticsCluster = async (
   }
 };
 
+export const deleteWorkspace = async (request: APIRequestContext, id: string) => {
+  return graphqlRequest(request, `
+    mutation GraphAnalyticsE2EWorkspaceDelete($id: ID!) { workspaceDelete(id: $id) }
+  `, { id }).catch(() => undefined);
+};
+
 export const deleteStixCoreObject = async (request: APIRequestContext, id: string) => {
   return graphqlRequest(request, `
     mutation GraphAnalyticsE2EDelete($id: ID!) { stixCoreObjectEdit(id: $id) { delete } }
