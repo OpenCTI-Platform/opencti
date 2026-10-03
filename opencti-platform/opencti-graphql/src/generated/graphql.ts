@@ -15186,6 +15186,7 @@ export type LandscapeDiffEntity = {
   revoked_in_period: Scalars['Boolean']['output'];
   score_after?: Maybe<Scalars['Int']['output']>;
   score_before?: Maybe<Scalars['Int']['output']>;
+  standard_id?: Maybe<Scalars['String']['output']>;
 };
 
 export enum LandscapeDiffGroupBy {
@@ -15210,6 +15211,8 @@ export type LandscapeDiffNamedItem = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  standard_id?: Maybe<Scalars['String']['output']>;
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
 };
 
 export enum LandscapeDiffStatus {
@@ -48462,6 +48465,7 @@ export type LandscapeDiffEntityResolvers<ContextType = any, ParentType extends R
   revoked_in_period?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   score_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   score_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type LandscapeDiffNamedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffNamedItem'] = ResolversParentTypes['LandscapeDiffNamedItem']> = ResolversObject<{
@@ -48469,6 +48473,8 @@ export type LandscapeDiffNamedItemResolvers<ContextType = any, ParentType extend
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type LandscapeDiffSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffSummary'] = ResolversParentTypes['LandscapeDiffSummary']> = ResolversObject<{

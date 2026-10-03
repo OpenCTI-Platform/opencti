@@ -182,13 +182,17 @@ type LandscapeDiffBucket {
 
 type LandscapeDiffNamedItem {
     id: ID!
+    standard_id: String
     entity_type: String!
     name: String!
+    # ATT&CK external id, techniques only
+    x_mitre_id: String
     count: Int!
 }
 
 type LandscapeDiffEntity {
     entity_id: ID!
+    standard_id: String
     entity_type: String!
     name: String!
     created_in_period: Boolean!
