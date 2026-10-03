@@ -43,6 +43,7 @@ import {
   cellForPlatform,
   computeGapPriority,
   computeThreatWeight,
+  countEffectiveTechniques,
   evaluateCoverage,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
@@ -339,17 +340,8 @@ export const buildDefenseMatrix = async (
   const { snapshot, can, overlay, selected } = evaluation;
   const techniques = snapshot.techniques.filter((t) => can(t.id));
   const cells = techniques.map((technique) => toCellView(technique, evaluateCoverage(technique.id, technique.coverage, can, selected), overlay));
-  // Parent techniques carry the best level and the threat usage of their sub-techniques
   const cellsById = new Map(cells.map((c) => [c.attack_pattern_id, c]));
-  const effective = new Map<string, { level: number; used: boolean }>();
-  cells.filter((c) => !c.parent_attack_pattern_id).forEach((c) => effective.set(c.attack_pattern_id, { level: c.level, used: c.threats_count > 0 }));
-  cells.filter((c) => !!c.parent_attack_pattern_id).forEach((sub) => {
-    const parent = effective.get(sub.parent_attack_pattern_id as string);
-    if (parent) {
-      parent.level = Math.max(parent.level, sub.level);
-      parent.used = parent.used || sub.threats_count > 0;
-    }
-  });
+  const effective = countEffectiveTechniques(cells);
   const levels = emptyLevels();
   const threatLevels = emptyLevels();
   effective.forEach((value) => {

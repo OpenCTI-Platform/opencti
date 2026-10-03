@@ -217,7 +217,7 @@ input DefenseValidationInput {
   attackPatternIds: [String!]!
   platformIds: [String!]
   threatId: String
-  name: String @constraint(minLength: 2, maxLength: 250)
+  name: String @constraint(minLength: 2, maxLength: 250, format: "not-blank")
   description: String
   periodicity: String
   duration: String

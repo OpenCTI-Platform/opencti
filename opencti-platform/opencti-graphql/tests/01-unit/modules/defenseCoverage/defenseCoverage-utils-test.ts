@@ -12,6 +12,7 @@ import {
   computeRecommendedAction,
   computeThreatWeight,
   computeValidationStatus,
+  countEffectiveTechniques,
   escapeCsvValue,
   evaluateCoverage,
   isLogsourceMatching,
@@ -214,6 +215,22 @@ describe('Defense coverage evaluation for a reader', () => {
     });
     expect(new Set(ids).size).toEqual(ids.length);
     expect(collectCoverageIds(undefined)).toEqual([]);
+  });
+});
+
+describe('Defense matrix totals', () => {
+  it('should count a parent with the best level and usage of its sub-techniques', () => {
+    const effective = countEffectiveTechniques([
+      { attack_pattern_id: 'parent', level: 1, threats_count: 0 },
+      { attack_pattern_id: 'sub', parent_attack_pattern_id: 'parent', level: 3, threats_count: 2 },
+      { attack_pattern_id: 'other', level: 0, threats_count: 0 },
+    ]);
+    expect(Object.fromEntries(effective)).toEqual({ parent: { level: 3, used: true }, other: { level: 0, used: false } });
+  });
+
+  it('should count on its own a sub-technique whose parent is not visible', () => {
+    const effective = countEffectiveTechniques([{ attack_pattern_id: 'orphan', parent_attack_pattern_id: 'revoked-or-restricted', level: 2, threats_count: 1 }]);
+    expect(Object.fromEntries(effective)).toEqual({ orphan: { level: 2, used: true } });
   });
 });
 
