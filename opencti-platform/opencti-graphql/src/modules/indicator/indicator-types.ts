@@ -68,6 +68,7 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  deployment_platforms_count?: number;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
@@ -85,6 +86,7 @@ export interface StoreEntityIndicator extends StoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  deployment_platforms_count?: number;
 }
 
 // region Stix 2.0 type
