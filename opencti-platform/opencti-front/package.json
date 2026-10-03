@@ -176,7 +176,7 @@
     "monocart-reporter": "2.13.1",
     "relay-compiler": "21.0.1",
     "relay-test-utils": "21.0.1",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "typescript-eslint": "8.70.1",
     "vite": "8.3.1",
     "vite-plugin-monaco-editor": "1.1.0",
