@@ -698,6 +698,8 @@ class ObservedData:
         :type number_seen: int
         :param max_distinct_count: maximum number of distinct sources having observed the data at once (optional)
         :type max_distinct_count: int
+        :param x_opencti_hunt_run_id: the hunt run that observed the data (optional)
+        :type x_opencti_hunt_run_id: str
         :param x_opencti_stix_ids: list of additional STIX IDs (optional)
         :type x_opencti_stix_ids: list
         :param objectOrganization: list of organization IDs (optional)
@@ -731,6 +733,7 @@ class ObservedData:
         number_observed = kwargs.get("number_observed", None)
         number_seen = kwargs.get("number_seen", None)
         max_distinct_count = kwargs.get("max_distinct_count", None)
+        x_opencti_hunt_run_id = kwargs.get("x_opencti_hunt_run_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
@@ -777,6 +780,7 @@ class ObservedData:
                 "number_observed": number_observed,
                 "number_seen": number_seen,
                 "max_distinct_count": max_distinct_count,
+                "x_opencti_hunt_run_id": x_opencti_hunt_run_id,
                 "x_opencti_stix_ids": x_opencti_stix_ids,
                 "x_opencti_workflow_id": x_opencti_workflow_id,
                 "x_opencti_modified_at": x_opencti_modified_at,
@@ -1017,6 +1021,12 @@ class ObservedData:
                 ),
                 max_distinct_count=self.opencti.get_attribute_in_extension(
                     "max_distinct_count", stix_object
+                ),
+                x_opencti_hunt_run_id=(
+                    stix_object.get("x_opencti_hunt_run_id")
+                    or self.opencti.get_attribute_in_extension(
+                        "hunt_run_id", stix_object
+                    )
                 ),
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]

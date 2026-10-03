@@ -26,6 +26,8 @@ from .entities.opencti_external_reference import ExternalReference
 from .entities.opencti_feedback import Feedback
 from .entities.opencti_group import Group
 from .entities.opencti_grouping import Grouping
+from .entities.opencti_hunt import Hunt
+from .entities.opencti_hunt_run import HuntRun
 from .entities.opencti_identity import Identity
 from .entities.opencti_incident import Incident
 from .entities.opencti_indicator import Indicator
@@ -124,6 +126,8 @@ __all__ = [
     "ExternalReference",
     "Feedback",
     "Grouping",
+    "Hunt",
+    "HuntRun",
     "Identity",
     "Incident",
     "Indicator",

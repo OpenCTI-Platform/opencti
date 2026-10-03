@@ -42,6 +42,8 @@ from pycti.entities.opencti_external_reference import ExternalReference
 from pycti.entities.opencti_feedback import Feedback
 from pycti.entities.opencti_group import Group
 from pycti.entities.opencti_grouping import Grouping
+from pycti.entities.opencti_hunt import Hunt
+from pycti.entities.opencti_hunt_run import HuntRun
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_incident import Incident
 from pycti.entities.opencti_indicator import Indicator
@@ -322,6 +324,8 @@ class OpenCTIApiClient:
         self.vulnerability = Vulnerability(self)
         self.security_coverage = SecurityCoverage(self)
         self.security_coverage_result = SecurityCoverageResult(self)
+        self.hunt = Hunt(self)
+        self.hunt_run = HuntRun(self)
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
         self.data_component = DataComponent(self)
