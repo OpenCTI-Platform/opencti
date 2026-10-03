@@ -149,7 +149,7 @@ The time machine never bypasses markings or organization restrictions:
 - Every view is computed with your current rights. If, at the selected date, the entity had markings or a sharing you do not have access to, the view only says that the entity was restricted.
 - Related entities you cannot access are displayed as **Restricted**, without their name.
 - Entities deleted since are displayed as tombstones (**Deleted**).
-- A landscape diff is computed with the rights of the user who requested it and is only visible to that user.
+- A landscape diff is computed with the rights of the user who requested it and is only visible to that user. A stored result, including a cached widget result, is discarded as soon as one of the entities it names is no longer accessible to that user (for example after a new marking): it is computed again on the next request.
 - A change digest is computed with the rights of each recipient.
 
 ## History retention and knowledge snapshots

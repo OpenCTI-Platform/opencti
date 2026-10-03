@@ -1,4 +1,5 @@
 import conf, { logApp } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
 import { stixLoadByIds } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
@@ -29,14 +30,16 @@ export interface ChangeDigestData {
   message: string;
 }
 
-const parseTriggerFilters = (filters: string | null | undefined): FilterGroup | null => {
+// Malformed filters must fail the digest: falling back to no filter would broaden its scope to every entity
+export const parseTriggerFilters = (filters: string | null | undefined): FilterGroup | null => {
   if (!filters) return null;
+  let parsed: FilterGroup;
   try {
-    const parsed = JSON.parse(filters) as FilterGroup;
-    return isFilterGroupNotEmpty(parsed) ? parsed : null;
+    parsed = JSON.parse(filters) as FilterGroup;
   } catch {
-    return null;
+    throw FunctionalError('Change digest filters are malformed');
   }
+  return isFilterGroupNotEmpty(parsed) ? parsed : null;
 };
 
 const delta = (before: number | null, after: number | null) => (before !== null && after !== null && before !== after ? `\`${before}\` -> \`${after}\`` : null);

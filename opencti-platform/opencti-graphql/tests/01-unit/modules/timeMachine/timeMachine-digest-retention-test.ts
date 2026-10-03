@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { computeSnapshotRetentionDate } from '../../../../src/manager/snapshotManager';
-import { buildAggregatesMessage, buildChangeMessage } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
-import { savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { buildAggregatesMessage, buildChangeMessage, parseTriggerFilters } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
+import { landscapeResultReferencedIds, savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import type { BasicStoreEntityRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-types';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from '../../../../src/modules/timeMachine/timeMachine-types';
 
@@ -78,6 +78,14 @@ describe('Change digest messages', () => {
     expect(buildAggregatesMessage(aggregates))
       .toEqual('`4` of `10` entities changed, `12` new relationship(s), `2` removed, `1` revocation(s), `1` new technique(s), `3` new infrastructure');
   });
+
+  it('should never broaden the scope of a digest with malformed filters', () => {
+    expect(parseTriggerFilters(null)).toBeNull();
+    expect(parseTriggerFilters(JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }))).toBeNull();
+    const filters = { mode: 'and', filters: [{ key: ['name'], values: ['APT'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    expect(parseTriggerFilters(JSON.stringify(filters))).toEqual(filters);
+    expect(() => parseTriggerFilters('{not json')).toThrow('Change digest filters are malformed');
+  });
 });
 
 describe('Landscape diff scopes', () => {
@@ -86,5 +94,21 @@ describe('Landscape diff scopes', () => {
     expect(savedFilterScopeEntityTypes('malwares')).toEqual(['Malware']);
     expect(savedFilterScopeEntityTypes('unknown-list')).toBeNull();
     expect(savedFilterScopeEntityTypes(undefined)).toBeNull();
+  });
+
+  it('should list every entity named by a landscape result', () => {
+    const aggregates = {
+      new_techniques: [{ id: 'technique', entity_type: 'Attack-Pattern', name: 'T1059', count: 1 }],
+      new_malware: [{ id: 'malware', entity_type: 'Malware', name: 'Malware', count: 1 }],
+      new_tools: [],
+      new_infrastructure: [{ id: 'infrastructure', entity_type: 'Infrastructure', name: 'C2', count: 1 }],
+      new_victims_by_sector: [{ key: 'sector', label: 'Finance', count: 1 }],
+      new_victims_by_country: [{ key: 'country', label: 'France', count: 1 }],
+      new_victims_by_region: [],
+    } as unknown as LandscapeDiffAggregates;
+    const entities = [{ entity_id: 'intrusion-set' }, { entity_id: 'malware' }] as unknown as LandscapeDiffEntitySummary[];
+    expect(landscapeResultReferencedIds(aggregates, entities).sort())
+      .toEqual(['country', 'infrastructure', 'intrusion-set', 'malware', 'sector', 'technique']);
+    expect(landscapeResultReferencedIds(null, [])).toEqual([]);
   });
 });
