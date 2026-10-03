@@ -9,6 +9,7 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
+import { normalizeFrontendError } from '../../utils/normalizeFrontendError';
 
 // --- Region UI errors components
 // -------------------------------
@@ -72,12 +73,13 @@ class ErrorBoundaryComponent extends React.Component {
     try {
       const isNetworkError = this.state.error?.res;
       if (!isNetworkError) {
+        const { message, stack } = normalizeFrontendError(error);
         // If direct javascript error, sent the error for back logging
         commitMutation({
           mutation: frontendErrorLogMutation,
           variables: {
-            message: String(error),
-            codeStack: error.stack,
+            message,
+            codeStack: stack,
             componentStack: errorInfo.componentStack,
           },
         });
