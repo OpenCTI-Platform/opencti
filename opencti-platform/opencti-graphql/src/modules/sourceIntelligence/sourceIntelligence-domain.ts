@@ -1,0 +1,544 @@
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
+import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { elRawSearch, elUpdate } from '../../database/engine';
+import {
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+} from '../../database/utils';
+import { notify, publishCacheResetEvent, redisGetSourceIntelligenceState, redisSetSourceIntelligenceState } from '../../database/redis';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { connectorIdFromIngestId } from '../../domain/connector';
+import { ConnectorType, type EditInput } from '../../generated/graphql';
+import {
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_JSON,
+  ENTITY_TYPE_INGESTION_RSS,
+  ENTITY_TYPE_INGESTION_TAXII,
+  ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
+} from '../ingestion/ingestion-types';
+import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityManagerConfiguration } from '../managerConfiguration/managerConfiguration-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
+import { getManagerConfigurationFromCache } from '../managerConfiguration/managerConfiguration-domain';
+import {
+  DEFAULT_SOURCE_INTELLIGENCE_SETTINGS,
+  resolveSourceIntelligenceSettings,
+  type SourceIntelligenceSettings,
+  validateSourceIntelligenceSettingsInput,
+} from './sourceIntelligence-settings';
+import {
+  type BasicStoreEntitySource,
+  ENTITY_TYPE_SOURCE,
+  REFERENCE_SCORECARD_PERIOD,
+  SCORECARD_PERIOD_DAYS,
+  SCORECARD_PERIODS,
+  type ScorecardPeriodValue,
+  SOURCE_COST_PERIODS,
+  SOURCE_INTELLIGENCE_MANAGER_ID,
+  SOURCE_KIND_AUTHOR,
+  SOURCE_KIND_CONNECTOR,
+  SOURCE_KIND_INGESTION_FEED,
+  SOURCE_KIND_MANUAL,
+  type SourceCost,
+  type SourceKindValue,
+  type StoreSourceScorecard,
+} from './sourceIntelligence-types';
+import { deleteScorecardsOfSources, findLiveScorecards, searchScorecards, writeScorecards } from './sourceIntelligence-store';
+import { computeCostPerActionable } from './sourceIntelligence-scoring';
+import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
+import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
+
+const DAY_MS = 24 * 3600 * 1000;
+const RESTRICTED_AUTHOR_NAME = 'Restricted';
+const INGESTION_FEED_TYPES = [
+  ENTITY_TYPE_INGESTION_RSS,
+  ENTITY_TYPE_INGESTION_TAXII,
+  ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_JSON,
+];
+// Connectors that never write knowledge are not intelligence sources
+const NON_PRODUCING_CONNECTOR_TYPES: string[] = [ConnectorType.InternalExportFile];
+
+// region settings and state
+export interface SourceIntelligenceState {
+  last_full_run_day?: string | null;
+  last_full_run_start?: string | null;
+  last_full_run_end?: string | null;
+  last_run_success?: boolean | null;
+  last_run_message?: string | null;
+  last_scanned_objects?: number | null;
+  last_scan_truncated?: boolean | null;
+  backfill_next_day?: string | null;
+  backfill_done?: boolean | null;
+  recompute_requested_at?: string | null;
+  gaps_last_run_end?: string | null;
+  recommendations_last_run_end?: string | null;
+}
+
+export const getSourceIntelligenceState = async (): Promise<SourceIntelligenceState> => {
+  return (await redisGetSourceIntelligenceState() ?? {}) as SourceIntelligenceState;
+};
+
+export const updateSourceIntelligenceState = async (patch: Partial<SourceIntelligenceState>) => {
+  const current = await getSourceIntelligenceState();
+  const next = { ...current, ...patch };
+  await redisSetSourceIntelligenceState(next as Record<string, unknown>);
+  return next;
+};
+
+export const getSourceIntelligenceManagerConfiguration = async (context: AuthContext) => {
+  return getManagerConfigurationFromCache(context, SYSTEM_USER, SOURCE_INTELLIGENCE_MANAGER_ID);
+};
+
+export const getSourceIntelligenceSettings = async (context: AuthContext): Promise<SourceIntelligenceSettings> => {
+  const configuration = await getSourceIntelligenceManagerConfiguration(context);
+  return resolveSourceIntelligenceSettings(configuration?.manager_setting ?? DEFAULT_SOURCE_INTELLIGENCE_SETTINGS);
+};
+
+export const isSourceIntelligenceRunning = async (context: AuthContext) => {
+  const configuration = await getSourceIntelligenceManagerConfiguration(context);
+  return configuration?.manager_running !== false;
+};
+
+export const editSourceIntelligenceSettings = async (context: AuthContext, user: AuthUser, input: Record<string, any>) => {
+  const configuration = await getSourceIntelligenceManagerConfiguration(context);
+  if (!configuration) {
+    throw FunctionalError('Source intelligence manager configuration not found');
+  }
+  const { manager_running, ...settingsInput } = input;
+  const current = resolveSourceIntelligenceSettings(configuration.manager_setting);
+  if (settingsInput.autonomy?.auto_apply_kinds && settingsInput.autonomy.auto_apply_kinds.length > 0 && !(await isEnterpriseEdition(context))) {
+    throw ForbiddenAccess('The autonomy policy requires the Enterprise Edition');
+  }
+  const settings = validateSourceIntelligenceSettingsInput(current, settingsInput);
+  const patch: Record<string, unknown> = { manager_setting: settings };
+  if (typeof manager_running === 'boolean') {
+    patch.manager_running = manager_running;
+  }
+  const { element } = await patchAttribute(context, user, configuration.id, ENTITY_TYPE_MANAGER_CONFIGURATION, patch);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'updates `source intelligence settings`',
+    context_data: { id: configuration.id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input: patch },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
+  return { ...settings, manager_running: (element as unknown as BasicStoreEntityManagerConfiguration).manager_running !== false };
+};
+
+export const requestSourceIntelligenceRecompute = async (context: AuthContext, user: AuthUser) => {
+  const requestedAt = new Date().toISOString();
+  await updateSourceIntelligenceState({ recompute_requested_at: requestedAt });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'requests a `source intelligence` recomputation',
+    context_data: { id: SOURCE_INTELLIGENCE_MANAGER_ID, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input: { requested_at: requestedAt } },
+  });
+  return true;
+};
+// endregion
+
+// region sources access
+const sourceVisibleIds = async (context: AuthContext, user: AuthUser, sources: BasicStoreEntitySource[]) => {
+  // Author sources reference identities that can be restricted by markings or organizations: the source stays visible
+  // (counts only) but its name is masked for users who cannot access the identity.
+  const authorRefIds = sources.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.ref_id);
+  if (authorRefIds.length === 0) {
+    return new Set<string>();
+  }
+  const accessible = await internalFindByIds(context, user, authorRefIds, { baseData: true, baseFields: ['internal_id'] }) as unknown as BasicStoreEntity[];
+  return new Set(accessible.map((element) => element.internal_id));
+};
+
+export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(context: AuthContext, user: AuthUser, sources: T[]): Promise<T[]> => {
+  const accessibleAuthors = await sourceVisibleIds(context, user, sources);
+  return sources.map((source) => {
+    if (source.source_kind === SOURCE_KIND_AUTHOR && !accessibleAuthors.has(source.ref_id)) {
+      return { ...source, name: RESTRICTED_AUTHOR_NAME, description: undefined, ref_id: '' };
+    }
+    return source;
+  });
+};
+
+export const findSourceById = async (context: AuthContext, user: AuthUser, id: string) => {
+  const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+  if (!source) {
+    return source;
+  }
+  const [masked] = await maskRestrictedSources(context, user, [source]);
+  return masked;
+};
+
+export const findSourcesPaginated = async (context: AuthContext, user: AuthUser, args: Record<string, any>) => {
+  const connection = await pageEntitiesConnection<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], args);
+  const masked = await maskRestrictedSources(context, user, connection.edges.map((edge) => edge.node));
+  return { ...connection, edges: connection.edges.map((edge, index) => ({ ...edge, node: masked[index] })) };
+};
+
+export const listAllSources = async (context: AuthContext) => {
+  return fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE]);
+};
+
+export const buildResolverFromSources = (sources: BasicStoreEntitySource[]): SourceResolver => {
+  // Feeds also run as a technical twin connector: map it on the feed source
+  const aliases = sources
+    .filter((source) => source.source_kind === SOURCE_KIND_INGESTION_FEED)
+    .map((source) => ({ kind: SOURCE_KIND_CONNECTOR as SourceKindValue, refId: connectorIdFromIngestId(source.ref_id), sourceId: source.internal_id }));
+  return buildSourceResolver(sources, aliases);
+};
+// endregion
+
+// region scorecards queries
+export const findSourceScorecards = async (
+  context: AuthContext,
+  _user: AuthUser,
+  args: { sourceId: string; period?: ScorecardPeriodValue | null; startDate?: string | null; endDate?: string | null; first?: number | null },
+) => {
+  return searchScorecards(context, {
+    sourceIds: [args.sourceId],
+    period: args.period ?? REFERENCE_SCORECARD_PERIOD,
+    live: false,
+    startDate: args.startDate ?? null,
+    endDate: args.endDate ?? null,
+    first: args.first ?? 365,
+    orderMode: 'asc',
+  });
+};
+
+export const findLatestScorecard = async (context: AuthContext, sourceId: string, period?: ScorecardPeriodValue | null) => {
+  const [scorecard] = await findLiveScorecards(context, period ?? REFERENCE_SCORECARD_PERIOD, [sourceId]);
+  return scorecard ?? null;
+};
+
+export const findSourceOverlap = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { period?: ScorecardPeriodValue | null; sourceIds?: string[] | null; first?: number | null },
+) => {
+  const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
+  const first = Math.min(Math.max(args.first ?? 20, 2), 50);
+  const scorecards = await findLiveScorecards(context, period, args.sourceIds && args.sourceIds.length > 0 ? args.sourceIds : undefined);
+  const selected = scorecards
+    .filter((scorecard) => scorecard.volume_total > 0)
+    .sort((a, b) => b.volume_total - a.volume_total)
+    .slice(0, first);
+  const selectedIds = new Set(selected.map((scorecard) => scorecard.source_id));
+  const byId = new Map(selected.map((scorecard) => [scorecard.source_id, scorecard]));
+  const cells: Array<{ source_a: string; source_b: string; shared_count: number; share_a: number; share_b: number; jaccard: number }> = [];
+  const seen = new Set<string>();
+  selected.forEach((scorecard) => {
+    scorecard.overlap.forEach((share) => {
+      if (!selectedIds.has(share.source_id)) return;
+      const key = scorecard.source_id < share.source_id ? `${scorecard.source_id}|${share.source_id}` : `${share.source_id}|${scorecard.source_id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const other = byId.get(share.source_id) as StoreSourceScorecard;
+      const union = scorecard.volume_total + other.volume_total - share.shared_count;
+      cells.push({
+        source_a: scorecard.source_id,
+        source_b: share.source_id,
+        shared_count: share.shared_count,
+        share_a: scorecard.volume_total > 0 ? Math.min(1, share.shared_count / scorecard.volume_total) : 0,
+        share_b: other.volume_total > 0 ? Math.min(1, share.shared_count / other.volume_total) : 0,
+        jaccard: union > 0 ? share.shared_count / union : 0,
+      });
+    });
+  });
+  const sources = selected.length > 0
+    ? await maskRestrictedSources(context, user, await internalFindByIds(context, user, selected.map((s) => s.source_id), { type: ENTITY_TYPE_SOURCE }) as unknown as BasicStoreEntitySource[])
+    : [];
+  const sourcesById = new Map(sources.map((source) => [source.internal_id, source]));
+  return {
+    period,
+    computed_at: selected[0]?.computed_at ?? null,
+    sources: selected.map((scorecard) => sourcesById.get(scorecard.source_id)).filter((source) => source !== undefined),
+    cells,
+  };
+};
+// endregion
+
+// region sources edition
+const CURRENCY_REGEXP = /^[A-Z]{3}$/;
+
+export const validateSourceCost = (input: { amount: number; currency: string; period: string } | null | undefined): SourceCost | null => {
+  if (!input) {
+    return null;
+  }
+  if (typeof input.amount !== 'number' || !Number.isFinite(input.amount) || input.amount < 0 || input.amount > 1e12) {
+    throw FunctionalError('Invalid source cost amount', { amount: input.amount });
+  }
+  const currency = (input.currency ?? '').trim().toUpperCase();
+  if (!CURRENCY_REGEXP.test(currency)) {
+    throw FunctionalError('Invalid source cost currency, an ISO 4217 code is expected', { currency: input.currency });
+  }
+  if (!(SOURCE_COST_PERIODS as readonly string[]).includes(input.period)) {
+    throw FunctionalError('Invalid source cost period', { period: input.period });
+  }
+  return { amount: input.amount, currency, period: input.period as SourceCost['period'] };
+};
+
+const refreshCostOnLiveScorecards = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
+  const scorecards = await Promise.all(SCORECARD_PERIODS.map((period) => findLatestScorecard(context, source.internal_id, period)));
+  const updated = scorecards
+    .filter((scorecard): scorecard is StoreSourceScorecard => scorecard !== null)
+    .map((scorecard) => ({
+      ...scorecard,
+      cost_currency: cost?.currency ?? null,
+      cost_per_actionable_object: computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[scorecard.scorecard_period], scorecard.actionable_count),
+    }));
+  await writeScorecards(context, updated);
+  const reference = updated.find((scorecard) => scorecard.scorecard_period === REFERENCE_SCORECARD_PERIOD);
+  return reference?.cost_per_actionable_object ?? null;
+};
+
+export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: string, input: { amount: number; currency: string; period: string } | null | undefined) => {
+  const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+  if (!source) {
+    throw FunctionalError('Source not found', { id });
+  }
+  const cost = validateSourceCost(input);
+  const costPerActionable = await refreshCostOnLiveScorecards(context, source, cost);
+  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE, { source_cost: cost, latest_cost_per_actionable: costPerActionable });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: cost ? `sets the cost of source \`${source.name}\` to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of source \`${source.name}\``,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: { source_cost: cost } },
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+const EDITABLE_SOURCE_KEYS = ['description', 'tags', 'owner_id', 'enabled'];
+
+export const sourceEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+  if (!source) {
+    throw FunctionalError('Source not found', { id });
+  }
+  const invalidKeys = input.map((i) => i.key).filter((key) => !EDITABLE_SOURCE_KEYS.includes(key));
+  if (invalidKeys.length > 0) {
+    throw FunctionalError('Invalid or forbidden source field', { keys: invalidKeys });
+  }
+  const patch: Record<string, unknown> = {};
+  input.forEach(({ key, value }) => {
+    const values = (value ?? []) as unknown[];
+    if (key === 'tags') {
+      const tags = values.map((v) => String(v).trim()).filter((v) => v.length > 0 && v.length <= 64);
+      if (tags.length > 50) throw FunctionalError('Too many tags on the source', { count: tags.length });
+      patch.tags = [...new Set(tags)];
+    } else if (key === 'enabled') {
+      patch.enabled = values[0] === true || values[0] === 'true';
+    } else if (key === 'description') {
+      const description = values[0] === null || values[0] === undefined ? null : String(values[0]);
+      if (description && description.length > 5000) throw FunctionalError('Source description too long');
+      patch.description = description;
+    } else if (key === 'owner_id') {
+      patch.owner_id = values[0] ? String(values[0]) : null;
+    }
+  });
+  if (patch.owner_id) {
+    const owner = await storeLoadById(context, user, patch.owner_id as string, ENTITY_TYPE_USER);
+    if (!owner) throw FunctionalError('Source owner not found', { owner_id: patch.owner_id });
+  }
+  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE, patch);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${Object.keys(patch).join(', ')}\` for source \`${source.name}\``,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: patch },
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+/**
+ * Side-channel update of the denormalized latest KPIs of a source (no stream event, no updated_at change): the
+ * scorecards are derived data and must not trigger playbooks, streams or history.
+ */
+export const updateSourceLatestKpis = async (context: AuthContext, source: BasicStoreEntitySource, kpis: Record<string, unknown>) => {
+  const params = { kpis };
+  const script = 'for (entry in params.kpis.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }';
+  await elUpdate(context, source._index, source.internal_id, { script: { source: script, lang: 'painless', params } });
+};
+// endregion
+
+// region sources materialization
+interface SourceCandidate {
+  source_kind: SourceKindValue;
+  ref_id: string;
+  ref_type: string;
+  name: string;
+  source_user_ids: string[];
+}
+
+const aggregateTopValues = async (context: AuthContext, field: string, sinceDays: number, minCount: number, size: number) => {
+  if (size <= 0) {
+    return [];
+  }
+  const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE, {
+    index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS],
+    size: 0,
+    track_total_hits: false,
+    body: {
+      query: { range: { updated_at: { gte: since } } },
+      aggs: { top: { terms: { field: `${field}.keyword`, size, min_doc_count: minCount } } },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Source intelligence source discovery failed', { cause: err, field });
+  });
+  return (data.aggregations?.top?.buckets ?? []) as Array<{ key: string; doc_count: number }>;
+};
+
+const collectSourceCandidates = async (context: AuthContext, settings: SourceIntelligenceSettings): Promise<SourceCandidate[]> => {
+  const candidates: SourceCandidate[] = [];
+  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+  const feeds = await fullEntitiesList<BasicStoreEntity & { name: string; user_id?: string }>(context, SYSTEM_USER, INGESTION_FEED_TYPES);
+  const feedTwinConnectorIds = new Set(feeds.map((feed) => connectorIdFromIngestId(feed.internal_id)));
+  const serviceUserIds = new Set<string>();
+  connectors
+    .filter((connector) => !feedTwinConnectorIds.has(connector.internal_id))
+    .filter((connector) => !NON_PRODUCING_CONNECTOR_TYPES.includes(connector.connector_type))
+    .forEach((connector) => {
+      const userIds = connector.connector_user_id ? [connector.connector_user_id] : [];
+      userIds.forEach((userId) => serviceUserIds.add(userId));
+      candidates.push({
+        source_kind: SOURCE_KIND_CONNECTOR,
+        ref_id: connector.internal_id,
+        ref_type: ENTITY_TYPE_CONNECTOR,
+        name: (connector as BasicStoreEntityConnector & { title?: string }).title || connector.name,
+        source_user_ids: userIds,
+      });
+    });
+  feeds.forEach((feed) => {
+    const userIds = feed.user_id ? [feed.user_id] : [];
+    userIds.forEach((userId) => serviceUserIds.add(userId));
+    candidates.push({ source_kind: SOURCE_KIND_INGESTION_FEED, ref_id: feed.internal_id, ref_type: feed.entity_type, name: feed.name, source_user_ids: userIds });
+  });
+  // Authors with a significant volume over the longest period
+  const maxDays = SCORECARD_PERIOD_DAYS[SCORECARD_PERIODS[SCORECARD_PERIODS.length - 1]];
+  const authorBuckets = await aggregateTopValues(context, 'rel_created-by.internal_id', maxDays, settings.min_author_volume, settings.max_author_sources);
+  if (authorBuckets.length > 0) {
+    const identities = await internalFindByIds(context, SYSTEM_USER, authorBuckets.map((b) => b.key)) as unknown as Array<BasicStoreEntity & { name: string }>;
+    identities.forEach((identity) => {
+      candidates.push({ source_kind: SOURCE_KIND_AUTHOR, ref_id: identity.internal_id, ref_type: identity.entity_type, name: identity.name, source_user_ids: [] });
+    });
+  }
+  // Analysts writing knowledge directly (not through a connector or a feed)
+  const creatorBuckets = await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, settings.max_manual_sources + serviceUserIds.size);
+  if (creatorBuckets.length > 0) {
+    const users = await getEntitiesMapFromCache<BasicStoreEntity & { name: string; user_service_account?: boolean }>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    creatorBuckets
+      .filter((bucket) => !serviceUserIds.has(bucket.key) && !INTERNAL_USERS[bucket.key])
+      .map((bucket) => users.get(bucket.key))
+      .filter((user): user is BasicStoreEntity & { name: string; user_service_account?: boolean } => !!user && user.user_service_account !== true)
+      .slice(0, settings.max_manual_sources)
+      .forEach((user) => {
+        candidates.push({ source_kind: SOURCE_KIND_MANUAL, ref_id: user.internal_id, ref_type: ENTITY_TYPE_USER, name: user.name, source_user_ids: [user.internal_id] });
+      });
+  }
+  return candidates;
+};
+
+/**
+ * Materialize one Source per connector, ingestion feed, significant author and analyst, keeping user edits (cost,
+ * tags, owner, enabled) and removing sources whose connector or feed no longer exists.
+ */
+export const syncSources = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
+  const candidates = await collectSourceCandidates(context, settings);
+  const existing = await listAllSources(context);
+  const existingByKey = new Map(existing.map((source) => [`${source.source_kind}|${source.ref_id}`, source]));
+  const candidateKeys = new Set<string>();
+  let created = 0;
+  let updated = 0;
+  for (let i = 0; i < candidates.length; i += 1) {
+    const candidate = candidates[i];
+    const key = `${candidate.source_kind}|${candidate.ref_id}`;
+    candidateKeys.add(key);
+    const current = existingByKey.get(key);
+    if (!current) {
+      await createEntity(context, SOURCE_INTELLIGENCE_MANAGER_USER, { ...candidate, enabled: true, quarantined: false }, ENTITY_TYPE_SOURCE);
+      created += 1;
+    } else {
+      const sameUsers = [...(current.source_user_ids ?? [])].sort().join(',') === [...candidate.source_user_ids].sort().join(',');
+      if (current.name !== candidate.name || !sameUsers || current.ref_type !== candidate.ref_type) {
+        await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, current.internal_id, ENTITY_TYPE_SOURCE, {
+          name: candidate.name,
+          ref_type: candidate.ref_type,
+          source_user_ids: candidate.source_user_ids,
+        });
+        updated += 1;
+      }
+    }
+  }
+  // Connectors and feeds deleted from the platform: their sources and scorecards are removed
+  const orphans = existing.filter((source) => {
+    const key = `${source.source_kind}|${source.ref_id}`;
+    return !candidateKeys.has(key) && (source.source_kind === SOURCE_KIND_CONNECTOR || source.source_kind === SOURCE_KIND_INGESTION_FEED);
+  });
+  for (let i = 0; i < orphans.length; i += 1) {
+    await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, orphans[i].internal_id, ENTITY_TYPE_SOURCE);
+  }
+  await deleteScorecardsOfSources(context, orphans.map((source) => source.internal_id));
+  if (created + updated + orphans.length > 0) {
+    await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
+  }
+  logApp.info('[OPENCTI-MODULE] Source intelligence sources synchronized', { created, updated, removed: orphans.length, total: candidates.length });
+  return listAllSources(context);
+};
+// endregion
+
+// region status
+export const getSourceIntelligenceStatus = async (context: AuthContext) => {
+  const [state, sources, running, enterprise] = await Promise.all([
+    getSourceIntelligenceState(),
+    listAllSources(context),
+    isSourceIntelligenceRunning(context),
+    isEnterpriseEdition(context),
+  ]);
+  const availability = resolveSoftJoinAvailability();
+  return {
+    manager_running: running,
+    enterprise_edition: enterprise,
+    provenance_mode: availability.provenance,
+    pulse_available: availability.pulse,
+    hunt_available: availability.huntRunType !== null,
+    sources_count: sources.length,
+    last_full_run_start: state.last_full_run_start ?? null,
+    last_full_run_end: state.last_full_run_end ?? null,
+    last_run_success: state.last_run_success ?? null,
+    last_run_message: state.last_run_message ?? null,
+    last_scanned_objects: state.last_scanned_objects ?? null,
+    last_scan_truncated: state.last_scan_truncated ?? false,
+    backfill_done: state.backfill_done ?? false,
+    backfill_next_day: state.backfill_next_day ?? null,
+    recompute_requested_at: state.recompute_requested_at ?? null,
+  };
+};
+// endregion
+
+export const checkSourceWriteCapability = (user: AuthUser, capability: string) => {
+  if (!isUserHasCapability(user, capability)) {
+    throw ForbiddenAccess(`This action requires the ${capability} capability`);
+  }
+};
