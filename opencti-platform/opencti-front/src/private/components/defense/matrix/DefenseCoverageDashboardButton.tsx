@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router';
 import { InsertChartOutlinedOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
-import { serializeDashboardManifestForBackend } from '../../../../components/dashboard/dashboard-utils';
+import { buildDashboardTemplateExport } from '../../../../components/dashboard/templates/dashboardTemplates';
+import { defenseCoverageDashboardTemplate } from '../../../../components/dashboard/templates/defenseCoverageDashboardTemplate';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
@@ -12,8 +13,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseCoverageDashboardButtonMutation } from './__generated__/DefenseCoverageDashboardButtonMutation.graphql';
-import { buildDefenseCoverageDashboard } from './defenseCoverageDashboardTemplate';
-
 const defenseCoverageDashboardButtonMutation = graphql`
   mutation DefenseCoverageDashboardButtonMutation($input: WorkspaceDuplicateInput!) {
     workspaceDuplicate(input: $input) {
@@ -36,7 +35,7 @@ const DefenseCoverageDashboardButton = () => {
           type: 'dashboard',
           name: t_i18n('Defense coverage'),
           description: t_i18n('Threat-informed defense: coverage by tactic, uncovered techniques used by threats and detection rules.'),
-          manifest: serializeDashboardManifestForBackend(buildDefenseCoverageDashboard(t_i18n)),
+          manifest: buildDashboardTemplateExport(defenseCoverageDashboardTemplate, t_i18n).configuration.manifest,
         },
       },
       onCompleted: (response, errors) => {
