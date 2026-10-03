@@ -32,19 +32,28 @@ describe('graph analytics manager batches', () => {
   it('should do nothing when no entity is ready', async () => {
     vi.mocked(redisGraphAnalyticsPopReady).mockResolvedValue([]);
     const result = await processReadyEntities(context, user, getGraphAnalyticsComputeConfig());
-    expect(result).toEqual({ processed: 0, removed: 0 });
+    expect(result).toEqual({ processed: 0, removed: 0, failed: [] });
     expect(processDirtyEntities).not.toHaveBeenCalled();
     expect(redisGraphAnalyticsSetState).not.toHaveBeenCalled();
   });
 
   it('should record the run of a processed batch', async () => {
     vi.mocked(redisGraphAnalyticsPopReady).mockResolvedValue(['a', 'b']);
-    vi.mocked(processDirtyEntities).mockResolvedValue({ processed: 2, removed: 0 });
+    vi.mocked(processDirtyEntities).mockResolvedValue({ processed: 2, removed: 0, failed: [] });
     const result = await processReadyEntities(context, user, getGraphAnalyticsComputeConfig());
-    expect(result).toEqual({ processed: 2, removed: 0 });
+    expect(result).toEqual({ processed: 2, removed: 0, failed: [] });
     expect(processDirtyEntities).toHaveBeenCalledWith(context, user, ['a', 'b'], expect.any(Object));
     expect(redisGraphAnalyticsSetState).toHaveBeenCalledTimes(1);
     expect(redisGraphAnalyticsMarkDirty).not.toHaveBeenCalled();
+  });
+
+  it('should queue again the entities whose similarity failed', async () => {
+    vi.mocked(redisGraphAnalyticsPopReady).mockResolvedValue(['a', 'b']);
+    vi.mocked(processDirtyEntities).mockResolvedValue({ processed: 2, removed: 0, failed: ['b'] });
+    const result = await processReadyEntities(context, user, getGraphAnalyticsComputeConfig());
+    expect(result.failed).toEqual(['b']);
+    expect(redisGraphAnalyticsMarkDirty).toHaveBeenCalledWith(['b']);
+    expect(redisGraphAnalyticsSetState).toHaveBeenCalledTimes(1);
   });
 
   it('should queue a failing batch again so it is retried', async () => {

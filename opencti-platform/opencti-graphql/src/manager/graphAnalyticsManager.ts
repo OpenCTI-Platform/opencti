@@ -149,12 +149,16 @@ const consumeStream = async () => {
 /**
  * Recompute the entities whose last change is older than the debounce delay (and the explicit requests).
  * The batch is popped before the computation: when it fails, it is queued again and retried after the debounce delay.
+ * Entities whose similarity alone failed are queued again the same way.
  */
 export const processReadyEntities = async (context: AuthContext, user: AuthUser, config: GraphAnalyticsComputeConfig) => {
   const ready = await redisGraphAnalyticsPopReady(Date.now() - config.debounceMs, GRAPH_ANALYTICS_MAX_ENTITIES_PER_TICK);
-  if (ready.length === 0) return { processed: 0, removed: 0 };
+  if (ready.length === 0) return { processed: 0, removed: 0, failed: [] };
   try {
     const result = await processDirtyEntities(context, user, ready, config);
+    if (result.failed.length > 0) {
+      await redisGraphAnalyticsMarkDirty(result.failed);
+    }
     await redisGraphAnalyticsSetState({ [GRAPH_STATE_LAST_INCREMENTAL_RUN]: new Date().toISOString() });
     return result;
   } catch (err) {

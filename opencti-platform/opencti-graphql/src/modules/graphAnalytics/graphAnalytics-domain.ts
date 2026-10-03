@@ -527,15 +527,18 @@ export const addGraphClusterToInvestigation = async (context: AuthContext, user:
   const features = await graphClusterFeatures(context, user, cluster);
   const ids = Array.from(new Set([...members.map((m) => m.internal_id), ...features.flatMap((f) => f.entities.map((e) => e.internal_id))]))
     .slice(0, INVESTIGATION_MAX_ELEMENTS);
-  addGraphAnalyticsPivotCount();
+  let workspace;
   if (investigationId) {
-    const workspace = await findWorkspaceById(context, user, investigationId);
-    if (!workspace || workspace.type !== 'investigation') {
+    const existing = await findWorkspaceById(context, user, investigationId);
+    if (!existing || existing.type !== 'investigation') {
       throw FunctionalError('Investigation not found', { id: investigationId });
     }
-    return workspaceEditField(context, user, investigationId, [{ key: 'investigated_entities_ids', value: ids, operation: 'add' as any }]);
+    workspace = await workspaceEditField(context, user, investigationId, [{ key: 'investigated_entities_ids', value: ids, operation: 'add' as any }]);
+  } else {
+    workspace = await addWorkspace(context, user, { type: 'investigation', name: `${cluster.name} (${nowTime()})`, investigated_entities_ids: ids });
   }
-  return addWorkspace(context, user, { type: 'investigation', name: `${cluster.name} (${nowTime()})`, investigated_entities_ids: ids });
+  addGraphAnalyticsPivotCount();
+  return workspace;
 };
 // endregion
 
