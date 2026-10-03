@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import DefenseProvidedDataComponents from '@components/techniques/defense_matrix/DefenseProvidedDataComponents';
 import { System_system$key } from './__generated__/System_system.graphql';
 import SystemDetails from './SystemDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -118,6 +119,9 @@ const System: React.FC<SystemProps> = ({
         </Grid>
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
+        </Grid>
+        <Grid item xs={12}>
+          <DefenseProvidedDataComponents entityId={system.id} />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes

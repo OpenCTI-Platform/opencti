@@ -23,7 +23,11 @@ const ALL_VISUALIZATION_TYPES = [
   'provenance-single-sourced',
   'bookmark',
   'wordcloud',
+  'defense-tactic-coverage',
+  'defense-top-gaps',
 ];
+
+const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps'];
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
@@ -48,12 +52,12 @@ describe('getVisualizationTypes', () => {
   });
 
   describe('when host is a custom view', () => {
-    it('all visualization types but attribute are available (custom-attributes always included)', () => {
+    it('all visualization types but attribute and the platform-wide defense ones are available (custom-attributes always included)', () => {
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
       }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'),
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
       );
     });
   });

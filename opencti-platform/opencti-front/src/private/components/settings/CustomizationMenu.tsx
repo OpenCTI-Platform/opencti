@@ -32,6 +32,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/exclusion_lists',
       label: 'Exclusion lists',
     },
+    {
+      path: '/dashboard/settings/customization/log_source_mappings',
+      label: 'Log source mappings',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;

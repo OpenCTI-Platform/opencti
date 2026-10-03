@@ -5,6 +5,8 @@ import StixCoreObjectsCustomAttributes from '@components/common/stix_core_object
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import WidgetDefenseTacticCoverage from '@components/techniques/defense_matrix/widgets/WidgetDefenseTacticCoverage';
+import WidgetDefenseTopGaps from '@components/techniques/defense_matrix/widgets/WidgetDefenseTopGaps';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -29,6 +31,10 @@ const DashboardRawViz = ({
           popover={popover}
         />
       );
+    case 'defense-tactic-coverage':
+      return <WidgetDefenseTacticCoverage title={widget.parameters?.title} popover={popover} />;
+    case 'defense-top-gaps':
+      return <WidgetDefenseTopGaps title={widget.parameters?.title} popover={popover} />;
     case 'custom-attributes':
       return (
         <StixCoreObjectsCustomAttributes
