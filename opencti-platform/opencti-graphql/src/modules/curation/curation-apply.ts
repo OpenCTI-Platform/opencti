@@ -3,7 +3,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, StoreObject, StoreRelation } from '../../types/store';
 import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { createEntity, deleteElementById, mergeEntities, storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
@@ -34,6 +35,7 @@ import {
   RELATIONSHIP_CONFLICT_MODE_PROCEDURES,
 } from './curation-types';
 import { unmergeFromRecord } from './curation-merge-record';
+import { type ConflictingProcedure, procedureAdditions, procedureNoteInput, type ProcedureEntry } from './curation-procedures';
 
 export const PROCEDURES_ATTRIBUTE = 'procedures';
 const MIN_REACTIVATION_DAYS = 30;
@@ -234,18 +236,14 @@ const applyPreserveProcedure = async (
 ): Promise<ApplyResult> => {
   const payload = parsePayload(proposal);
   const relationship = await loadSubject(context, user, payload.relationship_id ?? proposal.target_id) as StoreRelation;
-  const previous = payload.previous as { text: string; source_id: string | null };
-  const current = payload.current as { text: string; source_id: string | null };
+  const previous = payload.previous as ConflictingProcedure;
+  const current = payload.current as ConflictingProcedure;
   if (settings.relationship_conflict_mode === RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY) {
     return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
   }
   if (settings.relationship_conflict_mode === RELATIONSHIP_CONFLICT_MODE_PROCEDURES && isProceduresAttributeAvailable(relationship.entity_type)) {
-    const existing = ((relationship as Record<string, any>)[PROCEDURES_ATTRIBUTE] ?? []) as Array<{ text: string }>;
-    const existingTexts = new Set(existing.map((procedure) => procedure.text?.trim().toLowerCase()));
-    const assertedAt = now();
-    const additions = [previous, current]
-      .filter((procedure) => procedure?.text && !existingTexts.has(procedure.text.trim().toLowerCase()))
-      .map((procedure) => ({ text: procedure.text, source_id: procedure.source_id, last_asserted_at: assertedAt }));
+    const existing = ((relationship as Record<string, any>)[PROCEDURES_ATTRIBUTE] ?? []) as ProcedureEntry[];
+    const additions = procedureAdditions(existing, [previous, current], now());
     if (additions.length === 0) {
       return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
     }
@@ -255,16 +253,13 @@ const applyPreserveProcedure = async (
   }
   // Note mode (also the fallback when the procedures attribute is not available on this platform): the overwritten
   // procedure is kept as a note attached to the relationship, without touching the relationship identity.
-  const fromName = (relationship.from as { name?: string } | undefined)?.name ?? relationship.fromId;
-  const toName = (relationship.to as { name?: string } | undefined)?.name ?? relationship.toId;
-  const note = await createEntity(context, user, {
-    attribute_abstract: `Alternative procedure: ${fromName} uses ${toName}`,
-    content: previous.text,
-    note_types: ['analysis'],
-    objects: [relationship.internal_id],
-    objectMarking: ((relationship as Record<string, any>).objectMarking ?? []).map((marking: BasicStoreBase) => marking.internal_id),
-    createdBy: previous.source_id ?? undefined,
-  }, ENTITY_TYPE_CONTAINER_NOTE);
+  const author = previous.source_id ? await storeLoadById(context, user, previous.source_id, ENTITY_TYPE_IDENTITY) : undefined;
+  const note = await createEntity(context, user, procedureNoteInput({
+    internal_id: relationship.internal_id,
+    fromName: (relationship.from as { name?: string } | undefined)?.name ?? relationship.fromId,
+    toName: (relationship.to as { name?: string } | undefined)?.name ?? relationship.toId,
+    markingIds: ((relationship as Record<string, any>).objectMarking ?? []).map((marking: BasicStoreBase) => marking.internal_id),
+  }, previous.text, author?.internal_id ?? null), ENTITY_TYPE_CONTAINER_NOTE);
   return { appliedPatch: { operations: [], created_ids: [note.internal_id ?? note.id], applied_at: now() }, mergeRecordId: null };
 };
 
