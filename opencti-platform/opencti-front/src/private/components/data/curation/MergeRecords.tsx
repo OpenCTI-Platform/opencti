@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import MergeRecordDrawer from './MergeRecordDrawer';
@@ -93,12 +94,19 @@ const mergeRecordsListQuery = graphql`
 `;
 
 const LOCAL_STORAGE_KEY = 'curation_merge_records';
+const ENTITY_LOCAL_STORAGE_KEY = 'curation_entity_merge_records';
 
-const MergeRecords = () => {
+interface MergeRecordsProps {
+  /** Only the merges this entity took part in, as the surviving entity or as a merged one (the Merges view of its Changes tab). */
+  entityId?: string;
+}
+
+const MergeRecords = ({ entityId }: MergeRecordsProps) => {
   const { t_i18n, fldt, n } = useFormatter();
   const labels = useCurationLabels();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Merges | Curation | Data'));
+  if (!entityId) setTitle(t_i18n('Merges | Curation | Data'));
+  const storageKey = entityId ? ENTITY_LOCAL_STORAGE_KEY : LOCAL_STORAGE_KEY;
   const [searchParams, setSearchParams] = useSearchParams();
   const recordId = searchParams.get('record');
 
@@ -110,10 +118,21 @@ const MergeRecords = () => {
     filters: emptyFilterGroup,
   };
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<MergeRecordsListQuery$variables>(
-    LOCAL_STORAGE_KEY,
+    storageKey,
     initialValues,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext('MergeRecord', viewStorage.filters);
+  const typeContextFilters = useBuildEntityTypeBasedFilterContext('MergeRecord', viewStorage.filters);
+  const contextFilters: FilterGroup = entityId ? {
+    ...typeContextFilters,
+    filterGroups: [...typeContextFilters.filterGroups, {
+      mode: 'or',
+      filters: [
+        { key: 'merge_target_id', values: [entityId], operator: 'eq', mode: 'or' },
+        { key: 'merge_source_ids', values: [entityId], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    }],
+  } : typeContextFilters;
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -189,14 +208,14 @@ const MergeRecords = () => {
   };
 
   return (
-    <div data-testid="curation-merge-records-page">
+    <div data-testid={entityId ? 'entity-merge-records' : 'curation-merge-records-page'}>
       {queryRef && (
         <DataTable
           removeSelectAll
           disableLineSelection
           dataColumns={dataColumns}
           resolvePath={(data: MergeRecords_records$data) => data.mergeRecords?.edges?.map((edge) => edge?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
+          storageKey={storageKey}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={{
