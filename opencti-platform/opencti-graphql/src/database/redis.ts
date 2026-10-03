@@ -1044,19 +1044,56 @@ const CURATION_COUNTER_TTL_SECONDS = 400 * 24 * 3600;
 
 // Stored value: "<writer>\n<event id>\n<previous writer>". The script runs atomically, so concurrent writers each observe
 // their immediate predecessor, and replaying the same event returns the predecessor observed the first time.
+// One key per entity field: the first line is the current writer, the next ones the most recent events, newest first,
+// each with the writer that preceded it ("<event id>\t<previous writer>"). A replayed event returns the predecessor it
+// saw the first time and changes nothing, even when later events of the same field were recorded since. Stream event
+// ids only grow, so an event not newer than the newest one recorded is a replay even once it left the history: it
+// then reports no predecessor.
 const CURATION_SWAP_FIELD_WRITER_SCRIPT = `
-local current = redis.call('GET', KEYS[1])
-local previous = ''
-if current then
-  local writer, event, before = string.match(current, '^([^\\n]*)\\n([^\\n]*)\\n(.*)$')
-  if event == ARGV[2] then
-    return {before, 1}
+local function not_newer(event, reference)
+  local em, es = string.match(event, '^(%d+)-(%d+)$')
+  local rm, rs = string.match(reference, '^(%d+)-(%d+)$')
+  if not em or not rm then
+    return false
   end
-  previous = writer or current
+  em, es, rm, rs = tonumber(em), tonumber(es), tonumber(rm), tonumber(rs)
+  return em < rm or (em == rm and es <= rs)
 end
-redis.call('SET', KEYS[1], ARGV[1] .. '\\n' .. ARGV[2] .. '\\n' .. previous, 'EX', tonumber(ARGV[3]))
-return {previous, 0}
+local value = redis.call('GET', KEYS[1])
+local current = ''
+local history = {}
+local newest = nil
+if value then
+  local index = 0
+  for line in string.gmatch(value .. '\\n', '(.-)\\n') do
+    if index == 0 then
+      current = line
+    else
+      local separator = string.find(line, '\\t', 1, true)
+      if separator then
+        local event = string.sub(line, 1, separator - 1)
+        if event == ARGV[2] then
+          return {string.sub(line, separator + 1), 1}
+        end
+        newest = newest or event
+        table.insert(history, line)
+      end
+    end
+    index = index + 1
+  end
+end
+if newest and not_newer(ARGV[2], newest) then
+  return {'', 1}
+end
+local lines = {ARGV[1], ARGV[2] .. '\\t' .. current}
+for i = 1, math.min(#history, tonumber(ARGV[4]) - 1) do
+  table.insert(lines, history[i])
+end
+redis.call('SET', KEYS[1], table.concat(lines, '\\n'), 'EX', tonumber(ARGV[3]))
+return {current, 0}
 `;
+// Events remembered per field with the writer that preceded them, for replays after a failed stream batch.
+const CURATION_FIELD_WRITER_EVENTS_KEPT = 32;
 
 export interface CurationFieldWriterSwap {
   previous: string | null;
@@ -1066,7 +1103,8 @@ export interface CurationFieldWriterSwap {
 
 /**
  * Remember the last writer of an entity field and return the previous one (if still within the TTL window).
- * Used to detect sources overwriting each other on the same field.
+ * Used to detect sources overwriting each other on the same field. Replaying an event already recorded returns the
+ * writer that preceded it at the time and leaves the field history unchanged.
  */
 export const redisCurationSwapFieldWriter = async (
   entityId: string,
@@ -1076,7 +1114,15 @@ export const redisCurationSwapFieldWriter = async (
   ttlSeconds: number,
 ): Promise<CurationFieldWriterSwap> => {
   const key = `${CURATION_KEY_PREFIX}writer:${entityId}:${field}`;
-  const [previous, replayed] = await getClientBase().eval(CURATION_SWAP_FIELD_WRITER_SCRIPT, 1, key, writer, eventId, ttlSeconds) as [string, number];
+  const [previous, replayed] = await getClientBase().eval(
+    CURATION_SWAP_FIELD_WRITER_SCRIPT,
+    1,
+    key,
+    writer,
+    eventId,
+    ttlSeconds,
+    CURATION_FIELD_WRITER_EVENTS_KEPT,
+  ) as [string, number];
   return { previous: previous || null, replayed: replayed === 1 };
 };
 

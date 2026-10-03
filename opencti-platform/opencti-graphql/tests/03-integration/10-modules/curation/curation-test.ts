@@ -22,6 +22,7 @@ import {
   ENTITY_TYPE_MERGE_RECORD,
 } from '../../../../src/modules/curation/curation-types';
 import type { BasicStoreEntity } from '../../../../src/types/store';
+import { redisCurationSwapFieldWriter } from '../../../../src/database/redis';
 
 const PROPOSALS_FOR_ENTITY_QUERY = gql`
   query CurationProposalsForEntity($id: ID!, $status: [CurationProposalStatus!]) {
@@ -419,6 +420,19 @@ describe('Knowledge curation', () => {
     expect(health.data?.knowledgeHealth.id).toBe(snapshot.id);
     expect(health.data?.curationStatistics.open_count).toBeGreaterThanOrEqual(0);
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: HEALTH_REFRESH_MUTATION, variables: {} });
+  });
+
+  it('keeps the writer history of a field exact when a stream batch is processed again', async () => {
+    const entityId = `curation-test-${Date.now()}`;
+    const swap = (writer: string, eventId: string) => redisCurationSwapFieldWriter(entityId, 'name', writer, eventId, 600);
+    expect(await swap('user-a', '1000-0')).toEqual({ previous: null, replayed: false });
+    expect(await swap('user-b', '1001-0')).toEqual({ previous: 'user-a', replayed: false });
+    // The batch is processed again from its first event: each event reports the writer it overwrote the first time
+    expect(await swap('user-a', '1000-0')).toEqual({ previous: null, replayed: true });
+    expect(await swap('user-b', '1001-0')).toEqual({ previous: 'user-a', replayed: true });
+    // An event older than the recorded ones is a replay too, and the next event overwrites the last real writer
+    expect(await swap('user-x', '999-0')).toEqual({ previous: null, replayed: true });
+    expect(await swap('user-c', '1002-0')).toEqual({ previous: 'user-b', replayed: false });
   });
 
   describe('source field authority', () => {
