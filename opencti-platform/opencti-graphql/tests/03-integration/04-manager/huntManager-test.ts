@@ -39,6 +39,7 @@ import {
   retryFailedHuntRuns,
   runScheduledHunts,
 } from '../../../src/modules/hunt/hunt-automation';
+import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 
 const CONNECTOR_ID = '6d2f4c1e-8a3b-4f6e-9c7d-2b5a1e0f3d02';
 const SIGMA_RULE = `title: Hunt manager test encoded command
@@ -318,6 +319,102 @@ describe('Hunt manager', () => {
         sigma_rule: before.sigma_rule,
         native_queries: before.native_queries,
       });
+    }
+  });
+
+  const addTestHunt = async (name: string) => {
+    const created = await queryAsAdminWithSuccess({
+      query: gql`mutation HuntAdd($input: HuntAddInput!) { huntAdd(input: $input) { id } }`,
+      variables: {
+        input: {
+          name,
+          sigma_rule: SIGMA_RULE,
+          huntTargets: [intrusionSetId],
+          native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
+        },
+      },
+    });
+    return created.data?.huntAdd.id as string;
+  };
+
+  const deleteTestHunt = async (id: string) => {
+    const runs = await listHuntRuns(id);
+    for (let index = 0; index < runs.length; index += 1) {
+      await deleteElementById(testContext, ADMIN_USER, runs[index].internal_id, ENTITY_TYPE_HUNT_RUN);
+    }
+    await queryAsAdmin({ query: gql`mutation HuntDelete($id: ID!) { huntDelete(id: $id) }`, variables: { id } });
+  };
+
+  it('should evaluate every PIR activated hunt at each tick, past the first page', async () => {
+    const olderId = await addTestHunt('Hunt manager test older PIR hunt');
+    const newerId = await addTestHunt('Hunt manager test newer PIR hunt');
+    await patchAttribute(testContext, ADMIN_USER, olderId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
+    await patchAttribute(testContext, ADMIN_USER, newerId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
+    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
+    const pir = await pirAdd(testContext, ADMIN_USER, {
+      name: 'Hunt manager test paging PIR',
+      pir_type: PirType.ThreatLandscape,
+      pir_rescan_days: 0,
+      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
+      pir_criteria: [criterion],
+    });
+    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
+    const { automationPageSize } = HUNT_CONFIG;
+    // One hunt per page: a single first page would read the same oldest hunt at every tick
+    HUNT_CONFIG.automationPageSize = 1;
+    try {
+      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
+      await reconcilePirActivatedHunts(testContext);
+      expect((await loadHunt(olderId)).hunt_pir_armed).toBe(true);
+      expect((await loadHunt(newerId)).hunt_pir_armed).toBe(true);
+    } finally {
+      HUNT_CONFIG.automationPageSize = automationPageSize;
+      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
+      await deletePir(testContext, ADMIN_USER, pir.id);
+      await deleteTestHunt(olderId);
+      await deleteTestHunt(newerId);
+    }
+  });
+
+  it('should start the runs of a hunt once when playbook executions race within the debounce window', async () => {
+    const resume = vi.spyOn(playbookManager, 'playbookStepExecution').mockResolvedValue(true);
+    const raceHuntId = await addTestHunt('Hunt manager test playbook race hunt');
+    const element = { id: `intrusion-set--${uuidv4()}`, type: 'intrusion-set', spec_version: '2.1', name: 'Hunt manager test race element' };
+    const bundle = { id: `bundle--${uuidv4()}`, type: 'bundle', spec_version: '2.1', objects: [element] };
+    const notify = PLAYBOOK_HUNT_COMPONENT.notify as NonNullable<typeof PLAYBOOK_HUNT_COMPONENT.notify>;
+    const execute = (executionId: string) => notify({
+      executionId,
+      eventId: 'event-id',
+      playbookId: uuidv4(),
+      dataInstanceId: element.id,
+      previousPlaybookNodeId: 'entry-step',
+      playbookNode: {
+        id: 'hunt-step',
+        name: 'Run hunts',
+        component_id: PLAYBOOK_HUNT_COMPONENT.id,
+        configuration: {
+          applyToElements: 'onlyMain',
+          hunt_ids: [raceHuntId],
+          security_platform_ids: [],
+          time_window_hours: 0,
+          max_hunts: 10,
+          wait_for_results: false,
+          include_results: false,
+        },
+      },
+      bundle,
+      previousStepBundle: bundle,
+    } as unknown as Parameters<typeof notify>[0]);
+    try {
+      await Promise.all([execute(uuidv4()), execute(uuidv4())]);
+      const runs = (await listHuntRuns(raceHuntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_PLAYBOOK);
+      expect(runs.length).toBeGreaterThan(0);
+      expect(new Set(runs.map((run) => run.playbook_execution_id)).size).toEqual(1);
+      // Both executions continue: the one that ran the hunt and the one the debounce skipped
+      expect(resume).toHaveBeenCalledTimes(2);
+    } finally {
+      resume.mockRestore();
+      await deleteTestHunt(raceHuntId);
     }
   });
 });

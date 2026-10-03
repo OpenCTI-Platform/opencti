@@ -3,8 +3,8 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
 import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { BUS_TOPICS, logApp } from '../../../config/conf';
-import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR } from '../../../config/errors';
-import { lockResources } from '../../../lock/master-lock';
+import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
+import { withHuntLock } from '../hunt-lock';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
 import { elAggregationCount, elCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
@@ -442,25 +442,13 @@ const withHuntRunTransition = async <T>(
   runId: string,
   transition: (current: BasicStoreEntityHuntRun) => Promise<T>,
 ): Promise<T> => {
-  const lockKey = `${HUNT_RUN_TRANSITION_LOCK}_${runId}`;
-  let lock;
-  try {
-    lock = await lockResources([lockKey]);
+  return withHuntLock(`${HUNT_RUN_TRANSITION_LOCK}_${runId}`, async () => {
     const current = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
     if (!current) {
       throw ResourceNotFoundError('Hunt run cannot be found', { runId });
     }
-    return await transition(current);
-  } catch (e: any) {
-    if (e.name === TYPE_LOCK_ERROR) {
-      throw LockTimeoutError({ participantIds: [lockKey] });
-    }
-    throw e;
-  } finally {
-    if (lock) {
-      await lock.unlock();
-    }
-  }
+    return transition(current);
+  });
 };
 
 /**

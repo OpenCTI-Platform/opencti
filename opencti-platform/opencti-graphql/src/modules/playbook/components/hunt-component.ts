@@ -32,6 +32,7 @@ import { findByIds } from '../../hunt/hunt-loaders';
 import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_STATUS_ACTIVE, INPUT_HUNT_SOURCES, INPUT_HUNT_TARGETS, INPUT_HUNT_TECHNIQUES } from '../../hunt/hunt-types';
 import { HUNT_CONFIG } from '../../hunt/hunt-utils';
 import { createHuntRuns } from '../../hunt/huntRun/huntRun-domain';
+import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
 import { findPlaybookHuntRuns, HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
 
@@ -137,6 +138,8 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
   });
 };
 
+const HUNT_PLAYBOOK_DEBOUNCE_LOCK = 'hunt_playbook_debounce';
+
 // Playbooks firing on every update of an entity must not hammer the security platforms: one playbook run per hunt per debounce window
 const isRecentlyRunByPlaybook = async (context: AuthContext, hunt: BasicStoreEntityHunt) => {
   const since = new Date(Date.now() - HUNT_CONFIG.standingDebounceMinutes * 60000).toISOString();
@@ -214,10 +217,14 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
       const waiting = configuration.wait_for_results !== false && serializedBundle.length <= HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH;
       for (let index = 0; index < hunts.length; index += 1) {
         const hunt = hunts[index];
-        if (await isRecentlyRunByPlaybook(context, hunt)) {
-          logApp.debug('[OPENCTI-MODULE] Playbook hunt skipped, the hunt already ran from a playbook recently', { huntId: hunt.internal_id, playbookId });
-        } else {
-          const created = await createHuntRuns(context, hunt, {
+        // Check and creation are serialized per hunt: concurrent executions cannot both find no recent run and both start
+        // one (runs are indexed with a refresh, so the next lock holder counts the runs created here)
+        const created = await withHuntLock(`${HUNT_PLAYBOOK_DEBOUNCE_LOCK}_${hunt.internal_id}`, async () => {
+          if (await isRecentlyRunByPlaybook(context, hunt)) {
+            logApp.debug('[OPENCTI-MODULE] Playbook hunt skipped, the hunt already ran from a playbook recently', { huntId: hunt.internal_id, playbookId });
+            return [];
+          }
+          return createHuntRuns(context, hunt, {
             trigger: HUNT_RUN_TRIGGER_PLAYBOOK,
             securityPlatformIds: configuration.security_platform_ids ?? [],
             timeWindowHours: configuration.time_window_hours > 0 ? configuration.time_window_hours : null,
@@ -229,8 +236,8 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
               context: waiting && runs.length === 0 ? playbookContext : undefined,
             },
           });
-          runs.push(...created);
-        }
+        });
+        runs.push(...created);
       }
       if (waiting && runs.length > 0) {
         return;

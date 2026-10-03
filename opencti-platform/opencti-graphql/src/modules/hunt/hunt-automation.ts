@@ -4,7 +4,7 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../types/event';
 import { logApp } from '../../config/conf';
 import { deleteElementById, patchAttribute } from '../../database/middleware';
-import { internalLoadById, topEntitiesList } from '../../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, topEntitiesList } from '../../database/middleware-loader';
 import { elCount } from '../../database/engine';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
@@ -51,8 +51,6 @@ import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
 import { findPlaybookHuntRuns, isHuntRunGroupSettled, resumeHuntPlaybookStep } from './hunt-playbook';
 
 export const HUNT_MANAGER_STREAM_STATE = 'hunt_manager';
-// Upper bound of the hunts evaluated by one tick of a phase (schedules, PIR arming, standing hunts)
-export const HUNT_AUTOMATION_MAX_HUNTS = 500;
 // Soft coupling with Threat Pulse: entities whose community trend rises make their standing hunts react faster
 export const PULSE_TREND_ATTRIBUTE = 'pulse_trend';
 const PULSE_TREND_RISING = 'rising';
@@ -74,15 +72,35 @@ const listRuns = (context: AuthContext, filters: FilterGroup['filters'], orderBy
   });
 };
 
+// One page only: for due cron hunts, processing moves their next run, so the next tick reads the next ones
 const listHunts = (context: AuthContext, filters: FilterGroup['filters'], filterGroups: FilterGroup[] = [], orderBy = 'created_at') => {
   return topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
-    first: HUNT_AUTOMATION_MAX_HUNTS,
+    first: HUNT_CONFIG.automationPageSize,
     orderBy,
     orderMode: OrderingMode.Asc,
     filters: andFilters(filters, filterGroups),
     noFiltersChecking: true,
     // Runs and standing triggers read the targets, techniques and sources of the hunts
     withoutRels: false,
+  });
+};
+
+/**
+ * Every hunt matching the filters, page by page. For phases whose filters do not drop the hunts they process (PIR arming,
+ * standing hunts), a bounded first page would read the same oldest hunts at every tick and never reach the others.
+ */
+const forEachHuntPage = async (context: AuthContext, filters: FilterGroup['filters'], onPage: (hunts: BasicStoreEntityHunt[]) => Promise<void>) => {
+  await fullEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+    first: HUNT_CONFIG.automationPageSize,
+    orderBy: 'created_at',
+    orderMode: OrderingMode.Asc,
+    filters: andFilters(filters),
+    noFiltersChecking: true,
+    withoutRels: false,
+    callback: async (hunts: BasicStoreEntityHunt[]) => {
+      await onPage(hunts);
+      return true;
+    },
   });
 };
 
@@ -329,28 +347,26 @@ export const runScheduledHunts = async (context: AuthContext): Promise<number> =
  * once; while armed its schedule and standing triggers apply, disarmed it waits. The hunt status stays the analyst's.
  */
 export const reconcilePirActivatedHunts = async (context: AuthContext): Promise<number> => {
-  const hunts = await listHunts(context, [
+  let started = 0;
+  await forEachHuntPage(context, [
     { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
     { key: ['hunt_pir_activation'], values: ['true'] },
-  ]);
-  if (hunts.length === 0) {
-    return 0;
-  }
-  const targetIds = Array.from(new Set(hunts.flatMap((hunt) => hunt[RELATION_HUNT_TARGETS] ?? [])));
-  const targets = targetIds.length > 0 ? await findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, targetIds) : [];
-  const flagged = new Set(targets.filter((target) => (target[RELATION_IN_PIR] ?? []).length > 0).map((target) => target.internal_id));
-  let started = 0;
-  for (let index = 0; index < hunts.length; index += 1) {
-    const hunt = hunts[index];
-    const armed = (hunt[RELATION_HUNT_TARGETS] ?? []).some((targetId) => flagged.has(targetId));
-    if (armed !== (hunt.hunt_pir_armed === true)) {
-      await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: armed, hunt_pir_armed_at: armed ? now() : null });
-      logApp.info(`[OPENCTI-MODULE] Hunt ${armed ? 'armed' : 'disarmed'} by its PIR targets`, { huntId: hunt.internal_id });
-      if (armed && started < HUNT_CONFIG.maxRunsPerTick) {
-        started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING);
+  ], async (hunts) => {
+    const targetIds = Array.from(new Set(hunts.flatMap((hunt) => hunt[RELATION_HUNT_TARGETS] ?? [])));
+    const targets = targetIds.length > 0 ? await findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, targetIds) : [];
+    const flagged = new Set(targets.filter((target) => (target[RELATION_IN_PIR] ?? []).length > 0).map((target) => target.internal_id));
+    for (let index = 0; index < hunts.length; index += 1) {
+      const hunt = hunts[index];
+      const armed = (hunt[RELATION_HUNT_TARGETS] ?? []).some((targetId) => flagged.has(targetId));
+      if (armed !== (hunt.hunt_pir_armed === true)) {
+        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: armed, hunt_pir_armed_at: armed ? now() : null });
+        logApp.info(`[OPENCTI-MODULE] Hunt ${armed ? 'armed' : 'disarmed'} by its PIR targets`, { huntId: hunt.internal_id });
+        if (armed && started < HUNT_CONFIG.maxRunsPerTick) {
+          started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING);
+        }
       }
     }
-  }
+  });
   return started;
 };
 
@@ -453,11 +469,14 @@ const isRecentStandingRun = async (context: AuthContext, candidate: StandingCand
  */
 export const processStandingHunts = async (context: AuthContext): Promise<number> => {
   const lastEventId = await redisGetManagerEventState(HUNT_MANAGER_STREAM_STATE);
-  const hunts = await listHunts(context, [
+  // Every standing hunt sees the events of the tick: the stream position is shared, events are read once
+  const listening: BasicStoreEntityHunt[] = [];
+  await forEachHuntPage(context, [
     { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
     { key: ['hunt_schedule'], values: [HUNT_SCHEDULE_STANDING] },
-  ]);
-  const listening = hunts.filter((hunt) => !isWaitingForPir(hunt));
+  ], async (hunts) => {
+    listening.push(...hunts.filter((hunt) => !isWaitingForPir(hunt)));
+  });
   if (!lastEventId || listening.length === 0) {
     // Nothing listens: the position follows the present so that a new standing hunt never replays the past
     await redisSetManagerEventState(HUNT_MANAGER_STREAM_STATE, `${Date.now()}-0`);

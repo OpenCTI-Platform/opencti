@@ -390,6 +390,7 @@
     "interval": 30000,
     "stream_batch_size": 5000,
     "max_runs_per_tick": 50,
+    "automation_page_size": 500,
     "max_concurrent_runs_per_connector": 2,
     "daily_runs_per_connector": 200,
     "run_timeout_minutes": 60,

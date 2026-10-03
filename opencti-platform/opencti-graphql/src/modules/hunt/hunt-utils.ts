@@ -18,6 +18,7 @@ export const HUNT_CONFIG = {
   interval: numberConf('hunt_manager:interval', 30000),
   streamBatchSize: numberConf('hunt_manager:stream_batch_size', 5000),
   maxRunsPerTick: numberConf('hunt_manager:max_runs_per_tick', 50),
+  automationPageSize: numberConf('hunt_manager:automation_page_size', 500),
   maxConcurrentRunsPerConnector: numberConf('hunt_manager:max_concurrent_runs_per_connector', 2),
   dailyRunsPerConnector: numberConf('hunt_manager:daily_runs_per_connector', 200),
   runTimeoutMinutes: numberConf('hunt_manager:run_timeout_minutes', 60),

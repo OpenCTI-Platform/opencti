@@ -46,6 +46,7 @@ The hunt manager runs on one platform node at a time. It dispatches the queued r
 | `hunt_manager:enabled` | `HUNT_MANAGER__ENABLED` | `true` | Enable the hunt manager |
 | `hunt_manager:interval` | `HUNT_MANAGER__INTERVAL` | `30000` | Interval between two ticks, in milliseconds |
 | `hunt_manager:max_runs_per_tick` | `HUNT_MANAGER__MAX_RUNS_PER_TICK` | `50` | Maximum runs started or processed by one tick of each phase |
+| `hunt_manager:automation_page_size` | `HUNT_MANAGER__AUTOMATION_PAGE_SIZE` | `500` | Hunts read per page: due scheduled hunts per tick, and the page size used to evaluate every PIR activated and standing hunt at each tick |
 | `hunt_manager:max_concurrent_runs_per_connector` | `HUNT_MANAGER__MAX_CONCURRENT_RUNS_PER_CONNECTOR` | `2` | Runs a hunt connector executes at the same time (a connector may declare a lower limit) |
 | `hunt_manager:daily_runs_per_connector` | `HUNT_MANAGER__DAILY_RUNS_PER_CONNECTOR` | `200` | Runs dispatched to a hunt connector per day |
 | `hunt_manager:run_timeout_minutes` | `HUNT_MANAGER__RUN_TIMEOUT_MINUTES` | `60` | Time a connector has to complete a run |

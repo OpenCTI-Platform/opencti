@@ -3,8 +3,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { logApp } from '../../config/conf';
-import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
-import { lockResources } from '../../lock/master-lock';
+import { FunctionalError } from '../../config/errors';
+import { withHuntLock } from './hunt-lock';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { completeConnector } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
@@ -241,22 +241,8 @@ const HUNT_CONNECTOR_DISPATCH_LOCK = 'hunt_connector_dispatch';
 
 // Budget checks and slot reservations of a connector are serialized: concurrent starts and manager dispatches cannot
 // all see the same free slot, and a run is dispatched only once
-const withConnectorDispatchLock = async <T>(connectorId: string, reservation: () => Promise<T>): Promise<T> => {
-  const lockKey = `${HUNT_CONNECTOR_DISPATCH_LOCK}_${connectorId}`;
-  let lock;
-  try {
-    lock = await lockResources([lockKey]);
-    return await reservation();
-  } catch (e: any) {
-    if (e.name === TYPE_LOCK_ERROR) {
-      throw LockTimeoutError({ participantIds: [lockKey] });
-    }
-    throw e;
-  } finally {
-    if (lock) {
-      await lock.unlock();
-    }
-  }
+const withConnectorDispatchLock = <T>(connectorId: string, reservation: () => Promise<T>): Promise<T> => {
+  return withHuntLock(`${HUNT_CONNECTOR_DISPATCH_LOCK}_${connectorId}`, reservation);
 };
 
 /**
