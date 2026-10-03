@@ -27,6 +27,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
+import SecurityPlatformDeployments from './SecurityPlatformDeployments';
 import { PATH_SECURITY_PLATFORM, PATH_SECURITY_PLATFORMS } from '@components/common/routes/paths';
 
 const subscription = graphql`
@@ -201,6 +202,12 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                       'Vulnerability',
                       'Indicator',
                     ]}
+                  />
+                ),
+                deployments: (
+                  <SecurityPlatformDeployments
+                    securityPlatformId={securityPlatform.id}
+                    securityPlatformName={securityPlatform.name}
                   />
                 ),
                 files: (

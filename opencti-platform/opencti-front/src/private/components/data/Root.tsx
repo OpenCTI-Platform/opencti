@@ -31,6 +31,9 @@ const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
 const RootCuration = lazy(() => import('./curation/Root'));
+const DisseminationAssuranceOverview = lazy(() => import('./dissemination_assurance/DisseminationAssuranceOverview'));
+const DisseminationAssuranceLists = lazy(() => import('./dissemination_assurance/DisseminationAssuranceLists'));
+const IocValidationRequests = lazy(() => import('./dissemination_assurance/IocValidationRequests'));
 
 // Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations
 // section, preserving any query params of the deep link.
@@ -165,6 +168,34 @@ const Root = () => {
         <Route
           path="/sharing/taxii"
           element={boundaryWrapper(Taxii)}
+        />
+        <Route
+          path="/assurance"
+          element={<Navigate to="/dashboard/data/assurance/overview" replace={true} />}
+        />
+        <Route
+          path="/assurance/overview"
+          element={(
+            <Security needs={[KNOWLEDGE]} placeholder={<Navigate to="/dashboard" />}>
+              {boundaryWrapper(DisseminationAssuranceOverview)}
+            </Security>
+          )}
+        />
+        <Route
+          path="/assurance/lists"
+          element={(
+            <Security needs={[KNOWLEDGE]} placeholder={<Navigate to="/dashboard" />}>
+              {boundaryWrapper(DisseminationAssuranceLists)}
+            </Security>
+          )}
+        />
+        <Route
+          path="/assurance/validations"
+          element={(
+            <Security needs={[KNOWLEDGE]} placeholder={<Navigate to="/dashboard" />}>
+              {boundaryWrapper(IocValidationRequests)}
+            </Security>
+          )}
         />
         <Route
           path="/processing"
