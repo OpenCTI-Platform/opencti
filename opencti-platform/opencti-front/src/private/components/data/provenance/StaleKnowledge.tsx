@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -15,16 +14,16 @@ const STALE_FILTERS: FilterGroup = {
 };
 
 /**
- * Knowledge flagged by the knowledge decay rules: no source re-asserted it for too long.
+ * Stale knowledge tab of the Curation hub: knowledge flagged by the knowledge decay rules because no source
+ * re-asserted it for too long.
  */
 const StaleKnowledge = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Stale knowledge | Provenance | Data'));
+  setTitle(t_i18n('Stale knowledge | Curation | Data'));
   const [tab, setTab] = useState('relationships');
   return (
     <div data-testid="provenance-stale-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Provenance') }, { label: t_i18n('Stale knowledge'), current: true }]} />
       <Typography variant="body2" sx={{ marginBottom: 2 }}>
         {t_i18n('Knowledge that no source re-asserted within the delay of its knowledge decay rule. Confirm it, update it or let the rule policy apply.')}
       </Typography>

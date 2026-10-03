@@ -7,11 +7,12 @@ import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { ProvenanceSettingsCardQuery } from './__generated__/ProvenanceSettingsCardQuery.graphql';
-import { ProvenanceSettingsCardFieldPatchMutation } from './__generated__/ProvenanceSettingsCardFieldPatchMutation.graphql';
+import { notifyPayloadErrors } from '../../common/provenance/provenanceUtils';
+import { SettingsProceduresQuery } from './__generated__/SettingsProceduresQuery.graphql';
+import { SettingsProceduresFieldPatchMutation } from './__generated__/SettingsProceduresFieldPatchMutation.graphql';
 
-const provenanceSettingsCardQuery = graphql`
-  query ProvenanceSettingsCardQuery {
+const settingsProceduresQuery = graphql`
+  query SettingsProceduresQuery {
     settings {
       id
       platform_procedures_preservation
@@ -20,8 +21,8 @@ const provenanceSettingsCardQuery = graphql`
   }
 `;
 
-const provenanceSettingsCardFieldPatchMutation = graphql`
-  mutation ProvenanceSettingsCardFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+const settingsProceduresFieldPatchMutation = graphql`
+  mutation SettingsProceduresFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         id
@@ -32,14 +33,19 @@ const provenanceSettingsCardFieldPatchMutation = graphql`
   }
 `;
 
-const ProvenanceSettingsContent = () => {
+const SettingsProceduresContent = () => {
   const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<ProvenanceSettingsCardQuery>(provenanceSettingsCardQuery, {});
-  const [commit, inFlight] = useApiMutation<ProvenanceSettingsCardFieldPatchMutation>(provenanceSettingsCardFieldPatchMutation);
+  const data = useLazyLoadQuery<SettingsProceduresQuery>(settingsProceduresQuery, {});
+  const [commit, inFlight] = useApiMutation<SettingsProceduresFieldPatchMutation>(settingsProceduresFieldPatchMutation);
   const { settings } = data;
-  const patch = (key: string, value: string) => commit({ variables: { id: settings.id, input: [{ key, value: [value] }] } });
+  const patch = (key: string, value: string) => commit({
+    variables: { id: settings.id, input: [{ key, value: [value] }] },
+    onCompleted: (_, errors) => {
+      notifyPayloadErrors(errors);
+    },
+  });
   return (
-    <Stack gap={2} data-testid="provenance-settings">
+    <Stack gap={2} data-testid="settings-procedures">
       <Switch
         checked={settings.platform_procedures_preservation}
         disabled={inFlight}
@@ -70,17 +76,17 @@ const ProvenanceSettingsContent = () => {
 };
 
 /**
- * Platform settings of the provenance tracking (procedures preservation, issue #15198).
+ * Platform parameters of the procedures preserved on uses relationships to attack patterns (issue #15198).
  */
-const ProvenanceSettingsCard = () => {
+const SettingsProcedures = () => {
   const { t_i18n } = useFormatter();
   return (
     <Card title={t_i18n('Procedures')}>
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <ProvenanceSettingsContent />
+        <SettingsProceduresContent />
       </Suspense>
     </Card>
   );
 };
 
-export default ProvenanceSettingsCard;
+export default SettingsProcedures;

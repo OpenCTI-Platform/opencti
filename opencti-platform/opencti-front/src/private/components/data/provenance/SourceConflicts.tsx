@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -15,16 +14,16 @@ const CONFLICTS_FILTERS: FilterGroup = {
 };
 
 /**
- * Knowledge on which sources disagree: the losing values of the upsert resolution, ready to be adopted or dismissed.
+ * Conflicts tab of the Curation hub: knowledge on which sources disagree, with the losing values of the upsert
+ * resolution ready to be adopted or dismissed.
  */
 const SourceConflicts = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Conflicts | Provenance | Data'));
+  setTitle(t_i18n('Conflicts | Curation | Data'));
   const [tab, setTab] = useState('entities');
   return (
     <div data-testid="provenance-conflicts-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Provenance') }, { label: t_i18n('Conflicts'), current: true }]} />
       <Typography variant="body2" sx={{ marginBottom: 2 }}>
         {t_i18n('Fields on which sources proposed different values. Open the sources of an element to adopt or dismiss an alternative value.')}
       </Typography>

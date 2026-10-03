@@ -5,24 +5,27 @@ import IntrusionSetPage from '../model/intrusionSet.pageModel';
 import IntrusionSetFormPage from '../model/form/intrusionSetForm.pageModel';
 import IntrusionSetDetailsPage from '../model/intrusionSetDetails.pageModel';
 
-test('Navigate the provenance views of the data section', { tag: ['@ce'] }, async ({ page }) => {
+test('Navigate the provenance tabs of the curation hub', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
 
-  await page.goto('/dashboard/data/provenance');
-  await leftBarPage.expectBreadcrumb('Data', 'Provenance', 'Overview');
-  await expect(page.getByTestId('provenance-overview')).toBeVisible();
-  await expect(page.getByTestId('provenance-freshness-chart')).toBeVisible();
-  await expect(page.getByTestId('provenance-backfill')).toBeVisible();
-
-  await page.goto('/dashboard/data/provenance/stale');
-  await leftBarPage.expectBreadcrumb('Data', 'Provenance', 'Stale knowledge');
-  await expect(page.getByTestId('provenance-stale-page')).toBeVisible();
-
-  await page.goto('/dashboard/data/provenance/conflicts');
-  await leftBarPage.expectBreadcrumb('Data', 'Provenance', 'Conflicts');
+  await page.goto('/dashboard/data/curation/conflicts');
+  await leftBarPage.expectBreadcrumb('Data', 'Curation', 'Conflicts');
   await expect(page.getByTestId('provenance-conflicts-page')).toBeVisible();
   await page.getByRole('tab', { name: 'Relationships' }).click();
   await expect(page.getByRole('tab', { name: 'Relationships' })).toHaveAttribute('aria-selected', 'true');
+
+  await page.getByTestId('curation-tab-stale-knowledge').click();
+  await leftBarPage.expectBreadcrumb('Data', 'Curation', 'Stale knowledge');
+  await expect(page.getByTestId('provenance-stale-page')).toBeVisible();
+});
+
+test('Follow the provenance backfill and the procedures parameters', { tag: ['@ce'] }, async ({ page }) => {
+  await page.goto('/dashboard/data/processing/tasks');
+  await expect(page.getByTestId('provenance-backfill')).toBeVisible();
+  await expect(page.getByTestId('provenance-backfill-status')).toBeVisible();
+
+  await page.goto('/dashboard/settings');
+  await expect(page.getByTestId('settings-procedures')).toBeVisible();
 });
 
 test('Display the sources of a created entity and confirm it', { tag: ['@ce'] }, async ({ page }) => {

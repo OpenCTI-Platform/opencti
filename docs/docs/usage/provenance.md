@@ -23,7 +23,7 @@ Assertions are recorded after deduplication, on the stored object. A source asse
 
 !!! note "Data created before provenance tracking"
 
-    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform. Its progress is visible in "Data > Provenance > Overview", where an administrator can also restart it. Replays are idempotent: existing assertions are merged, never duplicated.
+    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it. Replays are idempotent: existing assertions are merged, never duplicated.
 
 ## Corroboration and freshness
 
@@ -64,18 +64,24 @@ Dates, counters, scores, confidence and technical fields never produce conflicts
 
 When several sources describe how a threat uses a technique, each `uses` relationship keeps the procedure provided by every source instead of overwriting the description. The "Use as description" action of the sources panel makes a procedure the description of the relationship.
 
-Two parameters are available in "Data > Provenance > Overview":
+Two parameters are available in the "Procedures" card of "Settings > Parameters":
 
 - **Procedures preservation on uses relationships**: enable or disable the preservation of the procedures (enabled by default).
 - **Procedures description policy**: when a new procedure arrives, keep the longest one or the most recent one as the description (longest by default).
 
-## Provenance views
+## Curation tabs
 
-The "Data > Provenance" menu gathers:
+The "Data > Curation" hub gathers the data-quality views of the platform. Provenance adds two tabs to it:
 
-- **Overview**: the share of knowledge with provenance, the single sourced, corroborated, conflicting and stale knowledge, the freshness distribution, the sources by kind and the single sourced share by type, along with the backfill progress and the procedures parameters.
-- **Stale knowledge**: the entities and relationships flagged as stale by a [knowledge decay rule](../administration/decay-rules.md#knowledge-decay-rules).
-- **Conflicts**: the entities and relationships with source conflicts, with direct access to their sources panel.
+- **Conflicts**: the entities and relationships with source conflicts, with direct access to their sources panel to adopt or dismiss the alternative values.
+- **Stale knowledge**: the entities and relationships flagged as stale by a [knowledge decay rule](../administration/decay-rules.md#knowledge-decay-rules), with direct access to their sources panel to confirm them.
+
+## Widgets
+
+Two visualizations are available in the widget catalog of dashboards, for the entities and the relationships perspectives. Both honor the filters of the widget and the dates of the dashboard:
+
+- **Freshness distribution**: the knowledge per time elapsed since its last assertion by any source (less than a month, 1 to 3 months, 3 to 6 months, 6 months to a year, more than a year, never asserted).
+- **Single sourced share by type**: per entity or relationship type, the knowledge asserted by a single source versus the corroborated knowledge. The "Number of results" parameter limits the number of types displayed.
 
 ## Notifications
 

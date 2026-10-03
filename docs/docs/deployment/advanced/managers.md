@@ -91,7 +91,7 @@ More information can be found:
 
 ## Provenance backfill manager
 
-The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Its progress is visible in "Data > Provenance > Overview".
+The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it.
 
 More information can be found [here](../../usage/provenance.md).
 
