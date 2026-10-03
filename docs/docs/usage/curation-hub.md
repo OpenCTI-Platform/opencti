@@ -16,6 +16,13 @@
 - Each tab has its own permission check: a tab you are not allowed to use is not listed, and the hub opens the first tab you can use.
 - Each tab keeps its own address under `Data > Curation`, so a link to a tab can be bookmarked and shared.
 
+## Working in the hub
+
+- The breadcrumb `Data > Curation > <tab>` and the tab bar stay on screen while a tab loads, so switching tabs never blanks the page.
+- A number next to a tab counts the work waiting for you there, for example proposals to review in the Inbox. The **Curation** entry of the menu shows the sum of these numbers. They are never totals, and they disappear when nothing is waiting.
+- A tab that has nothing to show yet says what it does and what feeds it, and offers its first action and a link to its documentation.
+- Opening a link to Curation when none of its tabs is available to you shows a page that says so, with a way back to **Data**. The tabs may be hidden on your platform or need a permission your account does not have: ask your administrator if you need them.
+
 ## Related pages
 
 - [Provenance](provenance.md): the sources, conflicts and freshness behind the Conflicts and Stale knowledge tabs.
