@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 from pycti.entities.opencti_hunt import Hunt
 from pycti.entities.opencti_hunt_run import HuntRun
+from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
 def _opencti(data):
@@ -109,6 +110,19 @@ class TestHunt(TestCase):
             hunt.preview(id="hunt-1", security_platform_id="sp-1"), {"id": "preview-1"}
         )
         self.assertEqual(_variables(opencti)["securityPlatformId"], "sp-1")
+
+    def test_bundle_splitter_keeps_hunts(self):
+        hunt = {
+            "type": "hunt",
+            "id": "hunt--8984f3bd-d90c-5c7b-8354-0309d9b78eaa",
+            "name": "Encoded PowerShell",
+        }
+        bundle = {"type": "bundle", "id": "bundle--1", "objects": [hunt]}
+        _, _, bundles = OpenCTIStix2Splitter().split_bundle_with_expectations(
+            bundle, use_json=False
+        )
+        self.assertEqual(len(bundles), 1)
+        self.assertEqual(bundles[0]["objects"][0]["id"], hunt["id"])
 
 
 class TestHuntRun(TestCase):
