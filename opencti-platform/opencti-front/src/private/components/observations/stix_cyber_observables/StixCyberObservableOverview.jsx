@@ -20,6 +20,7 @@ import { graphql } from 'react-relay';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemCreators from '../../../../components/ItemCreators';
+import ProvenanceSummary from '../../common/provenance/ProvenanceSummary';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemScore from '../../../../components/ItemScore';
 import Label from '../../../../components/common/label/Label';
@@ -165,6 +166,7 @@ class StixCyberObservableOverview extends Component {
                 {t('Creators')}
               </Label>
               <ItemCreators creators={stixCyberObservable.creators ?? []} />
+              <ProvenanceSummary id={stixCyberObservable.id} sx={{ marginTop: 2 }} />
               <Label
                 sx={{ marginTop: 2 }}
               >

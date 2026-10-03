@@ -21,6 +21,7 @@ import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreators from '../../../../components/ItemCreators';
+import ProvenanceSummary from '../../common/provenance/ProvenanceSummary';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
@@ -485,6 +486,7 @@ class StixSightingRelationshipContainer extends Component {
                   <ItemCreators
                     creators={stixSightingRelationship.creators ?? []}
                   />
+                  <ProvenanceSummary id={stixSightingRelationship.id} sx={{ marginTop: 2 }} />
                 </Grid>
               </Grid>
             </Card>

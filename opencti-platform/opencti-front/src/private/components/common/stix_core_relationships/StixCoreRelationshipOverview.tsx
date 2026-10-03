@@ -35,6 +35,7 @@ import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObje
 import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
+import ProvenanceSummary from '../provenance/ProvenanceSummary';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
@@ -4717,6 +4718,7 @@ const StixCoreRelationshipOverview = ({
                 <ItemCreators
                   creators={stixCoreRelationship.creators ?? []}
                 />
+                <ProvenanceSummary id={stixCoreRelationship.id} sx={{ marginTop: 2 }} />
               </Grid>
             </Grid>
           </Card>

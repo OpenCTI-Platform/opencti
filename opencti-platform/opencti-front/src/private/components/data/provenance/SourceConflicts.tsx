@@ -1,0 +1,47 @@
+import React, { useState } from 'react';
+import Typography from '@mui/material/Typography';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useFormatter } from '../../../../components/i18n';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
+import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
+
+const CONFLICTS_FILTERS: FilterGroup = {
+  mode: 'and',
+  filters: [{ key: 'has_conflicts', values: ['true'], operator: 'eq', mode: 'or' }],
+  filterGroups: [],
+};
+
+/**
+ * Knowledge on which sources disagree: the losing values of the upsert resolution, ready to be adopted or dismissed.
+ */
+const SourceConflicts = () => {
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Conflicts | Provenance | Data'));
+  const [tab, setTab] = useState('entities');
+  return (
+    <div data-testid="provenance-conflicts-page">
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Provenance') }, { label: t_i18n('Conflicts'), current: true }]} />
+      <Typography variant="body2" sx={{ marginBottom: 2 }}>
+        {t_i18n('Fields on which sources proposed different values. Open the sources of an element to adopt or dismiss an alternative value.')}
+      </Typography>
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="entities">{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="entities">
+          {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-conflicts-entities" fixedFilters={CONFLICTS_FILTERS} withConflicts />}
+        </TabsContent>
+        <TabsContent value="relationships">
+          {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-conflicts-relationships" fixedFilters={CONFLICTS_FILTERS} withConflicts />}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default SourceConflicts;

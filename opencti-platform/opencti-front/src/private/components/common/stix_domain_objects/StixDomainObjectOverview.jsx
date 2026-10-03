@@ -36,6 +36,7 @@ import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOver
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
+import ProvenanceSummary from '../provenance/ProvenanceSummary';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 
 const StixDomainObjectOverview = ({
@@ -304,6 +305,7 @@ const StixDomainObjectOverview = ({
               </Label>
               <ItemCreators creators={stixDomainObject.creators ?? []} />
             </div>
+            <ProvenanceSummary id={stixDomainObject.id} sx={{ marginTop: 2 }} />
             <div style={{ marginTop: 20 }}>
               <Label
                 sx={{ marginTop: 2 }}

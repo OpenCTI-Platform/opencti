@@ -24,6 +24,7 @@ export interface ObjectToParse {
   }[];
   color?: string;
   numberOfConnectedElement?: number;
+  corroboration_count?: number | null;
   createdBy: {
     id: string;
     name: string;
@@ -181,6 +182,7 @@ const useGraphParser = () => {
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      corroborationCount: data.corroboration_count ?? undefined,
     };
   };
 
@@ -202,6 +204,7 @@ const useGraphParser = () => {
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      corroborationCount: data.corroboration_count ?? undefined,
     };
     return {
       ...baseLink,

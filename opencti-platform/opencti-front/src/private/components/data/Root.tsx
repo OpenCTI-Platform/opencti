@@ -30,6 +30,7 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
+const Provenance = lazy(() => import('./provenance/Root'));
 
 // Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations
 // section, preserving any query params of the deep link.
@@ -92,6 +93,10 @@ const Root = () => {
         <Route
           path="/relationships"
           element={boundaryWrapper(Relationships)}
+        />
+        <Route
+          path="/provenance/*"
+          element={isGrantedToKnowledge ? boundaryWrapper(Provenance) : <Navigate to="/dashboard" />}
         />
         <Route
           path="/ingestion"

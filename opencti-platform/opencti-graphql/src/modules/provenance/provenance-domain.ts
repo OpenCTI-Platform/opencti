@@ -141,12 +141,13 @@ export const provenanceStatistics = async (context: AuthContext, user: AuthUser,
 };
 
 // Freshness buckets, in days since the last assertion of any source (bounds included)
-export const FRESHNESS_BUCKETS: Array<{ label: string; from: number; to: number | null }> = [
-  { label: '0-30', from: 0, to: 30 },
-  { label: '31-90', from: 31, to: 90 },
-  { label: '91-180', from: 91, to: 180 },
-  { label: '181-365', from: 181, to: 365 },
-  { label: '366+', from: 366, to: null },
+const UNKNOWN_FRESHNESS_BUCKET = 'unknown';
+export const FRESHNESS_BUCKETS: Array<{ bucket: string; from: number; to: number | null }> = [
+  { bucket: '0-30', from: 0, to: 30 },
+  { bucket: '31-90', from: 31, to: 90 },
+  { bucket: '91-180', from: 91, to: 180 },
+  { bucket: '181-365', from: 181, to: 365 },
+  { bucket: '366+', from: 366, to: null },
 ];
 
 const freshnessBucketFilter = (bucket: { from: number; to: number | null }): FilterGroup => ({
@@ -173,7 +174,7 @@ export const provenanceFreshnessDistribution = async (context: AuthContext, user
     filters: [{ key: [ATTRIBUTE_LAST_ASSERTED_AT], values: [], operator: FilterOperator.Nil }],
     filterGroups: [],
   }));
-  return [...FRESHNESS_BUCKETS.map((bucket, index) => ({ label: bucket.label, value: counts[index] })), { label: 'unknown', value: unknown }];
+  return [...FRESHNESS_BUCKETS.map((bucket, index) => ({ label: bucket.bucket, value: counts[index] })), { label: UNKNOWN_FRESHNESS_BUCKET, value: unknown }];
 };
 
 export const provenanceSourceKindsDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSourceKindsDistributionArgs) => {

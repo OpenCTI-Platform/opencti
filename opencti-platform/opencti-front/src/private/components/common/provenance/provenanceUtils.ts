@@ -1,0 +1,124 @@
+import type { Theme } from '../../../../components/Theme';
+
+export type AssertionSourceKind = 'connector' | 'feed' | 'author' | 'user' | 'inference' | 'emulation';
+
+export const ASSERTION_SOURCE_KINDS: AssertionSourceKind[] = ['connector', 'feed', 'author', 'user', 'inference', 'emulation'];
+
+export interface ProvenanceAssertion {
+  readonly source_id: string;
+  readonly source_kind: string;
+  readonly source_name: string;
+  readonly first_asserted_at: string;
+  readonly last_asserted_at: string;
+  readonly assert_count: number;
+  readonly confidence?: number | null;
+}
+
+export interface ProvenanceConflictValue {
+  readonly value_hash: string;
+  readonly display: string;
+  readonly adoptable: boolean;
+  readonly source_id: string;
+  readonly source_kind?: string | null;
+  readonly source_name?: string | null;
+  readonly confidence?: number | null;
+  readonly last_asserted_at: string;
+}
+
+export interface ProvenanceConflict {
+  readonly field: string;
+  readonly values: ReadonlyArray<ProvenanceConflictValue>;
+}
+
+export interface ProvenanceProcedure {
+  readonly text: string;
+  readonly source_id?: string | null;
+  readonly last_asserted_at?: string | null;
+}
+
+/** Provenance of a Stix core object, Stix core relationship or sighting, as read through the API. */
+export interface ProvenanceData {
+  readonly id: string;
+  readonly entity_type: string;
+  readonly description?: string | null;
+  readonly corroboration_count?: number | null;
+  readonly single_sourced?: boolean | null;
+  readonly has_conflicts?: boolean | null;
+  readonly last_asserted_at?: string | null;
+  readonly freshness_days?: number | null;
+  readonly freshness_stale?: boolean | null;
+  readonly freshness_stale_at?: string | null;
+  readonly x_opencti_assertions?: ReadonlyArray<ProvenanceAssertion> | null;
+  readonly x_opencti_conflicts?: ReadonlyArray<ProvenanceConflict> | null;
+  readonly procedures?: ReadonlyArray<ProvenanceProcedure> | null;
+}
+
+// Labels are translated by the caller (t_i18n)
+export const SOURCE_KIND_LABELS: Record<AssertionSourceKind, string> = {
+  connector: 'Connector',
+  feed: 'Ingestion feed',
+  author: 'Author',
+  user: 'User',
+  inference: 'Inference rule',
+  emulation: 'Emulation',
+};
+
+export const sourceKindLabel = (kind: string | null | undefined) => {
+  return SOURCE_KIND_LABELS[(kind ?? '') as AssertionSourceKind] ?? 'Unknown';
+};
+
+// The warning palette is optional in the theme typing
+export const warningColor = (theme: Theme) => (theme.palette.warning as { main?: string } | undefined)?.main ?? theme.palette.error.main;
+
+export type CorroborationLevel = 'none' | 'single' | 'corroborated' | 'strong';
+
+/** Single sourced knowledge is a warning, 2-3 sources is corroborated, 4 sources or more is strongly corroborated. */
+export const corroborationLevel = (count: number | null | undefined): CorroborationLevel => {
+  if (!count || count <= 0) {
+    return 'none';
+  }
+  if (count === 1) {
+    return 'single';
+  }
+  return count >= 4 ? 'strong' : 'corroborated';
+};
+
+export const corroborationColor = (theme: Theme, count: number | null | undefined) => {
+  switch (corroborationLevel(count)) {
+    case 'single':
+      return warningColor(theme);
+    case 'corroborated':
+      return theme.palette.primary.main;
+    case 'strong':
+      return theme.palette.success.main;
+    default:
+      return theme.palette.text.disabled ?? theme.palette.text.secondary;
+  }
+};
+
+// Freshness buckets, in days since the last assertion of any source
+export const FRESHNESS_BUCKET_LABELS: Record<string, string> = {
+  '0-30': 'Less than a month',
+  '31-90': '1 to 3 months',
+  '91-180': '3 to 6 months',
+  '181-365': '6 months to a year',
+  '366+': 'More than a year',
+  unknown: 'Never asserted',
+};
+
+export const freshnessColor = (theme: Theme, days: number | null | undefined, stale?: boolean | null) => {
+  if (stale) {
+    return theme.palette.error.main;
+  }
+  if (days === null || days === undefined) {
+    return theme.palette.text.secondary;
+  }
+  if (days <= 90) {
+    return theme.palette.success.main;
+  }
+  return days <= 365 ? warningColor(theme) : theme.palette.error.main;
+};
+
+export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined) => {
+  return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
+};
