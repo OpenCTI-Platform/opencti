@@ -240,7 +240,8 @@ const executeApply = async (
     case RECOMMENDATION_LOWER_CONFIDENCE:
     case RECOMMENDATION_RAISE_CONFIDENCE: {
       requireCapability(user, autonomous, SETTINGS_SET_ACCESSES);
-      const target = await storeLoadById<BasicStoreEntity & { user_confidence_level?: { max_confidence: number; overrides: unknown[] } | null }>(context, SYSTEM_USER, payload.user_id, ENTITY_TYPE_USER);
+      type ConfidenceUser = BasicStoreEntity & { user_confidence_level?: { max_confidence: number; overrides: unknown[] } | null };
+      const target = await storeLoadById<ConfidenceUser>(context, SYSTEM_USER, payload.user_id, ENTITY_TYPE_USER);
       if (!target) throw FunctionalError('Source user not found', { user_id: payload.user_id });
       const previous = target.user_confidence_level ?? null;
       const next = { max_confidence: payload.proposed_max_confidence, overrides: previous?.overrides ?? [] };
@@ -561,7 +562,12 @@ const loadAllRecommendations = async (context: AuthContext) => {
  * Persist proposals: one live recommendation per fingerprint, dismissed ones are not proposed again before the
  * cooldown, proposals not produced anymore by the rules are withdrawn (dismissed by the system).
  */
-export const upsertProposals = async (context: AuthContext, proposals: RecommendationProposal[], settings: SourceIntelligenceSettings, scope: { kinds: RecommendationKindValue[] }) => {
+export const upsertProposals = async (
+  context: AuthContext,
+  proposals: RecommendationProposal[],
+  settings: SourceIntelligenceSettings,
+  scope: { kinds: RecommendationKindValue[] },
+) => {
   const existing = await loadAllRecommendations(context);
   const byFingerprint = new Map<string, BasicStoreEntitySourceRecommendation>();
   existing

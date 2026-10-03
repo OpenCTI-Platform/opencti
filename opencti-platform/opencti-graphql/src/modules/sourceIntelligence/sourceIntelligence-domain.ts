@@ -265,9 +265,10 @@ export const findSourceOverlap = async (
       });
     });
   });
-  const sources = selected.length > 0
-    ? await maskRestrictedSources(context, user, await internalFindByIds(context, user, selected.map((s) => s.source_id), { type: ENTITY_TYPE_SOURCE }) as unknown as BasicStoreEntitySource[])
+  const selectedSources = selected.length > 0
+    ? await internalFindByIds(context, user, selected.map((s) => s.source_id), { type: ENTITY_TYPE_SOURCE }) as unknown as BasicStoreEntitySource[]
     : [];
+  const sources = selectedSources.length > 0 ? await maskRestrictedSources(context, user, selectedSources) : [];
   const sourcesById = new Map(sources.map((source) => [source.internal_id, source]));
   return {
     period,

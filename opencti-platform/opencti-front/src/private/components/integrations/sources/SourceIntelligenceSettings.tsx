@@ -64,26 +64,26 @@ type NumericFieldDefinition = { name: string; label: string; min: number; max: n
 
 const GENERAL_FIELDS: NumericFieldDefinition[] = [
   { name: 'recompute_hour_utc', label: 'Nightly computation hour (UTC)', min: 0, max: 23, integer: true },
-  { name: 'backfill_days', label: 'History backfill (days)', min: 0, max: 365, integer: true },
-  { name: 'snapshot_retention_days', label: 'Snapshot retention (days)', min: 7, max: 1825, integer: true },
+  { name: 'backfill_days', label: 'History backfill (days)', min: 0, max: 90, integer: true },
+  { name: 'snapshot_retention_days', label: 'Snapshot retention (days)', min: 30, max: 1825, integer: true },
   { name: 'corroboration_min_other_sources', label: 'Other sources needed to corroborate', min: 1, max: 10, integer: true },
   { name: 'max_scan_objects', label: 'Maximum scanned objects per computation', min: 1000, max: 50000000, integer: true },
   { name: 'overlap_top', label: 'Overlapping sources kept per scorecard', min: 1, max: 50, integer: true },
   { name: 'min_author_volume', label: 'Minimum volume of an author source', min: 1, max: 100000, integer: true },
-  { name: 'max_author_sources', label: 'Maximum author sources', min: 0, max: 1000, integer: true },
+  { name: 'max_author_sources', label: 'Maximum author sources', min: 0, max: 5000, integer: true },
   { name: 'min_manual_volume', label: 'Minimum volume of an analyst source', min: 1, max: 100000, integer: true },
-  { name: 'max_manual_sources', label: 'Maximum analyst sources', min: 0, max: 1000, integer: true },
+  { name: 'max_manual_sources', label: 'Maximum analyst sources', min: 0, max: 2000, integer: true },
 ];
 const WEIGHT_FIELDS: NumericFieldDefinition[] = ['uniqueness', 'lead_time', 'accuracy', 'relevance', 'impact', 'noise']
-  .map((key) => ({ name: `value_weights.${key}`, label: `Weight of ${key.replace('_', ' ')}`, min: 0, max: 10, step: 0.1 }));
+  .map((key) => ({ name: `value_weights.${key}`, label: `Weight of ${key.replace('_', ' ')}`, min: 0, max: 1, step: 0.05 }));
 const THRESHOLD_FIELDS: NumericFieldDefinition[] = [
-  { name: 'thresholds.min_volume', label: 'Minimum volume to recommend', min: 1, max: 1000000, integer: true },
+  { name: 'thresholds.min_volume', label: 'Minimum volume to recommend', min: 0, max: 10000000, integer: true },
   { name: 'thresholds.low_accuracy', label: 'Low accuracy', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.quarantine_accuracy', label: 'Quarantine accuracy', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.high_accuracy', label: 'High accuracy', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.raise_confidence_corroboration', label: 'Corroboration to raise confidence', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.high_noise', label: 'High noise', min: 0, max: 1, step: 0.01 },
-  { name: 'thresholds.deny_list_min_false_positives', label: 'False positives for a deny list', min: 1, max: 10000, integer: true },
+  { name: 'thresholds.deny_list_min_false_positives', label: 'False positives for a deny list', min: 1, max: 100000, integer: true },
   { name: 'thresholds.redundant_overlap', label: 'Redundant overlap', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.retire_max_unique_contribution', label: 'Unique contribution to retire', min: 0, max: 1, step: 0.01 },
   { name: 'thresholds.stale_feed_hours', label: 'Stale feed (hours)', min: 1, max: 8760, integer: true },
@@ -93,19 +93,19 @@ const TUNING_FIELDS: NumericFieldDefinition[] = [
   { name: 'tuning.confidence_step', label: 'Confidence step', min: 1, max: 50, integer: true },
   { name: 'tuning.min_confidence', label: 'Minimum confidence', min: 0, max: 100, integer: true },
   { name: 'tuning.noisy_decay_lifetime_days', label: 'Decay lifetime for noisy sources (days)', min: 1, max: 3650, integer: true },
-  { name: 'tuning.deny_list_max_values', label: 'Maximum values in a deny list', min: 1, max: 10000, integer: true },
+  { name: 'tuning.deny_list_max_values', label: 'Maximum values in a deny list', min: 1, max: 100000, integer: true },
   { name: 'tuning.dismiss_cooldown_days', label: 'Cooldown after a dismissal (days)', min: 0, max: 365, integer: true },
-  { name: 'tuning.min_schedule_minutes', label: 'Minimum schedule (minutes)', min: 1, max: 10080, integer: true },
+  { name: 'tuning.min_schedule_minutes', label: 'Minimum schedule (minutes)', min: 5, max: 10080, integer: true },
 ];
 const AUTONOMY_FIELDS: NumericFieldDefinition[] = [
   { name: 'autonomy.max_auto_actions_per_run', label: 'Maximum autonomous actions per computation', min: 0, max: 100, integer: true },
 ];
 const GAP_FIELDS: NumericFieldDefinition[] = [
-  { name: 'gaps.window_days', label: 'Coverage window (days)', min: 1, max: 3650, integer: true },
+  { name: 'gaps.window_days', label: 'Coverage window (days)', min: 7, max: 365, integer: true },
   { name: 'gaps.recent_days', label: 'Recent knowledge (days)', min: 1, max: 365, integer: true },
   { name: 'gaps.target_relationships', label: 'Target recent relationships', min: 1, max: 100000, integer: true },
-  { name: 'gaps.target_sources', label: 'Target distinct sources', min: 1, max: 100, integer: true },
-  { name: 'gaps.max_recommendations', label: 'Recommended integrations per gap', min: 0, max: 20, integer: true },
+  { name: 'gaps.target_sources', label: 'Target distinct sources', min: 1, max: 50, integer: true },
+  { name: 'gaps.max_recommendations', label: 'Recommended integrations per gap', min: 1, max: 20, integer: true },
 ];
 const ALL_NUMERIC_FIELDS = [...GENERAL_FIELDS, ...WEIGHT_FIELDS, ...THRESHOLD_FIELDS, ...TUNING_FIELDS, ...AUTONOMY_FIELDS, ...GAP_FIELDS];
 
