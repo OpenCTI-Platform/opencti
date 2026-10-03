@@ -7,6 +7,7 @@ import {
   COUNTER_FIELDS,
   flagExpiredDeployments,
   reconcileAllIndicatorDeploymentCounters,
+  reconcileDeployedIndicatorCounters,
   reconcileIndicatorDeploymentCounters,
   refreshIndicatorDeploymentCounters,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
@@ -371,6 +372,27 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(indicator.data?.indicator.deployments_count).toEqual(1);
     expect(indicator.data?.indicator.deployment_expired_count).toEqual(1);
     expect(indicator.data?.indicator.deployment_platforms_count).toEqual(0);
+  });
+
+  it('should reconcile zero counters of a deployed indicator from its relationships', async () => {
+    const fullScan = async () => {
+      let pass = await reconcileDeployedIndicatorCounters(testContext, 1000);
+      let updated = pass.updated;
+      while (!pass.done) {
+        pass = await reconcileDeployedIndicatorCounters(testContext, 1000);
+        updated += pass.updated;
+      }
+      return updated;
+    };
+    // The rolling scan resumes from its saved cursor: finish the current pass so the next one starts at the beginning
+    await fullScan();
+    const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+    const zeroAll = COUNTER_FIELDS.map((field) => `ctx._source.${field} = 0;`).join(' ');
+    await elUpdate(testContext, stored._index, indicatorId, setCounterScript(zeroAll));
+    expect(await fullScan()).toBeGreaterThanOrEqual(1);
+    const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });
+    expect(indicator.data?.indicator.deployments_count).toEqual(1);
+    expect(indicator.data?.indicator.deployment_expired_count).toEqual(1);
   });
 
   it('should reconcile stale counters, as after a security platform deletion cascading to its deployments', async () => {

@@ -3,7 +3,15 @@ import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreRelation } from '../../types/store';
 import { createRelation, distributionRelations, patchAttribute } from '../../database/middleware';
-import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, topRelationsList } from '../../database/middleware-loader';
+import {
+  fullEntitiesList,
+  fullRelationsList,
+  internalLoadById,
+  pageEntitiesConnection,
+  pageRelationsConnection,
+  storeLoadById,
+  topRelationsList,
+} from '../../database/middleware-loader';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elRawUpdateByQuery, elUpdate } from '../../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
@@ -450,8 +458,18 @@ export const retryIndicatorDeployment = async (context: AuthContext, user: AuthU
  */
 export const removeIndicatorDeployment = async (context: AuthContext, user: AuthUser, id: string) => {
   const relation = await loadDeployedOnById(context, user, id);
-  const { element } = await patchAttribute(context, user, relation.internal_id, RELATION_DEPLOYED_ON, { revoked: true });
-  return notifyRelationEdit(user, element);
+  // Same pair lock as a retry and the connector reports: a concurrent retry never undoes the withdrawal.
+  const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
+  try {
+    const current = await loadDeployedOnById(context, user, id);
+    if (current.revoked === true) {
+      return current;
+    }
+    const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, { revoked: true });
+    return await notifyRelationEdit(user, element);
+  } finally {
+    await lock.unlock();
+  }
 };
 // endregion
 
@@ -744,6 +762,29 @@ export const reconcileIndicatorDeploymentCounters = async (context: AuthContext,
   const done = !page.pageInfo.hasNextPage || !page.pageInfo.endCursor;
   await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
   return { checked: ids.length, updated, done };
+};
+
+const DEPLOYED_RECONCILIATION_CURSOR_STATE = 'indicator_deployment_deployed_reconciliation';
+
+/**
+ * Rolling reconciliation driven by the deployed-on relationships, one page per call: the counters of an
+ * indicator can be at their default 0 while deployments exist (relationships written while the manager was
+ * stopped or before its first start, outside the stream it resumes), and the scan above never selects an
+ * indicator without a positive counter. Only mismatching counters are written.
+ * @returns the number of relationships checked, the counters updated and whether the scan reached the end.
+ */
+export const reconcileDeployedIndicatorCounters = async (context: AuthContext, batchSize: number) => {
+  const after = (await redisGetManagerEventState(DEPLOYED_RECONCILIATION_CURSOR_STATE)) || undefined;
+  const page = await pageRelationsConnection<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
+    first: batchSize,
+    after,
+    orderBy: 'internal_id',
+    orderMode: 'asc',
+  } as never);
+  const updated = await refreshIndicatorDeploymentCounters(context, page.edges.map((edge) => edge.node.fromId));
+  const done = !page.pageInfo.hasNextPage || !page.pageInfo.endCursor;
+  await redisSetManagerEventState(DEPLOYED_RECONCILIATION_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
+  return { checked: page.edges.length, updated, done };
 };
 
 /** Full reconciliation pass, from the beginning, bounded by maxPages (after a Security Platform deletion). */
