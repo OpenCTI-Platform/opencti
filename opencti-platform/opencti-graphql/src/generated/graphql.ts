@@ -25646,8 +25646,8 @@ export type Query = {
   container?: Maybe<Container>;
   containerTimeline?: Maybe<TimelineEventConnection>;
   containerTimelineExport?: Maybe<Scalars['String']['output']>;
-  /** Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events */
-  containerTimelineExportFileMarkings: Array<MarkingDefinition>;
+  /** Timeline export stored as a file: the content and the file markings covering it, computed from the same events */
+  containerTimelineExportFile?: Maybe<TimelineExportFile>;
   containerTimelineSummary?: Maybe<TimelineSummary>;
   containers?: Maybe<ContainerConnection>;
   containersAskAiSummary?: Maybe<AiSummary>;
@@ -26417,13 +26417,15 @@ export type QueryContainerTimelineExportArgs = {
 };
 
 
-export type QueryContainerTimelineExportFileMarkingsArgs = {
+export type QueryContainerTimelineExportFileArgs = {
   contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  format: TimelineExportFormat;
   from?: InputMaybe<Scalars['DateTime']['input']>;
   id: Scalars['String']['input'];
   includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
   kinds?: InputMaybe<Array<TimelineEventKind>>;
+  labels?: InputMaybe<Array<TimelineExportLabelInput>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
   pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
@@ -37638,6 +37640,13 @@ export enum TimelineEventSource {
   Manual = 'manual'
 }
 
+export type TimelineExportFile = {
+  __typename?: 'TimelineExportFile';
+  content: Scalars['String']['output'];
+  /** Never weaker than the markings of the exported events and of the elements they reference (highest marking per definition type) */
+  file_markings: Array<MarkingDefinition>;
+};
+
 export enum TimelineExportFormat {
   Csv = 'csv',
   Html = 'html',
@@ -43207,6 +43216,7 @@ export type ResolversTypes = ResolversObject<{
   TimelineEventEditInput: TimelineEventEditInput;
   TimelineEventKind: TimelineEventKind;
   TimelineEventSource: TimelineEventSource;
+  TimelineExportFile: ResolverTypeWrapper<Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversTypes['MarkingDefinition']> }>;
   TimelineExportFormat: TimelineExportFormat;
   TimelineExportLabelInput: TimelineExportLabelInput;
   TimelineGrouping: TimelineGrouping;
@@ -44277,6 +44287,7 @@ export type ResolversParentTypes = ResolversObject<{
   TimelineEventConnection: Omit<TimelineEventConnection, 'edges'> & { edges: Array<ResolversParentTypes['TimelineEventEdge']> };
   TimelineEventEdge: Omit<TimelineEventEdge, 'node'> & { node: ResolversParentTypes['TimelineEvent'] };
   TimelineEventEditInput: TimelineEventEditInput;
+  TimelineExportFile: Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversParentTypes['MarkingDefinition']> };
   TimelineExportLabelInput: TimelineExportLabelInput;
   TimelineKindDistribution: TimelineKindDistribution;
   TimelineLaneDistribution: TimelineLaneDistribution;
@@ -52906,7 +52917,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containerTimeline?: Resolver<Maybe<ResolversTypes['TimelineEventConnection']>, ParentType, ContextType, RequireFields<QueryContainerTimelineArgs, 'id'>>;
   containerTimelineExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportArgs, 'format' | 'id'>>;
-  containerTimelineExportFileMarkings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportFileMarkingsArgs, 'id'>>;
+  containerTimelineExportFile?: Resolver<Maybe<ResolversTypes['TimelineExportFile']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportFileArgs, 'format' | 'id'>>;
   containerTimelineSummary?: Resolver<Maybe<ResolversTypes['TimelineSummary']>, ParentType, ContextType, RequireFields<QueryContainerTimelineSummaryArgs, 'id'>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
   containersAskAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAskAiSummaryArgs>>;
@@ -56164,6 +56175,11 @@ export type TimelineEventEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['TimelineEvent'], ParentType, ContextType>;
 }>;
 
+export type TimelineExportFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineExportFile'] = ResolversParentTypes['TimelineExportFile']> = ResolversObject<{
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  file_markings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
+}>;
+
 export type TimelineKindDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineKindDistribution'] = ResolversParentTypes['TimelineKindDistribution']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['TimelineEventKind'], ParentType, ContextType>;
@@ -58201,6 +58217,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TimelineEvent?: TimelineEventResolvers<ContextType>;
   TimelineEventConnection?: TimelineEventConnectionResolvers<ContextType>;
   TimelineEventEdge?: TimelineEventEdgeResolvers<ContextType>;
+  TimelineExportFile?: TimelineExportFileResolvers<ContextType>;
   TimelineKindDistribution?: TimelineKindDistributionResolvers<ContextType>;
   TimelineLaneDistribution?: TimelineLaneDistributionResolvers<ContextType>;
   TimelineRegenerationResult?: TimelineRegenerationResultResolvers<ContextType>;

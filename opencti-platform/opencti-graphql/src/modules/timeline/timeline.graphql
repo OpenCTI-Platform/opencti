@@ -257,6 +257,12 @@ input TimelineExportLabelInput {
   label: String! @constraint(maxLength: 256)
 }
 
+type TimelineExportFile {
+  content: String!
+  "Never weaker than the markings of the exported events and of the elements they reference (highest marking per definition type)"
+  file_markings: [MarkingDefinition!]!
+}
+
 input TimelineSettingsInput {
   enabled_lanes: [TimelineLane!]
   default_grouping: TimelineGrouping
@@ -356,9 +362,10 @@ type Query {
     "Content ceiling: events marked above these markings (or above the max shareable markings of the user) are left out"
     contentMaxMarkings: [String!]
   ): String @auth(for: [KNOWLEDGE])
-  "Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events"
-  containerTimelineExportFileMarkings(
+  "Timeline export stored as a file: the content and the file markings covering it, computed from the same events"
+  containerTimelineExportFile(
     id: String!
+    format: TimelineExportFormat!
     from: DateTime
     to: DateTime
     lanes: [TimelineLane!]
@@ -368,9 +375,11 @@ type Query {
     search: String
     includeHidden: Boolean
     pinnedOnly: Boolean
+    labels: [TimelineExportLabelInput!]
     contentMaxMarkings: [String!]
+    "Markings selected for the file, raised to cover the markings of the exported events and of the elements they reference"
     fileMarkings: [String!]
-  ): [MarkingDefinition!]! @auth(for: [KNOWLEDGE])
+  ): TimelineExportFile @auth(for: [KNOWLEDGE])
   timelineEvent(id: String!): TimelineEvent @auth(for: [KNOWLEDGE])
   timelineAnchors(containerId: String!): TimelineAnchors @auth(for: [KNOWLEDGE])
   timelineRules: [TimelineRuleDefinition!]! @auth(for: [KNOWLEDGE])

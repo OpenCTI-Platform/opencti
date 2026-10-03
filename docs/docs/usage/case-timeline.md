@@ -70,7 +70,7 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 | Containment | First containment milestone, or completion of a task labelled containment |
 | Closure | Last transition to the final workflow status, while the case stays closed |
 
-Hidden events never move an anchor. Click an anchor to center the timeline on it.
+Hidden events never move an anchor. Every reader of the case sees the same anchors, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves an anchor. Click an anchor to center the timeline on it.
 
 The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last computation) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
 
@@ -122,8 +122,8 @@ The CSV contains one line per event with its time, end time, lane, kind, precisi
 What an export contains and how it is marked:
 
 - An export only contains the events the exporting user can see, and leaves out the events marked above the user's max shareable markings, like every export of the platform.
-- In the export menu of the container, the **Content max marking definitions** field sets a ceiling: the events marked above it are left out of the file.
-- A file stored in the entity is never marked less strictly than the events it contains: when the selected file markings are weaker than the markings of the exported events, the platform raises them (highest marking per marking type) and the confirmation message names the markings added.
+- In the export menu of the container, the **Content max marking definitions** field sets a ceiling: the events marked above it, and the events about an element marked above it, are left out of the file.
+- A file stored in the entity is never marked less strictly than what it contains: when the selected file markings are weaker than the markings of the exported events or of the elements they refer to, the platform raises them (highest marking per marking type) and the confirmation message names the markings added. The content of the file and its markings are computed together from the same events.
 
 ## Dashboards and custom views
 
@@ -151,7 +151,7 @@ The trigger filters apply to the incident or case, and only users who can access
 ## Exchange and API
 
 - **STIX**: the analyst contributions (milestones, pins, hidden flags, annotations) travel with the container in the `extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb` extension. Derived events are not exported: the receiving platform computes them from its own knowledge, and imports the contributions idempotently.
-- **GraphQL API**: `containerTimeline`, `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFileMarkings` (the markings a stored export must carry), `timelineEvent`, `timelineAnchors`, the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, and the subscription `containerTimelineUpdated`.
+- **GraphQL API**: `containerTimeline`, `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFile` (the content of a stored export together with the markings the file must carry), `timelineEvent`, `timelineAnchors`, the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, and the subscription `containerTimelineUpdated`.
 - **Python client (pycti)**: `OpenCTIApiClient.timeline_event` with `create`, `update`, `delete`, `list`, `read`, `pin`, `hide`, `anchors` and `regenerate`, so that connectors and incident importers can push milestones.
 
 ## Large cases

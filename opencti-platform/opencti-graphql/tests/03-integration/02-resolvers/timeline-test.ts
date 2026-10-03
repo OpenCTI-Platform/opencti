@@ -173,9 +173,12 @@ const CONTAINER_TIMELINE_EXPORT = gql`
     )
   }
 `;
-const CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS = gql`
-  query ContainerTimelineExportFileMarkings($id: String!, $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
-    containerTimelineExportFileMarkings(id: $id, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) { id standard_id }
+const CONTAINER_TIMELINE_EXPORT_FILE = gql`
+  query ContainerTimelineExportFile($id: String!, $format: TimelineExportFormat!, $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
+    containerTimelineExportFile(id: $id, format: $format, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) {
+      content
+      file_markings { id standard_id }
+    }
   }
 `;
 const TIMELINE_VIEWED = gql`
@@ -493,6 +496,18 @@ describe('Incident and case timeline', () => {
       expect(iso(anchors.data.timelineAnchors.containment)).toEqual(CONTAINMENT_TIME);
     });
 
+    it('should not move the anchors with events marked more strictly than the container', async () => {
+      const restricted = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-03T08:00:00.000Z', title: 'Amber containment', kind: 'containment', lane: 'response', objectMarking: [MARKING_TLP_AMBER] } },
+      });
+      // Every reader of the case gets the same anchors: an earlier containment only TLP:AMBER readers can see is left out
+      const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
+      expect(iso(anchors.data.timelineAnchors.containment)).toEqual(CONTAINMENT_TIME);
+      expect(iso(anchors.data.timelineAnchors.first_response)).toEqual('2026-02-04T12:00:00.000Z');
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: restricted.data.timelineEventAdd.id } });
+    });
+
     it('should be idempotent on the external id of a manual event', async () => {
       const input = { container_id: caseIncident.id, event_time: '2026-02-05T12:00:00.000Z', title: 'Regulator notified', kind: 'notification', external_id: 'splunk-alert-42', createdBy: TEST_ORGANIZATION.id };
       const first = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input } });
@@ -659,16 +674,26 @@ describe('Incident and case timeline', () => {
     it('should mark a stored export at least as strictly as the events it contains', async () => {
       const green = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_GREEN } });
       const greenId = green.data.markingDefinition.id;
-      const raised = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS, variables: { id: caseIncident.id, fileMarkings: [greenId] } });
-      const raisedIds = raised.data.containerTimelineExportFileMarkings.map((marking: { standard_id: string }) => marking.standard_id);
+      const markingIdsOf = (file: { file_markings: { standard_id: string }[] }) => file.file_markings.map((marking) => marking.standard_id);
+      const raised = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT_FILE, variables: { id: caseIncident.id, format: 'csv', fileMarkings: [greenId] } });
+      // The content and its markings come from the same events: the amber indicator is in the file, marked TLP:AMBER
+      expect(raised.data.containerTimelineExportFile.content).toContain('Timeline amber indicator');
       // TLP:AMBER (amber indicator events) replaces the weaker TLP:GREEN selected for the file
-      expect(raisedIds).toContain(MARKING_TLP_AMBER);
-      expect(raisedIds).not.toContain(MARKING_TLP_GREEN);
+      expect(markingIdsOf(raised.data.containerTimelineExportFile)).toContain(MARKING_TLP_AMBER);
+      expect(markingIdsOf(raised.data.containerTimelineExportFile)).not.toContain(MARKING_TLP_GREEN);
       const ceiled = await queryAsPlatformAdminWithSuccess({
-        query: CONTAINER_TIMELINE_EXPORT_FILE_MARKINGS,
-        variables: { id: caseIncident.id, contentMaxMarkings: [greenId], fileMarkings: [greenId] },
+        query: CONTAINER_TIMELINE_EXPORT_FILE,
+        variables: { id: caseIncident.id, format: 'csv', contentMaxMarkings: [greenId], fileMarkings: [greenId] },
       });
-      expect(ceiled.data.containerTimelineExportFileMarkings.map((marking: { standard_id: string }) => marking.standard_id)).toEqual([MARKING_TLP_GREEN]);
+      expect(ceiled.data.containerTimelineExportFile.content).not.toContain('Timeline amber indicator');
+      expect(markingIdsOf(ceiled.data.containerTimelineExportFile)).toEqual([MARKING_TLP_GREEN]);
+    });
+
+    it('should name the referenced elements in the exports', async () => {
+      const csv = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
+      const rows = (csv.data.containerTimelineExport as string).split('\r\n').filter((row) => row.length > 0);
+      // The element and element_type columns carry the name and the type of the attack pattern, never an identifier
+      expect(rows.some((row) => row.includes(',Timeline spearphishing,Attack-Pattern,'))).toBe(true);
     });
 
     it('should only mark as editable the manual events of users who can update the container', async () => {

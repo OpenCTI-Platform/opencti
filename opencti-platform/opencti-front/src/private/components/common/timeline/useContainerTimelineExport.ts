@@ -3,8 +3,8 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
-import { containerTimelineExportFileMarkingsQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
-import type { ContainerTimelineMutationsExportFileMarkingsQuery } from './__generated__/ContainerTimelineMutationsExportFileMarkingsQuery.graphql';
+import { containerTimelineExportFileQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
+import type { ContainerTimelineMutationsExportFileQuery } from './__generated__/ContainerTimelineMutationsExportFileQuery.graphql';
 import type {
   ContainerTimelineMutationsExportQuery,
   ContainerTimelineMutationsExportQuery$variables,
@@ -72,6 +72,31 @@ const svgToPngBlob = (svg: string, width: number, height: number): Promise<Blob>
   image.src = url;
 });
 
+type TimelineServerFormat = ContainerTimelineMutationsExportQuery$variables['format'];
+
+// PDF and PNG files are produced in the browser from the HTML and SVG rendered by the server
+const serverFormatOf = (format: TimelineExportFormat): TimelineServerFormat => {
+  if (format === 'csv') return 'csv';
+  if (format === 'pdf') return 'html';
+  return 'svg';
+};
+
+const serverContentToBlob = async (format: TimelineExportFormat, content: string): Promise<Blob> => {
+  if (format === 'csv') {
+    return new Blob([content], { type: `${TIMELINE_EXPORT_MIME_TYPES.csv};charset=utf-8` });
+  }
+  if (format === 'pdf') {
+    // Built-in HTML to PDF export, the timeline being rendered server side as an SVG in the HTML
+    return htmlToPdf('timeline', fitSvgToWidth(content, MAX_WIDTH_PORTRAIT)).getBlob();
+  }
+  if (format === 'svg') {
+    return new Blob([content], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });
+  }
+  const match = content.match(/width="(\d+)" height="(\d+)"/);
+  const size = match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 1200, height: 400 };
+  return svgToPngBlob(content, size.width, size.height);
+};
+
 /** Filters of the exported events, the whole timeline when none is given. */
 export interface TimelineExportFilters {
   lanes?: readonly string[] | null;
@@ -119,7 +144,7 @@ export const useTimelineFileRenderer = () => {
     { key: 'column.annotation', label: t_i18n('Annotation') },
   ];
 
-  const fetchServerExport = async (options: TimelineFileOptions, format: 'csv' | 'svg' | 'html') => {
+  const fetchServerExport = async (options: TimelineFileOptions, format: TimelineServerFormat) => {
     const variables: ContainerTimelineMutationsExportQuery$variables = {
       id: options.containerId,
       format,
@@ -140,47 +165,48 @@ export const useTimelineFileRenderer = () => {
 
   const renderTimelineFile = async (options: TimelineFileOptions): Promise<Blob> => {
     const { format, svgElement } = options;
-    if (format === 'csv') {
-      const csv = await fetchServerExport(options, 'csv');
-      return new Blob([csv], { type: `${TIMELINE_EXPORT_MIME_TYPES.csv};charset=utf-8` });
+    // The rendered lanes chart is exported as is for SVG and PNG
+    if (svgElement && (format === 'svg' || format === 'png')) {
+      const svg = serializeSvgElement(svgElement);
+      if (format === 'svg') {
+        return new Blob([svg], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });
+      }
+      return svgToPngBlob(svg, Number(svgElement.getAttribute('width')), Number(svgElement.getAttribute('height')));
     }
-    if (format === 'pdf') {
-      // Built-in HTML to PDF export, the timeline being rendered server side as an SVG in the HTML
-      const html = fitSvgToWidth(await fetchServerExport(options, 'html'), MAX_WIDTH_PORTRAIT);
-      return htmlToPdf('timeline', html).getBlob();
-    }
-    let svg = svgElement ? serializeSvgElement(svgElement) : null;
-    let size = svgElement ? { width: Number(svgElement.getAttribute('width')), height: Number(svgElement.getAttribute('height')) } : null;
-    if (!svg || !size) {
-      svg = await fetchServerExport(options, 'svg');
-      const match = svg.match(/width="(\d+)" height="(\d+)"/);
-      size = match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 1200, height: 400 };
-    }
-    if (format === 'svg') {
-      return new Blob([svg], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });
-    }
-    return svgToPngBlob(svg, size.width, size.height);
+    return serverContentToBlob(format, await fetchServerExport(options, serverFormatOf(format)));
   };
 
   /**
-   * Markings of an export stored as a file: the selected ones, raised by the platform to cover the markings of the
-   * exported events (a file is never marked less strictly than its content). `raised` names the markings added.
+   * Export stored as a file of the container. The content and its markings come from the same events on the server:
+   * the selected markings are raised to cover the exported events and the elements they reference (a file is never
+   * marked less strictly than its content). `raised` names the markings added.
    */
-  const resolveFileMarkings = async (containerId: string, contentMaxMarkings: string[], fileMarkings: string[]) => {
-    const result = await fetchQuery<ContainerTimelineMutationsExportFileMarkingsQuery>(
-      containerTimelineExportFileMarkingsQuery,
-      { id: containerId, contentMaxMarkings: contentMaxMarkings.length > 0 ? contentMaxMarkings : null, fileMarkings },
+  const renderStoredTimelineFile = async (containerId: string, format: TimelineExportFormat, contentMaxMarkings: string[], fileMarkings: string[]) => {
+    const serverFormat = serverFormatOf(format);
+    const result = await fetchQuery<ContainerTimelineMutationsExportFileQuery>(
+      containerTimelineExportFileQuery,
+      {
+        id: containerId,
+        format: serverFormat,
+        labels: serverFormat === 'csv' ? null : labels(),
+        contentMaxMarkings: contentMaxMarkings.length > 0 ? contentMaxMarkings : null,
+        fileMarkings,
+      },
       { fetchPolicy: 'network-only' },
     ).toPromise();
-    if (!result) throw new Error('Unable to resolve the markings of the timeline export');
-    const markings = result.containerTimelineExportFileMarkings;
+    const exported = result?.containerTimelineExportFile;
+    if (!exported) throw new Error('Unable to export the timeline');
+    const markings = exported.file_markings;
     return {
-      ids: markings.map((marking) => marking.id),
-      raised: markings.filter((marking) => !fileMarkings.includes(marking.id)).map((marking) => marking.definition ?? marking.id),
+      blob: await serverContentToBlob(format, exported.content),
+      fileMarkings: {
+        ids: markings.map((marking) => marking.id),
+        raised: markings.filter((marking) => !fileMarkings.includes(marking.id)).map((marking) => marking.definition ?? marking.id),
+      },
     };
   };
 
-  return { renderTimelineFile, resolveFileMarkings };
+  return { renderTimelineFile, renderStoredTimelineFile };
 };
 
 /** Maps an export format of the container export dialog to the timeline format producing it. */

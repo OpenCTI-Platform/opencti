@@ -12,6 +12,7 @@ import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphq
 import type {
   QueryContainerTimelineArgs,
   QueryContainerTimelineExportArgs,
+  QueryContainerTimelineExportFileArgs,
   TimelineEventAddInput,
   TimelineEventEditInput,
   TimelineEventKind,
@@ -221,10 +222,11 @@ const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | 
   containerId: string,
   items: T[],
   getEvent: (item: T) => StoredTimelineEvent,
+  opts: { fullElements?: boolean } = {},
 ): Promise<{ items: T[]; elements: Record<string, AnyStoreElement> }> => {
   const elementIds = Array.from(new Set(items.map((item) => getEvent(item).element_id).filter((id): id is string => !!id && id !== containerId)));
   const elements = elementIds.length > 0
-    ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: !opts.fullElements }) as unknown as Record<string, AnyStoreElement>
     : {};
   const filtered = items.filter((item) => {
     const elementId = getEvent(item).element_id;
@@ -377,14 +379,23 @@ export const listTimelineRules = (): TimelineRuleDefinition[] => {
 // region exports
 interface TimelineExportArgs extends TimelineFilterArgs {
   id: string;
+  format: QueryContainerTimelineExportArgs['format'];
+  labels?: QueryContainerTimelineExportArgs['labels'];
   contentMaxMarkings?: string[] | null;
+}
+
+interface TimelineExportSnapshot {
+  container: AnyStoreElement;
+  items: StoredTimelineEvent[];
+  elements: Record<string, AnyStoreElement>;
 }
 
 /**
  * The events an export contains: the events the user can see, within the content ceiling he selected and his max
- * shareable markings (same rule as every export of the platform).
+ * shareable markings (same rule as every export of the platform). The ceiling also applies to the elements the events
+ * reference, which can be marked more strictly than the events themselves.
  */
-const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, args: TimelineExportArgs) => {
+const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, args: TimelineExportArgs): Promise<TimelineExportSnapshot> => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const contentMaxMarkings = args.contentMaxMarkings ?? [];
   if (contentMaxMarkings.length > 0) {
@@ -397,32 +408,26 @@ const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, 
   const markingList = await getEntitiesListFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   const { markingFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [] });
   const baseFilters = buildTimelineFilters(container.internal_id, args);
-  const ceilingFilters = (markingFilter.filters as { key: string | string[] }[]).map((filter) => ({ ...filter, key: Array.isArray(filter.key) ? filter.key : [filter.key] }));
+  const ceilingFilters = (markingFilter.filters as { key: string | string[]; values?: string[] }[])
+    .map((filter) => ({ ...filter, key: Array.isArray(filter.key) ? filter.key : [filter.key] }));
+  const markingsAboveCeiling = new Set(ceilingFilters.flatMap((filter) => filter.values ?? []));
   const events = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: { ...baseFilters, filters: [...baseFilters.filters, ...ceilingFilters] } as any,
     orderBy: ['event_time', 'ordering_hint'],
     orderMode: OrderingMode.Asc,
-    maxSize: TIMELINE_MAX_EVENTS,
+    // Derived events and analyst milestones have separate caps: an export carries every retained event
+    maxSize: TIMELINE_MAX_EVENTS + TIMELINE_MAX_MANUAL_EVENTS,
   } as any);
-  const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e);
-  return { container, items, elements };
+  const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
+  const withinCeiling = items.filter((event) => {
+    const element = event.element_id ? elements[event.element_id] : undefined;
+    return !element || markingsOf(element).every((markingId) => !markingsAboveCeiling.has(markingId));
+  });
+  return { container, items: withinCeiling, elements };
 };
 
-/** A stored export is never marked less strictly than the events it contains (highest marking per definition type). */
-export const findTimelineExportFileMarkings = async (
-  context: AuthContext,
-  user: AuthUser,
-  args: TimelineExportArgs & { fileMarkings?: string[] | null },
-) => {
-  const { items } = await loadExportedTimelineEvents(context, user, args);
-  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
-  validateMarkings(user, selected);
-  const required = items.flatMap((event) => markingsOf(event));
-  return cleanMarkings(context, Array.from(new Set([...selected, ...required])));
-};
-
-export const exportContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportArgs) => {
-  const { container, items, elements } = await loadExportedTimelineEvents(context, user, args);
+const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineExportArgs): string => {
+  const { container, items, elements } = snapshot;
   const exportEvents: TimelineExportEvent[] = items.map((event) => {
     const element = event.element_id && event.element_id !== container.internal_id ? elements[event.element_id] : null;
     return {
@@ -451,7 +456,6 @@ export const exportContainerTimeline = async (context: AuthContext, user: AuthUs
     generatedAt: now(),
     labels,
   };
-  addTimelineExportCount();
   switch (args.format) {
     case 'csv':
       return renderTimelineCsv(exportInput);
@@ -462,6 +466,31 @@ export const exportContainerTimeline = async (context: AuthContext, user: AuthUs
     default:
       throw UnsupportedError('Unsupported timeline export format', { format: args.format });
   }
+};
+
+export const exportContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportArgs) => {
+  const snapshot = await loadExportedTimelineEvents(context, user, args);
+  const content = renderTimelineExport(snapshot, args);
+  addTimelineExportCount();
+  return content;
+};
+
+/**
+ * A stored export and its markings come from the same events: the file is never marked less strictly than the events
+ * it contains nor than the elements they reference (highest marking per definition type).
+ */
+export const exportContainerTimelineFile = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportFileArgs) => {
+  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
+  validateMarkings(user, selected);
+  const snapshot = await loadExportedTimelineEvents(context, user, args);
+  const content = renderTimelineExport(snapshot, args);
+  const required = snapshot.items.flatMap((event) => {
+    const element = event.element_id ? snapshot.elements[event.element_id] : undefined;
+    return element ? [...markingsOf(event), ...markingsOf(element)] : markingsOf(event);
+  });
+  const fileMarkings = await cleanMarkings(context, Array.from(new Set([...selected, ...required])));
+  addTimelineExportCount();
+  return { content, file_markings: fileMarkings };
 };
 // endregion
 

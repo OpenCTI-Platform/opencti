@@ -142,19 +142,26 @@ export const containerTimelineExportQuery = graphql`
   }
 `;
 
-export const containerTimelineExportFileMarkingsQuery = graphql`
-  query ContainerTimelineMutationsExportFileMarkingsQuery(
+export const containerTimelineExportFileQuery = graphql`
+  query ContainerTimelineMutationsExportFileQuery(
     $id: String!
+    $format: TimelineExportFormat!
+    $labels: [TimelineExportLabelInput!]
     $contentMaxMarkings: [String!]
     $fileMarkings: [String!]
   ) {
-    containerTimelineExportFileMarkings(
+    containerTimelineExportFile(
       id: $id
+      format: $format
+      labels: $labels
       contentMaxMarkings: $contentMaxMarkings
       fileMarkings: $fileMarkings
     ) {
-      id
-      definition
+      content
+      file_markings {
+        id
+        definition
+      }
     }
   }
 `;

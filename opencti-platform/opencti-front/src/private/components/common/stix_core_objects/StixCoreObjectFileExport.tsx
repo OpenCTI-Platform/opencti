@@ -187,7 +187,7 @@ const StixCoreObjectFileExportComponent = ({
     setAskAiOpen(false);
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { renderTimelineFile, resolveFileMarkings } = useTimelineFileRenderer();
+  const { renderStoredTimelineFile } = useTimelineFileRenderer();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
 
   const {
@@ -504,8 +504,8 @@ const StixCoreObjectFileExportComponent = ({
     }
     try {
       const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
-      const blob = await renderTimelineFile({ containerId: scoId, format, contentMaxMarkings });
-      const fileMarkings = await resolveFileMarkings(scoId, contentMaxMarkings, values.fileMarkings.map(({ value }) => value));
+      const selectedFileMarkings = values.fileMarkings.map(({ value }) => value);
+      const { blob, fileMarkings } = await renderStoredTimelineFile(scoId, format, contentMaxMarkings, selectedFileMarkings);
       const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
       commitUploadFile({
         variables: { id: scoId, file, fileMarkings: fileMarkings.ids, noTriggerImport: true },

@@ -45,6 +45,17 @@ export const TIMELINE_MAX_OBJECTS = conf.get('timeline_manager:max_objects') ?? 
 const TIMELINE_MAX_HISTORY = conf.get('timeline_manager:max_history_entries') ?? 5000;
 const TIMELINE_MAX_RELATED = conf.get('timeline_manager:max_related_elements') ?? 1000;
 
+/** Truncation of one derivation input: every bounded read asks for one item more than its bound to know it was reached. */
+interface TimelineReadBounds {
+  truncated: boolean;
+}
+
+export const capTimelineRead = <T>(bounds: TimelineReadBounds, items: T[], max: number): T[] => {
+  if (items.length <= max) return items;
+  bounds.truncated = true;
+  return items.slice(0, max);
+};
+
 // Types owned by other modules, consumed only when they are registered on the platform (soft checks).
 export const SOFT_TYPE_HUNT = 'Hunt';
 export const SOFT_TYPE_HUNT_RUN = 'Hunt-Run';
@@ -173,25 +184,44 @@ const toFiles = (container: AnyStoreElement): TimelineFileData[] => {
   }));
 };
 
-const findHistory = async (context: AuthContext, filters: any, maxSize: number) => {
+const findHistory = async (context: AuthContext, bounds: TimelineReadBounds, filters: any, maxSize: number) => {
   const logs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
     indices: [READ_INDEX_HISTORY],
     filters,
     noFiltersChecking: true,
     orderBy: ['timestamp'],
     orderMode: OrderingMode.Asc,
-    maxSize,
+    maxSize: maxSize + 1,
   } as any);
-  return logs.map((log) => toTimelineHistoryEntry(log as AnyStoreElement));
+  return capTimelineRead(bounds, logs, maxSize).map((log) => toTimelineHistoryEntry(log as AnyStoreElement));
 };
 
-const findContainersReferencing = async <T extends BasicStoreEntity>(context: AuthContext, types: string[], ids: string[], maxSize: number) => {
+const findBoundedEntities = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  bounds: TimelineReadBounds,
+  types: string[],
+  filters: any,
+  maxSize: number,
+): Promise<T[]> => {
+  const items = await fullEntitiesList<T>(context, SYSTEM_USER, types, { filters, noFiltersChecking: true, maxSize: maxSize + 1 } as any);
+  return capTimelineRead(bounds, items, maxSize);
+};
+
+const findBoundedRelations = async (
+  context: AuthContext,
+  bounds: TimelineReadBounds,
+  types: string | string[],
+  args: Record<string, unknown>,
+  maxSize: number,
+): Promise<BasicStoreRelation[]> => {
+  const items = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, types, { ...args, maxSize: maxSize + 1 } as any);
+  return capTimelineRead(bounds, items, maxSize);
+};
+
+const findContainersReferencing = async <T extends BasicStoreEntity>(context: AuthContext, bounds: TimelineReadBounds, types: string[], ids: string[], maxSize: number) => {
   if (ids.length === 0) return [];
-  return fullEntitiesList<T>(context, SYSTEM_USER, types, {
-    filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: ids }], filterGroups: [] },
-    noFiltersChecking: true,
-    maxSize,
-  } as any);
+  const filters = { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: ids }], filterGroups: [] };
+  return findBoundedEntities<T>(context, bounds, types, filters, maxSize);
 };
 
 const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineStatusData>> => {
@@ -224,28 +254,24 @@ export const isContainerClosed = async (context: AuthContext, container: AnyStor
 
 const loadSoftSources = async (
   context: AuthContext,
+  bounds: TimelineReadBounds,
   container: AnyStoreElement,
   entities: TimelineElementData[],
 ): Promise<TimelineSoftSources> => {
   const soft: TimelineSoftSources = { coverageResults: [], coverageRelationships: [], huntRuns: [], deployments: [], investigationRuns: [] };
   const containerId = container.internal_id;
+  const toElement = (element: BasicStoreBase) => toTimelineElement(element as AnyStoreElement);
   // Security coverage (OpenAEV): coverages targeting the container, their results and covered techniques
   if (isTimelineSoftTypeAvailable(ENTITY_TYPE_SECURITY_COVERAGE) && isTimelineSoftTypeAvailable(ENTITY_TYPE_SECURITY_COVERAGE_RESULT)) {
-    const coverages = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_SECURITY_COVERAGE], {
-      filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_COVERED)], values: [containerId] }], filterGroups: [] },
-      noFiltersChecking: true,
-      maxSize: TIMELINE_MAX_RELATED,
-    } as any);
+    const coverageFilters = { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_COVERED)], values: [containerId] }], filterGroups: [] };
+    const coverages = await findBoundedEntities<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_SECURITY_COVERAGE], coverageFilters, TIMELINE_MAX_RELATED);
     const coverageIds = coverages.map((c) => c.internal_id);
     if (coverageIds.length > 0) {
-      const results = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], {
-        filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_RESULT_OF)], values: coverageIds }], filterGroups: [] },
-        noFiltersChecking: true,
-        maxSize: TIMELINE_MAX_RELATED,
-      } as any);
-      soft.coverageResults = results.map((r) => toTimelineElement(r as AnyStoreElement));
-      const covered = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_HAS_COVERED, { fromId: coverageIds, maxSize: TIMELINE_MAX_RELATED } as any);
-      soft.coverageRelationships = covered.map((r) => toTimelineElement(r as unknown as AnyStoreElement));
+      const resultFilters = { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_RESULT_OF)], values: coverageIds }], filterGroups: [] };
+      const results = await findBoundedEntities<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], resultFilters, TIMELINE_MAX_RELATED);
+      soft.coverageResults = results.map(toElement);
+      const covered = await findBoundedRelations(context, bounds, RELATION_HAS_COVERED, { fromId: coverageIds }, TIMELINE_MAX_RELATED);
+      soft.coverageRelationships = covered.map(toElement);
     }
   }
   // Hunt runs (innovation 01) of the hunts in scope, and the runs that opened the incident
@@ -253,36 +279,29 @@ const loadSoftSources = async (
   if (isTimelineSoftTypeAvailable(SOFT_TYPE_HUNT_RUN)) {
     const huntRunFilters: any[] = [{ key: ['incident_id'], values: [containerId] }];
     if (huntIds.length > 0) huntRunFilters.push({ key: ['hunt_id'], values: huntIds });
-    const runs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [SOFT_TYPE_HUNT_RUN], {
-      filters: { mode: FilterMode.Or, filters: huntRunFilters, filterGroups: [] },
-      noFiltersChecking: true,
-      maxSize: TIMELINE_MAX_RELATED,
-    } as any);
-    soft.huntRuns = runs.map((r) => toTimelineElement(r as AnyStoreElement));
+    const runFilters = { mode: FilterMode.Or, filters: huntRunFilters, filterGroups: [] };
+    const runs = await findBoundedEntities<BasicStoreEntity>(context, bounds, [SOFT_TYPE_HUNT_RUN], runFilters, TIMELINE_MAX_RELATED);
+    soft.huntRuns = runs.map(toElement);
   }
   // Deployments (innovation 10) of the indicators in scope
   const indicatorIds = entities.filter((e) => e.entity_type === ENTITY_TYPE_INDICATOR).map((e) => e.id);
   if (indicatorIds.length > 0 && isTimelineSoftTypeAvailable(SOFT_RELATION_DEPLOYED_ON)) {
-    const deploymentArgs = { fromId: indicatorIds, maxSize: TIMELINE_MAX_RELATED };
-    const deployments = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, SOFT_RELATION_DEPLOYED_ON, deploymentArgs as any);
-    soft.deployments = deployments.map((r) => toTimelineElement(r as unknown as AnyStoreElement));
+    const deployments = await findBoundedRelations(context, bounds, SOFT_RELATION_DEPLOYED_ON, { fromId: indicatorIds }, TIMELINE_MAX_RELATED);
+    soft.deployments = deployments.map(toElement);
   }
   // Case Autopilot investigation runs (innovation 02) on the container, known by any of its ids
   if (isTimelineSoftTypeAvailable(SOFT_TYPE_INVESTIGATION_RUN)) {
     const containerIds = asArray([containerId, container.standard_id]);
-    const runs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [SOFT_TYPE_INVESTIGATION_RUN], {
-      filters: {
-        mode: FilterMode.Or,
-        filters: [
-          { key: ['case_ids'], values: containerIds },
-          { key: ['subject_id'], values: [containerId] },
-        ],
-        filterGroups: [],
-      },
-      noFiltersChecking: true,
-      maxSize: TIMELINE_MAX_RELATED,
-    } as any);
-    soft.investigationRuns = runs.map((r) => toTimelineElement(r as AnyStoreElement));
+    const runFilters = {
+      mode: FilterMode.Or,
+      filters: [
+        { key: ['case_ids'], values: containerIds },
+        { key: ['subject_id'], values: [containerId] },
+      ],
+      filterGroups: [],
+    };
+    const runs = await findBoundedEntities<BasicStoreEntity>(context, bounds, [SOFT_TYPE_INVESTIGATION_RUN], runFilters, TIMELINE_MAX_RELATED);
+    soft.investigationRuns = runs.map(toElement);
   }
   return soft;
 };
@@ -300,23 +319,18 @@ export interface TimelineLoadResult {
 export const loadTimelineDerivationInput = async (context: AuthContext, container: AnyStoreElement): Promise<TimelineLoadResult> => {
   const containerId = container.internal_id;
   const isCase = container.entity_type !== ENTITY_TYPE_INCIDENT;
-  let truncated = false;
+  const bounds: TimelineReadBounds = { truncated: false };
   let entities: AnyStoreElement[];
   let relationships: AnyStoreElement[];
   if (isCase) {
     // Knowledge of a case: its object refs
-    const objectIds = asArray(container[buildRefRelationKey(RELATION_OBJECT)]);
-    if (objectIds.length > TIMELINE_MAX_OBJECTS) truncated = true;
-    const objects = await internalFindByIds(context, SYSTEM_USER, objectIds.slice(0, TIMELINE_MAX_OBJECTS)) as unknown as AnyStoreElement[];
+    const objectIds = capTimelineRead(bounds, asArray(container[buildRefRelationKey(RELATION_OBJECT)]), TIMELINE_MAX_OBJECTS);
+    const objects = await internalFindByIds(context, SYSTEM_USER, objectIds) as unknown as AnyStoreElement[];
     entities = objects.filter((o) => o.base_type !== BASE_TYPE_RELATION);
     relationships = objects.filter((o) => o.base_type === BASE_TYPE_RELATION);
   } else {
     // Knowledge of an incident: its relationships and the entities on the other side
-    const related = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP], {
-      fromOrToId: containerId,
-      maxSize: TIMELINE_MAX_OBJECTS,
-    } as any);
-    if (related.length >= TIMELINE_MAX_OBJECTS) truncated = true;
+    const related = await findBoundedRelations(context, bounds, [ABSTRACT_STIX_CORE_RELATIONSHIP], { fromOrToId: containerId }, TIMELINE_MAX_OBJECTS);
     relationships = related as unknown as AnyStoreElement[];
     const otherIds = R.uniq(related.map((r) => (r.fromId === containerId ? r.toId : r.fromId)));
     entities = otherIds.length > 0 ? await internalFindByIds(context, SYSTEM_USER, otherIds) as unknown as AnyStoreElement[] : [];
@@ -324,32 +338,29 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
   // Sightings of the indicators in scope by security platforms are the platform detections
   const indicatorIds = entities.filter((e) => e.entity_type === ENTITY_TYPE_INDICATOR).map((e) => e.internal_id);
   if (indicatorIds.length > 0) {
-    const platformSightings = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, STIX_SIGHTING_RELATIONSHIP, {
-      fromId: indicatorIds,
-      toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM],
-      maxSize: TIMELINE_MAX_RELATED,
-    } as any);
+    const sightingArgs = { fromId: indicatorIds, toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM] };
+    const platformSightings = await findBoundedRelations(context, bounds, STIX_SIGHTING_RELATIONSHIP, sightingArgs, TIMELINE_MAX_RELATED);
     const known = new Set(relationships.map((r) => r.internal_id));
     relationships = [...relationships, ...(platformSightings as unknown as AnyStoreElement[]).filter((s) => !known.has(s.internal_id))];
   }
   // Tasks, notes and opinions referencing the container
   const [tasks, notes, opinions] = await Promise.all([
-    findContainersReferencing<BasicStoreEntity>(context, [ENTITY_TYPE_CONTAINER_TASK], [containerId], TIMELINE_MAX_RELATED),
-    findContainersReferencing<BasicStoreEntity>(context, [ENTITY_TYPE_CONTAINER_NOTE], [containerId], TIMELINE_MAX_RELATED),
-    findContainersReferencing<BasicStoreEntity>(context, [ENTITY_TYPE_CONTAINER_OPINION], [containerId], TIMELINE_MAX_RELATED),
+    findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_TASK], [containerId], TIMELINE_MAX_RELATED),
+    findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_NOTE], [containerId], TIMELINE_MAX_RELATED),
+    findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_OPINION], [containerId], TIMELINE_MAX_RELATED),
   ]);
   // Reports: contained by a case, containing an incident
   const reports = isCase
     ? entities.filter((e) => e.entity_type === ENTITY_TYPE_CONTAINER_REPORT)
-    : await findContainersReferencing<BasicStoreEntity>(context, [ENTITY_TYPE_CONTAINER_REPORT], [containerId], TIMELINE_MAX_RELATED) as AnyStoreElement[];
+    : await findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_REPORT], [containerId], TIMELINE_MAX_RELATED) as AnyStoreElement[];
   // Meta: kill chain phases of the techniques, labels of the tasks, external references of the container
   const killChainPhaseIds = R.uniq(entities.flatMap((e) => asArray(e[buildRefRelationKey(RELATION_KILL_CHAIN_PHASE)])));
   const labelIds = R.uniq(tasks.flatMap((t) => asArray((t as AnyStoreElement)[buildRefRelationKey(RELATION_OBJECT_LABEL)])));
-  const externalReferenceIds = asArray(container[buildRefRelationKey(RELATION_EXTERNAL_REFERENCE)]);
+  const externalReferenceIds = capTimelineRead(bounds, asArray(container[buildRefRelationKey(RELATION_EXTERNAL_REFERENCE)]), TIMELINE_MAX_RELATED);
   const [killChainPhases, labels, externalReferences] = await Promise.all([
     killChainPhaseIds.length > 0 ? internalFindByIds(context, SYSTEM_USER, killChainPhaseIds, { type: ENTITY_TYPE_KILL_CHAIN_PHASE }) : [],
     labelIds.length > 0 ? internalFindByIds(context, SYSTEM_USER, labelIds, { type: ENTITY_TYPE_LABEL }) : [],
-    externalReferenceIds.length > 0 ? internalFindByIds(context, SYSTEM_USER, externalReferenceIds.slice(0, TIMELINE_MAX_RELATED)) : [],
+    externalReferenceIds.length > 0 ? internalFindByIds(context, SYSTEM_USER, externalReferenceIds) : [],
   ]) as unknown as [AnyStoreElement[], AnyStoreElement[], AnyStoreElement[]];
   const labelsMap = new Map(labels.map((l) => [l.internal_id, l.value as string]));
   const killChainPhasesMap = new Map<string, TimelineKillChainPhaseData>(killChainPhases.map((k) => [k.internal_id, {
@@ -360,9 +371,9 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
   }]));
   // History: the container itself (status, assignees, objects, files, merges) and merges of its objects
   const objectIds = entities.map((e) => e.internal_id);
-  const history = await findHistory(context, { mode: FilterMode.And, filters: [{ key: ['context_data.id'], values: [containerId] }], filterGroups: [] }, TIMELINE_MAX_HISTORY);
-  if (history.length >= TIMELINE_MAX_HISTORY) truncated = true;
-  const objectMerges = objectIds.length > 0 ? await findHistory(context, {
+  const containerHistoryFilters = { mode: FilterMode.And, filters: [{ key: ['context_data.id'], values: [containerId] }], filterGroups: [] };
+  const history = await findHistory(context, bounds, containerHistoryFilters, TIMELINE_MAX_HISTORY);
+  const objectMerges = objectIds.length > 0 ? await findHistory(context, bounds, {
     mode: FilterMode.And,
     filters: [
       { key: ['event_scope'], values: ['merge'] },
@@ -372,7 +383,7 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
   }, TIMELINE_MAX_RELATED) : [];
   const taskIds = tasks.map((t) => t.internal_id);
   // Task updates only: the task rule reads the workflow transitions, older entries without structured changes fall back to the update date
-  const taskHistory = taskIds.length > 0 ? await findHistory(context, {
+  const taskHistory = taskIds.length > 0 ? await findHistory(context, bounds, {
     mode: FilterMode.And,
     filters: [
       { key: ['context_data.id'], values: taskIds },
@@ -388,9 +399,9 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
     is_case: isCase,
     files: toFiles(container),
   };
-  const soft = await loadSoftSources(context, container, entitiesData);
+  const soft = await loadSoftSources(context, bounds, container, entitiesData);
   return {
-    truncated,
+    truncated: bounds.truncated,
     input: {
       container: containerData,
       entities: entitiesData,

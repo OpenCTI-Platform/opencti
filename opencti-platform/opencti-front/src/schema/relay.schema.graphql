@@ -10201,9 +10201,28 @@ type Query {
   ): String
 
   """
-  Markings of a timeline export stored as a file: the selected file markings raised to cover the markings of the exported events
+  Timeline export stored as a file: the content and the file markings covering it, computed from the same events
   """
-  containerTimelineExportFileMarkings(id: String!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean, contentMaxMarkings: [String!], fileMarkings: [String!]): [MarkingDefinition!]!
+  containerTimelineExportFile(
+    id: String!
+    format: TimelineExportFormat!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+    labels: [TimelineExportLabelInput!]
+    contentMaxMarkings: [String!]
+
+    """
+    Markings selected for the file, raised to cover the markings of the exported events and of the elements they reference
+    """
+    fileMarkings: [String!]
+  ): TimelineExportFile
   timelineEvent(id: String!): TimelineEvent
   timelineAnchors(containerId: String!): TimelineAnchors
   timelineRules: [TimelineRuleDefinition!]!
@@ -18940,6 +18959,15 @@ input TimelineExportLabelInput {
 
   "*Constraints:*\n* Maximal length: `256`\n"
   label: String!
+}
+
+type TimelineExportFile {
+  content: String!
+
+  """
+  Never weaker than the markings of the exported events and of the elements they reference (highest marking per definition type)
+  """
+  file_markings: [MarkingDefinition!]!
 }
 
 input TimelineSettingsInput {
