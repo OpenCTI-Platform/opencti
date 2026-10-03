@@ -74,6 +74,16 @@ const deleteIndexTemplate = async (name: string) => {
   }
 };
 
+// The platform error only says "Updating index mapping fail": surface the index and the engine reason it carries.
+const updateIndicesMappings = async () => {
+  try {
+    await elUpdateIndicesMappings();
+  } catch (e: any) {
+    const { index, cause } = e.extensions?.data ?? {};
+    throw new Error(`${e.message} on index ${index}: ${JSON.stringify(cause?.meta?.body?.error ?? cause?.message)}`, { cause: e });
+  }
+};
+
 const removeFixtures = async () => {
   await elDeleteIndices([LONG_LIVED_INDEX, FRESH_INDEX]);
   await deleteIndexTemplate(LONG_LIVED_ALIAS);
@@ -111,7 +121,7 @@ describe('Search engine fields limit on long-lived indices', () => {
   it('should raise the fields limit of a long-lived index instead of failing the startup mapping update', async () => {
     const warnSpy = vi.spyOn(logApp, 'warn');
     try {
-      await elUpdateIndicesMappings();
+      await updateIndicesMappings();
       const mapping = await elPlatformMapping(LONG_LIVED_INDEX);
       const fields = countMappingFields(mapping);
       // The index now holds every attribute of the current schema and still keeps its legacy fields.
@@ -131,7 +141,7 @@ describe('Search engine fields limit on long-lived indices', () => {
     expect(await indexFieldsLimit(FRESH_INDEX)).toBe(ES_MAX_MAPPINGS);
     const warnSpy = vi.spyOn(logApp, 'warn');
     try {
-      await elUpdateIndicesMappings();
+      await updateIndicesMappings();
       const mapping = await elPlatformMapping(FRESH_INDEX);
       expect(computeMappingFieldsLimit(mapping)).toBe(ES_MAX_MAPPINGS);
       expect(await indexFieldsLimit(FRESH_INDEX)).toBe(ES_MAX_MAPPINGS);
