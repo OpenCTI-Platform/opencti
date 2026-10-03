@@ -203,6 +203,21 @@ export class TelemetryMeterManager {
   // Number of has-covered relationships
   relationshipsHasCoveredCount = 0;
 
+  // Number of deployed-on relationships (indicator deployment lifecycle on security platforms)
+  relationshipsDeployedOnCount = 0;
+
+  // Number of indicator deployment reports received from stream connectors
+  indicatorDeploymentReportCount = 0;
+
+  // Number of indicator hits reported by stream connectors
+  indicatorHitsReportCount = 0;
+
+  // Number of IOC validation requests
+  iocValidationRequestsCount = 0;
+
+  // Number of IOC validation requests created
+  iocValidationRequestCreationCount = 0;
+
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
@@ -554,6 +569,26 @@ export class TelemetryMeterManager {
     this.relationshipsHasCoveredCount = n;
   }
 
+  setRelationshipsDeployedOnCount(n: number) {
+    this.relationshipsDeployedOnCount = n;
+  }
+
+  setIndicatorDeploymentReportCount(n: number) {
+    this.indicatorDeploymentReportCount = n;
+  }
+
+  setIndicatorHitsReportCount(n: number) {
+    this.indicatorHitsReportCount = n;
+  }
+
+  setIocValidationRequestsCount(n: number) {
+    this.iocValidationRequestsCount = n;
+  }
+
+  setIocValidationRequestCreationCount(n: number) {
+    this.iocValidationRequestCreationCount = n;
+  }
+
   setDecayRuleCreationCount(n: number) {
     this.decayRuleCreationCount = n;
   }
@@ -816,6 +851,11 @@ export class TelemetryMeterManager {
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
     this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
     this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
+    this.registerGauge('relationships_deployed_on_count', 'Number of relationships deployed-on', 'relationshipsDeployedOnCount');
+    this.registerGauge('indicator_deployment_report_count', 'Number of indicator deployment reports received from connectors', 'indicatorDeploymentReportCount');
+    this.registerGauge('indicator_hits_report_count', 'Number of indicator hits reported by connectors', 'indicatorHitsReportCount');
+    this.registerGauge('ioc_validation_requests_count', 'Number of IOC validation requests', 'iocValidationRequestsCount');
+    this.registerGauge('ioc_validation_request_creation_count', 'Number of IOC validation requests created', 'iocValidationRequestCreationCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('knowledge_decay_rule_creation_count', 'Number of knowledge decay rules created', 'knowledgeDecayRuleCreationCount');
     this.registerGauge('active_knowledge_decay_rules_count', 'Number of active knowledge decay rules', 'activeKnowledgeDecayRulesCount');

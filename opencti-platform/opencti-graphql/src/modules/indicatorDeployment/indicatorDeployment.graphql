@@ -64,10 +64,94 @@ extend type Indicator {
   deployment_platforms_count: Int
   deployment_failed_count: Int
   validated_platforms_count: Int
+  hit_platforms_count: Int
 }
 
 extend enum IndicatorsOrdering {
   deployment_platforms_count
   deployment_failed_count
   validated_platforms_count
+  hit_platforms_count
+}
+
+# Write-back from stream connectors
+input IndicatorDeploymentMetadataInput {
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  error_message: String @constraint(maxLength: 5000)
+}
+
+input IndicatorDeploymentReportInput {
+  indicatorId: StixRef!
+  status: IndicatorDeploymentStatus!
+  externalId: String @constraint(maxLength: 1000)
+  metadata: IndicatorDeploymentMetadataInput
+}
+
+type IndicatorDeploymentReportError {
+  indicatorId: String!
+  message: String!
+}
+
+type IndicatorDeploymentBatchResult {
+  processed: Int!
+  created: Int!
+  updated: Int!
+  unchanged: Int!
+  errors: [IndicatorDeploymentReportError!]!
+}
+
+# Dissemination assurance analytics
+type DisseminationAssuranceFunnel {
+  created: Int!
+  disseminated: Int!
+  deployed: Int!
+  validated: Int!
+  hit: Int!
+  expired_still_deployed: Int!
+}
+
+type DisseminationAssuranceStatusCount {
+  status: String!
+  count: Int!
+}
+
+type DisseminationAssurancePlatformCount {
+  platform: SecurityPlatform!
+  count: Int!
+}
+
+type DisseminationAssuranceMetrics {
+  funnel: DisseminationAssuranceFunnel!
+  deployment_statuses: [DisseminationAssuranceStatusCount!]!
+  validation_statuses: [DisseminationAssuranceStatusCount!]!
+  failures_by_platform: [DisseminationAssurancePlatformCount!]!
+  deployments_by_platform: [DisseminationAssurancePlatformCount!]!
+  # Share (0-100) of live deployments proven by a detected or prevented validation.
+  proven_share: Float!
+}
+
+type Query {
+  disseminationAssuranceMetrics(platformId: String, startDate: DateTime, endDate: DateTime): DisseminationAssuranceMetrics @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+  indicatorReportDeployment(
+    indicatorId: StixRef!
+    platformId: StixRef!
+    status: IndicatorDeploymentStatus!
+    externalId: String
+    metadata: IndicatorDeploymentMetadataInput
+  ): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorReportHits(
+    indicatorId: StixRef!
+    platformId: StixRef!
+    count: Int!
+    lastHit: DateTime
+    firstHit: DateTime
+  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorDeploymentRetry(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorDeploymentRemove(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
 }
