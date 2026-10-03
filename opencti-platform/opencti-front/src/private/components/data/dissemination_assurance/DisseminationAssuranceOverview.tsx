@@ -2,28 +2,20 @@ import { useMemo, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import DisseminationAssuranceMenu from './DisseminationAssuranceMenu';
+import DeployedOnRelationships from './DeployedOnRelationships';
 import DisseminationAssuranceMetrics from './DisseminationAssuranceMetrics';
 import { type Period, periodStartDate } from './disseminationAssuranceUtils';
 
 const DisseminationAssuranceOverview = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Dissemination assurance | Data'));
+  setTitle(t_i18n('Dissemination assurance | Defense'));
   const [period, setPeriod] = useState<Period>('all');
   const startDate = useMemo(() => periodStartDate(period), [period]);
   return (
-    <div style={{ paddingRight: 200 }} data-testid="dissemination-assurance-overview-page">
-      <DisseminationAssuranceMenu />
-      <Breadcrumbs elements={[
-        { label: t_i18n('Defense') },
-        { label: t_i18n('Dissemination assurance') },
-        { label: t_i18n('Overview'), current: true },
-      ]}
-      />
-      <Stack direction="row" alignItems="flex-end" justifyContent="space-between" gap={2} sx={{ mb: 3 }}>
+    <Stack gap={3} data-testid="dissemination-assurance-overview-page">
+      <Stack direction="row" alignItems="flex-end" justifyContent="space-between" gap={2}>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 820 }}>
           {t_i18n('Disseminated is not deployed, deployed is not proven. Stream connectors report where each indicator is live, OpenAEV proves that security platforms detect or prevent it.')}
         </Typography>
@@ -43,8 +35,11 @@ const DisseminationAssuranceOverview = () => {
           </Select>
         </div>
       </Stack>
-      <DisseminationAssuranceMetrics startDate={startDate} />
-    </div>
+      <DisseminationAssuranceMetrics
+        startDate={startDate}
+        renderDeployments={(kpiFilters) => <DeployedOnRelationships side="all" kpiFilters={kpiFilters} startDate={startDate} />}
+      />
+    </Stack>
   );
 };
 

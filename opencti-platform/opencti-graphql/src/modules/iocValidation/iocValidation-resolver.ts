@@ -18,6 +18,7 @@ import {
   updateIocValidationRequestStatus,
 } from './iocValidation-domain';
 import { requesterIdOf } from './iocValidation-utils';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 const iocValidationResolvers: Resolvers = {
   Query: {
@@ -40,6 +41,9 @@ const iocValidationResolvers: Resolvers = {
       const requesterId = requesterIdOf(request as never);
       return (requesterId ? loadCreator(context, context.user!, requesterId) : null) as never;
     },
+  },
+  IocValidationSkipped: {
+    indicator: (skip, _, context) => context.batch.idsBatchLoader.load({ id: skip.indicator_id, type: ENTITY_TYPE_INDICATOR }) as never,
   },
   Mutation: {
     indicatorsRequestValidation: (_, args, context) => requestIndicatorsValidation(context, context.user!, args) as never,

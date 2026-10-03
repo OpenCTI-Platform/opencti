@@ -10,6 +10,7 @@ import type { IndicatorDeployment_indicator$key } from './__generated__/Indicato
 const indicatorDeploymentFragment = graphql`
   fragment IndicatorDeployment_indicator on Indicator {
     id
+    name
     deployment_platforms_count
     deployment_failed_count
     validated_platforms_count
@@ -53,7 +54,7 @@ const IndicatorDeployment = ({ indicator }: IndicatorDeploymentProps) => {
         </Grid>
         <Stack direction="row" gap={1}>
           <DisseminationAssuranceLink />
-          <LiveDeploymentsValidationButton side="indicator" entityId={data.id} />
+          <LiveDeploymentsValidationButton side="indicator" entityId={data.id} entityName={data.name} />
         </Stack>
       </Stack>
       <DeployedOnRelationships side="indicator" entityId={data.id} />

@@ -137,6 +137,37 @@ export const periodStartDate = (period: Period, now: Date = new Date()) => {
 /** Percentage of a stage relative to the first stage of the funnel, one decimal. */
 export const funnelShare = (value: number, reference: number) => (reference > 0 ? Math.round((value / reference) * 1000) / 10 : 0);
 
+export const DISSEMINATION_ASSURANCE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/dissemination-assurance/';
+
+/** Total of the status buckets of the metrics, restricted to some statuses when given. */
+export const sumStatuses = (buckets: ReadonlyArray<{ status: string; count: number }>, statuses?: string[]) => buckets
+  .filter((bucket) => !statuses || statuses.includes(bucket.status))
+  .reduce((total, bucket) => total + bucket.count, 0);
+
+export type KpiId = 'disseminated' | 'deployed' | 'active' | 'validated' | 'missed';
+
+const statusFilter = (key: string, values: string[]): FilterGroup => ({
+  mode: 'and',
+  filters: [{ key, values, operator: 'eq', mode: 'or' }],
+  filterGroups: [],
+});
+
+/** Deployments shown under the KPI strip for the selected counter; every deployment for "Disseminated" or no selection. */
+export const buildKpiFilters = (kpi: KpiId | null): FilterGroup | undefined => {
+  switch (kpi) {
+    case 'deployed':
+      return statusFilter('deployment_status', LIVE_DEPLOYMENT_STATUSES);
+    case 'active':
+      return statusFilter('deployment_status', ['active']);
+    case 'validated':
+      return statusFilter('validation_status', PROVEN_VALIDATION_STATUSES);
+    case 'missed':
+      return statusFilter('validation_status', ['missed']);
+    default:
+      return undefined;
+  }
+};
+
 // region saved lists
 export type SavedListId = 'disseminated_not_deployed' | 'deployed_never_validated' | 'expired_still_deployed';
 

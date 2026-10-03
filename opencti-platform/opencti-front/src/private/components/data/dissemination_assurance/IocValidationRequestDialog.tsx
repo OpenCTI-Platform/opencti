@@ -1,12 +1,15 @@
 import { ReactNode, Suspense, useEffect, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Alert, DialogActions, Stack, Typography } from '@mui/material';
-import { Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from '@filigran/design-system';
+import { Link } from 'react-router';
+import { DialogActions, Stack, Typography } from '@mui/material';
+import { Alert, Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
+import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useGranted, { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
 import {
   DEFAULT_TEST_KINDS,
@@ -63,17 +66,25 @@ export interface ValidationPlatformOption {
   name: string;
 }
 
+export interface ValidationIndicatorOption {
+  id: string;
+  name: string;
+}
+
 interface IocValidationRequestDialogProps {
   open: boolean;
   onClose: () => void;
-  indicatorIds: string[];
+  indicators: ValidationIndicatorOption[];
   platforms: ValidationPlatformOption[];
   defaultName: string;
   summary?: ReactNode;
 }
 
+const PREVIEW_SIZE = 5;
+
 const ConnectorSelection = ({ connectorId, onChange }: { connectorId: string | null; onChange: (id: string | null) => void }) => {
   const { t_i18n } = useFormatter();
+  const canManageConnectors = useGranted([MODULES_MODMANAGE]);
   const { iocValidationConnectors } = useLazyLoadQuery<IocValidationRequestDialogConnectorsQuery>(
     iocValidationConnectorsQuery,
     {},
@@ -85,10 +96,21 @@ const ConnectorSelection = ({ connectorId, onChange }: { connectorId: string | n
     if (!connectorId && activeConnectors.length > 0) onChange(activeConnectors[0].id);
   }, [connectorId, activeConnectors.length]);
   if (activeConnectors.length === 0) {
+    const settingsPath = connectors.length > 0 ? `/dashboard/integrations/connectors/${connectors[0].id}` : '/dashboard/integrations';
     return (
-      <Alert severity="warning" variant="outlined" data-testid="ioc-validation-no-connector">
-        {t_i18n('No OpenAEV IOC validation connector is active. Configure OpenCTI in OpenAEV to enable IOC validation.')}
-      </Alert>
+      <Alert
+        severity="warning"
+        data-testid="ioc-validation-no-connector"
+        title={t_i18n('No OpenAEV IOC validation connector is active')}
+        description={canManageConnectors
+          ? t_i18n('Configure OpenCTI in OpenAEV, then check that its IOC validation connector is running.')
+          : t_i18n('Ask an administrator to configure OpenCTI in OpenAEV and start its IOC validation connector.')}
+        action={canManageConnectors ? (
+          <Button variant="secondary" size="small" component={Link} to={settingsPath}>
+            {t_i18n('Open connector settings')}
+          </Button>
+        ) : undefined}
+      />
     );
   }
   if (activeConnectors.length === 1) return null;
@@ -107,7 +129,38 @@ const ConnectorSelection = ({ connectorId, onChange }: { connectorId: string | n
   );
 };
 
-const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, defaultName, summary }: IocValidationRequestDialogProps) => {
+/** What the request will test: the indicators (first ones, then all on demand). */
+const TestedIndicators = ({ indicators }: { indicators: ValidationIndicatorOption[] }) => {
+  const { t_i18n } = useFormatter();
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? indicators : indicators.slice(0, PREVIEW_SIZE);
+  return (
+    <Stack gap={0.5} data-testid="ioc-validation-tested-indicators">
+      <Typography variant="h4">
+        {t_i18n('{count, plural, one {# indicator to test} other {# indicators to test}}', { values: { count: indicators.length } })}
+      </Typography>
+      <Stack component="ul" gap={0.5} sx={{ listStyle: 'none', margin: 0, padding: 0, maxHeight: 220, overflowY: 'auto' }}>
+        {visible.map((indicator) => (
+          <Stack component="li" key={indicator.id} direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+            <ItemIcon type="Indicator" size="small" />
+            <Typography variant="body2" noWrap title={indicator.name}>{indicator.name}</Typography>
+          </Stack>
+        ))}
+      </Stack>
+      {indicators.length > PREVIEW_SIZE && (
+        <div>
+          <Button variant="tertiary" size="small" onClick={() => setShowAll((current) => !current)} aria-expanded={showAll}>
+            {showAll
+              ? t_i18n('Show fewer')
+              : t_i18n('Show all {count} indicators', { values: { count: indicators.length } })}
+          </Button>
+        </div>
+      )}
+    </Stack>
+  );
+};
+
+const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defaultName, summary }: IocValidationRequestDialogProps) => {
   const { t_i18n } = useFormatter();
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(platforms.slice(0, IOC_VALIDATION_MAX_PLATFORMS).map((p) => p.id));
   const [testKinds, setTestKinds] = useState<IocValidationTestKind[]>(DEFAULT_TEST_KINDS);
@@ -115,6 +168,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
   const [description, setDescription] = useState('');
   const [connectorId, setConnectorId] = useState<string | null>(null);
   const [commit, submitting] = useApiMutation<IocValidationRequestDialogMutation>(iocValidationRequestMutation);
+  const indicatorIds = indicators.map((indicator) => indicator.id);
 
   useEffect(() => {
     if (open) {
@@ -167,27 +221,33 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
     <Dialog open={open} onClose={onClose} title={t_i18n('Request validation in OpenAEV')} size="medium">
       <Stack gap={2} data-testid="ioc-validation-request-dialog">
         {summary && <Typography variant="body2">{summary}</Typography>}
-        <Alert severity="info" variant="outlined">
-          {t_i18n('OpenAEV runs benign tests built from each indicator and checks that the security platforms detected or prevented them. Every validation scenario must be approved in OpenAEV before it runs, and only the test kinds allowed there are executed.')}
-        </Alert>
-        {platforms.length > 1 && (
-          <Stack gap={0.5}>
-            <Typography variant="h4">{t_i18n('Security platforms')}</Typography>
-            {platforms.map((platform) => (
-              <Checkbox
-                key={platform.id}
-                label={platform.name}
-                checked={selectedPlatforms.includes(platform.id)}
-                onCheckedChange={() => togglePlatform(platform.id)}
-              />
-            ))}
-            {tooManyPlatforms && (
-              <Typography variant="caption" color="error">
-                {t_i18n('A validation request covers at most 10 security platforms')}
-              </Typography>
-            )}
-          </Stack>
-        )}
+        <Alert
+          severity="info"
+          title={t_i18n('Every validation scenario is approved in OpenAEV before it runs')}
+          description={t_i18n('OpenAEV runs benign tests built from each indicator and checks that the security platforms detected or prevented them. Only the test kinds allowed there are executed.')}
+        />
+        {indicators.length > 0 && <TestedIndicators indicators={indicators} />}
+        <Stack gap={0.5}>
+          <Typography variant="h4">{t_i18n('Security platforms')}</Typography>
+          {platforms.length > 1 ? platforms.map((platform) => (
+            <Checkbox
+              key={platform.id}
+              label={platform.name}
+              checked={selectedPlatforms.includes(platform.id)}
+              onCheckedChange={() => togglePlatform(platform.id)}
+            />
+          )) : platforms.map((platform) => (
+            <Stack key={platform.id} direction="row" alignItems="center" gap={1}>
+              <ItemIcon type="SecurityPlatform" size="small" />
+              <Typography variant="body2">{platform.name}</Typography>
+            </Stack>
+          ))}
+          {tooManyPlatforms && (
+            <Typography variant="caption" color="error">
+              {t_i18n('A validation request covers at most 10 security platforms')}
+            </Typography>
+          )}
+        </Stack>
         <Stack gap={0.5}>
           <Typography variant="h4">{t_i18n('Test kinds')}</Typography>
           {TEST_KINDS.map((definition) => (
@@ -201,9 +261,11 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
             />
           ))}
           {testKinds.some((kind) => TEST_KINDS.find((definition) => definition.kind === kind)?.contactsInfrastructure) && (
-            <Alert severity="warning" variant="outlined">
-              {t_i18n('Network and HTTP tests reach the indicator values. OpenAEV only runs them when an administrator allowed them, through the egress proxy or the sinkhole it configured.')}
-            </Alert>
+            <Alert
+              severity="warning"
+              title={t_i18n('Network and HTTP tests reach the indicator values')}
+              description={t_i18n('OpenAEV only runs them when an administrator allowed them, through the egress proxy or the sinkhole it configured.')}
+            />
           )}
         </Stack>
         <Input
@@ -220,9 +282,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
           onChange={(event) => setDescription(event.target.value)}
         />
         {tooManyIndicators && (
-          <Alert severity="error" variant="outlined">
-            {t_i18n('A validation request covers at most 200 indicators')}
-          </Alert>
+          <Alert severity="error" title={t_i18n('A validation request covers at most 200 indicators')} />
         )}
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           {open && <ConnectorSelection connectorId={connectorId} onChange={setConnectorId} />}
@@ -233,7 +293,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicatorIds, platforms, de
           {t_i18n('Cancel')}
         </Button>
         <Button onClick={submit} disabled={!canSubmit} data-testid="ioc-validation-request-submit">
-          {t_i18n('Request validation')}
+          {t_i18n('{count, plural, one {Validate # indicator} other {Validate # indicators}}', { values: { count: indicatorIds.length } })}
         </Button>
       </DialogActions>
     </Dialog>

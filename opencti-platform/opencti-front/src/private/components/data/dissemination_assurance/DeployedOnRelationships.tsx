@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -87,7 +87,6 @@ export const deployedOnRelationshipsLineFragment = graphql`
     revoked
     created_at
     deployment_status
-    external_id
     deployed_at
     last_sync_at
     removed_at
@@ -124,18 +123,38 @@ export const deployedOnRelationshipsLineFragment = graphql`
   }
 `;
 
-export type DeployedOnSide = 'indicator' | 'platform';
+export type DeployedOnSide = 'indicator' | 'platform' | 'all';
 
 interface DeployedOnRelationshipsProps {
-  /** Indicator page lists the platforms, Security Platform page lists the indicators. */
+  /** Indicator page lists the platforms, Security Platform page lists the indicators, the area lists both. */
   side: DeployedOnSide;
-  entityId: string;
+  entityId?: string;
+  /** Applied on top of the user filters, from the selected KPI counter. */
+  kpiFilters?: FilterGroup;
+  /** Deployments recorded since this date only. */
+  startDate?: string | null;
 }
 
-const DeployedOnRelationships = ({ side, entityId }: DeployedOnRelationshipsProps) => {
-  const { t_i18n, nsdt, n } = useFormatter();
+/** Relative date ("3 hours ago") with the absolute date in a tooltip. */
+const RelativeDate = ({ date, emptyLabel }: { date: string | null | undefined; emptyLabel: string }) => {
+  const { rd, nsdt } = useFormatter();
+  if (!date) {
+    return defaultRender(emptyLabel);
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>{rd(date)}</span>
+      </TooltipTrigger>
+      <TooltipContent>{nsdt(date)}</TooltipContent>
+    </Tooltip>
+  );
+};
+
+const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: DeployedOnRelationshipsProps) => {
+  const { t_i18n } = useFormatter();
   const canUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const LOCAL_STORAGE_KEY = `deployed-on-${side}-${entityId}`;
+  const LOCAL_STORAGE_KEY = `deployed-on-${side}-${entityId ?? 'all'}`;
   const initialValues = {
     searchTerm: '',
     sortBy: 'last_sync_at',
@@ -149,13 +168,26 @@ const DeployedOnRelationships = ({ side, entityId }: DeployedOnRelationshipsProp
     true,
   );
   const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', viewStorage.filters);
+  const scopeFilters = [];
+  if (side !== 'all' && entityId) {
+    scopeFilters.push({ key: side === 'indicator' ? 'fromId' : 'toId', values: [entityId] });
+  }
+  if (startDate) {
+    scopeFilters.push({ key: 'created_at', values: [startDate], operator: 'gte' });
+  }
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: [
-      { key: 'relationship_type', values: [RELATION_DEPLOYED_ON] },
-      { key: side === 'indicator' ? 'fromId' : 'toId', values: [entityId] },
+    filters: [{ key: 'relationship_type', values: [RELATION_DEPLOYED_ON] }, ...scopeFilters],
+    filterGroups: [
+      ...(isFilterGroupNotEmpty(userFilters) ? [userFilters] : []),
+      ...(kpiFilters ? [kpiFilters] : []),
     ],
-    filterGroups: isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+  const filtered = isFilterGroupNotEmpty(userFilters) || !!kpiFilters || !!startDate;
+  const emptyStateMessages: Record<DeployedOnSide, string> = {
+    indicator: t_i18n('No stream connector has reported a deployment of this indicator yet'),
+    platform: t_i18n('No stream connector has reported a deployment on this platform yet'),
+    all: t_i18n('No deployment reported yet'),
   };
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -170,74 +202,73 @@ const DeployedOnRelationships = ({ side, entityId }: DeployedOnRelationshipsProp
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DeployedOnRelationshipsLinesPaginationQuery>;
 
-  const counterpartColumn: DataTableProps['dataColumns'] = side === 'indicator'
-    ? {
-        platform: {
-          id: 'platform',
-          label: t_i18n('Security platform'),
-          percentWidth: 20,
-          isSortable: false,
-          render: ({ to }: DeployedOnRelationships_node$data) => defaultRender(to?.name ?? t_i18n('Restricted')),
-        },
-      }
-    : {
-        indicator: {
-          id: 'indicator',
-          label: t_i18n('Indicator'),
-          percentWidth: 20,
-          isSortable: false,
-          render: ({ from }: DeployedOnRelationships_node$data) => defaultRender(from?.name ?? t_i18n('Restricted')),
-        },
-      };
+  const platformColumn: DataTableProps['dataColumns'] = {
+    platform: {
+      id: 'platform',
+      label: t_i18n('Security platform'),
+      percentWidth: side === 'all' ? 14 : 20,
+      isSortable: false,
+      render: ({ to }: DeployedOnRelationships_node$data) => defaultRender(to?.name ?? t_i18n('Restricted')),
+    },
+  };
+  const indicatorColumn: DataTableProps['dataColumns'] = {
+    indicator: {
+      id: 'indicator',
+      label: t_i18n('Indicator'),
+      percentWidth: side === 'all' ? 18 : 20,
+      isSortable: false,
+      render: ({ from }: DeployedOnRelationships_node$data) => defaultRender(from?.name ?? t_i18n('Restricted')),
+    },
+  };
+  const counterpartColumns: Record<DeployedOnSide, DataTableProps['dataColumns']> = {
+    indicator: platformColumn,
+    platform: indicatorColumn,
+    all: { ...indicatorColumn, ...platformColumn },
+  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    ...counterpartColumn,
+    ...counterpartColumns[side],
     deployment_status: {
       id: 'deployment_status',
       label: t_i18n('Deployment status'),
-      percentWidth: 12,
+      percentWidth: side === 'all' ? 16 : 20,
       isSortable: true,
-      render: ({ deployment_status, error_message }: DeployedOnRelationships_node$data) => {
-        if (deployment_status === 'failed' && error_message) {
-          return (
+      render: ({ deployment_status, error_message }: DeployedOnRelationships_node$data) => (
+        <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+          <DeploymentStatusChip status={deployment_status} />
+          {deployment_status === 'failed' && error_message && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span><DeploymentStatusChip status={deployment_status} /></span>
+                <Typography variant="caption" color="text.secondary" noWrap data-testid="deployment-error">{error_message}</Typography>
               </TooltipTrigger>
               <TooltipContent>{error_message}</TooltipContent>
             </Tooltip>
-          );
-        }
-        return <DeploymentStatusChip status={deployment_status} />;
-      },
-    },
-    external_id: {
-      id: 'external_id',
-      label: t_i18n('External id'),
-      percentWidth: 13,
-      isSortable: false,
-      render: ({ external_id }: DeployedOnRelationships_node$data) => defaultRender(external_id),
+          )}
+        </Stack>
+      ),
     },
     last_sync_at: {
       id: 'last_sync_at',
-      label: t_i18n('Last synchronization'),
-      percentWidth: 12,
+      label: t_i18n('Last report'),
+      percentWidth: 11,
       isSortable: true,
-      render: ({ last_sync_at }: DeployedOnRelationships_node$data) => defaultRender(nsdt(last_sync_at)),
+      render: ({ last_sync_at }: DeployedOnRelationships_node$data) => <RelativeDate date={last_sync_at} emptyLabel={t_i18n('Never')} />,
     },
     hit_count: {
       id: 'hit_count',
       label: t_i18n('Hits'),
-      percentWidth: 7,
+      percentWidth: 9,
       isSortable: true,
-      render: ({ hit_count }: DeployedOnRelationships_node$data) => defaultRender(n(hit_count ?? 0)),
+      render: ({ hit_count }: DeployedOnRelationships_node$data) => defaultRender(
+        t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hit_count ?? 0 } }),
+      ),
     },
     last_hit_at: {
       id: 'last_hit_at',
       label: t_i18n('Last hit'),
-      percentWidth: 12,
+      percentWidth: 10,
       isSortable: true,
-      render: ({ last_hit_at }: DeployedOnRelationships_node$data) => defaultRender(nsdt(last_hit_at)),
+      render: ({ last_hit_at }: DeployedOnRelationships_node$data) => <RelativeDate date={last_hit_at} emptyLabel={t_i18n('Never')} />,
     },
     validation_status: {
       id: 'validation_status',
@@ -249,9 +280,9 @@ const DeployedOnRelationships = ({ side, entityId }: DeployedOnRelationshipsProp
     last_validation_at: {
       id: 'last_validation_at',
       label: t_i18n('Last validation'),
-      percentWidth: 12,
+      percentWidth: side === 'all' ? 10 : 18,
       isSortable: true,
-      render: ({ last_validation_at }: DeployedOnRelationships_node$data) => defaultRender(nsdt(last_validation_at)),
+      render: ({ last_validation_at }: DeployedOnRelationships_node$data) => <RelativeDate date={last_validation_at} emptyLabel={t_i18n('Never')} />,
     },
   };
 
@@ -268,6 +299,7 @@ const DeployedOnRelationships = ({ side, entityId }: DeployedOnRelationshipsProp
           lineFragment={deployedOnRelationshipsLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           availableFilterKeys={['deployment_status', 'validation_status', 'last_sync_at', 'last_hit_at', 'hit_count', 'objectMarking']}
+          emptyStateMessage={filtered ? t_i18n('No deployment matches these filters') : emptyStateMessages[side]}
           disableLineSelection
           icon={() => (
             <Stack direction="row" alignItems="center">
