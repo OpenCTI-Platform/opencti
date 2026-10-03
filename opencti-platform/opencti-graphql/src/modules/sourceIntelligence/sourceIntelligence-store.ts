@@ -33,7 +33,7 @@ export interface ScorecardSearchOptions {
   orderMode?: 'asc' | 'desc';
 }
 
-export const searchScorecards = async (context: AuthContext, options: ScorecardSearchOptions): Promise<StoreSourceScorecard[]> => {
+const buildScorecardFilter = (options: Omit<ScorecardSearchOptions, 'first' | 'orderMode'>) => {
   const filter: any[] = [{ term: { 'entity_type.keyword': ENTITY_TYPE_SOURCE_SCORECARD } }];
   if (options.sourceIds && options.sourceIds.length > 0) {
     filter.push({ terms: { 'source_id.keyword': options.sourceIds } });
@@ -47,6 +47,11 @@ export const searchScorecards = async (context: AuthContext, options: ScorecardS
   if (options.startDate || options.endDate) {
     filter.push({ range: { computed_at: { ...(options.startDate ? { gte: options.startDate } : {}), ...(options.endDate ? { lte: options.endDate } : {}) } } });
   }
+  return filter;
+};
+
+export const searchScorecards = async (context: AuthContext, options: ScorecardSearchOptions): Promise<StoreSourceScorecard[]> => {
+  const filter = buildScorecardFilter(options);
   const size = Math.min(Math.max(options.first ?? MAX_SCORECARDS_PAGE, 1), MAX_SCORECARDS_PAGE);
   const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, {
     index: [READ_INDEX_SOURCE_SCORECARDS],
@@ -63,22 +68,100 @@ export const searchScorecards = async (context: AuthContext, options: ScorecardS
 };
 
 /**
+ * Every scorecard matching the options, page after page (`search_after` on a unique sort), never truncated.
+ */
+const searchAllScorecards = async (context: AuthContext, options: Omit<ScorecardSearchOptions, 'first' | 'orderMode'>) => {
+  const filter = buildScorecardFilter(options);
+  const scorecards: StoreSourceScorecard[] = [];
+  let searchAfter: unknown[] | undefined;
+  let hasMore = true;
+  while (hasMore) {
+    const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, {
+      index: [READ_INDEX_SOURCE_SCORECARDS],
+      size: MAX_SCORECARDS_PAGE,
+      track_total_hits: false,
+      body: {
+        query: { bool: { filter } },
+        sort: [{ 'internal_id.keyword': { order: 'asc' } }],
+        ...(searchAfter ? { search_after: searchAfter } : {}),
+      },
+    }).catch((err: unknown) => {
+      throw DatabaseError('Source scorecards search failed', { cause: err });
+    });
+    const hits = (data.hits?.hits ?? []) as Array<{ _id: string; _source: Record<string, any>; sort?: unknown[] }>;
+    scorecards.push(...hits.map(fromHit));
+    searchAfter = hits.length > 0 ? hits[hits.length - 1].sort : undefined;
+    hasMore = hits.length === MAX_SCORECARDS_PAGE && searchAfter !== undefined;
+  }
+  return scorecards;
+};
+
+/**
  * Latest scorecard of each source for a period: the live document, kept up to date by the streaming increments.
+ * Without source ids, the live scorecards of every source are returned.
  */
 export const findLiveScorecards = async (context: AuthContext, period: ScorecardPeriodValue, sourceIds?: string[]) => {
-  const scorecards: StoreSourceScorecard[] = [];
-  const ids = sourceIds ?? [];
-  if (sourceIds && ids.length === 0) {
-    return scorecards;
+  if (!sourceIds) {
+    return searchAllScorecards(context, { period, live: true });
   }
-  const chunks = ids.length > 0
-    ? Array.from({ length: Math.ceil(ids.length / MAX_SCORECARDS_PAGE) }, (_, i) => ids.slice(i * MAX_SCORECARDS_PAGE, (i + 1) * MAX_SCORECARDS_PAGE))
-    : [undefined];
-  for (let i = 0; i < chunks.length; i += 1) {
-    const page = await searchScorecards(context, { period, live: true, sourceIds: chunks[i], first: MAX_SCORECARDS_PAGE });
+  const scorecards: StoreSourceScorecard[] = [];
+  // One live document per source and period: a chunk of ids never exceeds one page
+  for (let i = 0; i < sourceIds.length; i += MAX_SCORECARDS_PAGE) {
+    const page = await searchScorecards(context, { period, live: true, sourceIds: sourceIds.slice(i, i + MAX_SCORECARDS_PAGE), first: MAX_SCORECARDS_PAGE });
     scorecards.push(...page);
   }
   return scorecards;
+};
+
+export type ScorecardAggregation = 'sum' | 'avg' | 'min' | 'max';
+
+/**
+ * Daily aggregate of one metric over the snapshots of the given sources, computed by Elasticsearch and paginated
+ * with a composite aggregation so that no day is dropped whatever the number of sources and the retention.
+ * Days where no source has a value for the metric are omitted.
+ */
+export const aggregateScorecardSnapshotsByDay = async (
+  context: AuthContext,
+  options: { sourceIds: string[]; period: ScorecardPeriodValue; metric: string; aggregation: ScorecardAggregation; startDate?: string | null; endDate?: string | null },
+) => {
+  if (options.sourceIds.length === 0) {
+    return [];
+  }
+  const filter = buildScorecardFilter({ sourceIds: options.sourceIds, period: options.period, live: false, startDate: options.startDate, endDate: options.endDate });
+  const points: Array<{ day: string; value: number }> = [];
+  let afterKey: Record<string, unknown> | undefined;
+  let hasMore = true;
+  while (hasMore) {
+    const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, {
+      index: [READ_INDEX_SOURCE_SCORECARDS],
+      size: 0,
+      track_total_hits: false,
+      body: {
+        query: { bool: { filter } },
+        aggs: {
+          days: {
+            composite: {
+              size: MAX_SCORECARDS_PAGE,
+              sources: [{ day: { terms: { field: 'snapshot_date.keyword', order: 'asc' } } }],
+              ...(afterKey ? { after: afterKey } : {}),
+            },
+            aggs: { metric: { [options.aggregation]: { field: options.metric } } },
+          },
+        },
+      },
+    }).catch((err: unknown) => {
+      throw DatabaseError('Source scorecards aggregation failed', { cause: err, metric: options.metric });
+    });
+    const buckets = (data.aggregations?.days?.buckets ?? []) as Array<{ key: { day: string }; metric: { value: number | null } }>;
+    buckets.forEach((bucket) => {
+      if (typeof bucket.metric?.value === 'number' && Number.isFinite(bucket.metric.value)) {
+        points.push({ day: bucket.key.day, value: bucket.metric.value });
+      }
+    });
+    afterKey = data.aggregations?.days?.after_key;
+    hasMore = buckets.length === MAX_SCORECARDS_PAGE && afterKey !== undefined;
+  }
+  return points;
 };
 
 export const deleteScorecardsOfSources = async (context: AuthContext, sourceIds: string[]) => {

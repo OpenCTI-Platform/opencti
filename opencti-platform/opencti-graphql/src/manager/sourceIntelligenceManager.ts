@@ -49,6 +49,7 @@ import { toSnapshotDate } from '../modules/sourceIntelligence/sourceIntelligence
 import type { SourceIntelligenceSettings } from '../modules/sourceIntelligence/sourceIntelligence-settings';
 import { generateSourceRecommendations } from '../modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { computeCollectionGaps } from '../modules/sourceIntelligence/sourceIntelligence-gaps';
+import { enforceQuarantines } from '../modules/sourceIntelligence/sourceIntelligence-quarantine';
 
 const SOURCE_INTELLIGENCE_MANAGER_LABEL = 'Source intelligence manager';
 const SOURCE_INTELLIGENCE_MANAGER_CONTEXT = 'source_intelligence_manager';
@@ -360,6 +361,11 @@ export const sourceIntelligenceHandler = async () => {
     await processStreamIncrements(context);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Source intelligence streaming increments error', { cause: error, manager: SOURCE_INTELLIGENCE_MANAGER_ID });
+  }
+  try {
+    await enforceQuarantines(context);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Source intelligence quarantine enforcement error', { cause: error, manager: SOURCE_INTELLIGENCE_MANAGER_ID });
   }
   const now = Date.now();
   const state = await getSourceIntelligenceState();
