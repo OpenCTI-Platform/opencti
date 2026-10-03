@@ -4,6 +4,7 @@ import {
   formatPulseGrowth,
   formatPulseRatio,
   PULSE_EVENT_KIND_LABELS,
+  PULSE_CONTRIBUTION_STATUS_LABELS,
   PULSE_MODE_LABELS,
   PULSE_PREVALENCE_LABELS,
   PULSE_PREVALENCE_ORDER,
@@ -24,7 +25,8 @@ describe('Threat Pulse utils', () => {
     expect(Object.keys(PULSE_PREVALENCE_SEVERITIES)).toEqual([...PULSE_PREVALENCE_ORDER]);
     expect(Object.keys(PULSE_TREND_LABELS)).toEqual(['rising', 'stable', 'falling']);
     expect(Object.keys(PULSE_TREND_SEVERITIES)).toEqual(['rising', 'stable', 'falling']);
-    expect(Object.keys(PULSE_MODE_LABELS)).toEqual(['off', 'contribute', 'contribute_and_read']);
+    expect(Object.keys(PULSE_MODE_LABELS)).toEqual(['off', 'preview', 'contribute_and_read']);
+    expect(Object.keys(PULSE_CONTRIBUTION_STATUS_LABELS)).toEqual(['active', 'grace', 'lapsed', 'none']);
     expect(Object.keys(PULSE_EVENT_KIND_LABELS)).toEqual(['created', 'sighted', 'detected', 'hunted', 'referenced']);
     expect(Object.keys(PULSE_SECTOR_LABELS)).toContain('undisclosed');
     expect(Object.keys(PULSE_REGION_LABELS)).toContain('undisclosed');

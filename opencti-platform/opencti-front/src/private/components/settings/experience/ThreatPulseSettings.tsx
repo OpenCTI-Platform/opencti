@@ -37,7 +37,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import ExperienceCard, { ExperienceHeadline } from './ExperienceCard';
 import ExperienceDetailRow from './ExperienceDetailRow';
 import ExperienceFeatureTile from './ExperienceFeatureTile';
-import { PULSE_MODE_LABELS, PULSE_REGION_LABELS, PULSE_SECTOR_LABELS } from '../../common/threat_pulse/threatPulseUtils';
+import { PULSE_CONTRIBUTION_STATUS_LABELS, PULSE_MODE_LABELS, PULSE_REGION_LABELS, PULSE_SECTOR_LABELS } from '../../common/threat_pulse/threatPulseUtils';
 import { ThreatPulseSettingsQuery } from './__generated__/ThreatPulseSettingsQuery.graphql';
 import { ThreatPulseSettings_settings$data, ThreatPulseSettings_settings$key } from './__generated__/ThreatPulseSettings_settings.graphql';
 import { ThreatPulseSettingsConfigureMutation } from './__generated__/ThreatPulseSettingsConfigureMutation.graphql';
@@ -52,6 +52,7 @@ const threatPulseSettingsFragment = graphql`
   fragment ThreatPulseSettings_settings on PulseSettings {
     id
     mode
+    access
     enabled
     readable
     hub_registered
@@ -90,6 +91,12 @@ const threatPulseSettingsFragment = graphql`
         records
       }
     }
+    preview {
+      last_refresh_at
+      digest_day
+      digest_items
+      matched_entities
+    }
     network {
       reachable
       k_threshold
@@ -97,6 +104,9 @@ const threatPulseSettingsFragment = graphql`
       contributors_bucket
       read_access
       last_contribution_day
+      contribution_status
+      read_access_until
+      contribution_grace_days
     }
   }
 `;
@@ -137,7 +147,8 @@ const threatPulseSettingsPurgeMutation = graphql`
 
 const SECTOR_VALUES = Object.keys(PULSE_SECTOR_LABELS) as PulseSectorBucket[];
 const REGION_VALUES = Object.keys(PULSE_REGION_LABELS) as PulseRegionBucket[];
-const ACTIVE_MODES: PulseMode[] = ['contribute_and_read', 'contribute'];
+const MODES: PulseMode[] = ['preview', 'contribute_and_read', 'off'];
+export const THREAT_PULSE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/threat-pulse/';
 
 interface MarkingOption {
   id: string;
@@ -149,20 +160,19 @@ interface ConsentDialogProps {
   open: boolean;
   settings: ThreatPulseSettings_settings$data;
   onClose: () => void;
-  onAccept: (input: { mode: PulseMode; sector: PulseSectorBucket; region: PulseRegionBucket }) => void;
+  onAccept: (input: { sector: PulseSectorBucket; region: PulseRegionBucket }) => void;
 }
 
 const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: ConsentDialogProps) => {
   const { t_i18n } = useFormatter();
   const [accepted, setAccepted] = useState(false);
-  const [mode, setMode] = useState<PulseMode>('contribute_and_read');
   const [sector, setSector] = useState<PulseSectorBucket>(settings.sector_bucket ?? settings.suggested_sector_bucket);
   const [region, setRegion] = useState<PulseRegionBucket>(settings.region_bucket ?? settings.suggested_region_bucket);
   return (
-    <Dialog open={open} onClose={onClose} title={t_i18n('Enable Threat Pulse')} size="medium">
+    <Dialog open={open} onClose={onClose} title={t_i18n('Contribute to Threat Pulse')} size="medium">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-consent-dialog">
         <Text variant="content-compact">
-          {t_i18n('By enabling Threat Pulse, this platform sends to XTM Hub, every hour, keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools it observes, with activity counts. Raw values, names, descriptions, files and the identity of your organization never leave the platform.')}
+          {t_i18n('By contributing, this platform sends to XTM Hub, every hour, keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools it observes, with activity counts. Raw values, names, descriptions, files and the identity of your organization never leave the platform.')}
         </Text>
         <Text variant="content-compact">
           {t_i18n('Hashes are derived with a salt that XTM Hub rotates every day. Objects marked TLP:RED, TLP:AMBER+STRICT or PAP:RED, objects with restricted access and the markings you exclude never contribute.')}
@@ -171,17 +181,11 @@ const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: Consent
           {t_i18n('XTM Hub publishes a signal only when enough distinct platforms observed the same object (k-anonymity). Your sector and region are shared as coarse buckets only.')}
         </Text>
         <Text variant="content-compact">
-          {t_i18n('Reading the community signal requires contributing. You can disable Threat Pulse and purge every contribution of this platform at any time.')}
+          {t_i18n('Contributing unlocks the full experience: platforms range, network first seen, 12-week trend, sector trend, trending alerts, benchmarks and briefings. You can stop contributing at any time and purge every contribution of this platform; the preview stays available and sends nothing.')}
         </Text>
-        <Select value={mode} onValueChange={(value) => setMode(value as PulseMode)}>
-          <SelectLabel>{t_i18n('Mode')}</SelectLabel>
-          <SelectTrigger aria-label={t_i18n('Mode')}>
-            <SelectValue>{t_i18n(PULSE_MODE_LABELS[mode])}</SelectValue>
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Mode')}>
-            {ACTIVE_MODES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_MODE_LABELS[value])}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <a href={THREAT_PULSE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+          <Text variant="content-compact">{t_i18n('Read what is shared in each mode')}</Text>
+        </a>
         <Select value={sector} onValueChange={(value) => setSector(value as PulseSectorBucket)}>
           <SelectLabel>{t_i18n('Sector bucket')}</SelectLabel>
           <SelectTrigger aria-label={t_i18n('Sector bucket')}>
@@ -209,8 +213,8 @@ const ThreatPulseConsentDialog = ({ open, settings, onClose, onAccept }: Consent
       </Box>
       <DialogActions>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-        <Button disabled={!accepted} onClick={() => onAccept({ mode, sector, region })} data-testid="threat-pulse-consent-accept">
-          {t_i18n('Enable')}
+        <Button disabled={!accepted} onClick={() => onAccept({ sector, region })} data-testid="threat-pulse-consent-accept">
+          {t_i18n('Contribute')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -250,11 +254,16 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
     });
   };
 
-  let statusChip = <Tag label={t_i18n('Disabled')} labelTextTransform="none" disableTooltip />;
-  if (settings.mode === 'contribute_and_read') {
-    statusChip = <Tag label={t_i18n('Contributing and reading')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
-  } else if (settings.mode === 'contribute') {
-    statusChip = <Tag label={t_i18n('Contributing')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
+  const lapsed = settings.mode === 'contribute_and_read' && settings.access === 'preview';
+  let statusChip = <Tag label={t_i18n('Off')} labelTextTransform="none" disableTooltip />;
+  if (settings.access === 'not_connected') {
+    statusChip = <Tag label={t_i18n('Not connected')} labelTextTransform="none" disableTooltip />;
+  } else if (settings.access === 'full') {
+    statusChip = <Tag label={t_i18n('Contributing - full experience')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
+  } else if (lapsed) {
+    statusChip = <Tag label={t_i18n('Contribution lapsed - preview')} labelTextTransform="none" disableTooltip />;
+  } else if (settings.access === 'preview') {
+    statusChip = <Tag label={t_i18n('Preview')} color={accent} labelTextTransform="none" disableTooltip />;
   }
 
   const footer = isGranted ? (
@@ -264,24 +273,57 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           {t_i18n('Purge my contributions')}
         </Button>
       )}
-      {settings.enabled ? (
-        <Button variant="secondary" onClick={() => configure({ mode: 'off' })} disabled={configuring} data-testid="threat-pulse-disable-button">
-          {t_i18n('Disable Threat Pulse')}
+      {settings.enabled && (
+        <Button variant="secondary" onClick={() => configure({ mode: 'preview' })} disabled={configuring} data-testid="threat-pulse-stop-button">
+          {t_i18n('Stop contributing')}
         </Button>
-      ) : (
+      )}
+      {settings.mode === 'preview' && (
+        <Button variant="secondary" onClick={() => configure({ mode: 'off' })} disabled={configuring} data-testid="threat-pulse-disable-button">
+          {t_i18n('Turn Threat Pulse off')}
+        </Button>
+      )}
+      {settings.mode === 'off' && (
+        <Button variant="secondary" onClick={() => configure({ mode: 'preview' })} disabled={!settings.hub_registered || configuring} data-testid="threat-pulse-preview-button">
+          {t_i18n('Turn the preview on')}
+        </Button>
+      )}
+      {!settings.enabled && (
         <Button onClick={() => setOpenConsent(true)} disabled={!settings.hub_registered || configuring} data-testid="threat-pulse-enable-button">
-          {t_i18n('Enable Threat Pulse')}
+          {t_i18n('Contribute and unlock the full experience')}
         </Button>
       )}
     </>
   ) : undefined;
 
+  const previewStatus = settings.mode === 'preview' && settings.hub_registered && (
+    <div data-testid="threat-pulse-preview-status">
+      <ExperienceDetailRow label={t_i18n('Sent by the preview')}>
+        <Text variant="content-compact">{t_i18n('Nothing: the digest is downloaded and matched on this platform')}</Text>
+      </ExperienceDetailRow>
+      <ExperienceDetailRow label={t_i18n('Objects found in the community digest')}>
+        <Text variant="content-compact" data-testid="threat-pulse-preview-matched">{n(settings.preview.matched_entities)}</Text>
+      </ExperienceDetailRow>
+      <ExperienceDetailRow label={t_i18n('Last preview refresh')} divider={false}>
+        <Text variant="content-compact">
+          {settings.preview.last_refresh_at ? `${fldt(settings.preview.last_refresh_at)} - ${n(settings.preview.digest_items)} ${t_i18n('objects in the digest')}` : '-'}
+        </Text>
+      </ExperienceDetailRow>
+    </div>
+  );
+
   const pitch = (
     <>
       <ExperienceHeadline>{t_i18n('The open network early warning system')}</ExperienceHeadline>
       <Text variant="content-compact" style={secondary}>
-        {t_i18n('Contribute keyed hashes and counts, never values, and get community prevalence, network first seen and sector trends on your indicators, techniques, vulnerabilities and threats.')}
+        {t_i18n('The preview shows how widespread your objects are across the community and whether they rise, without sending anything. Contribute keyed hashes and counts, never values, to unlock network first seen, platforms ranges, sector trends, alerts and benchmarks.')}
       </Text>
+      {lapsed && (
+        <Alert severity="warning" variant="outlined" data-testid="threat-pulse-lapsed">
+          {t_i18n('XTM Hub received no contribution from this platform within the grace period: the preview is shown until the next contribution is accepted.')}
+        </Alert>
+      )}
+      {previewStatus}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: theme.spacing(1.5) }}>
         <ExperienceFeatureTile accent={accent} icon={<PublicOutlined />} label={t_i18n('Community prevalence')} />
         <ExperienceFeatureTile accent={accent} icon={<TimelineOutlined />} label={t_i18n('Network first seen and trends')} />
@@ -297,15 +339,32 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const configuration = (
     <div data-testid="threat-pulse-configuration">
       <ExperienceDetailRow label={t_i18n('Mode')}>
-        <Select value={settings.mode} disabled={!isGranted || configuring} onValueChange={(value) => configure({ mode: value as PulseMode })}>
+        <Select
+          value={settings.mode}
+          disabled={!isGranted || configuring}
+          onValueChange={(value) => {
+            if (value === 'contribute_and_read' && !settings.enabled) {
+              setOpenConsent(true);
+            } else {
+              configure({ mode: value as PulseMode });
+            }
+          }}
+        >
           <SelectTrigger aria-label={t_i18n('Mode')} style={{ width: 240 }}>
             <SelectValue>{t_i18n(PULSE_MODE_LABELS[settings.mode])}</SelectValue>
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Mode')}>
-            {ACTIVE_MODES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_MODE_LABELS[value])}</SelectItem>)}
+            {MODES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_MODE_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
       </ExperienceDetailRow>
+      {settings.network.contribution_status && (
+        <ExperienceDetailRow label={t_i18n('Contribution status')}>
+          <Text variant="content-compact" data-testid="threat-pulse-contribution-status">
+            {`${t_i18n(PULSE_CONTRIBUTION_STATUS_LABELS[settings.network.contribution_status] ?? settings.network.contribution_status)}${settings.network.read_access_until ? ` - ${t_i18n('full experience until')} ${settings.network.read_access_until}` : ''}`}
+          </Text>
+        </ExperienceDetailRow>
+      )}
       <ExperienceDetailRow label={t_i18n('Sector bucket')}>
         <Select
           value={settings.sector_bucket ?? settings.suggested_sector_bucket}
@@ -440,9 +499,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           open={openConsent}
           settings={settings}
           onClose={() => setOpenConsent(false)}
-          onAccept={({ mode, sector, region }) => {
+          onAccept={({ sector, region }) => {
             commitConfigure({
-              variables: { input: { mode, sector_bucket: sector, region_bucket: region, consent_version: settings.consent_version } },
+              variables: { input: { mode: 'contribute_and_read', sector_bucket: sector, region_bucket: region, consent_version: settings.consent_version } },
               onCompleted: () => setOpenConsent(false),
             });
           }}

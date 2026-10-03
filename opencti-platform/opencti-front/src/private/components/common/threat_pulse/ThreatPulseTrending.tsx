@@ -11,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseTrendingQuery } from './__generated__/ThreatPulseTrendingQuery.graphql';
 import ThreatPulseBriefing from './ThreatPulseBriefing';
+import { ThreatPulseLockedRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import {
   formatPulseGrowth,
   PULSE_PERIOD_LABELS,
@@ -25,16 +26,19 @@ import {
 
 export const threatPulseTrendingQuery = graphql`
   query ThreatPulseTrendingQuery($period: PulsePeriod!, $first: Int) {
-    pulseTrending(period: $period, first: $first) {
+    pulseTrending(period: $period, first: $first, include_preview: true) {
       readable
+      preview
       unavailable_reason
       day
       period
       sector_bucket
       region_bucket
       network_items_count
+      locked_count
       entries {
         object_type
+        rank
         platforms_bucket
         prevalence
         trend
@@ -68,6 +72,7 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
     { fetchPolicy: 'store-and-network' },
   );
   const secondary = { color: theme.palette.text.secondary };
+  useThreatPulseImpression('trending_widget', pulseTrending.preview);
   if (!pulseTrending.readable) {
     return (
       <Text variant="content-compact" style={secondary} data-testid="threat-pulse-trending-unavailable">
@@ -76,11 +81,52 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
     );
   }
   const notHeld = Math.max(0, pulseTrending.network_items_count - pulseTrending.entries.length);
+  const sectorLabel = pulseTrending.sector_bucket
+    ? t_i18n(PULSE_SECTOR_LABELS[pulseTrending.sector_bucket] ?? 'Undisclosed')
+    : t_i18n('Every sector');
+  if (pulseTrending.preview) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="threat-pulse-trending-preview">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <ThreatPulsePreviewChip />
+          <Text variant="content-compact" style={secondary}>{`${t_i18n('Sector')}: ${sectorLabel} - ${t_i18n('Last 7 days')}`}</Text>
+        </Box>
+        <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {pulseTrending.entries.map((entry) => {
+            const link = resolveLink(entry.entity.entity_type);
+            const name = <Text variant="content-compact" style={ELLIPSIS}>{entry.entity.representative.main}</Text>;
+            return (
+              <Box component="li" key={entry.entity.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, paddingY: 0.75 }}>
+                <Text variant="content-compact" style={secondary}>{`#${entry.rank ?? '-'}`}</Text>
+                <ItemIcon type={entry.entity.entity_type} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  {link ? <Link to={`${link}/${entry.entity.id}`} style={{ color: 'inherit' }}>{name}</Link> : name}
+                  <Text variant="content-compact" style={secondary}>{t_i18n(PULSE_PREVALENCE_LABELS[entry.prevalence])}</Text>
+                </Box>
+                <Chip label={t_i18n(PULSE_TREND_LABELS[entry.trend])} severity={PULSE_TREND_SEVERITIES[entry.trend]} />
+              </Box>
+            );
+          })}
+        </Box>
+        {notHeld > 0 && (
+          <Text variant="content-compact" style={secondary}>
+            {`${notHeld} ${t_i18n('of the first ranks trend in the community, but this platform does not hold them.')}`}
+          </Text>
+        )}
+        {Array.from({ length: pulseTrending.locked_count }, (_, index) => (
+          <ThreatPulseLockedRow key={index} label={`#${pulseTrending.network_items_count + index + 1} ${t_i18n('Trending object')}`} />
+        ))}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingTop: 0.5 }}>
+          <ThreatPulseUnlockCta surface="trending_widget" />
+        </Box>
+      </Box>
+    );
+  }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="threat-pulse-trending-list">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
         <Text variant="content-compact" style={secondary}>
-          {`${t_i18n('Sector')}: ${t_i18n(PULSE_SECTOR_LABELS[pulseTrending.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')}`}
+          {`${t_i18n('Sector')}: ${sectorLabel}`}
         </Text>
         <ThreatPulseBriefing period={period} sectorBucket={pulseTrending.sector_bucket} regionBucket={pulseTrending.region_bucket} />
       </Box>
@@ -103,11 +149,11 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 {link ? <Link to={`${link}/${entry.entity.id}`} style={{ color: 'inherit' }}>{name}</Link> : name}
                 <Text variant="content-compact" style={secondary}>
-                  {`${t_i18n('Network first seen')} ${fsd(entry.first_seen_network)} - ${t_i18n(PULSE_PREVALENCE_LABELS[entry.prevalence])}`}
+                  {`${t_i18n('Network first seen')} ${entry.first_seen_network ? fsd(entry.first_seen_network) : '-'} - ${t_i18n(PULSE_PREVALENCE_LABELS[entry.prevalence])}`}
                 </Text>
               </Box>
-              <Text variant="content-compact" style={secondary} title={t_i18n('Contributing platforms')}>{entry.platforms_bucket}</Text>
-              <Chip label={formatPulseGrowth(entry.growth)} severity="info" />
+              <Text variant="content-compact" style={secondary} title={t_i18n('Contributing platforms')}>{entry.platforms_bucket ?? '-'}</Text>
+              <Chip label={entry.growth !== null && entry.growth !== undefined ? formatPulseGrowth(entry.growth) : '-'} severity="info" />
               <Chip label={t_i18n(PULSE_TREND_LABELS[entry.trend])} severity={PULSE_TREND_SEVERITIES[entry.trend]} />
             </Box>
           );

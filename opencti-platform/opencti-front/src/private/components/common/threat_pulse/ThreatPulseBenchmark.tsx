@@ -11,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseBenchmarkQuery } from './__generated__/ThreatPulseBenchmarkQuery.graphql';
+import { ThreatPulseLockedRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import {
   formatPulseRatio,
   PULSE_EVENT_KIND_LABELS,
@@ -64,6 +65,27 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
   const { translateEntityType } = useEntityTranslation();
   const { pulseBenchmark } = useLazyLoadQuery<ThreatPulseBenchmarkQuery>(threatPulseBenchmarkQuery, { period }, { fetchPolicy: 'store-and-network' });
   const secondary = { color: theme.palette.text.secondary };
+  const locked = pulseBenchmark.unavailable_reason === 'contribution_required';
+  useThreatPulseImpression('benchmark_template', locked);
+  if (locked) {
+    // The template stays discoverable in preview: each tile names what it would show once the platform contributes.
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="threat-pulse-benchmark-locked">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ThreatPulsePreviewChip />
+          <Text variant="content-compact" style={secondary}>
+            {t_i18n('Sector benchmarks compare the activity of this platform with the median of its sector, without revealing any other platform.')}
+          </Text>
+        </Box>
+        <ThreatPulseLockedRow label={t_i18n('This platform against the median of its sector, by type and activity')} />
+        <ThreatPulseLockedRow label={t_i18n('Objects this platform reports well above its sector')} />
+        <ThreatPulseLockedRow label={t_i18n('Contributing platforms of the sector')} />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingTop: 0.5 }}>
+          <ThreatPulseUnlockCta surface="benchmark_template" />
+        </Box>
+      </Box>
+    );
+  }
   if (!pulseBenchmark.readable) {
     return (
       <Text variant="content-compact" style={secondary} data-testid="threat-pulse-benchmark-unavailable">

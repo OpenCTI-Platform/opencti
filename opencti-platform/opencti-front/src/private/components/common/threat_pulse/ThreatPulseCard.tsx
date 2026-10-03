@@ -8,6 +8,8 @@ import { InformationOutline } from 'mdi-material-ui';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { ThreatPulseConnectCta, ThreatPulseLockedRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import { ThreatPulseCardQuery } from './__generated__/ThreatPulseCardQuery.graphql';
 import {
   buildSparklinePoints,
@@ -23,11 +25,13 @@ export const threatPulseCardQuery = graphql`
   query ThreatPulseCardQuery($id: ID!) {
     pulseEntity(id: $id) {
       id
+      access
       readable
       unavailable_reason
       sector_bucket
       information {
         published
+        preview
         prevalence
         platforms_bucket
         first_seen_network
@@ -125,17 +129,9 @@ interface ThreatPulseCardProps {
   entityId: string;
 }
 
-const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n, fsd, fldt } = useFormatter();
-  const { pulseEntity } = useLazyLoadQuery<ThreatPulseCardQuery>(threatPulseCardQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
-  const information = pulseEntity.information;
-  if (!information) {
-    return null;
-  }
-  const secondary = { color: theme.palette.text.secondary };
-  const reason = pulseEntity.unavailable_reason;
-  const title = (
+const ThreatPulseCardTitle = ({ preview = false }: { preview?: boolean }) => {
+  const { t_i18n } = useFormatter();
+  return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {t_i18n('Threat Pulse')}
       <Tooltip>
@@ -148,8 +144,98 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
           {t_i18n('Community signal from the platforms contributing to Threat Pulse: keyed hashes and counts only, published when at least the anonymity threshold of platforms observed the same object.')}
         </TooltipContent>
       </Tooltip>
+      {preview && <ThreatPulsePreviewChip />}
     </Box>
   );
+};
+
+// Not connected to XTM Hub: what Threat Pulse would add, and the one step to get it.
+const ThreatPulseNotConnectedCard = () => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  useThreatPulseImpression('entity_card', true);
+  return (
+    <Box sx={{ flex: '0 0 auto' }}>
+      <Card title={<ThreatPulseCardTitle />} fullHeight={false}>
+        <Box data-testid="threat-pulse-not-connected" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'flex-start' }}>
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
+            {t_i18n('Connect the platform to XTM Hub to see how widespread this object is across the OpenCTI community and whether it is rising, without sending anything about it.')}
+          </Text>
+          <ThreatPulseConnectCta surface="entity_card" />
+        </Box>
+      </Card>
+    </Box>
+  );
+};
+
+type PulseEntity = ThreatPulseCardQuery['response']['pulseEntity'];
+
+// Preview: the real coarse signal of the digest when the object is among the most prevalent of the community, the
+// rows of the full experience locked, and the one step to unlock them.
+const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n, fldt } = useFormatter();
+  useThreatPulseImpression('entity_card', true);
+  const secondary = { color: theme.palette.text.secondary };
+  const information = pulseEntity.information?.preview ? pulseEntity.information : null;
+  return (
+    <Box sx={{ flex: '0 0 auto' }}>
+      <Card title={<ThreatPulseCardTitle preview />} fullHeight={false}>
+        <Box data-testid="threat-pulse-preview" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {information ? (
+            <>
+              <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
+              <DetailRow label={t_i18n('Community trend')}>
+                {information.trend && (
+                  <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
+                )}
+              </DetailRow>
+            </>
+          ) : (
+            <Text variant="content-compact" style={secondary} data-testid="threat-pulse-preview-not-listed">
+              {t_i18n('This object is not among the most prevalent objects of the community today.')}
+            </Text>
+          )}
+          <ThreatPulseLockedRow label={t_i18n('Contributing platforms')} />
+          <ThreatPulseLockedRow label={t_i18n('Network first seen')} />
+          <ThreatPulseLockedRow label={t_i18n('Community trend over 12 weeks')} />
+          <ThreatPulseLockedRow label={t_i18n('Sector trend')} />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <ThreatPulseUnlockCta surface="entity_card" />
+          </Box>
+          {information?.updated_at && (
+            <Text variant="content-compact" style={secondary}>
+              {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
+            </Text>
+          )}
+        </Box>
+      </Card>
+    </Box>
+  );
+};
+
+const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n, fsd, fldt } = useFormatter();
+  const { settings } = useAuth();
+  const { pulseEntity } = useLazyLoadQuery<ThreatPulseCardQuery>(threatPulseCardQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
+  if (pulseEntity.unavailable_reason === 'out_of_scope') {
+    return null;
+  }
+  if (pulseEntity.access === 'not_connected') {
+    // Only where XTM Hub can be reached: an isolated platform is never asked to connect.
+    return settings?.xtm_hub_backend_is_reachable ? <ThreatPulseNotConnectedCard /> : null;
+  }
+  if (pulseEntity.access === 'preview') {
+    return <ThreatPulsePreviewCard pulseEntity={pulseEntity} />;
+  }
+  const information = pulseEntity.information;
+  if (pulseEntity.access !== 'full' || !information) {
+    return null;
+  }
+  const secondary = { color: theme.palette.text.secondary };
+  const reason = pulseEntity.unavailable_reason;
+  const title = <ThreatPulseCardTitle />;
   return (
     <Box sx={{ flex: '0 0 auto' }}>
       <Card title={title} fullHeight={false}>
@@ -211,8 +297,9 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
 };
 
 /**
- * Threat Pulse card of an entity overview. It renders nothing until the entity carries Threat Pulse information, so
- * that it never takes room on platforms that did not opt in or on objects the network has not reported yet.
+ * Threat Pulse card of an entity overview, in three states: not connected to XTM Hub (what it would add and how to
+ * connect), preview (the coarse community signal and the locked rows of the full experience) and full. It renders
+ * nothing when an administrator turned Threat Pulse off or the entity type is out of scope.
  */
 const ThreatPulseCard = ({ entityId }: ThreatPulseCardProps) => (
   <Suspense fallback={null}>

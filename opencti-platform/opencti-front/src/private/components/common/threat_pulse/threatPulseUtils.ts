@@ -46,8 +46,15 @@ export const PULSE_PERIOD_LABELS: Record<PulsePeriodValue, string> = {
 
 export const PULSE_MODE_LABELS: Record<string, string> = {
   off: 'Off',
-  contribute: 'Contribute only',
-  contribute_and_read: 'Contribute and read',
+  preview: 'Preview, nothing sent',
+  contribute_and_read: 'Contribute, full experience',
+};
+
+export const PULSE_CONTRIBUTION_STATUS_LABELS: Record<string, string> = {
+  active: 'Active contributor',
+  grace: 'Grace period',
+  lapsed: 'Lapsed',
+  none: 'No contribution yet',
 };
 
 export const PULSE_SECTOR_LABELS: Record<string, string> = {
@@ -89,7 +96,7 @@ export const PULSE_EVENT_KIND_LABELS: Record<string, string> = {
 export const PULSE_UNAVAILABLE_MESSAGES: Record<string, string> = {
   not_enabled: 'Threat Pulse is not enabled on this platform.',
   not_registered: 'Register the platform on XTM Hub to use Threat Pulse.',
-  contribution_required: 'Reading Threat Pulse requires contributing: the first contribution is sent within the hour.',
+  contribution_required: 'This platform shows the Threat Pulse preview: contributing unlocks the full experience.',
   hub_unreachable: 'XTM Hub is unreachable, the last known network information is displayed.',
   rate_limited: 'The XTM Hub rate limit is reached, retry in a few minutes.',
   enterprise_edition_required: 'Sector benchmarks require the Enterprise Edition.',

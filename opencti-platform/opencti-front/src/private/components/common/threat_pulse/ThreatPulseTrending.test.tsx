@@ -2,23 +2,26 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import ThreatPulseTrending from './ThreatPulseTrending';
 
 vi.mock('./ThreatPulseBriefing', () => ({ default: () => null }));
 
-const entry = (id: string, name: string, trend: string, growth: number) => ({
+const entry = (id: string, name: string, trend: string, growth: number | null, rank: number | null = null) => ({
   object_type: 'malware',
-  platforms_bucket: '10-24',
+  rank,
+  platforms_bucket: growth === null ? null : '10-24',
   prevalence: 'uncommon',
   trend,
   growth,
-  first_seen_network: '2026-09-21T00:00:00.000Z',
+  first_seen_network: growth === null ? null : '2026-09-21T00:00:00.000Z',
   entity: { id, entity_type: 'Malware', representative: { main: name } },
 });
 
+const administrator = createMockUserContext({ me: { id: 'admin', capabilities: [{ name: 'BYPASS' }] } });
+
 const renderTrending = (pulseTrending: Record<string, unknown>) => {
-  const { relayEnv } = testRender(<ThreatPulseTrending />);
+  const { relayEnv } = testRender(<ThreatPulseTrending />, { userContext: administrator });
   act(() => {
     relayEnv.mock.resolveMostRecentOperation((operation) => {
       expect(operation.request.variables).toEqual({ period: 'last_7_days', first: 10 });
@@ -27,13 +30,12 @@ const renderTrending = (pulseTrending: Record<string, unknown>) => {
   });
 };
 
+const BASE = { readable: true, preview: false, unavailable_reason: null, day: '2026-10-03', period: 'last_7_days', locked_count: 0 };
+
 describe('ThreatPulseTrending', () => {
   it('should list the local entities rising in the sector with their community facts', async () => {
     renderTrending({
-      readable: true,
-      unavailable_reason: null,
-      day: '2026-10-03',
-      period: 'last_7_days',
+      ...BASE,
       sector_bucket: 'finance',
       region_bucket: 'europe',
       network_items_count: 5,
@@ -48,25 +50,40 @@ describe('ThreatPulseTrending', () => {
   });
 
   it('should say when nothing the platform holds is trending', async () => {
-    renderTrending({
-      readable: true,
-      unavailable_reason: null,
-      day: '2026-10-03',
-      period: 'last_7_days',
-      sector_bucket: 'finance',
-      region_bucket: null,
-      network_items_count: 0,
-      entries: [],
-    });
+    renderTrending({ ...BASE, sector_bucket: 'finance', region_bucket: null, network_items_count: 0, entries: [] });
     expect(await screen.findByText('Nothing this platform holds is trending in its sector for this period.')).toBeDefined();
+  });
+
+  it('should name the first ranks of the preview, lock the next ones and offer the unlock step', async () => {
+    renderTrending({
+      ...BASE,
+      preview: true,
+      sector_bucket: null,
+      region_bucket: null,
+      network_items_count: 3,
+      locked_count: 7,
+      entries: [entry('m1', 'LockBit', 'rising', null, 1), entry('m3', 'Akira', 'rising', null, 3)],
+    });
+    expect(await screen.findByTestId('threat-pulse-trending-preview')).toBeDefined();
+    expect(screen.getByTestId('threat-pulse-preview-chip')).toBeDefined();
+    expect(screen.getByText('Sector: Every sector - Last 7 days')).toBeDefined();
+    expect(screen.getByText('#1')).toBeDefined();
+    expect(screen.getByText('#3')).toBeDefined();
+    expect(screen.getByText('1 of the first ranks trend in the community, but this platform does not hold them.')).toBeDefined();
+    const locked = screen.getAllByTestId('threat-pulse-locked-row').map((row) => row.textContent);
+    expect(locked).toHaveLength(7);
+    expect(locked[0]).toBe('#4 Trending objectLocked');
+    expect(locked[6]).toBe('#10 Trending objectLocked');
+    expect(screen.getByTestId('threat-pulse-unlock-cta')).toBeDefined();
+    expect(screen.queryByText('x3.2')).toBeNull();
   });
 
   it('should explain why the trending list cannot be read', async () => {
     renderTrending({
+      ...BASE,
       readable: false,
       unavailable_reason: 'not_registered',
       day: null,
-      period: 'last_7_days',
       sector_bucket: null,
       region_bucket: null,
       network_items_count: 0,
