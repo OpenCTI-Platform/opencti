@@ -49,6 +49,11 @@ Leveraging the filters, users can meticulously **define the criteria that activa
 
 Beyond filters, a trigger can be configured to **respond to three event types**: creation, modification, and deletion.
 
+Live triggers can also respond to two [provenance](provenance.md) event types:
+
+- **Corroboration reached**: the number of distinct sources asserting a matching element reaches the corroboration threshold of the trigger (2 by default, up to 200). The notification is sent once, when the threshold is crossed.
+- **Source conflict detected**: a source proposes a value conflicting with the current value of a matching element.
+
 With the Enterprise Edition, a trigger can also respond to the events of [Case Autopilot](case-autopilot.md) investigations, delivered on the case of the investigation: investigation awaiting approval, investigation completed and investigation failed.
 
 ![Trigger configuration](assets/trigger-configuration.png)

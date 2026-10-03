@@ -15,6 +15,8 @@ import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_
 import StixRelationshipsTreeMap from '../../private/components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '../../private/components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
+import ProvenanceFreshnessWidget from '@components/common/provenance/ProvenanceFreshnessWidget';
+import ProvenanceSingleSourcedWidget from '@components/common/provenance/ProvenanceSingleSourcedWidget';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import WidgetNotImplemented from './WidgetNotImplemented';
@@ -219,6 +221,30 @@ const DashboardRelationshipsViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-freshness':
+      return (
+        <ProvenanceFreshnessWidget
+          perspective="relationships"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-single-sourced':
+      return (
+        <ProvenanceSingleSourcedWidget
+          perspective="relationships"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
           popover={popover}
           host={host}
           refreshRate={refreshRate}

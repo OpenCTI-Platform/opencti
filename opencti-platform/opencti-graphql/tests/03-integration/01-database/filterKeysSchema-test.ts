@@ -156,11 +156,12 @@ describe('Filter keys schema generation testing', async () => {
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_NOTIFICATION)?.get('notification_content.events.operation');
     expect(filterDefinition?.filterKey).toEqual('notification_content.events.operation');
     expect(filterDefinition?.type).toEqual('enum');
-    // create, update, delete, and the three Case Autopilot run events
+    // create, update, delete, corroboration, conflict and the three Case Autopilot run events
     expect(filterDefinition?.elementsForFilterValuesSearch).toEqual(expect.arrayContaining([
-      'create', 'update', 'delete', 'investigation_awaiting_approval', 'investigation_completed', 'investigation_failed',
+      'create', 'update', 'delete', 'corroboration', 'conflict',
+      'investigation_awaiting_approval', 'investigation_completed', 'investigation_failed',
     ]));
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(6);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(8);
   });
   it('should construct correct filter definition for nested object attributes: case of relationships', () => {
     // 'fromId' for stix core relationships

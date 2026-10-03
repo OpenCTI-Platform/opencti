@@ -159,6 +159,7 @@ import './savedFilter/savedFilter-graphql';
 import './requestAccess/requestAccess-graphql';
 import './pir/pir-graphql';
 import './investigationRun/investigationRun-graphql';
+import './provenance/provenance-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './securityCoverage/securityCoverage-graphql';

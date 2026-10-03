@@ -48,6 +48,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'trigger_time', label: 'Trigger time', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'trigger_type', label: 'Trigger type', type: 'string', format: 'enum', values: TRIGGER_TYPE_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'instance_trigger', label: 'Instance trigger', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'corroboration_threshold', label: 'Corroboration threshold', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     authorizedMembers,
     authorizedAuthorities,
   ],

@@ -18,6 +18,16 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   # Stix Core Object
   createdBy: Identity
+  # Provenance
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
   objectOrganization: [Organization!]
@@ -190,6 +200,9 @@ enum CaseRftsOrdering {
   severity
   priority
   _score
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 
 # Relay connections

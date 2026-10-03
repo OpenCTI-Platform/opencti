@@ -23,6 +23,8 @@ import DraftsHorizontalBars from '@components/common/drafts/DraftsHorizontalBars
 import DraftsMultiVerticalBars from '@components/common/drafts/DraftsMultiVerticalBars';
 import DraftsMultiLineChart from '@components/common/drafts/DraftsMultiLineChart';
 import DraftsMultiAreaChart from '@components/common/drafts/DraftsMultiAreaChart';
+import ProvenanceFreshnessWidget from '@components/common/provenance/ProvenanceFreshnessWidget';
+import ProvenanceSingleSourcedWidget from '@components/common/provenance/ProvenanceSingleSourcedWidget';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
@@ -360,6 +362,30 @@ const DashboardEntitiesViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-freshness':
+      return (
+        <ProvenanceFreshnessWidget
+          perspective="entities"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-single-sourced':
+      return (
+        <ProvenanceSingleSourcedWidget
+          perspective="entities"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
           popover={popover}
           host={host}
           refreshRate={refreshRate}
