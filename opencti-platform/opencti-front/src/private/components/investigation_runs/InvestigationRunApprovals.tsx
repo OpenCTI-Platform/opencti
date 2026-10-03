@@ -44,13 +44,13 @@ const requiredCapability = (kind: string) => {
   return KNOWLEDGE_KNUPDATE;
 };
 
-const RelativeTime = ({ date, template }: { date: string; template: string }) => {
+const RelativeTime = ({ date, template }: { date: string; template?: string }) => {
   const { t_i18n, rd, fldt } = useFormatter();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Typography variant="caption" color="text.secondary" component="span" tabIndex={0}>
-          {t_i18n(template, { values: { time: rd(date) } })}
+          {template ? t_i18n(template, { values: { time: rd(date) } }) : rd(date)}
         </Typography>
       </TooltipTrigger>
       <TooltipContent>{fldt(date)}</TooltipContent>
@@ -207,7 +207,7 @@ const DecidedLine = ({ run, approval, entityNames }: { run: Run; approval: Appro
         {t_i18n(approved ? 'Approved by {user}: {subject}' : 'Rejected by {user}: {subject}', { values: { user: who, subject } })}
         {!approved && approval.rejection_reason ? ` - ${approval.rejection_reason}` : ''}
       </Typography>
-      {approval.decided_at && <RelativeTime date={approval.decided_at} template="{time}" />}
+      {approval.decided_at && <RelativeTime date={approval.decided_at} />}
     </Stack>
   );
 };
