@@ -162,3 +162,10 @@ Connectors use the following GraphQL mutations, also available in the Python cli
 - `indicatorReportDeployment`: reports the deployment status of one indicator on one platform.
 - `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
 - `indicatorReportHits`: reports the hits of one indicator on one platform.
+
+A security platform able to prove a validation test from its own data (for example a SIEM that searched for the
+benign test of a request) reports the outcome with `iocValidationReportResults(id, platformId, results)`: each result
+gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
+evidence. Only the pairs of the request on that platform still waiting for an answer are updated, so a result already
+received from OpenAEV is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
+negative for a miss.

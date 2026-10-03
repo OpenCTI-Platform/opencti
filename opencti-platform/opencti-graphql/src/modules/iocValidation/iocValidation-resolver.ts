@@ -13,6 +13,7 @@ import {
   loadRequestDeployments,
   loadRequestPlatforms,
   readableResultsSummary,
+  reportIocValidationResults,
   requestIndicatorsValidation,
   updateIocValidationRequestStatus,
 } from './iocValidation-domain';
@@ -43,6 +44,7 @@ const iocValidationResolvers: Resolvers = {
   Mutation: {
     indicatorsRequestValidation: (_, args, context) => requestIndicatorsValidation(context, context.user!, args) as never,
     iocValidationRequestStatusUpdate: (_, { id, input }, context) => updateIocValidationRequestStatus(context, context.user!, id, input) as never,
+    iocValidationReportResults: (_, args, context) => reportIocValidationResults(context, context.user!, args) as never,
     iocValidationRequestDelete: (_, { id }, context) => deleteIocValidationRequest(context, context.user!, id),
   },
 };

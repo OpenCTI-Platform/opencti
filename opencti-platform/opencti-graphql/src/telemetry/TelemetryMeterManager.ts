@@ -218,6 +218,9 @@ export class TelemetryMeterManager {
   // Number of IOC validation requests created
   iocValidationRequestCreationCount = 0;
 
+  // Number of IOC validation results reported by the security platforms themselves
+  iocValidationPlatformResultCount = 0;
+
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
@@ -562,6 +565,10 @@ export class TelemetryMeterManager {
     this.iocValidationRequestCreationCount = n;
   }
 
+  setIocValidationPlatformResultCount(n: number) {
+    this.iocValidationPlatformResultCount = n;
+  }
+
   setDecayRuleCreationCount(n: number) {
     this.decayRuleCreationCount = n;
   }
@@ -793,6 +800,7 @@ export class TelemetryMeterManager {
     this.registerGauge('indicator_hits_report_count', 'Number of indicator hits reported by connectors', 'indicatorHitsReportCount');
     this.registerGauge('ioc_validation_requests_count', 'Number of IOC validation requests', 'iocValidationRequestsCount');
     this.registerGauge('ioc_validation_request_creation_count', 'Number of IOC validation requests created', 'iocValidationRequestCreationCount');
+    this.registerGauge('ioc_validation_platform_result_count', 'Number of IOC validation results reported by security platforms', 'iocValidationPlatformResultCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
