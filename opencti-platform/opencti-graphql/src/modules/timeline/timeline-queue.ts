@@ -33,6 +33,27 @@ export const claimDueTimelineRegenerations = async (limit: number): Promise<stri
   return claimed;
 };
 
+// Failed regenerations are retried with an exponential backoff, then left to the next change or the nightly pass
+const TIMELINE_ATTEMPTS_KEY = 'timeline_regeneration_attempts';
+export const TIMELINE_MAX_RETRIES = 3;
+
+export const retryDelayMs = (attempt: number) => TIMELINE_DEBOUNCE_MS * 2 ** attempt;
+
+/** Schedule a new attempt of a failed regeneration; false once the retries of the container are exhausted. */
+export const retryTimelineRegeneration = async (containerId: string): Promise<boolean> => {
+  const attempt = await getClientBase().hincrby(TIMELINE_ATTEMPTS_KEY, containerId, 1);
+  if (attempt > TIMELINE_MAX_RETRIES) {
+    await getClientBase().hdel(TIMELINE_ATTEMPTS_KEY, containerId);
+    return false;
+  }
+  await enqueueTimelineRegeneration([containerId], retryDelayMs(attempt));
+  return true;
+};
+
+export const clearTimelineRegenerationAttempts = async (containerId: string) => {
+  await getClientBase().hdel(TIMELINE_ATTEMPTS_KEY, containerId);
+};
+
 export const countPendingTimelineRegenerations = async (): Promise<number> => {
   return getClientBase().zcard(TIMELINE_QUEUE_KEY);
 };

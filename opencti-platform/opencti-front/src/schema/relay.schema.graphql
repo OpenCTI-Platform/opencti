@@ -9495,9 +9495,27 @@ type Query {
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
-  containerTimeline(id: String!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean, first: Int, after: ID): TimelineEventConnection
+  containerTimeline(
+    id: String!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+
+    """
+    Ascending (default) from the oldest event, descending from the latest one
+    """
+    orderMode: OrderingMode
+    first: Int
+    after: ID
+  ): TimelineEventConnection
   containerTimelineSummary(id: String!): TimelineSummary
-  containerTimelineExport(id: String!, format: TimelineExportFormat!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], includeHidden: Boolean, labels: [TimelineExportLabelInput!]): String
+  containerTimelineExport(id: String!, format: TimelineExportFormat!, from: DateTime, to: DateTime, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean, labels: [TimelineExportLabelInput!]): String
   timelineEvent(id: String!): TimelineEvent
   timelineAnchors(containerId: String!): TimelineAnchors
   timelineRules: [TimelineRuleDefinition!]!

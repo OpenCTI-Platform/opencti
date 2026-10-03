@@ -8,7 +8,7 @@ import { elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/en
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { BASE_TYPE_ENTITY, buildRefRelationKey, OPENCTI_NAMESPACE } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { notify } from '../../database/redis';
@@ -304,16 +304,35 @@ export const publishTimelineUpdate = async (payload: Omit<TimelineUpdatePayload,
 // endregion
 
 // region contributions (anchors and STIX exchange) refreshed from the stored events
-const buildExchange = async (context: AuthContext, containerId: string, events: StoredTimelineEvent[]): Promise<StoreTimelineExchange> => {
-  const manual = events.filter((e) => e.event_source === 'manual');
+const grantedOf = (element: Record<string, any>): string[] => uniq(element[buildRefRelationKey(RELATION_GRANTED_TO)] ?? []);
+
+/**
+ * The exchange is stored once on the container and served to every user who can read the container, in toStix and
+ * in bundles: it only carries contributions exactly as visible as the container. Events marked more strictly than the
+ * container are left out, and so are the references to (and annotations of) elements restricted to authorized members
+ * or shared with fewer organizations than the container.
+ */
+const buildExchange = async (context: AuthContext, container: AnyStoreElement, events: StoredTimelineEvent[]): Promise<StoreTimelineExchange> => {
+  const containerId = container.internal_id;
+  const containerMarkings = new Set(markingsOf(container));
+  const containerGranted = grantedOf(container);
+  const isAsVisibleAsContainer = (event: StoredTimelineEvent) => markingsOf(event).every((id) => containerMarkings.has(id));
+  const manual = events.filter((e) => e.event_source === 'manual' && isAsVisibleAsContainer(e));
   const annotated = events.filter((e) => e.event_source === 'derived' && (e.analyst_fields ?? []).length > 0 && e.element_id
     // Only annotations of events whose identity is portable travel: history-based events depend on local history ids
-    && e.internal_id === computeDerivedEventId(containerId, e.rule_id ?? '', e.element_id, e.kind));
+    && e.internal_id === computeDerivedEventId(containerId, e.rule_id ?? '', e.element_id, e.kind)
+    && isAsVisibleAsContainer(e));
   const elementIds = uniq([...manual.map((e) => e.element_id), ...annotated.map((e) => e.element_id)]);
   const authorIds = uniq(manual.map((e) => (e[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0]));
   const resolved = elementIds.length + authorIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], { toMap: true }) as unknown as Record<string, AnyStoreElement>
     : {};
+  const portableElementRef = (elementId: string | null | undefined): string | undefined => {
+    const element = elementId ? resolved[elementId] : undefined;
+    if (!element || (element.restricted_members ?? []).length > 0) return undefined;
+    const granted = new Set(grantedOf(element));
+    return containerGranted.every((id) => granted.has(id)) ? element.standard_id as string : undefined;
+  };
   const markingsMap = await getEntitiesMapFromCache<AnyStoreElement>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const toStandardIds = (ids: string[]): string[] => ids.flatMap((id) => {
     const standardId = markingsMap.get(id)?.standard_id;
@@ -329,7 +348,7 @@ const buildExchange = async (context: AuthContext, containerId: string, events: 
     kind: event.kind,
     title: event.name,
     description: event.description || undefined,
-    element_ref: event.element_id ? resolved[event.element_id]?.standard_id : undefined,
+    element_ref: portableElementRef(event.element_id),
     confidence: event.confidence ?? undefined,
     ordering_hint: event.ordering_hint ?? undefined,
     pinned: event.pinned || undefined,
@@ -339,13 +358,13 @@ const buildExchange = async (context: AuthContext, containerId: string, events: 
     created_by_ref: resolved[(event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0]]?.standard_id,
   }));
   const exchangeAnnotations: StixTimelineExtensionAnnotation[] = annotated
-    .filter((event) => !!resolved[event.element_id as string])
+    .filter((event) => !!portableElementRef(event.element_id))
     .map((event) => {
       const fields = event.analyst_fields ?? [];
       return {
         rule_id: timelineRuleFamily(event.rule_id ?? ''),
         kind: event.kind,
-        element_ref: resolved[event.element_id as string].standard_id,
+        element_ref: portableElementRef(event.element_id) as string,
         pinned: fields.includes('pinned') ? event.pinned : undefined,
         hidden: fields.includes('hidden') ? event.hidden : undefined,
         annotation: fields.includes('annotation') ? (event.annotation ?? undefined) : undefined,
@@ -379,7 +398,7 @@ export const refreshTimelineContributions = async (
     event_time: e.event_time,
     hidden: e.hidden,
   })), { isClosed, computedAt: now(), previous: previousAnchors });
-  const exchange = await buildExchange(context, container.internal_id, events);
+  const exchange = await buildExchange(context, container, events);
   const changedAnchors = diffTimelineAnchors(previousAnchors, anchors);
   await elUpdate(context, container._index, container.internal_id, {
     doc: { [ATTRIBUTE_TIMELINE_ANCHORS]: anchors, [ATTRIBUTE_TIMELINE_EXCHANGE]: exchange },

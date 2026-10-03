@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import { AccessOperation, executionContext, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
+import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../database/engine';
@@ -104,6 +104,7 @@ const loadEditableTimelineEvent = async (context: AuthContext, user: AuthUser, e
 };
 
 const validateMarkings = (user: AuthUser, markingIds: string[]) => {
+  if (isBypassUser(user)) return;
   const allowed = new Set(user.allowed_marking.map((m) => m.internal_id));
   const forbidden = markingIds.filter((id) => !allowed.has(id));
   if (forbidden.length > 0) {
@@ -220,6 +221,20 @@ const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | 
   return { items: filtered, elements };
 };
 
+/** Elements referenced by the events of a container that the user cannot access (or that no longer exist). */
+const findInaccessibleElementIds = async (context: AuthContext, user: AuthUser, containerId: string): Promise<string[]> => {
+  const references = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
+    filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
+    baseData: true,
+    baseFields: ['element_id'],
+    maxSize: TIMELINE_MAX_EVENTS * 2,
+  } as any);
+  const elementIds = Array.from(new Set(references.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId)));
+  if (elementIds.length === 0) return [];
+  const accessible = await internalFindByIds(context, user, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>;
+  return elementIds.filter((id) => !accessible[id]);
+};
+
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
@@ -228,7 +243,7 @@ export const findContainerTimeline = async (context: AuthContext, user: AuthUser
     first,
     after: args.after,
     orderBy: ['event_time', 'ordering_hint'],
-    orderMode: OrderingMode.Asc,
+    orderMode: args.orderMode ?? OrderingMode.Asc,
   });
   const { items } = await filterAccessibleEvents(context, user, container.internal_id, connection.edges, (edge) => edge.node);
   return { ...connection, edges: items };
@@ -270,8 +285,14 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
   }
   const container = await ensureTimelineGenerated(context, loaded);
   const baseArgs = { types: [ENTITY_TYPE_TIMELINE_EVENT], noFiltersChecking: true };
-  const visibleFilters = buildTimelineFilters(container.internal_id, {});
-  const allFilters = buildTimelineFilters(container.internal_id, { includeHidden: true });
+  // Same visibility as the list: the events of elements the user cannot access are not counted
+  const hiddenElementIds = await findInaccessibleElementIds(context, user, container.internal_id);
+  const restrict = (filters: ReturnType<typeof buildTimelineFilters>) => (hiddenElementIds.length === 0 ? filters : {
+    ...filters,
+    filters: [...filters.filters, { key: ['element_id'], values: hiddenElementIds, operator: FilterOperator.NotEq, mode: FilterMode.And }],
+  });
+  const visibleFilters = restrict(buildTimelineFilters(container.internal_id, {}));
+  const allFilters = restrict(buildTimelineFilters(container.internal_id, { includeHidden: true }));
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
   const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, firstEvents, lastEvents, settings] = await Promise.all([
@@ -617,12 +638,21 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
     }
     return null;
   };
-  const docs = events.filter((e) => e.title && e.event_time).map((event) => {
+  // An event is never declassified: when one of its markings is unknown here or not allowed to the user, it is skipped
+  const importableMarkings = (event: StixTimelineExtensionEvent): string[] | null => {
+    const markingIds = (event.object_marking_refs ?? []).map((ref) => resolved[ref]?.internal_id);
+    return markingIds.every((id) => !!id && (isBypassUser(user) || allowedMarkings.has(id))) ? markingIds as string[] : null;
+  };
+  const candidates = events.filter((e) => e.title && e.event_time).map((event) => ({ event, markings: importableMarkings(event) }));
+  const skipped = candidates.filter((candidate) => candidate.markings === null).length;
+  if (skipped > 0) {
+    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed', { containerId: container.internal_id, skipped });
+  }
+  const docs = candidates.filter((candidate) => candidate.markings !== null).map(({ event, markings }) => {
     validateWindow(event.event_time, event.event_end_time);
     const existing = findKnownEvent(event);
     const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
     const element = event.element_ref ? resolved[event.element_ref] : null;
-    const markings = (event.object_marking_refs ?? []).map((ref) => resolved[ref]?.internal_id).filter((id): id is string => !!id && allowedMarkings.has(id));
     return buildTimelineEventDoc({
       internal_id: internalId,
       container_id: container.internal_id,
@@ -644,7 +674,7 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
       external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
-      markings: [...markings, ...access.markings],
+      markings: [...(markings as string[]), ...access.markings],
       created_by_id: event.created_by_ref ? resolved[event.created_by_ref]?.internal_id : null,
       creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,

@@ -25629,6 +25629,7 @@ export type QueryContainerTimelineArgs = {
   kinds?: InputMaybe<Array<TimelineEventKind>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  orderMode?: InputMaybe<OrderingMode>;
   pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   sources?: InputMaybe<Array<TimelineEventSource>>;
@@ -25644,6 +25645,10 @@ export type QueryContainerTimelineExportArgs = {
   kinds?: InputMaybe<Array<TimelineEventKind>>;
   labels?: InputMaybe<Array<TimelineExportLabelInput>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
   to?: InputMaybe<Scalars['DateTime']['input']>;
 };
 

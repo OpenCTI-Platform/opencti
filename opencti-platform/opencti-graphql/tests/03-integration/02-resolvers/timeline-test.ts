@@ -111,6 +111,7 @@ const CONTAINER_TIMELINE = gql`
     $search: String
     $includeHidden: Boolean
     $pinnedOnly: Boolean
+    $orderMode: OrderingMode
     $first: Int
   ) {
     containerTimeline(
@@ -123,6 +124,7 @@ const CONTAINER_TIMELINE = gql`
       search: $search
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
+      orderMode: $orderMode
       first: $first
     ) {
       pageInfo { globalCount }
@@ -151,8 +153,8 @@ const CONTAINER_TIMELINE_SUMMARY = gql`
   }
 `;
 const CONTAINER_TIMELINE_EXPORT = gql`
-  query ContainerTimelineExport($id: String!, $format: TimelineExportFormat!, $labels: [TimelineExportLabelInput!]) {
-    containerTimelineExport(id: $id, format: $format, labels: $labels)
+  query ContainerTimelineExport($id: String!, $format: TimelineExportFormat!, $labels: [TimelineExportLabelInput!], $search: String, $sources: [TimelineEventSource!], $pinnedOnly: Boolean) {
+    containerTimelineExport(id: $id, format: $format, labels: $labels, search: $search, sources: $sources, pinnedOnly: $pinnedOnly)
   }
 `;
 const TIMELINE_EVENT = gql`
@@ -549,6 +551,32 @@ describe('Incident and case timeline', () => {
       expect(htmlContent).toContain('Reponse');
     });
 
+    it('should export with the filters of the current view', async () => {
+      const filtered = await queryAsAdminWithSuccess({
+        query: CONTAINER_TIMELINE_EXPORT,
+        variables: { id: caseIncident.id, format: 'csv', search: 'Regulator', sources: ['manual'] },
+      });
+      const rows = (filtered.data.containerTimelineExport as string).split('\r\n').filter((row) => row.length > 0);
+      expect(rows).toHaveLength(2);
+      expect(rows[1]).toContain('Regulator notified (CNIL)');
+      const pinned = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv', pinnedOnly: true } });
+      expect(pinned.data.containerTimelineExport).not.toContain('Regulator notified (CNIL)');
+    });
+
+    it('should list from the latest event in descending order', async () => {
+      const descending = await listTimeline(caseIncident.id, { orderMode: 'desc', first: 3 });
+      const ascending = await listTimeline(caseIncident.id);
+      expect(descending[0].event_time).toEqual(ascending[ascending.length - 1].event_time);
+      const times = descending.map((event) => new Date(event.event_time).getTime());
+      expect([...times].sort((a, b) => b - a)).toEqual(times);
+    });
+
+    it('should count in the summary exactly the events the user can list', async () => {
+      const summary = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
+      const listed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500 } });
+      expect(summary.data.containerTimelineSummary.total).toEqual(listed.data.containerTimeline.edges.length);
+    });
+
     it('should only export what the exporting user can see', async () => {
       const csv = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       expect(csv.data.containerTimelineExport).not.toContain('Timeline amber indicator');
@@ -628,6 +656,29 @@ describe('Incident and case timeline', () => {
 
     it('should reject an invalid extension', async () => {
       await queryAsAdminWithError({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: 'not json' } }, 'Invalid timeline extension');
+    });
+
+    it('should only carry contributions as visible as the container and never declassify on import', async () => {
+      const amber = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T15:00:00.000Z', title: 'Amber only milestone', objectMarking: [MARKING_TLP_AMBER] } },
+      });
+      const result = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
+      const extension = JSON.parse(result.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE];
+      expect(extension.events.map((e: { title: string }) => e.title)).not.toContain('Amber only milestone');
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
+      const unknownMarking = JSON.stringify({
+        events: [{
+          id: 'timeline-event--6b0cbf59-1fd4-4b5a-9c55-1f2f4f5b8d11',
+          title: 'Unknown marking milestone',
+          event_time: '2026-02-05T16:00:00.000Z',
+          object_marking_refs: ['marking-definition--00000000-0000-4000-8000-000000000001'],
+        }],
+        annotations: [],
+      });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: unknownMarking } });
+      const manual = await listTimeline(secondCase.id, { sources: ['manual'] });
+      expect(manual.map((event) => event.title)).not.toContain('Unknown marking milestone');
     });
   });
 

@@ -16,7 +16,14 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { FilterMode } from '../generated/graphql';
 import { ENTITY_TYPE_TIMELINE_EVENT, ENTITY_TYPE_TIMELINE_SETTINGS, isTimelineContainerType, TIMELINE_CONTAINER_TYPES } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
-import { claimDueTimelineRegenerations, enqueueTimelineRegeneration, getTimelineConsistencyLastRun, setTimelineConsistencyLastRun } from '../modules/timeline/timeline-queue';
+import {
+  claimDueTimelineRegenerations,
+  clearTimelineRegenerationAttempts,
+  enqueueTimelineRegeneration,
+  getTimelineConsistencyLastRun,
+  retryTimelineRegeneration,
+  setTimelineConsistencyLastRun,
+} from '../modules/timeline/timeline-queue';
 
 const TIMELINE_MANAGER_ID = 'TIMELINE_MANAGER';
 const TIMELINE_MANAGER_LABEL = 'Timeline manager';
@@ -155,11 +162,13 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
   await BluePromise.map(due, async (containerId) => {
     try {
       const result = await regenerateContainerTimeline(context, containerId);
+      await clearTimelineRegenerationAttempts(containerId);
       if (result) {
         logApp.debug('[TIMELINE] Container timeline regenerated', { ...result, anchors: undefined });
       }
     } catch (error) {
-      logApp.error('[TIMELINE] Container timeline regeneration failure', { cause: error, containerId });
+      const retried = await retryTimelineRegeneration(containerId).catch(() => false);
+      logApp.error('[TIMELINE] Container timeline regeneration failure', { cause: error, containerId, retried });
     }
   }, { concurrency: TIMELINE_MANAGER_MAX_CONCURRENCY });
 };

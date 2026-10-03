@@ -334,6 +334,8 @@ type Query {
     search: String
     includeHidden: Boolean
     pinnedOnly: Boolean
+    "Ascending (default) from the oldest event, descending from the latest one"
+    orderMode: OrderingMode
     first: Int
     after: ID
   ): TimelineEventConnection @auth(for: [KNOWLEDGE])
@@ -345,7 +347,11 @@ type Query {
     to: DateTime
     lanes: [TimelineLane!]
     kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
     includeHidden: Boolean
+    pinnedOnly: Boolean
     labels: [TimelineExportLabelInput!]
   ): String @auth(for: [KNOWLEDGE])
   timelineEvent(id: String!): TimelineEvent @auth(for: [KNOWLEDGE])
