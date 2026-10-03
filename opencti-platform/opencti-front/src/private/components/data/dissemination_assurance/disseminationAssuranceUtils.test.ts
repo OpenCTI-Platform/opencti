@@ -59,6 +59,9 @@ describe('dissemination assurance statuses', () => {
     expect(canRemoveDeployment('active', false)).toBe(true);
     expect(canRemoveDeployment('active', true)).toBe(false);
     expect(canRemoveDeployment('removed', false)).toBe(false);
+    // Expired by the manager while the removal was never confirmed: it can still be withdrawn, once
+    expect(canRemoveDeployment('expired', false)).toBe(true);
+    expect(canRemoveDeployment('expired', true)).toBe(false);
   });
 });
 
@@ -121,12 +124,13 @@ describe('dissemination assurance saved lists', () => {
 });
 
 describe('validation request candidate filters', () => {
-  it('should query the unproven live deployments of a platform, in-flight validations excluded', () => {
+  it('should query the unproven live deployments of a platform, in-flight validations and removals excluded', () => {
     const filters = buildValidationCandidateFilters('platform', 'platform-id', false);
     expect(filters.filters).toEqual([
       { key: 'relationship_type', values: ['deployed-on'], operator: 'eq', mode: 'or' },
       { key: 'toId', values: ['platform-id'], operator: 'eq', mode: 'or' },
       { key: 'deployment_status', values: ['deployed', 'active'], operator: 'eq', mode: 'or' },
+      { key: 'revoked', values: ['false'], operator: 'eq', mode: 'or' },
     ]);
     expect(filters.filterGroups[0].mode).toEqual('or');
     expect(filters.filterGroups[0].filters).toEqual([
@@ -138,7 +142,8 @@ describe('validation request candidate filters', () => {
   it('should query the proven live deployments of an indicator separately', () => {
     const filters = buildValidationCandidateFilters('indicator', 'indicator-id', true);
     expect(filters.filters[1]).toEqual({ key: 'fromId', values: ['indicator-id'], operator: 'eq', mode: 'or' });
-    expect(filters.filters[3]).toEqual({ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' });
+    expect(filters.filters[3]).toEqual({ key: 'revoked', values: ['false'], operator: 'eq', mode: 'or' });
+    expect(filters.filters[4]).toEqual({ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' });
     expect(filters.filterGroups).toEqual([]);
   });
 });

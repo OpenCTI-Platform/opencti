@@ -7,6 +7,7 @@ import {
   touchesLifecycleFields,
   touchesValidationFields,
 } from '../../../../src/modules/iocValidation/iocValidation-validator';
+import { isTrustedDeploymentReporter } from '../../../../src/modules/iocValidation/iocValidation-utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
@@ -80,5 +81,18 @@ describe('Deployment lifecycle fields guard', () => {
     // Defaults on a pair without deployment (no existing relationship to reset)
     await expect(validatorCreation(testContext, editor, { deployment_status: 'pending', hit_count: 0 })).resolves.toEqual(true);
     await expect(validatorCreation(testContext, connector, { deployment_status: 'active', hit_count: 9 })).resolves.toEqual(true);
+  });
+
+  it('should only let a connector account among the creators write a verdict', async () => {
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    // An editor joins the creators by upserting the relationship, which does not make it a reporter of the platform
+    const upserted = { creator_id: ['connector-user', 'user-1'] };
+    await expect(validatorUpdate(testContext, editor, { validation_status: ['detected'] }, upserted)).rejects.toThrow('Validation results');
+    await expect(validatorUpdate(testContext, editor, { validation_status: ['not_requested'] }, upserted)).rejects.toThrow('Validation results');
+    await expect(validatorUpdate(testContext, connector, { validation_status: ['detected'] }, upserted)).resolves.toEqual(true);
+    expect(isTrustedDeploymentReporter(upserted, editor)).toEqual(false);
+    expect(isTrustedDeploymentReporter(upserted, connector)).toEqual(true);
+    expect(isTrustedDeploymentReporter({ creator_id: 'connector-user' }, connector)).toEqual(false);
+    expect(isTrustedDeploymentReporter({ creator_id: null }, administrator)).toEqual(false);
   });
 });

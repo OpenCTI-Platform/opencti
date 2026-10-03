@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -545,6 +546,32 @@ const dateRangeFilters = (attribute: string, startDate?: DateInput, endDate?: Da
 
 export const computeProvenShare = (live: number, proven: number) => (live > 0 ? Math.round((proven / live) * 1000) / 10 : 0);
 
+// Indicators per deployment count query when counting the live deployments of expired or revoked indicators.
+const EXPIRED_SOURCES_CHUNK_SIZE = 5000;
+
+/**
+ * Live deployments matching the filters whose indicator is revoked or past its valid_until: still on the platform
+ * during the removal grace period, before the manager flags them expired. Only indicators the reader can access and
+ * that have a live deployment somewhere are considered, so the scan stays bounded by what is still to remove.
+ */
+const countLiveDeploymentsOfExpiredIndicators = async (context: AuthContext, user: AuthUser, deploymentFilters: FilterContent[], now: string) => {
+  const indicators = await fullEntitiesList<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], {
+    filters: filterGroup([{ key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [0], operator: 'gt' }], [filterGroup([
+      { key: ['revoked'], values: [true] },
+      { key: ['valid_until'], values: [now], operator: 'lt' },
+    ], [], 'or')]),
+    noFiltersChecking: true,
+    baseData: true,
+  } as never);
+  const ids = indicators.map((indicator) => indicator.internal_id);
+  const counts = await BluePromise.map(
+    R.splitEvery(EXPIRED_SOURCES_CHUNK_SIZE, ids),
+    (chunk) => countDeployments(context, user, [...deploymentFilters, { key: ['fromId'], values: chunk }]),
+    { concurrency: 2 },
+  );
+  return counts.reduce((total, count) => total + count, 0);
+};
+
 export interface DisseminationAssuranceMetricsArgs {
   platformId?: string | null;
   startDate?: DateInput;
@@ -564,14 +591,16 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
   const provenFilter: FilterContent = { key: ['validation_status'], values: PROVEN_VALIDATION_STATUSES };
   let funnel;
   if (args.platformId) {
-    const [disseminated, deployed, validated, hit, expired] = await Promise.all([
+    // Expired still deployed: flagged expired (removal never confirmed), or still live while the indicator is revoked or past valid_until.
+    const [disseminated, deployed, validated, hit, flaggedExpired, liveOfExpired] = await Promise.all([
       countDeployments(context, user, baseDeploymentFilters),
       countDeployments(context, user, [...baseDeploymentFilters, liveFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, provenFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, { key: ['hit_count'], values: [0], operator: 'gt' }]),
       countDeployments(context, user, [...baseDeploymentFilters, { key: ['deployment_status'], values: [DEPLOYMENT_STATUS_EXPIRED] }]),
+      countLiveDeploymentsOfExpiredIndicators(context, user, [...baseDeploymentFilters, liveFilter], now),
     ]);
-    funnel = { created: disseminated, disseminated, deployed, validated, hit, expired_still_deployed: expired };
+    funnel = { created: disseminated, disseminated, deployed, validated, hit, expired_still_deployed: flaggedExpired + liveOfExpired };
   } else {
     const createdDates = dateRangeFilters('created_at', args.startDate, args.endDate);
     const isDeployed: FilterContent = { key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [0], operator: 'gt' };

@@ -71,9 +71,9 @@ import {
 import {
   emptyResultsSummary,
   extractIocFromIndicator,
-  isDeploymentReporter,
   isIocValidationTestKind,
   isSummaryComplete,
+  isTrustedDeploymentReporter,
   requesterIdOf,
   summarizeValidationResults,
 } from './iocValidation-utils';
@@ -570,12 +570,12 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   if (!platform || !(request.platform_ids ?? []).includes(platform.internal_id)) {
     throw FunctionalError('The security platform is not targeted by this IOC validation request', { id: args.id, platformId: args.platformId });
   }
-  // A result is proof attributed to the platform: besides the request connector, only an account that recorded
-  // the deployment of a pair speaks for the platform, and only for the pairs it recorded.
+  // A result is proof attributed to the platform: besides the request connector, only a connector account that
+  // recorded the deployment of a pair speaks for the platform, and only for the pairs it recorded.
   const trusted = await isRequestConnectorUser(context, user, request);
   if (!trusted) {
     const platformDeployments = (await findRequestDeployments(context, request.internal_id)).filter((d) => d.toId === platform.internal_id);
-    if (!platformDeployments.some((d) => isDeploymentReporter(d, user.id))) {
+    if (!platformDeployments.some((d) => isTrustedDeploymentReporter(d, user))) {
       throw ForbiddenAccess('Only the account reporting the deployments of this security platform can report its validation results', {
         id: request.internal_id,
         platformId: platform.internal_id,
@@ -596,7 +596,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       if (!deployment || deployment.validation_run_id !== request.internal_id) {
         return;
       }
-      if (!trusted && !isDeploymentReporter(deployment, user.id)) {
+      if (!trusted && !isTrustedDeploymentReporter(deployment, user)) {
         logApp.info('[IOC-VALIDATION] Ignoring a result for a pair recorded by another account', { id: request.internal_id, deploymentId: deployment.internal_id });
         return;
       }

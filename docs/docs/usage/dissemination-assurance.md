@@ -185,10 +185,12 @@ evidence. Only the pairs of the request on that platform still waiting for an an
 received from OpenAEV is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss.
 
-A validation result is proof attributed to the platform, so it is accepted only from the account that recorded the
-deployments of the pairs on that platform (the integration reporting its deployment statuses), from the OpenAEV
-connector the request was sent to, or from an administrator. Any other account, even with the "Update knowledge"
-capability, is refused. The same rule protects every other way to write the validation fields of a deployment
+A validation result is proof attributed to the platform, so it is accepted only from the connector account that
+recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the
+OpenAEV connector the request was sent to, or from an administrator. Any other account, even with the "Update
+knowledge" capability, is refused, including an account that only edited or re-created a deployment (for example to
+add a description): editing a relationship lists you among its creators, but does not make you speak for the
+platform. The same rule protects every other way to write the validation fields of a deployment
 (validation status, last validation, validation run): editing the relationship, or creating it again with these
 fields so that the existing relationship is updated, requires one of these accounts, resets to "not requested"
 included, and creating or importing a deployment that already carries a validation outcome is reserved to an OpenAEV

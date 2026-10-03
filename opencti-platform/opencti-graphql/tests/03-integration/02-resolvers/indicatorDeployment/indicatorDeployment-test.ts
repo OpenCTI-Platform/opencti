@@ -414,6 +414,21 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   // Side-channel writes below: no stream event, so the raw stream counts of the suite are unchanged.
   const setCounterScript = (source: string) => ({ script: { source, lang: 'painless' } });
 
+  it('should count on a platform the live deployments of a revoked indicator before they are flagged expired', async () => {
+    const before = await queryAsAdminWithSuccess({ query: METRICS, variables: { platformId } });
+    const flaggedOnly = before.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed;
+    const stored = await internalLoadById(testContext, ADMIN_USER, secondIndicatorId) as unknown as { _index: string };
+    await elUpdate(testContext, stored._index, secondIndicatorId, setCounterScript('ctx._source.revoked = true'));
+    try {
+      const revoked = await queryAsAdminWithSuccess({ query: METRICS, variables: { platformId } });
+      expect(revoked.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toEqual(flaggedOnly + 1);
+      const global = await queryAsAdminWithSuccess({ query: METRICS, variables: {} });
+      expect(global.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toBeGreaterThanOrEqual(2);
+    } finally {
+      await elUpdate(testContext, stored._index, secondIndicatorId, setCounterScript('ctx._source.revoked = false'));
+    }
+  });
+
   it('should backfill a counter added after the indicator got its counters, by recomputation', async () => {
     const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
     await elUpdate(testContext, stored._index, indicatorId, setCounterScript("ctx._source.remove('deployments_count')"));
