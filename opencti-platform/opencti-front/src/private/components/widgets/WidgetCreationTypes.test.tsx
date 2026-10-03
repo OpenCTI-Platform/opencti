@@ -21,6 +21,9 @@ const ALL_VISUALIZATION_TYPES = [
   'map',
   'bookmark',
   'wordcloud',
+  'landscape-relationships',
+  'landscape-techniques',
+  'landscape-top-entities',
 ];
 
 describe('getVisualizationTypes', () => {
