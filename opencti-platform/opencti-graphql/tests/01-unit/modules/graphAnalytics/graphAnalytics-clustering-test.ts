@@ -1,7 +1,55 @@
 import { describe, expect, it } from 'vitest';
-import { buildGraphClusterId, buildGraphClusterName, computeFeatureClusters, type ClusteringMember } from '../../../../src/modules/graphAnalytics/graphAnalytics-clustering';
+import {
+  buildGraphClusterId,
+  buildGraphClusterName,
+  computeFeatureClusters,
+  type ClusteringMember,
+  matchClusterLineage,
+} from '../../../../src/modules/graphAnalytics/graphAnalytics-clustering';
 
 const member = (id: string, features: ClusteringMember['features']): ClusteringMember => ({ id, type: 'Domain-Name', features });
+
+describe('graph analytics cluster lineage', () => {
+  it('should keep the id of a growing cluster whose anchor moved', () => {
+    // previous cluster P (10 members) now computed as C with 8 of them plus new members
+    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 8 }], new Map([['P', 10]]));
+    expect(renames.get('C')).toBe('P');
+  });
+
+  it('should not continue a cluster holding a minority of the previous members', () => {
+    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 5 }], new Map([['P', 10]]));
+    expect(renames.size).toBe(0);
+  });
+
+  it('should give a split cluster its id once, to the part holding most of it', () => {
+    const renames = matchClusterLineage([
+      { next: 'C1', previous: 'P', members: 7 },
+      { next: 'C2', previous: 'P', members: 6 },
+    ], new Map([['P', 12]]));
+    expect(renames.get('C1')).toBe('P');
+    expect(renames.has('C2')).toBe(false);
+  });
+
+  it('should keep the larger lineage when clusters merge', () => {
+    const renames = matchClusterLineage([
+      { next: 'C', previous: 'P1', members: 6 },
+      { next: 'C', previous: 'P2', members: 4 },
+    ], new Map([['P1', 6], ['P2', 4]]));
+    expect(renames).toEqual(new Map([['C', 'P1']]));
+  });
+
+  it('should never give an id still computed by the run to another cluster', () => {
+    const renames = matchClusterLineage([
+      { next: 'C', previous: 'P', members: 9 },
+      { next: 'P', previous: 'P', members: 3 },
+    ], new Map([['P', 12]]));
+    expect(renames.size).toBe(0);
+  });
+
+  it('should leave clusters keeping their computed id untouched', () => {
+    expect(matchClusterLineage([{ next: 'P', previous: 'P', members: 9 }], new Map([['P', 10]])).size).toBe(0);
+  });
+});
 
 describe('graph analytics clustering', () => {
   it('should build the same deterministic ids as the opencti-analytics process', () => {

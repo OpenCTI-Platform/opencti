@@ -16,6 +16,8 @@
   "Infrastructure hubs": "インフラストラクチャのハブ",
   "Joined a graph cluster": "グラフクラスターに参加",
   "Similarity of the most connected threats": "最も接続の多い脅威の類似度",
+  "The similar entities could not be loaded.": "類似エンティティを読み込めませんでした。",
+  "The similarity matrix could not be loaded.": "類似度マトリクスを読み込めませんでした。",
   "This list is ranked by graph metrics, which require access to every relationship of the platform.": "このリストはグラフ指標で並べ替えられており、プラットフォームのすべての関係へのアクセスが必要です。",
   "Threat and malware hubs": "脅威とマルウェアのハブ",
   "Threats and malware": "脅威とマルウェア",

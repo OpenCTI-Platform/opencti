@@ -1016,6 +1016,27 @@ describe('PublicDashboard resolver', () => {
           expect(belgique).toBeDefined();
         });
 
+        it('should return the data for API: SCO List with its configured sort', async () => {
+          const API_SCO_SORTED_LIST_QUERY = gql`
+            query PublicStixCoreObjectsSorted($uriKey: String!, $widgetId : String!) {
+              publicStixCoreObjects(uriKey: $uriKey, widgetId : $widgetId) {
+                edges {
+                  node {
+                    ... on Malware {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_SCO_SORTED_LIST_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103' },
+          });
+          expect(data.publicStixCoreObjects.edges.map((e) => e.node.name)).toEqual(['magneto', 'octopus', 'vador']);
+        });
+
         it('should return the data for API: SCR List', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationships(

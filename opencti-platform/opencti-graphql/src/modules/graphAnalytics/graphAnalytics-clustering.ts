@@ -25,9 +25,39 @@ export interface ComputedCluster {
 }
 
 // The anchor is the smallest member internal id: adding members rarely changes it, so ids stay stable across runs.
-// The same rule is implemented by the opencti-analytics process.
+// The same rule is implemented by the opencti-analytics process. The id is provisional: when a run is published,
+// matchClusterLineage gives a computed cluster the id of the previous cluster it continues.
 export const buildGraphClusterId = (kind: GraphClusterKind, anchor: string): string => {
   return uuidv5(`graph-cluster:${kind}:${anchor}`, OPENCTI_NAMESPACE);
+};
+
+export interface ClusterLineageOverlap {
+  next: string; // cluster computed by the run being published
+  previous: string; // published cluster the members belonged to
+  members: number; // members of `next` that belonged to `previous`
+}
+
+/**
+ * Identity of the clusters of a run: a computed cluster continues the previous cluster most of whose members it holds,
+ * and takes its id, so promotions, creation date and membership dates survive anchors moving as communities evolve.
+ * Matches are made by decreasing overlap, one previous cluster per computed cluster and conversely; an id still
+ * computed by the run is never given to another cluster. Returns the renames, computed id to previous id.
+ */
+export const matchClusterLineage = (overlaps: ClusterLineageOverlap[], previousSizes: Map<string, number>): Map<string, string> => {
+  const computedIds = new Set(overlaps.map((overlap) => overlap.next));
+  const matchedNext = new Set<string>();
+  const matchedPrevious = new Set<string>();
+  const renames = new Map<string, string>();
+  const ordered = [...overlaps].sort((a, b) => (b.members - a.members) || a.next.localeCompare(b.next) || a.previous.localeCompare(b.previous));
+  ordered.forEach(({ next, previous, members }) => {
+    if (matchedNext.has(next) || matchedPrevious.has(previous)) return;
+    // the computed cluster must hold the majority of the previous one to continue it
+    if (members * 2 <= (previousSizes.get(previous) ?? 0)) return;
+    matchedNext.add(next);
+    matchedPrevious.add(previous);
+    if (next !== previous && !computedIds.has(previous)) renames.set(next, previous);
+  });
+  return renames;
 };
 
 export const buildGraphClusterName = (kind: GraphClusterKind, clusterId: string): string => {

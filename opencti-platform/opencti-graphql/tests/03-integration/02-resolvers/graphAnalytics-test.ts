@@ -515,6 +515,30 @@ describe('Graph analytics resolvers', () => {
     expect(cluster.timeline[cluster.timeline.length - 1].value).toBe(1);
   });
 
+  it('should keep the identity of a cluster when a run computes another id for the same community', async () => {
+    const upsert = gql`
+      mutation upsertLineage($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }
+    `;
+    const run = (runId: string, clusterId: string, members: string[]) => ({
+      run_id: runId,
+      process_version: 'test',
+      complete: true,
+      metrics: members.map((id) => ({ entity_id: ids[id], betweenness_approx: 0.1, cluster_id: clusterId, cluster_size: members.length, cluster_kind: 'campaign' })),
+      clusters: [{ cluster_id: clusterId, cluster_kind: 'campaign', members_count: members.length, representative_ids: [ids[members[0]]], features: [] }],
+    });
+    const original = uuidv4();
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-1-${uuidv4()}`, original, ['isA', 'isB', 'isC']) } });
+    // the community grew and its provisional id changed: it continues the original cluster
+    const provisional = uuidv4();
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: run(`graph-analytics-lineage-2-${uuidv4()}`, provisional, ['isA', 'isB', 'isC', 'tool']) } });
+    const grown = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.tool } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(grown.cluster_id).toBe(original);
+    const { data } = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
+    const listed = data.graphClusters.edges.map((e: any) => e.node);
+    expect(listed.map((node: any) => node.id)).not.toContain(provisional);
+    expect(listed.find((node: any) => node.id === original)?.members_count).toBe(4);
+  });
+
   it('should reject analytics write-back with invalid cluster identifiers', async () => {
     const upsert = gql`
       mutation upsert($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }

@@ -16,6 +16,8 @@
   "Infrastructure hubs": "Узловые элементы инфраструктуры",
   "Joined a graph cluster": "Вхождение в кластер графа",
   "Similarity of the most connected threats": "Сходство наиболее связанных угроз",
+  "The similar entities could not be loaded.": "Не удалось загрузить похожие сущности.",
+  "The similarity matrix could not be loaded.": "Не удалось загрузить матрицу сходства.",
   "This list is ranked by graph metrics, which require access to every relationship of the platform.": "Этот список упорядочен по метрикам графа, для которых требуется доступ ко всем связям платформы.",
   "Threat and malware hubs": "Узловые угрозы и вредоносное ПО",
   "Threats and malware": "Угрозы и вредоносное ПО",
