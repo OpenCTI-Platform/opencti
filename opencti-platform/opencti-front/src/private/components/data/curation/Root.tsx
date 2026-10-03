@@ -6,7 +6,9 @@ import Loader from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
-import { CURATION_TABS, type CurationTab, PATH_CURATION } from './curationTabs';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isGrantedTo } from '../../../../utils/hooks/useGranted';
+import { CURATION_TABS, type CurationTab, grantedCurationTabs, PATH_CURATION } from './curationTabs';
 
 interface CurationRootProps {
   tabs?: CurationTab[];
@@ -52,7 +54,9 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
   );
 };
 
-const Root = ({ tabs = CURATION_TABS }: CurationRootProps) => {
+const Root = ({ tabs: registered = CURATION_TABS }: CurationRootProps) => {
+  const { me } = useAuth();
+  const tabs = grantedCurationTabs(registered, (needs) => isGrantedTo(me, needs));
   if (tabs.length === 0) {
     return <Navigate to="/dashboard/data" replace={true} />;
   }
