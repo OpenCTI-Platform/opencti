@@ -15,6 +15,8 @@ import {
   type PublicDashboardAddInput,
   type QueryPublicBookmarksArgs,
   type QueryPublicDashboardsArgs,
+  type QueryPublicGraphClustersSizeTimeSeriesArgs,
+  type QueryPublicGraphSimilarityMatrixArgs,
   type QueryPublicStixCoreObjectsArgs,
   type QueryPublicStixCoreObjectsDistributionArgs,
   type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
@@ -33,6 +35,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cach
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
+import { graphClustersSizeTimeSeries, graphSimilarityMatrix } from '../graphAnalytics/graphAnalytics-domain';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -352,6 +355,30 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// graph-similarity-matrix: the most connected entities of the selection, created in the dashboard period if any
+export const publicGraphSimilarityMatrix = async (context: AuthContext, args: QueryPublicGraphSimilarityMatrixArgs) => {
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const [selection] = dataSelection;
+  const dateAttribute = selection.date_attribute || 'created_at';
+  let filters = selection.filters ?? undefined;
+  if (args.startDate) filters = addFilter(filters, dateAttribute, [args.startDate], 'gt');
+  if (args.endDate) filters = addFilter(filters, dateAttribute, [args.endDate], 'lt');
+  return graphSimilarityMatrix(context, user, { filters, first: typeof selection.number === 'number' ? selection.number : 10 });
+};
+
+// graph-clusters-size: member creation dates draw the curves, so the period is not a member filter
+export const publicGraphClustersSizeTimeSeries = async (context: AuthContext, args: QueryPublicGraphClustersSizeTimeSeriesArgs) => {
+  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const [selection] = dataSelection;
+  return graphClustersSizeTimeSeries(context, user, {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: parameters?.interval ?? 'month',
+    limit: typeof selection.number === 'number' ? selection.number : 5,
+    filters: selection.filters,
+  });
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (
