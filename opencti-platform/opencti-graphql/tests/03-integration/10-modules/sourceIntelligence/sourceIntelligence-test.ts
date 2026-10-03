@@ -8,7 +8,9 @@ import { upsertProposals } from '../../../../src/modules/sourceIntelligence/sour
 import { deleteScorecardsOfSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
-import { deleteElementById } from '../../../../src/database/middleware';
+import { v4 as uuidv4 } from 'uuid';
+import { createEntity, deleteElementById, patchAttribute } from '../../../../src/database/middleware';
+import { resolveFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../../src/types/store';
 import { deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
@@ -427,6 +429,12 @@ describe('Source intelligence', () => {
     expect(restored.data.sourceIntelligenceSettingsEdit.overlap_top).toBe(initialOverlapTop);
   });
 
+  it('should require the customization capability to edit the settings', async () => {
+    // Reading sources does not grant changing thresholds or the autonomy allow-list
+    await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, { query: SOURCES_QUERY, variables: { first: 1 } });
+    await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, { query: SETTINGS_EDIT_MUTATION, variables: { input: { overlap_top: 15 } } });
+  });
+
   it('should apply and revert a confidence recommendation with an audit trail', async () => {
     const before = await queryAsAdminWithSuccess({ query: USER_CONFIDENCE_QUERY, variables: { id: connectorUserId } });
     previousMaxConfidence = before.data.user.user_confidence_level?.max_confidence ?? null;
@@ -495,6 +503,35 @@ describe('Source intelligence', () => {
     const lifted = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_SOURCE);
     expect(lifted?.quarantined).toBe(false);
     expect(lifted?.quarantine_draft_id ?? null).toBeNull();
+    await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
+  });
+
+  it('should route the bundles of a quarantined feed into its open quarantine draft', async () => {
+    const feedId = uuidv4();
+    const feedSource = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'ingestion_feed',
+      ref_id: feedId,
+      ref_type: 'IngestionRss',
+      name: 'Source intelligence test feed',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+    expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBeUndefined();
+
+    await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: true, quarantine_draft_id: null });
+    // The first bundle opens the quarantine draft, the next ones reuse it
+    const firstDraftId = await resolveFeedQuarantineDraftId(testContext, feedId) as string;
+    expect(firstDraftId).toBeTruthy();
+    expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBe(firstDraftId);
+
+    await deleteDraftWorkspace(testContext, ADMIN_USER, firstDraftId);
+    const renewedDraftId = await resolveFeedQuarantineDraftId(testContext, feedId) as string;
+    expect(renewedDraftId).toBeTruthy();
+    expect(renewedDraftId).not.toBe(firstDraftId);
+
+    await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
+    expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBeUndefined();
     await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
   });
 

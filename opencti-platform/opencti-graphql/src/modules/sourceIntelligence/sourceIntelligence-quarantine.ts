@@ -100,13 +100,23 @@ export const renewQuarantineDraft = async (context: AuthContext, sourceId: strin
  * undefined otherwise. Never falls back to the live knowledge while the quarantine is in force.
  */
 export const resolveFeedQuarantineDraftId = async (context: AuthContext, ingestionId: string): Promise<string | undefined> => {
-  const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
-  const source = sources.find((s) => s.source_kind === SOURCE_KIND_INGESTION_FEED && s.ref_id === ingestionId);
-  if (!source?.quarantined) {
+  // Read from the store: a bundle routed from a cache not yet reset on this node would reach the live knowledge
+  const filters = {
+    mode: FilterMode.And,
+    filters: [
+      { key: ['source_kind'], values: [SOURCE_KIND_INGESTION_FEED] },
+      { key: ['ref_id'], values: [ingestionId] },
+      { key: ['quarantined'], values: ['true'] },
+    ],
+    filterGroups: [],
+  };
+  const [source] = await fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE], { filters, noFiltersChecking: true });
+  if (!source) {
     return undefined;
   }
-  const drafts = await getEntitiesMapFromCache<BasicStoreEntityDraftWorkspace>(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
-  const draft = source.quarantine_draft_id ? drafts.get(source.quarantine_draft_id) : undefined;
+  const draft = source.quarantine_draft_id
+    ? await storeLoadById<BasicStoreEntityDraftWorkspace>(context, SYSTEM_USER, source.quarantine_draft_id, ENTITY_TYPE_DRAFT_WORKSPACE)
+    : undefined;
   if (isOpenDraft(draft)) {
     return draft.internal_id;
   }
