@@ -12,6 +12,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { COST_PERIOD_LABELS } from './sourceIntelligenceUtils';
+import notifyMutationOutcome from './notifyMutationOutcome';
 import { SourceCostEditorMutation, SourceCostPeriod } from './__generated__/SourceCostEditorMutation.graphql';
 
 const sourceCostEditorMutation = graphql`
@@ -48,9 +49,7 @@ interface CostFormValues {
 const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [commit, inFlight] = useApiMutation<SourceCostEditorMutation>(sourceCostEditorMutation, undefined, {
-    successMessage: t_i18n('Source cost saved'),
-  });
+  const [commit, inFlight] = useApiMutation<SourceCostEditorMutation>(sourceCostEditorMutation);
   const validation = Yup.object().shape({
     amount: Yup.number().typeError(t_i18n('This field must be a number')).required(t_i18n('This field is required')).min(0, `${t_i18n('Minimum')} 0`),
     currency: Yup.string().required(t_i18n('This field is required')).matches(/^[A-Za-z]{3}$/, t_i18n('ISO 4217 currency code, for example EUR or USD')),
@@ -62,7 +61,12 @@ const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
     period: cost?.period ?? 'year',
   };
   const close = () => setOpen(false);
-  const clearCost = () => commit({ variables: { id: sourceId, input: null }, onCompleted: close });
+  const clearCost = () => commit({
+    variables: { id: sourceId, input: null },
+    onCompleted: (_, errors) => {
+      if (notifyMutationOutcome(errors, { success: t_i18n('Source cost removed') })) close();
+    },
+  });
 
   return (
     <>
@@ -82,9 +86,9 @@ const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
                 id: sourceId,
                 input: { amount: Number(values.amount), currency: values.currency.toUpperCase(), period: values.period as SourceCostPeriod },
               },
-              onCompleted: () => {
+              onCompleted: (_, errors) => {
                 setSubmitting(false);
-                close();
+                if (notifyMutationOutcome(errors, { success: t_i18n('Source cost saved') })) close();
               },
               onError: () => setSubmitting(false),
             });

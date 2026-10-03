@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import notifyMutationOutcome from './notifyMutationOutcome';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { RECOMMENDATION_KIND_LABELS } from './sourceIntelligenceUtils';
 import { SourceIntelligenceSettingsQuery } from './__generated__/SourceIntelligenceSettingsQuery.graphql';
@@ -150,9 +151,7 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { sourceIntelligenceSettings } = usePreloadedQuery(sourceIntelligenceSettingsQuery, queryRef);
-  const [commit] = useApiMutation<SourceIntelligenceSettingsEditMutation>(sourceIntelligenceSettingsEditMutation, undefined, {
-    successMessage: t_i18n('Source intelligence settings saved'),
-  });
+  const [commit] = useApiMutation<SourceIntelligenceSettingsEditMutation>(sourceIntelligenceSettingsEditMutation);
   if (!sourceIntelligenceSettings) {
     return null;
   }
@@ -215,7 +214,10 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
         };
         commit({
           variables: { input },
-          onCompleted: () => setSubmitting(false),
+          onCompleted: (_, errors) => {
+            setSubmitting(false);
+            notifyMutationOutcome(errors, { success: t_i18n('Source intelligence settings saved') });
+          },
           onError: () => setSubmitting(false),
         });
       }}

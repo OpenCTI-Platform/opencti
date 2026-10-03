@@ -16,6 +16,10 @@ import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../..
 import type { Theme } from '../../../../components/Theme';
 import { parseJsonObject, RECOMMENDATION_KIND_LABELS, RECOMMENDATION_STATUS_LABELS } from './sourceIntelligenceUtils';
 import { SourceRecommendationCard_recommendation$key } from './__generated__/SourceRecommendationCard_recommendation.graphql';
+import { SourceRecommendationCardApplyMutation } from './__generated__/SourceRecommendationCardApplyMutation.graphql';
+import { SourceRecommendationCardRevertMutation } from './__generated__/SourceRecommendationCardRevertMutation.graphql';
+import { SourceRecommendationCardDismissMutation } from './__generated__/SourceRecommendationCardDismissMutation.graphql';
+import notifyMutationOutcome from './notifyMutationOutcome';
 
 const recommendationFragment = graphql`
   fragment SourceRecommendationCard_recommendation on SourceRecommendation {
@@ -59,6 +63,8 @@ const recommendationFragment = graphql`
 const applyMutation = graphql`
   mutation SourceRecommendationCardApplyMutation($id: ID!, $input: SourceRecommendationApplyInput) {
     applySourceRecommendation(id: $id, input: $input) {
+      status
+      error_message
       ...SourceRecommendationCard_recommendation
     }
   }
@@ -101,9 +107,9 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [dismissOpen, setDismissOpen] = useState(false);
   const [dismissReason, setDismissReason] = useState('');
-  const [commitApply, applying] = useApiMutation(applyMutation, undefined, { successMessage: t_i18n('Recommendation applied') });
-  const [commitRevert, reverting] = useApiMutation(revertMutation, undefined, { successMessage: t_i18n('Recommendation reverted') });
-  const [commitDismiss, dismissing] = useApiMutation(dismissMutation, undefined, { successMessage: t_i18n('Recommendation dismissed') });
+  const [commitApply, applying] = useApiMutation<SourceRecommendationCardApplyMutation>(applyMutation);
+  const [commitRevert, reverting] = useApiMutation<SourceRecommendationCardRevertMutation>(revertMutation);
+  const [commitDismiss, dismissing] = useApiMutation<SourceRecommendationCardDismissMutation>(dismissMutation);
 
   const payload = parseJsonObject(recommendation.payload);
   const statusColors: Record<string, string | undefined> = {
@@ -116,11 +122,27 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const busy = applying || reverting || dismissing;
   const catalogSlug = recommendation.kind === 'add_connector' && typeof payload.slug === 'string' ? payload.slug : null;
 
-  const handleApply = () => commitApply({ variables: { id: recommendation.id, input: {} }, onCompleted: () => onChange?.() });
-  const handleRevert = () => commitRevert({ variables: { id: recommendation.id }, onCompleted: () => onChange?.() });
+  const handleApply = () => commitApply({
+    variables: { id: recommendation.id, input: {} },
+    onCompleted: (response, errors) => {
+      const applied = response.applySourceRecommendation;
+      const failure = !errors?.length && applied?.status !== 'applied'
+        ? `${t_i18n('The recommendation could not be applied')}${applied?.error_message ? `: ${applied.error_message}` : ''}`
+        : null;
+      notifyMutationOutcome(errors, { success: t_i18n('Recommendation applied'), failure });
+      onChange?.();
+    },
+  });
+  const handleRevert = () => commitRevert({
+    variables: { id: recommendation.id },
+    onCompleted: (_, errors) => {
+      if (notifyMutationOutcome(errors, { success: t_i18n('Recommendation reverted') })) onChange?.();
+    },
+  });
   const handleDismiss = () => commitDismiss({
     variables: { id: recommendation.id, reason: dismissReason.trim() || null },
-    onCompleted: () => {
+    onCompleted: (_, errors) => {
+      if (!notifyMutationOutcome(errors, { success: t_i18n('Recommendation dismissed') })) return;
       setDismissOpen(false);
       setDismissReason('');
       onChange?.();
