@@ -63,7 +63,11 @@ export const renderGraphImage = (
   });
   let size = sizeAt(scale);
   if (size.width > MAX_SIDE || size.height > MAX_SIDE) {
-    scale *= Math.min((MAX_SIDE - LEGEND_WIDTH - PADDING * 2) / (graphWidthUnits * scale), (MAX_SIDE - HEADER_HEIGHT - PADDING) / (graphHeightUnits * scale));
+    // One pixel of margin, which the rounding up of the sizes may take.
+    scale *= Math.min(
+      (MAX_SIDE - 1 - LEGEND_WIDTH - PADDING * 2) / (graphWidthUnits * scale),
+      (MAX_SIDE - 1 - HEADER_HEIGHT - PADDING) / (graphHeightUnits * scale),
+    );
     size = sizeAt(scale);
   }
   const canvas = createCanvas();

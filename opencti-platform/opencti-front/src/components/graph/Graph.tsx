@@ -309,6 +309,9 @@ const Graph = ({
   };
 
   const exportImage = async () => {
+    // The page title names what the graph shows (container, investigation, entity) when the
+    // surface does not give a title of its own.
+    const imageTitle = title || document.title || t_i18n('Graph');
     const families = new Map<string, { label: string; color: string; count: number }>();
     shownNodes.forEach((node) => {
       const type = node.groupOf?.entityType ?? node.entity_type;
@@ -321,7 +324,7 @@ const Graph = ({
       nodes: shownNodes,
       links: shownLinks,
       palette,
-      title: title ?? t_i18n('Graph'),
+      title: imageTitle,
       subtitle: `${t_i18n('{count} entities', { values: { count: shownNodes.length } })}, ${t_i18n('{count} relationships', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),
       badgesOf: (node) => badgesOfNode(node, { t_i18n }),
@@ -342,7 +345,8 @@ const Graph = ({
       return;
     }
     try {
-      await downloadCanvasAsPng(canvas, `${title ?? t_i18n('Graph')} - ${new Date().toISOString().slice(0, 10)}`);
+      const fileName = `${imageTitle.replace(/[\\/:*?"<>|]+/g, '-').slice(0, 120)} - ${new Date().toISOString().slice(0, 10)}`;
+      await downloadCanvasAsPng(canvas, fileName);
     } catch {
       MESSAGING$.notifyError(t_i18n('The graph image could not be generated'));
     }

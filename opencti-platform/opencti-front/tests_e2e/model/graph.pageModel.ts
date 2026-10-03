@@ -38,8 +38,16 @@ const readGraphSnapshot = (): GraphSnapshot | null => {
   const host = container?.parentElement as (HTMLElement & Record<string, unknown>) | null | undefined;
   if (!canvas || !host) return null;
   const fiberKey = Object.keys(host).find((key) => key.startsWith('__reactFiber$'));
-  type Fiber = { memoizedProps?: { graphData?: { nodes: Record<string, unknown>[]; links: Record<string, unknown>[] } }; return?: Fiber };
+  const propsKey = Object.keys(host).find((key) => key.startsWith('__reactProps$'));
+  type Fiber = {
+    memoizedProps?: { graphData?: { nodes: Record<string, unknown>[]; links: Record<string, unknown>[] } };
+    return?: Fiber;
+    alternate?: Fiber;
+  };
   let fiber = (fiberKey ? host[fiberKey] : undefined) as Fiber | undefined;
+  // React keeps two versions of every fiber and the element may point to the stale one: the
+  // current one is the version holding the props last committed to the element.
+  if (fiber?.alternate && propsKey && fiber.memoizedProps !== host[propsKey]) fiber = fiber.alternate;
   while (fiber && !fiber.memoizedProps?.graphData) fiber = fiber.return;
   const graphData = fiber?.memoizedProps?.graphData;
   if (!graphData) return null;
