@@ -13324,6 +13324,8 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   decay_base_score_date?: Maybe<Scalars['DateTime']['output']>;
   decay_exclusion_applied_rule?: Maybe<IndicatorDecayExclusionRule>;
   decay_history?: Maybe<Array<DecayHistory>>;
+  deployment_failed_count?: Maybe<Scalars['Int']['output']>;
+  deployment_platforms_count?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -13380,6 +13382,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   updated_at: Scalars['DateTime']['output'];
   valid_from?: Maybe<Scalars['DateTime']['output']>;
   valid_until?: Maybe<Scalars['DateTime']['output']>;
+  validated_platforms_count?: Maybe<Scalars['Int']['output']>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -13627,6 +13630,15 @@ export type IndicatorDecayRule = {
   decay_rule_id?: Maybe<Scalars['String']['output']>;
 };
 
+export enum IndicatorDeploymentStatus {
+  Active = 'active',
+  Deployed = 'deployed',
+  Expired = 'expired',
+  Failed = 'failed',
+  Pending = 'pending',
+  Removed = 'removed'
+}
+
 export type IndicatorEdge = {
   __typename?: 'IndicatorEdge';
   cursor: Scalars['String']['output'];
@@ -13639,6 +13651,15 @@ export enum IndicatorFormat {
   Yara = 'yara'
 }
 
+export enum IndicatorValidationStatus {
+  Detected = 'detected',
+  Error = 'error',
+  Missed = 'missed',
+  NotRequested = 'not_requested',
+  Prevented = 'prevented',
+  Requested = 'requested'
+}
+
 export enum IndicatorsOrdering {
   Score = '_score',
   Confidence = 'confidence',
@@ -13647,6 +13668,8 @@ export enum IndicatorsOrdering {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  DeploymentFailedCount = 'deployment_failed_count',
+  DeploymentPlatformsCount = 'deployment_platforms_count',
   FreshnessDays = 'freshness_days',
   IndicatorTypes = 'indicator_types',
   LastAssertedAt = 'last_asserted_at',
@@ -13659,6 +13682,7 @@ export enum IndicatorsOrdering {
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
+  ValidatedPlatformsCount = 'validated_platforms_count',
   XOpenctiDetection = 'x_opencti_detection',
   XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -33007,11 +33031,15 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  deployed_at?: Maybe<Scalars['DateTime']['output']>;
+  deployment_status?: Maybe<IndicatorDeploymentStatus>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  error_message?: Maybe<Scalars['String']['output']>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  external_id?: Maybe<Scalars['String']['output']>;
   freshness_days?: Maybe<Scalars['Int']['output']>;
   freshness_stale?: Maybe<Scalars['Boolean']['output']>;
   freshness_stale_at?: Maybe<Scalars['DateTime']['output']>;
@@ -33021,11 +33049,15 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   fromType: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   has_conflicts?: Maybe<Scalars['Boolean']['output']>;
+  hit_count?: Maybe<Scalars['Int']['output']>;
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
+  last_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  last_sync_at?: Maybe<Scalars['DateTime']['output']>;
+  last_validation_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
@@ -33037,6 +33069,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   procedures?: Maybe<Array<Procedure>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
+  removed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -33053,6 +33086,8 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   toStix?: Maybe<Scalars['String']['output']>;
   toType: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  validation_run_id?: Maybe<Scalars['String']['output']>;
+  validation_status?: Maybe<IndicatorValidationStatus>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_assertions?: Maybe<Array<Assertion>>;
@@ -33133,17 +33168,26 @@ export type StixCoreRelationshipAddInput = {
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  deployed_at?: InputMaybe<Scalars['DateTime']['input']>;
+  deployment_status?: InputMaybe<IndicatorDeploymentStatus>;
   description?: InputMaybe<Scalars['String']['input']>;
+  error_message?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  external_id?: InputMaybe<Scalars['String']['input']>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
   fromId: Scalars['StixRef']['input'];
+  hit_count?: InputMaybe<Scalars['Int']['input']>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
+  last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  last_sync_at?: InputMaybe<Scalars['DateTime']['input']>;
+  last_validation_at?: InputMaybe<Scalars['DateTime']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   relationship_type: Scalars['String']['input'];
+  removed_at?: InputMaybe<Scalars['DateTime']['input']>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   start_time?: InputMaybe<Scalars['DateTime']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
@@ -33151,6 +33195,8 @@ export type StixCoreRelationshipAddInput = {
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
+  validation_run_id?: InputMaybe<Scalars['String']['input']>;
+  validation_status?: InputMaybe<IndicatorValidationStatus>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -33272,10 +33318,16 @@ export enum StixCoreRelationshipsOrdering {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  DeployedAt = 'deployed_at',
+  DeploymentStatus = 'deployment_status',
   EntityType = 'entity_type',
   FreshnessDays = 'freshness_days',
+  HitCount = 'hit_count',
   KillChainPhase = 'killChainPhase',
   LastAssertedAt = 'last_asserted_at',
+  LastHitAt = 'last_hit_at',
+  LastSyncAt = 'last_sync_at',
+  LastValidationAt = 'last_validation_at',
   Modified = 'modified',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
@@ -33288,6 +33340,7 @@ export enum StixCoreRelationshipsOrdering {
   ToValidFrom = 'toValidFrom',
   ToValidUntil = 'toValidUntil',
   UpdatedAt = 'updated_at',
+  ValidationStatus = 'validation_status',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -42137,8 +42190,10 @@ export type ResolversTypes = ResolversObject<{
   IndicatorConnection: ResolverTypeWrapper<Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>> }>;
   IndicatorDecayExclusionRule: ResolverTypeWrapper<IndicatorDecayExclusionRule>;
   IndicatorDecayRule: ResolverTypeWrapper<IndicatorDecayRule>;
+  IndicatorDeploymentStatus: IndicatorDeploymentStatus;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
   IndicatorFormat: IndicatorFormat;
+  IndicatorValidationStatus: IndicatorValidationStatus;
   IndicatorsOrdering: IndicatorsOrdering;
   Individual: ResolverTypeWrapper<Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, organizations?: Maybe<ResolversTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, workflowInstance?: Maybe<ResolversTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   IndividualAddInput: IndividualAddInput;
@@ -48524,6 +48579,8 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   decay_base_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   decay_exclusion_applied_rule?: Resolver<Maybe<ResolversTypes['IndicatorDecayExclusionRule']>, ParentType, ContextType>;
   decay_history?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
+  deployment_failed_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  deployment_platforms_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -48580,6 +48637,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  validated_platforms_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -54119,11 +54177,15 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  deployed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  deployment_status?: Resolver<Maybe<ResolversTypes['IndicatorDeploymentStatus']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipExternalReferencesArgs>>;
+  external_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   freshness_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   freshness_stale?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   freshness_stale_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54133,11 +54195,15 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipGroupingsArgs>>;
   has_conflicts?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hit_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_sync_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_validation_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipNotesArgs>>;
@@ -54149,6 +54215,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   procedures?: Resolver<Maybe<Array<ResolversTypes['Procedure']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  removed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -54165,6 +54232,8 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCoreRelationshipToStixArgs>>;
   toType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  validation_run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  validation_status?: Resolver<Maybe<ResolversTypes['IndicatorValidationStatus']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_assertions?: Resolver<Maybe<Array<ResolversTypes['Assertion']>>, ParentType, ContextType>;

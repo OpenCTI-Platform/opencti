@@ -1,0 +1,136 @@
+import { describe, expect, it } from 'vitest';
+import '../../../../src/modules/index';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { checkStixCoreRelationshipMapping } from '../../../../src/database/stix';
+import { isStixCoreRelationship, RELATION_DEPLOYED_ON } from '../../../../src/schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { buildDeployedOnCreationData, isDeploymentStatus, isValidationStatus } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import { convertDeployedOnToStixExtension } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-converter';
+import type { StoreRelation } from '../../../../src/types/store';
+
+describe('deployed-on relationship definition', () => {
+  it('should be a STIX core relationship from Indicator to Security Platform only', () => {
+    expect(RELATION_DEPLOYED_ON).toEqual('deployed-on');
+    expect(isStixCoreRelationship(RELATION_DEPLOYED_ON)).toEqual(true);
+    expect(checkStixCoreRelationshipMapping(ENTITY_TYPE_INDICATOR, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, RELATION_DEPLOYED_ON)).toEqual(true);
+    expect(checkStixCoreRelationshipMapping(ENTITY_TYPE_INDICATOR, ENTITY_TYPE_MALWARE, RELATION_DEPLOYED_ON)).toEqual(false);
+    expect(checkStixCoreRelationshipMapping(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, ENTITY_TYPE_INDICATOR, RELATION_DEPLOYED_ON)).toEqual(false);
+  });
+
+  it('should register the lifecycle attributes on deployed-on only', () => {
+    const attributes = schemaAttributesDefinition.getAttributeNames(RELATION_DEPLOYED_ON);
+    const expected = [
+      'deployment_status',
+      'external_id',
+      'deployed_at',
+      'last_sync_at',
+      'removed_at',
+      'hit_count',
+      'last_hit_at',
+      'validation_status',
+      'last_validation_at',
+      'validation_run_id',
+      'error_message',
+    ];
+    expected.forEach((name) => expect(attributes).toContain(name));
+    // Common relationship attributes are kept
+    expect(attributes).toContain('start_time');
+    expect(attributes).toContain('description');
+    // Other relationship types are not polluted
+    const usesAttributes = schemaAttributesDefinition.getAttributeNames('uses');
+    expect(usesAttributes).not.toContain('deployment_status');
+    expect(usesAttributes).not.toContain('hit_count');
+  });
+
+  it('should register filterable enum statuses with the exact plan values', () => {
+    const deploymentStatus = schemaAttributesDefinition.getAttribute(RELATION_DEPLOYED_ON, 'deployment_status');
+    expect(deploymentStatus?.isFilterable).toEqual(true);
+    expect(deploymentStatus?.type === 'string' && deploymentStatus.format === 'enum' ? deploymentStatus.values : [])
+      .toEqual(['pending', 'deployed', 'active', 'failed', 'removed', 'expired']);
+    const validationStatus = schemaAttributesDefinition.getAttribute(RELATION_DEPLOYED_ON, 'validation_status');
+    expect(validationStatus?.type === 'string' && validationStatus.format === 'enum' ? validationStatus.values : [])
+      .toEqual(['not_requested', 'requested', 'detected', 'prevented', 'missed', 'error']);
+  });
+
+  it('should register the derived filterable counters on Indicator', () => {
+    ['deployment_platforms_count', 'deployment_failed_count', 'validated_platforms_count'].forEach((name) => {
+      const attribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INDICATOR, name);
+      expect(attribute?.type).toEqual('numeric');
+      expect(attribute?.isFilterable).toEqual(true);
+      expect(attribute?.update).toEqual(false);
+    });
+  });
+});
+
+describe('deployed-on creation data', () => {
+  it('should apply defaults for status and counters', () => {
+    expect(buildDeployedOnCreationData({})).toEqual({
+      deployment_status: 'pending',
+      hit_count: 0,
+      validation_status: 'not_requested',
+    });
+  });
+
+  it('should keep valid values and drop empty optional ones', () => {
+    const data = buildDeployedOnCreationData({
+      deployment_status: 'active',
+      hit_count: 3.7,
+      validation_status: 'detected',
+      external_id: 'ti-123',
+      error_message: '',
+      deployed_at: '2026-10-01T00:00:00.000Z',
+      removed_at: null,
+    });
+    expect(data).toEqual({
+      deployment_status: 'active',
+      hit_count: 3,
+      validation_status: 'detected',
+      external_id: 'ti-123',
+      deployed_at: '2026-10-01T00:00:00.000Z',
+    });
+  });
+
+  it('should reject unknown statuses and negative counters', () => {
+    const data = buildDeployedOnCreationData({ deployment_status: 'live', validation_status: 'ok', hit_count: -2 });
+    expect(data.deployment_status).toEqual('pending');
+    expect(data.validation_status).toEqual('not_requested');
+    expect(data.hit_count).toEqual(0);
+    expect(isDeploymentStatus('expired')).toEqual(true);
+    expect(isDeploymentStatus('EXPIRED')).toEqual(false);
+    expect(isValidationStatus('missed')).toEqual(true);
+    expect(isValidationStatus(undefined)).toEqual(false);
+  });
+});
+
+describe('deployed-on STIX extension', () => {
+  it('should export the lifecycle for deployed-on relationships', () => {
+    const extension = convertDeployedOnToStixExtension({
+      relationship_type: RELATION_DEPLOYED_ON,
+      deployment_status: 'deployed',
+      external_id: 'abc',
+      deployed_at: new Date('2026-10-01T10:00:00.000Z'),
+      last_sync_at: '2026-10-02T10:00:00.000Z',
+      hit_count: 4,
+      validation_status: 'prevented',
+    } as unknown as StoreRelation);
+    expect(extension).toEqual({
+      deployment_status: 'deployed',
+      external_id: 'abc',
+      deployed_at: '2026-10-01T10:00:00.000Z',
+      last_sync_at: '2026-10-02T10:00:00.000Z',
+      removed_at: undefined,
+      hit_count: 4,
+      last_hit_at: undefined,
+      validation_status: 'prevented',
+      last_validation_at: undefined,
+      validation_run_id: undefined,
+      error_message: undefined,
+    });
+  });
+
+  it('should not add anything to other relationship types', () => {
+    expect(convertDeployedOnToStixExtension({ relationship_type: 'uses' } as unknown as StoreRelation)).toEqual({});
+  });
+});
