@@ -177,6 +177,11 @@ const STEP_OUTCOME_RULES: Record<string, StepOutcomeRule> = {
   'source.case_context_empty': { message: 'The case holds no entity to investigate yet.' },
   'source.case_run_missing': { message: 'The investigation of this case is no longer available in OpenCTI.', next: 'run_again' },
   'source.enrichment_wave': { message: '{done} of {jobs} enrichment jobs ended: {created} entities created, {updated} updated.' },
+  'source.enrichment_wave_gaps': {
+    message: '{done} of {jobs} enrichment jobs finished, {gaps} without a result (failed, refused, skipped or timed out): {created} entities created, {updated} updated in the draft.',
+    next: 'connectors_status',
+  },
+  'source.enrichment_wave_capped': { message: '{created} entities created and {updated} updated in the draft; the first {cited} are cited, the others stay in the draft.' },
   'source.enrichment_nothing_to_enrich': { message: 'No enrichment connector of the policy accepts {types}.', next: 'policy_connectors' },
   'source.enrichment_awaiting_approval': {
     message: '{count, plural, one {# enrichment job is waiting for your approval.} other {# enrichment jobs are waiting for your approval.}}',

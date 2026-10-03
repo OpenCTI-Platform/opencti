@@ -24,7 +24,8 @@ const ENGINE_DETAIL_CODES = [
   'source.mcp_tool_missing', 'source.mcp_argument_ambiguous', 'source.mcp_tool_error', 'source.fingerprint_matched', 'source.fingerprint_capped',
   'source.vt_unavailable', 'source.passive_dns_filtered', 'source.passive_dns_filtered_more', 'source.passive_dns_more', 'source.passive_dns_seeds',
   'source.passive_dns_seeds_set_aside', 'source.opencti_unavailable', 'source.opencti_known', 'source.opencti_none_known', 'source.case_context',
-  'source.case_context_empty', 'source.case_run_missing', 'source.enrichment_wave', 'source.enrichment_nothing_to_enrich',
+  'source.case_context_empty', 'source.case_run_missing', 'source.enrichment_wave', 'source.enrichment_wave_gaps', 'source.enrichment_wave_capped',
+  'source.enrichment_nothing_to_enrich',
   'source.enrichment_awaiting_approval', 'source.enrichment_refused', 'source.enrichment_timed_out', 'source.conclusion_written',
   'source.conclusion_trimmed', 'source.conclusion_unavailable',
 ];
@@ -66,6 +67,12 @@ describe('Case Autopilot step outcomes', () => {
     });
     expect(stepOutcome('empty', 'source.enrichment_awaiting_approval', { count: 1 }, t, context)?.text).toBe('1 enrichment job is waiting for your approval.');
     expect(stepOutcome('error', 'source.querier_error', {}, t, context)).toMatchObject({ text: 'Web research could not be queried.', next: 'run_again' });
+    expect(stepOutcome('degraded', 'source.enrichment_wave_gaps', { jobs: 4, done: 4, gaps: 1, created: 3, updated: 2 }, t, context)).toMatchObject({
+      text: '4 of 4 enrichment jobs finished, 1 without a result (failed, refused, skipped or timed out): 3 entities created, 2 updated in the draft.',
+      next: 'connectors_status',
+    });
+    expect(stepOutcome('degraded', 'source.enrichment_wave_capped', { created: 60, updated: 4, cited: 50 }, t, context)?.text)
+      .toBe('60 entities created and 4 updated in the draft; the first 50 are cited, the others stay in the draft.');
   });
 
   it('explains a missing conclusion by the failed steps when there are some', () => {
