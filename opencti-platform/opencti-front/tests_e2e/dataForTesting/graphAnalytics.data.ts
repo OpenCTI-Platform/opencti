@@ -43,11 +43,9 @@ export const requestGraphRecompute = async (request: APIRequestContext, ids: str
   `, { ids });
 };
 
-/**
- * Write a cluster the way the opencti-analytics process does, without completing the run:
- * the clusters computed by the platform are kept.
- */
-export const upsertAnalyticsCluster = async (
+const RUN_IN_PROGRESS_RETRIES = 30;
+
+const upsertCompleteAnalyticsRun = async (
   request: APIRequestContext,
   clusterId: string,
   memberIds: string[],
@@ -61,7 +59,7 @@ export const upsertAnalyticsCluster = async (
     input: {
       run_id: `e2e-${clusterId}`,
       process_version: 'e2e',
-      complete: false,
+      complete: true,
       metrics: memberIds.map((entity_id) => ({ entity_id, cluster_id: clusterId, cluster_kind: 'campaign', cluster_size: memberIds.length })),
       clusters: [{
         cluster_id: clusterId,
@@ -72,6 +70,28 @@ export const upsertAnalyticsCluster = async (
       }],
     },
   });
+};
+
+/**
+ * Write a cluster the way the opencti-analytics process does. Clusters are only published when their run completes,
+ * so the run is completed; it waits while a clustering run of the platform holds the single write lease.
+ */
+export const upsertAnalyticsCluster = async (
+  request: APIRequestContext,
+  clusterId: string,
+  memberIds: string[],
+  featureIds: string[],
+) => {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await upsertCompleteAnalyticsRun(request, clusterId, memberIds, featureIds);
+    } catch (error) {
+      if (attempt >= RUN_IN_PROGRESS_RETRIES || !String(error).includes('Another graph analytics run is in progress')) throw error;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+    }
+  }
 };
 
 export const deleteStixCoreObject = async (request: APIRequestContext, id: string) => {
