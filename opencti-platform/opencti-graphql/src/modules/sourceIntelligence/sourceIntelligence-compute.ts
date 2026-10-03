@@ -491,7 +491,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
     rawSearch(context, [READ_INDEX_STIX_CORE_RELATIONSHIPS], {
       query: { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'any') } } } },
       aggs: {
-        all: connectionCountAggregation(ids, 'any'),
+        all: { filter: { match_all: {} }, aggs: connectionCountAggregation(ids, 'any') },
         incidents: {
           filter: { nested: { path: 'connections', query: { term: { 'connections.types.keyword': ENTITY_TYPE_INCIDENT } } } },
           aggs: connectionCountAggregation(ids, 'any'),
