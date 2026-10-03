@@ -3,8 +3,12 @@ import { useFormatter } from '../../i18n';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { graphNodeTitle } from '../utils/useGraphParser';
 
-/** Beyond this, links are left out of the list: the nodes and their own counts still describe them. */
-const MAX_LISTED_LINKS = 1000;
+/**
+ * Options mounted on each side of the active one. Every element of the graph stays in the list and
+ * is reached by moving through it; only a window of options is in the document, so a graph of
+ * thousands of elements keeps a light list box.
+ */
+export const ACCESSIBLE_LIST_WINDOW_RADIUS = 100;
 
 export interface GraphAccessibleListProps {
   nodes: readonly GraphNode[];
@@ -42,15 +46,21 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
       const count = t_i18n('{count} relationships', { values: { count: degree.get(node.id) ?? 0 } });
       return { kind: 'node', node, text: `${type} ${name}, ${count}` };
     });
-    const linkEntries: Entry[] = links.filter((link) => !!link.label).slice(0, MAX_LISTED_LINKS).map((link) => ({
+    const endName = (end: GraphLink['source'], id: string) => {
+      const node = endpoint(end);
+      return node ? graphNodeTitle(node) : id;
+    };
+    const linkEntries: Entry[] = links.map((link) => ({
       kind: 'link',
       link,
-      text: `${endpoint(link.source)?.label ?? link.source_id} ${link.label} ${endpoint(link.target)?.label ?? link.target_id}`,
+      text: `${endName(link.source, link.source_id)} ${link.label || t_i18n(`relationship_${link.relationship_type || link.entity_type}`)} ${endName(link.target, link.target_id)}`,
     }));
     return [...nodeEntries, ...linkEntries];
   }, [nodes, links]);
 
   const activeIndex = Math.min(active, Math.max(0, entries.length - 1));
+  const windowStart = Math.max(0, activeIndex - ACCESSIBLE_LIST_WINDOW_RADIUS);
+  const windowEnd = Math.min(entries.length, activeIndex + ACCESSIBLE_LIST_WINDOW_RADIUS + 1);
   const idOf = (entry: Entry) => (entry.kind === 'node' ? entry.node.id : entry.link.id);
   const choose = (entry: Entry, additive: boolean) => {
     if (entry.kind === 'node') onSelectNode(entry.node, additive);
@@ -84,12 +94,14 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
       aria-activedescendant={entries.length > 0 ? `${listId}-${activeIndex}` : undefined}
       onKeyDown={onKeyDown}
     >
-      {entries.map((entry, index) => (
+      {entries.slice(windowStart, windowEnd).map((entry, offset) => (
         <div
           key={idOf(entry)}
-          id={`${listId}-${index}`}
+          id={`${listId}-${windowStart + offset}`}
           role="option"
           aria-selected={selectedIds.has(idOf(entry))}
+          aria-posinset={windowStart + offset + 1}
+          aria-setsize={entries.length}
           onClick={(event) => choose(entry, event.shiftKey)}
         >
           {entry.text}

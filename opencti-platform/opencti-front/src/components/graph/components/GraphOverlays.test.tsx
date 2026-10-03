@@ -6,7 +6,7 @@ import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import GraphLegend from './GraphLegend';
 import GraphControls from './GraphControls';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
-import GraphAccessibleList from './GraphAccessibleList';
+import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', label: 'APT-X', name: 'APT-X\n2025-01-01' });
@@ -201,6 +201,31 @@ describe('GraphAccessibleList', () => {
     fireEvent.keyDown(list, { key: 'End' });
     fireEvent.keyDown(list, { key: 'Enter', shiftKey: true });
     expect(onSelectLink).toHaveBeenCalledWith(uses, true);
+  });
+
+  it('keeps every relationship of a large graph reachable while mounting only a window of options', () => {
+    const onSelectLink = vi.fn();
+    const many = Array.from({ length: 4000 }, (_, index) => graphLink(actor, malware, { id: `link-${index}` }));
+    testRender(
+      <GraphAccessibleList
+        nodes={[actor, malware]}
+        links={many}
+        selectedIds={new Set()}
+        onSelectNode={vi.fn()}
+        onSelectLink={onSelectLink}
+      />,
+    );
+    const list = screen.getByRole('listbox', { name: 'Elements of the graph' });
+    expect(screen.getAllByRole('option').length).toBeLessThanOrEqual(2 * ACCESSIBLE_LIST_WINDOW_RADIUS + 1);
+    fireEvent.keyDown(list, { key: 'End' });
+    const active = document.getElementById(list.getAttribute('aria-activedescendant') ?? '');
+    expect(active).toHaveAttribute('aria-posinset', '4002');
+    expect(active).toHaveAttribute('aria-setsize', '4002');
+    fireEvent.keyDown(list, { key: 'Enter' });
+    expect(onSelectLink).toHaveBeenCalledWith(many[3999], false);
+    fireEvent.keyDown(list, { key: 'PageUp' });
+    fireEvent.keyDown(list, { key: 'Enter' });
+    expect(onSelectLink).toHaveBeenLastCalledWith(many[3989], false);
   });
 });
 
