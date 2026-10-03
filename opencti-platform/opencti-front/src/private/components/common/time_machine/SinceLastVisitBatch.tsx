@@ -4,6 +4,7 @@ import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { countLabel } from './timeMachineUtils';
 import { SinceLastVisitBatchQuery, SinceLastVisitBatchQuery$data } from './__generated__/SinceLastVisitBatchQuery.graphql';
 
 const sinceLastVisitBatchQuery = graphql`
@@ -109,9 +110,9 @@ export const SinceLastVisitRowBadge = ({ id, entityType }: { id: string; entityT
   const total = result.new_relationships + result.updates + result.new_container_objects;
   if (total === 0) return null;
   const parts = [
-    result.new_relationships > 0 ? `${result.new_relationships} ${t_i18n('new relationships')}` : null,
-    result.updates > 0 ? `${result.updates} ${t_i18n('updates')}` : null,
-    result.new_container_objects > 0 ? `${result.new_container_objects} ${t_i18n('new objects')}` : null,
+    result.new_relationships > 0 ? countLabel('new_relationships', result.new_relationships, t_i18n) : null,
+    result.updates > 0 ? countLabel('updates', result.updates, t_i18n) : null,
+    result.new_container_objects > 0 ? countLabel('new_container_objects', result.new_container_objects, t_i18n) : null,
   ].filter((part): part is string => !!part);
   const description = `${t_i18n('New since your last visit')}: ${parts.join(', ')}`;
   return (

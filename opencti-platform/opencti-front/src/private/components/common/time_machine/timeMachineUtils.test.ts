@@ -17,6 +17,7 @@ import {
   isValidDate,
   landscapeDiffToCsv,
   landscapeDiffToHtml,
+  countLabel,
   type LandscapeDiffData,
   landscapeFailureReason,
   landscapeGroupBuckets,
@@ -26,6 +27,7 @@ import {
   resolveChangesSection,
   TIME_MACHINE_PRESETS,
   valuesToText,
+  widgetDefaultRange,
 } from './timeMachineUtils';
 
 const t = (message: string) => message;
@@ -322,6 +324,27 @@ describe('Landscape changes grouping', () => {
     expect(byType).toContain('Changed entities by entity type');
     expect(byType).toContain('New techniques by tactic');
     expect(byType).toContain('New relationships by type');
+  });
+});
+
+describe('Counts and widget periods', () => {
+  const t = (message: string, opts?: { values?: Record<string, string | number> }) => message.replace('{count}', String(opts?.values?.count ?? ''));
+
+  it('should write a count with its singular or plural unit', () => {
+    expect(countLabel('new_relationships', 1, t)).toEqual('1 new relationship');
+    expect(countLabel('new_relationships', 3, t)).toEqual('3 new relationships');
+    expect(countLabel('updates', 1, t)).toEqual('1 update');
+    expect(countLabel('new_container_objects', 2, t)).toEqual('2 new objects');
+    expect(countLabel('attributes_changed', 0, t)).toEqual('0 attributes changed');
+  });
+
+  it('should keep the default widget period stable for a whole minute', () => {
+    const early = widgetDefaultRange(new Date('2026-10-03T22:40:05.123Z'));
+    const late = widgetDefaultRange(new Date('2026-10-03T22:40:59.999Z'));
+    expect(early).toEqual(late);
+    expect(early.to).toEqual('2026-10-03T22:41:00.000Z');
+    expect(early.from).toEqual('2026-09-03T22:41:00.000Z');
+    expect(widgetDefaultRange(new Date('2026-10-03T22:41:00.000Z')).to).toEqual('2026-10-03T22:41:00.000Z');
   });
 });
 

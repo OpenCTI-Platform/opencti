@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { resolveLink } from '../../../../utils/Entity';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
-import { entityChangesPath, presetRange } from './timeMachineUtils';
+import { countLabel, entityChangesPath, widgetDefaultRange } from './timeMachineUtils';
 import { LandscapeChangesWidgetQuery } from './__generated__/LandscapeChangesWidgetQuery.graphql';
 
 const landscapeChangesWidgetQuery = graphql`
@@ -50,7 +50,7 @@ const TOP_ENTITIES_LIMIT = 10;
 export const buildLandscapeWidgetVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
   const selection = resolvedDataSelection[0];
   const { startDate, endDate } = computeStartEndDates(config);
-  const fallback = presetRange('30d');
+  const fallback = widgetDefaultRange();
   const filters = selection?.filters ? normalizeFilterGroupForBackend(selection.filters) : null;
   return {
     input: {
@@ -98,7 +98,7 @@ const LandscapeChangesWidgetComponent = ({
               <ListItem key={entity.entity_id} divider secondaryAction={<Text variant="content-compact">{n(entity.change_score)}</Text>}>
                 <ListItemText
                   primary={base ? <Link to={entityChangesPath(base, entity.entity_id, entity.entity_type, period)}>{entity.name}</Link> : entity.name}
-                  secondary={`${t_i18n(`entity_${entity.entity_type}`)} - ${entity.relationships_added} ${t_i18n('new relationships')}, ${entity.attributes_changed} ${t_i18n('attributes changed')}`}
+                  secondary={`${t_i18n(`entity_${entity.entity_type}`)} - ${countLabel('new_relationships', entity.relationships_added, t_i18n)}, ${countLabel('attributes_changed', entity.attributes_changed, t_i18n)}`}
                 />
               </ListItem>
             );

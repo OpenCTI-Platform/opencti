@@ -3,6 +3,7 @@ import { graphql, useMutation } from 'react-relay';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Box } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
+import { countLabel } from './timeMachineUtils';
 import { SinceLastVisitChipsRecordMutation, SinceLastVisitChipsRecordMutation$data } from './__generated__/SinceLastVisitChipsRecordMutation.graphql';
 
 const sinceLastVisitChipsRecordMutation = graphql`
@@ -65,13 +66,13 @@ const SinceLastVisitChips = ({ entityId }: SinceLastVisitChipsProps) => {
         <TooltipContent>{`${t_i18n('Last visit')}: ${since}`}</TooltipContent>
       </Tooltip>
       {data.new_relationships > 0 && (
-        <Chip label={`${data.new_relationships} ${t_i18n('new relationships')}`} severity="info" />
+        <Chip label={countLabel('new_relationships', data.new_relationships, t_i18n)} severity="info" />
       )}
       {data.updates > 0 && (
-        <Chip label={`${data.updates} ${t_i18n('updates')}`} severity="info" />
+        <Chip label={countLabel('updates', data.updates, t_i18n)} severity="info" />
       )}
       {data.new_container_objects > 0 && (
-        <Chip label={`${data.new_container_objects} ${t_i18n('new objects')}`} severity="info" />
+        <Chip label={countLabel('new_container_objects', data.new_container_objects, t_i18n)} severity="info" />
       )}
     </Box>
   );
