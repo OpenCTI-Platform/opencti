@@ -4,7 +4,7 @@ export const SIGMA_RULE_MAX_LENGTH = 65536;
 
 const SIGMA_STATUSES = ['stable', 'test', 'experimental', 'deprecated', 'unsupported'];
 const SIGMA_LEVELS = ['informational', 'low', 'medium', 'high', 'critical'];
-const CONDITION_KEYWORDS = new Set(['and', 'or', 'not', 'of', 'them', 'all', '1', 'any']);
+const CONDITION_KEYWORDS = new Set(['and', 'or', 'not', 'of', 'them', 'all', 'any']);
 const ATTACK_TECHNIQUE_TAG = /^attack\.(t\d{4}(?:\.\d{3})?)$/i;
 
 export interface SigmaValidation {
@@ -58,11 +58,14 @@ const collectSearchFields = (search: unknown, fields: Set<string>) => {
 const conditionIdentifiers = (condition: string): string[] => {
   // Aggregation expressions (deprecated) are separated by a pipe and are not identifiers
   const [expression] = condition.split('|');
-  return expression
+  const tokens = expression
     .replace(/[()]/g, ' ')
     .split(/\s+/)
     .map((token) => token.trim())
-    .filter((token) => token.length > 0 && !CONDITION_KEYWORDS.has(token.toLowerCase()));
+    .filter((token) => token.length > 0);
+  // A number followed by "of" is the quantifier of "<n> of <identifiers>", not a search identifier
+  const isQuantifier = (token: string, index: number) => /^\d+$/.test(token) && tokens[index + 1]?.toLowerCase() === 'of';
+  return tokens.filter((token, index) => !CONDITION_KEYWORDS.has(token.toLowerCase()) && !isQuantifier(token, index));
 };
 
 const identifierMatches = (identifier: string, searchIdentifiers: string[]) => {

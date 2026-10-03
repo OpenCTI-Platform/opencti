@@ -10,7 +10,7 @@ import { completeConnector } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { topEntitiesList } from '../../database/middleware-loader';
+import { fullEntitiesList } from '../../database/middleware-loader';
 import { patchAttribute } from '../../database/middleware';
 import { createWork } from '../../domain/work';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
@@ -38,8 +38,6 @@ export interface HuntConnectorTarget {
   connector: BasicStoreEntityConnector;
   securityPlatform: BasicStoreEntitySecurityPlatform | null;
 }
-
-const MAX_SCOPE_PLATFORMS = 500;
 
 /**
  * Active hunt connectors, completed with their liveness (a connector pings every minute).
@@ -69,9 +67,9 @@ export const resolveHuntScopePlatforms = async (
   hunt: Pick<BasicStoreEntityHunt, 'hunt_scope'>,
 ): Promise<BasicStoreEntitySecurityPlatform[]> => {
   const filters = parseHuntFilterGroup(hunt.hunt_scope, 'hunt_scope');
-  return topEntitiesList<BasicStoreEntitySecurityPlatform>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
+  // Every matching platform, read page by page: a platform left out would never be hunted
+  return fullEntitiesList<BasicStoreEntitySecurityPlatform>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
     filters: filters ?? undefined,
-    first: MAX_SCOPE_PLATFORMS,
   });
 };
 

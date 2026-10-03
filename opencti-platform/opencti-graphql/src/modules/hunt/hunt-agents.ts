@@ -1,4 +1,4 @@
-import Ajv, { type JSONSchemaType } from 'ajv';
+import Ajv, { type JSONSchemaType, type SchemaObject } from 'ajv';
 import type { AuthContext } from '../../types/user';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -102,7 +102,8 @@ interface RawHuntTriageResult {
   incident?: { name: string; description: string; severity: string } | null;
 }
 
-const HUNT_TRIAGE_SCHEMA: JSONSchemaType<RawHuntTriageResult> = {
+// JSONSchemaType cannot type a property that is both required and nullable, hence the plain SchemaObject
+const HUNT_TRIAGE_SCHEMA: SchemaObject = {
   type: 'object',
   properties: {
     verdict: { type: 'string', enum: [HUNT_VERDICT_TRUE_POSITIVE, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE] },
@@ -122,7 +123,7 @@ const HUNT_TRIAGE_SCHEMA: JSONSchemaType<RawHuntTriageResult> = {
   required: ['verdict', 'confidence', 'rationale'],
   additionalProperties: true,
 };
-const validateTriageSchema = ajv.compile(HUNT_TRIAGE_SCHEMA);
+const validateTriageSchema = ajv.compile<RawHuntTriageResult>(HUNT_TRIAGE_SCHEMA);
 // endregion
 
 /**

@@ -79,6 +79,12 @@ describe('Hunt Sigma validation', () => {
     expect(missingCondition.errors).toEqual(['The Sigma rule detection must have a condition']);
     const wildcard = validateSigmaRule('title: t\nlogsource:\n  product: linux\ndetection:\n  sel_a:\n    a: b\n  sel_b:\n    c: d\n  condition: 1 of sel_* or (s*_b)\n');
     expect(wildcard.valid).toBe(true);
+    const quantified = validateSigmaRule('title: t\nlogsource:\n  product: linux\ndetection:\n  sel_a:\n    a: b\n  sel_b:\n    c: d\n  sel_c:\n    e: f\n  condition: 2 of sel_* and not (10 of sel_c)\n');
+    expect(quantified.errors).toEqual([]);
+    const bareNumber = validateSigmaRule('title: t\nlogsource:\n  product: linux\ndetection:\n  sel_a:\n    a: b\n  condition: sel_a and not 10\n');
+    expect(bareNumber.valid).toBe(false);
+    const unknown = validateSigmaRule('title: t\nlogsource:\n  product: linux\ndetection:\n  sel_a:\n    a: b\n  condition: 2 of sel_* or missing\n');
+    expect(unknown.valid).toBe(false);
     const scalarSearch = validateSigmaRule('title: t\nlogsource:\n  product: linux\ndetection:\n  selection: value\n  condition: selection\n');
     expect(scalarSearch.errors).toEqual(['The Sigma search identifier selection must be a map or a list']);
   });
