@@ -34,9 +34,19 @@ const SimpleGraph2D = ({
   const {
     nodePaint,
     nodePointerAreaPaint,
-    linkLabelPaint,
+    linkPaint,
+    linkCurvature,
+    framePrePaint,
+    framePostPaint,
     linkColorPaint,
-  } = useGraphPainter();
+  } = useGraphPainter({
+    selectedLinks: [],
+    selectedNodes: [],
+    detailsPreviewSelected: undefined,
+    search: undefined,
+    links: graphProps.graphData?.links ?? [],
+    nodeCount: graphProps.graphData?.nodes.length ?? 0,
+  });
 
   return (
     <ForceGraph2D<GraphNode, GraphLink>
@@ -44,17 +54,19 @@ const SimpleGraph2D = ({
       width={width}
       height={height}
       dagLevelDistance={50}
-      linkDirectionalArrowLength={3}
-      linkDirectionalArrowRelPos={0.99}
-      linkCanvasObjectMode={() => 'after'}
-      linkCanvasObject={(link, ctx) => linkLabelPaint(link, ctx)}
-      linkLineDash={(link) => (link.isNestedInferred ? [2, 1] : null)}
+      nodeLabel={() => ''}
+      linkCurvature={linkCurvature}
+      linkWidth={2}
+      linkCanvasObjectMode={() => 'replace'}
+      linkCanvasObject={(link, ctx, globalScale) => linkPaint(link, ctx, globalScale)}
       linkDirectionalParticles={(link) => (link.inferred && showParticules ? 20 : 0)}
       linkDirectionalParticleWidth={showParticules ? 2 : undefined}
       linkDirectionalParticleSpeed={showParticules ? 0.002 : undefined}
       linkColor={linkColorPaint}
-      nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
-      nodeCanvasObject={(node, ctx) => nodePaint(node, ctx)}
+      nodePointerAreaPaint={(node, color, ctx, globalScale) => nodePointerAreaPaint(node, color, ctx, globalScale)}
+      nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, { globalScale })}
+      onRenderFramePre={framePrePaint}
+      onRenderFramePost={framePostPaint}
       {...graphProps}
     />
   );

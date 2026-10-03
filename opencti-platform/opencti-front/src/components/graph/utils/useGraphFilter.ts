@@ -9,6 +9,7 @@ const useGraphFilter = () => {
     disabledCreators,
     disabledMarkings,
     selectedTimeRangeInterval,
+    disabledRelationshipTypes = [],
   } = graphState;
 
   const filterNodes = (disabledTargets: string[]) => {
@@ -34,6 +35,10 @@ const useGraphFilter = () => {
       if (link.disabled) {
         targets.push(link.target_id);
       }
+      // A relationship type turned off in the legend fades its links, not the entities they join.
+      if (disabledRelationshipTypes.includes(link.relationship_type || link.entity_type)) {
+        link.disabled = true;
+      }
     });
     return targets;
   };
@@ -46,6 +51,7 @@ const useGraphFilter = () => {
     disabledCreators,
     disabledMarkings,
     selectedTimeRangeInterval,
+    disabledRelationshipTypes,
     graphData,
   ]);
 };

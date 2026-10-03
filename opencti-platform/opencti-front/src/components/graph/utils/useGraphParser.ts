@@ -29,6 +29,7 @@ export interface ObjectToParse {
     id: string;
     name: string;
   };
+  confidence?: number | null;
   created: string;
   start_time: string;
   stop_time: string;
@@ -47,11 +48,17 @@ export interface ObjectToParse {
   objectMarking: {
     id: string;
     definition: string;
+    x_opencti_color?: string | null;
   }[];
   // Other containers associated to this object.
   // Used for correlation graphs.
   linkedContainers?: ObjectToParse[];
 }
+
+/** Id of the placeholder marking of unmarked elements, which the marking filter lists as "None". */
+export const NO_MARKING_ID = 'abb8eb18-a02c-48e9-adae-08c92275c87e';
+/** Id of the placeholder author of elements without one, which the author filter lists as "None". */
+export const NO_AUTHOR_ID = '0533fcc9-b9e8-4010-877c-174343cb24cd';
 
 const useGraphParser = () => {
   const { t_i18n } = useFormatter();
@@ -67,20 +74,18 @@ const useGraphParser = () => {
     return `${relTypeStr}<br/>${createdStr}<br/>${startStr}<br/>${endStr}`;
   };
 
-  const getMarkings = (data: ObjectToParse) => {
-    let markedBy = [{
-      id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-      definition: t_i18n('None'),
-    }];
+  const getMarkings = (data: ObjectToParse): GraphNode['markedBy'] => {
     if (data.objectMarking && data.objectMarking.length > 0) {
-      markedBy = data.objectMarking.map((m) => ({ id: m.id, definition: m.definition }));
+      return data.objectMarking.map((m) => (m.x_opencti_color
+        ? { id: m.id, definition: m.definition, x_opencti_color: m.x_opencti_color }
+        : { id: m.id, definition: m.definition }));
     }
-    return markedBy;
+    return [{ id: NO_MARKING_ID, definition: t_i18n('None') }];
   };
 
   const getCreatedBy = (data: ObjectToParse) => {
     return data.createdBy ? data.createdBy : {
-      id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+      id: NO_AUTHOR_ID,
       name: t_i18n('None'),
     };
   };
@@ -183,6 +188,8 @@ const useGraphParser = () => {
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
       corroborationCount: data.corroboration_count ?? undefined,
+      confidence: data.confidence ?? null,
+      raw: data,
     };
   };
 
@@ -205,6 +212,8 @@ const useGraphParser = () => {
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
       corroborationCount: data.corroboration_count ?? undefined,
+      confidence: data.confidence ?? null,
+      raw: data,
     };
     return {
       ...baseLink,

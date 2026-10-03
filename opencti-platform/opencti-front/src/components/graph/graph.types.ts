@@ -1,5 +1,6 @@
 import { ForceGraphProps } from 'react-force-graph-3d';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
+import type { ObjectToParse } from './utils/useGraphParser';
 
 interface GraphElement {
   id: string;
@@ -12,9 +13,15 @@ interface GraphElement {
   relationship_type: string;
   isNestedInferred: boolean;
   createdBy: { id: string; name: string };
-  markedBy: { id: string; definition: string }[];
+  markedBy: { id: string; definition: string; x_opencti_color?: string | null }[];
+  confidence?: number | null;
   // Number of distinct sources asserting the element (provenance)
   corroborationCount?: number;
+  /**
+   * The object received from the query, untouched: badge providers and quick actions read their
+   * own fields from it (soft checks), whatever the graph itself uses.
+   */
+  raw?: ObjectToParse;
 }
 
 export interface GraphLink extends GraphElement {
@@ -42,6 +49,8 @@ export interface GraphNode extends GraphElement {
   rawImg: string;
   img: HTMLImageElement;
   numberOfConnectedElement?: number;
+  /** A group node standing for every entity of one type, collapsed by the reader. */
+  groupOf?: { entityType: string; memberIds: string[] };
 }
 
 export const isGraphNode = (o: GraphNode | GraphLink): o is GraphNode => {
@@ -70,10 +79,25 @@ export interface GraphEntity {
   objectMarking?: readonly DefaultMarking[] | null | undefined;
 }
 
+/** Deterministic layouts other than the tree modes: by entity tier, or rings around one node. */
+export type GraphLayoutMode = 'tiers' | 'radial';
+
 // Stuff kept in URL and local storage.
 export interface GraphState {
   mode3D: boolean;
   modeTree: 'td' | 'lr' | null;
+  layoutMode?: GraphLayoutMode | null;
+  /** Centre of the radial layout; the most connected node when unset. */
+  layoutCentreId?: string | null;
+  /** Entities hidden from the view by the reader (not removed from the data). */
+  hiddenNodeIds?: string[];
+  /** Entity types drawn as a single group node. */
+  collapsedEntityTypes?: string[];
+  /** Relationship types hidden from the view through the legend. */
+  disabledRelationshipTypes?: string[];
+  showLegend?: boolean;
+  /** Shortest path highlighted between two nodes. */
+  highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;
   withForces: boolean;
   selectFreeRectangle: boolean;
   selectFree: boolean;

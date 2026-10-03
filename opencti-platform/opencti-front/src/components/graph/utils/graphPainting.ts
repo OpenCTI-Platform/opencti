@@ -1,0 +1,447 @@
+import type { GraphLink, GraphNode } from '../graph.types';
+import type { GraphPalette } from './graphPalette';
+import type { GraphBadge } from '../badges/graphBadgeRegistry';
+import { entityGlyph, iconGlyph, paintGlyph } from './graphIcons';
+import { type Box, fitText, keepNonOverlapping, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
+
+/*
+ * Sizes are graph units: the view is fitted to the drawing, so they only fix proportions. Sizes
+ * that must stay readable whatever the zoom are given in screen pixels and divided by the scale.
+ */
+export const NODE_RADIUS = 6.5;
+/** A relationship drawn as a node (it is the end of another relationship) is smaller than an entity. */
+export const RELATIONSHIP_NODE_RADIUS = 4.5;
+const RING_WIDTH = 1.1;
+const ICON_SIZE_RATIO = 1.15;
+const HALO_GAP = 1.8;
+const HALO_WIDTH = 1.3;
+const LABEL_GAP = 2.4;
+const LABEL_SIZE = 3.6;
+const SUBLABEL_SIZE = 2.7;
+const LABEL_MAX_WIDTH = 48;
+/** Emphasised labels (selected, hovered, on a path) never read smaller than this on screen. */
+const EMPHASIS_LABEL_PX = 12;
+/** And no label grows past this on screen when zooming in. */
+const MAX_LABEL_PX = 18;
+const PILL_PADDING = 1.2;
+const BADGE_SIZE = 3.4;
+const BADGE_MIN_PX = 10;
+const BADGE_GAP = 0.7;
+const COUNTER_RADIUS = 2.5;
+const LINK_WIDTH = 0.55;
+const LINK_MIN_PX = 1;
+const LINK_GAP = 1.2;
+const ARROW_LENGTH = 3.4;
+const ARROW_HALF_WIDTH = 1.45;
+const LINK_LABEL_SIZE = 2.6;
+const LINK_LABEL_MAX_PX = 15;
+const INFERRED_DASH = [2.4, 1.6];
+const LOW_CONFIDENCE_DASH = [0.7, 1.5];
+/** Below this confidence a relationship is drawn dotted: it is asserted with little certainty. */
+export const LOW_CONFIDENCE_THRESHOLD = 50;
+const DEFAULT_FONT = '"IBM Plex Sans", sans-serif';
+
+export interface LevelOfDetail {
+  icons: boolean;
+  labels: boolean;
+  secondaryLabels: boolean;
+  badges: boolean;
+  arrows: boolean;
+  linkLabels: boolean;
+}
+
+/**
+ * What is worth drawing at a zoom level: detail appears as it becomes readable, and a crowded
+ * graph keeps its overview clean until the reader zooms in.
+ */
+export const levelOfDetail = (globalScale: number, nodeCount: number): LevelOfDetail => {
+  const crowded = nodeCount > 500;
+  const radiusPx = NODE_RADIUS * globalScale;
+  return {
+    icons: radiusPx >= 3.5,
+    labels: LABEL_SIZE * globalScale >= (crowded ? 9 : 6.5),
+    secondaryLabels: SUBLABEL_SIZE * globalScale >= 8.5,
+    badges: radiusPx >= (crowded ? 10 : 7),
+    arrows: ARROW_LENGTH * globalScale >= 3,
+    linkLabels: LINK_LABEL_SIZE * globalScale >= (crowded ? 9 : 7),
+  };
+};
+
+export const nodeRadius = (node: Pick<GraphNode, 'relationship_type'>) => (node.relationship_type ? RELATIONSHIP_NODE_RADIUS : NODE_RADIUS);
+
+// Corroboration ring: invisible for single-sourced knowledge, thicker with every additional source
+const MAX_RING_SOURCES = 8;
+const CORROBORATION_RING_GAP = 0.4;
+export const corroborationRingWidth = (corroborationCount: number | undefined) => {
+  if (!corroborationCount || corroborationCount < 2) {
+    return 0;
+  }
+  return 0.25 + 0.15 * (Math.min(corroborationCount, MAX_RING_SOURCES) - 1);
+};
+
+/** A relationship label, with the number of sources asserting it once it is corroborated. */
+export const linkLabelText = (link: Pick<GraphLink, 'label' | 'corroborationCount'>) => {
+  const corroboration = link.corroborationCount ?? 0;
+  return corroboration >= 2 ? `${link.label} (${corroboration})` : link.label;
+};
+
+const font = (weight: number, size: number, family = DEFAULT_FONT) => `${weight} ${size}px ${family}`;
+
+export interface NodeVisual {
+  selected: boolean;
+  /** The entity shown in the details panel. */
+  preview: boolean;
+  hovered: boolean;
+  /** Outside the focus (selection, hover or path), drawn faded. */
+  faded: boolean;
+  onPath: boolean;
+}
+
+export interface NodePaintOptions {
+  palette: GraphPalette;
+  globalScale: number;
+  detail: LevelOfDetail;
+  visual: NodeVisual;
+  badges?: GraphBadge[];
+  /** Investigations show how many relationships are not drawn yet. */
+  showConnectedCount?: boolean;
+  /** Translated entity type, the second line of the label at close zoom. */
+  typeLabel?: string;
+}
+
+const connectedCountLabel = (count: number | undefined): string | null => {
+  if (count === undefined) return '?';
+  if (count <= 0) return null;
+  return count > 99 ? '99+' : `${count}+`;
+};
+
+const paintHalo = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, color: string, alpha: number, width = HALO_WIDTH) => {
+  const opacity = ctx.globalAlpha;
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, radius + HALO_GAP + width / 2, 0, 2 * Math.PI);
+  ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = opacity * alpha;
+  ctx.stroke();
+  ctx.globalAlpha = opacity;
+};
+
+const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions) => {
+  const { palette, globalScale } = options;
+  const size = Math.max(BADGE_SIZE, BADGE_MIN_PX / globalScale);
+  const gap = BADGE_GAP * (size / BADGE_SIZE);
+  ctx.font = font(600, size * 0.62);
+  const widths = badges.map((badge) => (badge.value !== undefined && badge.value !== ''
+    ? size + ctx.measureText(String(badge.value)).width + size * 0.35
+    : size));
+  const total = widths.reduce((sum, width) => sum + width, 0) + gap * (badges.length - 1);
+  const centreY = node.y - radius - HALO_GAP - size / 2 - gap;
+  let left = node.x - total / 2;
+  badges.forEach((badge, index) => {
+    const width = widths[index];
+    const color = badge.color || palette.tones[badge.tone];
+    ctx.beginPath();
+    ctx.roundRect(left, centreY - size / 2, width, size, size / 2);
+    ctx.fillStyle = palette.surface;
+    ctx.fill();
+    ctx.lineWidth = size * 0.12;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    const glyphCentre = left + size / 2;
+    const painted = badge.icon ? paintGlyph(ctx, iconGlyph(badge.icon), glyphCentre, centreY, size * 0.68, color) : false;
+    if (!painted) {
+      ctx.beginPath();
+      ctx.arc(glyphCentre, centreY, size * 0.26, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+    if (badge.value !== undefined && badge.value !== '') {
+      ctx.fillStyle = palette.text;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(badge.value), left + size * 0.95, centreY + size * 0.04);
+    }
+    left += width + gap;
+  });
+};
+
+const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, options: NodePaintOptions, emphasised: boolean) => {
+  const { palette, globalScale, visual, detail, typeLabel } = options;
+  const base = emphasised ? Math.max(LABEL_SIZE, EMPHASIS_LABEL_PX / globalScale) : LABEL_SIZE;
+  const size = Math.min(base, MAX_LABEL_PX / globalScale);
+  const top = node.y + radius + LABEL_GAP + (visual.selected || visual.preview ? HALO_WIDTH : 0);
+  ctx.font = font(visual.selected || visual.preview ? 600 : 500, size);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const text = fitText((value) => ctx.measureText(value).width, node.label ?? '', LABEL_MAX_WIDTH * (size / LABEL_SIZE));
+  if (visual.selected || visual.preview) {
+    const width = ctx.measureText(text).width + PILL_PADDING * 2 * (size / LABEL_SIZE);
+    ctx.beginPath();
+    ctx.roundRect(node.x - width / 2, top - size * 0.2, width, size * 1.4, size * 0.35);
+    ctx.fillStyle = palette.accent;
+    ctx.fill();
+    ctx.fillStyle = palette.background;
+  } else {
+    ctx.fillStyle = node.disabled ? palette.textSecondary : palette.text;
+  }
+  ctx.fillText(text, node.x, top);
+  if (typeLabel && detail.secondaryLabels && !node.disabled) {
+    const subSize = Math.min(SUBLABEL_SIZE, (MAX_LABEL_PX * 0.8) / globalScale);
+    ctx.font = font(400, subSize);
+    ctx.fillStyle = palette.textSecondary;
+    ctx.fillText(fitText((value) => ctx.measureText(value).width, typeLabel, LABEL_MAX_WIDTH * (subSize / LABEL_SIZE)), node.x, top + size * 1.3);
+  }
+};
+
+/**
+ * Draws one node: a disc tinted with the entity colour, its ring and icon, the selection halo,
+ * the badges above and the label below, each according to the level of detail.
+ */
+export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, options: NodePaintOptions) => {
+  const { palette, detail, visual, badges = [], showConnectedCount = false } = options;
+  if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+  const radius = nodeRadius(node);
+  const color = node.disabled ? palette.textSecondary : (node.color || palette.textSecondary);
+  ctx.save();
+  let alpha = 1;
+  if (node.disabled) alpha = palette.fadeAlpha * 0.7;
+  else if (visual.faded) alpha = palette.fadeAlpha;
+  ctx.globalAlpha = alpha;
+
+  if (visual.selected || visual.preview || visual.onPath) {
+    paintHalo(ctx, node, radius, palette.accent, visual.preview ? 1 : 0.8);
+  } else if (visual.hovered) {
+    paintHalo(ctx, node, radius, color, 0.55);
+  }
+
+  // Opaque first, so a link behind never shows through the tint.
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = palette.surface;
+  ctx.fill();
+  ctx.globalAlpha = alpha * palette.tintAlpha;
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = RING_WIDTH;
+  ctx.strokeStyle = node.isNestedInferred ? palette.inferred : color;
+  if (node.isNestedInferred) ctx.setLineDash([1.6, 1.1]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const corroborationWidth = corroborationRingWidth(node.corroborationCount);
+  if (corroborationWidth > 0 && !node.disabled) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + RING_WIDTH / 2 + CORROBORATION_RING_GAP + corroborationWidth / 2, 0, 2 * Math.PI);
+    ctx.lineWidth = corroborationWidth;
+    ctx.strokeStyle = palette.tones.success;
+    ctx.stroke();
+  }
+
+  if (detail.icons) {
+    const glyph = entityGlyph(node.relationship_type ? 'relationship' : node.entity_type);
+    const size = radius * ICON_SIZE_RATIO;
+    const painted = paintGlyph(ctx, glyph, node.x, node.y, size, color);
+    if (!painted && node.img?.complete && node.img.naturalWidth > 0) {
+      ctx.drawImage(node.img, node.x - size / 2, node.y - size / 2, size, size);
+    }
+  }
+
+  const counter = showConnectedCount ? connectedCountLabel(node.numberOfConnectedElement) : null;
+  if (counter) {
+    const cx = node.x + radius * 0.78;
+    const cy = node.y - radius * 0.78;
+    ctx.beginPath();
+    ctx.arc(cx, cy, COUNTER_RADIUS, 0, 2 * Math.PI);
+    ctx.fillStyle = palette.background;
+    ctx.fill();
+    ctx.lineWidth = 0.4;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.fillStyle = palette.text;
+    ctx.font = font(600, counter.length > 2 ? 1.5 : 1.8);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(counter, cx, cy + 0.1);
+  }
+
+  if (badges.length > 0 && detail.badges && !node.disabled) {
+    paintBadges(ctx, node, radius, badges, options);
+  }
+
+  const emphasised = visual.selected || visual.preview || visual.hovered || visual.onPath;
+  if (detail.labels || emphasised) {
+    paintLabels(ctx, node, radius, options, emphasised);
+  }
+  ctx.restore();
+};
+
+/** The area a pointer hits for a node: its disc with a little margin, and its label when drawn. */
+export const paintGraphNodeHitArea = (ctx: CanvasRenderingContext2D, node: GraphNode, color: string, showLabel: boolean) => {
+  const radius = nodeRadius(node);
+  ctx.beginPath();
+  ctx.fillStyle = color;
+  ctx.arc(node.x, node.y, radius + 1.5, 0, 2 * Math.PI);
+  ctx.fill();
+  if (showLabel) {
+    ctx.fillRect(node.x - LABEL_MAX_WIDTH / 4, node.y + radius, LABEL_MAX_WIDTH / 2, LABEL_GAP + LABEL_SIZE * 1.4);
+  }
+};
+
+export interface LinkVisual {
+  selected: boolean;
+  hovered: boolean;
+  faded: boolean;
+  onPath: boolean;
+}
+
+export interface LinkPaintOptions {
+  palette: GraphPalette;
+  globalScale: number;
+  detail: LevelOfDetail;
+  visual: LinkVisual;
+  color: string;
+  curvature: number;
+  rotation: number;
+  /** Confidence of the relationship, when known. */
+  confidence?: number | null;
+}
+
+export interface LinkLabel {
+  text: string;
+  x: number;
+  y: number;
+  angle: number;
+  /** Selected and focused labels are kept first when labels overlap. */
+  priority: number;
+  emphasised: boolean;
+}
+
+const endOf = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end : null);
+
+export const linkDash = (link: Pick<GraphLink, 'inferred' | 'isNestedInferred'>, confidence?: number | null): number[] => {
+  if (link.inferred || link.isNestedInferred) return INFERRED_DASH;
+  if (typeof confidence === 'number' && confidence < LOW_CONFIDENCE_THRESHOLD) return LOW_CONFIDENCE_DASH;
+  return [];
+};
+
+const strokePath = (ctx: CanvasRenderingContext2D, path: LinkPath) => {
+  ctx.beginPath();
+  ctx.moveTo(path.start.x, path.start.y);
+  if (path.kind === 'line') ctx.lineTo(path.end.x, path.end.y);
+  else if (path.kind === 'quadratic') ctx.quadraticCurveTo(path.control.x, path.control.y, path.end.x, path.end.y);
+  else ctx.bezierCurveTo(path.c1.x, path.c1.y, path.c2.x, path.c2.y, path.end.x, path.end.y);
+  ctx.stroke();
+};
+
+const paintArrowHead = (ctx: CanvasRenderingContext2D, tip: { x: number; y: number }, direction: { x: number; y: number }, scale: number) => {
+  const length = ARROW_LENGTH * scale;
+  const half = ARROW_HALF_WIDTH * scale;
+  const tailX = tip.x - direction.x * length;
+  const tailY = tip.y - direction.y * length;
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.lineTo(tailX - direction.y * half, tailY + direction.x * half);
+  ctx.lineTo(tailX + direction.y * half, tailY - direction.x * half);
+  ctx.closePath();
+  ctx.fill();
+};
+
+/**
+ * Draws one link: the curve between the two rings, its arrowhead, its dash when uncertain.
+ * Returns the label to draw once every node is painted, or `null`.
+ */
+export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, options: LinkPaintOptions): LinkLabel | null => {
+  const { palette, globalScale, detail, visual, color, curvature, rotation, confidence } = options;
+  const source = endOf(link.source);
+  const target = endOf(link.target);
+  if (!source || !target || !Number.isFinite(source.x) || !Number.isFinite(target.x)) return null;
+  const path = linkPath(source, target, curvature, rotation);
+  const trimmed = trimToNodes(path, nodeRadius(source) + LINK_GAP, nodeRadius(target) + LINK_GAP);
+  if (!trimmed) return null;
+
+  const emphasis = visual.onPath || visual.selected || visual.hovered;
+  let alpha = 0.72;
+  if (link.disabled) alpha = palette.fadeAlpha * 0.6;
+  else if (visual.faded) alpha = palette.fadeAlpha;
+  else if (emphasis) alpha = 1;
+  let widthFactor = 1;
+  if (visual.onPath) widthFactor = 2.6;
+  else if (visual.selected) widthFactor = 2.2;
+  else if (visual.hovered) widthFactor = 1.6;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = visual.onPath ? palette.accent : color;
+  ctx.fillStyle = ctx.strokeStyle;
+  ctx.lineWidth = Math.max(LINK_WIDTH, LINK_MIN_PX / globalScale) * widthFactor;
+  ctx.lineCap = 'round';
+  ctx.setLineDash(linkDash(link, confidence));
+  strokePath(ctx, trimmed);
+  ctx.setLineDash([]);
+  const isConnector = !link.label;
+  if ((detail.arrows || emphasis) && !(isConnector && link.target_id === link.id)) {
+    paintArrowHead(ctx, trimmed.end, tangentAt(trimmed, 1), emphasis ? Math.min(1.5, widthFactor * 0.75) : 1);
+  }
+  ctx.restore();
+
+  if (!link.label || link.disabled || !(detail.linkLabels || emphasis)) return null;
+  const middle = pointAt(trimmed, 0.5);
+  const tangent = tangentAt(trimmed, 0.5);
+  let angle = Math.atan2(tangent.y, tangent.x);
+  if (angle > Math.PI / 2) angle -= Math.PI;
+  if (angle < -Math.PI / 2) angle += Math.PI;
+  let priority = 0;
+  if (visual.selected) priority = 3;
+  else if (visual.onPath) priority = 2;
+  else if (visual.hovered) priority = 1;
+  return { text: linkLabelText(link), x: middle.x, y: middle.y, angle, priority, emphasised: emphasis && !visual.faded };
+};
+
+const rotatedBox = (label: LinkLabel, width: number, height: number): Box => {
+  const cos = Math.abs(Math.cos(label.angle));
+  const sin = Math.abs(Math.sin(label.angle));
+  return {
+    x: label.x,
+    y: label.y,
+    halfWidth: (width * cos + height * sin) / 2,
+    halfHeight: (width * sin + height * cos) / 2,
+  };
+};
+
+/**
+ * Draws the link labels over everything else, most important first, dropping a label that
+ * would overlap one already drawn: half-hidden labels name nothing.
+ */
+export const paintLinkLabels = (
+  ctx: CanvasRenderingContext2D,
+  labels: readonly LinkLabel[],
+  options: { palette: GraphPalette; globalScale: number },
+) => {
+  if (labels.length === 0) return;
+  const { palette, globalScale } = options;
+  const size = Math.min(LINK_LABEL_SIZE, LINK_LABEL_MAX_PX / globalScale);
+  ctx.save();
+  ctx.font = font(500, size);
+  const measured = [...labels]
+    .sort((a, b) => b.priority - a.priority)
+    .map((label) => {
+      const width = ctx.measureText(label.text).width;
+      return { label, width, box: rotatedBox(label, width + size, size * 1.5) };
+    });
+  keepNonOverlapping(measured).forEach(({ label }) => {
+    ctx.save();
+    ctx.translate(label.x, label.y);
+    ctx.rotate(label.angle);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = size * 0.5;
+    ctx.strokeStyle = palette.background;
+    ctx.strokeText(label.text, 0, 0);
+    ctx.fillStyle = label.emphasised ? palette.text : palette.textSecondary;
+    ctx.fillText(label.text, 0, 0);
+    ctx.restore();
+  });
+  ctx.restore();
+};

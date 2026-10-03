@@ -7,7 +7,7 @@ import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } f
 import { useFormatter } from '../i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
-import { graphStateToLocalStorage } from './utils/graphUtils';
+import { graphStateToLocalStorage, normalizeGraphStateParams } from './utils/graphUtils';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -31,11 +31,18 @@ interface GraphContextValue {
   setGraphState: Setter<GraphState>;
   // --- utils data derived from raw data.
   stixCoreObjectTypes: string[];
+  /** Relationship types drawn, for the legend. */
+  relationshipTypes: string[];
   markingDefinitions: { id: string; definition: string }[];
   creators: { id: string; name: string }[];
   timeRange: GraphTimeRange;
+  // --- view state never saved
+  isFullscreen: boolean;
+  setIsFullscreen: Setter<boolean>;
   // --- misc
   context?: string;
+  /** Name of what the graph shows, for the exported image. */
+  title?: string;
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -46,6 +53,7 @@ interface GraphProviderProps {
   localStorageKey?: string;
   context?: string;
   positions?: OctiGraphPositions;
+  title?: string;
 }
 
 export const GraphProvider = ({
@@ -54,6 +62,7 @@ export const GraphProvider = ({
   localStorageKey,
   objects,
   positions,
+  title,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,6 +89,13 @@ export const GraphProvider = ({
     selectedNodes: [],
     isAddRelationOpen: false,
     isExpandOpen: false,
+    layoutMode: null,
+    layoutCentreId: null,
+    hiddenNodeIds: [],
+    collapsedEntityTypes: [],
+    disabledRelationshipTypes: [],
+    showLegend: true,
+    highlightedPath: null,
   };
 
   const [graphState, setGraphState] = useState<GraphState>(() => {
@@ -87,8 +103,9 @@ export const GraphProvider = ({
     const params = localStorageKey
       ? buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey)
       : {};
-    return { ...DEFAULT_STATE, ...params };
+    return { ...DEFAULT_STATE, ...normalizeGraphStateParams(params) };
   });
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (localStorageKey) {
@@ -99,11 +116,20 @@ export const GraphProvider = ({
   }, [graphState]);
 
   useEffect(() => {
-    // On selection change, reset relationship select mode.
-    setGraphState((oldState) => ({
-      ...oldState,
-      selectRelationshipMode: null,
-    }));
+    // On selection change, reset relationship select mode, and the highlighted path unless both
+    // of its ends are still selected.
+    setGraphState((oldState) => {
+      const path = oldState.highlightedPath;
+      const selectedIds = oldState.selectedNodes.map((n) => n.id);
+      const keepPath = !!path && path.nodeIds.length > 0
+        && selectedIds.includes(path.nodeIds[0])
+        && selectedIds.includes(path.nodeIds[path.nodeIds.length - 1]);
+      return {
+        ...oldState,
+        selectRelationshipMode: null,
+        highlightedPath: keepPath ? path : null,
+      };
+    });
   }, [graphState.selectedNodes]);
 
   const [rawPositions, setRawPositions] = useState(positions ?? {});
@@ -153,6 +179,14 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [graphData?.nodes]);
 
+  // Dynamically compute all relationship types drawn as links.
+  const relationshipTypes = useMemo(() => {
+    return [...new Set((graphData?.links ?? [])
+      .map(({ relationship_type, entity_type }) => relationship_type || entity_type)
+      .filter((type) => !!type))]
+      .sort((a, b) => t_i18n(`relationship_${a}`).localeCompare(t_i18n(`relationship_${b}`)));
+  }, [graphData?.links]);
+
   // Dynamically compute all marking definitions in graphData.
   const markingDefinitions = useMemo(() => {
     return [...(graphData?.nodes ?? []), ...(graphData?.links ?? [])]
@@ -174,11 +208,15 @@ export const GraphProvider = ({
     graphRef3D,
     graphData,
     stixCoreObjectTypes,
+    relationshipTypes,
     markingDefinitions,
     creators,
     graphState,
     timeRange,
     context,
+    title,
+    isFullscreen,
+    setIsFullscreen,
     rawPositions,
     rawObjects,
     setRawObjects,
@@ -189,6 +227,8 @@ export const GraphProvider = ({
     graphData,
     graphState,
     rawPositions,
+    isFullscreen,
+    title,
   ]);
 
   return (

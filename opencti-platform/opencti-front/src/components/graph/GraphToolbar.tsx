@@ -47,9 +47,13 @@ const GraphToolbar = ({
       search,
     },
     context,
+    isFullscreen,
   } = useGraphContext();
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
+  // In full screen the graph covers the navigation, so the toolbar starts at the edge.
+  let paddingLeft = navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH;
+  if (isFullscreen) paddingLeft = 0;
 
   return (
     <Drawer
@@ -61,7 +65,7 @@ const GraphToolbar = ({
         sx: { ...layerInputVars },
         style: {
           zIndex: 1,
-          paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          paddingLeft,
           right: 'var(--chatbot-sidebar-width, 0px)',
           transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
           height: showTimeRange ? 134 : 54,
@@ -115,7 +119,7 @@ const GraphToolbar = ({
           </>
         )}
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1 }} data-graph-search>
           {context !== 'analyses' && (
             <SearchInput
               keyword={search ?? ''}
