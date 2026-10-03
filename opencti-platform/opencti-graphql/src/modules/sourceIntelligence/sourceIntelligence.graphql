@@ -609,7 +609,7 @@ type Mutation {
   revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
-  sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [SETTINGS_SETCUSTOMIZATION, MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
+  sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
   sourceIntelligenceRecompute: Boolean @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceDashboardCreate(name: String): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
