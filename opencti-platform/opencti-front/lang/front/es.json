@@ -5207,6 +5207,7 @@
   "Tone": "Tono",
   "Too many changes happened after this date, the view stops at the oldest change that could be replayed.": "Se produjeron demasiados cambios después de esta fecha, la vista se detiene en el cambio más antiguo que se pudo reproducir.",
   "Too many objects": "Demasiados objetos",
+  "Too many relationship changes during this period: the list only covers its most recent part, and so do the counters of removed, revoked and confidence-changed relationships.": "Demasiados cambios de relaciones en este periodo: la lista solo cubre su parte más reciente, al igual que los contadores de relaciones eliminadas, revocadas y con cambio de confianza.",
   "Too many relationship changes to replay, the relationships only reflect the most recent part of the history.": "Demasiados cambios de relaciones para reproducir, las relaciones solo reflejan la parte más reciente del historial.",
   "Tool": "Herramienta",
   "Tool definitions": "Definiciones de herramientas",

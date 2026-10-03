@@ -68,7 +68,7 @@ The **Compare dates** section of the **Changes** tab shows everything that chang
 
 !!! note "Long periods"
 
-    The relationship list shows the 500 most recent changes. The counters of the summary always cover the whole period.
+    The relationship list shows the 500 most recent changes, and the counters of the summary cover the whole period. When a period holds too many relationship changes to read them all, a warning says so: the list, and the counters of removed, revoked and confidence-changed relationships, then only cover the most recent part of the period, while the number of added relationships still covers all of it.
 
 ### Export a diff
 
