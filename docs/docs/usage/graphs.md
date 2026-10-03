@@ -1,0 +1,147 @@
+# Work with graphs
+
+OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them share the same graph, described on this page.
+
+## Why use the graph?
+
+A graph shows what a list cannot: who is connected to what, through which relationships, and how strongly. The graph is built to answer those questions quickly:
+
+- every node says what it is (icon and colour of its type), what it carries (markings, a low confidence, an inference) and how certain its relationships are;
+- focusing on an entity fades everything else, so its neighbourhood reads at a glance;
+- deterministic layouts arrange the same graph the same way every time, from the threat to its victims;
+- every element can be acted on from where it is drawn.
+
+![Knowledge graph of a report, laid out by entity tier](assets/graph-knowledge-tiers.png)
+
+## Read the graph
+
+### Nodes
+
+Each entity is a disc tinted with the colour of its type, ringed with that colour and marked with the icon of its type, the same icon as everywhere else in the platform. Its name is written below; long names are shortened, the full name is in the hover card. Relationships that are themselves the source or target of another relationship are drawn as smaller nodes.
+
+Above a node, **badges** give its state:
+
+| Badge | Meaning |
+|---|---|
+| Coloured dot | A marking of the entity, in the colour of the marking (for example TLP:GREEN). |
+| Gauge with a number | A low confidence (below 50), with its value. |
+| Wand | The entity is inferred by the rules engine. |
+
+Other features of the platform can add their own badges (see [Extend the graph](#extend-the-graph)).
+
+In investigations, a small counter on the top right of a node tells how many relationships of the entity are not drawn yet (`5+`, `99+`, or `?` while the count loads).
+
+### Links
+
+| Style | Meaning |
+|---|---|
+| Plain line | A relationship asserted in the knowledge base. |
+| Dashed line, warning colour | An inferred relationship. |
+| Dotted line | A relationship with a low confidence (below 50). |
+
+Links end with an arrowhead on their target. Several relationships between the same two entities are fanned out instead of drawn on top of each other. The name of a relationship appears along its link when you zoom in, or when the link is selected or hovered; labels that would overlap are left out.
+
+### Level of detail
+
+Details appear as they become readable: far out, nodes are plain discs; closer, icons, names, badges, arrowheads and relationship names appear. The entity hovered, selected or on a highlighted path always keeps a readable name.
+
+## Navigate
+
+The controls on the top left of the graph zoom in and out, fit the whole graph, fit the selection, centre the view on the selection, show or hide the legend, show the graph full screen and export it. In full screen, the toolbar and every dialog stay available; press `Esc` or the control again to leave.
+
+## Focus and hover cards
+
+Hovering an entity or a relationship, or selecting it, keeps it and its direct neighbours at full strength and fades the rest of the graph.
+
+After a short moment on an element, a **hover card** opens with its key facts: type, name, date, author, confidence, markings, relationship counts, badges and, in investigations, the number of relationships not drawn yet. Its quick actions apply to the entity directly:
+
+- **Open in a new tab**;
+- **Expand this entity** (investigations);
+- **Pin at its place** / **Unpin**;
+- **Hide from the view** (the entity is not removed from the container or the investigation; the legend shows it back);
+- **Select with its neighbours**;
+- **Lay out the graph around it** (radial layout);
+- **Shortest path from the selection** and **Create a relationship from the selection**, when one other entity is selected.
+
+## The legend
+
+The legend on the bottom left counts the entities of each type and the relationships of each type drawn in the graph.
+
+- Click a counter to fade or restore every entity or relationship of that type, like the type filters of the toolbar.
+- Use the button next to an entity type to **collapse** all its entities into a single group node, and again to expand it. A click on a group node expands it too. Relationships towards the members of a group are drawn once towards the group.
+- When entities are hidden, **Show the hidden entities** brings them back.
+
+## Layouts
+
+The toolbar at the bottom offers several layouts. All of them except the forces are deterministic: the same graph is always drawn the same way, and nodes glide to their new place.
+
+| Layout | Use it to |
+|---|---|
+| Forces (default) | Let related entities gather; drag nodes to arrange them, their positions are saved. |
+| Vertical / horizontal tree | Follow the direction of the relationships, from sources to targets, top to bottom or left to right. Cycles are handled. |
+| Layout by entity tier | Read an attack left to right: threats, arsenal, techniques, observables and indicators, victims, locations, then containers. |
+| Radial layout | Put one entity at the centre (the selected one, or the most connected) and the others on rings by distance. |
+
+**Unfix the nodes and re-apply forces** forgets the saved positions and lets the forces arrange the graph again.
+
+![Investigation graph in the horizontal tree layout](assets/graph-investigation-tree.png)
+
+## Select
+
+Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the toolbar selects with a rectangle or a free shape, by entity type, all nodes, or the relationships of the selected nodes. It also:
+
+- **selects the neighbours** of the selected nodes;
+- **highlights the shortest path** between two selected nodes, whatever the direction of the relationships; the path stays highlighted until the selection changes.
+
+The search field of the toolbar selects the matching entities.
+
+![Focus on a selected entity and its neighbours](assets/graph-focus.png)
+
+## Keyboard shortcuts
+
+Shortcuts apply while the pointer is over the graph or the focus is inside it, never while typing in a field or when a dialog is open. Press `?` to list them in the platform.
+
+| Keys | Action |
+|---|---|
+| `F` / `Shift` + `F` | Fit the whole graph / fit the selection |
+| `L` | Locate the selection |
+| `+` / `-` | Zoom in / zoom out |
+| `Ctrl` + `A` | Select all nodes |
+| `N` | Select the neighbours of the selection |
+| `P` | Highlight the shortest path between the two selected nodes |
+| `H` / `Shift` + `H` | Hide the selection / show the hidden entities |
+| `Esc` | Clear the selection (leave full screen when nothing is selected) |
+| `G` | Show or hide the legend |
+| `Shift` + `M` | Full screen |
+| `Shift` + `E` | Export the whole graph as a high-resolution image |
+| `/` | Search in the graph |
+
+## Export
+
+Two exports are available:
+
+- the **image export** of the container or workspace header captures the visible area of the page, in PNG or PDF;
+- the **Export the whole graph as a high-resolution image** control renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles.
+
+## 3D mode
+
+The 3D mode shows the same graph in three dimensions, with the same filters, hidden entities, groups and selection. Selection shapes, the legend and the deterministic layouts other than the trees are available in 2D only.
+
+## Accessibility
+
+Every entity and relationship drawn is mirrored in a list box that keyboard and screen reader users can reach with `Tab`: the arrow keys move in the list, `Enter` or `Space` selects the element (with `Shift` to add it to the selection), and the keyboard shortcuts above apply.
+
+## Extend the graph
+
+Features of the platform add states and actions to the graph without changing it:
+
+- a **badge provider** returns badges for a node from the data the graph received, and returns nothing when its data is absent;
+- a **node action** adds a quick action to the hover card of the nodes it applies to.
+
+Both are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts` and `graphNodeActionRegistry.ts`).
+
+## What's next?
+
+- [Pivot and investigate](pivoting.md) with the investigation graph.
+- [Analyses](exploring-analysis.md): the graph and correlation views of containers.
+- [Inferences](inferences.md) and the graph explaining an inferred relationship.
