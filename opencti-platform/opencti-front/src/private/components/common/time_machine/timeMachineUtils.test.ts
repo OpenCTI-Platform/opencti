@@ -17,6 +17,8 @@ import {
   landscapeDiffToCsv,
   landscapeDiffToHtml,
   type LandscapeDiffData,
+  landscapeGroupBuckets,
+  landscapeGroupTitle,
   presetLabel,
   presetRange,
   resolveChangesSection,
@@ -273,5 +275,39 @@ describe('Changes tab links', () => {
     expect(search.get('section')).toBe(CHANGES_SECTION_COMPARE);
     expect(search.get('from')).toBe('2026-07-01T00:00:00.000Z');
     expect(search.get('to')).toBe('2026-10-01T00:00:00.000Z');
+  });
+});
+
+describe('Landscape changes grouping', () => {
+  const grouped = (groupBy: string, groups: Array<{ key: string; label: string; count: number }>): LandscapeDiffData => ({
+    ...landscapeDiff,
+    group_by: groupBy,
+    aggregates: landscapeDiff.aggregates ? { ...landscapeDiff.aggregates, groups } : null,
+  });
+  const translate = (message: string) => `T(${message})`;
+
+  it('titles the breakdown chosen with Group by', () => {
+    expect(landscapeGroupTitle('entity_type')).toBe('Changed entities by entity type');
+    expect(landscapeGroupTitle('relationship_type')).toBe('New relationships by type');
+    expect(landscapeGroupTitle('tactic')).toBe('New techniques by tactic');
+    expect(landscapeGroupTitle(null)).toBe('Changed entities by entity type');
+  });
+
+  it('translates the entity and relationship types of the breakdown, not the tactics', () => {
+    const buckets = [{ key: 'k', label: 'Intrusion-Set', count: 2 }];
+    expect(landscapeGroupBuckets(grouped('entity_type', buckets), translate)[0].label).toBe('T(entity_Intrusion-Set)');
+    expect(landscapeGroupBuckets(grouped('relationship_type', [{ key: 'uses', label: 'uses', count: 1 }]), translate)[0].label).toBe('T(relationship_uses)');
+    expect(landscapeGroupBuckets(grouped('tactic', [{ key: 'execution', label: 'Execution', count: 1 }]), translate)[0].label).toBe('Execution');
+    expect(landscapeGroupBuckets({ ...landscapeDiff, aggregates: null }, translate)).toEqual([]);
+  });
+
+  it('puts the chosen breakdown first in the PDF and does not repeat it', () => {
+    const html = landscapeDiffToHtml(grouped('tactic', [{ key: 'initial-access', label: 'Initial Access', count: 2 }]), t, (date) => date);
+    expect(html.indexOf('New techniques by tactic')).toBeLessThan(html.indexOf('New techniques<'));
+    expect(html.split('New techniques by tactic').length - 1).toBe(1);
+    const byType = landscapeDiffToHtml(grouped('entity_type', [{ key: 'Intrusion-Set', label: 'Intrusion-Set', count: 3 }]), t, (date) => date);
+    expect(byType).toContain('Changed entities by entity type');
+    expect(byType).toContain('New techniques by tactic');
+    expect(byType).toContain('New relationships by type');
   });
 });

@@ -21,6 +21,7 @@ const timeMachineSliderTimelineQuery = graphql`
         date
         event_scope
       }
+      events_truncated
       snapshots
       max_replay_days
     }
@@ -151,6 +152,11 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
       {historyStartsAfterCreation && (
         <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginTop: 8 }}>
           {t_i18n('History is retained since')} {fldt(timeline.history_start)}. {t_i18n('Older states only reflect the changes still available in the history.')}
+        </Text>
+      )}
+      {timeline?.events_truncated && (
+        <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginTop: 8 }} data-testid="time-machine-slider-truncated">
+          {t_i18n('Only the most recent changes are marked on the slider, older dates can still be selected.')}
         </Text>
       )}
     </Box>

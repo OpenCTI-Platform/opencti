@@ -62,6 +62,17 @@ export const buildLandscapeWidgetVariables = (resolvedDataSelection: WidgetDataS
   };
 };
 
+// The scope exceeded the limits of a widget summary: the figures only cover its most recent part
+const PartialNotice = ({ truncated }: { truncated: boolean }) => {
+  const { t_i18n } = useFormatter();
+  if (!truncated) return null;
+  return (
+    <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginBottom: 4 }} data-testid="landscape-widget-partial">
+      {t_i18n('Partial result: the scope exceeds the limits of a widget, only its most recent entities and relationships are compared.')}
+    </Text>
+  );
+};
+
 const LandscapeChangesWidgetComponent = ({
   queryRef,
   variant,
@@ -78,19 +89,22 @@ const LandscapeChangesWidgetComponent = ({
     if (entities.length === 0) return <WidgetNoData />;
     const changesParams = comparePeriodSearch({ from: summary.from, to: summary.to });
     return (
-      <List dense sx={{ width: '100%', height: '100%', overflow: 'auto' }} data-testid="landscape-widget-top-entities">
-        {entities.map((entity) => {
-          const base = resolveLink(entity.entity_type);
-          return (
-            <ListItem key={entity.entity_id} divider secondaryAction={<Text variant="content-compact">{n(entity.change_score)}</Text>}>
-              <ListItemText
-                primary={base ? <Link to={`${base}/${entity.entity_id}/changes?${changesParams}`}>{entity.name}</Link> : entity.name}
-                secondary={`${t_i18n(`entity_${entity.entity_type}`)} - ${entity.relationships_added} ${t_i18n('new relationships')}, ${entity.attributes_changed} ${t_i18n('attributes changed')}`}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+      <Box sx={{ height: '100%', overflow: 'auto' }}>
+        <PartialNotice truncated={summary.truncated} />
+        <List dense sx={{ width: '100%' }} data-testid="landscape-widget-top-entities">
+          {entities.map((entity) => {
+            const base = resolveLink(entity.entity_type);
+            return (
+              <ListItem key={entity.entity_id} divider secondaryAction={<Text variant="content-compact">{n(entity.change_score)}</Text>}>
+                <ListItemText
+                  primary={base ? <Link to={`${base}/${entity.entity_id}/changes?${changesParams}`}>{entity.name}</Link> : entity.name}
+                  secondary={`${t_i18n(`entity_${entity.entity_type}`)} - ${entity.relationships_added} ${t_i18n('new relationships')}, ${entity.attributes_changed} ${t_i18n('attributes changed')}`}
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
     );
   }
   const buckets = variant === 'landscape-techniques'
@@ -103,6 +117,7 @@ const LandscapeChangesWidgetComponent = ({
   }));
   return (
     <Box sx={{ height: '100%', overflow: 'auto' }} data-testid={`landscape-widget-${variant}`}>
+      <PartialNotice truncated={summary.truncated} />
       <WidgetDistributionList data={entries} />
     </Box>
   );
