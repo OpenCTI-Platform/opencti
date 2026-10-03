@@ -1,11 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { elapsedMs, formatDuration, runReasonNext, runStatusSentence, stepOutcome, type Translate } from './investigationRunOutcomes';
-import { draftChangeGroups, draftChangeSummary, type DraftChange } from './investigationRunDraftChanges';
+import { elapsedMs, formatDuration, runReasonNext, runStatusSentence, STEP_OUTCOME_CODES, stepOutcome, type Translate } from './investigationRunOutcomes';
+import { draftChangeOperation, draftChangeSummary } from './investigationRunDraftChanges';
 
 // Fills the placeholders like the platform formatter does, so the tests read the final sentence.
-const t: Translate = (message, options) => Object.entries(options?.values ?? {})
-  .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message)
-  .replace(/\{count, plural, one \{# (\w+)\} other \{# (\w+)\}\}/, (_, one: string, other: string) => (options?.values?.count === 1 ? `1 ${one}` : `${options?.values?.count} ${other}`));
+const t: Translate = (message, options) => {
+  const values = options?.values ?? {};
+  const pluralized = message.replace(/\{(\w+), plural, (?:one \{([^}]*)\} )?(?:few \{[^}]*\} )?(?:many \{[^}]*\} )?other \{([^}]*)\}\}/g, (_, key: string, one: string | undefined, other: string) => {
+    const count = Number(values[key]);
+    return (count === 1 && one !== undefined ? one : other).replace('#', String(count));
+  });
+  return Object.entries(values).reduce((text, [key, value]) => text.split(`{${key}}`).join(String(value)), pluralized);
+};
+
+const context = { source: 'Web research', failedSteps: 0, totalSteps: 4, observableTypes: ['IPv4 address'] };
+
+// Every detail code of the investigation engine contract (XTM One `DETAIL_CODES`,
+// listed in `dev-docs/investigations.md`): each one must be rendered in words.
+const ENGINE_DETAIL_CODES = [
+  'run.all_sources_queried', 'run.budget_spent', 'run.no_covering_source', 'run.cancelled', 'run.interrupted',
+  'source.timed_out', 'source.http_status', 'source.free_http_refused', 'source.free_http_capped', 'source.truncated',
+  'source.thin_response', 'source.querier_error', 'source.kb_provider_unreachable', 'source.kb_search_failed', 'source.kb_capped',
+  'source.kb_unavailable', 'source.kb_below_floor', 'source.mcp_bad_server_id', 'source.mcp_server_missing', 'source.mcp_server_disabled',
+  'source.mcp_tool_missing', 'source.mcp_argument_ambiguous', 'source.mcp_tool_error', 'source.fingerprint_matched', 'source.fingerprint_capped',
+  'source.vt_unavailable', 'source.passive_dns_filtered', 'source.passive_dns_filtered_more', 'source.passive_dns_more', 'source.passive_dns_seeds',
+  'source.passive_dns_seeds_set_aside', 'source.opencti_unavailable', 'source.opencti_known', 'source.opencti_none_known', 'source.case_context',
+  'source.case_context_empty', 'source.case_run_missing', 'source.enrichment_wave', 'source.enrichment_nothing_to_enrich',
+  'source.enrichment_awaiting_approval', 'source.enrichment_refused', 'source.enrichment_timed_out', 'source.conclusion_written',
+  'source.conclusion_trimmed', 'source.conclusion_unavailable',
+];
 
 describe('Case Autopilot durations', () => {
   it('measures up to now while the end is not known', () => {
@@ -25,43 +47,68 @@ describe('Case Autopilot durations', () => {
 });
 
 describe('Case Autopilot step outcomes', () => {
+  it('renders every detail code of the engine contract in words', () => {
+    expect(ENGINE_DETAIL_CODES.filter((code) => !STEP_OUTCOME_CODES.includes(code))).toEqual([]);
+  });
+
   it('says why a step failed and what to do, never a bare state', () => {
-    expect(stepOutcome('error', 'source.timed_out', { seconds: 30 }, t)).toEqual({
-      text: 'The source did not answer within 30 s.', next: 'run_again', details: 'source.timed_out seconds=30',
+    expect(stepOutcome('error', 'source.timed_out', { seconds: 30 }, t, context)).toEqual({
+      text: 'Web research did not answer within 30 s.', next: 'run_again', also: 'continue', details: 'source.timed_out seconds=30',
     });
-    expect(stepOutcome('empty', 'source.enrichment_nothing_to_enrich', {}, t)?.next).toBe('policy_connectors');
-    expect(stepOutcome('skipped', 'run.budget_spent', { budget: 'iterations' }, t)?.next).toBe('policy_budget');
-    expect(stepOutcome('empty', 'source.enrichment_awaiting_approval', { count: 2 }, t)).toMatchObject({
-      text: 'Enrichment jobs waiting for your approval: 2.', next: 'review_approvals',
+    expect(stepOutcome('empty', 'source.enrichment_nothing_to_enrich', {}, t, context)).toMatchObject({
+      text: 'No enrichment connector of the policy accepts IPv4 address.', next: 'policy_connectors',
     });
-    expect(stepOutcome('error', 'source.conclusion_unavailable', {}, t)?.next).toBe('xtm_one');
+    expect(stepOutcome('empty', 'source.enrichment_nothing_to_enrich', {}, t, { ...context, observableTypes: [] })).toMatchObject({
+      text: 'The case holds no observable to enrich.', next: 'add_observables',
+    });
+    expect(stepOutcome('skipped', 'run.budget_spent', { budget: 10 }, t, context)).toMatchObject({
+      text: 'Stopped before this step: the budget of 10 iterations was used.', next: 'continue', also: 'policy_budget',
+    });
+    expect(stepOutcome('empty', 'source.enrichment_awaiting_approval', { count: 1 }, t, context)?.text).toBe('1 enrichment job is waiting for your approval.');
+    expect(stepOutcome('error', 'source.querier_error', {}, t, context)).toMatchObject({ text: 'Web research could not be queried.', next: 'run_again' });
+  });
+
+  it('explains a missing conclusion by the failed steps when there are some', () => {
+    expect(stepOutcome('error', 'source.conclusion_unavailable', {}, t, { ...context, failedSteps: 2 })).toMatchObject({
+      text: 'No conclusion - 2 of 4 steps failed, too little evidence to weigh the hypotheses.', next: 'run_again',
+    });
+    expect(stepOutcome('error', 'source.conclusion_unavailable', {}, t, context)?.next).toBe('xtm_one');
   });
 
   it('reads HTTP statuses as access, rate and availability problems', () => {
-    expect(stepOutcome('error', 'source.http_status', { status: 403 }, t)).toMatchObject({ text: 'Access denied: the source refused the request (HTTP 403).', next: 'xtm_one' });
-    expect(stepOutcome('error', 'source.http_status', { status: 429 }, t)?.next).toBe('run_again');
-    expect(stepOutcome('error', 'source.http_status', { status: 503 }, t)?.text).toBe('The source is unavailable (HTTP 503).');
-    expect(stepOutcome('empty', 'source.http_status', { status: 404 }, t)?.next).toBeNull();
+    expect(stepOutcome('error', 'source.http_status', { status: 403 }, t, context)).toMatchObject({ text: 'Access denied by Web research (HTTP 403).', next: 'xtm_one' });
+    expect(stepOutcome('error', 'source.http_status', { status: 429 }, t, context)?.next).toBe('run_again_later');
+    expect(stepOutcome('error', 'source.http_status', { status: 503 }, t, context)?.text).toBe('Web research is unavailable (HTTP 503).');
+    expect(stepOutcome('empty', 'source.http_status', { status: 404 }, t, context)?.next).toBeNull();
   });
 
   it('falls back on the state when the code or its parameters are unknown', () => {
-    expect(stepOutcome('empty', null, null, t)).toEqual({ text: 'The source answered and found nothing.', next: null, details: null });
-    expect(stepOutcome('error', 'source.brand_new', null, t)).toMatchObject({ text: 'The source could not be queried.', next: 'run_again', details: 'source.brand_new' });
-    expect(stepOutcome('error', 'source.timed_out', {}, t)).toMatchObject({ text: 'The source could not be queried.', next: 'run_again' });
-    expect(stepOutcome('completed', null, null, t)).toBeNull();
-    expect(stepOutcome('pending', null, null, t)).toBeNull();
+    expect(stepOutcome('empty', null, null, t, context)).toEqual({ text: 'Web research answered and found nothing.', next: null, also: null, details: null });
+    expect(stepOutcome('error', 'source.brand_new', null, t, context)).toMatchObject({ text: 'Web research could not be queried.', next: 'run_again', details: 'source.brand_new' });
+    expect(stepOutcome('error', 'source.timed_out', {}, t, context)).toMatchObject({ text: 'Web research could not be queried.', next: 'run_again' });
+    expect(stepOutcome('completed', null, null, t, context)).toBeNull();
+    expect(stepOutcome('pending', null, null, t, context)).toBeNull();
   });
 });
 
 describe('Case Autopilot run sentences', () => {
-  const base = { run_status: 'running', run_phase: 'investigating', pendingDraftChanges: null, pendingRequests: 0, stepsDone: 2, stepsTotal: 6 };
+  const base = {
+    run_status: 'running',
+    run_phase: 'investigating',
+    pendingDraftChanges: null,
+    pendingRequests: 0,
+    currentStep: { index: 3, total: 6, label: 'Enrich through OpenCTI connectors' },
+    stepsFound: 2,
+    stepsTotal: 6,
+  };
 
   it('says what the investigation does and who acts', () => {
-    expect(runStatusSentence(base, t)).toBe('Case Autopilot is investigating: 2 of 6 steps done.');
-    expect(runStatusSentence({ ...base, stepsTotal: 0 }, t)).toBe('Case Autopilot is investigating.');
+    expect(runStatusSentence(base, t)).toBe('Step 3 of 6: Enrich through OpenCTI connectors.');
+    expect(runStatusSentence({ ...base, currentStep: null }, t)).toBe('Case Autopilot is investigating.');
+    expect(runStatusSentence({ ...base, run_status: 'planned' }, t)).toBe('Case Autopilot is preparing the goal plan.');
     expect(runStatusSentence({ ...base, run_status: 'awaiting_approval', pendingDraftChanges: 5 }, t)).toBe('5 changes are waiting for your review.');
     expect(runStatusSentence({ ...base, run_status: 'awaiting_approval', pendingRequests: 2 }, t)).toBe('Requests waiting for your approval: 2.');
-    expect(runStatusSentence({ ...base, run_status: 'completed', draft_status: 'validated' }, t)).toBe('The investigation is complete and its results were written to the case.');
+    expect(runStatusSentence({ ...base, run_status: 'completed' }, t)).toBe('Complete - 2 of 6 steps found evidence.');
     expect(runStatusSentence({ ...base, run_status: 'failed' }, t)).toBe('The investigation failed.');
   });
 
@@ -74,18 +121,13 @@ describe('Case Autopilot run sentences', () => {
 });
 
 describe('Case Autopilot draft changes', () => {
-  const changes: DraftChange[] = [
-    { kind: 'entity', id: '1', type: 'Intrusion-Set', name: 'APT28', operation: 'create' },
-    { kind: 'entity', id: '2', type: 'Note', name: 'Finding', operation: 'create' },
-    { kind: 'entity', id: '3', type: 'Case-Incident', name: 'Beaconing', operation: 'update' },
-    { kind: 'relationship', id: '4', type: 'indicates', name: 'indicates', fromName: 'APT28', toName: '198.51.100.23', operation: 'create' },
-  ];
-
-  it('groups the changes by operation, creations first', () => {
-    expect(draftChangeGroups(changes).map((group) => [group.operation, group.changes.length])).toEqual([['create', 3], ['update', 1]]);
+  it('folds the linked operations into their own operation', () => {
+    expect(['create', 'update', 'update_linked', 'delete', 'delete_linked', null].map(draftChangeOperation))
+      .toEqual(['create', 'update', 'update', 'delete', 'delete', 'update']);
   });
 
-  it('summarises the changes by translated type', () => {
-    expect(draftChangeSummary(changes, t)).toBe('entity_Case-Incident (1), entity_Intrusion-Set (1), entity_Note (1), Relationships (1)');
+  it('summarises the changes from the draft counts, with plurals and without empty groups', () => {
+    expect(draftChangeSummary({ entitiesCount: 3, observablesCount: 0, relationshipsCount: 1, sightingsCount: 0, containersCount: 1 }, t))
+      .toBe('3 entities, 1 relationship, 1 container');
   });
 });

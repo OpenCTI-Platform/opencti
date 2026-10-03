@@ -14,10 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
+import Typography from '@mui/material/Typography';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
-import { runPhaseLabel } from './investigationRunUtils';
+import { runStatusSentence } from './investigationRunOutcomes';
 
 export interface InvestigationRunBadgeRun {
   readonly id: string;
@@ -33,8 +34,18 @@ interface InvestigationRunBadgeProps {
 const InvestigationRunBadge = ({ run }: InvestigationRunBadgeProps) => {
   const { t_i18n } = useFormatter();
   if (!run) {
-    return <span aria-label={t_i18n('No investigation')}>-</span>;
+    return <Typography component="span" variant="caption" color="text.disabled">{t_i18n('No investigation')}</Typography>;
   }
+  // A list row knows the state and the phase only: the sentence of the state, without counts.
+  const sentence = runStatusSentence({
+    run_status: run.run_status,
+    run_phase: run.run_phase,
+    pendingDraftChanges: 0,
+    pendingRequests: 0,
+    currentStep: null,
+    stepsFound: 0,
+    stepsTotal: 0,
+  }, t_i18n);
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -42,7 +53,7 @@ const InvestigationRunBadge = ({ run }: InvestigationRunBadgeProps) => {
           <InvestigationRunStatusChip status={run.run_status} size="sm" />
         </span>
       </TooltipTrigger>
-      <TooltipContent>{`${t_i18n('Case Autopilot')}: ${t_i18n(runPhaseLabel(run.run_phase))}`}</TooltipContent>
+      <TooltipContent>{sentence}</TooltipContent>
     </Tooltip>
   );
 };

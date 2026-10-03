@@ -52,7 +52,7 @@ const InvestigationRunEvidence = ({ run }: InvestigationRunEvidenceProps) => {
           {evidence.length > VISIBLE_EVIDENCE && (
             <Box>
               <Button size="small" variant="tertiary" onClick={() => setShowAll(!showAll)} aria-expanded={showAll}>
-                {showAll ? t_i18n('Show less') : t_i18n('Show all {count} pieces of evidence', { values: { count: evidence.length } })}
+                {showAll ? t_i18n('Show less') : t_i18n('Show all {count} evidence items', { values: { count: evidence.length } })}
               </Button>
             </Box>
           )}

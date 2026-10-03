@@ -18,11 +18,14 @@ import { graphql, useFragment, useLazyLoadQuery, useSubscription } from 'react-r
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery } from '../../../relay/environment';
 import InvestigationRunHeader from './InvestigationRunHeader';
 import InvestigationRunApprovals from './InvestigationRunApprovals';
+import InvestigationRunConclusion from './InvestigationRunConclusion';
+import InvestigationRunDetails from './InvestigationRunDetails';
 import InvestigationRunGoalPlan from './InvestigationRunGoalPlan';
 import InvestigationRunEvidence from './InvestigationRunEvidence';
 import InvestigationRunHypotheses from './InvestigationRunHypotheses';
@@ -30,9 +33,10 @@ import InvestigationRunRecommendations from './InvestigationRunRecommendations';
 import InvestigationRunReport from './InvestigationRunReport';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { consumeGraphAutoOpen, investigationGraphPath, isRunActive, reportMutationOutcome } from './investigationRunUtils';
+import { caseTabPath, consumeGraphAutoOpen, investigationGraphPath, isRunActive, reportMutationOutcome } from './investigationRunUtils';
 import { InvestigationRunView_run$key } from './__generated__/InvestigationRunView_run.graphql';
 import { InvestigationRunViewRunAgainMutation } from './__generated__/InvestigationRunViewRunAgainMutation.graphql';
+import { InvestigationRunViewContinueMutation } from './__generated__/InvestigationRunViewContinueMutation.graphql';
 import { InvestigationRunViewQuery } from './__generated__/InvestigationRunViewQuery.graphql';
 import { InvestigationRunViewSubscription } from './__generated__/InvestigationRunViewSubscription.graphql';
 
@@ -63,6 +67,11 @@ export const investigationRunViewFragment = graphql`
       draft_status
       objectsCount {
         totalCount
+        entitiesCount
+        observablesCount
+        relationshipsCount
+        sightingsCount
+        containersCount
       }
     }
     policy {
@@ -241,6 +250,15 @@ const investigationRunViewRunAgainMutation = graphql`
   }
 `;
 
+const investigationRunViewContinueMutation = graphql`
+  mutation InvestigationRunViewContinueMutation($id: ID!) {
+    investigationRunContinue(id: $id) {
+      id
+      ...InvestigationRunView_run
+    }
+  }
+`;
+
 const investigationRunViewSubscription = graphql`
   subscription InvestigationRunViewSubscription($id: ID!) {
     investigationRun(id: $id) {
@@ -285,6 +303,7 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
   const entityNames = useMemo(() => new Map(run.enrichment_entities.map((entity) => [entity.id, entity.name])), [run.enrichment_entities]);
   const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
   const [commitRunAgain, launching] = useApiMutation<InvestigationRunViewRunAgainMutation>(investigationRunViewRunAgainMutation);
+  const [commitContinue, continuing] = useApiMutation<InvestigationRunViewContinueMutation>(investigationRunViewContinueMutation);
   // Same subject and policy; the case is kept when it is live, else a new one is created in the new draft.
   const runAgain = () => commitRunAgain({
     variables: { subjectId: run.subject_id, policyId: run.policy?.id ?? null, caseId: run.case && run.case.id !== run.subject_id ? run.case.id : null },
@@ -294,27 +313,46 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
       onRunStarted?.(started.id);
     },
   });
+  const continueRun = () => commitContinue({
+    variables: { id: run.id },
+    onCompleted: (_, errors) => {
+      reportMutationOutcome(errors, t_i18n('The investigation continues'));
+    },
+  });
+  const caseObservablesPath = run.case ? caseTabPath(run.case, 'observables') : null;
   const handlers = {
     // A run that is still going cannot be launched again.
     onRunAgain: canLaunch && !isRunActive(run.run_status) && !launching ? runAgain : undefined,
+    onContinue: canLaunch && run.can_continue && !continuing ? continueRun : undefined,
     onReviewApprovals: () => reveal(approvalsRef.current),
+    caseObservablesPath,
   };
   return (
     <Stack spacing={3} data-testid="investigation-run-view">
       <InvestigationRunHeader
         run={run}
-        currentEntityId={currentEntityId}
         handlers={handlers}
         onOpenReport={() => reveal(reportRef.current)}
         onGiveFeedback={() => reveal(hypothesesRef.current)}
         launching={launching}
+        continuing={continuing}
         onDeleted={onDeleted}
       />
       <InvestigationRunApprovals ref={approvalsRef} run={run} entityNames={entityNames} onDecided={refresh} />
-      <InvestigationRunGoalPlan run={run} handlers={handlers} entityNames={entityNames} />
-      <InvestigationRunEvidence run={run} />
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <InvestigationRunGoalPlan run={run} handlers={handlers} />
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Stack spacing={3}>
+            <InvestigationRunConclusion run={run} onOpenReport={() => reveal(reportRef.current)} />
+            <InvestigationRunDetails run={run} currentEntityId={currentEntityId} />
+          </Stack>
+        </Grid>
+      </Grid>
       <Box ref={hypothesesRef} tabIndex={-1} sx={{ outline: 'none' }}><InvestigationRunHypotheses run={run} /></Box>
       <InvestigationRunRecommendations run={run} />
+      <InvestigationRunEvidence run={run} />
       <Box ref={reportRef} tabIndex={-1} sx={{ outline: 'none' }}><InvestigationRunReport run={run} /></Box>
     </Stack>
   );

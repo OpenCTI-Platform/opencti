@@ -15,20 +15,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { AutoAwesomeOutlined } from '@mui/icons-material';
+import { Alert, Hero, HeroBody, HeroHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Thumbnail } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
+import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunView from './InvestigationRunView';
 import RunCaseAutopilotDialog from './RunCaseAutopilotDialog';
-import { INVESTIGATION_LAUNCHED$, RUN_TRIGGER_LABELS, runStatusLabel } from './investigationRunUtils';
-import { CASE_AUTOPILOT_DOCS_URL } from './investigationRunOutcomes';
+import { INVESTIGATION_LAUNCHED$, runStatusLabel } from './investigationRunUtils';
+import { CASE_AUTOPILOT_DOCS_URL, POLICIES_PATH, XTM_ONE_SETTINGS_PATH } from './investigationRunOutcomes';
 import { InvestigationRunsTabQuery } from './__generated__/InvestigationRunsTabQuery.graphql';
 
 const investigationRunsTabQuery = graphql`
@@ -93,11 +95,14 @@ interface InvestigationRunsTabProps {
 
 /** The Autopilot tab of an incident or a case: its investigations, the latest one open and live. */
 const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProps) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, rd } = useFormatter();
   const [searchParams, setSearchParams] = useSearchParams();
   const [fetchKey, setFetchKey] = useState(0);
   const [launching, setLaunching] = useState(false);
+  const { xtmOneConfigured } = useChatbot();
   const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
+  const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
+  const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
   const requestedRunId = searchParams.get('run');
   // A case holds the runs attached to it; an incident, the runs that investigated it.
   const isIncident = entityType === 'Incident';
@@ -129,18 +134,20 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
   return (
     <Stack spacing={3} data-testid="case-autopilot-tab">
       {(runs.length > 1 || (requestedMissing && runs.length > 0)) && (
-        <Select value={selectedRun?.id} onValueChange={selectRun}>
-          <SelectTrigger aria-label={t_i18n('Investigation')} style={{ minWidth: 360, alignSelf: 'flex-start' }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Investigation')}>
-            {runs.map((run) => (
-              <SelectItem key={run.id} value={run.id}>
-                {`${fldt(run.created_at)} - ${t_i18n(runStatusLabel(run.run_status))} - ${t_i18n(RUN_TRIGGER_LABELS[run.run_trigger] ?? 'Manual')}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Box sx={{ alignSelf: 'flex-start', minWidth: (theme) => theme.spacing(45) }}>
+          <Select value={selectedRun?.id} onValueChange={selectRun}>
+            <SelectTrigger aria-label={t_i18n('Investigation')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Investigation')}>
+              {runs.map((run) => (
+                <SelectItem key={run.id} value={run.id}>
+                  {t_i18n('{time} - {state}', { values: { time: rd(run.created_at), state: t_i18n(runStatusLabel(run.run_status)) } })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Box>
       )}
       {requestedMissing && (
         <Card title={t_i18n('Case Autopilot')}>
@@ -154,21 +161,37 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
           <InvestigationRunView key={selectedRun.id} runId={selectedRun.id} currentEntityId={entityId} onDeleted={onDeleted} onRunStarted={onRunStarted} />
         </Suspense>
       )}
-      {!requestedMissing && !selectedRun && (
-        <Card title={t_i18n('Case Autopilot')}>
-          <Stack spacing={1.5} data-testid="case-autopilot-empty">
-            <Typography variant="body1">{t_i18n('No investigation yet')}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t_i18n('Case Autopilot investigates with the XTM One investigation engine and the connectors of this platform, scores the hypotheses, proposes recommendations and writes its results to a draft you approve.')}
-            </Typography>
-            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
-              {canLaunch && (
-                <Button intent="ai" onClick={() => setLaunching(true)} data-testid="case-autopilot-empty-run">{t_i18n('Run Case Autopilot')}</Button>
-              )}
-              <a href={CASE_AUTOPILOT_DOCS_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
+      {!requestedMissing && !selectedRun && xtmOneConfigured === false && (
+        <Alert
+          severity="warning"
+          title={t_i18n('XTM One is not connected')}
+          description={t_i18n('Case Autopilot runs on the XTM One investigation engine. Once XTM One is connected, investigations start from this tab or from the Ask AI menu.')}
+          action={canConfigure ? <Button size="small" variant="secondary" component={Link} to={XTM_ONE_SETTINGS_PATH}>{t_i18n('Connect XTM One')}</Button> : undefined}
+          data-testid="case-autopilot-empty"
+        />
+      )}
+      {!requestedMissing && !selectedRun && xtmOneConfigured !== false && (
+        <Hero data-testid="case-autopilot-empty">
+          <HeroHeader
+            icon={<Thumbnail><AutoAwesomeOutlined /></Thumbnail>}
+            action={canLaunch ? (
+              <Button intent="ai" onClick={() => setLaunching(true)} data-testid="case-autopilot-empty-run">{t_i18n('Run Case Autopilot')}</Button>
+            ) : undefined}
+          >
+            {t_i18n('Investigate this case with Case Autopilot')}
+          </HeroHeader>
+          <HeroBody>
+            <Stack spacing={1.5}>
+              <Typography variant="body2">
+                {t_i18n('Case Autopilot reads the case, checks what OpenCTI knows, enriches through your connectors, weighs the hypotheses and proposes a draft for your approval.')}
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+                <a href={CASE_AUTOPILOT_DOCS_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
+                {canCustomize && <Link to={POLICIES_PATH}>{t_i18n('Investigation policies')}</Link>}
+              </Stack>
             </Stack>
-          </Stack>
-        </Card>
+          </HeroBody>
+        </Hero>
       )}
       <RunCaseAutopilotDialog
         open={launching}

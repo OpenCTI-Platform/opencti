@@ -412,11 +412,16 @@ export const investigationGraphPath = (workspaceId: string) => `/dashboard/works
 
 export const elementPath = (id: string) => `/dashboard/id/${id}`;
 
+/** A tab of a case (`observables`, `autopilot`...), or the case itself when its type has no page. */
+export const caseTabPath = (caseItem: { id: string; entity_type: string }, tab: string) => {
+  const base = resolveLink(caseItem.entity_type);
+  return base ? `${base}/${caseItem.id}/${tab}` : elementPath(caseItem.id);
+};
+
 /** The Autopilot tab of a case, on the investigation it holds. */
 export const caseAutopilotPath = (caseItem: { id: string; entity_type: string }, runId?: string | null) => {
-  const base = resolveLink(caseItem.entity_type);
-  if (!base) return elementPath(caseItem.id);
-  const path = `${base}/${caseItem.id}/autopilot`;
+  if (!resolveLink(caseItem.entity_type)) return elementPath(caseItem.id);
+  const path = caseTabPath(caseItem, 'autopilot');
   return runId ? `${path}?run=${encodeURIComponent(runId)}` : path;
 };
 

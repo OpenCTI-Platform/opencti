@@ -48,6 +48,19 @@ interface InvestigationRunHypothesesProps {
   run: InvestigationRunView_run$data;
 }
 
+// Diagnosticity and weight are 0-1 scores; readers get a level, with the score beside it.
+const diagnosticLabel = (value: number) => {
+  if (value >= 0.66) return 'High diagnostic value ({value}%)';
+  if (value >= 0.33) return 'Medium diagnostic value ({value}%)';
+  return 'Low diagnostic value ({value}%)';
+};
+
+const weightLabel = (value: number) => {
+  if (value >= 0.66) return 'Weighs heavily ({value}%)';
+  if (value >= 0.33) return 'Weighs moderately ({value}%)';
+  return 'Weighs little ({value}%)';
+};
+
 const ConsistencyCell = ({ cell }: { cell: EvidenceCell }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -55,33 +68,36 @@ const ConsistencyCell = ({ cell }: { cell: EvidenceCell }) => {
   let color = theme.palette.text.secondary;
   if (cell.consistency > 0) color = theme.palette.success.main;
   if (cell.consistency < 0) color = theme.palette.error.main;
-  const description = `${t_i18n(scale.label)} - ${t_i18n(EVIDENCE_CATEGORY_LABELS[cell.category] ?? cell.category)}`;
+  const category = t_i18n(EVIDENCE_CATEGORY_LABELS[cell.category] ?? 'Source reliability');
+  const description = t_i18n('{consistency} - {category}', { values: { consistency: t_i18n(scale.label), category } });
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Box
-          component="span"
-          tabIndex={0}
-          aria-label={description}
-          sx={{
-            display: 'inline-block',
-            minWidth: 36,
-            paddingX: 1,
-            paddingY: 0.25,
-            borderRadius: 1,
-            textAlign: 'center',
-            fontWeight: 600,
-            color,
-            backgroundColor: alpha(color, Math.min(0.3, 0.08 + Math.abs(cell.consistency) * 0.08)),
-          }}
-        >
-          {scale.code}
-        </Box>
+        <Stack component="span" tabIndex={0} aria-label={description} alignItems="center" spacing={0.25} sx={{ display: 'inline-flex' }}>
+          <Box
+            component="span"
+            sx={{
+              display: 'inline-block',
+              minWidth: 36,
+              paddingX: 1,
+              paddingY: 0.25,
+              borderRadius: 1,
+              textAlign: 'center',
+              fontWeight: 600,
+              color,
+              backgroundColor: alpha(color, Math.min(0.3, 0.08 + Math.abs(cell.consistency) * 0.08)),
+            }}
+          >
+            {scale.code}
+          </Box>
+          <Typography component="span" variant="caption" color="text.secondary">{t_i18n(scale.label)}</Typography>
+        </Stack>
       </TooltipTrigger>
       <TooltipContent>
         <Stack spacing={0.5}>
           <span>{description}</span>
-          <span>{`${t_i18n('Weight')}: ${cell.weight.toFixed(2)} - ${t_i18n('Diagnosticity')}: ${cell.diagnosticity.toFixed(2)}`}</span>
+          <span>{t_i18n(diagnosticLabel(cell.diagnosticity), { values: { value: Math.round(cell.diagnosticity * 100) } })}</span>
+          <span>{t_i18n(weightLabel(cell.weight), { values: { value: Math.round(cell.weight * 100) } })}</span>
           {cell.rationale && <span>{cell.rationale}</span>}
         </Stack>
       </TooltipContent>
@@ -104,7 +120,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
       const item = evidenceById.get(cell.evidence_id);
       rows.push({
         id: cell.evidence_id,
-        name: cell.evidence_name ?? item?.label ?? cell.evidence_id,
+        name: cell.evidence_name ?? item?.label ?? t_i18n('Restricted entity'),
         path: item ? (!item.in_draft && evidenceObjectPath(item)) || null : elementPath(cell.evidence_id),
       });
     }
@@ -132,9 +148,10 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                   {hypotheses.map((hypothesis) => (
                     <TableCell key={hypothesis.candidate_id} align="center" sx={{ minWidth: 160 }}>
                       <Stack spacing={0.5} alignItems="center">
+                        {hypothesis.rank === 1 && <Chip label={t_i18n('Leading')} severity="info" size="sm" data-testid="investigation-hypothesis-leading" />}
                         <span>
                           {`#${hypothesis.rank} `}
-                          <Link to={elementPath(hypothesis.candidate_id)}>{hypothesis.candidate_name ?? hypothesis.candidate_id}</Link>
+                          <Link to={elementPath(hypothesis.candidate_id)}>{hypothesis.candidate_name ?? t_i18n('Unknown actor')}</Link>
                         </span>
                         <Typography variant="h3" component="span">{formatProbability(hypothesis.probability)}</Typography>
                         <Chip
@@ -178,7 +195,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                         runId={run.id}
                         itemType="hypothesis"
                         itemRef={hypothesis.candidate_id}
-                        itemLabel={hypothesis.candidate_name ?? hypothesis.candidate_id}
+                        itemLabel={hypothesis.candidate_name ?? t_i18n('Unknown actor')}
                         decision={feedbackDecisionFor(run.analyst_feedback, 'hypothesis', hypothesis.candidate_id)}
                       />
                     </TableCell>
@@ -191,7 +208,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
             {hypotheses.map((hypothesis) => (
               <Box key={hypothesis.candidate_id}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {`#${hypothesis.rank} ${hypothesis.candidate_name ?? hypothesis.candidate_id}`}
+                  {`#${hypothesis.rank} ${hypothesis.candidate_name ?? t_i18n('Unknown actor')}`}
                 </Typography>
                 <Typography variant="body2">{hypothesis.explanation}</Typography>
                 {hypothesis.rationale && <Typography variant="body2" color="text.secondary">{hypothesis.rationale}</Typography>}

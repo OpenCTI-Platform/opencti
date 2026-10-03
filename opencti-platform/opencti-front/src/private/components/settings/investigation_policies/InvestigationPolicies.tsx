@@ -22,7 +22,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
 import { AddOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
-import { Chip } from '@filigran/design-system';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -46,7 +46,7 @@ import {
   toPolicyEditInputs,
   toPolicyInput,
 } from './investigationPolicyUtils';
-import { formatProbability, reportMutationOutcome } from '../../investigation_runs/investigationRunUtils';
+import { DEFAULT_PACK, formatProbability, reportMutationOutcome } from '../../investigation_runs/investigationRunUtils';
 import { InvestigationPoliciesQuery, InvestigationPoliciesQuery$data } from './__generated__/InvestigationPoliciesQuery.graphql';
 import { InvestigationPoliciesAddMutation } from './__generated__/InvestigationPoliciesAddMutation.graphql';
 import { InvestigationPoliciesEditMutation } from './__generated__/InvestigationPoliciesEditMutation.graphql';
@@ -87,6 +87,16 @@ const investigationPoliciesQuery = graphql`
             rate
           }
         }
+      }
+    }
+    investigationEnrichmentConnectors {
+      id
+      name
+    }
+    investigationPacks {
+      packs {
+        slug
+        label
       }
     }
   }
@@ -136,18 +146,46 @@ const investigationPoliciesDeleteMutation = graphql`
 
 type Policy = NonNullable<NonNullable<InvestigationPoliciesQuery$data['investigationPolicies']>['edges'][number]>['node'];
 
-const PolicyCard = ({ policy, onEdit, onDelete }: { policy: Policy; onEdit: () => void; onDelete: () => void }) => {
-  const { t_i18n, n } = useFormatter();
+interface PolicyCardProps {
+  policy: Policy;
+  connectorNames: Map<string, string>;
+  packLabels: Map<string, string>;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+// A count of connectors, with their names in a tooltip.
+const ConnectorCount = ({ ids, names, empty }: { ids: readonly string[]; names: Map<string, string>; empty: string }) => {
+  const { t_i18n } = useFormatter();
+  if (ids.length === 0) return <>{empty}</>;
+  const listed = ids.map((id) => names.get(id)).filter((name): name is string => !!name);
+  const label = t_i18n('{count, plural, one {# connector} other {# connectors}}', { values: { count: ids.length } });
+  if (listed.length === 0) return <>{label}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild><span tabIndex={0}>{label}</span></TooltipTrigger>
+      <TooltipContent>{listed.join(', ')}</TooltipContent>
+    </Tooltip>
+  );
+};
+
+const PolicyCard = ({ policy, connectorNames, packLabels, onEdit, onDelete }: PolicyCardProps) => {
+  const { t_i18n } = useFormatter();
   const decisions = policy.acceptance.hypotheses_accepted + policy.acceptance.hypotheses_rejected
     + policy.acceptance.recommendations_accepted + policy.acceptance.recommendations_rejected;
-  const facts: [string, string][] = [
-    [t_i18n('Investigations'), n(policy.runs_count)],
-    [t_i18n('Analyst acceptance'), decisions > 0 && policy.acceptance.rate !== null && policy.acceptance.rate !== undefined ? formatProbability(policy.acceptance.rate) : '-'],
-    [t_i18n('Budget'), `${policy.max_iterations} ${t_i18n('iterations')} - ${policy.max_enrichment_jobs} ${t_i18n('enrichment jobs')} - ${policy.max_minutes} min`],
-    [t_i18n('Minimum confidence to write an attribution (%)'), `${policy.attribution_min_confidence}%`],
-    [t_i18n('Enrichment connectors'), policy.enrichment_connector_ids.length > 0 ? n(policy.enrichment_connector_ids.length) : t_i18n('All')],
-    [t_i18n('Connectors that need an approval'), n(policy.approval_connector_ids.length)],
-    [t_i18n('Investigation pack'), policy.pack_id ?? t_i18n('Default pack')],
+  const packLabel = !policy.pack_id || policy.pack_id === DEFAULT_PACK
+    ? t_i18n('OpenCTI case investigation')
+    : (packLabels.get(policy.pack_id) ?? t_i18n('Custom pack'));
+  const facts: [string, React.ReactNode][] = [
+    [t_i18n('Investigations'), String(policy.runs_count)],
+    [t_i18n('Analyst acceptance'), decisions > 0 && policy.acceptance.rate !== null && policy.acceptance.rate !== undefined ? formatProbability(policy.acceptance.rate) : t_i18n('No decision yet')],
+    [t_i18n('Budget'), t_i18n('{iterations} iterations - {jobs} enrichment jobs - {minutes} min', {
+      values: { iterations: policy.max_iterations, jobs: policy.max_enrichment_jobs, minutes: policy.max_minutes },
+    })],
+    [t_i18n('Minimum confidence to write an attribution'), `${policy.attribution_min_confidence}%`],
+    [t_i18n('Enrichment connectors'), <ConnectorCount key="enrichment" ids={policy.enrichment_connector_ids} names={connectorNames} empty={t_i18n('All enrichment connectors')} />],
+    [t_i18n('Connectors that need an approval'), <ConnectorCount key="approval" ids={policy.approval_connector_ids} names={connectorNames} empty={t_i18n('None')} />],
+    [t_i18n('Investigation pack'), packLabel],
     [t_i18n('Run automatic investigations as'), policy.runAs?.name ?? t_i18n('Platform administrator')],
   ];
   return (
@@ -155,11 +193,11 @@ const PolicyCard = ({ policy, onEdit, onDelete }: { policy: Policy; onEdit: () =
       title={policy.name}
       action={(
         <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" variant="tertiary" aria-label={`${t_i18n('Update')} - ${policy.name}`} onClick={onEdit}>
+          <IconButton size="small" variant="tertiary" aria-label={t_i18n('Edit the policy {name}', { values: { name: policy.name } })} onClick={onEdit}>
             <EditOutlined fontSize="small" />
           </IconButton>
           {!policy.is_default && (
-            <IconButton size="small" variant="tertiary" aria-label={`${t_i18n('Delete')} - ${policy.name}`} onClick={onDelete}>
+            <IconButton size="small" variant="tertiary" aria-label={t_i18n('Delete the policy {name}', { values: { name: policy.name } })} onClick={onDelete}>
               <DeleteOutlined fontSize="small" />
             </IconButton>
           )}
@@ -194,6 +232,8 @@ const InvestigationPoliciesContent = () => {
   const [deleting, setDeleting] = useState<Policy | null>(null);
   const data = useLazyLoadQuery<InvestigationPoliciesQuery>(investigationPoliciesQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
   const policies = (data.investigationPolicies?.edges ?? []).map((edge) => edge.node);
+  const connectorNames = new Map(data.investigationEnrichmentConnectors.map((connector) => [connector.id, connector.name]));
+  const packLabels = new Map((data.investigationPacks?.packs ?? []).map((pack) => [pack.slug, pack.label]));
   const [commitAdd] = useApiMutation<InvestigationPoliciesAddMutation>(investigationPoliciesAddMutation);
   const [commitEdit] = useApiMutation<InvestigationPoliciesEditMutation>(investigationPoliciesEditMutation);
   const [commitDelete, deleteInFlight] = useApiMutation<InvestigationPoliciesDeleteMutation>(investigationPoliciesDeleteMutation);
@@ -241,7 +281,13 @@ const InvestigationPoliciesContent = () => {
       <Grid container spacing={3}>
         {policies.map((policy) => (
           <Grid key={policy.id} size={{ xs: 12, md: 6, xl: 4 }} data-testid="investigation-policy-card">
-            <PolicyCard policy={policy} onEdit={() => setEditing({ id: policy.id, policy })} onDelete={() => setDeleting(policy)} />
+            <PolicyCard
+              policy={policy}
+              connectorNames={connectorNames}
+              packLabels={packLabels}
+              onEdit={() => setEditing({ id: policy.id, policy })}
+              onDelete={() => setDeleting(policy)}
+            />
           </Grid>
         ))}
       </Grid>

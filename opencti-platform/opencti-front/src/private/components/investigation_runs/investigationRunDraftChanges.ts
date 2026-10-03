@@ -28,24 +28,26 @@ export interface DraftChange {
   operation: DraftOperation;
 }
 
-const OPERATION_ORDER: DraftOperation[] = ['create', 'update', 'delete'];
-
-/** Changes grouped by operation, creations first, each group in the order it came. */
-export const draftChangeGroups = (changes: readonly DraftChange[]) => OPERATION_ORDER
-  .map((operation) => ({ operation, changes: changes.filter((change) => change.operation === operation) }))
-  .filter((group) => group.changes.length > 0);
-
-/**
- * One line naming what a draft writes, by translated type: "Intrusion set (1),
- * Note (1), Relationships (2)". Types never show as keys.
- */
-export const draftChangeSummary = (changes: readonly DraftChange[], t: Translate) => {
-  const counts = new Map<string, number>();
-  changes.filter((change) => change.kind === 'entity').forEach((change) => counts.set(change.type, (counts.get(change.type) ?? 0) + 1));
-  const parts = Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([type, count]) => t('{type} ({count})', { values: { type: t(`entity_${type}`), count } }));
-  const relationships = changes.filter((change) => change.kind === 'relationship').length;
-  if (relationships > 0) parts.push(t('Relationships ({count})', { values: { count: relationships } }));
-  return parts.join(', ');
+/** The operation a draft version applies, folding the linked variants into their own operation. */
+export const draftChangeOperation = (operation: string | null | undefined): DraftOperation => {
+  if (operation === 'create') return 'create';
+  if (operation === 'delete' || operation === 'delete_linked') return 'delete';
+  return 'update';
 };
+
+export interface DraftCounts {
+  entitiesCount: number;
+  observablesCount: number;
+  relationshipsCount: number;
+  sightingsCount: number;
+  containersCount: number;
+}
+
+/** One line naming what a draft writes, from its counts: "3 entities, 2 relationships, 1 container". */
+export const draftChangeSummary = (counts: DraftCounts, t: Translate) => [
+  counts.entitiesCount > 0 ? t('{count, plural, one {# entity} other {# entities}}', { values: { count: counts.entitiesCount } }) : null,
+  counts.observablesCount > 0 ? t('{count, plural, one {# observable} other {# observables}}', { values: { count: counts.observablesCount } }) : null,
+  counts.relationshipsCount > 0 ? t('{count, plural, one {# relationship} other {# relationships}}', { values: { count: counts.relationshipsCount } }) : null,
+  counts.sightingsCount > 0 ? t('{count, plural, one {# sighting} other {# sightings}}', { values: { count: counts.sightingsCount } }) : null,
+  counts.containersCount > 0 ? t('{count, plural, one {# container} other {# containers}}', { values: { count: counts.containersCount } }) : null,
+].filter((part): part is string => !!part).join(', ');

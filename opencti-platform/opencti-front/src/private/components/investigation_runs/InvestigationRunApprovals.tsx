@@ -29,7 +29,8 @@ import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import InvestigationRunDraftPreview from './InvestigationRunDraftPreview';
-import { APPROVAL_KIND_LABELS, decideInvestigationApprovals, type InvestigationApprovalDecision } from './investigationRunUtils';
+import { draftChangeSummary } from './investigationRunDraftChanges';
+import { APPROVAL_KIND_LABELS, decideInvestigationApprovals, type InvestigationApprovalDecision, SEVERITY_LABELS } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
 type Run = InvestigationRunView_run$data;
@@ -58,24 +59,24 @@ const RelativeTime = ({ date, template }: { date: string; template?: string }) =
   );
 };
 
+const connectorNameOf = (run: Run, approval: Approval) => run.enrichment_requests.find((request) => request.connector_id === approval.connector_id)?.connector_name;
+
 /** The title of a gate and what approving it changes, in words. */
 const useGateText = (run: Run, approval: Approval, entityNames: Map<string, string>) => {
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
   if (approval.kind === 'enrichment') {
-    const connector = run.enrichment_requests.find((request) => request.connector_id === approval.connector_id)?.connector_name
-      ?? t_i18n('An enrichment connector');
+    const connector = connectorNameOf(run, approval) ?? t_i18n('An enrichment connector');
     const entity = (approval.entity_id && entityNames.get(approval.entity_id)) || t_i18n('a restricted entity');
-    const remaining = Math.max(0, run.budget.max_enrichment_jobs - run.budget.used_enrichment_jobs);
     return {
       title: t_i18n('Run {connector} on {entity}', { values: { connector, entity } }),
-      change: t_i18n('The connector queries its service about this entity and adds what it finds to the investigation draft. It uses 1 of the {remaining} enrichment jobs left.', { values: { remaining: n(remaining) } }),
+      change: t_i18n('This connector needs an approval in the investigation policy.'),
     };
   }
   const recommendation = run.recommendations.find((item) => item.id === approval.recommendation_id);
   if (recommendation?.action_kind === 'severity_change' && recommendation.severity) {
     return {
       title: recommendation.text,
-      change: t_i18n('The severity of the case changes to {severity}.', { values: { severity: t_i18n(recommendation.severity) } }),
+      change: t_i18n('The severity of the case changes to {severity}.', { values: { severity: t_i18n(SEVERITY_LABELS[recommendation.severity] ?? 'Medium') } }),
     };
   }
   return {
@@ -114,22 +115,28 @@ const DecisionControls = ({ run, approval, approveLabel, onDecided }: DecisionCo
   if (!canDecide) {
     return <Typography variant="body2" color="text.secondary">{t_i18n('You are not allowed to decide this request')}</Typography>;
   }
+  const connector = approval.kind === 'enrichment' ? connectorNameOf(run, approval) : null;
   return (
     <>
       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         <Button size="small" onClick={() => decide('approve')} disabled={busy} data-testid={`investigation-approve-${approval.kind}`}>{approveLabel}</Button>
         {approval.kind === 'enrichment' && (
           <Button size="small" variant="secondary" onClick={() => decide('approve_always')} disabled={busy}>
-            {t_i18n('Approve for this connector')}
+            {connector ? t_i18n('Always approve {connector}', { values: { connector } }) : t_i18n('Always approve this connector')}
           </Button>
         )}
-        <Button size="small" variant="secondary" onClick={() => setRejecting(true)} disabled={busy} data-testid={`investigation-reject-${approval.kind}`}>
+        <Button size="small" variant="secondary" intent="destructive" onClick={() => setRejecting(true)} disabled={busy} data-testid={`investigation-reject-${approval.kind}`}>
           {t_i18n('Reject')}
         </Button>
       </Stack>
-      <Dialog open={rejecting} onClose={() => setRejecting(false)} title={t_i18n('Reject the request')} size="small">
+      <Dialog
+        open={rejecting}
+        onClose={() => setRejecting(false)}
+        title={approval.kind === 'draft_validation' ? t_i18n('Reject the changes') : t_i18n('Reject the request')}
+        size="small"
+      >
         <Stack spacing={2}>
-          <Typography variant="body2">{t_i18n('The reason is kept with the investigation as analyst feedback.')}</Typography>
+          <Typography variant="body2">{t_i18n('Your reason calibrates the next investigations of this platform.')}</Typography>
           <Textarea
             label={t_i18n('Reason (optional)')}
             value={reason}
@@ -148,25 +155,27 @@ const DecisionControls = ({ run, approval, approveLabel, onDecided }: DecisionCo
 
 const DraftApproval = ({ run, approval, onDecided }: { run: Run; approval: Approval; onDecided: () => void }) => {
   const { t_i18n, n } = useFormatter();
-  const [count, setCount] = useState<number | null>(null);
-  const title = count && count > 0
-    ? t_i18n(run.case ? 'Approve {count} changes to this case' : 'Approve {count} changes', { values: { count: n(count) } })
-    : t_i18n('Approve the investigation draft');
+  const counts = run.draft?.objectsCount;
+  const total = counts?.totalCount ?? 0;
+  const summary = counts ? draftChangeSummary(counts, t_i18n) : '';
+  let title = t_i18n('Approve the investigation draft');
+  if (total > 0) title = t_i18n(run.case ? 'Approve {count} changes to this case' : 'Approve {count} changes', { values: { count: n(total) } });
   return (
     <Stack spacing={1.5} data-testid="investigation-approval-draft_validation">
       <Stack spacing={0.25}>
         <Typography variant="h3" component="h3">{title}</Typography>
         <RelativeTime date={approval.created_at} template="Proposed by Case Autopilot {time}" />
       </Stack>
+      {summary && <Typography variant="body2" data-testid="investigation-draft-summary">{summary}</Typography>}
       {run.draft_id && (
         <Suspense fallback={<Stack spacing={1}>{[0, 1, 2].map((key) => <Skeleton key={key} variant="text" width={`${70 - key * 15}%`} />)}</Stack>}>
-          <InvestigationRunDraftPreview draftId={run.draft_id} onCount={setCount} />
+          <InvestigationRunDraftPreview draftId={run.draft_id} total={total} />
         </Suspense>
       )}
       <DecisionControls
         run={run}
         approval={approval}
-        approveLabel={count && count > 0 ? t_i18n('Approve {count} changes', { values: { count: n(count) } }) : t_i18n('Approve the draft')}
+        approveLabel={total > 0 ? t_i18n('Approve {count} changes', { values: { count: n(total) } }) : t_i18n('Approve the draft')}
         onDecided={onDecided}
       />
     </Stack>
@@ -182,10 +191,15 @@ const GateApproval = ({ run, approval, entityNames, onDecided }: { run: Run; app
         <Chip label={t_i18n(APPROVAL_KIND_LABELS[approval.kind] ?? 'Sensitive recommendation')} severity="medium" size="sm" />
         <Typography variant="body1" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{text.title}</Typography>
       </Stack>
-      <Typography variant="body2">{text.change}</Typography>
+      <Typography variant="body2" color="text.secondary">{text.change}</Typography>
       {approval.reason && <Typography variant="body2" color="text.secondary">{approval.reason}</Typography>}
       <RelativeTime date={approval.created_at} template="Requested by Case Autopilot {time}" />
-      <DecisionControls run={run} approval={approval} approveLabel={t_i18n('Approve')} onDecided={onDecided} />
+      <DecisionControls
+        run={run}
+        approval={approval}
+        approveLabel={approval.kind === 'enrichment' ? t_i18n('Approve once') : t_i18n('Approve')}
+        onDecided={onDecided}
+      />
     </Stack>
   );
 };
@@ -234,7 +248,7 @@ const InvestigationRunApprovals = forwardRef<HTMLDivElement, InvestigationRunApp
   const otherGates = pending.filter((approval) => approval.kind !== 'draft_validation');
   return (
     <Box ref={ref} tabIndex={-1} id="investigation-run-approvals" sx={{ outline: 'none' }} aria-label={t_i18n('Approvals')}>
-      <Card title={pending.length > 0 ? t_i18n('Waiting for your approval ({count})', { values: { count: pending.length } }) : t_i18n('Approvals')}>
+      <Card title={pending.length > 0 ? t_i18n('Waiting for your approval') : t_i18n('Approvals')}>
         <Stack spacing={2} divider={<Divider flexItem />}>
           {draftGate && <DraftApproval run={run} approval={draftGate} onDecided={onDecided} />}
           {otherGates.map((approval) => (

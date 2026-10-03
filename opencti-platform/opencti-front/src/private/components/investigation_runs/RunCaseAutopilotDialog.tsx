@@ -15,10 +15,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Link } from 'react-router';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
 import {
+  Alert,
   Combobox,
   ComboboxContent,
   ComboboxControls,
@@ -34,15 +36,20 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
-import { rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
+import { caseAutopilotPath, rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
+import { CASE_AUTOPILOT_DOCS_URL, XTM_ONE_SETTINGS_PATH } from './investigationRunOutcomes';
 import { RunCaseAutopilotDialogQuery } from './__generated__/RunCaseAutopilotDialogQuery.graphql';
 import { RunCaseAutopilotDialogAddMutation } from './__generated__/RunCaseAutopilotDialogAddMutation.graphql';
 
@@ -132,7 +139,7 @@ interface LaunchFormProps {
 }
 
 const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormProps) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const { xtmOneConfigured } = useChatbot();
   const needsCase = !AUTOPILOT_TAB_TYPES.includes(subjectType);
   const data = useLazyLoadQuery<RunCaseAutopilotDialogQuery>(runCaseAutopilotDialogQuery, {
@@ -158,6 +165,10 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   const selectedPolicy = policies.find((policy) => policy.id === policyId);
   const engineMissing = xtmOneConfigured !== true;
   const caseMissing = needsCase && caseMode === 'existing' && !selectedCase;
+  const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
+  let startBlocker: string | null = null;
+  if (engineMissing) startBlocker = t_i18n('XTM One is not connected');
+  else if (caseMissing) startBlocker = t_i18n('Select the case of the investigation');
   const start = () => {
     commit({
       variables: {
@@ -177,12 +188,18 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   return (
     <Stack spacing={3} data-testid="run-case-autopilot-form">
       <Typography variant="body2">
-        {t_i18n('Case Autopilot investigates with the XTM One investigation engine: it reads the case, checks what OpenCTI knows, enriches through the connectors of this platform, weighs the hypotheses and writes a cited report. Everything it writes goes to a draft you approve.')}
+        {t_i18n('Case Autopilot investigates this case with XTM One and writes what it finds to a draft you approve.')}
+        {' '}
+        <a href={CASE_AUTOPILOT_DOCS_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</a>
       </Typography>
       {engineMissing && (
-        <Typography variant="body2" color="warning.main" data-testid="run-case-autopilot-no-engine">
-          {t_i18n('XTM One is not connected to this platform: Case Autopilot runs on the XTM One investigation engine.')}
-        </Typography>
+        <Alert
+          severity="warning"
+          title={t_i18n('XTM One is not connected')}
+          description={t_i18n('Case Autopilot runs on the XTM One investigation engine.')}
+          action={canConfigure ? <Button size="small" variant="secondary" component={Link} to={XTM_ONE_SETTINGS_PATH}>{t_i18n('Connect XTM One')}</Button> : undefined}
+          data-testid="run-case-autopilot-no-engine"
+        />
       )}
       <Select value={policyId} onValueChange={setPolicyId}>
         <SelectLabel>{t_i18n('Investigation policy')}</SelectLabel>
@@ -237,19 +254,35 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
         <Stack spacing={1}>
           <Typography variant="h4">{t_i18n('Previous investigations')}</Typography>
           {runs.map((run) => (
-            <Stack key={run.id} direction="row" spacing={2} alignItems="center">
-              <InvestigationRunStatusChip status={run.run_status} />
-              <Typography variant="body2">{fldt(run.created_at)}</Typography>
-              {run.case && <Typography variant="body2" color="text.secondary">{run.case.name}</Typography>}
+            <Stack key={run.id} direction="row" spacing={2} alignItems="center" data-testid="run-case-autopilot-previous">
+              <InvestigationRunStatusChip status={run.run_status} size="sm" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Typography variant="body2" tabIndex={0}>{rd(run.created_at)}</Typography>
+                </TooltipTrigger>
+                <TooltipContent>{fldt(run.created_at)}</TooltipContent>
+              </Tooltip>
+              {run.case && <Link to={caseAutopilotPath(run.case, run.id)} onClick={onCancel}>{run.case.name}</Link>}
             </Stack>
           ))}
         </Stack>
       )}
       <DialogActions>
         <Button variant="secondary" onClick={onCancel} disabled={inFlight}>{t_i18n('Cancel')}</Button>
-        <Button intent="ai" onClick={start} disabled={inFlight || engineMissing || caseMissing} data-testid="run-case-autopilot-start">
-          {t_i18n('Run Case Autopilot')}
-        </Button>
+        {startBlocker ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0}>
+                <Button intent="ai" disabled data-testid="run-case-autopilot-start">{t_i18n('Run Case Autopilot')}</Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{startBlocker}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button intent="ai" onClick={start} disabled={inFlight} data-testid="run-case-autopilot-start">
+            {t_i18n('Run Case Autopilot')}
+          </Button>
+        )}
       </DialogActions>
     </Stack>
   );
