@@ -211,15 +211,16 @@ describe('Threat Pulse manager and API', () => {
     const refreshed = await runPulseRefresh(testContext, true);
     expect(refreshed).toBeGreaterThanOrEqual(2);
     const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
-    expect(result.data?.pulseEntity.information).toMatchObject({
+    const information = result.data?.pulseEntity.information;
+    expect(information).toMatchObject({
       published: true,
       prevalence: 'widespread',
       platforms_bucket: '5-9',
-      first_seen_network: `${utcDay()}T00:00:00.000Z`,
       trend: 'rising',
       sector_trend: 'rising',
       community_uniqueness: 0,
     });
+    expect(new Date(information.first_seen_network).toISOString()).toBe(`${utcDay()}T00:00:00.000Z`);
     const filtered = await queryAsAdminWithSuccess({
       query: INDICATORS_BY_PREVALENCE,
       variables: { filters: { mode: 'and', filters: [{ key: 'pulse_prevalence', values: ['widespread'] }], filterGroups: [] } },
