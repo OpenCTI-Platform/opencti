@@ -117,6 +117,8 @@ const Graph = ({
       search,
       detailsPreviewSelected,
       zoom,
+      isExpandOpen,
+      isAddRelationOpen,
       layoutMode,
       layoutCentreId,
       hiddenNodeIds = [],
@@ -167,13 +169,20 @@ const Graph = ({
   const onHover = (target: GraphHoverTarget | null) => {
     setHovered(target);
     clearTimeout(openTimer.current);
-    if (!target || selectFree || selectFreeRectangle) {
+    if (!target || selectFree || selectFreeRectangle || isExpandOpen || isAddRelationOpen) {
       scheduleClose();
       return;
     }
     cancelClose();
     openTimer.current = setTimeout(() => setCard({ target, anchor: { ...pointer.current } }), HOVER_OPEN_MS);
   };
+  // A dialog opened from the graph takes over: no card lingers or opens behind it.
+  useEffect(() => {
+    if (!isExpandOpen && !isAddRelationOpen) return;
+    clearTimeout(openTimer.current);
+    clearTimeout(closeTimer.current);
+    setCard(null);
+  }, [isExpandOpen, isAddRelationOpen]);
   useEffect(() => () => {
     clearTimeout(openTimer.current);
     clearTimeout(closeTimer.current);
@@ -416,6 +425,8 @@ const Graph = ({
           const box = event.currentTarget.getBoundingClientRect();
           pointer.current = { x: event.clientX - box.left, y: event.clientY - box.top };
         }}
+        // The canvas reports no hover change when the pointer leaves it fast, for the toolbar for example.
+        onMouseLeave={() => onHover(null)}
       >
         <GraphLoadingAlert />
         {selectedEntities.length > 0 && <EntitiesDetailsRightsBar />}
