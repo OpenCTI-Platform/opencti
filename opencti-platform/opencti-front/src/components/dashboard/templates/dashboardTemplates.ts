@@ -1,5 +1,6 @@
 import { toB64 } from '../../../utils/String';
 import { disseminationAssuranceDashboardTemplate } from './disseminationAssuranceDashboardTemplate';
+import { defenseCoverageDashboardTemplate } from './defenseCoverageDashboardTemplate';
 
 export interface DashboardTemplateFilter {
   key: string[];
@@ -30,7 +31,8 @@ export interface DashboardTemplateSelection {
 export interface DashboardTemplateWidget {
   id: string;
   type: string;
-  perspective: 'entities' | 'relationships';
+  /** Null for the widgets that load their own data and carry no data selection. */
+  perspective: 'entities' | 'relationships' | null;
   parameters: { title: string; interval?: string };
   dataSelection: DashboardTemplateSelection[];
   layout: { x: number; y: number; w: number; h: number };
@@ -47,6 +49,7 @@ export interface DashboardTemplate {
 /** Built-in dashboard templates offered next to "Import dashboard", in menu order. */
 export const DASHBOARD_TEMPLATES: DashboardTemplate[] = [
   disseminationAssuranceDashboardTemplate,
+  defenseCoverageDashboardTemplate,
 ];
 
 // The import endpoint checks a minimal version (5.12.16), not the running one.

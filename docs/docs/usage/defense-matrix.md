@@ -78,6 +78,6 @@ When OpenAEV sends the results back, they update the validation layer. OpenAEV a
 
 Two widgets are available in custom dashboards: **Defense coverage by tactic** and **Top uncovered techniques used by threats**. The `defense_level` attribute of attack patterns can also be used in the filters of any widget.
 
-Click **Create the defense coverage dashboard** in the defense matrix header to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, deployed and validated techniques, techniques by defense level and detection rules.
+Click **Create the defense coverage dashboard** in the defense matrix header to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, deployed and validated techniques, techniques by defense level and detection rules. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
 The defense widgets are not available in public dashboards and in the custom views of entities.
