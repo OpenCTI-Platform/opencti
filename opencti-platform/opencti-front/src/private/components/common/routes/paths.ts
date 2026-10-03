@@ -61,7 +61,7 @@ export const PATH_OBSERVED_DATAS = `${PATH_DASHBOARD}/events/observed_data`;
 export const PATH_OBSERVED_DATA = (observedDataId: string) => `${PATH_OBSERVED_DATAS}/${observedDataId}`;
 export const PATH_INCIDENTS = `${PATH_DASHBOARD}/events/incidents`;
 export const PATH_INCIDENT = (incidentId: string) => `${PATH_INCIDENTS}/${incidentId}`;
-export const PATH_HUNTS = `${PATH_DASHBOARD}/events/hunts`;
+export const PATH_HUNTS = `${PATH_DASHBOARD}/defense/hunts`;
 export const PATH_HUNT = (huntId: string) => `${PATH_HUNTS}/${huntId}`;
 
 // THREATS

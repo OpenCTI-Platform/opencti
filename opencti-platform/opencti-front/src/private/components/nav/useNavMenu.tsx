@@ -47,7 +47,6 @@ import {
   ChessKnight,
   CityVariantOutline,
   CogOutline,
-  Crosshairs,
   Database,
   Fire,
   FlaskOutline,
@@ -186,7 +185,7 @@ const useNavMenu = (): NavGroup[] => {
   ]);
 
   const hideAnalyses = useIsHiddenEntities('Report', 'Grouping', 'Note', 'Malware-Analysis', 'Security-Coverage');
-  const hideEvents = useIsHiddenEntities('stix-sighting-relationship', 'Incident', 'Observed-Data', 'Hunt');
+  const hideEvents = useIsHiddenEntities('stix-sighting-relationship', 'Incident', 'Observed-Data');
   const hideObservations = useIsHiddenEntities('Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure');
   const hideThreats = useIsHiddenEntities('Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign');
   const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'Security-platforms', 'System', 'Individual');
@@ -269,7 +268,6 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: <Fire fontSize="small" /> },
             { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
             { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: <WifiTetheringOutlined fontSize="small" /> },
-            { type: 'Hunt', link: '/dashboard/events/hunts', label: t_i18n('Hunts'), icon: <Crosshairs fontSize="small" /> },
           ],
         },
         !hideObservations && {

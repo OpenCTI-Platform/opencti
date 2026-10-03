@@ -12,7 +12,7 @@ export default class HuntDetailsPage {
   }
 
   gotoRun(huntId: string, runId: string) {
-    return this.page.goto(`/dashboard/events/hunts/${huntId}/runs/${runId}`);
+    return this.page.goto(`/dashboard/defense/hunts/${huntId}/runs/${runId}`);
   }
 
   getPage() {

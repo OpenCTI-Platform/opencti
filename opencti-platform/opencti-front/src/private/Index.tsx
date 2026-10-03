@@ -36,6 +36,7 @@ const RootObservations = lazy(() => import('./components/observations/Root'));
 const RootProfile = lazy(() => import('./components/profile/Root'));
 const RootSearch = lazy(() => import('@components/RootSearch'));
 const RootThreats = lazy(() => import('./components/threats/Root'));
+const RootHunts = lazy(() => import('./components/hunts/RootHunts'));
 const RootArsenal = lazy(() => import('./components/arsenal/Root'));
 const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
@@ -144,6 +145,7 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
                   <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
                   <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
+                  <Route path="/defense/hunts/*" element={boundaryWrapper(RootHunts)} />
                   <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
                   <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
                   <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />

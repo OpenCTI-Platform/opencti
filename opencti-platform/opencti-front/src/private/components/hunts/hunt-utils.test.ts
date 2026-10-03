@@ -198,7 +198,7 @@ describe('Hunt utils', () => {
     expect(isHuntableEntityPath('/dashboard/techniques/attack_patterns/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/pirs/abc/analyses')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets')).toBe(false);
-    expect(isHuntableEntityPath('/dashboard/events/hunts/abc')).toBe(false);
+    expect(isHuntableEntityPath('/dashboard/defense/hunts/abc')).toBe(false);
   });
 
   describe('huntTechniqueValidationStatus()', () => {

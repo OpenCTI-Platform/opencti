@@ -24,7 +24,6 @@ test('Hunt manual creation, tabs and Logic validation', { tag: ['@hunt', '@mutat
   // region List
   // -----------
   await huntsPage.goto();
-  await huntsPage.navigateFromMenu();
   await expect(huntsPage.getPage()).toBeVisible();
   // endregion
 
@@ -71,7 +70,7 @@ test('Hunt manual creation, tabs and Logic validation', { tag: ['@hunt', '@mutat
   // region Delete
   // -------------
   await huntDetails.delete();
-  await huntsPage.navigateFromMenu();
+  await huntsPage.goto();
   await expect(huntsPage.getItemFromList(huntName)).toBeHidden();
   // endregion
 });
