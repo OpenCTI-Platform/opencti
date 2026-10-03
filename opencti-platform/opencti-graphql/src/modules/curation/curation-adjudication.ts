@@ -1,0 +1,187 @@
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import { FunctionalError } from '../../config/errors';
+import { logApp } from '../../config/conf';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { AUTOMATION_MANAGER_USER } from '../../utils/access';
+import { storeLoadByIdsWithRefs, patchAttribute } from '../../database/middleware';
+import { redisCurationIncrementCounter } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
+import xtmOneClient from '../xtm/one/xtm-one-client';
+import { buildPlaybookAutomationContext, callXtmAgent, isXtmOneConfigured, resolveAgentJwtUser, type AgentJwtUser } from '../playbook/components/ai-agent-shared';
+import { addCurationAdjudicationCount } from '../../manager/telemetryManager';
+import { resolveAliasesField } from '../../schema/stixDomainObject';
+import { now } from '../../utils/format';
+import {
+  type BasicStoreEntityCurationProposal,
+  CURATION_ADJUDICATE_INTENT,
+  CURATION_DECISIONS,
+  type CurationAdjudication,
+  type CurationDecision,
+  type CurationSettings,
+  DECISION_SKIP,
+  ENTITY_TYPE_CURATION_PROPOSAL,
+} from './curation-types';
+
+const MAX_DESCRIPTION_LENGTH = 1500;
+const MAX_RATIONALE_LENGTH = 2000;
+
+export interface ParsedAdjudication {
+  decision: CurationDecision;
+  rationale: string;
+  target_id: string | null;
+}
+
+/**
+ * Extract the first JSON object of an agent answer (tolerating one markdown fence) and validate it strictly.
+ * Returns null when the answer is not a valid adjudication, which callers treat as "skip".
+ */
+export const parseAdjudicationResponse = (content: string | null | undefined, subjectIds: string[]): ParsedAdjudication | null => {
+  if (!content || typeof content !== 'string') return null;
+  const unfenced = content.replace(/```(?:json)?/gi, '').trim();
+  const start = unfenced.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  let end = -1;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < unfenced.length; index += 1) {
+    const char = unfenced[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') inString = false;
+    } else if (char === '"') {
+      inString = true;
+    } else if (char === '{') {
+      depth += 1;
+    } else if (char === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        end = index;
+        break;
+      }
+    }
+  }
+  if (end === -1) return null;
+  let parsed: any;
+  try {
+    parsed = JSON.parse(unfenced.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+  const decision = typeof parsed?.decision === 'string' ? parsed.decision.trim().toLowerCase() : '';
+  const rationale = typeof parsed?.rationale === 'string' ? parsed.rationale.trim() : '';
+  if (!(CURATION_DECISIONS as readonly string[]).includes(decision) || rationale.length === 0) return null;
+  const targetId = typeof parsed?.target_id === 'string' && subjectIds.includes(parsed.target_id) ? parsed.target_id : null;
+  return { decision: decision as CurationDecision, rationale: rationale.slice(0, MAX_RATIONALE_LENGTH), target_id: targetId };
+};
+
+const describeSubject = (entity: BasicStoreEntity & Record<string, any>) => {
+  const aliasField = resolveAliasesField(entity.entity_type).name;
+  return {
+    id: entity.internal_id,
+    entity_type: entity.entity_type,
+    name: entity.name ?? null,
+    aliases: (entity[aliasField] ?? []).slice(0, 50),
+    description: typeof entity.description === 'string' ? entity.description.slice(0, MAX_DESCRIPTION_LENGTH) : null,
+    created_by: entity.createdBy?.name ?? null,
+    first_seen: entity.first_seen ?? null,
+    last_seen: entity.last_seen ?? null,
+    created_at: entity.created_at ?? null,
+  };
+};
+
+export const buildAdjudicationContent = (proposal: BasicStoreEntityCurationProposal, subjects: Array<BasicStoreEntity & Record<string, any>>) => {
+  const document = {
+    proposal_id: proposal.internal_id,
+    kind: proposal.proposal_kind,
+    confidence: proposal.confidence_score,
+    detector: proposal.detector,
+    allowed_decisions: [...CURATION_DECISIONS],
+    target_id: proposal.target_id ?? null,
+    subjects: subjects.map(describeSubject),
+    evidence: (proposal.curation_evidence ?? []).map((item) => ({ type: item.evidence_type, score: item.score, weight: item.weight, description: item.description })),
+  };
+  return `Adjudicate the following OpenCTI curation proposal. Answer with one JSON object only.\n--- CURATION PROPOSAL ---\n${JSON.stringify(document, null, 2)}`;
+};
+
+export const isAdjudicationAvailable = async (context: AuthContext) => isXtmOneConfigured() && isEnterpriseEdition(context);
+
+const selectAgentSlug = async (settings: CurationSettings, jwtUser: AgentJwtUser): Promise<string | null> => {
+  const context: AuthContext = {
+    ...buildPlaybookAutomationContext(),
+    user: { ...AUTOMATION_MANAGER_USER, id: jwtUser.id, user_email: jwtUser.user_email },
+  };
+  const agents = (await xtmOneClient.listAgentsForIntent(context, CURATION_ADJUDICATE_INTENT)) ?? [];
+  const bound = agents.filter((agent) => !!agent.agent_slug).sort((a, b) => b.priority - a.priority);
+  if (settings.adjudication_agent_slug) {
+    return bound.some((agent) => agent.agent_slug === settings.adjudication_agent_slug) ? settings.adjudication_agent_slug : null;
+  }
+  return bound[0]?.agent_slug ?? null;
+};
+
+const reserveDailyBudget = async (settings: CurationSettings) => {
+  const day = new Date().toISOString().slice(0, 10);
+  const used = await redisCurationIncrementCounter('adjudication', day);
+  return used <= settings.adjudication_daily_limit;
+};
+
+/**
+ * Ask the XTM One agent bound to cti.curation_adjudicate for a decision on an ambiguous proposal. The decision is
+ * recorded on the proposal (advisory): applying it is the job of an analyst, of the XTM One decide tool, or of a
+ * curation policy requiring adjudication agreement.
+ */
+export const adjudicateProposal = async (
+  context: AuthContext,
+  user: AuthUser,
+  proposal: BasicStoreEntityCurationProposal,
+  settings: CurationSettings,
+): Promise<BasicStoreEntityCurationProposal> => {
+  await checkEnterpriseEdition(context);
+  if (!isXtmOneConfigured()) {
+    throw FunctionalError('XTM One is not configured on this platform');
+  }
+  if (!(await reserveDailyBudget(settings))) {
+    throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
+  }
+  await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { adjudication_requested_at: now() });
+  const jwtUser = await resolveAgentJwtUser(settings.adjudication_run_as_id ?? undefined);
+  if (!jwtUser) {
+    throw FunctionalError('No identity can be resolved to call XTM One for adjudication');
+  }
+  const agentSlug = await selectAgentSlug(settings, jwtUser);
+  if (!agentSlug) {
+    throw FunctionalError('No XTM One agent is bound to the curation adjudication intent', { intent: CURATION_ADJUDICATE_INTENT });
+  }
+  const subjects = await storeLoadByIdsWithRefs(context, user, proposal.subject_ids);
+  const content = buildAdjudicationContent(proposal, subjects as unknown as Array<BasicStoreEntity & Record<string, any>>);
+  addCurationAdjudicationCount();
+  const answer = await callXtmAgent(agentSlug, content, jwtUser);
+  const parsed = parseAdjudicationResponse(answer, proposal.subject_ids);
+  if (!parsed) {
+    logApp.warn('[CURATION] Adjudication answer is not a valid decision, recorded as skip', { proposal_id: proposal.internal_id, agentSlug });
+  }
+  const adjudication: CurationAdjudication = {
+    decision: parsed?.decision ?? DECISION_SKIP,
+    rationale: parsed?.rationale ?? 'The agent answer was not a valid adjudication (expected one JSON object with decision and rationale).',
+    agent_slug: agentSlug,
+    model: null,
+    adjudicated_at: now(),
+    applied: false,
+  };
+  const patch: Record<string, unknown> = { curation_adjudication: adjudication };
+  if (parsed?.target_id) {
+    patch.target_id = parsed.target_id;
+  }
+  const { element } = await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'extended',
+    message: `adjudicates curation proposal \`${proposal.name}\` with XTM One agent \`${agentSlug}\`: ${adjudication.decision}`,
+    context_data: { id: proposal.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: { decision: adjudication.decision, agent_slug: agentSlug } },
+  });
+  return element as unknown as BasicStoreEntityCurationProposal;
+};

@@ -1,4 +1,6 @@
 import { DEFAULT_PROVENANCE_BACKFILL_STATE, PROVENANCE_BACKFILL_MANAGER_ID } from '../provenance/provenance-types';
+import { CURATION_MANAGER_ID } from '../curation/curation-types';
+import { getDefaultCurationManagerSetting } from '../curation/curation-defaults';
 
 export const supportedMimeTypes = [
   'application/pdf',
@@ -27,6 +29,11 @@ const defaultManagerConfigurations = [
     manager_id: PROVENANCE_BACKFILL_MANAGER_ID,
     manager_running: false,
     manager_setting: { ...DEFAULT_PROVENANCE_BACKFILL_STATE },
+  },
+  {
+    manager_id: CURATION_MANAGER_ID,
+    manager_running: false,
+    manager_setting: getDefaultCurationManagerSetting(),
   },
 ];
 

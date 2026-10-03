@@ -29,6 +29,7 @@ import { extractFilterGroupValues, findFiltersFromKey, isFilterGroupNotEmpty } f
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_CURATION_PROPOSAL } from '../modules/curation/curation-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
@@ -64,6 +65,7 @@ export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 export const ACTION_TYPE_ENROLL_PLAYBOOK = 'ENROLL_PLAYBOOK';
 export const ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES = 'REMOVE_CUSTOM_FIELD_VALUES';
 export const ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES = 'ADD_RELATED_COVERED_ENTITIES';
+export const ACTION_TYPE_CURATION_APPLY = 'CURATION_APPLY';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -118,6 +120,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     // 2.4. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
+      if (actions.some((a) => a.type === ACTION_TYPE_CURATION_APPLY)) {
+        throw ForbiddenAccess('The curation apply action only supports list tasks.');
+      }
       const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));
       const isNotKnowledge = (!acceptedInternalTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
@@ -126,7 +131,14 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
-      const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
+      // Curation proposals can only be targeted by the curation apply action (and that action only targets them).
+      const askForCurationApply = actions.some((a) => a.type === ACTION_TYPE_CURATION_APPLY);
+      const areCurationProposals = objects.length > 0 && objects.every((o) => o?.entity_type === ENTITY_TYPE_CURATION_PROPOSAL);
+      if (askForCurationApply !== areCurationProposals || (askForCurationApply && actions.length !== 1)) {
+        throw ForbiddenAccess('The curation apply action only targets curation proposals.');
+      }
+      const acceptedInternalTypes = areCurationProposals
+        || objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
         || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);

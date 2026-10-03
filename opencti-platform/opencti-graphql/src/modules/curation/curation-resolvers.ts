@@ -1,0 +1,158 @@
+import type { Resolvers } from '../../generated/graphql';
+import type { AuthContext } from '../../types/user';
+import type { BasicStoreBase } from '../../types/store';
+import { loadCreator } from '../../database/members';
+import {
+  acceptProposal,
+  adjudicateProposalNow,
+  applyProposalFromTask,
+  bulkAcceptProposals,
+  bulkRejectProposals,
+  canUserApplyProposal,
+  curationSettingsForApi,
+  curationStatistics,
+  decideProposal,
+  editCurationSettings,
+  findProposalById,
+  findProposalsForEntity,
+  findProposalsPaginated,
+  refreshKnowledgeHealth,
+  rejectProposal,
+  requestCurationScan,
+  revertProposal,
+} from './curation-domain';
+import { findMergeRecordById, findMergeRecordsPaginated, isMergeRecordReversible, unmergeFromRecord } from './curation-merge-record';
+import {
+  addCurationPolicy,
+  applyCurationPolicyById,
+  deleteCurationPolicy,
+  dryRunCurationPolicy,
+  editCurationPolicy,
+  findPoliciesPaginated,
+  findPolicyById,
+} from './curation-policies';
+import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curation-health';
+import { curationResolve } from './curation-resolve';
+import type { BasicStoreEntityCurationPolicy, BasicStoreEntityCurationProposal, BasicStoreEntityMergeRecord, CurationPolicyDryRunResult } from './curation-types';
+
+const toJsonString = (value: unknown) => {
+  if (value === null || value === undefined) return null;
+  return typeof value === 'string' ? value : JSON.stringify(value);
+};
+
+const resolveSampleProposals = async (context: AuthContext, dryRun: CurationPolicyDryRunResult) => {
+  const proposals = await Promise.all((dryRun.sample_proposal_ids ?? []).map((id) => findProposalById(context, context.user!, id)));
+  return proposals.filter((proposal) => proposal !== undefined && proposal !== null);
+};
+
+const loadSubjects = async (context: AuthContext, proposal: BasicStoreEntityCurationProposal) => {
+  const loaded = await Promise.all(proposal.subject_ids.map((id, index) => context.batch?.idsBatchLoader.load({ id, type: proposal.subject_types?.[index] })));
+  return loaded.filter((element): element is BasicStoreBase => !!element);
+};
+
+const curationResolvers: Resolvers = {
+  Query: {
+    curationProposal: (_, { id }, context) => findProposalById(context, context.user, id),
+    curationProposals: (_, args, context) => findProposalsPaginated(context, context.user, args as any),
+    curationProposalsForEntity: (_, { id, status }, context) => findProposalsForEntity(context, context.user, id, status as string[] | null),
+    curationStatistics: (_, __, context) => curationStatistics(context, context.user),
+    curationResolve: (_, { name, type }, context) => curationResolve(context, context.user, name, type),
+    mergeRecord: (_, { id }, context) => findMergeRecordById(context, context.user, id),
+    mergeRecords: (_, args, context) => findMergeRecordsPaginated(context, context.user, args as any),
+    curationPolicy: (_, { id }, context) => findPolicyById(context, context.user, id),
+    curationPolicies: (_, args, context) => findPoliciesPaginated(context, context.user, args as any),
+    curationPolicyDryRun: (_, { id }, context) => dryRunCurationPolicy(context, context.user, id) as any,
+    knowledgeHealth: (_, __, context) => findLatestHealthSnapshot(context, context.user),
+    knowledgeHealthSnapshots: (_, args, context) => findHealthSnapshotsPaginated(context, context.user, args as any),
+    curationSettings: (_, __, context) => curationSettingsForApi(context) as any,
+  },
+  CurationProposal: {
+    objectMarking: (proposal, _, context) => context.batch.markingsBatchLoader.load(proposal),
+    evidence: (proposal) => (proposal as unknown as BasicStoreEntityCurationProposal).curation_evidence ?? [],
+    adjudication: (proposal) => ((proposal as unknown as BasicStoreEntityCurationProposal).curation_adjudication ?? null) as any,
+    in_ambiguous_band: (proposal) => (proposal as unknown as BasicStoreEntityCurationProposal).in_ambiguous_band ?? false,
+    action_payload: (proposal) => toJsonString((proposal as unknown as BasicStoreEntityCurationProposal).action_payload),
+    applied_patch: (proposal) => toJsonString((proposal as unknown as BasicStoreEntityCurationProposal).applied_patch),
+    subjects: (proposal, _, context) => loadSubjects(context, proposal as unknown as BasicStoreEntityCurationProposal) as any,
+    restricted_subjects_count: async (proposal, _, context) => {
+      const typed = proposal as unknown as BasicStoreEntityCurationProposal;
+      const subjects = await loadSubjects(context, typed);
+      return typed.subject_ids.length - subjects.length;
+    },
+    policy: (proposal, _, context) => {
+      const { policy_id } = proposal as unknown as BasicStoreEntityCurationProposal;
+      return policy_id ? findPolicyById(context, context.user, policy_id) as any : null;
+    },
+    decidedBy: (proposal, _, context) => {
+      const { decided_by_id } = proposal as unknown as BasicStoreEntityCurationProposal;
+      return decided_by_id ? loadCreator(context, context.user, decided_by_id) : null;
+    },
+    mergeRecord: (proposal, _, context) => {
+      const { merge_record_id } = proposal as unknown as BasicStoreEntityCurationProposal;
+      return merge_record_id ? findMergeRecordById(context, context.user, merge_record_id) as any : null;
+    },
+    can_apply: (proposal, _, context) => canUserApplyProposal(context.user!, proposal as unknown as BasicStoreEntityCurationProposal),
+  },
+  MergeRecord: {
+    objectMarking: (record, _, context) => context.batch.markingsBatchLoader.load(record),
+    target: (record, _, context) => {
+      const typed = record as unknown as BasicStoreEntityMergeRecord;
+      return context.batch.idsBatchLoader.load({ id: typed.merge_target_id, type: typed.merge_target_type });
+    },
+    sources: (record) => {
+      const typed = record as unknown as BasicStoreEntityMergeRecord;
+      return (typed.merge_snapshot?.sources ?? []).map((source) => ({
+        id: source.internal_id,
+        standard_id: source.standard_id,
+        name: source.name ?? source.standard_id,
+        entity_type: source.entity_type,
+        aliases: [...((source.attributes?.aliases as string[]) ?? []), ...((source.attributes?.x_opencti_aliases as string[]) ?? [])],
+        redirected_relationships_count: source.redirected?.length ?? 0,
+        recreatable_relationships_count: source.recreatable?.length ?? 0,
+        contributed_aliases: source.contributed_aliases ?? [],
+        reverted_at: source.reverted_at ?? null,
+      }));
+    },
+    alias_provenance: (record) => ((record as unknown as BasicStoreEntityMergeRecord).alias_provenance ?? []).map((provenance) => ({
+      alias: provenance.alias ?? '',
+      source_id: provenance.source_id,
+      source_aliases: provenance.source_aliases ?? [],
+      relationships_count: provenance.relationship_ids?.length ?? 0,
+    })),
+    is_reversible: (record) => isMergeRecordReversible(record as unknown as BasicStoreEntityMergeRecord),
+    mergedBy: (record, _, context) => loadCreator(context, context.user, (record as unknown as BasicStoreEntityMergeRecord).merged_by_id),
+    unmergedBy: (record, _, context) => {
+      const { unmerged_by_id } = record as unknown as BasicStoreEntityMergeRecord;
+      return unmerged_by_id ? loadCreator(context, context.user, unmerged_by_id) : null;
+    },
+  },
+  CurationPolicy: {
+    last_dry_run: (policy) => ((policy as unknown as BasicStoreEntityCurationPolicy).last_dry_run ?? null) as any,
+  },
+  CurationPolicyDryRun: {
+    sample_proposals: (dryRun, _, context) => resolveSampleProposals(context, dryRun as unknown as CurationPolicyDryRunResult) as any,
+  },
+  Mutation: {
+    curationProposalAccept: (_, { id, input }, context) => acceptProposal(context, context.user, id, input),
+    curationProposalReject: (_, { id, rationale }, context) => rejectProposal(context, context.user, id, rationale),
+    curationProposalDecide: (_, { id, input }, context) => decideProposal(context, context.user, id, input as any),
+    curationProposalApply: (_, { id, policy_id }, context) => applyProposalFromTask(context, context.user, id, policy_id),
+    curationProposalAdjudicate: (_, { id }, context) => adjudicateProposalNow(context, context.user, id),
+    curationProposalsBulkAccept: (_, { ids }, context) => bulkAcceptProposals(context, context.user, ids),
+    curationProposalsBulkReject: (_, { ids, rationale }, context) => bulkRejectProposals(context, context.user, ids, rationale),
+    curationProposalRevert: (_, { id }, context) => revertProposal(context, context.user, id),
+    unmergeEntity: async (_, { mergeRecordId, sourceIds }, context) => {
+      const result = await unmergeFromRecord(context, context.user, mergeRecordId, sourceIds);
+      return result.record as any;
+    },
+    curationPolicyAdd: (_, { input }, context) => addCurationPolicy(context, context.user, input),
+    curationPolicyFieldPatch: (_, { id, input }, context) => editCurationPolicy(context, context.user, id, input),
+    curationPolicyDelete: (_, { id }, context) => deleteCurationPolicy(context, context.user, id),
+    curationPolicyApply: (_, { id }, context) => applyCurationPolicyById(context, context.user, id),
+    curationSettingsEdit: (_, { input }, context) => editCurationSettings(context, context.user, input as any) as any,
+    curationScanRequest: (_, __, context) => requestCurationScan(context, context.user) as any,
+    knowledgeHealthRefresh: (_, __, context) => refreshKnowledgeHealth(context, context.user),
+  },
+};
+
+export default curationResolvers;

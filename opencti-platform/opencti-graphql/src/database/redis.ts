@@ -1030,6 +1030,37 @@ export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<vo
 };
 // endregion
 
+// region - curation (knowledge curation manager bookkeeping)
+const CURATION_KEY_PREFIX = 'curation:';
+const CURATION_COUNTER_TTL_SECONDS = 400 * 24 * 3600;
+
+/**
+ * Remember the last writer of an entity field and return the previous one (if still within the TTL window).
+ * Used to detect sources overwriting each other on the same field.
+ */
+export const redisCurationSwapFieldWriter = async (entityId: string, field: string, writer: string, ttlSeconds: number): Promise<string | null> => {
+  const key = `${CURATION_KEY_PREFIX}writer:${entityId}:${field}`;
+  const client = getClientBase();
+  const previous = await client.get(key);
+  await client.set(key, writer, 'EX', ttlSeconds);
+  return previous;
+};
+
+export const redisCurationIncrementCounter = async (name: string, day: string, increment = 1): Promise<number> => {
+  const key = `${CURATION_KEY_PREFIX}counter:${name}:${day}`;
+  const client = getClientBase();
+  const value = await client.incrby(key, increment);
+  await client.expire(key, CURATION_COUNTER_TTL_SECONDS);
+  return value;
+};
+
+export const redisCurationGetCounters = async (name: string, days: string[]): Promise<number[]> => {
+  if (days.length === 0) return [];
+  const values = await Promise.all(days.map((day) => getClientBase().get(`${CURATION_KEY_PREFIX}counter:${name}:${day}`)));
+  return values.map((value) => (value ? Number(value) : 0));
+};
+// endregion - curation
+
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';
 
