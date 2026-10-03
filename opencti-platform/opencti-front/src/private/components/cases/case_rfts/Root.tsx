@@ -123,6 +123,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
       ]}
       />
       <ContainerHeader
+        enableTimeMachine
         container={caseData}
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
@@ -140,6 +141,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        enableTimeMachine
         entity={caseData}
         basePath={basePath}
         pages={{

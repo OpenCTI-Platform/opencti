@@ -20,7 +20,7 @@ Strategic analysts regularly need to answer questions such as "what changed abou
 
 ## The Changes tab
 
-Every entity with a **History** tab also has a **Changes** tab, the single place for its evolution over time. It has two sections:
+Every entity with a history (including reports, groupings and cases, whose history is displayed in their **Data** tab) has a **Changes** tab, the single place for its evolution over time. It has two sections:
 
 - **Compare dates** (the default section): everything that changed between two dates.
 - **View as of**: the entity as it was at a past date.
