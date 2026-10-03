@@ -66,6 +66,13 @@ describe('Defense coverage vector building', () => {
     expect(edr?.deployments).toEqual([{ id: 'rule-1', rel: 'deployed-1', status: 'active', indicates: 'indicates-1' }]);
     expect(edr?.telemetry).toEqual([{ id: 'dc-process', rel: 'deployed-1', detects: 'detects-1', inferred_from: 'rule-1' }]);
   });
+  it.each(['pending', 'failed', 'removed', 'expired'])('should not infer telemetry from a %s deployment', (status) => {
+    const graph = buildGraph();
+    graph.deploymentsByRule = new Map([['rule-1', [relation('deployed-1', 'rule-1', EDR, { deployment_status: status })]]]);
+    const edr = buildTechniqueCoverage(AP, graph, '2026-10-01T00:00:00.000Z').platforms.find((p) => p.platform_id === EDR);
+    expect(edr?.deployments).toEqual([{ id: 'rule-1', rel: 'deployed-1', status, indicates: 'indicates-1' }]);
+    expect(edr?.telemetry).toEqual([]);
+  });
   it('should attribute the OpenAEV results per security platform', () => {
     expect(vectorOf(EDR)?.validations[0]).toMatchObject({ status: 'detected', scores: [{ name: 'DETECTION', score: 90 }] });
     expect(vectorOf(SIEM)?.validations[0]).toMatchObject({ status: 'failed', scores: [{ name: 'DETECTION', score: 10 }] });
@@ -109,6 +116,22 @@ describe('Defense coverage stream impact', () => {
     expect(platform.accessChanged).toEqual(true);
     expect(platform.full).toEqual(false);
     expect(collectDefenseImpact([event('update', { type: 'report', extensions: { [STIX_EXT_OCTI]: { id: 'r', type: 'Report' } } })]).accessChanged).toEqual(false);
+  });
+  it('should invalidate the threat overlays when the usages or the access to a threat change', () => {
+    const threat = { type: 'intrusion-set', extensions: { [STIX_EXT_OCTI]: { id: 'is-1', type: 'Intrusion-Set' } } };
+    const updateWith = (path: string) => ({ id: '1-0', event: 'update', data: { type: 'update', data: threat, context: { patch: [{ op: 'add', path, value: 'x' }] } } } as never);
+    const uses = collectDefenseImpact([
+      event('delete', { type: 'relationship', relationship_type: 'uses', extensions: { [STIX_EXT_OCTI]: { id: 'u1', type: 'uses', source_ref: 'is-1', target_ref: AP, target_type: 'Attack-Pattern' } } }),
+    ]);
+    expect(uses.overlayChanged).toEqual(true);
+    expect(Array.from(uses.techniqueIds)).toEqual([]);
+    expect(collectDefenseImpact([event('create', { type: 'relationship', relationship_type: 'uses', extensions: { [STIX_EXT_OCTI]: { id: 'u2', type: 'uses', target_ref: 'malware-1', target_type: 'Malware' } } })]).overlayChanged).toEqual(false);
+    expect(collectDefenseImpact([event('delete', threat)]).overlayChanged).toEqual(true);
+    expect(collectDefenseImpact([event('merge', threat)]).overlayChanged).toEqual(true);
+    expect(collectDefenseImpact([updateWith('/object_marking_refs/0')]).overlayChanged).toEqual(true);
+    expect(collectDefenseImpact([updateWith('/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/0')]).overlayChanged).toEqual(true);
+    // A routine update of a threat (description, aliases) keeps the overlays
+    expect(collectDefenseImpact([updateWith('/description')]).overlayChanged).toEqual(false);
   });
 });
 

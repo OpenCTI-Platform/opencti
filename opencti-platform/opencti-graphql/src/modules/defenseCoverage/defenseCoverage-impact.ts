@@ -10,12 +10,14 @@ import {
   RELATION_MITIGATES,
   RELATION_PROVIDES,
   RELATION_SUBTECHNIQUE_OF,
+  RELATION_USES,
 } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { DEFENSE_THREAT_TYPES } from './defenseCoverage-types';
 
 // Deleting or merging one of these entities removes relationships without dedicated events: recompute everything.
 // Updating one of them can change who may see it as an evidence.
@@ -30,6 +32,13 @@ const FULL_RECOMPUTE_ENTITY_TYPES = [
   ENTITY_TYPE_ATTACK_PATTERN,
 ];
 const TECHNIQUE_RELATIONSHIPS = [RELATION_DETECTS, RELATION_INDICATES, RELATION_MITIGATES, RELATION_HAS_COVERED, RELATION_SUBTECHNIQUE_OF];
+// Patch paths of the attributes deciding who may see an element (markings, organizations, authorized members)
+const ACCESS_PATCH_PATH = /object_marking_refs|granted_refs|authorized_members|restricted_members/;
+
+const isAccessUpdate = (event: SseEvent<DataEvent>) => {
+  const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
+  return patch.some((operation) => ACCESS_PATCH_PATH.test(operation.path ?? ''));
+};
 
 export interface DefenseImpact {
   full: boolean;
@@ -37,6 +46,8 @@ export interface DefenseImpact {
   dataComponentIds: Set<string>;
   ruleIds: Set<string>;
   accessChanged: boolean;
+  // The threat usages of the overlays changed: a uses relationship, or a threat created, removed or with a new access
+  overlayChanged: boolean;
 }
 
 interface StixEventData {
@@ -57,7 +68,7 @@ interface StixEventData {
  * data components and rules whose techniques must be recomputed, or a full recomputation.
  */
 export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): DefenseImpact => {
-  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set(), accessChanged: false };
+  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set(), accessChanged: false, overlayChanged: false };
   events.forEach((event) => {
     const eventType = event.data.type;
     const data = event.data.data as unknown as StixEventData;
@@ -65,7 +76,9 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     if (!extension) return;
     if (data.type === STIX_TYPE_RELATION) {
       const relationshipType = data.relationship_type ?? '';
-      if (TECHNIQUE_RELATIONSHIPS.includes(relationshipType)) {
+      if (relationshipType === RELATION_USES) {
+        if (extension.target_type === ENTITY_TYPE_ATTACK_PATTERN) impact.overlayChanged = true;
+      } else if (TECHNIQUE_RELATIONSHIPS.includes(relationshipType)) {
         if (extension.target_type === ENTITY_TYPE_ATTACK_PATTERN && extension.target_ref) impact.techniqueIds.add(extension.target_ref);
         if (relationshipType === RELATION_SUBTECHNIQUE_OF && extension.source_ref) impact.techniqueIds.add(extension.source_ref);
       } else if (relationshipType === RELATION_PROVIDES && extension.target_ref) {
@@ -73,6 +86,10 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       } else if (relationshipType === RELATION_DEPLOYED_ON && extension.source_ref) {
         impact.ruleIds.add(extension.source_ref);
       }
+      return;
+    }
+    if (DEFENSE_THREAT_TYPES.includes(extension.type) && (eventType !== EVENT_TYPE_UPDATE || isAccessUpdate(event))) {
+      impact.overlayChanged = true;
       return;
     }
     if (eventType === EVENT_TYPE_MERGE) {

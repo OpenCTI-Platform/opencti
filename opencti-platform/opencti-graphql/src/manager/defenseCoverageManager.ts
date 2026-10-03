@@ -9,6 +9,7 @@ import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defe
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import {
   bumpDefenseCoverageVersion,
+  bumpDefenseOverlayVersion,
   clearFullComputationRunning,
   consumeFullComputationRequest,
   getLastFullComputation,
@@ -78,6 +79,8 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
   if (streamEvents.length === 0) return;
   const context = executionContext(DEFENSE_COVERAGE_MANAGER_CONTEXT);
   const impact = collectDefenseImpact(streamEvents);
+  // Readers drop the threat overlays computed with the previous usages
+  if (impact.overlayChanged) await bumpDefenseOverlayVersion();
   if (impact.full) {
     await requestFullDefenseCoverageComputation();
     return;
