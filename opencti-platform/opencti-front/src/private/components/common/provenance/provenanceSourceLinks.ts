@@ -1,3 +1,5 @@
+import { sourceScorecardRefLink } from '../../integrations/sources/sourceIntelligenceUtils';
+
 export interface ProvenanceSourceRef {
   readonly source_id: string;
   readonly source_kind: string;
@@ -17,6 +19,7 @@ const authorEntityLink: ProvenanceSourceLinkResolver = (source) => {
  * links to its scorecard (information architecture directive, OpenCTI-Platform/opencti#18685).
  */
 export const PROVENANCE_SOURCE_LINK_RESOLVERS: ProvenanceSourceLinkResolver[] = [
+  sourceScorecardRefLink,
   authorEntityLink,
 ];
 

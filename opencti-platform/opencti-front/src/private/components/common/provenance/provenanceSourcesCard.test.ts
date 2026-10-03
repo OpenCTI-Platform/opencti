@@ -48,17 +48,19 @@ describe('buildSourcesCardModel', () => {
 });
 
 describe('resolveProvenanceSourceLink', () => {
-  it('links an author source to its entity and leaves other kinds unlinked by default', () => {
-    expect(resolveProvenanceSourceLink(assertion('org-1', '2026-09-01T00:00:00.000Z', 'author'))).toBe('/dashboard/id/org-1');
-    expect(resolveProvenanceSourceLink(assertion('connector-1', '2026-09-01T00:00:00.000Z', 'connector'))).toBeNull();
-    expect(resolveProvenanceSourceLink(assertion('user-1', '2026-09-01T00:00:00.000Z', 'user'))).toBeNull();
+  it('links every scored source kind to its Source Intelligence scorecard by default', () => {
+    expect(resolveProvenanceSourceLink(assertion('org-1', '2026-09-01T00:00:00.000Z', 'author'))).toBe('/dashboard/integrations/sources/source/ref/author/org-1');
+    expect(resolveProvenanceSourceLink(assertion('connector-1', '2026-09-01T00:00:00.000Z', 'connector'))).toBe('/dashboard/integrations/sources/source/ref/connector/connector-1');
+    expect(resolveProvenanceSourceLink(assertion('feed-1', '2026-09-01T00:00:00.000Z', 'feed'))).toBe('/dashboard/integrations/sources/source/ref/feed/feed-1');
+    expect(resolveProvenanceSourceLink(assertion('user-1', '2026-09-01T00:00:00.000Z', 'user'))).toBe('/dashboard/integrations/sources/source/ref/user/user-1');
+    expect(resolveProvenanceSourceLink(assertion('rule-1', '2026-09-01T00:00:00.000Z', 'inference'))).toBeNull();
   });
 
   it('uses the first resolver returning a link', () => {
     const scorecard: ProvenanceSourceLinkResolver = (source) => (source.source_kind === 'connector' ? `/scorecard/${source.source_id}` : null);
     const resolvers = [scorecard, ...PROVENANCE_SOURCE_LINK_RESOLVERS];
     expect(resolveProvenanceSourceLink(assertion('connector-1', '2026-09-01T00:00:00.000Z'), resolvers)).toBe('/scorecard/connector-1');
-    expect(resolveProvenanceSourceLink(assertion('org-1', '2026-09-01T00:00:00.000Z', 'author'), resolvers)).toBe('/dashboard/id/org-1');
+    expect(resolveProvenanceSourceLink(assertion('org-1', '2026-09-01T00:00:00.000Z', 'author'), resolvers)).toBe('/dashboard/integrations/sources/source/ref/author/org-1');
     expect(resolveProvenanceSourceLink(assertion('feed-1', '2026-09-01T00:00:00.000Z', 'feed'), [])).toBeNull();
   });
 });

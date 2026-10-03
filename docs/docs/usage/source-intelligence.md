@@ -60,6 +60,8 @@ The **Leaderboard** tab lists the sources with their value score and their main 
 - its open recommendations (EE),
 - a switch to exclude the source from the computation.
 
+The **Sources** card of an entity, an observable or a relationship (see [Provenance and corroboration](provenance.md)) links each connector, feed, author and analyst to its scorecard page. An author without a scorecard (below the minimum volume, or when you cannot access the Sources area) opens the author entity instead.
+
 ### Cost
 
 Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page. The cost is normalized to each window to compute the cost per actionable object.
