@@ -270,12 +270,13 @@ describe('Changes tab links', () => {
     expect(resolveChangesSection([CHANGES_SECTION_COMPARE], null, '2026-07-01T00:00:00.000Z')).toBe(CHANGES_SECTION_COMPARE);
   });
 
-  it('opens the comparison of the entity on the period, or the overview of containers without a Changes tab', () => {
+  it('opens the comparison of the entity on the period, or the page of entities without a Changes tab', () => {
     const period = { from: '2026-07-01T00:00:00.000Z', to: '2026-10-01T00:00:00.000Z' };
     const path = entityChangesPath('/dashboard/threats/intrusion_sets', 'id-1', 'Intrusion-Set', period);
     expect(path.startsWith('/dashboard/threats/intrusion_sets/id-1/changes?')).toBe(true);
     expect(new URLSearchParams(path.split('?')[1]).get('section')).toBe(CHANGES_SECTION_COMPARE);
-    expect(entityChangesPath('/dashboard/analyses/reports', 'id-2', 'Report', period)).toBe('/dashboard/analyses/reports/id-2');
+    expect(entityChangesPath('/dashboard/analyses/reports', 'id-2', 'Report', period).startsWith('/dashboard/analyses/reports/id-2/changes?')).toBe(true);
+    expect(entityChangesPath('/dashboard/analyses/opinions', 'id-3', 'Opinion', period)).toBe('/dashboard/analyses/opinions/id-3');
   });
 
   it('builds the search of a section with its own parameters', () => {

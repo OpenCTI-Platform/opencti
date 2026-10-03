@@ -77,8 +77,8 @@ export const comparePeriodSearch = (range: DateRange) => {
   return changesSearch(CHANGES_SECTION_COMPARE, { [FROM_SEARCH_PARAM]: range.from, [TO_SEARCH_PARAM]: range.to });
 };
 
-// Containers whose page has no Changes tab (their history lives in the Data tab, their time tab is the timeline)
-const ENTITY_TYPES_WITHOUT_CHANGES_TAB = ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft', 'Opinion'];
+// Entity pages without tabs, hence without a Changes tab
+const ENTITY_TYPES_WITHOUT_CHANGES_TAB = ['Opinion'];
 
 // Drill-down from the landscape changes: the comparison of the entity on the same period, or its overview
 export const entityChangesPath = (base: string, entityId: string, entityType: string, range: DateRange) => {

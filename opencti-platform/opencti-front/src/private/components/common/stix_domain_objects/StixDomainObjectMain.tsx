@@ -13,6 +13,8 @@ interface StixDomainObjectMainProps {
   pages: { overview: ReactNode } & Partial<Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
+  /** The entity has a history without a History tab (containers showing it in their Data tab) **/
+  enableTimeMachine?: boolean;
 }
 
 const StixDomainObjectMain = ({
@@ -21,10 +23,11 @@ const StixDomainObjectMain = ({
   extraActions,
   pages,
   extraRoutes,
+  enableTimeMachine = false,
 }: StixDomainObjectMainProps) => {
-  // Every overview shows what is new since the last visit of the user (containers included, whose history
-  // can live in another tab); every entity with a History tab also gets the Changes tab (compare dates, view as of)
-  const withTimeMachine = pages.history !== undefined;
+  // Every overview shows what is new since the last visit of the user; every entity with a history
+  // also gets the Changes tab (compare dates, view as of)
+  const withTimeMachine = enableTimeMachine || pages.history !== undefined;
   const allPages = withTimeMachine && pages.changes === undefined
     ? { ...pages, changes: <EntityChangesTab entityId={entity.id} basePath={basePath} /> }
     : pages;
