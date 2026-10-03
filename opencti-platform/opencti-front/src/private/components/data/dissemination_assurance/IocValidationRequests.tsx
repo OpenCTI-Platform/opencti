@@ -170,7 +170,6 @@ const RequestDeletion = ({ id, paginationOptions }: { id: string; paginationOpti
                   MESSAGING$.notifySuccess(t_i18n('Validation request deleted'));
                 }
               },
-              onError: () => {},
             })}
           >
             {t_i18n('Delete')}
