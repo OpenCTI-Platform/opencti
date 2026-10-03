@@ -9,7 +9,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { internalFindByIds } from '../database/middleware-loader';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../types/stix-2-1-extensions';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -22,7 +22,9 @@ import {
   type BasicStoreEntitySource,
   ENTITY_TYPE_SOURCE,
   REFERENCE_SCORECARD_PERIOD,
+  SCORECARD_PERIOD_DAYS,
   SCORECARD_PERIODS,
+  type ScorecardPeriodValue,
   SOURCE_INTELLIGENCE_MANAGER_ID,
 } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import {
@@ -40,12 +42,14 @@ import {
   buildScorecardDocuments,
   createComputeState,
   findHuntRunSightedObjects,
+  periodCounting,
   prepareRunLookups,
   resolveSoftJoinAvailability,
   scanKnowledge,
+  toAssertionActivity,
 } from '../modules/sourceIntelligence/sourceIntelligence-compute';
 import { applyLiveIncrements, type LiveIncrement, purgeScorecardSnapshots, writeScorecards } from '../modules/sourceIntelligence/sourceIntelligence-store';
-import { resolveDocumentAssertions, resolveEventSources, type SourceResolver } from '../modules/sourceIntelligence/sourceIntelligence-provenance';
+import { type ProvenanceDocument, resolveDocumentAssertions, resolveEventSources, type SourceResolver } from '../modules/sourceIntelligence/sourceIntelligence-provenance';
 import { toSnapshotDate } from '../modules/sourceIntelligence/sourceIntelligence-scoring';
 import type { SourceIntelligenceSettings } from '../modules/sourceIntelligence/sourceIntelligence-settings';
 import { applyAutonomousRecommendations, generateSourceRecommendations } from '../modules/sourceIntelligence/sourceIntelligence-recommendations';
@@ -84,17 +88,56 @@ const patchSetsValue = (event: UpdateEvent, path: string, value: unknown) => {
   return (event.context?.patch ?? []).some((operation: any) => operation.path === path && operation.op !== 'remove' && operation.value === value);
 };
 
-const knowledgeVolumePatch = (entityType: string, time: number): LiveIncrement => {
+// Volume counters of the object type, besides the totals
+const typeVolumePatch = (entityType: string, value: number): LiveIncrement => {
   const isRelationship = isStixCoreRelationship(entityType) || entityType === STIX_SIGHTING_RELATIONSHIP;
   return {
-    volume_total: 1,
-    new_objects: 1,
-    volume_last_day: 1,
-    ...(isRelationship ? { volume_relationships: 1 } : { volume_entities: 1 }),
-    ...(entityType === ENTITY_TYPE_INDICATOR ? { volume_indicators: 1 } : {}),
-    ...(isStixCyberObservable(entityType) ? { volume_observables: 1 } : {}),
-    source_last_asserted_at: time,
+    ...(isRelationship ? { volume_relationships: value } : { volume_entities: value }),
+    ...(entityType === ENTITY_TYPE_INDICATOR ? { volume_indicators: value } : {}),
+    ...(isStixCyberObservable(entityType) ? { volume_observables: value } : {}),
   };
+};
+
+const knowledgeVolumePatch = (entityType: string, time: number): LiveIncrement => ({
+  volume_total: 1,
+  new_objects: 1,
+  volume_last_day: 1,
+  ...typeVolumePatch(entityType, 1),
+  source_last_asserted_at: time,
+});
+
+const latestDate = (...dates: Array<string | null | undefined>): string | undefined => {
+  const times = dates.map((date) => (date ? new Date(date).getTime() : Number.NaN)).filter((time) => Number.isFinite(time));
+  return times.length > 0 ? new Date(Math.max(...times)).toISOString() : undefined;
+};
+
+/**
+ * Removal of a deleted object from the live scorecards: for each of its sources and each period, what the full
+ * computation counts for it, under the same rules (`toAssertionActivity`, `periodCounting`). An object outside a
+ * period was never counted in it and is not removed from it.
+ */
+export const deletionDecrements = (resolver: SourceResolver, entityType: string, doc: ProvenanceDocument, deletedAt: number) => {
+  const decrements = new Map<ScorecardPeriodValue, Map<string, LiveIncrement>>();
+  const docCreated = doc.created_at ? new Date(doc.created_at).getTime() : deletedAt;
+  const docUpdated = doc.updated_at ? new Date(doc.updated_at).getTime() : docCreated;
+  resolveDocumentAssertions(doc, resolver)
+    .map((assertion) => toAssertionActivity(assertion, docCreated, docUpdated, deletedAt))
+    .filter((activity) => activity.start <= deletedAt)
+    .forEach((activity) => {
+      SCORECARD_PERIODS.forEach((period) => {
+        const counting = periodCounting(activity, deletedAt - SCORECARD_PERIOD_DAYS[period] * DAY_MS, deletedAt);
+        if (!counting.inVolume) return;
+        const periodDecrements = decrements.get(period) ?? new Map<string, LiveIncrement>();
+        addIncrement(periodDecrements, [activity.sourceId], {
+          volume_total: -1,
+          ...typeVolumePatch(entityType, -1),
+          ...(counting.isNew ? { new_objects: -1 } : {}),
+          ...(counting.lastDay ? { volume_last_day: -1 } : {}),
+        });
+        decrements.set(period, periodDecrements);
+      });
+    });
+  return decrements;
 };
 
 const resolveStoredSources = async (context: AuthContext, resolver: SourceResolver, ids: string[]) => {
@@ -124,7 +167,10 @@ export const computeEventIncrements = async (
   resolver: SourceResolver,
   options: { enterprise: boolean; huntRunType: string | null },
 ) => {
+  // Applied to the live scorecards of every period
   const increments = new Map<string, LiveIncrement>();
+  // Deleted objects, removed only from the periods whose window contains their creation
+  const deletions = new Map<ScorecardPeriodValue, Map<string, LiveIncrement>>();
   const sightings: Array<{ objectId: string; platform: boolean; negative: boolean }> = [];
   const revoked: string[] = [];
   const pirFlagged: string[] = [];
@@ -172,8 +218,21 @@ export const computeEventIncrements = async (
         huntRuns.push(extension.id);
       }
     } else if (data.type === EVENT_TYPE_DELETE && isKnowledge && extension.is_inferred !== true) {
-      const sourceIds = resolveEventSources(resolver, { creatorIds: extension.creator_ids, createdByRefId: extension.created_by_ref_id });
-      addIncrement(increments, sourceIds, { volume_total: -1 });
+      // Streams carry no source identifiers, only provenance dates: the sources are the creators and the author,
+      // active until the last update or assertion. The user deleting the object is not one of its sources.
+      const provenance = stix.extensions?.[STIX_EXT_OCTI_PROVENANCE];
+      const decrements = deletionDecrements(resolver, entityType, {
+        internal_id: extension.id,
+        created_at: extension.created_at,
+        updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
+        creator_id: extension.creator_ids ?? [],
+        'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
+      }, time);
+      decrements.forEach((periodDecrements, period) => {
+        const periodIncrements = deletions.get(period) ?? new Map<string, LiveIncrement>();
+        periodDecrements.forEach((patch, sourceId) => addIncrement(periodIncrements, [sourceId], patch));
+        deletions.set(period, periodIncrements);
+      });
     }
   }
   // Hunt runs (innovation 01) write sightings carrying their run id: each sighted object is a confirmed detection
@@ -195,7 +254,7 @@ export const computeEventIncrements = async (
   revoked.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { revoked_count: 1 }));
   pirFlagged.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { pir_matched_count: 1 }));
   huntSightedObjects.forEach((objectId) => addIncrement(increments, sourcesByObject.get(objectId) ?? [], { hunt_true_positives_count: 1 }));
-  return increments;
+  return { increments, deletions };
 };
 
 const processStreamIncrements = async (context: AuthContext) => {
@@ -224,9 +283,15 @@ const processStreamIncrements = async (context: AuthContext) => {
       { streamBatchSize: STREAM_BATCH_SIZE, withInternal: true },
     );
     if (events.length > 0) {
-      const increments = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
+      const { increments, deletions } = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
       disabledSourceIds.forEach((sourceId) => increments.delete(sourceId));
       await applyLiveIncrements(context, increments, SCORECARD_PERIODS);
+      const deletionsByPeriod = Array.from(deletions.entries());
+      for (let i = 0; i < deletionsByPeriod.length; i += 1) {
+        const [period, periodIncrements] = deletionsByPeriod[i];
+        disabledSourceIds.forEach((sourceId) => periodIncrements.delete(sourceId));
+        await applyLiveIncrements(context, periodIncrements, [period]);
+      }
     }
     if (nextEventId === lastEventId) {
       break;
