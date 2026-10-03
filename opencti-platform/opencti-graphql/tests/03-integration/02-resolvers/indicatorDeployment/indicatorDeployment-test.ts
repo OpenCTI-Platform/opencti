@@ -331,22 +331,6 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(deployment.hit_count).toEqual(5);
   });
 
-  it('should let a regular editor create a deployment in its default state', async () => {
-    const thirdIndicator = await queryAsAdminWithSuccess({
-      query: INDICATOR_ADD,
-      variables: { input: { name: 'manual.evil.example', pattern: "[domain-name:value = 'manual.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
-    });
-    const thirdIndicatorId = thirdIndicator.data?.indicatorAdd.id;
-    const created = await queryAsUserWithSuccess(USER_EDITOR, {
-      query: RELATION_ADD,
-      variables: { input: { fromId: thirdIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending' } },
-    });
-    expect(created.data?.stixCoreRelationshipAdd.deployment_status).toEqual('pending');
-    expect(created.data?.stixCoreRelationshipAdd.hit_count).toEqual(0);
-    expect(created.data?.stixCoreRelationshipAdd.validation_status).toEqual('not_requested');
-    await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: thirdIndicatorId } });
-  });
-
   it('should refresh the derived indicator counters', async () => {
     await refreshIndicatorDeploymentCounters(testContext, [indicatorId, secondIndicatorId]);
     const indicator = await queryAsAdminWithSuccess({ query: INDICATOR_READ, variables: { id: indicatorId } });

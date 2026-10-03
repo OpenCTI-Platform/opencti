@@ -73,4 +73,12 @@ describe('Deployment lifecycle fields guard', () => {
     await expect(validatorUpdate(testContext, connector, { hit_count: [4] }, {})).resolves.toEqual(true);
     await expect(validatorUpdate(testContext, editor, { description: ['notes'] }, {})).resolves.toEqual(true);
   });
+
+  it('should let a regular editor create a new deployment in its default state', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    await expect(validatorCreation(testContext, editor, { description: 'manual' })).resolves.toEqual(true);
+    // Defaults on a pair without deployment (no existing relationship to reset)
+    await expect(validatorCreation(testContext, editor, { deployment_status: 'pending', hit_count: 0 })).resolves.toEqual(true);
+    await expect(validatorCreation(testContext, connector, { deployment_status: 'active', hit_count: 9 })).resolves.toEqual(true);
+  });
 });
