@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
-import { createGraphFixture, deleteGraphFixture, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
+import { createGraphFixture, deleteGraphFixture, deleteInvestigation, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
 
 /**
  * The capabilities the elevated graph adds on every surface: legend counters as filters,
@@ -81,6 +81,23 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await expect(elements(page).getByRole('option', { name: new RegExp(fixture.intrusionSet.name) })).toHaveCount(0);
     await legend(page).getByRole('button', { name: /Show the hidden entities/ }).click();
     await expect(elements(page).getByRole('option', { name: new RegExp(`^[^,]*${fixture.intrusionSet.name}`) })).toHaveCount(1);
+  });
+
+  test('starts an investigation from the hover card of an entity', async ({ page, playwright }) => {
+    const graph = await openGraph(page);
+    await graph.arrangeInMiddle([fixture.malware.id]);
+    await graph.waitForGraph(5);
+    await graph.hoverNode(fixture.malware.id);
+    const card = page.getByRole('group', { name: 'Details on hover' });
+    await card.getByRole('button', { name: 'Start an investigation' }).click();
+    await page.waitForURL(/\/dashboard\/workspaces\/investigations\/[0-9a-f-]{36}$/);
+    const investigationId = new URL(page.url()).pathname.split('/').pop() ?? '';
+    try {
+      await graph.waitForGraph(1);
+      expect((await graph.snapshot()).nodes.map((n) => n.id)).toContain(fixture.malware.id);
+    } finally {
+      await withApiRequest(playwright, (request) => deleteInvestigation(request, investigationId));
+    }
   });
 
   test('arranges the graph by entity tier and around a selected entity', async ({ page }) => {

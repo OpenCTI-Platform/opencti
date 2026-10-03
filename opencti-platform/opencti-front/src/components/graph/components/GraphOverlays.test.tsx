@@ -148,6 +148,22 @@ describe('GraphHoverCard', () => {
     expect(handlers.onPathFromSelection).toHaveBeenCalled();
   });
 
+  it('gives the sources of an entity and starts an investigation from it, never from a relationship node', async () => {
+    const handlers = { ...actions(), onStartInvestigation: vi.fn() };
+    const node = graphNode({ ...actor, corroborationCount: 3 });
+    const { user, unmount } = testRender(
+      <GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} actions={handlers} />,
+    );
+    expect(screen.getByText('Sources')).toBeInTheDocument();
+    expect(screen.getByText('3 sources')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Start an investigation' }));
+    expect(handlers.onStartInvestigation).toHaveBeenCalledWith(node);
+    unmount();
+    const relationshipNode = graphNode({ id: 'rel', label: 'Uses', relationship_type: 'uses' });
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: relationshipNode }} badges={[]} relationshipCounts={[]} actions={handlers} />);
+    expect(screen.queryByRole('button', { name: 'Start an investigation' })).toBeNull();
+  });
+
   it('describes a relationship and a collapsed group', async () => {
     const handlers = actions();
     const { user, unmount } = testRender(

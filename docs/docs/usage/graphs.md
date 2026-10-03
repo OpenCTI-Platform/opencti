@@ -65,7 +65,8 @@ After a short moment on an element, a **hover card** opens with its key facts: t
 - **Hide from the view** (the entity is not removed from the container or the investigation; the legend shows it back);
 - **Select with its neighbours**;
 - **Lay out the graph around it** (radial layout);
-- **Shortest path from the selection** and **Create a relationship from the selection**, when one other entity is selected.
+- **Shortest path from the selection** and **Create a relationship from the selection**, when one other entity is selected;
+- **Start an investigation** (outside investigations, for users allowed to create them, not in a draft): a new investigation opens with the entity, or with every selected entity when the entity is part of the selection.
 
 ## The legend
 

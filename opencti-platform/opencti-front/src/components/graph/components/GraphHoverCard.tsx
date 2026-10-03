@@ -4,6 +4,7 @@ import {
   AccountTreeOutlined,
   HubOutlined,
   LinkOutlined,
+  ManageSearchOutlined,
   OpenInNewOutlined,
   PushPinOutlined,
   RouteOutlined,
@@ -34,6 +35,7 @@ export interface GraphHoverCardActions {
   onCentreRadial: (node: GraphNode) => void;
   onPathFromSelection?: (node: GraphNode) => void;
   onRelateToSelection?: (node: GraphNode) => void;
+  onStartInvestigation?: (node: GraphNode) => void;
   onExpandGroup: (entityType: string) => void;
   onSelectLink: (link: GraphLink) => void;
 }
@@ -225,6 +227,9 @@ const GraphHoverCard = ({
           )}
           {actions.onRelateToSelection && (
             <Action label={t_i18n('Create a relationship from the selection')} icon={<LinkOutlined fontSize="small" />} onClick={() => actions.onRelateToSelection?.(node)} />
+          )}
+          {actions.onStartInvestigation && !node.relationship_type && (
+            <Action label={t_i18n('Start an investigation')} icon={<ManageSearchOutlined fontSize="small" />} onClick={() => actions.onStartInvestigation?.(node)} />
           )}
           {extra.map((action) => {
             const Icon = action.icon;

@@ -217,6 +217,9 @@ const deleteSilently = async (request: APIRequestContext, query: string) => {
   }
 };
 
+/** Removes an investigation a test created from the graph. */
+export const deleteInvestigation = (request: APIRequestContext, id: string) => deleteSilently(request, `mutation { workspaceDelete(id: ${quote(id)}) }`);
+
 export const deleteGraphFixture = async (request: APIRequestContext, fixture: GraphFixture | undefined) => {
   if (!fixture) return;
   await deleteSilently(request, `mutation { workspaceDelete(id: ${quote(fixture.investigation.id)}) }`);

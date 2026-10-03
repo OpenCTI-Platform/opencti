@@ -30,6 +30,8 @@ import { relationshipCounts } from './utils/graphFocus';
 import { badgesOfNode } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { MESSAGING$ } from '../../relay/environment';
+import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
+import { graphNodeTitle } from './utils/useGraphParser';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
@@ -57,6 +59,7 @@ const Graph = ({
   const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pointer = useRef({ x: 0, y: 0 });
+  const startInvestigation = useGraphStartInvestigation();
 
   const {
     saveZoom,
@@ -595,6 +598,14 @@ const Graph = ({
                     selectNodes([other, node]);
                     setIsAddRelationOpen(true);
                     setCard(null);
+                  }
+                : undefined,
+              onStartInvestigation: startInvestigation && context !== 'investigation'
+                ? (node) => {
+                    const selectedEntityNodes = selectedNodes.filter((n) => !n.relationship_type && !n.groupOf);
+                    const seeds = selectedEntityNodes.some((n) => n.id === node.id) ? selectedEntityNodes : [node];
+                    setCard(null);
+                    startInvestigation(graphNodeTitle(node), seeds.map((n) => n.id));
                   }
                 : undefined,
               onExpandGroup: (entityType) => {
