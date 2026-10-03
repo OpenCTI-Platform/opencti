@@ -57,7 +57,8 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 52;
+// + 1 created by timeMachine-test
+testCreatedCounter.report = 53;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -158,7 +159,8 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 4;
-testDeletedCounter.report = 43;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.report = 44;
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
