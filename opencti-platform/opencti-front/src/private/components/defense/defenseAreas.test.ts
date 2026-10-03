@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import { describe, expect, it } from 'vitest';
-import { CURATION_TABS } from '../data/curation/curationTabs';
+import { CURATION_TABS, grantedCurationTabs } from '../data/curation/curationTabs';
 import { DEFENSE_AREAS, type DefenseArea, visibleDefenseAreas } from './defenseAreas';
 
 const area = (path: string, entityType?: string): DefenseArea => ({
@@ -49,5 +49,27 @@ describe.each([
       expect(entry.label.trim()).not.toEqual('');
       expect(entry.label[0]).toEqual(entry.label[0].toUpperCase());
     });
+  });
+});
+
+describe('the capability an area or a tab needs', () => {
+  const granted = (needs: string[]) => needs.includes('KNOWLEDGE');
+  const lazyNothing = lazy(async () => ({ default: () => null }));
+
+  it('drops an area the user is not granted, and keeps an area that needs nothing', () => {
+    const areas = [
+      { ...area('hunts', 'Hunt'), needs: ['KNOWLEDGE_KNUPDATE'] },
+      { ...area('matrix'), needs: ['KNOWLEDGE'] },
+      area('assurance'),
+    ];
+    expect(visibleDefenseAreas(areas, [], granted).map((a) => a.path)).toEqual(['matrix', 'assurance']);
+  });
+
+  it('drops a tab the user is not granted', () => {
+    const tabs = [
+      { path: 'inbox', label: 'Inbox', needs: ['KNOWLEDGE_KNUPDATE_KNMERGE'], component: lazyNothing },
+      { path: 'health', label: 'Knowledge health', component: lazyNothing },
+    ];
+    expect(grantedCurationTabs(tabs, granted).map((t) => t.path)).toEqual(['health']);
   });
 });
