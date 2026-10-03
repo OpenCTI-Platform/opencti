@@ -69,6 +69,8 @@ const TIMELINE_EVENT_DEFINITION: ModuleDefinition<StoreEntityTimelineEvent, Stix
     { name: 'ordering_hint', label: 'Timeline ordering hint', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'analyst_fields', label: 'Timeline analyst fields', type: 'string', format: 'enum', values: [...TIMELINE_ANALYST_FIELDS], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, update: false, isFilterable: false },
     { name: 'external_id', label: 'External id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+    // State of the run, step or deployment an event comes from, only read with the event: not indexed
+    { name: 'source_state', label: 'Timeline source state', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
     authorizedMembers,
   ],
   relations: [],

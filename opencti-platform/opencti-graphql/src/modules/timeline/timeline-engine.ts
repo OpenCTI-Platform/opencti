@@ -34,6 +34,7 @@ import {
   type TimelineAnchors,
   type TimelinePendingAnnotation,
   type TimelineSettingsState,
+  type TimelineSourceState,
 } from './timeline-types';
 import { enqueueTimelineRegeneration } from './timeline-queue';
 import {
@@ -151,7 +152,7 @@ export const loadTimelineSettings = async (context: AuthContext, containerId: st
 const CONTENT_FIELDS = [
   'name', 'description', 'event_time', 'event_end_time', 'time_precision', 'lane', 'kind', 'event_source', 'rule_id', 'element_id', 'element_type',
   'pinned', 'hidden', 'annotation', 'confidence', 'ordering_hint', 'analyst_fields', 'external_id', 'restricted_members', 'creator_id',
-  buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_CREATED_BY),
+  'source_state', buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_CREATED_BY),
 ];
 
 const normalizeForSignature = (value: unknown): unknown => {
@@ -194,6 +195,7 @@ export interface TimelineEventDocInput {
   created_by_id?: string | null;
   creator_ids: string[];
   restricted_members: AuthorizedMember[];
+  source_state?: TimelineSourceState | null;
 }
 
 export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: StoredTimelineEvent | null) => {
@@ -227,6 +229,7 @@ export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: S
     ordering_hint: input.ordering_hint ?? null,
     analyst_fields: input.analyst_fields,
     external_id: input.external_id ?? null,
+    source_state: input.source_state ?? null,
     restricted_members: input.restricted_members,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: uniq(input.markings),
     [buildRefRelationKey(RELATION_CREATED_BY)]: input.created_by_id ? [input.created_by_id] : [],
@@ -586,6 +589,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       created_by_id: event.created_by_id,
       creator_ids: event.creator_ids ?? [],
       restricted_members: access.restricted_members,
+      source_state: event.source_state ?? null,
       ...analyst,
     }, existing));
   });

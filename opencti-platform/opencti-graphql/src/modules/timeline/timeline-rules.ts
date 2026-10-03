@@ -1,5 +1,5 @@
 import { FROM_START, UNTIL_END } from '../../utils/format';
-import type { TimelineKindValue, TimelineLaneValue, TimelinePrecisionValue } from './timeline-types';
+import type { TimelineKindValue, TimelineLaneValue, TimelinePrecisionValue, TimelineSourceState } from './timeline-types';
 
 // region derivation input
 // The loader (timeline-loader.ts) reads the database and normalizes everything a rule needs
@@ -144,6 +144,7 @@ export interface DerivedTimelineEvent {
   ordering_hint?: number | null;
   created_by_id?: string | null;
   creator_ids?: string[];
+  source_state?: TimelineSourceState | null;
 }
 
 export interface TimelineRule {
@@ -835,7 +836,6 @@ export const huntRunRule: TimelineRule = {
       const verdict = readExtraString(run, 'verdict');
       const huntId = readExtraString(run, 'hunt_id');
       const huntName = huntId ? huntNames.get(huntId) : undefined;
-      const details = [status ? `Status: ${status}` : null, formatCount(hits, 'hit', 'hits') ?? null, verdict ? `Verdict: ${verdict}` : null].filter((d) => !!d);
       return [{
         rule_id: 'hunt-run',
         kind: 'hunt_run' as const,
@@ -848,8 +848,9 @@ export const huntRunRule: TimelineRule = {
         event_end_time: end !== null && end > start ? iso(end) : null,
         time_precision: 'exact' as const,
         name: `Hunt run ${huntName ?? run.name}`,
-        description: details.join(' - ') || undefined,
+        description: formatCount(hits, 'hit', 'hits'),
         markings: mergeMarkings(run.markings),
+        source_state: { family: 'hunt_run', state: status ?? null, verdict: verdict ?? null },
       }];
     });
   },
@@ -866,7 +867,6 @@ export const deploymentRule: TimelineRule = {
     const status = readExtraString(deployment, 'deployment_status');
     const validation = readExtraString(deployment, 'validation_status');
     const hits = readExtra(deployment, 'hit_count') as number | undefined;
-    const details = [status ? `Status: ${status}` : null, validation ? `Validation: ${validation}` : null, formatCount(hits, 'hit', 'hits') ?? null].filter((d) => !!d);
     return [{
       rule_id: 'indicator-deployment',
       kind: 'deployment' as const,
@@ -877,8 +877,9 @@ export const deploymentRule: TimelineRule = {
       event_end_time: end !== null && end > start ? iso(end) : null,
       time_precision: 'exact' as const,
       name: `${deployment.from_name ?? 'Indicator'} deployed on ${deployment.to_name ?? 'Unknown'}`,
-      description: details.join(' - ') || undefined,
+      description: formatCount(hits, 'hit', 'hits'),
       markings: mergeMarkings(deployment.markings),
+      source_state: { family: 'deployment', state: status ?? null, validation: validation ?? null },
     }];
   }),
 };
@@ -942,7 +943,32 @@ interface InvestigationActionGroup {
   findings: number;
   withFindings: boolean;
   sources: Set<string>;
+  states: Set<string>;
 }
+
+// Engine step states, by the meaning they share with the seven step states of the program
+const QUERYING_STATES = ['running', 'querying', 'in_progress'];
+const FOUND_STATES = [STEP_WITH_FINDINGS, LEGACY_STEP_WITH_FINDINGS];
+const PARTIAL_STATES = ['degraded', 'partial'];
+const FAILED_STATES = ['error', 'failed', 'timeout'];
+const NOTHING_FOUND_STATES = ['empty', 'no_result'];
+const NOT_REACHED_STATES = ['skipped', 'cancelled'];
+
+/**
+ * State of a goal-plan action from the states of its source steps, as an engine state: still querying while a source
+ * is, found only when nothing failed, partial when findings come with failures or degraded answers.
+ */
+export const aggregateInvestigationStepState = (states: Iterable<string>): string => {
+  const all = [...states].map((state) => state.toLowerCase());
+  const any = (values: string[]) => all.some((state) => values.includes(state));
+  if (any(QUERYING_STATES)) return 'running';
+  if (any(FOUND_STATES)) return any(FAILED_STATES) || any(PARTIAL_STATES) ? 'degraded' : STEP_WITH_FINDINGS;
+  if (any(PARTIAL_STATES)) return 'degraded';
+  if (any(FAILED_STATES)) return 'error';
+  if (any(NOTHING_FOUND_STATES)) return 'empty';
+  if (any(NOT_REACHED_STATES)) return 'skipped';
+  return 'planned';
+};
 
 /** One group per goal-plan action, in the order the plan declares them, then in the order the steps reached them. */
 const groupStepsByAction = (steps: InvestigationStepEntry[], actionOrder: Map<string, number>): InvestigationActionGroup[] => {
@@ -960,7 +986,9 @@ const groupStepsByAction = (steps: InvestigationStepEntry[], actionOrder: Map<st
       findings: 0,
       withFindings: false,
       sources: new Set<string>(),
+      states: new Set<string>(),
     };
+    if (step.status) group.states.add(step.status);
     if (start !== null) group.start = group.start === null ? start : Math.min(group.start, start);
     if (end !== null) group.end = group.end === null ? end : Math.max(group.end, end);
     if (isStepWithFindings(step)) {
@@ -976,7 +1004,7 @@ const groupStepsByAction = (steps: InvestigationStepEntry[], actionOrder: Map<st
 
 export const investigationRunRule: TimelineRule = {
   id: RULE_INVESTIGATION_RUN,
-  label: 'Case Autopilot investigation runs, the goal-plan actions that found something and the findings outside the case',
+  label: 'Case Autopilot investigation runs, the goal-plan actions they reached and the findings outside the case',
   kinds: ['investigation_step'],
   derive: (input) => {
     // Findings about elements already in scope are derived by the core rules, only the others are new
@@ -992,12 +1020,12 @@ export const investigationRunRule: TimelineRule = {
       const planActions = Array.isArray(goalPlan?.actions) ? goalPlan.actions.filter((a) => !!a?.slug) : [];
       const actionLabels = new Map(planActions.map((a) => [a.slug as string, a.label || humanizeSlug(a.slug as string)]));
       const actionOrder = new Map(planActions.map((a, index) => [a.slug as string, index]));
-      const groups = groupStepsByAction(steps, actionOrder).filter((group) => group.withFindings);
+      // Actions the run reached (dated) or that found something; planned and not reached actions have no time to show
+      const groups = groupStepsByAction(steps, actionOrder).filter((group) => group.start !== null || group.withFindings);
       const totalFindings = groups.reduce((sum, group) => sum + group.findings, 0);
       if (start !== null) {
         const details = [
           run.name && run.name !== INVESTIGATION_RUN_TITLE ? run.name : null,
-          status ? `Status: ${status}` : null,
           totalFindings > 0 ? formatCount(totalFindings, 'finding', 'findings') : null,
         ].filter((d) => !!d);
         events.push({
@@ -1012,6 +1040,7 @@ export const investigationRunRule: TimelineRule = {
           name: INVESTIGATION_RUN_TITLE,
           description: details.join(' - ') || undefined,
           markings,
+          source_state: { family: 'investigation_run', state: status ?? null, run_id: run.id },
         });
       }
       // Never one event per source step: a run has up to fifty of them and they would flood the lane
@@ -1037,6 +1066,7 @@ export const investigationRunRule: TimelineRule = {
           description: details.join(' - ') || undefined,
           markings,
           ordering_hint: group.order,
+          source_state: { family: 'investigation_step', state: aggregateInvestigationStepState(group.states), run_id: run.id, step: group.key },
         });
       });
       // Findings outside the case: when the run saw the element, as the engine dated it

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aggregateInvestigationStepState,
   computeAdversaryWindow,
   coverageResultRule,
   deploymentRule,
@@ -337,21 +338,42 @@ describe('Timeline soft-check rules', () => {
     expect(events.find((e) => e.element_id === 'cov-res-1')).toMatchObject({ kind: 'coverage_result', lane: 'detection', description: 'detection: 80%' });
     expect(events.find((e) => e.element_id === 'has-cov-1')).toMatchObject({ name: 'Coverage of Phishing', description: 'prevention: 40%' });
     const huntRuns = events.filter((e) => e.kind === 'hunt_run');
-    expect(huntRuns[0]).toMatchObject({ element_id: 'hunt-1', element_type: 'Hunt', discriminator: 'run-1', name: 'Hunt run Cobalt beacons', description: 'Status: completed - 3 hits - Verdict: true_positive' });
+    // States stay out of the descriptions: they are carried raw, for the vocabulary of their owner
+    expect(huntRuns[0]).toMatchObject({
+      element_id: 'hunt-1',
+      element_type: 'Hunt',
+      discriminator: 'run-1',
+      name: 'Hunt run Cobalt beacons',
+      description: '3 hits',
+      source_state: { family: 'hunt_run', state: 'completed', verdict: 'true_positive' },
+    });
     // The hunt of the second run is not in scope: the event points to the run itself
-    expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', description: 'Status: failed' });
-    expect(events.find((e) => e.kind === 'deployment')).toMatchObject({ name: 'evil.com deployed on Sentinel', lane: 'detection' });
-    // Former ledger shape: the tool stands for the action, the step without findings is left out
+    expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', source_state: { family: 'hunt_run', state: 'failed', verdict: null } });
+    expect(huntRuns[1].description).toBeUndefined();
+    expect(events.find((e) => e.kind === 'deployment')).toMatchObject({
+      name: 'evil.com deployed on Sentinel',
+      lane: 'detection',
+      description: '2 hits',
+      source_state: { family: 'deployment', state: 'active', validation: null },
+    });
+    // Former ledger shape: the tool stands for the action, the step never reached (no time, no findings) is left out
     const investigation = events.filter((e) => e.kind === 'investigation_step');
     expect(investigation).toHaveLength(3);
     expect(investigation[0]).toMatchObject({
       rule_id: 'investigation-run',
       lane: 'response',
       name: 'Case Autopilot investigation',
-      description: 'Autopilot - Status: completed',
+      description: 'Autopilot',
       event_end_time: '2026-03-16T01:00:00.000Z',
+      source_state: { family: 'investigation_run', state: 'completed', run_id: 'inv-1' },
     });
-    expect(investigation[1]).toMatchObject({ name: 'Enrich', discriminator: 'inv-1-action-enrich', description: 'Sources: enrich', event_end_time: '2026-03-16T00:11:00.000Z' });
+    expect(investigation[1]).toMatchObject({
+      name: 'Enrich',
+      discriminator: 'inv-1-action-enrich',
+      description: 'Sources: enrich',
+      event_end_time: '2026-03-16T00:11:00.000Z',
+      source_state: { family: 'investigation_step', state: 'completed', run_id: 'inv-1', step: 'enrich' },
+    });
     // Findings about elements in scope are already derived by the core rules
     expect(investigation[2]).toMatchObject({
       lane: 'evidence',
@@ -362,7 +384,7 @@ describe('Timeline soft-check rules', () => {
     });
   });
 
-  it('should derive one investigation event per run and per goal-plan action that found something', () => {
+  it('should derive one investigation event per run and per goal-plan action it reached, with the state of the action', () => {
     const input = buildInput({
       entities: [element({ id: 'malware-1', entity_type: 'Malware', name: 'Cobalt Strike' })],
       soft: {
@@ -404,17 +426,18 @@ describe('Timeline soft-check rules', () => {
       },
     });
     const events = deriveTimelineEvents(input, [investigationRunRule], () => {});
-    expect(events).toHaveLength(4);
+    expect(events).toHaveLength(5);
     expect(events.every((e) => e.kind === 'investigation_step' && e.rule_id === 'investigation-run')).toBe(true);
     expect(events[0]).toMatchObject({
       lane: 'response',
       element_id: 'inv-2',
       name: 'Case Autopilot investigation',
-      description: 'Investigation of the phishing case - Status: completed - 6 findings',
+      description: 'Investigation of the phishing case - 6 findings',
       event_time: '2026-03-16T00:00:00.000Z',
       event_end_time: '2026-03-16T00:30:00.000Z',
+      source_state: { family: 'investigation_run', state: 'completed', run_id: 'inv-2' },
     });
-    // Source steps of the same action collapse into one event spanning them; actions without findings are left out
+    // Source steps of the same action collapse into one event spanning them, with the state of the action
     expect(events[1]).toMatchObject({
       lane: 'response',
       name: 'Enrich through OpenCTI connectors',
@@ -424,12 +447,35 @@ describe('Timeline soft-check rules', () => {
       event_end_time: '2026-03-16T00:12:00.000Z',
       time_precision: 'exact',
       ordering_hint: 0,
+      source_state: { family: 'investigation_step', state: 'completed', run_id: 'inv-2', step: 'enrich_opencti' },
     });
+    // A reached action that found nothing is shown with its state, never as a success
+    expect(events[2]).toMatchObject({
+      name: 'Search the web',
+      discriminator: 'inv-2-action-search_web',
+      event_time: '2026-03-16T00:08:00.000Z',
+      event_end_time: '2026-03-16T00:10:00.000Z',
+      ordering_hint: 1,
+      source_state: { family: 'investigation_step', state: 'error', run_id: 'inv-2', step: 'search_web' },
+    });
+    expect(events[2].description).toBeUndefined();
     // Evidence outside the case is dated as the engine saw it
-    expect(events.slice(2).map((e) => [e.element_id, e.name, e.lane, e.time_precision])).toEqual([
+    expect(events.slice(3).map((e) => [e.element_id, e.name, e.lane, e.time_precision])).toEqual([
       ['ip-7', '10.0.0.7 first seen', 'evidence', 'approximate'],
       ['ip-7', '10.0.0.7 last seen', 'evidence', 'approximate'],
     ]);
+  });
+
+  it('should give a goal-plan action the state of its source steps', () => {
+    expect(aggregateInvestigationStepState(['completed', 'empty'])).toEqual('completed');
+    expect(aggregateInvestigationStepState(['completed', 'error'])).toEqual('degraded');
+    expect(aggregateInvestigationStepState(['succeeded'])).toEqual('completed');
+    expect(aggregateInvestigationStepState(['empty', 'running'])).toEqual('running');
+    expect(aggregateInvestigationStepState(['degraded', 'empty'])).toEqual('degraded');
+    expect(aggregateInvestigationStepState(['error', 'empty'])).toEqual('error');
+    expect(aggregateInvestigationStepState(['EMPTY'])).toEqual('empty');
+    expect(aggregateInvestigationStepState(['skipped'])).toEqual('skipped');
+    expect(aggregateInvestigationStepState([])).toEqual('planned');
   });
 
   it('should skip unavailable rules and isolate failing rules', () => {

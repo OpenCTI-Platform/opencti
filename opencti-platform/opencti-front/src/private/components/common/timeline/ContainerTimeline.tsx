@@ -172,6 +172,14 @@ const containerTimelineEventsFragment = graphql`
           ordering_hint
           external_id
           analyst_fields
+          source_state {
+            family
+            state
+            verdict
+            validation
+            run_id
+            step
+          }
           editable
           createdBy {
             ... on Identity {

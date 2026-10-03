@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
 import type { TimelineChartEvent } from './ContainerTimelineLanes';
+import TimelineSourceStateChip from './TimelineSourceStateChip';
 import {
   groupEventsByBucket,
   TIMELINE_KIND_LABELS,
@@ -147,6 +148,7 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                     <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                       <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
                       <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
+                      <TimelineSourceStateChip state={event.source_state} />
                       {event.precision !== 'exact' && (
                         <Chip label={t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? event.precision)} severity="medium" />
                       )}

@@ -37547,6 +37547,7 @@ export type TimelineEvent = BasicObject & InternalObject & {
   representative: Representative;
   rule_id?: Maybe<Scalars['String']['output']>;
   source: TimelineEventSource;
+  source_state?: Maybe<TimelineSourceState>;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -37735,6 +37736,17 @@ export type TimelineSettingsInput = {
   default_zoom_window?: InputMaybe<TimelineZoomWindow>;
   enabled_lanes?: InputMaybe<Array<TimelineLane>>;
   hidden_kinds?: InputMaybe<Array<TimelineEventKind>>;
+};
+
+/** State of the run, step or deployment a derived event comes from, as its owner stores it (labelled with the owner's vocabulary) */
+export type TimelineSourceState = {
+  __typename?: 'TimelineSourceState';
+  family: Scalars['String']['output'];
+  run_id?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
+  step?: Maybe<Scalars['String']['output']>;
+  validation?: Maybe<Scalars['String']['output']>;
+  verdict?: Maybe<Scalars['String']['output']>;
 };
 
 export type TimelineSummary = {
@@ -43228,6 +43240,7 @@ export type ResolversTypes = ResolversObject<{
   TimelineRuleDefinition: ResolverTypeWrapper<TimelineRuleDefinition>;
   TimelineSettings: ResolverTypeWrapper<TimelineSettings>;
   TimelineSettingsInput: TimelineSettingsInput;
+  TimelineSourceState: ResolverTypeWrapper<TimelineSourceState>;
   TimelineSummary: ResolverTypeWrapper<TimelineSummary>;
   TimelineUpdate: ResolverTypeWrapper<TimelineUpdate>;
   TimelineUpdateType: TimelineUpdateType;
@@ -44295,6 +44308,7 @@ export type ResolversParentTypes = ResolversObject<{
   TimelineRuleDefinition: TimelineRuleDefinition;
   TimelineSettings: TimelineSettings;
   TimelineSettingsInput: TimelineSettingsInput;
+  TimelineSourceState: TimelineSourceState;
   TimelineSummary: TimelineSummary;
   TimelineUpdate: TimelineUpdate;
   TokenGenerated: TokenGenerated;
@@ -56159,6 +56173,7 @@ export type TimelineEventResolvers<ContextType = any, ParentType extends Resolve
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   rule_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<ResolversTypes['TimelineEventSource'], ParentType, ContextType>;
+  source_state?: Resolver<Maybe<ResolversTypes['TimelineSourceState']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -56222,6 +56237,15 @@ export type TimelineSettingsResolvers<ContextType = any, ParentType extends Reso
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TimelineSourceStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSourceState'] = ResolversParentTypes['TimelineSourceState']> = ResolversObject<{
+  family?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  step?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  validation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  verdict?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type TimelineSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSummary'] = ResolversParentTypes['TimelineSummary']> = ResolversObject<{
@@ -58223,6 +58247,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TimelineRegenerationResult?: TimelineRegenerationResultResolvers<ContextType>;
   TimelineRuleDefinition?: TimelineRuleDefinitionResolvers<ContextType>;
   TimelineSettings?: TimelineSettingsResolvers<ContextType>;
+  TimelineSourceState?: TimelineSourceStateResolvers<ContextType>;
   TimelineSummary?: TimelineSummaryResolvers<ContextType>;
   TimelineUpdate?: TimelineUpdateResolvers<ContextType>;
   TokenGenerated?: TokenGeneratedResolvers<ContextType>;

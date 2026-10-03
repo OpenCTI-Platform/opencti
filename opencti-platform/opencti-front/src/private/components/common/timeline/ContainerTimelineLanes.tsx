@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
+import { resolveTimelineSourceState, type TimelineSourceStateValue } from './timelineSourceStates';
 import {
   clusterLaneEvents,
   layoutLaneRows,
@@ -34,6 +35,7 @@ export interface TimelineChartEvent {
   hidden: boolean;
   source: string;
   annotation?: string | null;
+  source_state?: TimelineSourceStateValue | null;
 }
 
 export type TimelineChartAnchors = Partial<Record<TimelineAnchorKey, string | null | undefined>> | null | undefined;
@@ -102,6 +104,7 @@ const ContainerTimelineLanes = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(960);
   const [hover, setHover] = useState<HoverState | null>(null);
+  const hoverState = hover ? resolveTimelineSourceState(hover.event.source_state) : null;
   const dragRef = useRef<{ x: number; domain: TimelineDomain } | null>(null);
   const interactive = !!onDomainChange && !compact;
 
@@ -461,6 +464,9 @@ const ContainerTimelineLanes = ({
           </Text>
           {hover.event.precision === 'approximate' && (
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Approximate time')}</Text>
+          )}
+          {hoverState && (
+            <Text variant="content-compact-medium" as="div">{t_i18n(hoverState.label)}</Text>
           )}
           <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
             {t_i18n('{kind} in the {lane} lane', {

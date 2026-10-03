@@ -116,6 +116,21 @@ export interface BasicStoreEntityTimelineEvent extends BasicStoreEntity {
   ordering_hint?: number | null;
   analyst_fields?: TimelineAnalystField[];
   restricted_members?: Array<AuthorizedMember>;
+  source_state?: TimelineSourceState | null;
+}
+
+/**
+ * State of the run, step or deployment a derived event comes from, as its owner stores it. The values stay raw: each
+ * family is labelled by the vocabulary of its owner (investigation step states, hunt verdicts, deployment states).
+ */
+export interface TimelineSourceState {
+  family: 'investigation_run' | 'investigation_step' | 'hunt_run' | 'deployment';
+  state?: string | null;
+  verdict?: string | null;
+  validation?: string | null;
+  // Investigation run and goal-plan action an investigation event belongs to
+  run_id?: string | null;
+  step?: string | null;
 }
 
 export interface StoreEntityTimelineEvent extends StoreEntity, BasicStoreEntityTimelineEvent {
