@@ -61,7 +61,7 @@ cd opencti-analytics
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp config.yml.sample config.yml   # then set opencti.url and opencti.token
+cp config.yml.sample src/config.yml   # read next to analytics.py; then set opencti.url and opencti.token
 cd src
 python analytics.py --once --force
 ```

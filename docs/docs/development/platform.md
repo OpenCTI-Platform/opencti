@@ -257,7 +257,7 @@ cd ~/opencti/opencti-analytics
 python3 -m venv .venv --prompt "analytics"
 source .venv/bin/activate
 pip3 install -r requirements.txt -r test-requirements.txt
-cp config.yml.sample config.yml
+cp config.yml.sample src/config.yml
 python -m pytest
 cd src
 python analytics.py --once --force

@@ -14,6 +14,14 @@ const featureFamilyMappings: MappingDefinition[] = GRAPH_FEATURE_FAMILIES.map((f
   isFilterable: false,
 }));
 
+const pendingRunMappings: MappingDefinition[] = [
+  { name: 'pending_cluster_id', label: 'Pending graph cluster', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'pending_cluster_size', label: 'Pending graph cluster size', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'pending_cluster_kind', label: 'Pending graph cluster kind', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'pending_betweenness_approx', label: 'Pending approximate betweenness', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'pending_run_id', label: 'Pending graph analytics run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+];
+
 // Computed by the graph analytics manager and the opencti-analytics process, never edited by users.
 // Written through side-channel updates so no stream event and no updated_at change is produced.
 export const graphMetricsAttribute: ObjectAttribute = {
@@ -72,8 +80,12 @@ export const graphMetricsAttribute: ObjectAttribute = {
     { name: 'cluster_size', label: 'Graph cluster size', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'cluster_kind', label: 'Graph cluster kind', type: 'string', format: 'enum', values: [...GRAPH_CLUSTER_KINDS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'computed_at', label: 'Graph metrics computation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // date the entity joined its current cluster (completion of the run that first assigned it), base of the cluster history
+    { name: 'cluster_joined_at', label: 'Graph cluster joining date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // clustering run that wrote cluster_* and betweenness_approx: the latest completed run detaches older assignments
     { name: 'run_id', label: 'Graph analytics run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // metrics staged by a run in progress, applied when the run completes
+    ...pendingRunMappings,
   ],
 };
 

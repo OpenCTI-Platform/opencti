@@ -49,7 +49,23 @@ const CLUSTER_ADD_PROMOTION_SCRIPT = 'if (ctx._source.promoted_to_ids == null) {
   + ' else if (!ctx._source.promoted_to_ids.contains(params.id)) { ctx._source.promoted_to_ids.add(params.id); }'
   + ' else { ctx.op = \'noop\'; }';
 // Metrics owned by a clustering run (platform clustering or opencti-analytics process)
-const RUN_METRIC_FIELDS = ['cluster_id', 'cluster_size', 'cluster_kind', 'betweenness_approx', 'run_id'];
+const RUN_METRIC_FIELDS = ['cluster_id', 'cluster_size', 'cluster_kind', 'betweenness_approx', 'run_id', 'cluster_joined_at'];
+// A run writes its metrics as pending_<field> (null included) and they replace the live ones when the run completes,
+// so readers never see a partially applied run, whether it completes, fails or is cancelled.
+const STAGED_RUN_FIELDS = ['cluster_id', 'cluster_size', 'cluster_kind', 'betweenness_approx'];
+const PENDING_PREFIX = 'pending_';
+const PENDING_RUN_ID = `${PENDING_PREFIX}run_id`;
+const GRAPH_METRICS_STAGE_SCRIPT = 'if (ctx._source.x_opencti_graph_metrics == null) { ctx._source.x_opencti_graph_metrics = [:]; }'
+  + ' for (entry in params.metrics.entrySet()) { ctx._source.x_opencti_graph_metrics[entry.getKey()] = entry.getValue(); }';
+const GRAPH_METRICS_PROMOTE_SCRIPT = 'def m = ctx._source.x_opencti_graph_metrics;'
+  + ' if (m.containsKey(params.prefix + \'cluster_id\')) { def next = m[params.prefix + \'cluster_id\'];'
+  + ' if (next == null) { m.remove(\'cluster_joined_at\'); }'
+  + ' else if (m.cluster_id != next || m.cluster_joined_at == null) { m.cluster_joined_at = params.now; } }'
+  + ' for (field in params.fields) { def key = params.prefix + field; if (m.containsKey(key)) { def value = m.remove(key);'
+  + ' if (value == null) { m.remove(field); } else { m[field] = value; } } }'
+  + ' m.run_id = m.remove(params.prefix + \'run_id\');';
+const GRAPH_METRICS_DROP_PENDING_SCRIPT = 'def m = ctx._source.x_opencti_graph_metrics;'
+  + ' for (field in params.fields) { m.remove(params.prefix + field); } m.remove(params.prefix + \'run_id\');';
 
 const BULK_CHUNK = 500;
 
@@ -130,18 +146,73 @@ export interface GraphMetricsUpdate {
   metrics: Partial<Record<keyof GraphMetrics, unknown>>;
 }
 
-export const writeGraphMetrics = async (context: AuthContext, updates: GraphMetricsUpdate[]): Promise<number> => {
+const bulkUpdateGraphMetrics = async (context: AuthContext, updates: GraphMetricsUpdate[], source: string): Promise<number> => {
   let written = 0;
   const chunks = chunk(updates, BULK_CHUNK);
   for (let i = 0; i < chunks.length; i += 1) {
     const body = chunks[i].flatMap((update) => [
       { update: { _index: update.index, _id: update.id, retry_on_conflict: 5 } },
-      { script: { source: GRAPH_METRICS_UPDATE_SCRIPT, lang: 'painless', params: { metrics: update.metrics } } },
+      { script: { source, lang: 'painless', params: { metrics: update.metrics } } },
     ]);
     await elBulk(context, { refresh: true, timeout: '5m', body });
     written += chunks[i].length;
   }
   return written;
+};
+
+export const writeGraphMetrics = async (context: AuthContext, updates: GraphMetricsUpdate[]): Promise<number> => {
+  return bulkUpdateGraphMetrics(context, updates, GRAPH_METRICS_UPDATE_SCRIPT);
+};
+
+/** Stage the metrics of a clustering run: they only become visible when the run completes. */
+export const stageRunMetrics = async (context: AuthContext, runId: string, updates: GraphMetricsUpdate[]): Promise<number> => {
+  const staged = updates.map((update) => {
+    const metrics: Record<string, unknown> = { [PENDING_RUN_ID]: runId };
+    STAGED_RUN_FIELDS.forEach((field) => {
+      if (field in update.metrics) metrics[`${PENDING_PREFIX}${field}`] = update.metrics[field as keyof GraphMetrics] ?? null;
+    });
+    return { ...update, metrics: metrics as GraphMetricsUpdate['metrics'] };
+  });
+  return bulkUpdateGraphMetrics(context, staged, GRAPH_METRICS_STAGE_SCRIPT);
+};
+
+/** Make the staged metrics of a completed run the live ones, recording when an entity joined its cluster. */
+const promoteRunMetrics = async (runId: string) => {
+  await elRawUpdateByQuery({
+    index: GRAPH_METRICS_ENTITY_INDICES,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: {
+        source: GRAPH_METRICS_PROMOTE_SCRIPT,
+        lang: 'painless',
+        params: { prefix: PENDING_PREFIX, fields: STAGED_RUN_FIELDS, now: new Date().toISOString() },
+      },
+      query: { term: { [`${GRAPH_METRICS_ATTRIBUTE}.${PENDING_RUN_ID}.keyword`]: runId } },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Graph analytics run metrics promotion fail', { cause: err });
+  });
+};
+
+/** Metrics staged by runs that never completed (failed or cancelled) are dropped. */
+const dropPendingMetricsNotFromRun = async (runId: string) => {
+  await elRawUpdateByQuery({
+    index: GRAPH_METRICS_ENTITY_INDICES,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: GRAPH_METRICS_DROP_PENDING_SCRIPT, lang: 'painless', params: { prefix: PENDING_PREFIX, fields: STAGED_RUN_FIELDS } },
+      query: {
+        bool: {
+          must: [{ exists: { field: `${GRAPH_METRICS_ATTRIBUTE}.${PENDING_RUN_ID}` } }],
+          must_not: [{ term: { [`${GRAPH_METRICS_ATTRIBUTE}.${PENDING_RUN_ID}.keyword`]: runId } }],
+        },
+      },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Graph analytics pending metrics cleanup fail', { cause: err });
+  });
 };
 
 /** Load the documents (index and current metrics) of entities able to carry graph metrics. */
@@ -450,10 +521,13 @@ export const upsertGraphClusters = async (
 };
 
 /**
- * Finalize a clustering run: clusters not refreshed by the run are deleted (whatever their source, only one source
- * is active at a time) and entity assignments written by older runs are detached.
+ * Finalize a clustering run: its staged entity metrics become the live ones, clusters not refreshed by the run are
+ * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
+ * are detached.
  */
 export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser, runId: string): Promise<string[]> => {
+  await promoteRunMetrics(runId);
+  await dropPendingMetricsNotFromRun(runId);
   const stale = await elList<BasicStoreEntityGraphCluster>(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_GRAPH_CLUSTER],
     baseData: true,

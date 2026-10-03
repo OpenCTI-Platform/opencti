@@ -479,6 +479,36 @@ describe('Graph analytics resolvers', () => {
     expect(status.data.graphAnalyticsStatus.similarity_documents).toBeGreaterThanOrEqual(2);
   });
 
+  it('should apply an analytics run only when it completes', async () => {
+    const upsert = gql`
+      mutation upsertStaged($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }
+    `;
+    const runId = `graph-analytics-staged-run-${uuidv4()}`;
+    const clusterId = uuidv4();
+    const before = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;
+    const partial = {
+      run_id: runId,
+      process_version: 'test',
+      complete: false,
+      metrics: [{ entity_id: ids.isC, betweenness_approx: 0.7, cluster_id: clusterId, cluster_size: 1, cluster_kind: 'campaign' }],
+      clusters: [{ cluster_id: clusterId, cluster_kind: 'campaign', members_count: 1, representative_ids: [ids.isC], features: [] }],
+    };
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: partial } });
+    // an interrupted run never shows: the live metrics are the ones of the last completed run
+    const staged = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(staged.cluster_id).toBe(before?.cluster_id ?? null);
+    expect(staged.betweenness_approx).toBe(before?.betweenness_approx ?? null);
+    const completion = { run_id: runId, process_version: 'test', complete: true, metrics: [], clusters: [] };
+    await queryAsAdminWithSuccess({ query: upsert, variables: { input: completion } });
+    const applied = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;
+    expect(applied.cluster_id).toBe(clusterId);
+    expect(applied.cluster_size).toBe(1);
+    expect(applied.betweenness_approx).toBe(0.7);
+    const { data } = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
+    const cluster = data.graphClusters.edges.map((e: any) => e.node).find((n: any) => n.id === clusterId);
+    expect(cluster.timeline[cluster.timeline.length - 1].value).toBe(1);
+  });
+
   it('should reject analytics write-back with invalid cluster identifiers', async () => {
     const upsert = gql`
       mutation upsert($input: GraphAnalyticsUpsertMetricsInput!) { graphAnalyticsUpsertMetrics(input: $input) { run_id } }
