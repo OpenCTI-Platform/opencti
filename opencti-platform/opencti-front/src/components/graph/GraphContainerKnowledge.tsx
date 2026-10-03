@@ -103,6 +103,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
             }
             ... on StixCoreObject {
               created_at
+              corroboration_count
+              freshness_stale
+              has_conflicts
               createdBy {
                 ... on Identity {
                   id
@@ -292,6 +295,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              corroboration_count
+              freshness_stale
+              has_conflicts
               created
               is_inferred
               from {
@@ -391,6 +397,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               first_seen
               last_seen
               confidence
+              corroboration_count
+              freshness_stale
+              has_conflicts
               created
               is_inferred
               from {

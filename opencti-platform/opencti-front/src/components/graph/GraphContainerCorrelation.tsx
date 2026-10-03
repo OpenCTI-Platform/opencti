@@ -59,6 +59,9 @@ const graphContainerCorrelationObjectsFragment = graphql`
             }
             ... on StixCoreObject {
               created_at
+              corroboration_count
+              freshness_stale
+              has_conflicts
               createdBy {
                 ... on Identity {
                   id

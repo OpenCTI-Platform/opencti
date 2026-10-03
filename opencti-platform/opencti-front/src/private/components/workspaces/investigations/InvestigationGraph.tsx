@@ -90,6 +90,8 @@ const investigationGraphObjectsFragment = graphql`
               created_at
               numberOfConnectedElement
               corroboration_count
+              freshness_stale
+              has_conflicts
               createdBy {
                 ... on Identity {
                   id
@@ -319,6 +321,8 @@ const investigationGraphObjectsFragment = graphql`
               stop_time
               confidence
               corroboration_count
+              freshness_stale
+              has_conflicts
               created
               created_at
               createdBy {
@@ -341,6 +345,9 @@ const investigationGraphObjectsFragment = graphql`
               first_seen
               last_seen
               confidence
+              corroboration_count
+              freshness_stale
+              has_conflicts
               created
               is_inferred
               from {
