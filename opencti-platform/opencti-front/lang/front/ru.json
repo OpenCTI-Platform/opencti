@@ -3405,7 +3405,6 @@
   "No tasks has been found.": "Задания не найдены.",
   "No TAXII feed found for this connector.": "Канал TAXII для этого коннектора не найден.",
   "No template found for this name": "Шаблон для этого имени не найден",
-  "No Threat Pulse information for this object yet.": "Для этого объекта пока нет информации Threat Pulse.",
   "No tokens found.": "Токены не найдены.",
   "No tokens found. Click \"Generate Token\" to create one.": "Токены не найдены. Нажмите \"Сгенерировать токен\", чтобы создать один.",
   "No value": "Нет значения",

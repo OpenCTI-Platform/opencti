@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/styles';
@@ -44,8 +43,6 @@ export const threatPulseCardQuery = graphql`
   }
 `;
 
-// Reasons for which the card is not displayed at all: Threat Pulse is off or does not apply to the entity.
-const HIDDEN_REASONS = ['not_enabled', 'out_of_scope'];
 const SPARKLINE_WIDTH = 160;
 const SPARKLINE_HEIGHT = 36;
 
@@ -132,11 +129,11 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fsd, fldt } = useFormatter();
   const { pulseEntity } = useLazyLoadQuery<ThreatPulseCardQuery>(threatPulseCardQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
-  if (!pulseEntity.readable && HIDDEN_REASONS.includes(pulseEntity.unavailable_reason ?? '')) {
+  const information = pulseEntity.information;
+  if (!information) {
     return null;
   }
   const secondary = { color: theme.palette.text.secondary };
-  const information = pulseEntity.information;
   const reason = pulseEntity.unavailable_reason;
   const title = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -154,75 +151,68 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
     </Box>
   );
   return (
-    <Grid item xs={6}>
-      <Card title={title}>
+    <Box sx={{ flex: '0 0 auto' }}>
+      <Card title={title} fullHeight={false}>
         <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {reason && (
             <Text variant="content-compact" style={secondary} data-testid="threat-pulse-unavailable">
               {t_i18n(PULSE_UNAVAILABLE_MESSAGES[reason] ?? reason)}
             </Text>
           )}
-          {information && (
+          <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
+          {!information.published && (
+            <Text variant="content-compact" style={secondary}>
+              {t_i18n('Fewer platforms than the anonymity threshold observed this object: it is rare, or unique to this platform.')}
+            </Text>
+          )}
+          {information.published && (
             <>
-              <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
-              {!information.published && (
-                <Text variant="content-compact" style={secondary}>
-                  {t_i18n('Fewer platforms than the anonymity threshold observed this object: it is rare, or unique to this platform.')}
-                </Text>
-              )}
-              {information.published && (
-                <>
-                  <DetailRow label={t_i18n('Contributing platforms')}>
-                    <Chip label={information.platforms_bucket ?? '-'} severity="info" />
-                  </DetailRow>
-                  <DetailRow label={t_i18n('Network first seen')}>
-                    <Text variant="content-compact">{information.first_seen_network ? fsd(information.first_seen_network) : '-'}</Text>
-                  </DetailRow>
-                  <DetailRow label={t_i18n('Network last seen')}>
-                    <Text variant="content-compact">{information.last_seen_network ? fsd(information.last_seen_network) : '-'}</Text>
-                  </DetailRow>
-                  <DetailRow label={t_i18n('Community trend')}>
-                    <PulseSparkline series={information.trend_series} label={t_i18n('Contributing platforms per week, last 12 weeks')} />
-                    {information.trend && (
-                      <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
-                    )}
-                  </DetailRow>
-                  <DetailRow label={`${t_i18n('Sector trend')} (${t_i18n(PULSE_SECTOR_LABELS[pulseEntity.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')})`}>
-                    {information.sector_trend ? (
-                      <>
-                        <Text variant="content-compact" style={secondary}>{information.sector_platforms_bucket}</Text>
-                        <Chip label={t_i18n(PULSE_TREND_LABELS[information.sector_trend])} severity={PULSE_TREND_SEVERITIES[information.sector_trend]} />
-                      </>
-                    ) : (
-                      <Text variant="content-compact" style={secondary}>{t_i18n('Below the anonymity threshold')}</Text>
-                    )}
-                  </DetailRow>
-                </>
-              )}
-              <DetailRow label={t_i18n('Community uniqueness')}>
-                <Text variant="content-compact">
-                  {information.community_uniqueness !== null && information.community_uniqueness !== undefined ? `${information.community_uniqueness} / 100` : '-'}
-                </Text>
+              <DetailRow label={t_i18n('Contributing platforms')}>
+                <Chip label={information.platforms_bucket ?? '-'} severity="info" />
               </DetailRow>
-              {information.updated_at && (
-                <Text variant="content-compact" style={secondary}>
-                  {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
-                </Text>
-              )}
+              <DetailRow label={t_i18n('Network first seen')}>
+                <Text variant="content-compact">{information.first_seen_network ? fsd(information.first_seen_network) : '-'}</Text>
+              </DetailRow>
+              <DetailRow label={t_i18n('Network last seen')}>
+                <Text variant="content-compact">{information.last_seen_network ? fsd(information.last_seen_network) : '-'}</Text>
+              </DetailRow>
+              <DetailRow label={t_i18n('Community trend')}>
+                <PulseSparkline series={information.trend_series} label={t_i18n('Contributing platforms per week, last 12 weeks')} />
+                {information.trend && (
+                  <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
+                )}
+              </DetailRow>
+              <DetailRow label={`${t_i18n('Sector trend')} (${t_i18n(PULSE_SECTOR_LABELS[pulseEntity.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed')})`}>
+                {information.sector_trend ? (
+                  <>
+                    <Text variant="content-compact" style={secondary}>{information.sector_platforms_bucket}</Text>
+                    <Chip label={t_i18n(PULSE_TREND_LABELS[information.sector_trend])} severity={PULSE_TREND_SEVERITIES[information.sector_trend]} />
+                  </>
+                ) : (
+                  <Text variant="content-compact" style={secondary}>{t_i18n('Below the anonymity threshold')}</Text>
+                )}
+              </DetailRow>
             </>
           )}
-          {!information && !reason && (
-            <Text variant="content-compact" style={secondary}>{t_i18n('No Threat Pulse information for this object yet.')}</Text>
+          <DetailRow label={t_i18n('Community uniqueness')}>
+            <Text variant="content-compact">
+              {information.community_uniqueness !== null && information.community_uniqueness !== undefined ? `${information.community_uniqueness} / 100` : '-'}
+            </Text>
+          </DetailRow>
+          {information.updated_at && (
+            <Text variant="content-compact" style={secondary}>
+              {`${t_i18n('Updated')} ${fldt(information.updated_at)}`}
+            </Text>
           )}
         </Box>
       </Card>
-    </Grid>
+    </Box>
   );
 };
 
 /**
- * Threat Pulse card of an entity overview: renders its own grid item, and nothing when Threat Pulse is off or does
- * not apply to the entity, so that it never takes room on platforms that did not opt in.
+ * Threat Pulse card of an entity overview. It renders nothing until the entity carries Threat Pulse information, so
+ * that it never takes room on platforms that did not opt in or on objects the network has not reported yet.
  */
 const ThreatPulseCard = ({ entityId }: ThreatPulseCardProps) => (
   <Suspense fallback={null}>

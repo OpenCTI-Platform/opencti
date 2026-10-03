@@ -3405,7 +3405,6 @@
   "No tasks has been found.": "没有找到任务。",
   "No TAXII feed found for this connector.": "未找到此连接器的 TAXII 数据源。",
   "No template found for this name": "此名称未找到模板",
-  "No Threat Pulse information for this object yet.": "此对象尚无 Threat Pulse 信息。",
   "No tokens found.": "未找到令牌。",
   "No tokens found. Click \"Generate Token\" to create one.": "未找到令牌。点击“生成令牌”以创建一个。",
   "No value": "没有价值",

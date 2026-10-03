@@ -2,18 +2,22 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import Grid from '@mui/material/Grid';
 import testRender from '../../../../utils/tests/test-render';
 import ThreatPulseCard from './ThreatPulseCard';
+import ThreatPulseOverviewColumn from './ThreatPulseOverviewColumn';
 
-const renderCard = (pulseEntity: Record<string, unknown>, information: Record<string, unknown> | null) => {
-  const { relayEnv } = testRender(<Grid container><ThreatPulseCard entityId="indicator-1" /></Grid>);
+const resolvePulseEntity = (relayEnv: ReturnType<typeof testRender>['relayEnv'], pulseEntity: Record<string, unknown>, information: Record<string, unknown> | null) => {
   act(() => {
     relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       PulseEntityInformation: () => ({ id: 'indicator-1', ...pulseEntity, information }),
       PulseInformation: () => information,
     }));
   });
+};
+
+const renderCard = (pulseEntity: Record<string, unknown>, information: Record<string, unknown> | null) => {
+  const { relayEnv } = testRender(<ThreatPulseCard entityId="indicator-1" />);
+  resolvePulseEntity(relayEnv, pulseEntity, information);
 };
 
 const PUBLISHED = {
@@ -41,6 +45,12 @@ describe('ThreatPulseCard', () => {
     expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
   });
 
+  it('should render nothing until the entity carries Threat Pulse information', () => {
+    renderCard({ readable: false, unavailable_reason: 'contribution_required', sector_bucket: 'finance' }, null);
+    expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
+    expect(screen.queryByTestId('threat-pulse-unavailable')).toBeNull();
+  });
+
   it('should show the community signal of a published object', async () => {
     renderCard({ readable: true, unavailable_reason: null, sector_bucket: 'finance' }, PUBLISHED);
     expect(await screen.findByTestId('threat-pulse-card')).toBeDefined();
@@ -65,15 +75,34 @@ describe('ThreatPulseCard', () => {
     expect(screen.getByText('100 / 100')).toBeDefined();
   });
 
-  it('should say why the signal cannot be read, without hiding the card', async () => {
-    renderCard({ readable: false, unavailable_reason: 'contribution_required', sector_bucket: 'finance' }, null);
-    expect(await screen.findByTestId('threat-pulse-unavailable')).toBeDefined();
-    expect(screen.getByText(/Reading Threat Pulse requires contributing/)).toBeDefined();
-  });
-
   it('should keep the last known information when XTM Hub is unreachable', async () => {
     renderCard({ readable: true, unavailable_reason: 'hub_unreachable', sector_bucket: 'finance' }, PUBLISHED);
     expect(await screen.findByText(/XTM Hub is unreachable/)).toBeDefined();
     expect(screen.getByText('25-49')).toBeDefined();
+  });
+});
+
+describe('ThreatPulseOverviewColumn', () => {
+  it('should place the Threat Pulse card after the Basic information card', async () => {
+    const { relayEnv } = testRender(
+      <ThreatPulseOverviewColumn entityId="indicator-1">
+        <div data-testid="basic-information">Basic information</div>
+      </ThreatPulseOverviewColumn>,
+    );
+    resolvePulseEntity(relayEnv, { readable: true, unavailable_reason: null, sector_bucket: 'finance' }, PUBLISHED);
+    const card = await screen.findByTestId('threat-pulse-card');
+    const basicInformation = screen.getByTestId('basic-information');
+    expect(basicInformation.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('should keep only the Basic information card when the entity has no Threat Pulse information', () => {
+    const { relayEnv } = testRender(
+      <ThreatPulseOverviewColumn entityId="indicator-1">
+        <div data-testid="basic-information">Basic information</div>
+      </ThreatPulseOverviewColumn>,
+    );
+    resolvePulseEntity(relayEnv, { readable: false, unavailable_reason: 'not_enabled', sector_bucket: null }, null);
+    expect(screen.getByTestId('basic-information')).toBeDefined();
+    expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
   });
 });

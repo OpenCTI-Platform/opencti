@@ -3405,7 +3405,6 @@
   "No tasks has been found.": "작업이 발견되지 않았습니다.",
   "No TAXII feed found for this connector.": "이 커넥터에 대한 TAXII 피드를 찾을 수 없습니다.",
   "No template found for this name": "이 이름에 대한 템플릿을 찾을 수 없습니다",
-  "No Threat Pulse information for this object yet.": "이 객체에 대한 Threat Pulse 정보가 아직 없습니다.",
   "No tokens found.": "토큰을 찾을 수 없습니다.",
   "No tokens found. Click \"Generate Token\" to create one.": "토큰을 찾을 수 없습니다. \"토큰 생성\"을 클릭하여 생성하십시오.",
   "No value": "값 없음",

@@ -11,7 +11,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ThreatPulseCard from '@components/common/threat_pulse/ThreatPulseCard';
+import ThreatPulseOverviewColumn from '@components/common/threat_pulse/ThreatPulseOverviewColumn';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -90,10 +90,12 @@ const Indicator: React.FC<IndicatorProps> = ({
           <IndicatorDetails indicator={indicator} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={indicator}
-            withPattern={true}
-          />
+          <ThreatPulseOverviewColumn entityId={indicator.id}>
+            <StixDomainObjectOverview
+              stixDomainObject={indicator}
+              withPattern={true}
+            />
+          </ThreatPulseOverviewColumn>
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -118,7 +120,6 @@ const Indicator: React.FC<IndicatorProps> = ({
             defaultMarkings={indicator.objectMarking ?? []}
           />
         </Grid>
-        <ThreatPulseCard entityId={indicator.id} />
       </Grid>
     </div>
   );

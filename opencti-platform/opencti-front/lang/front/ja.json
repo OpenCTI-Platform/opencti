@@ -3405,7 +3405,6 @@
   "No tasks has been found.": "タスクが見つかりませんでした。",
   "No TAXII feed found for this connector.": "このコネクタに対応するTAXIIフィードが見つかりませんでした。",
   "No template found for this name": "この名前に対応するテンプレートは見つかりませんでした",
-  "No Threat Pulse information for this object yet.": "このオブジェクトの Threat Pulse 情報はまだありません。",
   "No tokens found.": "トークンが見つかりません。",
   "No tokens found. Click \"Generate Token\" to create one.": "トークンが見つかりません。トークンの生成]をクリックしてトークンを生成してください。",
   "No value": "値なし",

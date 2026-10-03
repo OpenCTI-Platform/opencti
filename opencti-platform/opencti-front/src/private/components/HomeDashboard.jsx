@@ -24,7 +24,6 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
-import ThreatPulseHomeWidget from './common/threat_pulse/ThreatPulseHomeWidget';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -487,7 +486,6 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <ThreatPulseHomeWidget />
       </Grid>
     </Security>
   );

@@ -3405,7 +3405,6 @@
   "No tasks has been found.": "Nessun compito è stato trovato.",
   "No TAXII feed found for this connector.": "Nessun feed TAXII trovato per questo connettore.",
   "No template found for this name": "Nessun template trovato per questo nome",
-  "No Threat Pulse information for this object yet.": "Ancora nessuna informazione Threat Pulse per questo oggetto.",
   "No tokens found.": "Nessun token trovato.",
   "No tokens found. Click \"Generate Token\" to create one.": "Non sono stati trovati token. Fare clic su \"Genera token\" per crearne uno.",
   "No value": "Nessun valore",
