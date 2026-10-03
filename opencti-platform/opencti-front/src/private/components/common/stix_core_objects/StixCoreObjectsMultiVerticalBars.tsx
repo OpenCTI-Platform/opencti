@@ -4,6 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -42,12 +43,14 @@ interface StixCoreObjectsMultiVerticalBarsComponentProps {
     stacked?: boolean;
     legend?: boolean;
   };
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsMultiVerticalBarsComponent = ({
   queryRef,
   dataSelection,
   parameters,
+  drilldown,
 }: StixCoreObjectsMultiVerticalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectsMultiTimeSeries } = usePreloadedQuery(
@@ -58,6 +61,7 @@ const StixCoreObjectsMultiVerticalBarsComponent = ({
   if (stixCoreObjectsMultiTimeSeries) {
     return (
       <WidgetVerticalBars
+        drilldown={drilldown}
         series={stixCoreObjectsMultiTimeSeries.map((serie, i) => ({
           name: dataSelection[i]?.label ?? t_i18n('Number of entities'),
           data: (serie?.data ?? []).map((entry) => ({
@@ -123,7 +127,9 @@ const StixCoreObjectsMultiVerticalBars = ({
   host,
 }: StixCoreObjectsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -150,6 +156,7 @@ const StixCoreObjectsMultiVerticalBars = ({
         host={host}
       >
         <StixCoreObjectsMultiVerticalBarsComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

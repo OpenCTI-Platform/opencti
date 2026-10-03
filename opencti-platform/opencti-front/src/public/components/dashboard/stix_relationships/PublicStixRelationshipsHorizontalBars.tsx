@@ -92,12 +92,11 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
     && publicStixRelationshipsDistribution.length > 0
   ) {
     const selection = dataSelection[0];
-    const { series, redirectionUtils } = buildWidgetProps(publicStixRelationshipsDistribution, selection, 'Number of relationships');
+    const { series } = buildWidgetProps(publicStixRelationshipsDistribution, selection, 'Number of relationships');
     return (
       <WidgetHorizontalBars
         series={series}
         distributed={!!parameters?.distributed}
-        redirectionUtils={redirectionUtils}
       />
     );
   }

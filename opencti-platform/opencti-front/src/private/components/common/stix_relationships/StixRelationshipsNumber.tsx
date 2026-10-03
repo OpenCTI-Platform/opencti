@@ -65,12 +65,14 @@ interface StixRelationshipsNumberComponentProps {
   dataSelection: WidgetDataSelection[];
   entityType?: string;
   label: string;
+  drilldownLink?: string | null;
 }
 
 const StixRelationshipsNumberComponent = ({
   queryRef,
   entityType,
   label,
+  drilldownLink,
 }: StixRelationshipsNumberComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -90,6 +92,7 @@ const StixRelationshipsNumberComponent = ({
       value={total}
       diffLabel={t_i18n('24 hours')}
       diffValue={total - count}
+      drilldownLink={drilldownLink}
     />
   );
 };
@@ -138,7 +141,7 @@ const StixRelationshipsNumber = ({
   const DEFAULT_TITLE = t_i18n('Relationships number');
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -168,6 +171,7 @@ const StixRelationshipsNumber = ({
           dataSelection={resolvedDataSelection}
           entityType={entityType}
           label={translatedNumberLabel}
+          drilldownLink={drilldown.getLink(0, { kind: 'total' })}
         />
       </WidgetRenderContent>
     </WidgetContainer>

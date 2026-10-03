@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItem, ListItemButton } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -17,6 +17,14 @@ interface WidgetDistributionListProps {
   hasSettingAccess?: boolean;
   overflow?: string;
   publicWidget?: boolean;
+  /**
+   * Resolves the list reproducing the count of row `index`, or null when it
+   * cannot be reproduced exactly. A callback rather than a parallel array, so it
+   * cannot fall out of step with the rows it describes.
+   *
+   * Public containers never pass it, which is what keeps public dashboards out.
+   */
+  getDrilldownLink?: (index: number) => string | null;
 }
 
 const WidgetDistributionList = ({
@@ -24,6 +32,7 @@ const WidgetDistributionList = ({
   hasSettingAccess = false,
   overflow = 'auto',
   publicWidget = false,
+  getDrilldownLink,
 }: WidgetDistributionListProps) => {
   const theme = useTheme<Theme>();
   const { n } = useFormatter();
@@ -67,61 +76,85 @@ const WidgetDistributionList = ({
           const cursorStyle = link ? 'pointer' : 'default';
           const hoverStyle = !link ? { '&.MuiListItemButton-root:hover': { backgroundColor: 'transparent' } } : {};
 
+          const countStyle = {
+            marginRight: '20px',
+            fontSize: 18,
+            fontWeight: 600,
+            color: theme.palette.primary.main,
+          };
+          const drilldownLink = getDrilldownLink?.(key) ?? null;
+
           return (
-            <ListItemButton
+            // The row and its count are two distinct destinations, so the count
+            // is a sibling of the row link: an anchor cannot contain an anchor.
+            <ListItem
               key={entry.id ?? entry.label}
-              dense={true}
               className="noDrag"
+              disablePadding
               divider={true}
-              disableRipple={publicWidget || !link}
-              {...linkProps}
-              sx={{
-                height: 50,
-                minHeight: 50,
-                maxHeight: 50,
-                paddingRight: 0,
-                cursor: cursorStyle,
-                ...hoverStyle,
-              }}
+              sx={{ height: 50, minHeight: 50, maxHeight: 50 }}
               style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
-              <ListItemIcon>
-                <ItemIcon
-                  color={
-                    theme.palette.mode === 'light'
-                    && entry.color === '#ffffff'
-                      ? '#000000'
-                      : entry.color
-                  }
-                  type={entry.id ? entry.type : 'default'}
-                />
-              </ListItemIcon>
-              <ListItemText
-                primary={(
-                  <div
-                    style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      paddingRight: 10,
-                    }}
-                  >
-                    {label}
-                  </div>
-                )}
-              />
-              <div
-                style={{
-                  float: 'right',
-                  marginRight: 20,
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: theme.palette.primary.main,
+              <ListItemButton
+                dense={true}
+                disableRipple={publicWidget || !link}
+                {...linkProps}
+                sx={{
+                  flex: 1,
+                  // Lets the label ellipsis kick in instead of pushing the count out.
+                  minWidth: 0,
+                  height: '100%',
+                  paddingRight: 0,
+                  cursor: cursorStyle,
+                  ...hoverStyle,
                 }}
               >
-                {n(entry.value)}
-              </div>
-            </ListItemButton>
+                <ListItemIcon>
+                  <ItemIcon
+                    color={
+                      theme.palette.mode === 'light'
+                      && entry.color === '#ffffff'
+                        ? '#000000'
+                        : entry.color
+                    }
+                    type={entry.id ? entry.type : 'default'}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  primary={(
+                    <div
+                      style={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        paddingRight: 10,
+                      }}
+                    >
+                      {label}
+                    </div>
+                  )}
+                />
+              </ListItemButton>
+              {drilldownLink ? (
+                <Box
+                  component={Link}
+                  to={drilldownLink}
+                  className="noDrag"
+                  data-testid="widget-distribution-count"
+                  sx={{
+                    ...countStyle,
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  {n(entry.value)}
+                </Box>
+              ) : (
+                <div style={countStyle} data-testid="widget-distribution-count">
+                  {n(entry.value)}
+                </div>
+              )}
+            </ListItem>
           );
         })}
       </List>

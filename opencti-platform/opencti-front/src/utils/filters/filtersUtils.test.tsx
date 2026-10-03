@@ -1106,6 +1106,35 @@ describe('buildFiltersAndOptionsForWidgets', () => {
     const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { isKnowledgeRelationshipWidget: true });
     expect(filters).toStrictEqual(expectedFilters);
   });
+
+  it('should default to exclusive gt/lt operators', () => {
+    const { filters } = buildFiltersAndOptionsForWidgets(undefined, {
+      startDate: '2024-01-01T00:00:00.000Z',
+      endDate: '2024-02-01T00:00:00.000Z',
+      dateAttribute: 'created_at',
+    });
+    expect(filters?.filters.map((f) => f.operator)).toEqual(['gt', 'lt']);
+  });
+
+  it('should honour explicit inclusive operators', () => {
+    const { filters } = buildFiltersAndOptionsForWidgets(undefined, {
+      startDate: '2024-01-01T00:00:00.000Z',
+      endDate: '2024-02-01T00:00:00.000Z',
+      dateAttribute: 'created_at',
+      operators: { start: 'gte', end: 'lte' },
+    });
+    expect(filters?.filters.map((f) => f.operator)).toEqual(['gte', 'lte']);
+  });
+
+  it('should allow overriding only one bound', () => {
+    const { filters } = buildFiltersAndOptionsForWidgets(undefined, {
+      startDate: '2024-01-01T00:00:00.000Z',
+      endDate: '2024-02-01T00:00:00.000Z',
+      dateAttribute: 'created_at',
+      operators: { start: 'gte' },
+    });
+    expect(filters?.filters.map((f) => f.operator)).toEqual(['gte', 'lt']);
+  });
 });
 
 describe('formatFiltersInPirContext', () => {

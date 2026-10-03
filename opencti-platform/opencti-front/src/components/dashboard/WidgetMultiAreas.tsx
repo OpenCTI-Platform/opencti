@@ -6,6 +6,8 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { areaChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
+import { useNavigate } from 'react-router';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 interface WidgetMultiAreasProps {
   series: ApexAxisChartSeries;
@@ -13,6 +15,7 @@ interface WidgetMultiAreasProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown?: WidgetDrilldown;
 }
 
 const WidgetMultiAreas = ({
@@ -21,9 +24,20 @@ const WidgetMultiAreas = ({
   isStacked = false,
   hasLegend = false,
   onMounted,
+  drilldown,
 }: WidgetMultiAreasProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
+
+  /**
+ * The chart options are memoized, so the navigate-carrying descriptor must be
+ * too: a fresh object on every render would rebuild the whole chart config.
+ */
+  const navigate = useNavigate();
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate } : undefined),
+    [drilldown, navigate],
+  );
 
   const options: ApexOptions = useMemo(() => {
     let formatter = fsd;
@@ -42,8 +56,9 @@ const WidgetMultiAreas = ({
       interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
       isStacked,
       hasLegend,
+      chartDrilldown,
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend]);
+  }, [theme, interval, isStacked, hasLegend, chartDrilldown]);
 
   return (
     <Chart

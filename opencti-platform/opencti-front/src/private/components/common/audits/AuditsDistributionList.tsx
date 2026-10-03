@@ -23,6 +23,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -93,6 +94,7 @@ interface AuditsDistributionListComponentProps {
   queryRef: PreloadedQuery<AuditsDistributionListDistributionQuery>;
   selection: WidgetDataSelection;
   hasSetAccess: boolean;
+  drilldown: WidgetDrilldown;
 }
 
 type DistributionNode = NonNullable<
@@ -103,6 +105,7 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
   queryRef,
   selection,
   hasSetAccess,
+  drilldown,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -115,8 +118,11 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
     return <WidgetNoData />;
   }
 
-  const mappedData = data.auditsDistribution
-    .filter((n): n is DistributionNode => n != null)
+  // Kept as its own const: `mappedData` is built from the filtered array, so
+  // indexing the unfiltered response would shift the drill-down rows.
+  const nodes = data.auditsDistribution.filter((n): n is DistributionNode => n != null);
+
+  const mappedData = nodes
     .map((n) => {
       let { label } = n;
       let id: string | undefined = undefined;
@@ -137,7 +143,17 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
       };
     });
 
-  return <WidgetDistributionList data={mappedData} hasSettingAccess={hasSetAccess} />;
+  return (
+    <WidgetDistributionList
+      data={mappedData}
+      hasSettingAccess={hasSetAccess}
+      getDrilldownLink={(index) => drilldown.getLink(0, {
+        kind: 'distribution',
+        rawValue: nodes[index]?.label ?? null,
+        entityId: nodes[index]?.entity?.id ?? null,
+      })}
+    />
+  );
 };
 
 interface AuditsDistributionListProps {
@@ -185,7 +201,7 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsDistributionListDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -215,6 +231,7 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
           queryRef={queryRef!}
           selection={selection}
           hasSetAccess={hasSetAccess}
+          drilldown={drilldown}
         />
       </AuditsWidgetRenderContent>
     </WidgetContainer>

@@ -5,7 +5,8 @@ import { DashboardConfig } from './dashboard-types';
 import { useQueryLoader } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
-import { resolveDataSelection } from './dashboardVizUtils';
+import { computeStartEndDates, resolveDataSelection } from './dashboardVizUtils';
+import useWidgetDrilldown from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -149,6 +150,44 @@ const useDashboardViz = <TQuery extends OperationType>({
   }, [isPending, setQueryPending]);
 
   /**
+   * Bounds the drill-down links inherit.
+   *
+   * Two ranges, because the widgets use two. Time series are fenced by the
+   * `startDate` / `endDate` *variables* -- the containers ask for them with
+   * `fallbackToDefaultDates`, so an unconfigured dashboard really queries the
+   * last 12 months and its edge buckets are cut there.
+   *
+   * Distributions and numbers are fenced by the dashboard range that
+   * `computeWidgetFiltersForSelection` baked into their filters. Reading it back
+   * from the variables would be wrong: `StixRelationshipsDonut` sends no date at
+   * all, and `StixCoreObjectsNumber` sends `dayAgo()`, a window that only feeds
+   * the 24h variation.
+   *
+   * Keyed on the variables signature so `getLink` stays referentially stable.
+   */
+  const drilldownScope = useMemo(() => {
+    const sentVariables = queryVariables as {
+      startDate?: string | null;
+      endDate?: string | null;
+      interval?: string | null;
+    } | null;
+    const { startDate, endDate } = computeStartEndDates(config);
+    return {
+      range: { startDate: sentVariables?.startDate ?? null, endDate: sentVariables?.endDate ?? null },
+      configRange: { startDate: startDate ?? null, endDate: endDate ?? null },
+      interval: sentVariables?.interval ?? null,
+    };
+  }, [queryVariablesSignature, config]);
+
+  const drilldown = useWidgetDrilldown({
+    perspective,
+    resolvedDataSelection,
+    range: drilldownScope.range,
+    configRange: drilldownScope.configRange,
+    interval: drilldownScope.interval,
+  });
+
+  /**
    * Rebuild query variables from the latest resolved selection and force a reload.
    *
    * Used by dashboard token refresh to avoid relying on a possibly stale
@@ -189,6 +228,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     queryRef,
     isPreviewMode,
     resolvedDataSelection,
+    drilldown,
     isMissingHostEntity,
     isMissingSavedFilters,
   };

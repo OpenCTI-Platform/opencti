@@ -140,8 +140,6 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     publicStixRelationshipsDistribution
     && publicStixRelationshipsDistribution.length > 0
   ) {
-    const selection = dataSelection[0];
-    const finalField = selection.attribute || 'entity_type';
     const subSelection = dataSelection[1];
     const finalSubDistributionField = subSelection.attribute || 'entity_type';
 
@@ -206,48 +204,10 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
         data: Object.entries(categoriesValues).map((o) => o[1][k]),
       };
     });
-    const subSectionIds: Record<string, number> = {};
-    if (
-      finalField === 'internal_id'
-      && finalSubDistributionField === 'internal_id'
-    ) {
-      // find subbars orders for entity subbars redirection
-      for (const distrib of publicStixRelationshipsDistribution) {
-        for (const subDistrib of (distrib?.breakdownDistribution ?? [])) {
-          if (subDistrib?.label) {
-            subSectionIds[subDistrib.label] = (subSectionIds[subDistrib.label] || 0)
-              + (subDistrib.value ?? 0);
-          }
-        }
-      }
-    }
-    const subSectionIdsOrder = R.take(
-      subSelection.number ?? 15,
-      Object.entries(subSectionIds)
-        .sort(([, a], [, b]) => b - a)
-        .map((k) => k[0]),
-    );
-    const redirectionUtils = finalField === 'internal_id'
-      ? publicStixRelationshipsDistribution.map((n) => ({
-          id: n?.label,
-          entity_type: n?.entity?.entity_type,
-          series: subSectionIdsOrder.map((subSectionId) => {
-            const [entity] = (n?.breakdownDistribution ?? []).filter(
-              (e) => e?.label === subSectionId,
-            );
-            return {
-              id: subSectionId,
-              entity_type: entity ? entity.entity?.entity_type : null,
-            };
-          }),
-        }))
-      : undefined;
-
     return (
       <WidgetHorizontalBars
         series={chartData}
         distributed={!!parameters?.distributed}
-        redirectionUtils={redirectionUtils}
         stacked
         total
         legend
