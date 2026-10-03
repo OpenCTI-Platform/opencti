@@ -503,7 +503,7 @@ export const computeLandscapeDiff = async (
   from: string,
   to: string,
   groupBy: string,
-  opts: { maxEntities?: number; onProgress?: (progress: number, total: number) => Promise<void> } = {},
+  opts: { maxEntities?: number; onProgress?: (progress: number, total: number) => Promise<void>; signal?: AbortSignal } = {},
 ): Promise<LandscapeDiffComputation> => {
   const maxEntities = opts.maxEntities ?? LANDSCAPE_MAX_ENTITIES;
   const scopeEntities = await topEntitiesList<BasicStoreEntity>(context, user, scope.entityTypes, {
@@ -539,18 +539,65 @@ export const computeLandscapeDiff = async (
   await opts.onProgress?.(0, entities.length);
   for (let index = 0; index < entities.length; index += LANDSCAPE_BATCH_SIZE) {
     await doYield();
+    opts.signal?.throwIfAborted();
     const batch = entities.slice(index, index + LANDSCAPE_BATCH_SIZE);
     await processBatch(context, user, batch, from, to, acc);
     await opts.onProgress?.(Math.min(index + batch.length, entities.length), entities.length);
   }
+  opts.signal?.throwIfAborted();
   const aggregates = await buildAggregates(context, user, acc, entities.length, groupBy);
   return { aggregates, entities: buildEntitySummaries(acc), total: entities.length, truncated: acc.truncated };
 };
 // endregion
 
 // region Background execution with progress and cache
-const runningByUser = new Map<string, number>();
-let runningTotal = 0;
+const LANDSCAPE_INTERRUPTED_MESSAGE = 'Landscape diff computation was interrupted';
+
+export interface LandscapeRunSlot {
+  userId: string;
+  controller: AbortController;
+  // Last progress of the computation (epoch milliseconds)
+  lastActivity: number;
+}
+
+/**
+ * Concurrency slots of the landscape diffs computed on this node, reserved per run id. A computation that did not
+ * report progress for `staleSeconds` is aborted and its slot released when the next run is reserved or when its
+ * state is read, so a hung computation never keeps a slot until the node restarts. Releasing is idempotent.
+ */
+export const createLandscapeRunSlots = (limits: { maxPerUser: number; maxTotal: number; staleSeconds: number }, clock: () => number = Date.now) => {
+  const slots = new Map<string, LandscapeRunSlot>();
+  const release = (id: string, reason?: string) => {
+    const slot = slots.get(id);
+    if (!slot) return;
+    slots.delete(id);
+    if (reason) slot.controller.abort(new Error(reason));
+  };
+  const releaseStale = () => {
+    const staleBefore = clock() - limits.staleSeconds * 1000;
+    [...slots.entries()].filter(([, slot]) => slot.lastActivity < staleBefore).forEach(([id]) => release(id, LANDSCAPE_INTERRUPTED_MESSAGE));
+  };
+  // Synchronous, so concurrent requests cannot exceed the limits
+  const reserve = (id: string, userId: string): LandscapeRunSlot | null => {
+    releaseStale();
+    const userRunning = [...slots.values()].filter((slot) => slot.userId === userId).length;
+    if (userRunning >= limits.maxPerUser || slots.size >= limits.maxTotal) return null;
+    const slot: LandscapeRunSlot = { userId, controller: new AbortController(), lastActivity: clock() };
+    slots.set(id, slot);
+    return slot;
+  };
+  const touch = (id: string) => {
+    const slot = slots.get(id);
+    if (slot) slot.lastActivity = clock();
+  };
+  return { reserve, touch, release, size: () => slots.size };
+};
+
+const landscapeRunSlots = createLandscapeRunSlots({
+  maxPerUser: LANDSCAPE_MAX_RUNNING_PER_USER,
+  maxTotal: LANDSCAPE_MAX_RUNNING,
+  staleSeconds: LANDSCAPE_STALE_SECONDS,
+});
 
 const stateKey = (id: string) => `${LANDSCAPE_STATE_PREFIX}${id}`;
 
@@ -610,7 +657,7 @@ const normalizeLandscapeDates = (input: LandscapeDiffInputData) => {
   return { from: from.toISOString(), to: finalTo.toISOString() };
 };
 
-const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser, state: LandscapeDiffState, scope: LandscapeScope) => {
+const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser, state: LandscapeDiffState, scope: LandscapeScope, signal: AbortSignal) => {
   // The computation outlives the request: it gets its own context, with the same organization evaluation
   // and the same draft as the request so it reads the same knowledge
   const context: AuthContext = {
@@ -622,11 +669,16 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
   await writeState(current);
   try {
     const computation = await computeLandscapeDiff(context, user, scope, state.input.from, state.input.to, state.input.group_by ?? 'entity_type', {
+      signal,
       onProgress: async (progress, total) => {
+        signal.throwIfAborted();
+        landscapeRunSlots.touch(state.id);
         current = { ...current, progress, total, updated_at: now() };
         await writeState(current);
       },
     });
+    // An interrupted run keeps its failed state, even if its last read completes afterwards
+    signal.throwIfAborted();
     current = {
       ...current,
       status: 'complete',
@@ -640,6 +692,11 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
     await writeState(current);
     addLandscapeDiffCount();
   } catch (err) {
+    if (signal.aborted) {
+      logApp.warn('[TIME MACHINE] Landscape diff computation interrupted', { id: state.id });
+      await writeState({ ...current, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() });
+      return;
+    }
     logApp.error('[TIME MACHINE] Landscape diff computation failed', { cause: err, id: state.id });
     await writeState({ ...current, status: 'failed', error: (err as Error)?.message ?? 'Landscape diff computation failed', updated_at: now() });
   }
@@ -661,25 +718,16 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
     const cached = await findLandscapeDiff(context, user, cachedId);
     if (cached && cached.status !== 'failed') return cached;
   }
-  // Slots are reserved before any await so concurrent requests cannot exceed the limits
-  const userRunning = runningByUser.get(user.id) ?? 0;
-  if (userRunning >= LANDSCAPE_MAX_RUNNING_PER_USER || runningTotal >= LANDSCAPE_MAX_RUNNING) {
+  // The slot is reserved before any await so concurrent requests cannot exceed the limits
+  const id = uuidv4();
+  const slot = landscapeRunSlots.reserve(id, user.id);
+  if (!slot) {
     throw FunctionalError('Too many landscape diffs are being computed, please retry later');
   }
-  runningByUser.set(user.id, userRunning + 1);
-  runningTotal += 1;
-  const releaseSlot = () => {
-    const remaining = (runningByUser.get(user.id) ?? 1) - 1;
-    if (remaining > 0) {
-      runningByUser.set(user.id, remaining);
-    } else {
-      runningByUser.delete(user.id);
-    }
-    runningTotal = Math.max(0, runningTotal - 1);
-  };
+  const releaseSlot = () => landscapeRunSlots.release(id);
   const createdAt = now();
   const state: LandscapeDiffState = {
-    id: uuidv4(),
+    id,
     user_id: user.id,
     access_fingerprint: accessFingerprint,
     status: 'pending',
@@ -703,7 +751,7 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
     throw err;
   }
   // The computation runs in the background, its progress is polled through the landscapeDiff query
-  void executeLandscapeDiff(context, user, state, scope).catch((err) => {
+  void executeLandscapeDiff(context, user, state, scope, slot.controller.signal).catch((err) => {
     logApp.error('[TIME MACHINE] Landscape diff execution error', { cause: err, id: state.id });
   }).finally(releaseSlot);
   return state;
@@ -802,7 +850,9 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
   if (!state || state.user_id !== user.id || state.access_fingerprint !== userAccessFingerprint(context, user)) return null;
   const isRunning = state.status === 'running' || state.status === 'pending';
   if (isRunning && utcDate().diff(utcDate(state.updated_at), 'seconds') > LANDSCAPE_STALE_SECONDS) {
-    const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: 'Landscape diff computation was interrupted', updated_at: now() };
+    // Aborts the computation and frees its slot when it runs on this node
+    landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
+    const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() };
     await writeState(interrupted);
     return interrupted;
   }
