@@ -2,6 +2,8 @@ import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import type { AuthContext, AuthUser } from '../types/user';
+import { buildFreshnessDaysSorting } from '../modules/provenance/provenance-filters';
+import { VIRTUAL_FRESHNESS_DAYS } from '../modules/provenance/provenance-types';
 
 const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
 
@@ -13,6 +15,9 @@ export const buildElasticSortingForAttributeCriteria = async (
   pirId?: string | null,
 ) => {
   let definition;
+  if (orderCriteria === VIRTUAL_FRESHNESS_DAYS) {
+    return buildFreshnessDaysSorting(orderMode);
+  }
   if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
     // the pir id should be specified and the pir accessible
     if (!pirId) {

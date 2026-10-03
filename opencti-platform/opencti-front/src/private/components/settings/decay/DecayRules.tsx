@@ -106,7 +106,13 @@ const DecayRules = () => {
   );
 
   const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
+  const userFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
+  // Indicator decay rules only: knowledge decay rules are listed in their own tab
+  const contextFilters = {
+    mode: 'and',
+    filters: [{ key: 'target_scope', values: ['indicator'], operator: 'eq', mode: 'or' }],
+    filterGroups: [userFilters],
+  };
 
   const queryPaginationOptions = {
     ...paginationOptions,

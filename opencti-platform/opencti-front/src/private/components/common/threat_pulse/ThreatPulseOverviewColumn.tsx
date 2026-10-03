@@ -9,8 +9,9 @@ interface ThreatPulseOverviewColumnProps {
 }
 
 /**
- * Right column of the overview of a Threat Pulse scoped entity: the Basic information card, which carries the Sources
- * summary, then the Threat Pulse card. The first card keeps filling the row when the second one renders nothing.
+ * Right column of the overview of a Threat Pulse scoped entity: the overview column (Basic information, then Sources
+ * when the element has provenance), then the Threat Pulse card. The overview keeps filling the row when the Threat
+ * Pulse card renders nothing.
  */
 const ThreatPulseOverviewColumn = ({ entityId, children }: ThreatPulseOverviewColumnProps) => (
   <Stack sx={{ height: '100%', gap: 3 }}>

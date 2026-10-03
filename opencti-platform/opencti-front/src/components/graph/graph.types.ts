@@ -13,6 +13,8 @@ interface GraphElement {
   isNestedInferred: boolean;
   createdBy: { id: string; name: string };
   markedBy: { id: string; definition: string }[];
+  // Number of distinct sources asserting the element (provenance)
+  corroborationCount?: number;
 }
 
 export interface GraphLink extends GraphElement {
