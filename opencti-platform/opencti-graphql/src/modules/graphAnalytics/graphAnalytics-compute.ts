@@ -390,7 +390,7 @@ export const runInfrastructureClustering = async (
   const population = await elList<BasicStoreBase>(context, user, GRAPH_METRICS_ENTITY_INDICES, {
     types: INFRASTRUCTURE_ENTITY_TYPES,
     first: 5000,
-    maxSize: config.clusteringMaxEntities,
+    maxSize: config.clusteringMaxEntities + 1,
     baseData: true,
     noFiltersChecking: true,
     filters: {
@@ -399,6 +399,13 @@ export const runInfrastructureClustering = async (
       filterGroups: [],
     },
   });
+  // Finalizing replaces every cluster of older runs: a partial population would wrongly dissolve the others
+  if (population.length > config.clusteringMaxEntities) {
+    logApp.warn('[OPENCTI-MODULE] Graph analytics infrastructure clustering skipped, too many entities: raise clustering_max_entities or deploy opencti-analytics', {
+      max: config.clusteringMaxEntities,
+    });
+    return { clusters: 0, members: 0, skipped: true };
+  }
   const profiles = await loadFeatureProfilesBatched(context, user, population.map((p) => ({ id: p.internal_id, entity_type: p.entity_type })), config);
   const members: ClusteringMember[] = profiles.map((profile) => ({ id: profile.id, type: profile.entity_type, features: profile.features }));
   const clusters = computeFeatureClusters(members, {

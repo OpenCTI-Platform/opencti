@@ -38,7 +38,7 @@ While the analytics process wrote results in the last `analytics_process_grace_h
 | `graph_analytics_manager:feature_max_fanout` | `GRAPH_ANALYTICS_MANAGER__FEATURE_MAX_FANOUT` | `500` | Elements shared by more entities are not used to find candidates |
 | `graph_analytics_manager:feature_max_per_family` | `GRAPH_ANALYTICS_MANAGER__FEATURE_MAX_PER_FAMILY` | `500` | Elements kept per family in an entity profile |
 | `graph_analytics_manager:clustering_enabled` | `GRAPH_ANALYTICS_MANAGER__CLUSTERING_ENABLED` | `true` | Compute infrastructure clusters in the platform |
-| `graph_analytics_manager:clustering_max_entities` | `GRAPH_ANALYTICS_MANAGER__CLUSTERING_MAX_ENTITIES` | `100000` | Maximum number of infrastructure elements clustered |
+| `graph_analytics_manager:clustering_max_entities` | `GRAPH_ANALYTICS_MANAGER__CLUSTERING_MAX_ENTITIES` | `100000` | Maximum number of infrastructure elements clustered; above it, the platform clustering is skipped and the previous clusters are kept |
 | `graph_analytics_manager:clustering_feature_max_fanout` | `GRAPH_ANALYTICS_MANAGER__CLUSTERING_FEATURE_MAX_FANOUT` | `50` | Features shared by more elements do not link them |
 | `graph_analytics_manager:clustering_min_size` | `GRAPH_ANALYTICS_MANAGER__CLUSTERING_MIN_SIZE` | `3` | Smallest cluster kept |
 | `graph_analytics_manager:analytics_process_grace_hours` | `GRAPH_ANALYTICS_MANAGER__ANALYTICS_PROCESS_GRACE_HOURS` | `48` | Hours during which the analytics process owns the clusters after its last run |
