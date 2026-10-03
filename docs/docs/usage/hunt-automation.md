@@ -22,7 +22,7 @@ Standing hunts are debounced: a hunt runs at most once per debounce period (15 m
 
 ## Activation by Priority Intelligence Requirements
 
-With **PIR activation**, a hunt is **armed** while at least one of its targets is flagged by a [Priority Intelligence Requirement](pir.md). Arming runs the hunt once; while armed, its schedule and standing triggers apply. When no PIR flags its targets anymore, the hunt is disarmed and waits. Arming never changes the status of the hunt, which remains the analyst's decision.
+With **PIR activation**, a hunt is **armed** while at least one of its targets is flagged by a [Priority Intelligence Requirement](pir.md). Arming runs the hunt once, and the hunt counts as armed once that run has started (when no hunt connector can take it yet, arming is tried again at the next tick); while armed, its schedule and standing triggers apply. When no PIR flags its targets anymore, the hunt is disarmed and waits. Arming never changes the status of the hunt, which remains the analyst's decision.
 
 ## Playbooks
 
@@ -40,6 +40,8 @@ When the runs complete, OpenCTI writes the `hunt_detected` coverage on the secur
 ## Hunt manager
 
 The hunt manager runs on one platform node at a time. It dispatches the queued runs within the connector budgets, expires the runs a connector never completed, retries failed runs, resumes the playbooks waiting on hunts, applies the run retention and, in Enterprise Edition, starts the scheduled, standing and PIR armed hunts. Manual runs rely on it too, the manager is therefore enabled in every edition.
+
+Work a tick cannot take is kept for the next tick, never dropped: due scheduled hunts beyond the tick budget keep their occurrence, triggered standing hunts stay pending until a run serves them, and the runs queued for a saturated or offline connector never hold back the runs of the other connectors.
 
 | Parameter | Environment variable | Default | Description |
 |---|---|---|---|

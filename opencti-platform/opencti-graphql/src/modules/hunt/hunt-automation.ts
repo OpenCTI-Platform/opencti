@@ -219,31 +219,53 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
 
 /**
  * Queued runs deferred by the connector budgets or a connector outage, translation previews first (an analyst waits
- * for them), then the oldest runs.
+ * for them), then the oldest runs. The queue is read page by page and a connector that defers a run is skipped for the
+ * rest of the tick, so the runs waiting on a saturated or offline connector never hold back the other connectors.
  */
 export const dispatchQueuedHuntRuns = async (context: AuthContext): Promise<number> => {
-  const runs = await listRuns(context, [
-    { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_QUEUED] },
-    { key: ['dispatched_at'], values: [], operator: FilterOperator.Nil },
-  ]);
-  const ordered = [...runs.filter((run) => run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW), ...runs.filter((run) => run.hunt_run_mode !== HUNT_RUN_MODE_PREVIEW)];
   const hunts = new Map<string, BasicStoreEntityHunt | undefined>();
+  const deferringConnectors = new Set<string>();
   let dispatched = 0;
-  for (let index = 0; index < ordered.length; index += 1) {
-    const run = ordered[index];
-    if (!hunts.has(run.hunt_id)) {
-      hunts.set(run.hunt_id, await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT }) ?? undefined);
-    }
-    const hunt = hunts.get(run.hunt_id);
-    try {
-      if (!hunt) {
-        await expireHuntRun(context, run, 'The hunt of the run does not exist anymore');
-      } else if (await dispatchHuntRun(context, run, hunt)) {
-        dispatched += 1;
+  const dispatchPage = async (runs: BasicStoreEntityHuntRun[]) => {
+    for (let index = 0; index < runs.length; index += 1) {
+      if (dispatched >= HUNT_CONFIG.maxRunsPerTick) {
+        return false;
       }
-    } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt run dispatch failed', { cause: error, runId: run.internal_id });
+      const run = runs[index];
+      if (!run.connector_id || !deferringConnectors.has(run.connector_id)) {
+        if (!hunts.has(run.hunt_id)) {
+          hunts.set(run.hunt_id, await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT }) ?? undefined);
+        }
+        const hunt = hunts.get(run.hunt_id);
+        try {
+          if (!hunt) {
+            await expireHuntRun(context, run, 'The hunt of the run does not exist anymore');
+          } else if (await dispatchHuntRun(context, run, hunt)) {
+            dispatched += 1;
+          } else if (run.connector_id) {
+            deferringConnectors.add(run.connector_id);
+          }
+        } catch (error) {
+          logApp.error('[OPENCTI-MODULE] Hunt run dispatch failed', { cause: error, runId: run.internal_id });
+        }
+      }
     }
+    return true;
+  };
+  const modes = [HUNT_RUN_MODE_PREVIEW, HUNT_RUN_MODE_EXECUTE];
+  for (let index = 0; index < modes.length && dispatched < HUNT_CONFIG.maxRunsPerTick; index += 1) {
+    await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+      first: HUNT_CONFIG.maxRunsPerTick,
+      orderBy: 'created_at',
+      orderMode: OrderingMode.Asc,
+      filters: andFilters([
+        { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_QUEUED] },
+        { key: ['dispatched_at'], values: [], operator: FilterOperator.Nil },
+        { key: ['hunt_run_mode'], values: [modes[index]] },
+      ]),
+      noFiltersChecking: true,
+      callback: dispatchPage,
+    });
   }
   return dispatched;
 };
@@ -331,9 +353,10 @@ export const runScheduledHunts = async (context: AuthContext): Promise<number> =
     filterGroups: [],
   }], 'next_run_at');
   let started = 0;
-  for (let index = 0; index < hunts.length; index += 1) {
+  // Once the tick budget is spent the remaining hunts keep their due occurrence for the next tick
+  for (let index = 0; index < hunts.length && started < HUNT_CONFIG.maxRunsPerTick; index += 1) {
     const hunt = hunts[index];
-    if (hunt.next_run_at && started < HUNT_CONFIG.maxRunsPerTick && !isWaitingForPir(hunt)) {
+    if (hunt.next_run_at && !isWaitingForPir(hunt)) {
       started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE);
     }
     const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
@@ -358,11 +381,16 @@ export const reconcilePirActivatedHunts = async (context: AuthContext): Promise<
     for (let index = 0; index < hunts.length; index += 1) {
       const hunt = hunts[index];
       const armed = (hunt[RELATION_HUNT_TARGETS] ?? []).some((targetId) => flagged.has(targetId));
-      if (armed !== (hunt.hunt_pir_armed === true)) {
-        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: armed, hunt_pir_armed_at: armed ? now() : null });
-        logApp.info(`[OPENCTI-MODULE] Hunt ${armed ? 'armed' : 'disarmed'} by its PIR targets`, { huntId: hunt.internal_id });
-        if (armed && started < HUNT_CONFIG.maxRunsPerTick) {
-          started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING);
+      if (!armed && hunt.hunt_pir_armed === true) {
+        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: false, hunt_pir_armed_at: null });
+        logApp.info('[OPENCTI-MODULE] Hunt disarmed by its PIR targets', { huntId: hunt.internal_id });
+      } else if (armed && hunt.hunt_pir_armed !== true && started < HUNT_CONFIG.maxRunsPerTick) {
+        // Armed once its arming run started: a run the tick budget or a missing connector refused is tried at the next tick
+        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING);
+        if (runs > 0) {
+          started += runs;
+          await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now() });
+          logApp.info('[OPENCTI-MODULE] Hunt armed by its PIR targets', { huntId: hunt.internal_id });
         }
       }
     }
@@ -465,7 +493,8 @@ const isRecentStandingRun = async (context: AuthContext, candidate: StandingCand
 /**
  * Standing hunts: the stream events since the last tick are matched against the trigger filters of each standing hunt
  * (or, without filters, against the threats, techniques and sources of the hunt). Results of hunt connectors never
- * trigger a hunt. Triggered hunts run once per debounce window, rising threats first.
+ * trigger a hunt. Triggered hunts run once per debounce window, rising threats first; a trigger stays pending on its
+ * hunt until a tick serves it.
  */
 export const processStandingHunts = async (context: AuthContext): Promise<number> => {
   const lastEventId = await redisGetManagerEventState(HUNT_MANAGER_STREAM_STATE);
@@ -502,12 +531,35 @@ export const processStandingHunts = async (context: AuthContext): Promise<number
     }
   };
   const { lastEventId: newLastEventId } = await fetchStreamEventsRangeFromEventId(lastEventId, processEvents, { streamBatchSize: HUNT_CONFIG.streamBatchSize });
+  // A trigger is kept on its hunt (its next run is due now) before the stream position moves past the events that raised
+  // it, and cleared once served: a trigger beyond the tick budget, or whose run could not start, is served by a later tick
+  const pending = new Set(listening
+    .filter((hunt) => !!hunt.next_run_at && new Date(hunt.next_run_at).getTime() <= Date.now())
+    .map((hunt) => hunt.internal_id));
+  const triggeredAt = now();
+  const newlyTriggered = Array.from(triggered.keys()).filter((huntId) => !pending.has(huntId));
+  for (let index = 0; index < newlyTriggered.length; index += 1) {
+    await updateHuntRunInformation(context, newlyTriggered[index], { next_run_at: triggeredAt });
+    pending.add(newlyTriggered[index]);
+  }
   await redisSetManagerEventState(HUNT_MANAGER_STREAM_STATE, newLastEventId);
-  const ordered = Array.from(triggered.values()).sort((a, b) => Number(b.rising) - Number(a.rising));
+  const candidatesById = new Map(candidates.map((candidate) => [candidate.hunt.internal_id, candidate]));
+  const ordered = Array.from(pending)
+    .map((huntId) => candidatesById.get(huntId))
+    .filter((candidate): candidate is StandingCandidate => !!candidate)
+    .sort((a, b) => Number(b.rising) - Number(a.rising));
   let started = 0;
   for (let index = 0; index < ordered.length && started < HUNT_CONFIG.maxRunsPerTick; index += 1) {
-    if (!(await isRecentStandingRun(context, ordered[index]))) {
-      started += await startAutomaticRuns(context, ordered[index].hunt, HUNT_RUN_TRIGGER_STANDING);
+    const candidate = ordered[index];
+    // A standing run within the debounce window serves the trigger
+    let served = true;
+    if (!(await isRecentStandingRun(context, candidate))) {
+      const runs = await startAutomaticRuns(context, candidate.hunt, HUNT_RUN_TRIGGER_STANDING);
+      started += runs;
+      served = runs > 0;
+    }
+    if (served) {
+      await updateHuntRunInformation(context, candidate.hunt.internal_id, { next_run_at: null });
     }
   }
   return started;

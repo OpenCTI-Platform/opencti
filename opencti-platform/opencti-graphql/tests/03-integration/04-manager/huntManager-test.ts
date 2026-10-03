@@ -33,12 +33,15 @@ import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import {
   dispatchQueuedHuntRuns,
   expireStaleHuntRuns,
+  HUNT_MANAGER_STREAM_STATE,
+  processStandingHunts,
   purgeExpiredHuntRuns,
   reconcilePirActivatedHunts,
   resumeSettledHuntPlaybooks,
   retryFailedHuntRuns,
   runScheduledHunts,
 } from '../../../src/modules/hunt/hunt-automation';
+import { redisSetManagerEventState } from '../../../src/database/redis';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 
@@ -374,6 +377,134 @@ describe('Hunt manager', () => {
       await deletePir(testContext, ADMIN_USER, pir.id);
       await deleteTestHunt(olderId);
       await deleteTestHunt(newerId);
+    }
+  });
+
+  it('should keep the due occurrence of the scheduled hunts beyond the tick budget', async () => {
+    const firstId = await addTestHunt('Hunt manager test first due cron hunt');
+    const secondId = await addTestHunt('Hunt manager test second due cron hunt');
+    await patchAttribute(testContext, ADMIN_USER, firstId, ENTITY_TYPE_HUNT, { hunt_schedule: '0 */6 * * *', next_run_at: hoursAgo(3) });
+    await patchAttribute(testContext, ADMIN_USER, secondId, ENTITY_TYPE_HUNT, { hunt_schedule: '0 */6 * * *', next_run_at: hoursAgo(2) });
+    const { maxRunsPerTick } = HUNT_CONFIG;
+    HUNT_CONFIG.maxRunsPerTick = 1;
+    try {
+      await runScheduledHunts(testContext);
+      expect(new Date((await loadHunt(firstId)).next_run_at as string).getTime()).toBeGreaterThan(Date.now());
+      // Beyond the budget: the occurrence is still due, not skipped
+      expect(new Date((await loadHunt(secondId)).next_run_at as string).getTime()).toBeLessThan(Date.now());
+      expect((await listHuntRuns(secondId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_SCHEDULE)).toHaveLength(0);
+      await runScheduledHunts(testContext);
+      expect((await listHuntRuns(secondId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_SCHEDULE)).toHaveLength(1);
+    } finally {
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      await deleteTestHunt(firstId);
+      await deleteTestHunt(secondId);
+    }
+  });
+
+  it('should arm a PIR activated hunt only once its arming run started', async () => {
+    const armedId = await addTestHunt('Hunt manager test arming run hunt');
+    await patchAttribute(testContext, ADMIN_USER, armedId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
+    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
+    const pir = await pirAdd(testContext, ADMIN_USER, {
+      name: 'Hunt manager test arming PIR',
+      pir_type: PirType.ThreatLandscape,
+      pir_rescan_days: 0,
+      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
+      pir_criteria: [criterion],
+    });
+    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
+    const { maxRunsPerTick } = HUNT_CONFIG;
+    try {
+      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
+      // No run can start in this tick: the hunt stays disarmed and arming is tried again
+      HUNT_CONFIG.maxRunsPerTick = 0;
+      await reconcilePirActivatedHunts(testContext);
+      expect((await loadHunt(armedId)).hunt_pir_armed).not.toBe(true);
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      await reconcilePirActivatedHunts(testContext);
+      expect((await loadHunt(armedId)).hunt_pir_armed).toBe(true);
+      expect((await listHuntRuns(armedId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
+    } finally {
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
+      await deletePir(testContext, ADMIN_USER, pir.id);
+      await deleteTestHunt(armedId);
+    }
+  });
+
+  it('should keep a standing trigger pending until a tick serves it', async () => {
+    const standingId = await addTestHunt('Hunt manager test pending standing hunt');
+    // A trigger raised by an earlier tick and not served yet
+    await patchAttribute(testContext, ADMIN_USER, standingId, ENTITY_TYPE_HUNT, { hunt_schedule: 'standing', next_run_at: hoursAgo(1) });
+    await redisSetManagerEventState(HUNT_MANAGER_STREAM_STATE, `${Date.now()}-0`);
+    const { maxRunsPerTick } = HUNT_CONFIG;
+    try {
+      HUNT_CONFIG.maxRunsPerTick = 0;
+      await processStandingHunts(testContext);
+      expect((await loadHunt(standingId)).next_run_at).toBeTruthy();
+      expect(await listHuntRuns(standingId)).toHaveLength(0);
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      expect(await processStandingHunts(testContext)).toBeGreaterThanOrEqual(1);
+      expect((await loadHunt(standingId)).next_run_at).toBeFalsy();
+      expect((await listHuntRuns(standingId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(1);
+    } finally {
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      await deleteTestHunt(standingId);
+    }
+  });
+
+  it('should dispatch the runs of a healthy connector past the runs waiting on a saturated one', async () => {
+    const sentinelConnectorId = uuidv4();
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: gql`mutation RegisterConnector($input: RegisterConnectorInput) { registerConnector(input: $input) { id } }`,
+      variables: { input: { id: sentinelConnectorId, name: 'Hunt manager test Sentinel connector', type: 'INTERNAL_HUNT', scope: ['microsoft-sentinel'], auto: false, only_contextual: false } },
+    });
+    const registration = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: gql`mutation HuntConnectorRegister($input: HuntConnectorRegisterInput!) {
+        huntConnectorRegister(input: $input) { id securityPlatform { id } }
+      }`,
+      variables: { input: { connector_id: sentinelConnectorId, platform: 'microsoft-sentinel', languages: ['kql'], security_platform_name: 'Hunt manager test Sentinel' } },
+    });
+    const sentinelPlatformId = registration.data?.huntConnectorRegister.securityPlatform.id;
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const saturatedHunt = await loadHunt(huntId);
+    const sentinelHuntId = await addTestHunt('Hunt manager test Sentinel hunt');
+    await patchAttribute(testContext, ADMIN_USER, sentinelHuntId, ENTITY_TYPE_HUNT, {
+      native_queries: [{ platform: 'microsoft-sentinel', language: 'kql', query: 'DeviceProcessEvents | take 1', pipeline: null }],
+    });
+    const { maxRunsPerTick, maxConcurrentRunsPerConnector } = HUNT_CONFIG;
+    const waiting: BasicStoreEntityHuntRun[] = [];
+    try {
+      // Runs left queued by earlier tests are dispatched first, so that only the runs below compete
+      await dispatchQueuedHuntRuns(testContext);
+      // The Splunk connector runs one hunt and takes no other run
+      waiting.push(...await createHuntRuns(testContext, saturatedHunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, securityPlatformIds: [securityPlatformId] }));
+      const occupied = (await listHuntRuns(huntId)).filter((run) => HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status) && run.dispatched_at).length;
+      expect(occupied).toBeGreaterThanOrEqual(1);
+      HUNT_CONFIG.maxConcurrentRunsPerConnector = occupied;
+      for (let index = 0; index < 3; index += 1) {
+        waiting.push(...await createHuntRuns(testContext, saturatedHunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false, securityPlatformIds: [securityPlatformId] }));
+      }
+      const sentinelHunt = await loadHunt(sentinelHuntId);
+      const [healthy] = await createHuntRuns(testContext, sentinelHunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false, securityPlatformIds: [sentinelPlatformId] });
+      expect(healthy.connector_id).toEqual(sentinelConnectorId);
+      // One tick reads fewer runs than wait on the saturated connector, all of them older than the healthy one
+      HUNT_CONFIG.maxRunsPerTick = 2;
+      expect(await dispatchQueuedHuntRuns(testContext)).toEqual(1);
+      expect((await loadRun(healthy.internal_id)).dispatched_at).toBeTruthy();
+    } finally {
+      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
+      HUNT_CONFIG.maxConcurrentRunsPerConnector = maxConcurrentRunsPerConnector;
+      for (let index = 0; index < waiting.length; index += 1) {
+        await deleteElementById(testContext, ADMIN_USER, waiting[index].internal_id, ENTITY_TYPE_HUNT_RUN);
+      }
+      await deleteTestHunt(sentinelHuntId);
+      await queryAsAdmin({ query: gql`mutation DeleteConnector($id: ID!) { deleteConnector(id: $id) }`, variables: { id: sentinelConnectorId } });
+      if (sentinelPlatformId) {
+        await deleteElementById(testContext, ADMIN_USER, sentinelPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+      }
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     }
   });
 
