@@ -89,14 +89,15 @@ const validatePlanSchema = ajv.compile(HUNT_PLAN_SCHEMA);
 // region triage
 export interface HuntTriageResult {
   verdict: string;
-  confidence: number;
+  // Null when the triage cannot weigh the evidence: shown as not assessed, never replaced by a number
+  confidence: number | null;
   rationale: string;
   incident: { name: string; description: string; severity: string } | null;
 }
 
 interface RawHuntTriageResult {
   verdict: string;
-  confidence: number;
+  confidence: number | null;
   rationale: string;
   incident?: { name: string; description: string; severity: string } | null;
 }
@@ -105,7 +106,7 @@ const HUNT_TRIAGE_SCHEMA: JSONSchemaType<RawHuntTriageResult> = {
   type: 'object',
   properties: {
     verdict: { type: 'string', enum: [HUNT_VERDICT_TRUE_POSITIVE, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE] },
-    confidence: { type: 'integer', minimum: 0, maximum: 100 },
+    confidence: { type: 'integer', minimum: 0, maximum: 100, nullable: true },
     rationale: { type: 'string', minLength: 1, maxLength: 10000 },
     incident: {
       type: 'object',

@@ -422,9 +422,11 @@ const RunTriage = ({ run }: { run: Run }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
               <Text variant="content-compact-bold">{t_i18n('Proposed verdict')}</Text>
               <HuntVerdictChip value={run.verdict_proposal} />
-              {run.verdict_proposal_confidence !== null && run.verdict_proposal_confidence !== undefined && (
-                <Text variant="content-compact">{t_i18n('Confidence {value}%', { values: { value: run.verdict_proposal_confidence } })}</Text>
-              )}
+              <Text variant="content-compact" data-testid="hunt-run-triage-confidence">
+                {run.verdict_proposal_confidence === null || run.verdict_proposal_confidence === undefined
+                  ? t_i18n('Confidence not assessed')
+                  : t_i18n('Confidence {value}%', { values: { value: run.verdict_proposal_confidence } })}
+              </Text>
               {run.verdict_proposal_agent && <Text variant="content-caption">{t_i18n('by {agent}', { values: { agent: run.verdict_proposal_agent } })}</Text>}
             </div>
             {run.verdict_proposal_rationale && (

@@ -83,7 +83,7 @@ Analysts set the final verdict from the run, with an optional feedback. Hunt sta
     AI assistance for hunts is available under the **OpenCTI Enterprise Edition** licence and requires XTM One. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
 - **Plan a hunt**: from the **Ask AI** menu of a threat, a report or an indicator, the hunt planner agent of XTM One designs a hunt (hypothesis, Sigma rule, native queries, benign patterns, threshold) from the knowledge about the entity and the security platforms available. The hunt is created in a draft workspace for review: it never runs before an analyst validates it.
-- **Triage**: runs with hits can be sent to the hunt triage agent. Its answer is stored as a **proposed verdict** with a confidence and a rationale; it is never applied automatically, the analyst decides.
+- **Triage**: runs with hits can be sent to the hunt triage agent. Its answer is stored as a **proposed verdict** with a confidence from 0 to 100 (shown as "Confidence not assessed" when the agent cannot weigh the evidence, never replaced by a number) and a rationale; it is never applied automatically, the analyst decides.
 
 ## Validation with OpenAEV
 

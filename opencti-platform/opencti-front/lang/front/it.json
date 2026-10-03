@@ -806,6 +806,7 @@
   "confidence": "Confidenza",
   "Confidence {value}%": "Confidenza {value}%",
   "Confidence level": "Livello di fiducia",
+  "Confidence not assessed": "Confidenza non valutata",
   "confidence scale configuration has been successfully updated": "La configurazione della scala di fiducia è stata aggiornata con successo",
   "Confidence step": "Passo di confidenza",
   "confidence_0": "Nessuna",

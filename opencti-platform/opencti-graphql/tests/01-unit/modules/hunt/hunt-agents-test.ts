@@ -79,4 +79,11 @@ describe('Hunt triage answers', () => {
     expect(() => validateHuntTriageResult({ verdict: 'benign', confidence: 50, rationale: '' })).toThrow('triage schema');
     expect(() => validateHuntTriageResult({ verdict: 'true_positive', confidence: 50, rationale: 'r', incident: { name: 'n', description: 'd', severity: 'huge' } })).toThrow('triage schema');
   });
+
+  it('should keep a confidence the triage could not assess as null, never as a number', () => {
+    expect(validateHuntTriageResult({ verdict: 'inconclusive', confidence: null, rationale: 'sample too small' }))
+      .toEqual({ verdict: 'inconclusive', confidence: null, rationale: 'sample too small', incident: null });
+    // The key stays mandatory: an answer that omits it is refused rather than defaulted
+    expect(() => validateHuntTriageResult({ verdict: 'inconclusive', rationale: 'r' })).toThrow('triage schema');
+  });
 });

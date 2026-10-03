@@ -806,6 +806,7 @@
   "confidence": "置信度",
   "Confidence {value}%": "置信度 {value}%",
   "Confidence level": "置信级别",
+  "Confidence not assessed": "置信度未评估",
   "confidence scale configuration has been successfully updated": "置信度配置已成功更新",
   "Confidence step": "置信度步长",
   "confidence_0": "无",

@@ -806,6 +806,7 @@
   "confidence": "신뢰도",
   "Confidence {value}%": "신뢰도 {value}%",
   "Confidence level": "신뢰도 수준",
+  "Confidence not assessed": "신뢰도 평가 안 됨",
   "confidence scale configuration has been successfully updated": "신뢰도 척도 구성이 성공적으로 업데이트되었습니다",
   "Confidence step": "신뢰도 감소 폭",
   "confidence_0": "없음",
