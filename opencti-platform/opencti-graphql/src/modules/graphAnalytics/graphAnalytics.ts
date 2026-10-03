@@ -24,6 +24,7 @@ const GRAPH_CLUSTER_DEFINITION: ModuleDefinition<StoreEntityGraphCluster, StixGr
     definition: {
       [ENTITY_TYPE_GRAPH_CLUSTER]: [{ src: 'cluster_id' }],
     },
+    resolvers: {},
   },
   attributes: graphClusterAttributes,
   relations: [],
@@ -44,6 +45,7 @@ const GRAPH_SIMILARITY_DEFINITION: ModuleDefinition<StoreEntityGraphSimilarity, 
     definition: {
       [ENTITY_TYPE_GRAPH_SIMILARITY]: [{ src: 'similarity_entity_id' }, { src: 'similarity_target_id' }],
     },
+    resolvers: {},
   },
   attributes: graphSimilarityAttributes,
   relations: [],

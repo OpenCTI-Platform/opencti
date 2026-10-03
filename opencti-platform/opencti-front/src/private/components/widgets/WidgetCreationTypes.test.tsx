@@ -21,6 +21,8 @@ const ALL_VISUALIZATION_TYPES = [
   'map',
   'bookmark',
   'wordcloud',
+  'graph-similarity-matrix',
+  'graph-clusters-size',
 ];
 
 describe('getVisualizationTypes', () => {
