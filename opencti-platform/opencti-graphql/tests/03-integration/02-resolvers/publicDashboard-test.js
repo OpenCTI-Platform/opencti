@@ -1056,16 +1056,15 @@ describe('PublicDashboard resolver', () => {
               }
             }
           `;
-          const { data } = await queryAsAdmin({
+          const { data, errors } = await queryAsAdmin({
             query: API_TOP_HUBS_QUERY,
             variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104' },
           });
-          // ranked by graph degree whatever the configured sort, bounded by the number of results
-          const hubs = data.publicStixCoreObjects.edges.map((e) => e.node);
-          expect(hubs.length).toEqual(2);
-          expect(hubs[0].id).toEqual(magnetoId);
-          expect(hubs[0].x_opencti_graph_metrics.degree).toEqual(2);
-          expect(hubs[1].x_opencti_graph_metrics.degree).toEqual(1);
+          // ranked by graph degree: a dashboard sharing no marking does not read every relationship of the platform,
+          // so the platform-wide degrees cannot rank its entities
+          expect(data.publicStixCoreObjects).toBeNull();
+          expect(errors?.[0]?.message).toEqual('Graph metrics filtering and sorting require access to every relationship of the platform');
+          expect(errors?.[0]?.extensions?.data?.fields).toEqual(['x_opencti_graph_metrics.degree']);
         });
 
         it('should return the data for API: SCR List', async () => {
