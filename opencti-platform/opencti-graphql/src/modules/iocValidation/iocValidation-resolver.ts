@@ -12,10 +12,11 @@ import {
   loadRequestConnector,
   loadRequestDeployments,
   loadRequestPlatforms,
+  readableResultsSummary,
   requestIndicatorsValidation,
   updateIocValidationRequestStatus,
 } from './iocValidation-domain';
-import { emptyResultsSummary, requesterIdOf } from './iocValidation-utils';
+import { requesterIdOf } from './iocValidation-utils';
 
 const iocValidationResolvers: Resolvers = {
   Query: {
@@ -28,8 +29,8 @@ const iocValidationResolvers: Resolvers = {
     platform_ids: (request, _, context) => filterReadablePlatformIds(context, context.user!, request as never),
     indicator_ids: (request, _, context) => filterReadableIndicatorIds(context, context.user!, request as never),
     platforms: (request, _, context) => loadRequestPlatforms(context, context.user!, request as never) as never,
-    indicators_count: (request) => (request.indicator_ids ?? []).length,
-    results_summary: (request) => request.results_summary ?? emptyResultsSummary(),
+    indicators_count: async (request, _, context) => (await filterReadableIndicatorIds(context, context.user!, request as never)).length,
+    results_summary: (request, _, context) => readableResultsSummary(context, context.user!, request as never),
     iocs: async (request, _, context) => (await filterReadableIocs(context, context.user!, request as never)).iocs as never,
     skipped: (request, _, context) => filterReadableSkipped(context, context.user!, request as never) as never,
     deployments: (request, _, context) => loadRequestDeployments(context, context.user!, request as never) as never,

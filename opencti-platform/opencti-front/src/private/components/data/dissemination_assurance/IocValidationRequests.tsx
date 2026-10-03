@@ -18,6 +18,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { deleteNode } from '../../../../utils/store';
+import { MESSAGING$ } from '../../../../relay/environment';
 import DisseminationAssuranceMenu from './DisseminationAssuranceMenu';
 import IocValidationRequestDetails from './IocValidationRequestDetails';
 import { RequestStatusChip } from './DisseminationStatusChips';
@@ -28,6 +29,7 @@ import type {
   IocValidationRequestsLinesPaginationQuery,
   IocValidationRequestsLinesPaginationQuery$variables,
 } from './__generated__/IocValidationRequestsLinesPaginationQuery.graphql';
+import type { IocValidationRequestsDeletionMutation } from './__generated__/IocValidationRequestsDeletionMutation.graphql';
 
 const ENTITY_TYPE_IOC_VALIDATION_REQUEST = 'Ioc-Validation-Request';
 const LOCAL_STORAGE_KEY = 'ioc-validation-requests';
@@ -126,9 +128,7 @@ const requestDeletionMutation = graphql`
 const RequestDeletion = ({ id, paginationOptions }: { id: string; paginationOptions: IocValidationRequestsLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [commit, deleting] = useApiMutation(requestDeletionMutation, undefined, {
-    successMessage: t_i18n('Validation request deleted'),
-  });
+  const [commit, deleting] = useApiMutation<IocValidationRequestsDeletionMutation>(requestDeletionMutation);
   return (
     <>
       <Tooltip>
@@ -158,9 +158,19 @@ const RequestDeletion = ({ id, paginationOptions }: { id: string; paginationOpti
             disabled={deleting}
             onClick={() => commit({
               variables: { id },
-              updater: (store) => deleteNode(store, 'Pagination_iocValidationRequests', paginationOptions, id),
-              onCompleted: () => setOpen(false),
-              onError: () => setOpen(false),
+              // Payload errors reach the updater and onCompleted: only a returned id confirms the deletion.
+              updater: (store, data) => {
+                if (data?.iocValidationRequestDelete) deleteNode(store, 'Pagination_iocValidationRequests', paginationOptions, id);
+              },
+              onCompleted: (response, errors) => {
+                if (errors && errors.length > 0) {
+                  MESSAGING$.notifyError(errors[0].message);
+                } else if (response.iocValidationRequestDelete) {
+                  setOpen(false);
+                  MESSAGING$.notifySuccess(t_i18n('Validation request deleted'));
+                }
+              },
+              onError: () => {},
             })}
           >
             {t_i18n('Delete')}
