@@ -9,11 +9,11 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { PATH_HUNT } from '../common/routes/paths';
-import { aggregateHuntEvidence, huntEvidenceFields, shortHash, type HuntEvidenceRow } from './hunt-evidence-utils';
+import { aggregateHuntEvidence, huntEvidenceFields, huntEvidenceWindow, shortHash, type HuntEvidenceRow } from './hunt-evidence-utils';
 import { HUNT_RUN_ENTITY_TYPE } from './hunt-utils';
 import { HuntEvidenceRunsQuery, HuntEvidenceRunsQuery$variables } from './__generated__/HuntEvidenceRunsQuery.graphql';
 
-/** The evidence of the most recent completed runs is aggregated in the browser. */
+/** The evidence of the most recent completed runs is aggregated in the browser; the screen names this window when older runs exist. */
 const EVIDENCE_RUNS_COUNT = 100;
 const ALL = 'all';
 
@@ -38,6 +38,9 @@ const huntEvidenceRunsQuery = graphql`
             count
           }
         }
+      }
+      pageInfo {
+        globalCount
       }
     }
   }
@@ -81,6 +84,7 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
   if (runs.length === 0) {
     return <Text variant="content-compact">{t_i18n('No completed run of this hunt has reported evidence yet')}</Text>;
   }
+  const { completedRunsCount, isWindowed, since } = huntEvidenceWindow(runs, huntRuns?.pageInfo?.globalCount);
   const dateRender = (value: string | null) => defaultRender(value ? fldt(value) : '-');
   return (
     <>
@@ -90,7 +94,11 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Hunt run')}>
-            <SelectItem value={ALL}>{t_i18n('All runs ({count})', { values: { count: runs.length } })}</SelectItem>
+            <SelectItem value={ALL}>
+              {isWindowed
+                ? t_i18n('Latest {count} of {total} runs', { values: { count: n(runs.length), total: n(completedRunsCount) } })
+                : t_i18n('All runs ({count})', { values: { count: runs.length } })}
+            </SelectItem>
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
                 {`${fldt(run.completed_at ?? run.created_at)} - ${run.platform ?? t_i18n('Internet')}`}
@@ -116,6 +124,15 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
         />
         <Text variant="content-caption">{t_i18n('{count} distinct values', { values: { count: n(rows.length) } })}</Text>
       </div>
+      {isWindowed && (
+        <div style={{ marginBottom: theme.spacing(2) }} data-testid="hunt-evidence-window">
+          <Text variant="content-caption">
+            {t_i18n('Evidence of the {count} most recent completed runs, since {date}. Each older run keeps its evidence on its page in the Runs tab.', {
+              values: { count: n(runs.length), date: since ? fldt(since) : '-' },
+            })}
+          </Text>
+        </div>
+      )}
       <div data-testid="hunt-evidence-table">
         <DataTableWithoutFragment
           storageKey={`hunt-${huntId}-evidence`}

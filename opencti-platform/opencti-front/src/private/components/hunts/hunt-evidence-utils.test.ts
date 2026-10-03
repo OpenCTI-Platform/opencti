@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateHuntEvidence, huntEvidenceFields, type HuntEvidenceRun, shortHash } from './hunt-evidence-utils';
+import { aggregateHuntEvidence, huntEvidenceFields, huntEvidenceWindow, type HuntEvidenceRun, shortHash } from './hunt-evidence-utils';
 
 const runs: HuntEvidenceRun[] = [
   {
@@ -62,5 +62,16 @@ describe('Hunt evidence utils', () => {
   it('should shorten long hashes only', () => {
     expect(shortHash('0123456789abcdef')).toEqual('0123456789ab...');
     expect(shortHash('abc')).toEqual('abc');
+  });
+
+  it('should name the window of the loaded runs when older completed runs exist', () => {
+    const recentFirst: HuntEvidenceRun[] = [
+      { id: 'run-new', completed_at: '2026-10-03T10:00:00.000Z' },
+      { id: 'run-old', completed_at: null, created_at: '2026-09-01T08:00:00.000Z' },
+    ];
+    expect(huntEvidenceWindow(recentFirst, 250)).toEqual({ completedRunsCount: 250, isWindowed: true, since: '2026-09-01T08:00:00.000Z' });
+    expect(huntEvidenceWindow(recentFirst, 2)).toEqual({ completedRunsCount: 2, isWindowed: false, since: '2026-09-01T08:00:00.000Z' });
+    expect(huntEvidenceWindow(recentFirst, null)).toEqual({ completedRunsCount: 2, isWindowed: false, since: '2026-09-01T08:00:00.000Z' });
+    expect(huntEvidenceWindow([], 0)).toEqual({ completedRunsCount: 0, isWindowed: false, since: null });
   });
 });

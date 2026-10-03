@@ -101,6 +101,26 @@ export const aggregateHuntEvidence = (runs: ReadonlyArray<HuntEvidenceRun>, filt
     .sort((a, b) => b.count - a.count || a.field.localeCompare(b.field) || a.value_hash.localeCompare(b.value_hash));
 };
 
+export interface HuntEvidenceWindow {
+  /** Completed runs of the hunt, the loaded ones included */
+  completedRunsCount: number;
+  /** True when older completed runs exist beyond the loaded ones */
+  isWindowed: boolean;
+  /** Date of the oldest loaded run, the start of the window */
+  since: string | null;
+}
+
+/** Window of the loaded runs (most recent first) within every completed run of the hunt. */
+export const huntEvidenceWindow = (runs: ReadonlyArray<HuntEvidenceRun>, globalCount?: number | null): HuntEvidenceWindow => {
+  const completedRunsCount = Math.max(globalCount ?? 0, runs.length);
+  const oldest = runs.length > 0 ? runs[runs.length - 1] : null;
+  return {
+    completedRunsCount,
+    isWindowed: completedRunsCount > runs.length,
+    since: oldest ? runDate(oldest) : null,
+  };
+};
+
 /** Distinct evidence fields of the runs, sorted alphabetically. */
 export const huntEvidenceFields = (runs: ReadonlyArray<HuntEvidenceRun>): string[] => {
   const fields = new Set<string>();
