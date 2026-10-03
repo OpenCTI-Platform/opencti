@@ -1,6 +1,6 @@
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
-import ejs from 'ejs';
+import { createEjsSandbox } from './safeEjs.sandbox';
 import NotificationTool from './NotificationTool';
 
 export abstract class VerifierError extends Error {
@@ -45,6 +45,10 @@ const forbiddenProperties = new Set([
   'preventExtensions',
   'getPrototypeOf',
   'setPrototypeOf',
+  '__lookupGetter__',
+  '__lookupSetter__',
+  '__defineGetter__',
+  '__defineSetter__',
 ]);
 
 const isForbiddenName = (name: string) => name.includes('\\') || name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name);
@@ -85,7 +89,12 @@ const forbiddenGlobals = [
 
 const noop = () => {};
 
-const createSafeContext = (async: boolean, data: Data, { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions) => {
+const createSafeContext = (
+  async: boolean,
+  data: Data,
+  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions,
+  sandboxGlobals: Record<string, unknown>,
+) => {
   let executedStatementCount = 0;
   const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
     executedStatementCount += 1;
@@ -147,27 +156,26 @@ const createSafeContext = (async: boolean, data: Data, { maxExecutedStatementCou
   const globals = Object.fromEntries(
     [...authorizeGlobals.entries()].map(([name, replacement]) => [
       name,
-      replacement === true ? (globalThis as Record<string, unknown>)[name] : guards[replacement],
+      replacement === true ? sandboxGlobals[name] : guards[replacement],
     ]),
   );
   return { ...globals, ...data, ...guards };
 };
 
 /**
- * Replaces JS line comments (`//...`) and block comments (`/* ... *\/`) in a
- * code fragment with spaces, preserving newlines so that character positions
- * remain identical to the original string.  This is applied only to the
- * code copy used by the lezer/AST verifier — the original EJS template is
- * never modified, so EJS rendering behaviour is unchanged.
+ * Replaces JS line and block comments in a code fragment with spaces, after normalising every
+ * ECMAScript line terminator (CR, LS, PS) to LF. One character maps to one character, so positions
+ * stay aligned with the original template — which the verifier edits by offset and EJS renders
+ * unchanged. This copy is used only by the lezer/AST verifier.
  */
 const stripJsComments = (code: string): string => {
-  const chars = code.split('');
-  const cursor = jsParser.parse(code).cursor();
+  const chars = code.replace(/[\r\u2028\u2029]/g, '\n').split('');
+  const cursor = jsParser.parse(chars.join('')).cursor();
   do {
     const { name } = cursor.type;
     if (name === 'LineComment' || name === 'BlockComment') {
       for (let i = cursor.from; i < cursor.to; i += 1) {
-        if (chars[i] !== '\n' && chars[i] !== '\r') {
+        if (chars[i] !== '\n') {
           chars[i] = ' ';
         }
       }
@@ -178,6 +186,7 @@ const stripJsComments = (code: string): string => {
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
   const fragments: string[] = [];
+  const outputRanges: Array<{ start: number; end: number }> = [];
   const pushFragment = (text: string, isCode: boolean) => {
     if (text.length > 0) {
       if (isCode) {
@@ -216,7 +225,8 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
         continue;
       }
 
-      if (template[startPos] === '=') {
+      const isOutput = template[startPos] === '=';
+      if (isOutput) {
         startPos += 1;
       }
 
@@ -246,6 +256,9 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
       }
 
       pushFragment(template.substring(codeStartPos, codeEndPos), true);
+      if (isOutput) {
+        outputRanges.push({ start: codeStartPos, end: codeEndPos });
+      }
 
       if (hasEndWhitespaceControl) {
         pushFragment(template[codeEndPos], false);
@@ -259,10 +272,26 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
     pushFragment(template.substring(processedPos), false);
   }
 
-  return fragments.join('');
+  const code = fragments.join('');
+  if (outputRanges.length === 0) {
+    return code;
+  }
+  const chars = [...code];
+  const isBlank = (i: number) => i >= 0 && i < chars.length && (chars[i] === ' ' || chars[i] === '\n' || chars[i] === '\r');
+  for (const { start, end } of outputRanges) {
+    if (code.slice(start, end).trim().length === 0) {
+      continue;
+    }
+    if (isBlank(start - 1) && isBlank(end) && isBlank(end + 1)) {
+      chars[start - 1] = '(';
+      chars[end] = ')';
+      chars[end + 1] = '\n';
+    }
+  }
+  return chars.join('');
 };
 
-const transformTemplate = (template: string, code: string, context: string[]) => {
+const transformTemplate = (template: string, code: string, context: string[], async: boolean) => {
   context.forEach((name) => {
     if (forbiddenGlobals.includes(name) || name.startsWith(safeReservedPrefix)) {
       throw new VerifierIllegalAccessError(`Forbidden context variable ${JSON.stringify(name)}`);
@@ -297,6 +326,10 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     throw new VerifierIllegalAccessError('Access to \'this\' is forbidden');
   };
 
+  const processWith = () => {
+    throw new VerifierIllegalAccessError('Access to \'with\' is forbidden');
+  };
+
   const isPropertyNameInBracket = () => {
     const parentType = cursor.node.parent?.type.name;
     return parentType === 'MemberExpression' || parentType === 'Property' || parentType === 'PatternProperty';
@@ -323,9 +356,50 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     }
   };
 
+  // A loop body may have no braces, so the block instrumentation never reaches it. The condition
+  // is the one place every loop form evaluates on each iteration.
+  const processParenthesisLeft = () => {
+    const parent = cursor.node.parent;
+    if (parent?.node.name !== 'ParenthesizedExpression') {
+      return;
+    }
+    const loop = parent.node.parent?.node.name;
+    if (loop === 'WhileStatement' || loop === 'DoStatement') {
+      editNode(`${nodeText()}${async ? 'await ' : ''}${safeName('statement')}(),`);
+    }
+  };
+
+  // `for` keeps its condition in a ForSpec. The separator that precedes it is the declaration's
+  // own semicolon when the loop initialises with `let`/`const`, and a ForSpec-level one otherwise.
+  const forInitSeparator = () => {
+    const parent = cursor.node.parent;
+    if (parent?.node.name === 'VariableDeclaration' && parent.node.parent?.node.name === 'ForSpec') {
+      return cursor.node.nextSibling === null ? parent.node : undefined;
+    }
+    if (parent?.node.name !== 'ForSpec') {
+      return undefined;
+    }
+    for (let previous = cursor.node.prevSibling; previous; previous = previous.prevSibling) {
+      if (previous.name === ';' || previous.name === 'VariableDeclaration') {
+        return undefined;
+      }
+    }
+    return cursor.node;
+  };
+
+  const processSemicolon = () => {
+    const separator = forInitSeparator();
+    if (!separator) {
+      return;
+    }
+    const guard = `(${async ? 'await ' : ''}${safeName('statement')}(), true)`;
+    const hasCondition = separator.nextSibling !== null && separator.nextSibling.name !== ';';
+    editNode(hasCondition ? `${nodeText()}${guard} && ` : `${nodeText()}${guard}`);
+  };
+
   const processCurlyBraceLeft = () => {
     if (cursor.node.parent?.node.name === 'Block') {
-      editNode(`${nodeText()};${safeName('statement')}();`);
+      editNode(`${nodeText()};${async ? 'await ' : ''}${safeName('statement')}();`);
     }
   };
 
@@ -378,12 +452,24 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
         processThis();
         break;
 
+      case 'WithStatement':
+        processWith();
+        break;
+
       case '[':
         processBracketLeft();
         break;
 
       case ']':
         processBracketRight();
+        break;
+
+      case '(':
+        processParenthesisLeft();
+        break;
+
+      case ';':
+        processSemicolon();
         break;
 
       case '{':
@@ -433,13 +519,34 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
   return fragments.join('');
 };
 
+const substitutedGlobals = [...authorizeGlobals.entries()].filter(([, replacement]) => replacement === true).map(([name]) => name);
+
+const forbidInclude = () => {
+  throw new VerifierIllegalAccessError('Access to \'include\' is forbidden');
+};
+
+export interface SafeEjsSandbox {
+  safeRender: (template: string, data: Data, options?: SafeRenderOptions) => string | Promise<string>;
+}
+
+// Renders made through the same sandbox share its globals; renders made through different
+// sandboxes never do.
+export const createSafeEjsSandbox = (): SafeEjsSandbox => {
+  const sandbox = createEjsSandbox();
+  const sandboxGlobals = sandbox.readGlobals(substitutedGlobals);
+  return {
+    safeRender: (template, data, options = {}) => {
+      const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
+      if (useNotificationTool) {
+        data.octi = new NotificationTool();
+      }
+      const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
+      const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}), async);
+      return sandbox.render(safeTemplate, createSafeContext(async, data ?? {}, options, sandboxGlobals), { ...options, includer: forbidInclude });
+    },
+  };
+};
+
 export const safeRender = (template: string, data: Data, options: SafeRenderOptions = {}) => {
-  const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
-  if (useNotificationTool) {
-    data.octi = new NotificationTool();
-  }
-  const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
-  const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
-  const safeContext = createSafeContext(async, data ?? {}, options);
-  return ejs.render(safeTemplate, safeContext, options);
+  return createSafeEjsSandbox().safeRender(template, data, options);
 };
