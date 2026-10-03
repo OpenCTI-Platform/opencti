@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
+import { MESSAGING$ } from '../../../relay/environment';
 import type { useGraphStartInvestigationMutation } from './__generated__/useGraphStartInvestigationMutation.graphql';
 
 const graphStartInvestigationMutation = graphql`
@@ -26,7 +27,11 @@ const useGraphStartInvestigation = (): ((name: string, entityIds: string[]) => v
   return (name, entityIds) => {
     commit({
       variables: { input: { type: 'investigation', name, investigated_entities_ids: entityIds } },
-      onCompleted: (response) => {
+      onCompleted: (response, errors) => {
+        if (errors && errors.length > 0) {
+          MESSAGING$.notifyError(errors[0].message);
+          return;
+        }
         const id = response.workspaceAdd?.id;
         if (id) navigate(`/dashboard/workspaces/investigations/${id}`);
       },
