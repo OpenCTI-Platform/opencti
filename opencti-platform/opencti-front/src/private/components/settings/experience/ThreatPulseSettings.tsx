@@ -233,7 +233,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const [openPurge, setOpenPurge] = useState(false);
   const [commitConfigure, configuring] = useApiMutation<ThreatPulseSettingsConfigureMutation>(threatPulseSettingsConfigureMutation);
   const [commitPurge, purging] = useApiMutation<ThreatPulseSettingsPurgeMutation>(threatPulseSettingsPurgeMutation);
-  const accent = theme.palette.xtmhub?.main ?? theme.palette.primary.main;
+  const accent = theme.palette.xtmhub?.main ?? theme.palette.designSystem.primary.main;
   const forcedIds = settings.forced_excluded_markings.map((marking) => marking.id);
   const selectableMarkings = markings.filter((marking) => !forcedIds.includes(marking.id));
 

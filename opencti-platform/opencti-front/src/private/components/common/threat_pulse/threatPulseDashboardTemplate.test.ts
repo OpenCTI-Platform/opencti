@@ -11,7 +11,7 @@ describe('Sector benchmark dashboard template', () => {
 
   it('should hold the two Threat Pulse widgets and the knowledge widgets on the community signal', () => {
     expect(widgets.map((widget) => widget.type)).toEqual(['pulse-trending', 'pulse-benchmark', 'number', 'number', 'donut', 'horizontal-bar', 'list', 'line']);
-    widgets.forEach((widget) => expect(indexedVisualizationTypes[widget.type]).toBeDefined());
+    widgets.forEach((widget) => expect(Object.keys(indexedVisualizationTypes)).toContain(widget.type));
   });
 
   it('should give every widget a translated title and a layout keyed by its id', () => {

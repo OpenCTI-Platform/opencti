@@ -69,8 +69,8 @@ const PrevalenceGauge = ({ prevalence }: { prevalence: string }) => {
               height: 8,
               borderRadius: 1,
               backgroundColor: index <= activeIndex
-                ? alpha(theme.palette.primary.main, 0.35 + (index * 0.65) / (PULSE_PREVALENCE_ORDER.length - 1))
-                : alpha(theme.palette.text.primary, 0.08),
+                ? alpha(theme.palette.designSystem.primary.main, 0.35 + (index * 0.65) / (PULSE_PREVALENCE_ORDER.length - 1))
+                : theme.palette.designSystem.border.main,
             }}
           />
           <Text
