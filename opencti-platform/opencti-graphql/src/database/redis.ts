@@ -837,6 +837,26 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - source intelligence manager run state
+// Small JSON document shared cluster wide: last full computation, backfill cursor, recomputation requests.
+const SOURCE_INTELLIGENCE_STATE_KEY = 'source_intelligence_state';
+export const redisGetSourceIntelligenceState = async (): Promise<Record<string, unknown> | null> => {
+  const raw = await getClientBase().get(SOURCE_INTELLIGENCE_STATE_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    logApp.error('[OPENCTI-MODULE] Source intelligence state in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+export const redisSetSourceIntelligenceState = async (state: Record<string, unknown>) => {
+  await getClientBase().set(SOURCE_INTELLIGENCE_STATE_KEY, JSON.stringify(state));
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;
