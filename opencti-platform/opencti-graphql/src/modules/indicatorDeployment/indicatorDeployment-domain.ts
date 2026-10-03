@@ -10,7 +10,7 @@ import { lockResources } from '../../lock/master-lock';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
@@ -77,6 +77,7 @@ const toDate = (value: DateInput, fallback: Date): Date => {
   return date;
 };
 
+const RETRYABLE_DEPLOYMENT_STATUSES: DeploymentStatus[] = [DEPLOYMENT_STATUS_FAILED, DEPLOYMENT_STATUS_REMOVED, DEPLOYMENT_STATUS_EXPIRED];
 const isLive = (status: string | undefined | null) => LIVE_DEPLOYMENT_STATUSES.includes(status as DeploymentStatus);
 
 /**
@@ -344,10 +345,26 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       sightingStixId,
       { type: STIX_SIGHTING_RELATIONSHIP },
     );
+    const createHitsSighting = (count: number, firstSeen: Date, lastSeen: Date) => createRelation(context, user, {
+      fromId: indicator.internal_id,
+      toId: platform.internal_id,
+      relationship_type: STIX_SIGHTING_RELATIONSHIP,
+      stix_id: sightingStixId,
+      [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+      attribute_count: count,
+      first_seen: firstSeen,
+      last_seen: lastSeen,
+      x_opencti_negative: false,
+      description: `Hits reported by the ${platform.name} integration`,
+    });
     const lastKnownHit = existing?.last_hit_at ? new Date(existing.last_hit_at).getTime() : undefined;
-    if (existingSighting && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit) {
-      // Replay of an already counted report: idempotent no-op.
-      return existingSighting;
+    if (existing && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit) {
+      // Replay of an already counted report: the hits are never counted twice. The deployment is
+      // written before the sighting, so a retry after a failed sighting write restores it.
+      if (existingSighting) {
+        return existingSighting;
+      }
+      return createHitsSighting(existing.hit_count ?? args.count, firstHit, new Date(lastKnownHit));
     }
     // 01. Deployment state: hits prove the indicator is live on the platform
     if (!existing) {
@@ -379,18 +396,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     // 02. Stable hits sighting Indicator -> Security Platform
     let sighting;
     if (!existingSighting) {
-      sighting = await createRelation(context, user, {
-        fromId: indicator.internal_id,
-        toId: platform.internal_id,
-        relationship_type: STIX_SIGHTING_RELATIONSHIP,
-        stix_id: sightingStixId,
-        [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
-        attribute_count: args.count,
-        first_seen: firstHit,
-        last_seen: lastHit,
-        x_opencti_negative: false,
-        description: `Hits reported by the ${platform.name} integration`,
-      });
+      sighting = await createHitsSighting((existing?.hit_count ?? 0) + args.count, firstHit, lastHit);
     } else {
       const previousFirst = existingSighting.first_seen ? new Date(existingSighting.first_seen).getTime() : firstHit.getTime();
       const previousLast = existingSighting.last_seen ? new Date(existingSighting.last_seen).getTime() : lastHit.getTime();
@@ -415,6 +421,9 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
  */
 export const retryIndicatorDeployment = async (context: AuthContext, user: AuthUser, id: string) => {
   const relation = await loadDeployedOnById(context, user, id);
+  if (!RETRYABLE_DEPLOYMENT_STATUSES.includes(relation.deployment_status as DeploymentStatus)) {
+    throw FunctionalError('Only a failed, removed or expired deployment can be retried', { id, status: relation.deployment_status });
+  }
   const { element } = await patchAttribute(context, user, relation.internal_id, RELATION_DEPLOYED_ON, {
     deployment_status: DEPLOYMENT_STATUS_PENDING,
     error_message: null,
@@ -695,6 +704,8 @@ export const refreshIndicatorDeploymentCounters = async (context: AuthContext, i
     if (!unchanged) {
       const params = buildReplaceScriptParams(counters);
       await elUpdate(context, indicator._index, indicator.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
+      // Live update of the open indicator screens only: still no stream event
+      await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, { ...indicator, ...counters }, SYSTEM_USER);
       updated += 1;
     }
   }, { concurrency: BATCH_CONCURRENCY });
