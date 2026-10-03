@@ -36,8 +36,8 @@ import {
 } from './curation-types';
 import { unmergeFromRecord } from './curation-merge-record';
 import { type ConflictingProcedure, procedureAdditions, procedureNoteInput, type ProcedureEntry } from './curation-procedures';
+import { ATTRIBUTE_ASSERTIONS, ATTRIBUTE_PROCEDURES } from '../provenance/provenance-types';
 
-export const PROCEDURES_ATTRIBUTE = 'procedures';
 const MIN_REACTIVATION_DAYS = 30;
 const MAX_REACTIVATION_DAYS = 365;
 
@@ -87,11 +87,10 @@ const replaceInputs = (changes: Record<string, unknown>) => Object.entries(chang
   value: value === null || value === undefined ? [] : (Array.isArray(value) ? value : [value]),
 }));
 
-export const isProceduresAttributeAvailable = (relationshipType = 'uses') => schemaAttributesDefinition.getAttribute(relationshipType, PROCEDURES_ATTRIBUTE) !== undefined;
+export const isProceduresAttributeAvailable = (relationshipType = 'uses') => schemaAttributesDefinition.getAttribute(relationshipType, ATTRIBUTE_PROCEDURES) !== undefined;
 
 // Per-source assertions are owned by the provenance module: their source agreement evidence is used only when registered.
-const ASSERTIONS_ATTRIBUTE = 'x_opencti_assertions';
-export const isProvenanceAvailable = () => schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INTRUSION_SET, ASSERTIONS_ATTRIBUTE) !== undefined;
+export const isProvenanceAvailable = () => schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INTRUSION_SET, ATTRIBUTE_ASSERTIONS) !== undefined;
 
 const findLatestMergeRecordForProposal = async (context: AuthContext, proposalId: string) => {
   const records = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
@@ -242,14 +241,14 @@ const applyPreserveProcedure = async (
     return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
   }
   if (settings.relationship_conflict_mode === RELATIONSHIP_CONFLICT_MODE_PROCEDURES && isProceduresAttributeAvailable(relationship.entity_type)) {
-    const existing = ((relationship as Record<string, any>)[PROCEDURES_ATTRIBUTE] ?? []) as ProcedureEntry[];
+    const existing = ((relationship as Record<string, any>)[ATTRIBUTE_PROCEDURES] ?? []) as ProcedureEntry[];
     const additions = procedureAdditions(existing, [previous, current], now());
     if (additions.length === 0) {
       return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
     }
     const next = [...existing, ...additions];
-    await updateAttribute(context, user, relationship.internal_id, relationship.entity_type, [{ key: PROCEDURES_ATTRIBUTE, value: next }]);
-    return { appliedPatch: { operations: [patchOperation(relationship, PROCEDURES_ATTRIBUTE, existing, next)], applied_at: now() }, mergeRecordId: null };
+    await updateAttribute(context, user, relationship.internal_id, relationship.entity_type, [{ key: ATTRIBUTE_PROCEDURES, value: next }]);
+    return { appliedPatch: { operations: [patchOperation(relationship, ATTRIBUTE_PROCEDURES, existing, next)], applied_at: now() }, mergeRecordId: null };
   }
   // Note mode (also the fallback when the procedures attribute is not available on this platform): the overwritten
   // procedure is kept as a note attached to the relationship, without touching the relationship identity.
