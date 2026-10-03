@@ -1,0 +1,73 @@
+# Dissemination assurance: lifecycle of an indicator on a security platform,
+# carried by the deployed-on relationship (Indicator -> Security Platform).
+
+enum IndicatorDeploymentStatus {
+  pending
+  deployed
+  active
+  failed
+  removed
+  expired
+}
+
+enum IndicatorValidationStatus {
+  not_requested
+  requested
+  detected
+  prevented
+  missed
+  error
+}
+
+# Attributes only set on deployed-on relationships, null for every other relationship type.
+extend type StixCoreRelationship {
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  last_hit_at: DateTime
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
+}
+
+extend enum StixCoreRelationshipsOrdering {
+  deployment_status
+  deployed_at
+  last_sync_at
+  hit_count
+  last_hit_at
+  validation_status
+  last_validation_at
+}
+
+# Used by bundle imports and platform synchronization to carry the deployment state.
+extend input StixCoreRelationshipAddInput {
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  last_hit_at: DateTime
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
+}
+
+# Derived counters, recomputed from the deployed-on relationships of the indicator.
+extend type Indicator {
+  deployment_platforms_count: Int
+  deployment_failed_count: Int
+  validated_platforms_count: Int
+}
+
+extend enum IndicatorsOrdering {
+  deployment_platforms_count
+  deployment_failed_count
+  validated_platforms_count
+}

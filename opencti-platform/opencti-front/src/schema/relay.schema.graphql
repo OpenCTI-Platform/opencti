@@ -8704,6 +8704,13 @@ type StixRelationshipRefSchema {
 }
 
 enum StixCoreRelationshipsOrdering {
+  deployment_status
+  deployed_at
+  last_sync_at
+  hit_count
+  last_hit_at
+  validation_status
+  last_validation_at
   entity_type
   relationship_type
   confidence
@@ -8791,6 +8798,17 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  last_hit_at: DateTime
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
 }
 
 input SecurityCoverageExpectation {
@@ -8825,6 +8843,17 @@ input StixCoreRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  last_hit_at: DateTime
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -13940,6 +13969,9 @@ input IngestionJsonAddInput {
 }
 
 enum IndicatorsOrdering {
+  deployment_platforms_count
+  deployment_failed_count
+  validated_platforms_count
   pattern_type
   pattern_version
   pattern
@@ -14088,6 +14120,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  deployment_platforms_count: Int
+  deployment_failed_count: Int
+  validated_platforms_count: Int
 }
 
 input IndicatorAddInput {
@@ -14134,6 +14169,24 @@ input IndicatorAddInput {
   embedded: [Boolean]
   basedOn: [String!]
   upsertOperations: [EditInput!]
+}
+
+enum IndicatorDeploymentStatus {
+  pending
+  deployed
+  active
+  failed
+  removed
+  expired
+}
+
+enum IndicatorValidationStatus {
+  not_requested
+  requested
+  detected
+  prevented
+  missed
+  error
 }
 
 enum VulnerabilitiesOrdering {

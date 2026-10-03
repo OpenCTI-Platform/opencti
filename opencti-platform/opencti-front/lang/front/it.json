@@ -3976,6 +3976,7 @@
   "relationship_creator-user": "autore",
   "relationship_delivers": "consegna",
   "relationship_demonstrates": "dimostra",
+  "relationship_deployed-on": "distribuito su",
   "relationship_derived-from": "derivato da",
   "relationship_detects": "rileva",
   "relationship_downloads": "downloads",

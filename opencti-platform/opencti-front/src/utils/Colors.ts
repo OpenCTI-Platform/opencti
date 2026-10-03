@@ -242,6 +242,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'reports-to': 'relationships',
   supports: 'relationships',
   'has-covered': 'relationships',
+  'deployed-on': 'relationships',
 
   // Restricted
   Restricted: 'restricted',
