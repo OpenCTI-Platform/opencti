@@ -27,6 +27,7 @@ import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
 import IndicatorKnowledge from './IndicatorKnowledge';
 import { PATH_INDICATOR, PATH_INDICATORS } from '@components/common/routes/paths';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -189,6 +190,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               ),
             }}
+            extraActions={<HuntThisMenu entity={indicator} />}
           />
         </div>
       ) : (

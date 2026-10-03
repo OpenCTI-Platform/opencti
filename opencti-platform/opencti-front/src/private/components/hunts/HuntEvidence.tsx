@@ -89,7 +89,7 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
           <SelectTrigger aria-label={t_i18n('Run')} style={{ minWidth: 260 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Run')}>
             <SelectItem value={ALL}>{t_i18n('All runs ({count})', { values: { count: runs.length } })}</SelectItem>
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
@@ -102,7 +102,7 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
           <SelectTrigger aria-label={t_i18n('Field')} style={{ minWidth: 200 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Field')}>
             <SelectItem value={ALL}>{t_i18n('All fields')}</SelectItem>
             {fields.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}
           </SelectContent>

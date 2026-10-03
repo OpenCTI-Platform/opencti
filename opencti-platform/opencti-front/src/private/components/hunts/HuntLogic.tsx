@@ -190,7 +190,7 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
               <SelectTrigger aria-label={t_i18n('Platform of the preview')} style={{ minWidth: 240 }}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent aria-label={t_i18n('Platform of the preview')}>
                 <SelectItem value={ANY_PLATFORM}>{t_i18n('First available platform')}</SelectItem>
                 {Array.from(platforms.entries()).map(([id, name]) => (
                   <SelectItem key={id} value={id}>{name}</SelectItem>

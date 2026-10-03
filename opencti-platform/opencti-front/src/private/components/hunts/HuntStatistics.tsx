@@ -164,7 +164,7 @@ const HuntStatistics = ({ huntId = null, showWidgets = true, defaultPeriod = '30
           <SelectTrigger aria-label={t_i18n('Period')} style={{ width: 180 }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Period')}>
             {(Object.keys(PERIODS) as HuntStatisticsPeriod[]).map((key) => (
               <SelectItem key={key} value={key}>{t_i18n(PERIODS[key].label)}</SelectItem>
             ))}

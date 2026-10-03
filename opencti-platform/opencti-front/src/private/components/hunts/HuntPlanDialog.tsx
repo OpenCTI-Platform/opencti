@@ -1,0 +1,179 @@
+import React, { useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router';
+import { useTheme } from '@mui/styles';
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  Text,
+} from '@filigran/design-system';
+import Button from '@common/button/Button';
+import CodeBlock from '@components/common/CodeBlock';
+import { useFormatter } from '../../../components/i18n';
+import type { Theme } from '../../../components/Theme';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
+import { HUNT_PLANNER_INTENT, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
+import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
+
+const huntPlanDialogMutation = graphql`
+  mutation HuntPlanDialogMutation($input: HuntPlanInput!) {
+    huntPlan(input: $input) {
+      draft_id
+      hunt {
+        id
+        name
+        hypothesis
+        hunt_type
+        sigma_rule
+      }
+    }
+  }
+`;
+
+const DEFAULT_AGENT = '__default__';
+
+type HuntProposal = NonNullable<HuntPlanDialogMutation$data['huntPlan']>;
+
+interface HuntPlanDialogProps {
+  open: boolean;
+  onClose: () => void;
+  /** Entities the hunt is planned from; the backend expands Reports and PIRs to their threats and techniques */
+  entityIds: string[];
+}
+
+/** Asks an XTM One agent to plan a hunt; the proposal lands in a draft workspace the analyst reviews. */
+const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
+  const [agents, setAgents] = useState<AgentOption[] | null>(null);
+  const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT);
+  const [proposal, setProposal] = useState<HuntProposal | null>(null);
+  const [commit, inFlight] = useApiMutation<HuntPlanDialogMutation>(huntPlanDialogMutation);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    let active = true;
+    setProposal(null);
+    fetchAgentsForIntent(HUNT_PLANNER_INTENT).then((options) => {
+      if (active) setAgents(options);
+    });
+    return () => {
+      active = false;
+    };
+  }, [open]);
+
+  const plan = () => {
+    commit({
+      variables: {
+        input: {
+          entity_ids: entityIds,
+          agent_slug: agentSlug === DEFAULT_AGENT ? null : agentSlug,
+        },
+      },
+      onCompleted: (data) => setProposal(data.huntPlan ?? null),
+    });
+  };
+
+  const reviewDraft = () => {
+    if (!proposal) return;
+    onClose();
+    navigate(huntDraftWorkspacePath(proposal.draft_id));
+  };
+
+  const renderProposal = (current: HuntProposal) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }} data-testid="hunt-plan-proposal">
+      <Text variant="content-compact">
+        {t_i18n('The proposed hunt was created in a draft workspace. Review it, then validate the draft to make it available.')}
+      </Text>
+      {current.hunt && (
+        <>
+          <div>
+            <Text variant="content-compact-bold">{t_i18n('Name')}</Text>
+            <Text variant="content-compact">{current.hunt.name}</Text>
+          </div>
+          <div>
+            <Text variant="content-compact-bold">{t_i18n('Hunt type')}</Text>
+            <Text variant="content-compact">{t_i18n(huntTypeLabel(current.hunt.hunt_type))}</Text>
+          </div>
+          {current.hunt.hypothesis && (
+            <div>
+              <Text variant="content-compact-bold">{t_i18n('Hypothesis')}</Text>
+              <Text variant="content-compact">{current.hunt.hypothesis}</Text>
+            </div>
+          )}
+          {current.hunt.sigma_rule && (
+            <div>
+              <Text variant="content-compact-bold">{t_i18n('Sigma rule')}</Text>
+              <CodeBlock language="yaml" code={current.hunt.sigma_rule} customHeight="240px" />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const renderForm = () => {
+    if (agents === null) {
+      return <Spinner size="md" label={t_i18n('Loading')} />;
+    }
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+        <Text variant="content-compact">{t_i18n('Agent')}</Text>
+        <Select value={agentSlug} onValueChange={setAgentSlug}>
+          <SelectTrigger aria-label={t_i18n('Agent')} data-testid="hunt-plan-agent">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Agent')}>
+            <SelectItem value={DEFAULT_AGENT}>{t_i18n('Default hunt planner')}</SelectItem>
+            {agents.map((agent) => (
+              <SelectItem key={agent.slug} value={agent.slug}>{agent.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {inFlight && <Spinner size="md" label={t_i18n('The agent is planning the hunt')} />}
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+      <DialogContent size="md" data-testid="hunt-plan-dialog">
+        <DialogTitle>{t_i18n('Plan a hunt with AI')}</DialogTitle>
+        <DialogDescription>
+          {t_i18n('An XTM One agent writes a hypothesis and the hunt logic from this knowledge. Nothing runs before you validate the draft.')}
+        </DialogDescription>
+        <DialogBody>
+          {proposal ? renderProposal(proposal) : renderForm()}
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose} disabled={inFlight}>
+            {proposal ? t_i18n('Close') : t_i18n('Cancel')}
+          </Button>
+          {proposal ? (
+            <Button onClick={reviewDraft} data-testid="hunt-plan-review">
+              {t_i18n('Review the draft')}
+            </Button>
+          ) : (
+            <Button intent="ai" onClick={plan} disabled={inFlight || agents === null} data-testid="hunt-plan-submit">
+              {t_i18n('Plan the hunt')}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default HuntPlanDialog;
