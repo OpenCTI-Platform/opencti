@@ -26,7 +26,7 @@ import { entityTier, layeredLayout, radialLayout, tierLayout } from './utils/gra
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
-import { relationshipCounts } from './utils/graphFocus';
+import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
 import { badgesOfNode } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { MESSAGING$ } from '../../relay/environment';
@@ -85,6 +85,7 @@ const Graph = ({
     toggleCollapsedEntityType,
     toggleRelationshipType,
     highlightShortestPath,
+    clearHighlightedPath,
     selectNeighbours,
     zoomIn,
     zoomOut,
@@ -131,7 +132,7 @@ const Graph = ({
     },
   } = useGraphContext();
 
-  useGraphFilter();
+  const filterToken = useGraphFilter();
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
 
@@ -144,7 +145,7 @@ const Graph = ({
         (entityType, count) => `${count} \u00d7 ${t_i18n(`entity_${entityType}`)}`,
         collapseCache.current,
       )
-    : graphData), [graphData, collapsedEntityTypes]);
+    : graphData), [graphData, collapsedEntityTypes, filterToken]);
   const hiddenIds = useMemo(() => new Set(hiddenNodeIds), [hiddenNodeIds]);
   const nodeShown = (node: GraphNode) => !hiddenIds.has(node.id) && !isCollapsedMember(node, collapsedEntityTypes);
   const shownNodes = useMemo(() => (displayData?.nodes ?? []).filter(nodeShown), [displayData, hiddenIds, collapsedEntityTypes]);
@@ -156,6 +157,14 @@ const Graph = ({
     () => `${shownNodes.map((n) => n.id).sort().join()}|${shownLinks.map((l) => l.id).sort().join()}`,
     [shownNodes, shownLinks],
   );
+  // A highlighted path that a filter, a hidden or collapsed entity or new data broke is dropped.
+  const drawablePath = useMemo(
+    () => (highlightedPath && isPathDrawable(highlightedPath, shownNodes, shownLinks) ? highlightedPath : null),
+    [highlightedPath, shownNodes, shownLinks, filterToken],
+  );
+  useEffect(() => {
+    if (highlightedPath && !drawablePath) clearHighlightedPath();
+  }, [highlightedPath, drawablePath]);
 
   // --- Hover: focus on the canvas at once, card after a short delay.
   const [hovered, setHovered] = useState<GraphHoverTarget | null>(null);
@@ -233,7 +242,7 @@ const Graph = ({
     detailsPreviewSelected,
     links: shownLinks,
     hovered,
-    highlightedPath,
+    highlightedPath: drawablePath,
     nodeCount: shownNodes.length,
     layoutTargets: mode3D ? null : layoutTargets,
   });

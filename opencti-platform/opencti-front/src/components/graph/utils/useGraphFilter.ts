@@ -1,8 +1,14 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { useGraphContext } from '../GraphContext';
 import { isNotEmptyField } from '../../../utils/utils';
 
-const useGraphFilter = () => {
+/**
+ * Sets the `disabled` flag of every node and link from the filters of the graph state. The flags
+ * are set while rendering, before what is derived from them (collapsed groups, highlighted path)
+ * is computed; the returned token changes every time they are set again, so derived values can
+ * depend on it.
+ */
+const useGraphFilter = (): object => {
   const { graphData, graphState } = useGraphContext();
   const {
     disabledEntityTypes,
@@ -43,9 +49,10 @@ const useGraphFilter = () => {
     return targets;
   };
 
-  useEffect(() => {
+  return useMemo(() => {
     const disabledTargets = filterLinks();
     filterNodes(disabledTargets);
+    return {};
   }, [
     disabledEntityTypes,
     disabledCreators,

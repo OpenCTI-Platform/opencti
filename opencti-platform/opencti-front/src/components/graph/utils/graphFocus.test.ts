@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { neighbourhood, relationshipCounts, shortestPath } from './graphFocus';
+import { isPathDrawable, neighbourhood, relationshipCounts, shortestPath } from './graphFocus';
 
 const links = [
   { id: 'ab', sourceId: 'a', targetId: 'b', relationship_type: 'uses' },
@@ -38,6 +38,26 @@ describe('shortestPath', () => {
   it('gives null between disconnected nodes and a trivial path to itself', () => {
     expect(shortestPath(links, 'a', 'e')).toBeNull();
     expect(shortestPath(links, 'a', 'a')).toEqual({ nodeIds: ['a'], linkIds: [] });
+  });
+});
+
+describe('isPathDrawable', () => {
+  const path = { nodeIds: ['a', 'b', 'c'], linkIds: ['ab', 'bc'] };
+  const nodes = ['a', 'b', 'c'].map((id) => ({ id, disabled: false }));
+  const drawnLinks = ['ab', 'bc'].map((id) => ({ id, disabled: false }));
+
+  it('accepts a path whose nodes and links are all drawn', () => {
+    expect(isPathDrawable(path, nodes, drawnLinks)).toBe(true);
+  });
+
+  it('rejects a path with a faded node or link', () => {
+    expect(isPathDrawable(path, nodes.map((n) => ({ ...n, disabled: n.id === 'b' })), drawnLinks)).toBe(false);
+    expect(isPathDrawable(path, nodes, drawnLinks.map((l) => ({ ...l, disabled: l.id === 'bc' })))).toBe(false);
+  });
+
+  it('rejects a path with a node or link no longer drawn', () => {
+    expect(isPathDrawable(path, nodes.filter((n) => n.id !== 'c'), drawnLinks)).toBe(false);
+    expect(isPathDrawable(path, nodes, drawnLinks.slice(0, 1))).toBe(false);
   });
 });
 

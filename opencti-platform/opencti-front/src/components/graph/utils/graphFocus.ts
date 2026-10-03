@@ -83,6 +83,20 @@ export const shortestPath = (links: readonly LinkEnds[], fromId: string, toId: s
 };
 
 /**
+ * Whether the reader can still follow a path: each of its nodes and links is among those drawn
+ * and none is faded by a filter.
+ */
+export const isPathDrawable = (
+  path: GraphPath,
+  nodes: readonly { id: string; disabled?: boolean }[],
+  links: readonly { id: string; disabled?: boolean }[],
+): boolean => {
+  const nodeIds = new Set(nodes.filter((node) => !node.disabled).map((node) => node.id));
+  const linkIds = new Set(links.filter((link) => !link.disabled).map((link) => link.id));
+  return path.nodeIds.every((id) => nodeIds.has(id)) && path.linkIds.every((id) => linkIds.has(id));
+};
+
+/**
  * Number of links of each relationship type touching a node, sorted by count then name: the
  * neighbourhood summary of the hover card.
  */
