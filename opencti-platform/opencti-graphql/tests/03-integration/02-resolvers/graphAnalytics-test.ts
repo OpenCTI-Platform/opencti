@@ -498,6 +498,12 @@ describe('Graph analytics resolvers', () => {
     const staged = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;
     expect(staged.cluster_id).toBe(before?.cluster_id ?? null);
     expect(staged.betweenness_approx).toBe(before?.betweenness_approx ?? null);
+    const stagedClusters = await queryAsAdminWithSuccess({ query: CLUSTERS_QUERY, variables: { kinds: ['campaign'] } });
+    expect(stagedClusters.data.graphClusters.edges.map((e: any) => e.node.id)).not.toContain(clusterId);
+    // a second run cannot overwrite the staged values of the run in progress
+    const concurrent = { ...partial, run_id: `graph-analytics-concurrent-run-${uuidv4()}` };
+    const rejected = await queryAsAdmin({ query: upsert, variables: { input: concurrent } });
+    expect(rejected.errors?.[0]?.message).toBe('Another graph analytics run is in progress');
     const completion = { run_id: runId, process_version: 'test', complete: true, metrics: [], clusters: [] };
     await queryAsAdminWithSuccess({ query: upsert, variables: { input: completion } });
     const applied = (await queryAsAdminWithSuccess({ query: METRICS_QUERY, variables: { id: ids.isC } })).data.stixCoreObject.x_opencti_graph_metrics;

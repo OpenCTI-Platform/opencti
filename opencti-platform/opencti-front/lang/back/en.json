@@ -96,6 +96,7 @@
   "Body": "Body",
   "Graph cluster joining date": "Graph cluster joining date",
   "Pending approximate betweenness": "Pending approximate betweenness",
+  "Pending cluster publication": "Pending cluster publication",
   "Pending graph analytics run": "Pending graph analytics run",
   "Pending graph cluster": "Pending graph cluster",
   "Pending graph cluster kind": "Pending graph cluster kind",

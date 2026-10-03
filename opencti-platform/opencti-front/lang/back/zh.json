@@ -96,6 +96,7 @@
   "Body": "正文",
   "Graph cluster joining date": "加入图聚类的日期",
   "Pending approximate betweenness": "待定近似中介中心性",
+  "Pending cluster publication": "待发布的聚类",
   "Pending graph analytics run": "待定图分析运行",
   "Pending graph cluster": "待定图聚类",
   "Pending graph cluster kind": "待定图聚类类型",

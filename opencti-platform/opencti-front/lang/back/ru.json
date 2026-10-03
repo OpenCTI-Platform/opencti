@@ -96,6 +96,7 @@
   "Body": "Тело",
   "Graph cluster joining date": "Дата вхождения в кластер графа",
   "Pending approximate betweenness": "Ожидающая приблизительная посредническая центральность",
+  "Pending cluster publication": "Ожидающая публикация кластера",
   "Pending graph analytics run": "Ожидающий запуск анализа графа",
   "Pending graph cluster": "Ожидающий кластер графа",
   "Pending graph cluster kind": "Тип ожидающего кластера графа",
