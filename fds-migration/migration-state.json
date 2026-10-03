@@ -339,6 +339,34 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
       ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "graph experience: the panels floating over the graph canvas (view controls, legend, hover card), padding owned by the padding prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: every graph tool button (toolbar items, view controls, legend and hover card actions); the active state of a tool is the active prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
     }
   ]
 }

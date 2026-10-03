@@ -4,7 +4,7 @@ import ThemeDark from '../../ThemeDark';
 import ThemeLight from '../../ThemeLight';
 import { buildGraphPalette } from './graphPalette';
 import { collisionForce } from './collisionForce';
-import { shortcutOf } from './useGraphKeyboardShortcuts';
+import { isOverlayOpen, shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
 import { glyphFromMarkup } from './graphIcons';
 import type { GraphState } from '../graph.types';
@@ -51,6 +51,26 @@ describe('shortcutOf', () => {
   });
 });
 
+describe('isOverlayOpen', () => {
+  const page = (html: string) => {
+    const root = document.createElement('div');
+    root.innerHTML = html;
+    return root;
+  };
+
+  it('ignores the overlays kept mounted while closed', () => {
+    expect(isOverlayOpen(page('<div class="MuiDialog-root MuiModal-root MuiModal-hidden" aria-hidden="true"><div role="dialog" aria-modal="true"></div></div>'))).toBe(false);
+    expect(isOverlayOpen(page('<div class="MuiDrawer-modal MuiModal-hidden"></div><ul role="menu" hidden></ul>'))).toBe(false);
+    expect(isOverlayOpen(page('<div role="dialog"></div>'))).toBe(false);
+  });
+
+  it('counts an open dialog, drawer, popover or menu', () => {
+    expect(isOverlayOpen(page('<div class="MuiDialog-root MuiModal-root"><div role="dialog" aria-modal="true"></div></div>'))).toBe(true);
+    expect(isOverlayOpen(page('<div class="MuiPopover-root"></div>'))).toBe(true);
+    expect(isOverlayOpen(page('<ul role="menu"></ul>'))).toBe(true);
+  });
+});
+
 describe('graph view state persistence', () => {
   it('saves the new view options next to the existing ones', () => {
     const saved = graphStateToLocalStorage({
@@ -67,7 +87,7 @@ describe('graph view state persistence', () => {
       disabledRelationshipTypes: ['uses'],
       showLegend: false,
       highlightedPath: { nodeIds: ['a', 'b'], linkIds: ['ab'] },
-    } as GraphState);
+    } as unknown as GraphState);
     expect(saved).toMatchObject({
       layoutMode: 'radial',
       layoutCentreId: 'node-1',
