@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildDisplacedGraphClusterId,
   buildGraphClusterId,
   buildGraphClusterName,
   computeFeatureClusters,
@@ -8,16 +9,17 @@ import {
 } from '../../../../src/modules/graphAnalytics/graphAnalytics-clustering';
 
 const member = (id: string, features: ClusteringMember['features']): ClusteringMember => ({ id, type: 'Domain-Name', features });
+const displaced = (id: string) => `${id}-displaced`;
 
 describe('graph analytics cluster lineage', () => {
   it('should keep the id of a growing cluster whose anchor moved', () => {
     // previous cluster P (10 members) now computed as C with 8 of them plus new members
-    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 8 }], new Map([['P', 10]]));
+    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 8 }], new Map([['P', 10]]), displaced);
     expect(renames.get('C')).toBe('P');
   });
 
   it('should not continue a cluster holding a minority of the previous members', () => {
-    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 5 }], new Map([['P', 10]]));
+    const renames = matchClusterLineage([{ next: 'C', previous: 'P', members: 5 }], new Map([['P', 10]]), displaced);
     expect(renames.size).toBe(0);
   });
 
@@ -25,7 +27,7 @@ describe('graph analytics cluster lineage', () => {
     const renames = matchClusterLineage([
       { next: 'C1', previous: 'P', members: 7 },
       { next: 'C2', previous: 'P', members: 6 },
-    ], new Map([['P', 12]]));
+    ], new Map([['P', 12]]), displaced);
     expect(renames.get('C1')).toBe('P');
     expect(renames.has('C2')).toBe(false);
   });
@@ -34,20 +36,35 @@ describe('graph analytics cluster lineage', () => {
     const renames = matchClusterLineage([
       { next: 'C', previous: 'P1', members: 6 },
       { next: 'C', previous: 'P2', members: 4 },
-    ], new Map([['P1', 6], ['P2', 4]]));
+    ], new Map([['P1', 6], ['P2', 4]]), displaced);
     expect(renames).toEqual(new Map([['C', 'P1']]));
   });
 
-  it('should never give an id still computed by the run to another cluster', () => {
+  it('should give a split cluster its id when the old anchor stayed in the minority, and move the minority', () => {
+    // C holds 9 of the 12 members of P, the 3-member fragment holding the old anchor computed the provisional id P
     const renames = matchClusterLineage([
       { next: 'C', previous: 'P', members: 9 },
       { next: 'P', previous: 'P', members: 3 },
-    ], new Map([['P', 12]]));
-    expect(renames.size).toBe(0);
+    ], new Map([['P', 12]]), displaced);
+    expect(renames).toEqual(new Map([['C', 'P'], ['P', 'P-displaced']]));
+  });
+
+  it('should not move a fragment continuing another previous cluster', () => {
+    const renames = matchClusterLineage([
+      { next: 'C', previous: 'P', members: 9 },
+      { next: 'P', previous: 'Q', members: 3 },
+      { next: 'P', previous: 'P', members: 2 },
+    ], new Map([['P', 11], ['Q', 4]]), displaced);
+    expect(renames).toEqual(new Map([['C', 'P'], ['P', 'Q']]));
+  });
+
+  it('should build a deterministic id for a displaced cluster, different for each run', () => {
+    expect(buildDisplacedGraphClusterId('P', 'run-1')).toBe(buildDisplacedGraphClusterId('P', 'run-1'));
+    expect(buildDisplacedGraphClusterId('P', 'run-1')).not.toBe(buildDisplacedGraphClusterId('P', 'run-2'));
   });
 
   it('should leave clusters keeping their computed id untouched', () => {
-    expect(matchClusterLineage([{ next: 'P', previous: 'P', members: 9 }], new Map([['P', 10]])).size).toBe(0);
+    expect(matchClusterLineage([{ next: 'P', previous: 'P', members: 9 }], new Map([['P', 10]]), displaced).size).toBe(0);
   });
 });
 
