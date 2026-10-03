@@ -167,6 +167,15 @@ describe('Defense coverage evaluation for a reader', () => {
     expect(evaluateCoverage('ap-1', coverage, () => true).level).toEqual(4);
     expect(evaluateCoverage('ap-1', coverage, () => true, [PLATFORM]).level).toEqual(2);
   });
+  it('should never count an attributed result as unattributed when the platform lists were capped', () => {
+    const coverage: DefenseCoverage = {
+      ...buildCoverage(),
+      platforms: [],
+      validations: [{ id: 'scr-2', rel: 'covered-2', status: 'prevented', last_result_at: '2026-09-02T00:00:00.000Z', scores: [], attributed: true }],
+    };
+    expect(evaluateCoverage('ap-1', coverage, () => true).level).toEqual(2);
+    expect(evaluateCoverage('ap-1', coverage, () => true).coverage_result_ids).toEqual([]);
+  });
   it('should cap the technique at 2 when its latest validation failed', () => {
     const base = buildCoverage();
     const coverage: DefenseCoverage = {
@@ -286,5 +295,23 @@ describe('Defense evidence cap', () => {
   it('should leave a list under the cap untouched', () => {
     const evidences = [...restricted, visible];
     expect(capEvidences(evidences, 10, (e) => e.key)).toBe(evidences);
+  });
+  it('should keep every access signature even when they outnumber the cap', () => {
+    const partitions = Array.from({ length: 5 }, (_, index) => [
+      { id: `p${index}-a`, key: `signature-${index}` },
+      { id: `p${index}-b`, key: `signature-${index}` },
+    ]).flat();
+    const capped = capEvidences(partitions, 3, (e) => e.key);
+    expect(capped.map((e) => e.id)).toEqual(['p0-a', 'p1-a', 'p2-a', 'p3-a', 'p4-a']);
+  });
+  it('should keep every level class of an access signature', () => {
+    const deployments = [
+      { id: 'rule-1', status: 'deployed', key: 'tlp-amber' },
+      { id: 'rule-2', status: 'deployed', key: 'tlp-amber' },
+      { id: 'rule-3', status: 'deployed', key: 'tlp-amber' },
+      { id: 'rule-4', status: 'active', key: 'tlp-amber' },
+    ];
+    expect(capEvidences(deployments, 2, (e) => e.key).map((e) => e.id)).toEqual(['rule-1', 'rule-2']);
+    expect(capEvidences(deployments, 2, (e) => e.key, (e) => e.status).map((e) => e.id)).toEqual(['rule-1', 'rule-4']);
   });
 });

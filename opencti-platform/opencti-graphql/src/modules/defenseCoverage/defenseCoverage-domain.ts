@@ -480,8 +480,10 @@ export const defenseTechniqueRules = async (context: AuthContext, user: AuthUser
 };
 
 export const defenseTechniqueValidations = async (context: AuthContext, user: AuthUser, view: DefenseTechniqueView): Promise<DefenseValidationEvidenceView[]> => {
-  const { coverage, evaluation } = view;
-  const accessible = (coverage?.validations ?? []).filter((v) => evaluation.can(v.id) && evaluation.can(v.rel));
+  const { coverage, evaluation, evaluated } = view;
+  // Only the results behind the displayed cell: the ones of the selected platforms (and the unattributed ones without selection)
+  const contributing = new Set(evaluated.coverage_result_ids);
+  const accessible = (coverage?.validations ?? []).filter((v) => contributing.has(v.id) && evaluation.can(v.id) && evaluation.can(v.rel));
   if (accessible.length === 0) return [];
   const results = await findByIdsChunked<BasicStoreEntity>(context, user, accessible.map((v) => v.id), { type: ENTITY_TYPE_SECURITY_COVERAGE_RESULT });
   const resultsById = new Map(results.map((r) => [r.internal_id, r]));
@@ -494,6 +496,7 @@ export const defenseTechniqueValidations = async (context: AuthContext, user: Au
     .map((validation) => {
       const platforms = (coverage?.platforms ?? [])
         .filter((p) => evaluation.can(p.platform_id) && evaluation.platformById.has(p.platform_id))
+        .filter((p) => !evaluation.selected || evaluation.selected.includes(p.platform_id))
         .flatMap((p) => p.validations.filter((pv) => pv.rel === validation.rel).map((pv) => ({
           platform: evaluation.platformById.get(p.platform_id) as DefensePlatformView,
           status: pv.status,

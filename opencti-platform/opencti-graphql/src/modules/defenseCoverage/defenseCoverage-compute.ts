@@ -33,6 +33,7 @@ import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defen
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
 import { bumpDefenseCoverageVersion } from './defenseCoverage-state';
 import { collectDefenseLevelChanges, notifyDefenseLevelChanges } from './defenseCoverage-notification';
+import { type DeploymentStatus, LIVE_DEPLOYMENT_STATUSES } from '../indicatorDeployment/indicatorDeployment-types';
 import { generateStandardId } from '../../schema/identifier';
 
 const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
@@ -195,11 +196,11 @@ const buildAccessKeys = (elements: Array<BasicStoreEntity | BasicStoreRelation>)
   return keys;
 };
 
-type EvidenceRefs = { id: string; rel: string; detects?: string; inferred_from?: string };
+type EvidenceRefs = { id: string; rel: string; detects?: string; inferred_from?: string; indicates?: string };
 const evidenceAccessKey = (graph: ComputationGraph) => {
   const { accessKeyById } = graph;
   if (!accessKeyById) return undefined;
-  return (evidence: EvidenceRefs) => [evidence.id, evidence.rel, evidence.detects, evidence.inferred_from]
+  return (evidence: EvidenceRefs) => [evidence.id, evidence.rel, evidence.detects, evidence.inferred_from, evidence.indicates]
     .map((id) => (id ? accessKeyById.get(id) ?? '' : ''))
     .join('|');
 };
@@ -277,6 +278,8 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
       const vector = vectorOf(deployment.toId);
       const status = (deployment as unknown as { deployment_status?: string }).deployment_status ?? 'deployed';
       vector.deployments.push({ id: indicate.fromId, rel: deployment.id, status, indicates: indicate.id } as DefenseDeploymentEvidence);
+      // Only a rule running on the platform proves that the platform collects its log source
+      if (!LIVE_DEPLOYMENT_STATUSES.includes(status as DeploymentStatus)) return;
       requiredIds.forEach((dataComponentId) => {
         (detectsByDataComponent.get(dataComponentId) ?? []).forEach((detect) => {
           vector.telemetry.push({ id: dataComponentId, rel: deployment.id, detects: detect.id, inferred_from: indicate.fromId });
@@ -304,18 +307,21 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
   });
 
   const accessKey = evidenceAccessKey(graph);
+  // The latest result of a partition is the one a reader's level depends on: it comes first and is always kept
+  const latestFirst = <T extends DefenseValidationEvidence>(list: T[]) => R.sortWith<T>([R.descend((v) => v.last_result_at ?? '')], list);
+  const attributedRels = new Set(Array.from(vectors.values()).flatMap((vector) => vector.validations.map((v) => v.rel)));
   const platforms = Array.from(vectors.values()).map((vector) => ({
     ...vector,
     telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES, accessKey),
-    deployments: capEvidences(vector.deployments, MAX_EVIDENCES, accessKey),
-    validations: capEvidences(vector.validations, MAX_EVIDENCES, accessKey),
+    deployments: capEvidences(vector.deployments, MAX_EVIDENCES, accessKey, (d) => d.status),
+    validations: capEvidences(latestFirst(vector.validations), MAX_EVIDENCES, accessKey),
   }));
   const coverage: DefenseCoverage = {
     computed_at: computedAt,
     data_components: capEvidences(dataComponents, MAX_EVIDENCES, accessKey),
     rules: capEvidences(rules, MAX_EVIDENCES, accessKey),
     mitigations: capEvidences(mitigations, MAX_EVIDENCES, accessKey),
-    validations: capEvidences(validations, MAX_EVIDENCES, accessKey),
+    validations: capEvidences(latestFirst(validations.map((v) => ({ ...v, attributed: attributedRels.has(v.rel) }))), MAX_EVIDENCES, accessKey),
     platforms,
     level: 0,
   };
