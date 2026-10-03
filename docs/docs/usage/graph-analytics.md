@@ -19,7 +19,7 @@ Graph analytics are part of the Community Edition and do not use any AI.
 
 ### From an entity
 
-1. Open any entity and click the **Connect to...** button in the header.
+1. Open any entity, open the more-actions menu of its header and click **Connect to...**.
 2. Select the target entity.
 3. Optionally adjust the search: maximum path length (4 relationships by default, 6 at most), number of paths, relationship types and intermediate entity types, inferred relationships, or going through containers (reports, groupings, cases).
 4. Click **Find paths**. The shortest paths are listed first, each one as a chain of entities and relationship types. Longer paths are only listed when they reach each of their entities by its shortest route: a detour through an entity already reached by a shorter path is not listed.
@@ -35,7 +35,7 @@ Select two entities in the investigation graph and click **Find path** in the to
 
 ### The Similar tab
 
-Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, domain names, hostnames, IP addresses, URLs, certificates and reports have a **Similar** tab listing their look-alikes. For each similar entity, the tab shows:
+Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, domain names, hostnames, IP addresses, URLs and certificates have a **Similar** tab, right after **Analyses**, listing their look-alikes. Similar reports are found in investigations (**Expand by similarity**) and in the similarity matrix widget. For each similar entity, the tab shows:
 
 - the **similarity score**, combining a weighted Jaccard index of the shared elements and a structural similarity of the relationship types,
 - the **shared evidence**, grouped by family, each element being a link to the entity,
@@ -46,7 +46,7 @@ The **Investigate these similar entities** button starts an investigation with t
 
 ### How similarity is computed
 
-Entities are only compared with entities of the same kind, on the elements that characterize them:
+Entities are only compared with entities of the same group (threats together, malware together, infrastructures together, domain names with hostnames, IP addresses together, and so on), on the elements that characterize them:
 
 | Entity types | Shared elements used |
 |---|---|
@@ -65,7 +65,7 @@ Similarities are computed in the background by the [graph analytics manager](../
 
 ## Clusters
 
-The **Analyses > Graph clusters** page lists clusters of entities that belong together:
+The **Analyses > Clusters** page lists clusters of entities that belong together:
 
 | Kind | Content |
 |---|---|

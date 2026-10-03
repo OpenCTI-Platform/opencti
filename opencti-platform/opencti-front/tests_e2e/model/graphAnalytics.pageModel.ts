@@ -26,8 +26,9 @@ export default class GraphAnalyticsPage {
   // endregion
 
   // region Connect to / path finder
-  getConnectToButton() {
-    return this.page.getByRole('button', { name: 'Connect to...' });
+  async openConnectTo() {
+    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Connect to...' }).click();
   }
 
   getPathFinder() {

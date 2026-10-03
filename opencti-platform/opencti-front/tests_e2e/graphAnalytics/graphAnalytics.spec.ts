@@ -61,9 +61,9 @@ test('Graph analytics: similar entities, paths and investigation tools', { tag: 
     await page.keyboard.press('Escape');
     // endregion
 
-    // region Connect to... from the header of the second intrusion set
+    // region Connect to... from the more-actions menu of the second intrusion set
     await page.goto(`/dashboard/threats/intrusion_sets/${setB}`);
-    await graphPage.getConnectToButton().click();
+    await graphPage.openConnectTo();
     await expect(graphPage.getPathFinder()).toBeVisible();
     await graphPage.getTargetEntityInput().fill(sectorName);
     await page.getByRole('option', { name: sectorName }).click();

@@ -17,7 +17,6 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -172,9 +171,6 @@ const RootReport = () => {
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      ),
-                      similar: (
-                        <StixCoreObjectSimilar stixCoreObjectId={reportId} />
                       ),
                       files: (
                         <StixCoreObjectFilesAndHistory

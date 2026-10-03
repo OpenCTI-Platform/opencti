@@ -88,7 +88,7 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
   const [commitInvestigation, investigating] = useApiMutation<RootGraphClusterInvestigationMutation>(addToInvestigationMutation);
   const { graphCluster: cluster } = usePreloadedQuery(graphClusterQuery, queryRef);
   if (!cluster) return <ErrorNotFound />;
-  setTitle(`${cluster.name} | ${t_i18n('Graph clusters')}`);
+  setTitle(`${cluster.name} | ${t_i18n('Clusters')}`);
   const tooLargeToPromote = cluster.members_count > cluster.promotion_max_members;
 
   const addToInvestigation = () => {
@@ -105,7 +105,7 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
     <div data-testid="graph-cluster-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Analyses') },
-        { label: t_i18n('Graph clusters'), link: GRAPH_CLUSTERS_PATH },
+        { label: t_i18n('Clusters'), link: GRAPH_CLUSTERS_PATH },
         { label: cluster.name, current: true },
       ]}
       />

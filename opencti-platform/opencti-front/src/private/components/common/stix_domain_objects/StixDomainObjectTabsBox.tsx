@@ -59,6 +59,10 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'analyses',
   label: 'Analyses',
 }, {
+  tab: 'similar',
+  path: 'similar',
+  label: 'Similar',
+}, {
   tab: 'sightings',
   path: 'sightings',
   label: 'Sightings',
@@ -70,10 +74,6 @@ const TABS_INFO: readonly TabInfo[] = [{
   tab: 'observables',
   path: 'observables',
   label: 'Observables',
-}, {
-  tab: 'similar',
-  path: 'similar',
-  label: 'Similar',
 }, {
   tab: 'files',
   path: 'files',
