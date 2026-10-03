@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { USER_EDITOR } from '../../../utils/testQuery';
+import { testContext, USER_EDITOR } from '../../../utils/testQuery';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
+import { getDefaultInvestigationPolicy } from '../../../../src/modules/investigationRun/investigationPolicy-domain';
 
 const POLICY_ADD = gql`
   mutation PolicyAdd($input: InvestigationPolicyAddInput!) {
@@ -50,10 +51,14 @@ describe('Case Autopilot investigation policies', () => {
     vi.restoreAllMocks();
   });
 
-  it('keeps the default policy created at platform initialization', async () => {
+  it('keeps a single default policy, created once on first use', async () => {
+    const first = await getDefaultInvestigationPolicy(testContext);
+    const second = await getDefaultInvestigationPolicy(testContext);
+    expect(second.internal_id).toEqual(first.internal_id);
     const { data } = await queryAsAdminWithSuccess({ query: POLICIES, variables: {} });
     const defaults = data.investigationPolicies.edges.filter((edge: { node: { is_default: boolean } }) => edge.node.is_default);
     expect(defaults).toHaveLength(1);
+    expect(defaults[0].node.id).toEqual(first.internal_id);
   });
 
   it('creates a policy naming a pack, its options and the engine budget', async () => {

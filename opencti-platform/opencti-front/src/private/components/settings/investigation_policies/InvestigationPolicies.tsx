@@ -165,7 +165,7 @@ const PolicyCard = ({ policy, onEdit, onDelete }: { policy: Policy; onEdit: () =
         </Stack>
       )}
     >
-      <Stack spacing={1.5} data-testid="investigation-policy-card">
+      <Stack spacing={1.5}>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {policy.is_default && <Chip label={t_i18n('Default policy')} severity="info" size="sm" />}
           {policy.auto_approve_low_risk && <Chip label={t_i18n('Low-risk drafts approved automatically')} severity="medium" size="sm" />}
@@ -231,7 +231,7 @@ const InvestigationPoliciesContent = () => {
       </Stack>
       <Grid container spacing={3}>
         {policies.map((policy) => (
-          <Grid key={policy.id} size={{ xs: 12, md: 6, xl: 4 }}>
+          <Grid key={policy.id} size={{ xs: 12, md: 6, xl: 4 }} data-testid="investigation-policy-card">
             <PolicyCard policy={policy} onEdit={() => setEditing({ id: policy.id, policy })} onDelete={() => setDeleting(policy)} />
           </Grid>
         ))}
