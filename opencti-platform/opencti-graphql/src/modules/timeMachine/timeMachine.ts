@@ -26,7 +26,7 @@ const KNOWLEDGE_SNAPSHOT_DEFINITION: ModuleDefinition<StoreEntityKnowledgeSnapsh
   },
   attributes: [
     {
-      name: 'snapshot_entity_id',
+      name: 'entity_id',
       label: 'Snapshot entity',
       type: 'string',
       format: 'id',
@@ -37,7 +37,7 @@ const KNOWLEDGE_SNAPSHOT_DEFINITION: ModuleDefinition<StoreEntityKnowledgeSnapsh
       upsert: false,
       isFilterable: false,
     },
-    { name: 'snapshot_entity_type', label: 'Snapshot entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'target_entity_type', label: 'Snapshot entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'snapshot_date', label: 'Snapshot date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'history_cursor', label: 'History cursor', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // Compact document (raw attribute values and relationship ids), never indexed
@@ -45,7 +45,7 @@ const KNOWLEDGE_SNAPSHOT_DEFINITION: ModuleDefinition<StoreEntityKnowledgeSnapsh
   ],
   relations: [],
   representative: (stix: StixKnowledgeSnapshot) => {
-    return `${stix.snapshot_entity_id} @ ${stix.snapshot_date}`;
+    return `${stix.entity_id} @ ${stix.snapshot_date}`;
   },
   converter_2_1: convertKnowledgeSnapshotToStix,
 };
@@ -77,7 +77,7 @@ const USER_VISIT_DEFINITION: ModuleDefinition<StoreEntityUserVisit, StixUserVisi
       isFilterable: false,
     },
     {
-      name: 'visit_entity_id',
+      name: 'entity_id',
       label: 'Visited entity',
       type: 'string',
       format: 'id',
@@ -88,13 +88,13 @@ const USER_VISIT_DEFINITION: ModuleDefinition<StoreEntityUserVisit, StixUserVisi
       upsert: false,
       isFilterable: false,
     },
-    { name: 'visit_entity_type', label: 'Visited entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'target_entity_type', label: 'Visited entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'last_seen_at', label: 'Last seen at', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'previous_seen_at', label: 'Previously seen at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixUserVisit) => {
-    return `${stix.user_id} @ ${stix.visit_entity_id}`;
+    return `${stix.user_id} @ ${stix.entity_id}`;
   },
   converter_2_1: convertUserVisitToStix,
 };
