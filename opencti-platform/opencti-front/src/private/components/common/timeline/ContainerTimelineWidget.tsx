@@ -1,6 +1,8 @@
 import React, { CSSProperties, ReactNode, Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useTheme } from '@mui/material/styles';
+import { Text } from '@filigran/design-system';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -131,6 +133,7 @@ interface ContainerTimelineWidgetContentProps {
 
 const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWidget }: ContainerTimelineWidgetContentProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const { stixDomainObject: container, containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineWidgetQuery>(
     containerTimelineWidgetQuery,
     queryRef,
@@ -138,23 +141,30 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
   if (!container || !summary) {
     return renderWidget(null, <WidgetNoData message={t_i18n('The selected incident or case is not available')} />);
   }
-  const title = t_i18n(
+  // Card titles are capitalized: the case and the period are named on the first line of the widget, as typed
+  const caption = t_i18n(
     'Timeline of {name} - {window, select, fit {whole timeline} day {last day of events} week {last week of events} month {last month of events} quarter {last quarter of events} other {last year of events}}',
     { values: { name: container.representative.main, window: zoomWindow } },
   );
-  return renderWidget(title, (
-    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <ContainerTimelineWidgetEvents
-        containerId={container.id}
-        containerName={container.representative.main}
-        timelinePath={`${resolveLink(container.entity_type)}/${container.id}/timeline`}
-        lanes={lanes}
-        enabledLanes={summary.settings.enabled_lanes}
-        zoomWindow={zoomWindow}
-        grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
-        anchors={summary.anchors}
-      />
-    </Suspense>
+  const timelinePath = `${resolveLink(container.entity_type)}/${container.id}/timeline`;
+  return renderWidget(null, (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <Text variant="content-caption" as="div" style={{ marginBottom: theme.spacing(1), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={caption}>
+        <Link to={timelinePath} data-testid="timeline-widget-caption">{caption}</Link>
+      </Text>
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <ContainerTimelineWidgetEvents
+          containerId={container.id}
+          containerName={container.representative.main}
+          timelinePath={timelinePath}
+          lanes={lanes}
+          enabledLanes={summary.settings.enabled_lanes}
+          zoomWindow={zoomWindow}
+          grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
+          anchors={summary.anchors}
+        />
+      </Suspense>
+    </div>
   ));
 };
 
