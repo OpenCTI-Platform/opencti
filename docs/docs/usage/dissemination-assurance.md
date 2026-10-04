@@ -182,7 +182,7 @@ following parameters:
 
 | Parameter                                           | Environment variable                                 | Default value | Description                                                     |
 |:----------------------------------------------------|:-----------------------------------------------------|:--------------|:----------------------------------------------------------------|
-| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager.                        |
+| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings of deployments after a change of markings, sharing or authorized members of their indicator or security platform. Keep it enabled. |
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
 | indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |
