@@ -1,7 +1,7 @@
 import type { GraphLink, GraphNode } from '../graph.types';
 import type { GraphPalette } from './graphPalette';
 import type { GraphBadge } from '../badges/graphBadgeRegistry';
-import { boundsOf, computeLinkCurvatures } from './graphGeometry';
+import { boundsOf, computeLinkCurvatures, linkPath } from './graphGeometry';
 import { type LinkLabel, levelOfDetail, linkDash, paintGraphLink, paintGraphNode, paintLinkLabels } from './graphPainting';
 
 export interface GraphExportLegendEntry {
@@ -53,7 +53,26 @@ export const renderGraphImage = (
   createCanvas: () => HTMLCanvasElement = () => document.createElement('canvas'),
 ): HTMLCanvasElement | null => {
   const { nodes, links, palette, legend } = input;
-  const bounds = boundsOf(nodes.filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y)));
+  const curvatures = computeLinkCurvatures(links.map((link) => ({
+    id: link.id,
+    sourceId: endpoint(link.source)?.id ?? link.source_id,
+    targetId: endpoint(link.target)?.id ?? link.target_id,
+  })));
+  const curvatureOf = (link: GraphLink) => input.curvatureOf?.(link) ?? curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+  const drawable = nodes.filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y));
+  // Curves and self-loops reach beyond the nodes: their control points bound them.
+  const positions = new Map(drawable.map((n) => [n.id, { x: n.x as number, y: n.y as number }]));
+  const controlPoints = links.flatMap((link) => {
+    const start = positions.get(endpoint(link.source)?.id ?? link.source_id);
+    const end = positions.get(endpoint(link.target)?.id ?? link.target_id);
+    if (!start || !end) return [];
+    const { curvature, rotation } = curvatureOf(link);
+    const path = linkPath(start, end, curvature, rotation);
+    if (path.kind === 'quadratic') return [path.control];
+    if (path.kind === 'cubic') return [path.c1, path.c2];
+    return [];
+  });
+  const bounds = boundsOf([...positions.values(), ...controlPoints]);
   if (!bounds) return null;
   const graphWidthUnits = bounds.maxX - bounds.minX + DRAWING_MARGIN * 2;
   const graphHeightUnits = bounds.maxY - bounds.minY + DRAWING_MARGIN * 2;
@@ -95,17 +114,12 @@ export const renderGraphImage = (
 
   // Drawing.
   const detail = levelOfDetail(Math.max(scale, 4), 0);
-  const curvatures = computeLinkCurvatures(links.map((link) => ({
-    id: link.id,
-    sourceId: endpoint(link.source)?.id ?? link.source_id,
-    targetId: endpoint(link.target)?.id ?? link.target_id,
-  })));
   ctx.save();
   ctx.translate(PADDING - (bounds.minX - DRAWING_MARGIN) * scale, HEADER_HEIGHT - (bounds.minY - DRAWING_MARGIN) * scale);
   ctx.scale(scale, scale);
   const labels: LinkLabel[] = [];
   links.forEach((link) => {
-    const { curvature, rotation } = input.curvatureOf?.(link) ?? curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+    const { curvature, rotation } = curvatureOf(link);
     const label = paintGraphLink(ctx, link, {
       palette,
       globalScale: scale,

@@ -126,6 +126,18 @@ describe('renderGraphImage', () => {
     expect(big.height).toBeLessThanOrEqual(8000);
   });
 
+  it('sizes the image on the curves and self-loops reaching beyond the nodes', () => {
+    const sizeWith = (curvature: number, links = [graphLink(a, b)]) => {
+      const sized = { width: 0, height: 0, getContext: () => createRecordingContext() } as unknown as HTMLCanvasElement;
+      renderGraphImage({ ...input, links, curvatureOf: () => ({ curvature, rotation: 0 }) }, () => sized);
+      return { width: sized.width, height: sized.height };
+    };
+    const straight = sizeWith(0);
+    expect(sizeWith(0.8).height).toBeGreaterThan(straight.height);
+    const selfLoop = sizeWith(1, [graphLink(b, b, { id: 'loop' })]);
+    expect(selfLoop.width).toBeGreaterThan(straight.width);
+  });
+
   it('gives nothing to export for an empty graph', () => {
     expect(renderGraphImage({ ...input, nodes: [], links: [] }, () => canvas)).toBeNull();
   });
