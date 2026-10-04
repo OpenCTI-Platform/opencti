@@ -435,17 +435,23 @@ type SourceScorecardMetric {
 type SourceScorecardDistributionItem {
   label: String!
   value: Float
+  # ISO 4217 currency of the value when the metric is a cost
+  currency: String
   entity: Source
 }
 
 type SourceScorecardNumber {
   value: Float
   sources_count: Int!
+  # ISO 4217 currency of the value when the metric is a cost
+  currency: String
 }
 
 type SourceScorecardTimePoint {
   date: DateTime!
   value: Float
+  # ISO 4217 currency of the value when the metric is a cost
+  currency: String
 }
 
 type SourceScorecardScatterPoint {
@@ -453,6 +459,8 @@ type SourceScorecardScatterPoint {
   x: Float
   y: Float
   size: Float
+  # ISO 4217 currency of the cost metrics of the point
+  currency: String
   entity: Source
 }
 

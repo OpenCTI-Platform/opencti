@@ -6204,5 +6204,7 @@
   "{measure}, total over the last {days} days": "{measure}, total sur les {days} derniers jours",
   "{measure}, lowest over the last {days} days": "{measure}, minimum sur les {days} derniers jours",
   "{measure}, highest over the last {days} days": "{measure}, maximum sur les {days} derniers jours",
-  "{measure} per day, scored over {days} days": "{measure} par jour, évalué sur {days} jours"
+  "{measure} per day, scored over {days} days": "{measure} par jour, évalué sur {days} jours",
+  "{measure} ({currency})": "{measure} ({currency})",
+  "Values in {currency}": "Valeurs en {currency}"
 }

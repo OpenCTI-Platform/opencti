@@ -31,6 +31,7 @@ const sourcesBubbleQuery = graphql`
       x
       y
       size
+      currency
       entity {
         id
       }
@@ -44,7 +45,7 @@ const DEFAULT_Y = 'impact_score';
 const DEFAULT_SIZE = 'volume_total';
 const DEFAULT_POINTS = 50;
 
-const axisLabel = (metric: SourceWidgetMetric, value: number) => (metric.type === 'ratio' ? `${value.toFixed(0)} %` : formatMetric(value, metric.type));
+const axisLabel = (metric: SourceWidgetMetric, value: number, currency: string | null) => (metric.type === 'ratio' ? `${value.toFixed(0)} %` : formatMetric(value, metric.type, currency));
 
 const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
   queryRef: PreloadedQuery<SourcesBubbleQuery>;
@@ -56,14 +57,15 @@ const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { sourceScorecardsScatter } = usePreloadedQuery(sourcesBubbleQuery, queryRef);
-  const points = useMemo(() => sourceScorecardsScatter.map((point) => ({
-    id: point.entity?.id,
-    label: point.label,
-    x: toWidgetValue(point.x, xMetric.type) ?? 0,
-    y: toWidgetValue(point.y, yMetric.type) ?? 0,
+  // An unmeasured value is never drawn as a zero: the point is left out
+  const points = useMemo(() => sourceScorecardsScatter.flatMap((point) => {
+    const x = toWidgetValue(point.x, xMetric.type);
+    const y = toWidgetValue(point.y, yMetric.type);
+    if (x === null || y === null || point.size === null || point.size === undefined) return [];
     // Signed metrics (lead time) can be negative: a radius needs a non-negative size
-    size: Math.max(0, point.size ?? 0),
-  })), [sourceScorecardsScatter, xMetric, yMetric]);
+    return [{ id: point.entity?.id, label: point.label, x, y, size: Math.max(0, point.size) }];
+  }), [sourceScorecardsScatter, xMetric, yMetric]);
+  const currency = sourceScorecardsScatter.find((point) => point.currency)?.currency ?? null;
   // Bubble radius proportional to the square root of the size metric, bounded so small sources stay visible
   const maxSize = Math.max(1, ...points.map((point) => point.size));
   // The tooltip renders series names as HTML
@@ -92,18 +94,18 @@ const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
     xaxis: {
       type: 'numeric',
       tickAmount: 6,
-      title: { text: metricAxisTitle(t_i18n, xMetric) },
-      labels: { formatter: (value: string) => axisLabel(xMetric, Number(value)) },
+      title: { text: metricAxisTitle(t_i18n, xMetric, currency) },
+      labels: { formatter: (value: string) => axisLabel(xMetric, Number(value), currency) },
     },
     yaxis: {
-      title: { text: metricAxisTitle(t_i18n, yMetric) },
-      labels: { formatter: (value: number) => axisLabel(yMetric, value) },
+      title: { text: metricAxisTitle(t_i18n, yMetric, currency) },
+      labels: { formatter: (value: number) => axisLabel(yMetric, value, currency) },
     },
     tooltip: {
       theme: theme.palette.mode,
       z: { formatter: () => '', title: '' },
     },
-  }), [theme, points, xMetric, yMetric, navigate]);
+  }), [theme, points, xMetric, yMetric, navigate, currency]);
   if (points.length === 0) {
     return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }

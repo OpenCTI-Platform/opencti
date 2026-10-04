@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useCallback, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
+import { Box, Stack, Typography } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -28,6 +29,7 @@ const sourcesDistributionQuery = graphql`
     sourceScorecardsDistribution(metric: $metric, period: $period, filters: $filters, first: $first, orderMode: $orderMode) {
       label
       value
+      currency
       entity {
         id
         entity_type
@@ -64,21 +66,29 @@ const SourcesDistributionComponent = ({ queryRef, selection, widgetType, onMount
   if (data.length === 0) {
     return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }
+  const currency = metric.type === 'cost' ? (sourceScorecardsDistribution.find((item) => item.currency)?.currency ?? null) : null;
+  // Cost values are in the currency the widget aggregated
+  const withCurrency = (content: React.ReactNode) => (currency ? (
+    <Stack sx={{ height: '100%' }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t_i18n('Values in {currency}', { values: { currency } })}</Typography>
+      <Box sx={{ flex: 1, minHeight: 0 }}>{content}</Box>
+    </Stack>
+  ) : content);
   if (widgetType === 'donut') {
-    return <WidgetDonut data={data} groupBy="name" onMounted={onMounted} />;
+    return withCurrency(<WidgetDonut data={data} groupBy="name" onMounted={onMounted} />);
   }
   if (widgetType === 'horizontal-bar') {
-    const { series, redirectionUtils } = buildWidgetProps(data, selection, metricAxisTitle(t_i18n, metric));
-    return (
+    const { series, redirectionUtils } = buildWidgetProps(data, selection, metricAxisTitle(t_i18n, metric, currency));
+    return withCurrency(
       <WidgetHorizontalBars
         series={series}
         distributed={false}
         redirectionUtils={redirectionUtils}
         onMounted={onMounted}
-      />
+      />,
     );
   }
-  return <WidgetDistributionList data={data} hasSettingAccess />;
+  return withCurrency(<WidgetDistributionList data={data} hasSettingAccess />);
 };
 
 interface SourcesDistributionProps {

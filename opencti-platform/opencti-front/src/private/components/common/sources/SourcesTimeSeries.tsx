@@ -34,6 +34,7 @@ const sourcesTimeSeriesQuery = graphql`
     ) {
       date
       value
+      currency
     }
   }
 `;
@@ -55,7 +56,7 @@ const SourcesTimeSeriesComponent = ({ queryRef, selection, hasLegend, onMounted 
   }
   return (
     <WidgetMultiLines
-      series={[{ name: selection.label || metricAxisTitle(t_i18n, metric), data: points }]}
+      series={[{ name: selection.label || metricAxisTitle(t_i18n, metric, sourceScorecardsTimeSeries.find((point) => point.currency)?.currency), data: points }]}
       interval="day"
       hasLegend={hasLegend}
       onMounted={onMounted}
