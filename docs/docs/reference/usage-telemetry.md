@@ -122,6 +122,15 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - Whether the platform is registered on XTM Hub
 - The number of OpenAEV connectors linked to OpenCTI
 
+### Dissemination assurance
+
+- The number of 'deployed-on' relationships (indicator deployments on security platforms)
+- The number of indicator deployment reports received from connectors
+- The number of indicator hits reported by connectors (one report can carry many hits)
+- The number of IOC validation requests
+- The number of IOC validation requests created
+- The number of IOC validation results reported by the security platforms themselves
+
 ### Email and notifications
 
 - The number of emails sent from the platform

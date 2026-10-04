@@ -16,6 +16,8 @@ import {
   CREATOR_FILTER,
   CVSS_BASE_SCORE_FILTER,
   CVSS_BASE_SEVERITY_FILTER,
+  DEPLOYMENT_PLATFORMS_COUNT_FILTER,
+  DEPLOYMENT_STATUS_FILTER,
   DETECTION_FILTER,
   EPSS_PERCENTILE_FILTER,
   EPSS_SCORE_FILTER,
@@ -43,6 +45,7 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
+  VALIDATION_STATUS_FILTER,
   WORKFLOW_FILTER,
   PATTERN_TYPE_FILTER,
   PIR_SCORE_FILTER,
@@ -253,6 +256,31 @@ export const testRevoked = (stix: ReadonlyStix, filter: Filter, changeContext?: 
 export const testDetection = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const stixValue: boolean | undefined = stix.extensions?.[STIX_EXT_OCTI]?.detection;
   return testBooleanFilter(filter, stixValue, changeContext);
+};
+
+/**
+ * DEPLOYMENT STATUS / VALIDATION STATUS
+ * - lifecycle of deployed-on relationships, carried in the stix extension
+ */
+export const testDeploymentStatus = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.deployment_status);
+  return testStringFilter(filter, stixValues, changeContext);
+};
+
+export const testValidationStatus = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.validation_status);
+  return testStringFilter(filter, stixValues, changeContext);
+};
+
+/**
+ * DEPLOYMENT PLATFORMS COUNT
+ * - number of platforms an indicator is live on, absent from the STIX export when none, so absent reads as 0
+ * - other types have no such counter and keep an absent value
+ */
+export const testDeploymentPlatformsCount = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const count: number | undefined = stix.extensions?.[STIX_EXT_OCTI]?.deployment_platforms_count;
+  const stixValue = stix.type === 'indicator' ? (count ?? 0) : count;
+  return testNumericFilter(filter, stixValue, changeContext);
 };
 
 /**
@@ -523,6 +551,9 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CREATED_BY_FILTER]: testCreatedBy,
   [CREATOR_FILTER]: testCreator,
   [DETECTION_FILTER]: testDetection,
+  [DEPLOYMENT_STATUS_FILTER]: testDeploymentStatus,
+  [VALIDATION_STATUS_FILTER]: testValidationStatus,
+  [DEPLOYMENT_PLATFORMS_COUNT_FILTER]: testDeploymentPlatformsCount,
   [INDICATOR_FILTER]: testIndicatorTypes,
   [REPORT_TYPES_FILTER]: testReportTypes,
   [INCIDENT_RESPONSE_TYPES_FILTER]: testResponseTypes,
