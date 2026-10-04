@@ -62,6 +62,8 @@ export interface DefenseComputationResult {
   level_changes: number;
   notified: number;
   gaps: number;
+  // Gaps whose computed values changed, the only ones written
+  written_gaps: number;
   closed_gaps: number;
   platforms: number;
   duration: number;
@@ -404,96 +406,134 @@ const GAP_REFRESH_SCRIPT = `
   for (entry in params.computed.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }
   for (field in params.removed) { ctx._source.remove(field); }
 `;
+// Techniques whose gaps are prepared and written together, so a full run holds this many techniques times the number
+// of security platforms in memory, whatever the size of the matrix
+const GAP_CHUNK_TECHNIQUES = 100;
+// The computed values of a gap: a stored gap holding the same ones is not written again
+const GAP_COMPARED_FIELDS = ['name', 'attack_pattern_id', 'platform_id', 'x_mitre_id', 'level', 'recommended_action', 'status', 'opened_at', 'closed_at'];
 
+const isGapUnchanged = (previous: BasicStoreEntityDefenseGap, input: Record<string, unknown>) => {
+  const stored = previous as unknown as Record<string, unknown>;
+  return GAP_COMPARED_FIELDS.every((field) => (stored[field] ?? null) === (input[field] ?? null));
+};
+
+/**
+ * Write the gap of every technique and platform pair, by chunks of techniques, skipping the gaps whose computed values
+ * did not change. `producedIds` receives the id of every gap of the run, written or not.
+ */
 const storeGaps = async (
   context: AuthContext,
   user: AuthUser,
   entries: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }>,
   platforms: DefensePlatform[],
   computedAt: string,
+  producedIds: Set<string>,
 ) => {
   const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...platforms.map((p) => p.id)];
   const platformNames = new Map(platforms.map((p) => [p.id, p.name]));
-  const wanted = entries.flatMap(({ attackPattern, coverage }) => {
-    const cell = evaluateCoverage(attackPattern.internal_id, coverage, () => true);
-    return platformKeys.map((platformId) => ({
-      attackPattern,
-      platformId,
-      cellPlatform: cellForPlatform(cell, platformId),
-      ...defenseGapId(attackPattern.internal_id, platformId),
-    }));
-  });
-  const existing = await findByIdsChunked<BasicStoreEntityDefenseGap>(context, user, wanted.map((w) => w.internalId), {
-    type: ENTITY_TYPE_DEFENSE_GAP,
-    indices: [READ_INDEX_INTERNAL_OBJECTS],
-  });
-  const existingById = new Map(existing.map((e) => [e.internal_id, e]));
   let closed = 0;
-  const docs: Array<{ element: Record<string, unknown>; previousIndex?: string }> = [];
-  for (let index = 0; index < wanted.length; index += 1) {
-    await doYield();
-    const { attackPattern, platformId, cellPlatform, standardId, internalId } = wanted[index];
-    const previous = existingById.get(internalId);
-    const isClosed = cellPlatform.level >= DEFENSE_LEVEL_VALIDATED;
-    // Only an actual open -> closed transition counts, not a technique already validated at its first computation
-    if (isClosed && previous?.status === DEFENSE_GAP_STATUS_OPEN) closed += 1;
-    const platformName = platformId === DEFENSE_AGGREGATE_PLATFORM ? 'All platforms' : (platformNames.get(platformId) ?? platformId);
-    const input = {
-      internal_id: internalId,
-      standard_id: standardId,
-      entity_type: ENTITY_TYPE_DEFENSE_GAP,
-      name: `${attackPattern.x_mitre_id ? `[${attackPattern.x_mitre_id}] ` : ''}${attackPattern.name} - ${platformName}`,
-      attack_pattern_id: attackPattern.internal_id,
-      platform_id: platformId,
-      x_mitre_id: attackPattern.x_mitre_id,
-      level: cellPlatform.level,
-      recommended_action: cellPlatform.recommended_action,
-      status: isClosed ? DEFENSE_GAP_STATUS_CLOSED : DEFENSE_GAP_STATUS_OPEN,
-      opened_at: previous?.opened_at ?? computedAt,
-      closed_at: isClosed ? (previous?.closed_at ?? computedAt) : undefined,
-      computed_at: computedAt,
-      validation_requests: previous?.validation_requests ?? [],
-      last_validation_requested_at: previous?.last_validation_requested_at,
-      created_at: previous?.created_at ?? computedAt,
-      updated_at: computedAt,
-    };
-    const { element } = await buildEntityData(context, user, R.reject(R.isNil, input), ENTITY_TYPE_DEFENSE_GAP);
-    docs.push({ element: await prepareElementForIndexing(element), previousIndex: previous?._index });
-  }
-  // A validation request is appended to its gaps without the computation lock: an existing gap gets the computed
-  // fields only, so that a request appended since it was read is never replaced by the copy taken above
-  const groups = R.splitEvery(BULK_SIZE, docs);
-  for (let index = 0; index < groups.length; index += 1) {
-    const body = groups[index].flatMap(({ element, previousIndex }) => {
-      const { _index: _ignored, ...upsert } = element;
-      const computed = R.omit(GAP_LIFECYCLE_FIELDS, upsert);
-      const removed = GAP_OPTIONAL_COMPUTED_FIELDS.filter((field) => !(field in computed));
-      return [
-        { update: { _index: previousIndex ?? INDEX_INTERNAL_OBJECTS, _id: upsert.internal_id, retry_on_conflict: 5 } },
-        { script: { source: GAP_REFRESH_SCRIPT, lang: 'painless', params: { computed, removed } }, upsert },
-      ];
+  let written = 0;
+  const chunks = R.splitEvery(GAP_CHUNK_TECHNIQUES, entries);
+  for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+    const wanted = chunks[chunkIndex].flatMap(({ attackPattern, coverage }) => {
+      const cell = evaluateCoverage(attackPattern.internal_id, coverage, () => true);
+      return platformKeys.map((platformId) => ({
+        attackPattern,
+        platformId,
+        cellPlatform: cellForPlatform(cell, platformId),
+        ...defenseGapId(attackPattern.internal_id, platformId),
+      }));
     });
-    await elBulk(context, { refresh: true, body });
+    wanted.forEach(({ internalId }) => producedIds.add(internalId));
+    const existing = await findByIdsChunked<BasicStoreEntityDefenseGap>(context, user, wanted.map((w) => w.internalId), {
+      type: ENTITY_TYPE_DEFENSE_GAP,
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+    });
+    const existingById = new Map(existing.map((e) => [e.internal_id, e]));
+    const docs: Array<{ element: Record<string, unknown>; previousIndex?: string }> = [];
+    for (let index = 0; index < wanted.length; index += 1) {
+      await doYield();
+      const { attackPattern, platformId, cellPlatform, standardId, internalId } = wanted[index];
+      const previous = existingById.get(internalId);
+      const isClosed = cellPlatform.level >= DEFENSE_LEVEL_VALIDATED;
+      // Only an actual open -> closed transition counts, not a technique already validated at its first computation
+      if (isClosed && previous?.status === DEFENSE_GAP_STATUS_OPEN) closed += 1;
+      const platformName = platformId === DEFENSE_AGGREGATE_PLATFORM ? 'All platforms' : (platformNames.get(platformId) ?? platformId);
+      const input = {
+        internal_id: internalId,
+        standard_id: standardId,
+        entity_type: ENTITY_TYPE_DEFENSE_GAP,
+        name: `${attackPattern.x_mitre_id ? `[${attackPattern.x_mitre_id}] ` : ''}${attackPattern.name} - ${platformName}`,
+        attack_pattern_id: attackPattern.internal_id,
+        platform_id: platformId,
+        x_mitre_id: attackPattern.x_mitre_id,
+        level: cellPlatform.level,
+        recommended_action: cellPlatform.recommended_action,
+        status: isClosed ? DEFENSE_GAP_STATUS_CLOSED : DEFENSE_GAP_STATUS_OPEN,
+        opened_at: previous?.opened_at ?? computedAt,
+        closed_at: isClosed ? (previous?.closed_at ?? computedAt) : undefined,
+        computed_at: computedAt,
+        validation_requests: previous?.validation_requests ?? [],
+        last_validation_requested_at: previous?.last_validation_requested_at,
+        created_at: previous?.created_at ?? computedAt,
+        updated_at: computedAt,
+      };
+      if (!previous || !isGapUnchanged(previous, input)) {
+        const { element } = await buildEntityData(context, user, R.reject(R.isNil, input), ENTITY_TYPE_DEFENSE_GAP);
+        docs.push({ element: await prepareElementForIndexing(element), previousIndex: previous?._index });
+      }
+    }
+    // A validation request is appended to its gaps without the computation lock: an existing gap gets the computed
+    // fields only, so that a request appended since it was read is never replaced by the copy taken above
+    const groups = R.splitEvery(BULK_SIZE, docs);
+    for (let index = 0; index < groups.length; index += 1) {
+      const body = groups[index].flatMap(({ element, previousIndex }) => {
+        const { _index: _ignored, ...upsert } = element;
+        const computed = R.omit(GAP_LIFECYCLE_FIELDS, upsert);
+        const removed = GAP_OPTIONAL_COMPUTED_FIELDS.filter((field) => !(field in computed));
+        return [
+          { update: { _index: previousIndex ?? INDEX_INTERNAL_OBJECTS, _id: upsert.internal_id, retry_on_conflict: 5 } },
+          { script: { source: GAP_REFRESH_SCRIPT, lang: 'painless', params: { computed, removed } }, upsert },
+        ];
+      });
+      await elBulk(context, { refresh: true, body });
+    }
+    written += docs.length;
   }
-  return { gaps: docs.length, closed };
+  return { gaps: producedIds.size, written, closed };
 };
 
-const deleteStaleGaps = async (computedAt: string) => {
-  await elRawDeleteByQuery({
-    index: READ_INDEX_INTERNAL_OBJECTS,
-    refresh: true,
-    wait_for_completion: true,
-    body: {
-      query: {
-        bool: {
-          filter: [
-            { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
-            { range: { computed_at: { lt: computedAt } } },
-          ],
+/**
+ * After a full run, delete the gaps the run did not produce (a revoked or deleted technique, a removed platform),
+ * except the ones written since the run started (a gap created meanwhile by a validation request).
+ */
+const deleteStaleGaps = async (context: AuthContext, user: AuthUser, producedIds: Set<string>, computedAt: string) => {
+  const stored = await fullEntitiesList<BasicStoreEntityDefenseGap>(context, user, [ENTITY_TYPE_DEFENSE_GAP], {
+    baseData: true,
+    baseFields: ['internal_id', 'computed_at'],
+  } as never);
+  const staleIds = stored
+    .filter((gap) => !producedIds.has(gap.internal_id) && (gap.computed_at ?? '') < computedAt)
+    .map((gap) => gap.internal_id);
+  const groups = R.splitEvery(BULK_SIZE, staleIds);
+  for (let index = 0; index < groups.length; index += 1) {
+    await elRawDeleteByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      wait_for_completion: true,
+      body: {
+        query: {
+          bool: {
+            filter: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
+              { terms: { 'internal_id.keyword': groups[index] } },
+            ],
+          },
         },
       },
-    },
-  });
+    });
+  }
+  return staleIds.length;
 };
 
 const deleteGapsOfTechniques = async (attackPatternIds: string[]) => {
@@ -611,9 +651,10 @@ export const computeDefenseCoverage = async (
   })));
 
   // 6. Gap lifecycle records
-  const { gaps, closed } = await storeGaps(context, user, entries, platforms, computedAt);
+  const producedGapIds = new Set<string>();
+  const { gaps, written, closed } = await storeGaps(context, user, entries, platforms, computedAt, producedGapIds);
   if (isFull) {
-    await deleteStaleGaps(computedAt);
+    await deleteStaleGaps(context, user, producedGapIds, computedAt);
   } else {
     await deleteGapsOfTechniques(revokedIds);
   }
@@ -634,6 +675,7 @@ export const computeDefenseCoverage = async (
     level_changes: coverageChanges.filter((change) => change.previous.level !== change.coverage.level).length,
     notified,
     gaps,
+    written_gaps: written,
     closed_gaps: closed,
     platforms: platforms.length,
     duration: Date.now() - start,

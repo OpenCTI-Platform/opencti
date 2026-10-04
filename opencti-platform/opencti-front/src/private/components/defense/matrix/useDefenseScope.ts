@@ -27,16 +27,23 @@ const readStoredScope = (storageKey: string) => {
 const useDefenseScope = (): [DefenseScopeState, (scope: DefenseScopeState) => void] => {
   const { me } = useAuth();
   const storageKey = defenseScopeStorageKey(me.id);
-  const [scope, setScope] = useState<DefenseScopeState>(() => readStoredScope(storageKey));
+  // The scope is kept with the key it belongs to: when the signed-in user changes, the scope of the new user is read
+  // during the same render, so the threats selected by the previous user are never shown nor written under the new key.
+  const [state, setState] = useState<{ storageKey: string; scope: DefenseScopeState }>(() => ({ storageKey, scope: readStoredScope(storageKey) }));
+  let current = state;
+  if (state.storageKey !== storageKey) {
+    current = { storageKey, scope: readStoredScope(storageKey) };
+    setState(current);
+  }
   const updateScope = useCallback((next: DefenseScopeState) => {
-    setScope(next);
+    setState({ storageKey, scope: next });
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(next));
     } catch {
       // Storage can be full or disabled: the scope still applies to the current page.
     }
   }, [storageKey]);
-  return [scope, updateScope];
+  return [current.scope, updateScope];
 };
 
 export default useDefenseScope;

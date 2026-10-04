@@ -596,6 +596,9 @@ describe('Threat-informed defense matrix', () => {
       const unchanged = await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
       expect(unchanged.level_changes).toEqual(0);
       expect(unchanged.notified).toEqual(0);
+      // and writes no gap: their computed values are the stored ones
+      expect(unchanged.gaps).toBeGreaterThan(0);
+      expect(unchanged.written_gaps).toEqual(0);
     } finally {
       await triggerDelete(testContext, ADMIN_USER, trigger.id);
       resetCacheForEntity(ENTITY_TYPE_TRIGGER);
