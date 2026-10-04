@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "当前有 {count} 个元素被此规则标记为过时",
   "{count} email address(es) extracted from pasted text": "{count} 从粘贴的文本中提取的电子邮件地址",
   "{count} entities": "{count} 个实体",
+  "{count} existing hunts updated from the hunt pack": "已从狩猎包更新 {count} 个现有狩猎",
   "{count} hits": "{count} 次命中",
   "{count} hours": "{count} 小时",
   "{count} hunts imported as drafts": "已将 {count} 个狩猎导入为草稿",

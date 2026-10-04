@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "{count} elements currently flagged as stale by this rule",
   "{count} email address(es) extracted from pasted text": "{count} email address(es) extracted from pasted text",
   "{count} entities": "{count} entities",
+  "{count} existing hunts updated from the hunt pack": "{count} existing hunts updated from the hunt pack",
   "{count} hits": "{count} hits",
   "{count} hours": "{count} hours",
   "{count} hunts imported as drafts": "{count} hunts imported as drafts",

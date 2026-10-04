@@ -53,6 +53,8 @@ export const huntPackImportMutation = graphql`
         ...Hunts_HuntFragment
       }
       unresolved_refs
+      created_count
+      updated_count
     }
   }
 `;
@@ -82,10 +84,13 @@ export const insertImportedHunts = (
   if (!connection) {
     return;
   }
+  // A hunt the pack updated may already be listed: it is refreshed in place, never listed twice
+  const listed = new Set((connection.getLinkedRecords('edges') ?? []).map((edge) => edge?.getLinkedRecord('node')?.getDataID()));
   hunts.forEach((hunt) => {
-    if (hunt) {
+    if (hunt && !listed.has(hunt.getDataID())) {
       const edge = ConnectionHandler.createEdge(store, connection, hunt, 'HuntEdge');
       ConnectionHandler.insertEdgeBefore(connection, edge);
+      listed.add(hunt.getDataID());
     }
   });
 };
@@ -95,8 +100,15 @@ export const notifyHuntPackImport = (
   t_i18n: (message: string, options?: { values?: Record<string, string | number> }) => string,
   result: HuntPackImportMutation$data['huntPackImport'],
 ) => {
-  const count = result?.hunts.length ?? 0;
-  MESSAGING$.notifySuccess(t_i18n('{count} hunts imported as drafts', { values: { count } }));
+  const created = result?.created_count ?? 0;
+  const updated = result?.updated_count ?? 0;
+  if (created > 0 || updated === 0) {
+    MESSAGING$.notifySuccess(t_i18n('{count} hunts imported as drafts', { values: { count: created } }));
+  }
+  if (updated > 0) {
+    // Existing hunts keep how they run here (status, origin, schedule): only their definition changed
+    MESSAGING$.notifySuccess(t_i18n('{count} existing hunts updated from the hunt pack', { values: { count: updated } }));
+  }
   const unresolved = result?.unresolved_refs ?? [];
   if (unresolved.length > 0) {
     MESSAGING$.notifyError(t_i18n('{count} references of the hunt pack are unknown on this platform and were skipped', { values: { count: unresolved.length } }));

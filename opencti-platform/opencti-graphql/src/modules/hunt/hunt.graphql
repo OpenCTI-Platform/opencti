@@ -313,6 +313,10 @@ type HuntProposal {
 type HuntPackImportResult {
   hunts: [Hunt!]!
   unresolved_refs: [String!]!
+  "Hunts of the pack created as drafts"
+  created_count: Int!
+  "Hunts of the pack that already existed, their definition updated and how they run here kept"
+  updated_count: Int!
 }
 type HuntValidation {
   hunts_count: Int!

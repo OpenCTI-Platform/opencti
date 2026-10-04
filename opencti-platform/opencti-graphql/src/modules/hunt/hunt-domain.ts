@@ -406,6 +406,7 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
   const { hunts, objects } = await parseHuntPack(file);
   const imported: BasicStoreEntityHunt[] = [];
   const unresolved = new Set<string>();
+  let updatedCount = 0;
   for (let index = 0; index < hunts.length; index += 1) {
     const plan = await planHuntPackImport(context, user, hunts[index], objects);
     plan.unresolved.forEach((ref) => unresolved.add(ref));
@@ -424,6 +425,9 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
       await validateHuntState(context, input as HuntValidationState);
       input.objectLabel = await resolveHuntPackLabels(context, user, plan.labels);
       imported.push(await addHunt(context, user, input as unknown as HuntAddInput));
+      if (existing) {
+        updatedCount += 1;
+      }
     }
   }
   await publishUserAction({
@@ -434,6 +438,6 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
     message: `imports a hunt pack of ${imported.length} hunt(s)`,
     context_data: { id: imported[0]?.internal_id ?? '', entity_type: ENTITY_TYPE_HUNT, input: { hunts: hunts.length } },
   });
-  return { hunts: imported, unresolved_refs: Array.from(unresolved) };
+  return { hunts: imported, unresolved_refs: Array.from(unresolved), created_count: imported.length - updatedCount, updated_count: updatedCount };
 };
 // endregion

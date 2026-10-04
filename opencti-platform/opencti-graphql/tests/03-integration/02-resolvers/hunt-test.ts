@@ -447,6 +447,7 @@ describe('Hunt resolvers', () => {
     // Importing the pack of a hunt that exists here updates its definition, never how it runs here
     const sameHunt = await importHuntPack(testContext, ADMIN_USER, toUpload(bundle));
     expect(sameHunt.hunts.map((hunt) => hunt.internal_id)).toEqual([huntId]);
+    expect({ created: sameHunt.created_count, updated: sameHunt.updated_count }).toEqual({ created: 0, updated: 1 });
     const unchanged = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
     expect(unchanged.data?.hunt.hunt_status).toEqual('active');
     expect(unchanged.data?.hunt.hunt_source_kind).toEqual('analyst');
@@ -457,6 +458,7 @@ describe('Hunt resolvers', () => {
     };
     const imported = await importHuntPack(testContext, ADMIN_USER, toUpload(renamed));
     expect(imported.hunts).toHaveLength(1);
+    expect({ created: imported.created_count, updated: imported.updated_count }).toEqual({ created: 1, updated: 0 });
     const [newHunt] = imported.hunts;
     huntIds.push(newHunt.internal_id);
     expect(newHunt.hunt_status).toEqual('draft');

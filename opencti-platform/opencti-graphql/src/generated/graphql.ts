@@ -11891,8 +11891,12 @@ export type HuntNativeQueryInput = {
 
 export type HuntPackImportResult = {
   __typename?: 'HuntPackImportResult';
+  /** Hunts of the pack created as drafts */
+  created_count: Scalars['Int']['output'];
   hunts: Array<Hunt>;
   unresolved_refs: Array<Scalars['String']['output']>;
+  /** Hunts of the pack that already existed, their definition updated and how they run here kept */
+  updated_count: Scalars['Int']['output'];
 };
 
 export type HuntPlanInput = {
@@ -49107,8 +49111,10 @@ export type HuntNativeQueryResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type HuntPackImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntPackImportResult'] = ResolversParentTypes['HuntPackImportResult']> = ResolversObject<{
+  created_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   hunts?: Resolver<Array<ResolversTypes['Hunt']>, ParentType, ContextType>;
   unresolved_refs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type HuntProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntProposal'] = ResolversParentTypes['HuntProposal']> = ResolversObject<{

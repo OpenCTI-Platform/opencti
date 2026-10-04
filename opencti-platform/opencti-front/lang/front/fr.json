@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "{count} éléments actuellement marqués comme obsolètes par cette règle",
   "{count} email address(es) extracted from pasted text": "{count} adresse(s) électronique(s) extraite(s) du texte collé",
   "{count} entities": "{count} entités",
+  "{count} existing hunts updated from the hunt pack": "{count} chasses existantes mises à jour depuis le pack de chasses",
   "{count} hits": "{count} correspondances",
   "{count} hours": "{count} heures",
   "{count} hunts imported as drafts": "{count} chasses importées en brouillon",

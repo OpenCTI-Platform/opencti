@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "현재 이 규칙에 의해 오래된 항목으로 표시된 요소 {count}개",
   "{count} email address(es) extracted from pasted text": "붙여넣은 텍스트에서 추출한 {count} 이메일 주소",
   "{count} entities": "{count}개 엔터티",
+  "{count} existing hunts updated from the hunt pack": "헌트 팩에서 기존 헌트 {count}개를 업데이트했습니다",
   "{count} hits": "히트 {count}개",
   "{count} hours": "{count}시간",
   "{count} hunts imported as drafts": "헌트 {count}개를 초안으로 가져왔습니다",

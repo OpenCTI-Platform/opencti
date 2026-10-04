@@ -2,8 +2,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import { fetchQuery } from '../../../relay/environment';
-import { HUNT_PACK_MAX_HUNTS, HuntPackExportButton, resolveSelectAllHuntIds } from './HuntPack';
+import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import { HUNT_PACK_MAX_HUNTS, HuntPackExportButton, notifyHuntPackImport, resolveSelectAllHuntIds } from './HuntPack';
 
 const dataTableContext = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
@@ -61,5 +61,23 @@ describe('resolveSelectAllHuntIds', () => {
   it('refuses a selection larger than a hunt pack instead of exporting part of it', async () => {
     mockHunts(['hunt-1'], HUNT_PACK_MAX_HUNTS + 5);
     expect(await resolveSelectAllHuntIds({}, { 'hunt-1': true })).toBeNull();
+  });
+});
+
+describe('notifyHuntPackImport()', () => {
+  const t = (message: string, options?: { values?: Record<string, string | number> }) => `${message}|${JSON.stringify(options?.values ?? {})}`;
+  const result = (created: number, updated: number) => ({ hunts: [], unresolved_refs: [], created_count: created, updated_count: updated });
+
+  it('names the hunts created and the existing hunts updated by a pack', () => {
+    const success = vi.spyOn(MESSAGING$, 'notifySuccess').mockImplementation(() => {});
+    notifyHuntPackImport(t, result(2, 1));
+    expect(success.mock.calls.map(([message]) => message)).toEqual([
+      '{count} hunts imported as drafts|{"count":2}',
+      '{count} existing hunts updated from the hunt pack|{"count":1}',
+    ]);
+    success.mockClear();
+    notifyHuntPackImport(t, result(0, 3));
+    expect(success.mock.calls.map(([message]) => message)).toEqual(['{count} existing hunts updated from the hunt pack|{"count":3}']);
+    success.mockRestore();
   });
 });

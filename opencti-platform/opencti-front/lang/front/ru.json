@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "Элементов, помеченных этим правилом как устаревшие: {count}",
   "{count} email address(es) extracted from pasted text": "{count} адреса электронной почты, извлеченные из вставленного текста",
   "{count} entities": "сущностей: {count}",
+  "{count} existing hunts updated from the hunt pack": "Обновлено существующих охот из пакета: {count}",
   "{count} hits": "Совпадений: {count}",
   "{count} hours": "{count} ч",
   "{count} hunts imported as drafts": "Импортировано охот в виде черновиков: {count}",

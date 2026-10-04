@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "{count} elementos marcados actualmente como obsoletos por esta regla",
   "{count} email address(es) extracted from pasted text": "{count} dirección(es) de correo electrónico extraída(s) del texto pegado",
   "{count} entities": "{count} entidades",
+  "{count} existing hunts updated from the hunt pack": "{count} cazas existentes actualizadas desde el paquete de cazas",
   "{count} hits": "{count} coincidencias",
   "{count} hours": "{count} horas",
   "{count} hunts imported as drafts": "{count} cazas importadas como borradores",

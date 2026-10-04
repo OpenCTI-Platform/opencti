@@ -21,6 +21,7 @@
   "{count} elements currently flagged as stale by this rule": "このルールにより現在 {count} 件の要素が古いものとしてフラグ付けされています",
   "{count} email address(es) extracted from pasted text": "貼り付けられたテキストから抽出された{count}メールアドレス",
   "{count} entities": "{count} 件のエンティティ",
+  "{count} existing hunts updated from the hunt pack": "既存のハント {count} 件をハントパックから更新しました",
   "{count} hits": "{count} 件のヒット",
   "{count} hours": "{count} 時間",
   "{count} hunts imported as drafts": "{count} 件のハントを下書きとしてインポートしました",
