@@ -45,3 +45,20 @@ export const completeXTMHubDataForRegistration = (user: AuthUser, input: InputSe
 
   return input;
 };
+
+const FILIGRAN_AI_DOMAIN = 'filigran.io';
+
+// The endpoint host must be filigran.io or one of its subdomains: a substring match would accept any host.
+export const resolveAIEndpointType = (endpoint: string | null | undefined): string => {
+  if (!isNotEmptyField(endpoint)) {
+    return '';
+  }
+  const value = String(endpoint).trim();
+  let hostname: string;
+  try {
+    hostname = new URL(value.includes('://') ? value : `https://${value}`).hostname.toLowerCase();
+  } catch {
+    return 'Custom';
+  }
+  return hostname === FILIGRAN_AI_DOMAIN || hostname.endsWith(`.${FILIGRAN_AI_DOMAIN}`) ? 'Filigran' : 'Custom';
+};
