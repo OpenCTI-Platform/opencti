@@ -138,7 +138,7 @@ A rule only applies to the types whose [provenance is tracked](../usage/provenan
 
 ![The Knowledge decay rules tab listing a custom rule on Malware that currently flags two elements, and the three built-in rules, disabled](./assets/knowledge-decay-rules.png)
 
-Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating, deleting or changing the targets of a rule clears the flags it set.
+Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating or deleting a rule, or changing its targets, filters, delay or policy, clears the flags it set: the next run evaluates that knowledge again under the new configuration, so a new policy also applies to the knowledge already flagged.
 
 Three built-in knowledge decay rules are shipped **disabled**: `communicates-with` relationships after 180 days, `uses` relationships after 24 months and infrastructures after one year. They can only be activated or deactivated: create your own rule to change their configuration.
 

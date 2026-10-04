@@ -9215,6 +9215,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   procedures_description_policy: ProceduresDescriptionPolicy;
   procedures_preservation: Scalars['Boolean']['output'];
   provenance_tracking: Scalars['Boolean']['output'];
+  provenance_untracked_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
@@ -47184,6 +47185,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
   procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   provenance_tracking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  provenance_untracked_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
