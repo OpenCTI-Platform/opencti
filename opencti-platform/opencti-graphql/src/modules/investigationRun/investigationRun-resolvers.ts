@@ -63,18 +63,23 @@ const loadElement = (context: any, id: string | null | undefined, type: string |
 
 const latestRun = (entity: { id: string }, context: any) => context.batch.latestInvestigationRunBatchLoader.load(entity.id);
 
-// What a run derived is served only while none of its sources is restricted to
-// authorized members, whichever path resolved the run: a query, a list, a case
-// badge, the generic object lookup, a mutation or a subscription event. Read
-// once per resolved run, batched across the runs of a page; the answer does
-// not depend on the reader.
-const servedRuns = new WeakMap<BasicStoreEntityInvestigationRun, Promise<BasicStoreEntityInvestigationRun>>();
+// What a run derived is served to a reader only while each of its live sources
+// is readable by that reader and none is restricted to authorized members,
+// whichever path resolved the run: a query, a list, a case badge, the generic
+// object lookup, a mutation or a subscription event. Read once per resolved
+// run and reader, batched across the runs of a page.
+const servedRuns = new WeakMap<BasicStoreEntityInvestigationRun, Map<string, Promise<BasicStoreEntityInvestigationRun>>>();
 const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
-  let view = servedRuns.get(run);
+  let byReader = servedRuns.get(run);
+  if (!byReader) {
+    byReader = new Map();
+    servedRuns.set(run, byReader);
+  }
+  let view = byReader.get(context.user.id);
   if (!view) {
-    const beyond: Promise<boolean> = context.batch.investigationRunBoundaryBatchLoader.load(run);
-    view = beyond.then((isBeyond) => (isBeyond ? withholdInvestigationRunFindings(run) : run));
-    servedRuns.set(run, view);
+    const withheld: Promise<string | null> = context.batch.investigationRunWithheldBatchLoader.load(run);
+    view = withheld.then((reason) => (reason ? withholdInvestigationRunFindings(run, reason) : run));
+    byReader.set(context.user.id, view);
   }
   return view;
 };
@@ -112,7 +117,7 @@ const investigationRunResolvers: Resolvers = {
     hypotheses: async (run, _, context) => [...((await served(run, context)).hypotheses ?? [])].sort((a, b) => a.rank - b.rank),
     timeline: async (run, _, context) => (await served(run, context)).timeline ?? [],
     recommendations: async (run, _, context) => (await served(run, context)).recommendations ?? [],
-    analyst_feedback: (run) => run.analyst_feedback ?? [],
+    analyst_feedback: async (run, _, context) => (await served(run, context)).analyst_feedback ?? [],
     approvals: async (run, _, context) => {
       const view = await served(run, context);
       return filterReadableRunRecords(context, context.user, view, view.approvals ?? []);
@@ -128,8 +133,8 @@ const investigationRunResolvers: Resolvers = {
     report_id: async (run, _, context) => (await served(run, context)).outputs?.report_id ?? null,
     can_continue: async (run, _, context) => canContinueInvestigationRun(await served(run, context)),
     budget: (run) => ({ ...run.budget, used_minutes: computeUsedMinutes(run, new Date()) }),
-    acceptance: (run) => {
-      const acceptance = computeAcceptance(run.analyst_feedback ?? []);
+    acceptance: async (run, _, context) => {
+      const acceptance = computeAcceptance((await served(run, context)).analyst_feedback ?? []);
       return { ...acceptance, rate: acceptanceRate(acceptance) };
     },
     report_sections: async (run, _, context) => buildInvestigationReportSections(await served(run, context)),

@@ -112,10 +112,11 @@ export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] =>
 /**
  * Everything a run derived from what it read, emptied: the engine's text, the
  * conclusion OpenCTI scored from it, the references to its outputs, what its
- * enrichment waves brought, and the approvals and requests quoting any of it
- * (a recommendation approval quotes its recommendation; the other records keep
- * their decision, not their reason). Withheld once the run is stopped at an
- * access boundary, and from every reader while one of its sources is beyond it.
+ * enrichment waves brought, the analyst feedback on its findings, and the
+ * approvals and requests quoting any of it (a recommendation approval quotes
+ * its recommendation; the other records keep their decision, not their
+ * reason). Withheld once the run is stopped at an access boundary, and from a
+ * reader while one of its sources is beyond that reader's access.
  */
 export const withheldRunContent = (run: BasicStoreEntityInvestigationRun) => ({
   goal_plan: null,
@@ -129,6 +130,7 @@ export const withheldRunContent = (run: BasicStoreEntityInvestigationRun) => ({
   report_sources: [],
   outputs: EMPTY_OUTPUTS,
   enrichment_waves: (run.enrichment_waves ?? []).map((wave) => ({ ...wave, delta: [] })),
+  analyst_feedback: [],
   approvals: (run.approvals ?? [])
     .filter((approval) => approval.kind !== InvestigationApprovalKind.Recommendation)
     .map((approval) => ({ ...approval, reason: null })),

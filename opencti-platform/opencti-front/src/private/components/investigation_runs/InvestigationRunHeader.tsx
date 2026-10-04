@@ -38,6 +38,7 @@ import {
   isRunActive,
   MEMBER_RESTRICTED_CODE,
   reportMutationOutcome,
+  SOURCE_INACCESSIBLE_CODE,
 } from './investigationRunUtils';
 import { CASE_AUTOPILOT_DOCS_URL, formatDuration, POLICIES_PATH, runReasonNext, runStatusSentence } from './investigationRunOutcomes';
 import { draftChangeCount } from './investigationRunDraftChanges';
@@ -167,8 +168,8 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
         </Button>
       );
     }
-    // Policies cannot lift a member restriction: the stop sentence says what can.
-    if (run.run_status === 'failed' && canCustomize && run.end_reason_code !== MEMBER_RESTRICTED_CODE) {
+    // Policies cannot lift a member restriction or a lost access: the sentence says what can.
+    if (run.run_status === 'failed' && canCustomize && run.end_reason_code !== MEMBER_RESTRICTED_CODE && run.end_reason_code !== SOURCE_INACCESSIBLE_CODE) {
       secondary.push(<Button key="policies" size="small" variant="secondary" component={Link} to={POLICIES_PATH}>{t_i18n('Open the investigation policies')}</Button>);
     }
   } else if (active && run.workspace_id) {

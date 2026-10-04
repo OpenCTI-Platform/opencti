@@ -409,6 +409,8 @@
   "An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found. Remove that entity from the case or ask an administrator for access, then run again.": "Сущность расследования теперь доступна только авторизованным участникам: Case Autopilot остановился и скрыл найденное. Удалите эту сущность из кейса или запросите доступ у администратора, затем запустите снова.",
   "Withheld: an entity of the investigation became restricted to authorized members.": "Скрыто: сущность расследования стала доступна только авторизованным участникам.",
   "Withheld: the investigated entity is no longer accessible to the account the investigation runs as.": "Скрыто: исследуемая сущность больше не доступна учетной записи, от имени которой выполняется расследование.",
+  "An entity of the investigation is no longer accessible to you: what Case Autopilot found is withheld. Ask an administrator for access to that entity.": "Сущность расследования вам больше не доступна: найденное Case Autopilot скрыто. Запросите у администратора доступ к этой сущности.",
+  "Withheld: an entity of the investigation is no longer accessible to you.": "Скрыто: сущность расследования вам больше не доступна.",
   "An enumeration of security platform type": "Перечисление типа платформы безопасности",
   "An enumeration of SSH key types": "Перечисление типов ключей SSH",
   "An enumeration of Windows service start types": "Перечисление типов запуска служб Windows",

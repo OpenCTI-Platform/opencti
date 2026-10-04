@@ -409,6 +409,8 @@
   "An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found. Remove that entity from the case or ask an administrator for access, then run again.": "Un'entità dell'indagine è ora limitata ai membri autorizzati: Case Autopilot si è fermato e ha rimosso ciò che aveva trovato. Rimuovi l'entità dal caso o chiedi l'accesso a un amministratore, poi esegui di nuovo.",
   "Withheld: an entity of the investigation became restricted to authorized members.": "Rimosso: un'entità dell'indagine è stata limitata ai membri autorizzati.",
   "Withheld: the investigated entity is no longer accessible to the account the investigation runs as.": "Rimosso: l'entità indagata non è più accessibile all'account con cui viene eseguita l'indagine.",
+  "An entity of the investigation is no longer accessible to you: what Case Autopilot found is withheld. Ask an administrator for access to that entity.": "Un'entità dell'indagine non ti è più accessibile: quanto trovato da Case Autopilot è stato rimosso. Chiedi a un amministratore l'accesso a quell'entità.",
+  "Withheld: an entity of the investigation is no longer accessible to you.": "Rimosso: un'entità dell'indagine non ti è più accessibile.",
   "An enumeration of security platform type": "Un'enumerazione di tipi di piattaforme di sicurezza",
   "An enumeration of SSH key types": "Un'enumerazione di tipi di chiavi SSH",
   "An enumeration of Windows service start types": "Un'enumerazione di tipi di avvio del servizio Windows",

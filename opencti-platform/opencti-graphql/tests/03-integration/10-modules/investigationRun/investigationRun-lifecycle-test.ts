@@ -2,12 +2,19 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { v4 as uuid } from 'uuid';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType, InvestigationRunTrigger } from '../../../../src/generated/graphql';
-import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
-import { addInvestigationRun, cancelInvestigationRun, decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { MARKING_TLP_AMBER, MARKING_TLP_RED } from '../../../../src/schema/identifier';
+import {
+  addInvestigationRun,
+  cancelInvestigationRun,
+  decideInvestigationApprovals,
+  findInvestigationRunsWithheldReasons,
+  loadInvestigationRun,
+} from '../../../../src/modules/investigationRun/investigationRun-domain';
+import type { BasicStoreEntityInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-types';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
@@ -139,6 +146,11 @@ const RESTRICT_CONTAINER = gql`
 `;
 const MARK_SDO = gql`
   mutation SdoMark($id: ID!, $input: StixRefRelationshipAddInput!) { stixDomainObjectEdit(id: $id) { relationAdd(input: $input) { id } } }
+`;
+const UNMARK_SDO = gql`
+  mutation SdoUnmark($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+    stixDomainObjectEdit(id: $id) { relationDelete(toId: $toId, relationship_type: $relationship_type) { id } }
+  }
 `;
 const DELETE_SDO = gql`mutation SdoDelete($id: ID!) { stixDomainObjectEdit(id: $id) { delete } }`;
 const DELETE_SCO = gql`mutation ScoDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`;
@@ -776,6 +788,48 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const cancelled = await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
       expect(cancelled.data.investigationRunCancel.run_status).toBe('cancelled');
     } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('withholds what it found from a reader who can no longer read an object it cites, and from that reader only', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e marked source case', objects: [fixture.intrusionSetId, fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    let marked = false;
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'completed';
+      const awaiting = await tickUntil(runId, (current) => current.run_status !== 'running', 15);
+      expect(awaiting.hypotheses.map((hypothesis: { candidate_id: string }) => hypothesis.candidate_id)).toContain(fixture.intrusionSetId);
+      const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+      const stored = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
+      expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual([null]);
+      // The cited intrusion set gets a marking the editor does not have, after the run read it.
+      await queryAsAdminWithSuccess({ query: MARK_SDO, variables: { id: fixture.intrusionSetId, input: { toId: MARKING_TLP_RED, relationship_type: 'object-marking' } } });
+      marked = true;
+      expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual(['source_inaccessible']);
+      expect(await findInvestigationRunsWithheldReasons(testContext, ADMIN_USER, [stored])).toEqual([null]);
+      const runFields = investigationRunResolvers.InvestigationRun as unknown as Record<string, (run: unknown, args: unknown, context: unknown) => Promise<unknown>>;
+      const editorContext = { ...testContext, user: editor, batch: computeLoaders(testContext, editor) };
+      expect(await runFields.evidence(stored, {}, editorContext)).toEqual([]);
+      expect(await runFields.hypotheses(stored, {}, editorContext)).toEqual([]);
+      expect(await runFields.analyst_feedback(stored, {}, editorContext)).toEqual([]);
+      expect(await runFields.end_reason_code(stored, {}, editorContext)).toBe('source_inaccessible');
+      const adminContext = { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) };
+      expect((await runFields.evidence(stored, {}, adminContext)) as unknown[]).not.toEqual([]);
+      expect(await runFields.end_reason_code(stored, {}, adminContext)).toBeNull();
+      // The stored run is unchanged: the findings are withheld when served, not erased.
+      expect((await readRun(runId)).summary).toContain('most likely operates the infrastructure');
+    } finally {
+      if (marked) {
+        await queryAsAdmin({ query: UNMARK_SDO, variables: { id: fixture.intrusionSetId, toId: MARKING_TLP_RED, relationship_type: 'object-marking' } });
+      }
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }

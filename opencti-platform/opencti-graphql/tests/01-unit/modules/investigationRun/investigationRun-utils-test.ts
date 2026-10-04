@@ -101,6 +101,7 @@ describe('Case Autopilot access boundary of a run', () => {
         { id: 'a2', kind: InvestigationApprovalKind.DraftValidation, status: InvestigationApprovalStatus.Pending, description: 'Approve the investigation draft', reason: 'Most likely APT28', created_at: '2026-10-01T10:00:00.000Z' },
       ],
       enrichment_requests: [{ id: 'q1', entity_id: 'ip-1', connector_id: 'c1', reason: 'Resolve the C2', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'engine', created_at: '2026-10-01T10:00:00.000Z' }],
+      analyst_feedback: [{ item_type: 'hypothesis', item_ref: 'apt28', decision: 'accepted', comment: 'APT28 confirmed by the SOC', user_id: 'user-1', ts: '2026-10-01T10:00:00.000Z' }],
     } as never);
     const withheld = withheldRunContent(run);
     expect(withheld).toMatchObject({
@@ -113,6 +114,7 @@ describe('Case Autopilot access boundary of a run', () => {
       report: null,
       report_sources: [],
       outputs: { attributed_candidate_ids: [], observable_ids: {} },
+      analyst_feedback: [],
     });
     expect(withheld.steps).toEqual([expect.objectContaining({ id: 's1', source_name: 'Read the case', action: null, detail_params: null, findings_count: 2 })]);
     expect(withheld.enrichment_waves).toEqual([expect.objectContaining({ id: 'w1', delta: [] })]);

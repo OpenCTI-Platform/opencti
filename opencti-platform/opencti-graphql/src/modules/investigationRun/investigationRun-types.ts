@@ -82,6 +82,9 @@ export const ENGINE_UNREACHABLE = 'engine_unreachable';
 export const MEMBER_RESTRICTED_CODE = 'member_restricted';
 export const SUBJECT_INACCESSIBLE_CODE = 'subject_inaccessible';
 export const CARRY_BOUNDARY_CODES = [MEMBER_RESTRICTED_CODE, SUBJECT_INACCESSIBLE_CODE];
+// Served, never stored: what a run found is withheld from a reader who can no
+// longer read one of its sources.
+export const SOURCE_INACCESSIBLE_CODE = 'source_inaccessible';
 
 // Engine status of a cancelled run whose engine run XTM One has not confirmed
 // stopping yet (asked again by the manager), then given up on.

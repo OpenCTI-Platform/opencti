@@ -93,10 +93,13 @@ export const stepStatusLabel = (status: string) => STEP_STATUS_LABELS[status as 
 export const stepStatusSeverity = (status: string): ChipSeverity => STEP_STATUS_SEVERITIES[status as InvestigationStepStatusValue] ?? 'neutral';
 
 export const MEMBER_RESTRICTED_CODE = 'member_restricted';
+// Served to a reader who can no longer read an entity of the investigation.
+export const SOURCE_INACCESSIBLE_CODE = 'source_inaccessible';
 
 // Why a run ended without the engine or was stopped by OpenCTI, by end_reason_code.
 export const ENGINE_REASON_LABELS: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found. Remove that entity from the case or ask an administrator for access, then run again.',
+  [SOURCE_INACCESSIBLE_CODE]: 'An entity of the investigation is no longer accessible to you: what Case Autopilot found is withheld. Ask an administrator for access to that entity.',
   engine_not_configured: 'XTM One is not connected to this platform: Case Autopilot runs on the XTM One investigation engine.',
   engine_disabled: 'The connected XTM One does not run investigations. Ask your XTM One administrator to turn on Deep Investigation.',
   engine_unavailable: 'The connected XTM One does not provide the investigation engine. Upgrade XTM One to run Case Autopilot.',
@@ -111,6 +114,7 @@ export const engineReasonLabel = (code: string | null | undefined) => (code ? EN
 const WITHHELD_SECTION_REASONS: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'Withheld: an entity of the investigation became restricted to authorized members.',
   subject_inaccessible: 'Withheld: the investigated entity is no longer accessible to the account the investigation runs as.',
+  [SOURCE_INACCESSIBLE_CODE]: 'Withheld: an entity of the investigation is no longer accessible to you.',
 };
 
 export const withheldSectionReason = (code: string | null | undefined) => (code ? WITHHELD_SECTION_REASONS[code] ?? null : null);

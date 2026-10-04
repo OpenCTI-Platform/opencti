@@ -185,6 +185,7 @@ describe('Case Autopilot run helpers', () => {
   it('renders the engine reasons in words', () => {
     expect(engineReasonLabel('engine_disabled')).toContain('Deep Investigation');
     expect(engineReasonLabel('member_restricted')).toContain('ask an administrator for access, then run again');
+    expect(engineReasonLabel('source_inaccessible')).toContain('no longer accessible to you');
     expect(engineReasonLabel('other')).toBeNull();
     expect(engineReasonLabel(null)).toBeNull();
   });
@@ -195,6 +196,9 @@ describe('Case Autopilot run helpers', () => {
       .toBe('t:Withheld: an entity of the investigation became restricted to authorized members.');
     expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'subject_inaccessible' }, t, 'while active', 'ended'))
       .toBe('t:Withheld: the investigated entity is no longer accessible to the account the investigation runs as.');
+    // Served to a reader who lost access to one of its entities, whatever the run status.
+    expect(emptySectionSentence({ run_status: 'completed', end_reason_code: 'source_inaccessible' }, t, 'while active', 'ended'))
+      .toBe('t:Withheld: an entity of the investigation is no longer accessible to you.');
     expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'engine_disabled' }, t, 'while active', 'ended')).toBe('ended');
     expect(emptySectionSentence({ run_status: 'running', end_reason_code: null }, t, 'while active', 'ended')).toBe('while active');
     expect(withheldSectionReason(null)).toBeNull();
