@@ -624,7 +624,8 @@ const applyLockedRecommendation = async (
     // The action ran but could not be recorded: it is undone, and the recommendation goes back to its previous status
     // only once undone; otherwise it stays applying, which no retry applies again
     if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
-      const undone = await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
+      // Only what this apply wrote is undone: a connector deployed beforehand and only linked is left running
+      const undone = !progress.writing || await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
         .then(() => true)
         .catch((revertError: unknown) => {
           logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply, the recommendation stays applying', { cause: revertError, id });
