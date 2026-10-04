@@ -1,5 +1,5 @@
-import React, { Suspense, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { Suspense } from 'react';
+import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -23,15 +23,23 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import type { GraphClusterPromoteDialogMutation, GraphClusterPromotionTarget } from './__generated__/GraphClusterPromoteDialogMutation.graphql';
 import type { GraphClusterPromoteDialogMembersQuery } from './__generated__/GraphClusterPromoteDialogMembersQuery.graphql';
+import type { GraphClusterPromoteDialogMembersRefetchQuery } from './__generated__/GraphClusterPromoteDialogMembersRefetchQuery.graphql';
+import type { GraphClusterPromoteDialogMembers_data$key } from './__generated__/GraphClusterPromoteDialogMembers_data.graphql';
 
 const PREVIEW_MEMBERS = 5;
-const PREVIEW_MEMBERS_ALL = 50;
+const PREVIEW_MEMBERS_PAGE = 100;
 
-const membersPreviewQuery = graphql`
-  query GraphClusterPromoteDialogMembersQuery($id: String!, $first: Int) {
+const membersPreviewFragment = graphql`
+  fragment GraphClusterPromoteDialogMembers_data on Query
+  @argumentDefinitions(
+    id: { type: "String!" }
+    count: { type: "Int", defaultValue: 5 }
+    after: { type: "ID" }
+  )
+  @refetchable(queryName: "GraphClusterPromoteDialogMembersRefetchQuery") {
     graphCluster(id: $id) {
       id
-      members(first: $first) {
+      members(first: $count, after: $after) @connection(key: "Pagination_graphClusterPromotion_members") {
         edges {
           node {
             id
@@ -41,28 +49,43 @@ const membersPreviewQuery = graphql`
             }
           }
         }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
       }
     }
+  }
+`;
+
+const membersPreviewQuery = graphql`
+  query GraphClusterPromoteDialogMembersQuery($id: String!, $count: Int) {
+    ...GraphClusterPromoteDialogMembers_data @arguments(id: $id, count: $count)
   }
 `;
 
 interface MembersPreviewProps {
   queryRef: PreloadedQuery<GraphClusterPromoteDialogMembersQuery>;
   membersCount: number;
-  showAll: boolean;
-  onShowAll: () => void;
 }
 
-/** The members the promotion writes, so the analyst approves what will change. */
-const MembersPreview = ({ queryRef, membersCount, showAll, onShowAll }: MembersPreviewProps) => {
+/** Every member the promotion writes, page by page, so the analyst approves what will change. */
+const MembersPreview = ({ queryRef, membersCount }: MembersPreviewProps) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
-  const { graphCluster } = usePreloadedQuery(membersPreviewQuery, queryRef);
-  const members = (graphCluster?.members?.edges ?? []).map((edge) => edge.node);
+  const queryData = usePreloadedQuery(membersPreviewQuery, queryRef);
+  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<
+    GraphClusterPromoteDialogMembersRefetchQuery,
+    GraphClusterPromoteDialogMembers_data$key
+  >(membersPreviewFragment, queryData);
+  const members = (data.graphCluster?.members?.edges ?? []).map((edge) => edge.node);
   const hidden = Math.max(0, membersCount - members.length);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="graph-cluster-promote-preview">
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box
+        component="ul"
+        sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.5, maxHeight: (theme) => theme.spacing(32), overflowY: 'auto' }}
+      >
         {members.map((member) => (
           <Box component="li" key={member.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
             <ItemIcon type={member.entity_type} size="small" />
@@ -76,9 +99,15 @@ const MembersPreview = ({ queryRef, membersCount, showAll, onShowAll }: MembersP
           <Text variant="content-caption" as="span">
             {t_i18n('and {count, plural, one {# more entity} other {# more entities}}', { values: { count: hidden } })}
           </Text>
-          {!showAll && (
-            <Button variant="tertiary" size="small" onClick={onShowAll}>
-              {t_i18n('Show all')}
+          {hasNext && (
+            <Button
+              variant="tertiary"
+              size="small"
+              onClick={() => loadNext(PREVIEW_MEMBERS_PAGE)}
+              disabled={isLoadingNext}
+              data-testid="graph-cluster-promote-preview-more"
+            >
+              {t_i18n('Show more')}
             </Button>
           )}
         </Box>
@@ -120,10 +149,9 @@ const GraphClusterPromoteDialog = ({ clusterId, clusterName, membersCount, targe
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [commit] = useApiMutation<GraphClusterPromoteDialogMutation>(promoteMutation);
-  const [showAll, setShowAll] = useState(false);
   const previewQueryRef = useQueryLoading<GraphClusterPromoteDialogMembersQuery>(
     membersPreviewQuery,
-    { id: clusterId, first: showAll ? PREVIEW_MEMBERS_ALL : PREVIEW_MEMBERS },
+    { id: clusterId, count: PREVIEW_MEMBERS },
   );
   const validation = Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -179,7 +207,7 @@ const GraphClusterPromoteDialog = ({ clusterId, clusterName, membersCount, targe
             <Box sx={{ my: 2 }}>
               {previewQueryRef ? (
                 <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
-                  <MembersPreview queryRef={previewQueryRef} membersCount={membersCount} showAll={showAll} onShowAll={() => setShowAll(true)} />
+                  <MembersPreview queryRef={previewQueryRef} membersCount={membersCount} />
                 </Suspense>
               ) : <Skeleton variant="rounded" height={120} />}
             </Box>

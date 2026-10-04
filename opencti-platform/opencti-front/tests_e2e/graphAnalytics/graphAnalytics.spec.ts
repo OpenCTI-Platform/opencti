@@ -120,8 +120,14 @@ test('Graph analytics: clusters list, detail and promotion to a grouping', { tag
     const setB = await addIntrusionSet(request, nameB);
     const technique = await addAttackPattern(request, techniqueName, `T7${suffix.slice(0, 3)}`);
     created.push(setA, setB, technique);
+    // more members than the first page of the promotion preview
+    const extraMembers: string[] = [];
+    for (let i = 0; i < 5; i += 1) {
+      extraMembers.push(await addIntrusionSet(request, `E2E graph cluster set ${i} ${suffix}`));
+    }
+    created.push(...extraMembers);
     const clusterId = uuid();
-    await upsertAnalyticsCluster(request, clusterId, [setA, setB], [technique]);
+    await upsertAnalyticsCluster(request, clusterId, [setA, setB, ...extraMembers], [technique]);
 
     await graphPage.gotoClusters();
     await expect(graphPage.getClustersPage()).toBeVisible();
@@ -139,8 +145,14 @@ test('Graph analytics: clusters list, detail and promotion to a grouping', { tag
     // named after what it holds, never after its identifier
     expect(clusterName).toContain('cluster around');
     await graphPage.getCreateGroupingButton().click();
-    await expect(page.getByRole('dialog').getByText('Create a grouping of 2 entities')).toBeVisible();
-    await expect(page.getByTestId('graph-cluster-promote-preview').getByText(nameA)).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('Create a grouping of 7 entities')).toBeVisible();
+    const preview = page.getByTestId('graph-cluster-promote-preview');
+    await expect(preview.getByRole('listitem')).toHaveCount(5);
+    await expect(preview.getByText('and 2 more entities')).toBeVisible();
+    await page.getByTestId('graph-cluster-promote-preview-more').click();
+    await expect(preview.getByRole('listitem')).toHaveCount(7);
+    await expect(preview.getByText(nameA)).toBeVisible();
+    await expect(page.getByTestId('graph-cluster-promote-preview-more')).toBeHidden();
     await graphPage.getPromoteSubmitButton().click();
     await page.waitForURL(/\/dashboard\/analyses\/groupings\/.+/);
     const groupingId = page.url().split('/groupings/')[1].split('/')[0];

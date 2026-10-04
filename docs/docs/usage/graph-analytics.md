@@ -114,7 +114,7 @@ Until the first full pass has found clusters, the page explains what clusters ar
 
 The detail of a cluster shows its members (most connected first), its shared features, its representative entities and the growth of its membership. From there:
 
-- **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features. The dialog lists the members it will contain before you confirm.
+- **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features. The dialog lists the members it will contain before you confirm: the first five, then **Show more** loads the next ones until every member is listed.
 - **Create Campaign** creates a Campaign related to the members you can access.
 - **Add to investigation** opens the members and shared features in a new investigation.
 
