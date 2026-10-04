@@ -445,18 +445,15 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: current.internal_id });
     }
   }
-  const completedAt = current.completed_at ?? now();
-  if (!hunt.last_run_at || new Date(hunt.last_run_at).getTime() <= new Date(completedAt).getTime()) {
-    try {
-      await updateHuntRunInformation(context, hunt.internal_id, {
-        last_run_at: completedAt,
-        last_run_status: current.hunt_run_status,
-        last_hits_count: current.hits_count ?? 0,
-      });
-    } catch (error) {
-      complete = false;
-      logApp.error('[OPENCTI-MODULE] Hunt statistics update failed', { cause: error, runId: current.internal_id });
-    }
+  try {
+    await updateHuntRunInformation(context, hunt.internal_id, {
+      last_run_at: current.completed_at ?? now(),
+      last_run_status: current.hunt_run_status,
+      last_hits_count: current.hits_count ?? 0,
+    }, { onlyIfNewer: true });
+  } catch (error) {
+    complete = false;
+    logApp.error('[OPENCTI-MODULE] Hunt statistics update failed', { cause: error, runId: current.internal_id });
   }
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
     try {
