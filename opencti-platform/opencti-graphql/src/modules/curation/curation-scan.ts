@@ -363,6 +363,35 @@ export const detectDuplicateDrafts = async (
   return drafts;
 };
 
+const SEARCHED_PER_SCAN = 500;
+const SEARCH_BATCH = 50;
+
+/**
+ * Entities loaded in different slices are never compared with each other: each scan also compares a rotating page
+ * of every type with the whole graph, through the full text search candidates of the live detection, so two old
+ * duplicates far apart in creation order are found over successive scans.
+ */
+const searchRotatingPage = async (context: AuthContext, settings: CurationSettings, types: string[], stats: ScanStats) => {
+  for (let index = 0; index < types.length; index += 1) {
+    const type = types[index];
+    const page = await loadRotatingPage(`duplicates_search_${type}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+      first: SEARCHED_PER_SCAN,
+      after,
+      orderBy: 'created_at',
+      orderMode: 'asc',
+      baseData: true,
+    } as any));
+    const batches = R.splitEvery(SEARCH_BATCH, page.map((element) => element.internal_id));
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
+      const searched = await runIncrementalDuplicateDetection(context, settings, batches[batchIndex]);
+      stats.scanned += searched.scanned;
+      stats.drafts += searched.drafts;
+      stats.created += searched.created;
+      stats.suppressed += searched.suppressed;
+    }
+  }
+};
+
 export const runDuplicateScan = async (context: AuthContext, settings: CurationSettings): Promise<ScanStats> => {
   const stats = emptyStats();
   const groups = scanGroups(settings.curated_entity_types.filter((type) => type !== ENTITY_TYPE_INDICATOR));
@@ -371,6 +400,7 @@ export const runDuplicateScan = async (context: AuthContext, settings: CurationS
     stats.scanned += entities.length;
     const drafts = await detectDuplicateDrafts(context, settings, entities);
     await persistDrafts(context, settings, drafts, stats);
+    await searchRotatingPage(context, settings, groups[index], stats);
   }
   return stats;
 };
