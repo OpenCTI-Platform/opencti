@@ -84,6 +84,31 @@ describe('computeDeploymentChange on update', () => {
     const change = computeDeploymentChange({ deployment_status: 'failed', error_message: 'old' }, { status: 'failed', errorMessage: 'new', externalId: 'x' }, NOW);
     expect(change.attributes).toEqual({ external_id: 'x', error_message: 'new', last_sync_at: NOW });
   });
+  it('should ignore a delayed report synchronized before the last applied one', () => {
+    const current = {
+      deployment_status: 'removed' as const,
+      deployed_at: '2026-09-01T00:00:00.000Z',
+      removed_at: '2026-10-03T10:00:00.000Z',
+      last_sync_at: '2026-10-03T10:00:00.000Z',
+    };
+    const change = computeDeploymentChange(current, { status: 'deployed', externalId: 'ti-2', syncedAt: '2026-10-03T09:00:00.000Z' }, NOW);
+    expect(change).toEqual({ attributes: {}, meaningful: false, stale: true });
+  });
+  it('should apply a report synchronized at the same time as the last applied one or later', () => {
+    const current = { deployment_status: 'deployed' as const, deployed_at: '2026-09-01T00:00:00.000Z', last_sync_at: '2026-10-03T10:00:00.000Z' };
+    const same = computeDeploymentChange(current, { status: 'removed', syncedAt: '2026-10-03T10:00:00.000Z' }, NOW);
+    expect(same.stale).toEqual(false);
+    expect(same.attributes.deployment_status).toEqual('removed');
+    const later = computeDeploymentChange(current, { status: 'failed', errorMessage: 'gone', syncedAt: '2026-10-03T11:00:00.000Z' }, NOW);
+    expect(later.attributes).toEqual({ deployment_status: 'failed', error_message: 'gone', last_sync_at: new Date('2026-10-03T11:00:00.000Z') });
+  });
+  it('should store the platform time for a report synchronized in the future', () => {
+    const change = computeDeploymentChange(undefined, { status: 'deployed', syncedAt: '2026-10-03T18:00:00.000Z' }, NOW);
+    expect(change.attributes.last_sync_at).toEqual(NOW);
+    const next = computeDeploymentChange({ deployment_status: 'deployed', deployed_at: NOW, last_sync_at: NOW }, { status: 'removed' }, NOW);
+    expect(next.stale).toEqual(false);
+    expect(next.attributes.deployment_status).toEqual('removed');
+  });
 });
 
 describe('derived counters', () => {

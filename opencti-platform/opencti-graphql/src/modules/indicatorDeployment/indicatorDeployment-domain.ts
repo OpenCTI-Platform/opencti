@@ -97,10 +97,12 @@ export interface DeploymentReport {
 }
 
 export interface DeploymentChange {
-  // Attributes to write. Always contains last_sync_at.
+  // Attributes to write. Always contains last_sync_at, except for a stale report (nothing to write).
   attributes: Partial<Record<keyof DeployedOnAttributes, unknown>>;
   // True when the change must go through the regular update path (history, stream event, triggers).
   meaningful: boolean;
+  // True when the report was synchronized before the last applied one: the platform already left that state.
+  stale: boolean;
 }
 
 const toDate = (value: DateInput, fallback: Date): Date => {
@@ -150,7 +152,13 @@ export const computeDeploymentChange = (
   if (isNotEmptyField(report.errorMessage) && String(report.errorMessage).length > ERROR_MESSAGE_MAX_LENGTH) {
     throw ValidationError(`Error message cannot exceed ${ERROR_MESSAGE_MAX_LENGTH} characters`, 'error_message');
   }
-  const syncedAt = toDate(report.syncedAt, now);
+  const reportedSyncAt = toDate(report.syncedAt, now);
+  // A sync time ahead of the platform clock would make every later report look stale.
+  const syncedAt = reportedSyncAt.getTime() > now.getTime() ? now : reportedSyncAt;
+  if (current && isNotEmptyField(current.last_sync_at) && syncedAt.getTime() < toDate(current.last_sync_at, syncedAt).getTime()) {
+    // Reports of one pair are serialized in arrival order only: a delayed snapshot never rolls the lifecycle back.
+    return { attributes: {}, meaningful: false, stale: true };
+  }
   const status = resolveEffectiveStatus(current?.deployment_status, report.status);
   const errorMessage = status === DEPLOYMENT_STATUS_FAILED && isNotEmptyField(report.errorMessage) ? report.errorMessage : null;
   if (!current) {
@@ -159,7 +167,7 @@ export const computeDeploymentChange = (
     if (isLive(status)) attributes.deployed_at = toDate(report.deployedAt, now);
     if (status === DEPLOYMENT_STATUS_REMOVED) attributes.removed_at = toDate(report.removedAt, now);
     if (errorMessage) attributes.error_message = errorMessage;
-    return { attributes, meaningful: true };
+    return { attributes, meaningful: true, stale: false };
   }
   const patch: DeploymentChange['attributes'] = {};
   if (status !== current.deployment_status) {
@@ -181,7 +189,7 @@ export const computeDeploymentChange = (
     patch.error_message = errorMessage;
   }
   const meaningful = Object.keys(patch).length > 0;
-  return { attributes: { ...patch, last_sync_at: syncedAt }, meaningful };
+  return { attributes: { ...patch, last_sync_at: syncedAt }, meaningful, stale: false };
 };
 
 export const computeIndicatorDeploymentCounters = (relations: Array<Partial<DeployedOnAttributes>>): IndicatorDeploymentCounters => {
@@ -457,6 +465,9 @@ const applyDeploymentReport = async (
         ...change.attributes,
       }, { grantedRefsFromInput: true }) as unknown as BasicStoreRelationDeployedOn;
       return { element, outcome: 'created' };
+    }
+    if (change.stale) {
+      return { element: existing, outcome: 'unchanged' };
     }
     if (!change.meaningful) {
       await touchLastSync(context, existing, change.attributes.last_sync_at);
