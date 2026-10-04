@@ -1,5 +1,5 @@
 import { AutoFix, FamilyTree, Video3d } from 'mdi-material-ui';
-import { AspectRatioOutlined, ScatterPlotOutlined } from '@mui/icons-material';
+import { AspectRatioOutlined, ScatterPlotOutlined, TrackChangesOutlined, ViewWeekOutlined } from '@mui/icons-material';
 import React from 'react';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
@@ -20,6 +20,7 @@ const GraphToolbarDisplayTools = ({
       mode3D,
       modeTree,
       withForces,
+      layoutMode,
     },
   } = useGraphContext();
 
@@ -28,6 +29,7 @@ const GraphToolbarDisplayTools = ({
     toggleHorizontalTree,
     toggleMode3D,
     toggleVerticalTree,
+    toggleLayoutMode,
     zoomToFit,
     unfixNodes,
   } = useGraphInteractions();
@@ -60,6 +62,22 @@ const GraphToolbarDisplayTools = ({
         color={modeTree === 'lr' ? 'secondary' : 'primary'}
         onClick={toggleHorizontalTree}
         title={modeTree ? t_i18n('Disable horizontal tree mode') : t_i18n('Enable horizontal tree mode')}
+      />
+
+      <GraphToolbarItem
+        Icon={<ViewWeekOutlined />}
+        disabled={mode3D}
+        color={layoutMode === 'tiers' ? 'secondary' : 'primary'}
+        onClick={() => toggleLayoutMode('tiers')}
+        title={layoutMode === 'tiers' ? t_i18n('Disable the layout by entity tier') : t_i18n('Enable the layout by entity tier')}
+      />
+
+      <GraphToolbarItem
+        Icon={<TrackChangesOutlined />}
+        disabled={mode3D}
+        color={layoutMode === 'radial' ? 'secondary' : 'primary'}
+        onClick={() => toggleLayoutMode('radial')}
+        title={layoutMode === 'radial' ? t_i18n('Disable the radial layout') : t_i18n('Enable the radial layout around the selection')}
       />
 
       <GraphToolbarItem

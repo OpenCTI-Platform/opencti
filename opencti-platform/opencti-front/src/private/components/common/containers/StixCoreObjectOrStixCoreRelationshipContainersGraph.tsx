@@ -68,6 +68,7 @@ const containersObjectsFragment = graphql`
           }
           ... on StixDomainObject {
             created
+            confidence
           }
           ... on AttackPattern {
             name

@@ -1,0 +1,271 @@
+import React, { CSSProperties, useMemo } from 'react';
+import { IconButton, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { UnfoldLessOutlined, UnfoldMoreOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import ItemIcon from '../../ItemIcon';
+import { itemColor } from '../../../utils/Colors';
+import { useFormatter } from '../../i18n';
+import type { Theme } from '../../Theme';
+import type { GraphLink, GraphNode } from '../graph.types';
+import type { GraphBadgeTone } from '../badges/graphBadgeRegistry';
+import { linkDash } from '../utils/graphPainting';
+import { buildGraphPalette } from '../utils/graphPalette';
+
+/** A badge drawn in the graph, with the number of entities carrying it. */
+export interface GraphLegendBadge {
+  key: string;
+  label: string;
+  tone: GraphBadgeTone;
+  tooltip?: string;
+  count: number;
+}
+
+export interface GraphLegendProps {
+  nodes: readonly GraphNode[];
+  links: readonly GraphLink[];
+  disabledEntityTypes: readonly string[];
+  disabledRelationshipTypes: readonly string[];
+  collapsedEntityTypes: readonly string[];
+  hiddenCount: number;
+  /** Only the badges present in the graph. */
+  badges?: readonly GraphLegendBadge[];
+  /** Pixels the toolbar under the graph covers at the bottom of the canvas, which the legend stays above. */
+  bottomOffset?: number;
+  /** Height of the controls and counter row at the top of the canvas, which the legend stays under. */
+  topOffset?: number;
+  onToggleEntityType: (type: string) => void;
+  onToggleRelationshipType: (type: string) => void;
+  onToggleCollapsed: (type: string) => void;
+  onShowHidden: () => void;
+  /** Selects the entities carrying the badge. */
+  onSelectBadge?: (key: string) => void;
+}
+
+const countBy = <T, >(items: readonly T[], key: (item: T) => string) => {
+  const counts = new Map<string, number>();
+  items.forEach((item) => {
+    const value = key(item);
+    if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
+  });
+  return counts;
+};
+
+/**
+ * What the graph is made of, counted: each entity type and relationship type is a filter (a click
+ * fades or restores it) and each entity type can be folded into one group node.
+ */
+const GraphLegend = ({
+  nodes,
+  links,
+  disabledEntityTypes,
+  disabledRelationshipTypes,
+  collapsedEntityTypes,
+  hiddenCount,
+  badges = [],
+  bottomOffset = 0,
+  topOffset = 0,
+  onToggleEntityType,
+  onToggleRelationshipType,
+  onToggleCollapsed,
+  onShowHidden,
+  onSelectBadge,
+}: GraphLegendProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const palette = useMemo(() => buildGraphPalette(theme), [theme]);
+
+  const entityCounts = useMemo(() => {
+    const counts = countBy(
+      nodes.flatMap((node) => {
+        if (node.groupOf) return node.groupOf.memberIds.map(() => node.groupOf?.entityType ?? '');
+        return node.relationship_type ? [] : [node.entity_type];
+      }),
+      (type) => type,
+    );
+    return [...counts.entries()]
+      .map(([type, count]) => ({ type, count, label: t_i18n(`entity_${type}`) }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }, [nodes]);
+
+  const relationshipCounts = useMemo(() => {
+    const counts = countBy(links.filter((link) => !!link.label), (link) => link.relationship_type || link.entity_type);
+    return [...counts.entries()]
+      .map(([type, count]) => ({ type, count, label: t_i18n(`relationship_${type}`) }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }, [links]);
+
+  const row: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    width: '100%',
+    minHeight: 28,
+    padding: theme.spacing(0.25, 0.75),
+    border: 'none',
+    borderRadius: theme.borderRadius,
+    background: 'transparent',
+    color: theme.palette.text.primary,
+    font: 'inherit',
+    textAlign: 'left',
+    cursor: 'pointer',
+  };
+  const count: CSSProperties = { marginLeft: 'auto', color: theme.palette.text.secondary, fontVariantNumeric: 'tabular-nums' };
+  const heading: CSSProperties = {
+    margin: theme.spacing(1, 0.75, 0.5),
+    color: theme.palette.text.secondary,
+  };
+  const lineSample = (dash: number[], color: string) => (
+    <svg width="22" height="8" aria-hidden style={{ flexShrink: 0 }}>
+      <line x1="1" y1="4" x2="21" y2="4" stroke={color} strokeWidth="2" strokeDasharray={dash.map((value) => value * 2.5).join(' ')} strokeLinecap="round" />
+    </svg>
+  );
+
+  return (
+    <Paper
+      elevation={2}
+      padding={0}
+      aria-label={t_i18n('Legend')}
+      role="region"
+      data-graph-panel=""
+      style={{
+        position: 'absolute',
+        left: theme.spacing(1.5),
+        bottom: theme.spacing(1.5),
+        marginBottom: bottomOffset,
+        zIndex: 2,
+        width: 248,
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: `calc(100% - ${theme.spacing(1.5)} - ${topOffset}px - ${theme.spacing(1)} - ${theme.spacing(1.5)} - ${bottomOffset}px)`,
+      }}
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      <Text variant="content-compact" as="div" style={{ maxHeight: 'min(45vh, 420px)', overflowY: 'auto', padding: theme.spacing(0.5) }}>
+        <Text variant="content-compact-bold" as="div" style={heading}>{t_i18n('Entities')}</Text>
+        {entityCounts.map(({ type, count: total, label }) => {
+          const disabled = disabledEntityTypes.includes(type);
+          const collapsed = collapsedEntityTypes.includes(type);
+          const color = itemColor(type);
+          return (
+            <div key={type} style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                type="button"
+                style={{ ...row, opacity: disabled ? 0.45 : 1 }}
+                aria-pressed={!disabled}
+                aria-label={`${label}: ${total}`}
+                onClick={() => onToggleEntityType(type)}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 20,
+                    height: 20,
+                    flexShrink: 0,
+                    borderRadius: '50%',
+                    border: `1.5px solid ${color}`,
+                    backgroundColor: `color-mix(in srgb, ${color} 22%, transparent)`,
+                  }}
+                >
+                  <ItemIcon type={type} size="inherit" style={{ width: 13, height: 13 }} />
+                </span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: disabled ? 'line-through' : 'none' }}>
+                  {label}
+                </span>
+                <span style={count}>{total}</span>
+              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <IconButton
+                    priority="tertiary"
+                    size="sm"
+                    aria-label={collapsed ? t_i18n('Expand the group') : t_i18n('Collapse into one node')}
+                    aria-pressed={collapsed}
+                    active={collapsed}
+                    icon={collapsed ? <UnfoldMoreOutlined fontSize="small" /> : <UnfoldLessOutlined fontSize="small" />}
+                    onClick={() => onToggleCollapsed(type)}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {collapsed ? t_i18n('Expand the group') : t_i18n('Collapse into one node')}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        })}
+        {relationshipCounts.length > 0 && (
+          <>
+            <Text variant="content-compact-bold" as="div" style={heading}>{t_i18n('Relationships')}</Text>
+            {relationshipCounts.map(({ type, count: total, label }) => {
+              const disabled = disabledRelationshipTypes.includes(type);
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  style={{ ...row, opacity: disabled ? 0.45 : 1 }}
+                  aria-pressed={!disabled}
+                  aria-label={`${label}: ${total}`}
+                  onClick={() => onToggleRelationshipType(type)}
+                >
+                  {lineSample([], palette.link)}
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: disabled ? 'line-through' : 'none' }}>
+                    {label}
+                  </span>
+                  <span style={count}>{total}</span>
+                </button>
+              );
+            })}
+          </>
+        )}
+        {badges.length > 0 && (
+          <>
+            <Text variant="content-compact-bold" as="div" style={heading}>{t_i18n('Badges')}</Text>
+            {badges.map(({ key, label, tone, tooltip, count: total }) => (
+              <Tooltip key={key}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    style={row}
+                    aria-label={`${label}: ${total}`}
+                    onClick={() => onSelectBadge?.(key)}
+                  >
+                    <span aria-hidden style={{ width: 22, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${palette.tones[tone]}` }} />
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                    <span style={count}>{total}</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{tooltip ?? label}</TooltipContent>
+              </Tooltip>
+            ))}
+          </>
+        )}
+        <Text variant="content-compact-bold" as="div" style={heading}>{t_i18n('Line styles')}</Text>
+        <div style={{ ...row, cursor: 'default' }}>
+          {lineSample([], palette.link)}
+          {t_i18n('Asserted relationship')}
+        </div>
+        <div style={{ ...row, cursor: 'default' }}>
+          {lineSample(linkDash({ inferred: true, isNestedInferred: false }), palette.inferred)}
+          {t_i18n('Inferred relationship')}
+        </div>
+        <div style={{ ...row, cursor: 'default' }}>
+          {lineSample(linkDash({ inferred: false, isNestedInferred: false }, 0), palette.link)}
+          {t_i18n('Low confidence')}
+        </div>
+        {hiddenCount > 0 && (
+          <button type="button" style={{ ...row, color: palette.accent }} onClick={onShowHidden}>
+            <VisibilityOutlined fontSize="small" />
+            {t_i18n('Show the hidden entities')}
+            <span style={count}>{hiddenCount}</span>
+          </button>
+        )}
+      </Text>
+    </Paper>
+  );
+};
+
+export default GraphLegend;

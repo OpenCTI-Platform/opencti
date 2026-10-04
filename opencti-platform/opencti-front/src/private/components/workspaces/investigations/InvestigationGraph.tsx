@@ -106,6 +106,7 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
               numberOfConnectedElement
             }
             ... on AttackPattern {

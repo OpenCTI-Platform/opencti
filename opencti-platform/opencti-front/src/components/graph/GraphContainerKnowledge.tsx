@@ -121,6 +121,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
             ... on StixDomainObject {
               is_inferred
               created
+              confidence
             }
             ... on AttackPattern {
               name
