@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { createRelation, distributionRelations, patchAttribute, patchAttributeFromLoadedWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import {
   fullEntitiesList,
@@ -33,6 +33,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_MAR
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../iocValidation/iocValidation-types';
 import { SYSTEM_USER } from '../../utils/access';
 import { addIndicatorDeploymentReportCount, addIndicatorHitsReportCount } from '../../manager/telemetryManager';
 import type { IndicatorDeploymentBatchResult, IndicatorDeploymentMetadataInput, IndicatorDeploymentReportInput, IndicatorDeploymentStatus } from '../../generated/graphql';
@@ -303,10 +304,23 @@ const ensurePairMarkings = async (
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
 
+// Validation requests that included a pair, whose result sightings are repaired with the deployment.
+const PAIR_REQUESTS_MAX = 500;
+const pairValidationRequestIds = async (context: AuthContext, indicatorId: string, platformId: string) => {
+  const requests = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+    filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
+    noFiltersChecking: true,
+    baseData: true,
+    maxSize: PAIR_REQUESTS_MAX,
+  } as never);
+  return requests.map((request) => request.internal_id);
+};
+
 /**
- * After a marking change of indicators or security platforms, the deployments of their pairs, the hits sightings and
- * the sightings of their latest validation result get the markings they now lack, and the counters of the indicators
- * are recomputed against the new markings. Bounded by the deployments of the changed endpoints.
+ * After a marking or sharing change of indicators or security platforms, the deployments of their pairs, the hits
+ * sightings and the validation result sightings of every request that included the pair get the markings they now
+ * lack, and the counters of the indicators are recomputed. Bounded by the deployments of the changed endpoints and by
+ * PAIR_REQUESTS_MAX requests per pair.
  */
 export const repairPairMarkings = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
   const [fromIndicators, toPlatforms] = await Promise.all([
@@ -328,10 +342,11 @@ export const repairPairMarkings = async (context: AuthContext, user: AuthUser, c
       return;
     }
     await ensurePairMarkings(context, user, deployment, indicator, platform);
-    const sightingIds = [hitsSightingStixId(indicator.internal_id, platform.internal_id)];
-    if (deployment.validation_run_id) {
-      sightingIds.push(validationResultSightingStixId(deployment.validation_run_id, indicator.internal_id, platform.internal_id));
-    }
+    const requestIds = await pairValidationRequestIds(context, indicator.internal_id, platform.internal_id);
+    const sightingIds = [
+      hitsSightingStixId(indicator.internal_id, platform.internal_id),
+      ...requestIds.map((requestId) => validationResultSightingStixId(requestId, indicator.internal_id, platform.internal_id)),
+    ];
     await BluePromise.map(sightingIds, async (sightingId) => {
       const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
       if (sighting) {
@@ -987,9 +1002,15 @@ export const refreshIndicatorDeploymentCounters = async (context: AuthContext, i
     list.push(relation);
     relationsByIndicator.set(relation.fromId, list);
   });
+  const platformIds = [...new Set(relations.map((relation) => relation.toId))];
+  const platforms = platformIds.length === 0
+    ? []
+    : await storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, platformIds, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+  const platformsById = new Map(platforms.filter((platform) => platform).map((platform) => [platform.internal_id, platform]));
   let updated = 0;
   await BluePromise.map(indicators, async (indicator) => {
-    const readable = (relationsByIndicator.get(indicator.internal_id) ?? []).filter((relation) => isReadableWithIndicator(relation, indicator));
+    const readable = (relationsByIndicator.get(indicator.internal_id) ?? [])
+      .filter((relation) => platformsById.has(relation.toId) && isReadableWithIndicator(relation, indicator, platformsById.get(relation.toId)));
     const counters = computeIndicatorDeploymentCounters(readable);
     const unchanged = (Object.keys(counters) as Array<keyof IndicatorDeploymentCounters>)
       .every((key) => (indicator[key] ?? 0) === counters[key] && indicator[key] !== undefined);

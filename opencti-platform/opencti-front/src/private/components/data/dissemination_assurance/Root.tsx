@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Link, Navigate, Route, Routes, useParams } from 'react-router';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import { boundaryWrapper } from '../../Error';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -47,7 +47,10 @@ const DisseminationAssuranceTabPage = () => {
           ))}
         </TabsList>
       </Tabs>
-      {boundaryWrapper(current.component)}
+      {/* The tab content suspends on its own: the breadcrumb and the tabs stay usable while it loads */}
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        {boundaryWrapper(current.component)}
+      </Suspense>
     </PageContainer>
   );
 };
