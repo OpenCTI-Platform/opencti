@@ -125,6 +125,9 @@ const CREATE_CASE = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) { caseIncidentAdd(input: $input) { id } }
 `;
 const DELETE_CASE = gql`mutation CaseIncidentDelete($id: ID!) { caseIncidentDelete(id: $id) }`;
+const RESTRICT_CONTAINER = gql`
+  mutation ContainerRestrict($id: ID!, $input: [MemberAccessInput!]) { containerEdit(id: $id) { editAuthorizedMembers(input: $input) { id } } }
+`;
 const DELETE_SDO = gql`mutation SdoDelete($id: ID!) { stixDomainObjectEdit(id: $id) { delete } }`;
 const DELETE_SCO = gql`mutation ScoDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`;
 const DELETE_DRAFT = gql`mutation DraftDelete($id: ID!) { draftWorkspaceDelete(id: $id) }`;
@@ -561,5 +564,39 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect(run).toMatchObject({ run_status: 'failed', end_reason_code: 'engine_disabled' });
     expect(run.xtm_investigation_id).toBeNull();
     expect(run.hypotheses).toEqual([]);
+  });
+
+  it('stops, withholds what it found and stops the engine run when its case becomes restricted to authorized members', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e restricted case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    try {
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      const runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'running';
+      const mirrored = await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 1);
+      expect(mirrored.evidence).toHaveLength(1);
+      vi.mocked(investigationXtm.cancelInvestigation).mockClear();
+      await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      engineStage = 'completed';
+      const stopped = await tickUntil(runId, (current) => current.run_status !== 'running');
+      expect(stopped).toMatchObject({
+        run_status: 'failed',
+        run_phase: 'done',
+        end_reason_code: 'member_restricted',
+        goal_plan: null,
+        evidence: [],
+        summary: null,
+        report: null,
+        report_sources: [],
+        hypotheses: [],
+      });
+      expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
+      expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
+      expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancelled');
+    } finally {
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
   });
 });

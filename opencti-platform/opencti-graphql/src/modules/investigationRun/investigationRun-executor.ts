@@ -173,6 +173,11 @@ const ENGINE_FAILURE_REASONS: Record<string, string> = {
   [ENGINE_NO_AGENT]: 'No agent of the connected XTM One answers the autonomous investigation intent',
   [ENGINE_UNREACHABLE]: 'The XTM One investigation engine cannot be reached',
 };
+const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer accessible to the identity of the run';
+const MEMBER_RESTRICTED_CODE = 'member_restricted';
+const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
+// Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
+const STOPPED_RUN_STATUSES: string[] = [InvestigationRunStatus.Cancelled, InvestigationRunStatus.Failed];
 
 interface RunExecution {
   run: BasicStoreEntityInvestigationRun;
@@ -470,7 +475,7 @@ const initializeRun = async (exec: RunExecution) => {
   const { run, runUser, liveContext } = exec;
   const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, run.subject_id);
   if (!subject) {
-    await failRun(liveContext, run.internal_id, 'The investigated entity is no longer accessible to the identity of the run');
+    await failRun(liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
     return;
   }
   if (!run.case_id && run.create_case) {
@@ -556,7 +561,13 @@ const startEngine = async (exec: RunExecution) => {
   }
   const subject = await loadSubject(exec);
   if (!subject) {
-    await failRun(exec.liveContext, run.internal_id, 'The investigated entity is no longer accessible to the identity of the run');
+    await failRun(exec.liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
+    return;
+  }
+  // A continuation starts long after the launch checked the subject and its case.
+  const boundary = await findCarryBoundary(exec, []);
+  if (boundary) {
+    await stopAtCarryBoundary(exec, boundary);
     return;
   }
   const agentSlug = await resolveInvestigationAgent(jwtUserOf(runUser), policy.agent_slug);
@@ -774,14 +785,65 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
 // hypotheses and the courses of action of its recommendations, as the run
 // identity reads them. The engine only knows what that identity can read: an
 // identifier it cannot read is invented or stale and restricts nothing.
+const revisionCitedIds = (evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined) => R.uniq([
+  ...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string),
+  ...conclusionCandidateIds(conclusion),
+  ...conclusionCourseOfActionIds(conclusion),
+]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
+
 const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
-  const ids = R.uniq([
-    ...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string),
-    ...conclusionCandidateIds(conclusion),
-    ...conclusionCourseOfActionIds(conclusion),
-  ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
+  const ids = revisionCitedIds(evidence, conclusion);
   if (ids.length === 0) return [];
   return withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
+};
+
+// A run and its outputs carry markings and organization sharing, never a member
+// restriction, and its markings were copied from what its identity read. The
+// run stops before anything more is sent to the engine or mirrored once its
+// subject or its case is no longer readable by that identity, or once one of
+// them, or an object the engine cites, is restricted to authorized members.
+const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string | null } | null> => {
+  const { run } = exec;
+  const anchors = [run.subject_id, run.case_id].filter((id): id is string => !!id);
+  const elements = await findElements(exec.draftContext, exec.runUser, R.uniq([...anchors, ...citedIds]));
+  const found = new Set(elements.flatMap((element) => [element.internal_id, element.standard_id]));
+  if (anchors.some((id) => !found.has(id))) {
+    return { reason: SUBJECT_INACCESSIBLE_REASON, code: null };
+  }
+  const restricted = elements.filter((element) => isMemberRestricted(element));
+  if (restricted.length > 0) {
+    logApp.warn('[CASE AUTOPILOT] Investigation stopped at a member restriction', { runId: run.internal_id, ids: restricted.map((element) => element.internal_id) });
+    return { reason: MEMBER_RESTRICTED_REASON, code: MEMBER_RESTRICTED_CODE };
+  }
+  return null;
+};
+
+// What the engine wrote is withheld from the run: it may describe what the run can no longer carry.
+const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string | null }) => {
+  const now = new Date();
+  const stop = { done: false, engineRunning: false };
+  await updateInvestigationRun(exec.liveContext, exec.run.internal_id, (current) => {
+    if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
+    stop.done = true;
+    stop.engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
+    return {
+      ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, boundary.reason),
+      end_reason_code: boundary.code,
+      pending_work_ids: [],
+      goal_plan: null,
+      steps: (current.steps ?? []).map((step) => ({ ...step, action: null, detail_params: null })),
+      evidence: [],
+      summary: null,
+      report: null,
+      report_sources: [],
+      ...(stop.engineRunning ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
+    };
+  });
+  if (!stop.done) return;
+  addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
+  if (stop.engineRunning) {
+    await stopCancelledEngineRun(exec.liveContext, exec.run.internal_id);
+  }
 };
 
 // The OpenCTI objects of a revision the run may cite: those its identity sees,
@@ -858,6 +920,13 @@ const investigate = async (exec: RunExecution) => {
   const changed = engine.revision !== run.xtm_revision || engine.status !== run.xtm_status;
   const revisionEvidence = mirrorEvidence(run.evidence ?? [], engine);
   const mirroring = changed || outcome !== 'running';
+  if (mirroring) {
+    const boundary = await findCarryBoundary(exec, revisionCitedIds(revisionEvidence, engine.conclusion));
+    if (boundary) {
+      await stopAtCarryBoundary(exec, boundary);
+      return;
+    }
+  }
   const cited = mirroring ? await citedElements(exec, revisionEvidence, engine.conclusion) : [];
   const citable = mirroring ? await citableObjectIds(exec, revisionEvidence) : null;
   if (outcome === 'failed') {
@@ -1147,7 +1216,7 @@ const ingestRun = async (exec: RunExecution) => {
   const { run, runUser, now, policy } = exec;
   const subject = await loadSubject(exec);
   if (!subject) {
-    await failRun(exec.liveContext, run.internal_id, 'The investigated entity is no longer accessible to the identity of the run');
+    await failRun(exec.liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
     return;
   }
   // The final state of the engine run; what was mirrored when it cannot be read.
@@ -1163,6 +1232,11 @@ const ingestRun = async (exec: RunExecution) => {
   }
   // The markings and sharing of the run are recomputed below from everything it cites.
   const mirrored = engine ? { ...run, ...mirrorPatch(run, engine, []) } as BasicStoreEntityInvestigationRun : run;
+  const boundary = await findCarryBoundary(exec, revisionCitedIds(mirrored.evidence, engine?.conclusion));
+  if (boundary) {
+    await stopAtCarryBoundary(exec, boundary);
+    return;
+  }
   // OpenCTI objects the engine cites, as the run identity sees them, with the attributes ACH weights them by.
   const objectIds = mirrored.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string);
   // An object restricted to authorized members is not cited either: the run and its outputs cannot carry the restriction.
@@ -1355,7 +1429,7 @@ const completeValidation = async (exec: RunExecution) => {
  */
 export const processInvestigationRun = async (context: AuthContext, runId: string) => {
   const run = await loadInvestigationRun(context, runId);
-  if (run?.run_status === InvestigationRunStatus.Cancelled && run.xtm_status === ENGINE_CANCEL_PENDING) {
+  if (run && STOPPED_RUN_STATUSES.includes(run.run_status) && run.xtm_status === ENGINE_CANCEL_PENDING) {
     await stopCancelledEngineRun(context, runId);
     return;
   }
@@ -1418,8 +1492,8 @@ const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
 
 /**
  * The next runs to advance, oldest first, resuming where the previous tick
- * stopped: the active runs, and the cancelled runs whose engine run is not
- * confirmed stopped yet.
+ * stopped: the active runs, and the cancelled or stopped runs whose engine run
+ * is not confirmed stopped yet.
  */
 export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => nextRunsWindow(async (after) => {
   const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
@@ -1429,7 +1503,7 @@ export const listInvestigationRunsToProcess = (context: AuthContext, limit: numb
       filterGroups: [{
         mode: FilterMode.And,
         filters: [
-          { key: ['run_status'], values: [InvestigationRunStatus.Cancelled] },
+          { key: ['run_status'], values: STOPPED_RUN_STATUSES },
           { key: ['xtm_status'], values: [ENGINE_CANCEL_PENDING] },
         ],
         filterGroups: [],
