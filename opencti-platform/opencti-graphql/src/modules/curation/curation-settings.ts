@@ -162,11 +162,12 @@ export const saveCurationSettings = async (
   context: AuthContext,
   user: AuthUser,
   patch: Partial<CurationSettings>,
-  opts: { auditLog?: boolean } = {},
+  opts: { auditLog?: boolean; validate?: (merged: CurationSettings) => void } = {},
 ): Promise<CurationSettings> => {
   const { configuration, next } = await withSettingsWriteLock(async () => {
     const loaded = await loadCurationConfiguration(context);
     const current = normalizeCurationSettings(loaded.manager_setting as Partial<CurationSettings>);
+    opts.validate?.({ ...current, ...patch });
     const merged = normalizeCurationSettings({ ...current, ...patch });
     const { element: updated } = await patchAttribute(context, user, loaded.id, ENTITY_TYPE_MANAGER_CONFIGURATION, { manager_setting: merged });
     await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updated, user);

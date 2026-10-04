@@ -230,7 +230,7 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
           {t_i18n('Reject')}
         </Button>
       )}
-      {proposal.can_revert && proposal.can_apply && (
+      {proposal.can_revert && (
         <Button variant="secondary" intent="destructive" onClick={() => setDialog('revert')} disabled={busy}>
           {t_i18n('Revert')}
         </Button>

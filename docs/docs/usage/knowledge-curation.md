@@ -402,7 +402,9 @@ Platform administrators can tune the manager schedules and the merge record limi
 | See the proposals, the merges and the Knowledge health                                           | `Access knowledge`                                     |
 | Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
 | Accept or revert a `merge` or `split` proposal, apply a `merge` decision, unmerge from a merge record | `Merge knowledge`                                  |
-| Accept an attribution conflict (deletes the attributions not kept)                               | `Delete knowledge`                                     |
+| Accept or revert an attribution conflict (deletes, then restores, the attributions not kept)     | `Delete knowledge`                                     |
+
+A revert needs the capability of what it undoes: reverting a proposal applied as a merge is an unmerge (`Merge knowledge`), while a `merge` proposal applied as an alias addition only needs `Create / Update knowledge` to revert.
 | See and change the settings, run a scan now, refresh the Knowledge health, see, manage and apply policies | `Manage customization`                         |
 
 See [Users and RBAC](../administration/users.md) for the capabilities.

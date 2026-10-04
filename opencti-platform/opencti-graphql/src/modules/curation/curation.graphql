@@ -104,6 +104,7 @@ type CurationProposal implements InternalObject & BasicObject {
   mergeRecord: MergeRecord
   applied_patch: String
   can_apply: Boolean!
+  """True when the proposal was applied, can be reverted, and the user holds the capability of the revert (an unmerge for a recorded merge)."""
   can_revert: Boolean!
   adjudicable: Boolean!
 }

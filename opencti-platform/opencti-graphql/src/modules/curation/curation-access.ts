@@ -38,3 +38,17 @@ export const canUserApplyProposal = (user: AuthUser, proposal: Pick<BasicStoreEn
   }
   return true;
 };
+
+/**
+ * The action a revert runs is the opposite of what was applied, whatever the proposal recommended: every merge is
+ * recorded, so a merge record means an unmerge; a duplicate proposal applied without one added aliases.
+ */
+export const revertedProposalAction = (proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action' | 'merge_record_id'>) => {
+  if (proposal.merge_record_id) return ACTION_UNMERGE;
+  if (proposal.recommended_action === ACTION_MERGE) return ACTION_ADD_ALIASES;
+  return proposal.recommended_action;
+};
+
+export const canUserRevertProposal = (user: AuthUser, proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action' | 'merge_record_id'>) => {
+  return canUserApplyProposal(user, { recommended_action: revertedProposalAction(proposal) });
+};

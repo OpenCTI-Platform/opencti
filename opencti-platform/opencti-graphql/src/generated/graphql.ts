@@ -6841,6 +6841,7 @@ export type CurationProposal = BasicObject & InternalObject & {
   adjudication_requested_at?: Maybe<Scalars['DateTime']['output']>;
   applied_patch?: Maybe<Scalars['String']['output']>;
   can_apply: Scalars['Boolean']['output'];
+  /** True when the proposal was applied, can be reverted, and the user holds the capability of the revert (an unmerge for a recorded merge). */
   can_revert: Scalars['Boolean']['output'];
   confidence_score: Scalars['Float']['output'];
   created_at: Scalars['DateTime']['output'];

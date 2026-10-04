@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AuthUser } from '../../../../src/types/user';
-import { canUserApplyProposal, effectiveProposalAction } from '../../../../src/modules/curation/curation-access';
+import { canUserApplyProposal, canUserRevertProposal, effectiveProposalAction, revertedProposalAction } from '../../../../src/modules/curation/curation-access';
 
 const userWith = (...capabilities: string[]) => ({ id: 'user', capabilities: capabilities.map((name) => ({ name })) }) as unknown as AuthUser;
 
@@ -26,6 +26,18 @@ describe('curation apply access', () => {
   it('requires the delete capability to resolve an attribution conflict', () => {
     expect(canUserApplyProposal(MERGE, { recommended_action: 'resolve_attribution' })).toBe(false);
     expect(canUserApplyProposal(DELETE, { recommended_action: 'resolve_attribution' })).toBe(true);
+  });
+
+  it('reverts what was applied, whatever the proposal recommended', () => {
+    // An alias proposal applied as a merge has a merge record: its revert is an unmerge.
+    expect(revertedProposalAction({ recommended_action: 'add_aliases', merge_record_id: 'record' })).toBe('unmerge');
+    expect(canUserRevertProposal(UPDATE, { recommended_action: 'add_aliases', merge_record_id: 'record' })).toBe(false);
+    expect(canUserRevertProposal(MERGE, { recommended_action: 'add_aliases', merge_record_id: 'record' })).toBe(true);
+    // A merge proposal applied as an alias addition has no merge record: reverting it only needs the update capability.
+    expect(revertedProposalAction({ recommended_action: 'merge', merge_record_id: null })).toBe('add_aliases');
+    expect(canUserRevertProposal(UPDATE, { recommended_action: 'merge', merge_record_id: null })).toBe(true);
+    expect(canUserRevertProposal(MERGE, { recommended_action: 'resolve_attribution', merge_record_id: null })).toBe(false);
+    expect(canUserRevertProposal(DELETE, { recommended_action: 'resolve_attribution', merge_record_id: null })).toBe(true);
   });
 
   it('runs the action an adjudication decision states on a duplicate proposal', () => {

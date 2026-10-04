@@ -40,7 +40,7 @@ import {
 import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curation-health';
 import { curationResolve } from './curation-resolve';
 import { isProposalAdjudicable } from './curation-adjudication';
-import { canUserApplyProposal } from './curation-access';
+import { canUserApplyProposal, canUserRevertProposal } from './curation-access';
 import type {
   BasicStoreEntityCurationPolicy,
   BasicStoreEntityCurationProposal,
@@ -123,7 +123,10 @@ const curationResolvers: Resolvers = {
       return merge_record_id ? findMergeRecordById(context, context.user, merge_record_id) as any : null;
     },
     can_apply: (proposal, _, context) => canUserApplyProposal(context.user!, proposal as unknown as BasicStoreEntityCurationProposal),
-    can_revert: (proposal) => isProposalRevertible(proposal as unknown as BasicStoreEntityCurationProposal),
+    can_revert: (proposal, _, context) => {
+      const typed = proposal as unknown as BasicStoreEntityCurationProposal;
+      return isProposalRevertible(typed) && canUserRevertProposal(context.user!, typed);
+    },
     adjudicable: (proposal) => isProposalAdjudicable(proposal as unknown as BasicStoreEntityCurationProposal),
   },
   CurationAdjudication: {

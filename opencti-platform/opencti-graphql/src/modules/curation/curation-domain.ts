@@ -21,7 +21,6 @@ import {
 import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
-  ACTION_UNMERGE,
   type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationAdjudication,
@@ -45,7 +44,7 @@ import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvai
 import { unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
-import { canUserApplyProposal } from './curation-access';
+import { canUserApplyProposal, canUserRevertProposal } from './curation-access';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
 import { isGraphSimilarityAvailable } from './curation-scan';
@@ -432,8 +431,7 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   if (proposal.recommended_action === ACTION_FIX_DATES) {
     throw FunctionalError('A date fix cannot be reverted: the original end date is before the start date, which the platform does not accept', { id });
   }
-  const revertedAction = proposal.merge_record_id ? ACTION_UNMERGE : proposal.recommended_action;
-  if (!canUserApplyProposal(user, { recommended_action: revertedAction })) {
+  if (!canUserRevertProposal(user, proposal)) {
     throw ForbiddenAccess('You are not allowed to revert this curation proposal');
   }
   let report: Record<string, unknown>;
@@ -495,10 +493,17 @@ export const editCurationSettings = async (context: AuthContext, user: AuthUser,
   if (patch.field_authority_rules) {
     validateFieldAuthorityRules(patch.field_authority_rules);
   }
-  if (patch.ambiguous_band_min !== undefined && patch.ambiguous_band_max !== undefined && patch.ambiguous_band_min >= patch.ambiguous_band_max) {
-    throw FunctionalError('The ambiguous band minimum must be lower than its maximum');
-  }
-  await saveCurationSettings(context, user, patch);
+  const changesBand = patch.ambiguous_band_min !== undefined || patch.ambiguous_band_max !== undefined;
+  // A partial input is checked against the settings it is merged into, read under the settings write lock.
+  const validate = (merged: CurationSettings) => {
+    if (changesBand && merged.ambiguous_band_min >= merged.ambiguous_band_max) {
+      throw FunctionalError('The ambiguous band minimum must be lower than its maximum', {
+        ambiguous_band_min: merged.ambiguous_band_min,
+        ambiguous_band_max: merged.ambiguous_band_max,
+      });
+    }
+  };
+  await saveCurationSettings(context, user, patch, { validate });
   return curationSettingsForApi(context);
 };
 
