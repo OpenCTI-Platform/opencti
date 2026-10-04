@@ -99,6 +99,8 @@ describe('Knowledge decay rules', () => {
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'name', value: ['Renamed'] }])).toEqual(false);
     // The knowledge flagged under the previous policy is evaluated again under the new one
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'freshness_policy', value: ['flag'] }])).toEqual(true);
+    // A lowered priority lets an overlapping rule take over the knowledge the rule flagged
+    expect(checkDecayRulePatch(knowledgeRule, [{ key: 'order', value: ['0'] }])).toEqual(true);
     // A new confidence step applies to the knowledge the rule already lowered
     const lowering = storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 });
     expect(checkDecayRulePatch(lowering, [{ key: 'freshness_confidence_step', value: ['20'] }])).toEqual(true);
