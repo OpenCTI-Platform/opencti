@@ -177,6 +177,27 @@ describe('Defense coverage stream impact', () => {
     // A routine update of a threat (description, aliases) keeps the overlays
     expect(collectDefenseImpact([updateWith('/description')]).overlayChanged).toEqual(false);
   });
+  it('should flag every change of a threat or of its relationships for the filtered threat overlays', () => {
+    const threat = { type: 'intrusion-set', extensions: { [STIX_EXT_OCTI]: { id: 'is-1', type: 'Intrusion-Set' } } };
+    const routineUpdate = { id: '1-0', event: 'update', data: { type: 'update', data: threat, context: { patch: [{ op: 'add', path: '/labels/0', value: 'x' }] } } } as never;
+    const routine = collectDefenseImpact([routineUpdate]);
+    expect(routine.threatsChanged).toEqual(true);
+    expect(routine.overlayChanged).toEqual(false);
+    expect(collectDefenseImpact([event('create', threat)]).threatsChanged).toEqual(true);
+    const targets = collectDefenseImpact([event('create', {
+      type: 'relationship',
+      relationship_type: 'targets',
+      extensions: { [STIX_EXT_OCTI]: { id: 't1', type: 'targets', source_ref: 'is-1', source_type: 'Intrusion-Set', target_ref: 'sector-1', target_type: 'Sector' } },
+    })]);
+    expect(targets.threatsChanged).toEqual(true);
+    expect(targets.overlayChanged).toEqual(false);
+    const unrelated = collectDefenseImpact([event('create', {
+      type: 'relationship',
+      relationship_type: 'related-to',
+      extensions: { [STIX_EXT_OCTI]: { id: 'r1', type: 'related-to', source_ref: 'report-1', source_type: 'Report', target_ref: 'sector-1', target_type: 'Sector' } },
+    })]);
+    expect(unrelated.threatsChanged).toEqual(false);
+  });
 });
 
 describe('Defense log source mapping defaults', () => {

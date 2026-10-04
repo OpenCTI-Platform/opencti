@@ -7,14 +7,17 @@ import type { DataEvent, SseEvent } from '../types/event';
 import { RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
+import { deliverPendingDefenseLevelChanges } from '../modules/defenseCoverage/defenseCoverage-notification';
 import { trackPendingValidationRequests } from '../modules/defenseCoverage/defenseCoverage-domain';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import {
   bumpDefenseCoverageVersion,
   bumpDefenseOverlayVersion,
+  bumpDefenseThreatsVersion,
   clearFullComputationRunning,
   consumeFullComputationRequest,
   getLastFullComputation,
+  listPendingLevelChanges,
   markFullComputationRunning,
   requestFullDefenseCoverageComputation,
   setLastFullComputation,
@@ -50,6 +53,24 @@ const runComputation = async (context: AuthContext, attackPatternIds?: string[])
 };
 
 /**
+ * Retry the level changes whose delivery failed, under the computation lock so a computation never delivers them twice.
+ */
+const deliverQueuedLevelChanges = async (context: AuthContext) => {
+  if ((await listPendingLevelChanges()).length === 0) return;
+  let lock;
+  try {
+    lock = await lockResources([DEFENSE_COVERAGE_COMPUTE_KEY], { retryCount: COMPUTE_LOCK_RETRY_COUNT });
+    await deliverPendingDefenseLevelChanges(context);
+  } catch (e: any) {
+    if (e?.name !== TYPE_LOCK_ERROR) {
+      logApp.error('[OPENCTI-MODULE] Defense coverage queued level changes delivery error', { cause: e });
+    }
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
+/**
  * Nightly full computation, also triggered on request (mapping change, platform creation or deletion, manual recompute).
  */
 export const defenseCoverageCronHandler = async () => {
@@ -59,6 +80,7 @@ export const defenseCoverageCronHandler = async () => {
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Defense coverage queued validation tracking error', { cause: e });
   }
+  await deliverQueuedLevelChanges(context);
   const lastFull = await getLastFullComputation();
   const requested = await consumeFullComputationRequest();
   const isDue = !lastFull || Date.now() - new Date(lastFull).getTime() >= FULL_COMPUTATION_INTERVAL;
@@ -86,8 +108,9 @@ const handleDefenseStreamEvents = async (streamEvents: Array<SseEvent<DataEvent>
   if (streamEvents.length === 0) return;
   const context = executionContext(DEFENSE_COVERAGE_MANAGER_CONTEXT);
   const impact = collectDefenseImpact(streamEvents);
-  // Readers drop the threat overlays computed with the previous usages
+  // Readers drop the threat overlays computed with the previous usages, or with the previous threats for filtered scopes
   if (impact.overlayChanged) await bumpDefenseOverlayVersion();
+  if (impact.threatsChanged) await bumpDefenseThreatsVersion();
   if (impact.full) {
     await requestFullDefenseCoverageComputation();
     return;

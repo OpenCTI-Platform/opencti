@@ -50,6 +50,8 @@ export interface DefenseImpact {
   accessChanged: boolean;
   // The threat usages of the overlays changed: a uses relationship, or a threat created, removed or with a new access
   overlayChanged: boolean;
+  // A threat or one of its relationships changed, which can move it in or out of the threats of a filtered scope
+  threatsChanged: boolean;
 }
 
 interface StixEventData {
@@ -78,6 +80,7 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     resultIds: new Set(),
     accessChanged: false,
     overlayChanged: false,
+    threatsChanged: false,
   };
   events.forEach((event) => {
     const eventType = event.data.type;
@@ -86,6 +89,9 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     if (!extension) return;
     if (data.type === STIX_TYPE_RELATION) {
       const relationshipType = data.relationship_type ?? '';
+      if (DEFENSE_THREAT_TYPES.includes(extension.source_type ?? '') || DEFENSE_THREAT_TYPES.includes(extension.target_type ?? '')) {
+        impact.threatsChanged = true;
+      }
       if (relationshipType === RELATION_USES) {
         if (extension.target_type === ENTITY_TYPE_ATTACK_PATTERN) impact.overlayChanged = true;
       } else if (TECHNIQUE_RELATIONSHIPS.includes(relationshipType)) {
@@ -102,9 +108,12 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       }
       return;
     }
-    if (DEFENSE_THREAT_TYPES.includes(extension.type) && (eventType !== EVENT_TYPE_UPDATE || isAccessUpdate(event))) {
-      impact.overlayChanged = true;
-      return;
+    if (DEFENSE_THREAT_TYPES.includes(extension.type)) {
+      impact.threatsChanged = true;
+      if (eventType !== EVENT_TYPE_UPDATE || isAccessUpdate(event)) {
+        impact.overlayChanged = true;
+        return;
+      }
     }
     if (eventType === EVENT_TYPE_MERGE) {
       if (FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) impact.full = true;

@@ -405,7 +405,9 @@ describe('Threat-informed defense matrix', () => {
     externalReferenceId = references[0]?.id;
     expect(references).toEqual([{ id: externalReferenceId, source_name: 'risk.example.com', url: 'https://risk.example.com/scenarios/defense-matrix-test' }]);
     const objectIds = validation.grouping.objects.edges.map((e: { node: { id: string } }) => e.node.id);
-    expect(objectIds).toEqual(expect.arrayContaining([created.attackPattern, created.threat]));
+    // The grouping records the security platform whose gaps track the request next to the technique and the threat
+    expect(objectIds.length).toEqual(3);
+    expect(objectIds).toEqual(expect.arrayContaining([created.attackPattern, created.threat, created.platform]));
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);

@@ -856,6 +856,20 @@ export const redisDeleteDefensePendingValidationTracking = async (securityCovera
 };
 // endregion
 
+// region - defense coverage pending level changes
+// One field per computation: a batch is removed once delivered, or rewritten with the changes not delivered yet
+const DEFENSE_PENDING_LEVEL_CHANGES_KEY = 'defense_coverage_pending_level_changes';
+export const redisSetDefensePendingLevelChanges = async (batchId: string, changes: string) => {
+  await getClientBase().hset(DEFENSE_PENDING_LEVEL_CHANGES_KEY, batchId, changes);
+};
+export const redisGetDefensePendingLevelChanges = async (): Promise<Record<string, string>> => {
+  return getClientBase().hgetall(DEFENSE_PENDING_LEVEL_CHANGES_KEY);
+};
+export const redisDeleteDefensePendingLevelChanges = async (batchId: string) => {
+  await getClientBase().hdel(DEFENSE_PENDING_LEVEL_CHANGES_KEY, batchId);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

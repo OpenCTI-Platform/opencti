@@ -1,18 +1,24 @@
+import { v4 as uuidv4 } from 'uuid';
 import {
+  redisDeleteDefensePendingLevelChanges,
   redisDeleteDefensePendingValidationTracking,
+  redisGetDefensePendingLevelChanges,
   redisGetDefensePendingValidationTrackings,
   redisGetManagerEventState,
   redisGetSetManagerEventState,
+  redisSetDefensePendingLevelChanges,
   redisSetDefensePendingValidationTracking,
   redisSetManagerEventState,
 } from '../../database/redis';
 import { now } from '../../utils/format';
 import type { DefenseGapValidationRequest } from './defenseGap/defenseGap-types';
 import type { DefenseValidationTarget } from './defenseCoverage-utils';
+import type { DefenseCoverageChange } from './defenseCoverage-notification';
 
 // Cluster-wide state of the defense coverage computation, shared through Redis between the API nodes.
 const STATE_VERSION = 'DEFENSE_COVERAGE_VERSION';
 const STATE_OVERLAY_VERSION = 'DEFENSE_OVERLAY_VERSION';
+const STATE_THREATS_VERSION = 'DEFENSE_THREATS_VERSION';
 const STATE_FULL_RUN = 'DEFENSE_COVERAGE_FULL_RUN';
 const STATE_FULL_REQUESTED = 'DEFENSE_COVERAGE_FULL_REQUESTED';
 const STATE_FULL_RUNNING_SINCE = 'DEFENSE_COVERAGE_FULL_RUNNING_SINCE';
@@ -42,6 +48,20 @@ export const getDefenseOverlayVersion = async (): Promise<string> => {
 export const bumpDefenseOverlayVersion = async () => {
   const version = now();
   await redisSetManagerEventState(STATE_OVERLAY_VERSION, version);
+  return version;
+};
+
+/**
+ * Version of the threats themselves. Bumped when a threat or one of its relationships changes, so the overlays of
+ * filtered scopes, whose threats are the ones matching the filters, are recomputed with the current matches.
+ */
+export const getDefenseThreatsVersion = async (): Promise<string> => {
+  return (await redisGetManagerEventState(STATE_THREATS_VERSION)) ?? 'none';
+};
+
+export const bumpDefenseThreatsVersion = async () => {
+  const version = now();
+  await redisSetManagerEventState(STATE_THREATS_VERSION, version);
   return version;
 };
 
@@ -119,4 +139,40 @@ export const listPendingValidationTrackings = async (): Promise<Array<{ id: stri
 
 export const clearPendingValidationTracking = async (securityCoverageId: string) => {
   await redisDeleteDefensePendingValidationTracking(securityCoverageId);
+};
+
+/**
+ * Level changes of a computation waiting for their delivery to the live triggers. The stored coverage is already their
+ * new baseline, so a later computation never finds them again: they stay queued until they are delivered.
+ * Batch ids sort by queuing time.
+ */
+export const queuePendingLevelChanges = async (changes: DefenseCoverageChange[]) => {
+  const batchId = `${now()}|${uuidv4()}`;
+  await redisSetDefensePendingLevelChanges(batchId, JSON.stringify(changes));
+  return batchId;
+};
+
+/**
+ * Queued batches, oldest first; a batch that cannot be read has no `changes` so the caller drops it.
+ */
+export const listPendingLevelChanges = async (): Promise<Array<{ id: string; changes?: DefenseCoverageChange[] }>> => {
+  const entries = await redisGetDefensePendingLevelChanges();
+  return Object.entries(entries ?? {})
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([id, value]) => {
+      try {
+        const changes = JSON.parse(value);
+        return Array.isArray(changes) ? { id, changes: changes as DefenseCoverageChange[] } : { id };
+      } catch {
+        return { id };
+      }
+    });
+};
+
+export const replacePendingLevelChanges = async (batchId: string, changes: DefenseCoverageChange[]) => {
+  await redisSetDefensePendingLevelChanges(batchId, JSON.stringify(changes));
+};
+
+export const clearPendingLevelChanges = async (batchId: string) => {
+  await redisDeleteDefensePendingLevelChanges(batchId);
 };

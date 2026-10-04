@@ -1049,11 +1049,14 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   const externalReference = referenceUrl
     ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
     : undefined;
+  // OpenAEV generates the scenario from the techniques and the threat; the security platforms record the gaps the request
+  // is tracked on. OpenAEV runs the scenario on endpoints and attributes each result to the platform that produced it.
+  const trackedPlatformIds = uniq([...requestedPlatforms, ...gapPlatforms]);
   const grouping = await addGrouping(context, user, {
     name,
-    description: input.description ?? 'Techniques selected from the defense gap backlog for validation with OpenAEV.',
+    description: input.description ?? 'Techniques selected from the defense gap backlog for validation with OpenAEV, with the security platforms whose gaps track the request.',
     context: 'defense-validation',
-    objects: [...attackPatterns.map((ap) => ap.internal_id), ...(threat ? [threat.internal_id] : [])],
+    objects: [...attackPatterns.map((ap) => ap.internal_id), ...(threat ? [threat.internal_id] : []), ...trackedPlatformIds],
   });
   let securityCoverage: BasicStoreEntitySecurityCoverage;
   try {

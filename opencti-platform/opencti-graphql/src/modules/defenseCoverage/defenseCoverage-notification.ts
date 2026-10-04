@@ -23,6 +23,7 @@ import {
 } from './defenseCoverage-types';
 import { type AccessPredicate, collectCoverageIds, evaluateCoverage } from './defenseCoverage-utils';
 import { findAccessibleIds } from './defenseCoverage-reader';
+import { clearPendingLevelChanges, listPendingLevelChanges, replacePendingLevelChanges } from './defenseCoverage-state';
 
 export const DEFENSE_TRIGGER_LEVEL_DECREASED = TriggerEventType.DefenseLevelDecreased;
 export const DEFENSE_TRIGGER_LEVEL_INCREASED = TriggerEventType.DefenseLevelIncreased;
@@ -92,9 +93,10 @@ export const buildDefenseLevelMessage = (stix: StixObject, change: DefenseLevelC
  * the previous computation counts with the markings it had, as kept in the trash). They must also be able to access
  * the technique and match the trigger filters, exactly as for knowledge events; digests built on these triggers collect
  * them like any live notification.
- * Returns the number of notified recipients.
+ * Returns the number of notified recipients; `progress.done` counts the changes fully delivered, so a caller can keep
+ * the remaining ones when a delivery fails.
  */
-export const notifyDefenseLevelChanges = async (context: AuthContext, changes: DefenseCoverageChange[]) => {
+export const notifyDefenseLevelChanges = async (context: AuthContext, changes: DefenseCoverageChange[], progress?: { done: number }) => {
   if (changes.length === 0) return 0;
   const liveNotifications = await getLiveNotifications(context);
   const listening = liveNotifications.filter(({ trigger }) => {
@@ -159,7 +161,36 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
         delivered += targets.length;
       }
     }
+    if (progress) progress.done = changeIndex + 1;
   }
   logApp.debug('[DEFENSE-COVERAGE] Defense level changes notified', { changes: changes.length, delivered });
+  return delivered;
+};
+
+/**
+ * Deliver the queued level changes, oldest computation first. A batch leaves the queue once delivered; when a delivery
+ * fails, the changes not delivered yet stay queued, the next batches wait behind them, and the next run retries.
+ * Returns the number of notified recipients.
+ */
+export const deliverPendingDefenseLevelChanges = async (context: AuthContext, notify = notifyDefenseLevelChanges) => {
+  const batches = await listPendingLevelChanges();
+  let delivered = 0;
+  for (let index = 0; index < batches.length; index += 1) {
+    const { id, changes } = batches[index];
+    if (!changes) {
+      logApp.error('[DEFENSE-COVERAGE] Unreadable queued defense level changes dropped', { batch: id });
+      await clearPendingLevelChanges(id);
+    } else {
+      const progress = { done: 0 };
+      try {
+        delivered += await notify(context, changes, progress);
+      } catch (error) {
+        if (progress.done > 0) await replacePendingLevelChanges(id, changes.slice(progress.done));
+        logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: changes.length - progress.done });
+        return delivered;
+      }
+      await clearPendingLevelChanges(id);
+    }
+  }
   return delivered;
 };

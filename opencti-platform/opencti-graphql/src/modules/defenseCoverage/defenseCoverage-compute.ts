@@ -32,8 +32,8 @@ import {
 import { capEvidences, cellForPlatform, computeValidationStatus, evaluateCoverage, type LogsourceCondition, mapLogsourceToDataComponents } from './defenseCoverage-utils';
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
-import { bumpDefenseCoverageVersion } from './defenseCoverage-state';
-import { collectDefenseCoverageChanges, notifyDefenseLevelChanges } from './defenseCoverage-notification';
+import { bumpDefenseCoverageVersion, queuePendingLevelChanges } from './defenseCoverage-state';
+import { collectDefenseCoverageChanges, deliverPendingDefenseLevelChanges } from './defenseCoverage-notification';
 import { type DeploymentStatus, LIVE_DEPLOYMENT_STATUSES } from '../indicatorDeployment/indicatorDeployment-types';
 import { generateStandardId } from '../../schema/identifier';
 
@@ -618,12 +618,14 @@ export const computeDefenseCoverage = async (
     await deleteGapsOfTechniques(revokedIds);
   }
   await bumpDefenseCoverageVersion();
-  // 7. Live triggers on level changes, once the new coverage is readable
+  // 7. Live triggers on level changes, once the new coverage is readable. The stored coverage is already their baseline,
+  // so they are queued before the delivery: a failed delivery is retried from the queue by the next run
+  if (coverageChanges.length > 0) await queuePendingLevelChanges(coverageChanges);
   let notified = 0;
   try {
-    notified = await notifyDefenseLevelChanges(context, coverageChanges);
+    notified = await deliverPendingDefenseLevelChanges(context);
   } catch (error) {
-    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified', { cause: error, changes: coverageChanges.length });
+    logApp.error('[DEFENSE-COVERAGE] Queued defense level changes could not be delivered', { cause: error });
   }
   const result = {
     techniques: activeAttackPatterns.length,

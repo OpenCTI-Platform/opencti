@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../../../src/database/middleware-loader';
 import { clearDefenseSnapshotCache, getAccessPredicate, getDefenseSnapshot, getThreatOverlay } from '../../../../src/modules/defenseCoverage/defenseCoverage-reader';
+import { getDefenseThreatsVersion } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
@@ -16,6 +17,7 @@ vi.mock('../../../../src/database/cache', () => ({
 vi.mock('../../../../src/modules/defenseCoverage/defenseCoverage-state', () => ({
   getDefenseCoverageVersion: vi.fn(async () => 'coverage-version'),
   getDefenseOverlayVersion: vi.fn(async () => 'overlay-version'),
+  getDefenseThreatsVersion: vi.fn(async () => 'threats-version'),
 }));
 
 const DRAFT_ID = 'draft-workspace-1';
@@ -60,5 +62,20 @@ describe('Defense coverage reader caches', () => {
   it('should compute the shared threat overlay on published knowledge for a reader in a draft', async () => {
     await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
     expectPublished(vi.mocked(fullRelationsList).mock.calls);
+  });
+
+  it('should recompute a filtered threat overlay when the threats change and keep the overlay of selected threats', async () => {
+    const filtered = { mode: 'FILTERED', filters: { mode: 'and', filters: [{ key: ['name'], values: ['APT'] }], filterGroups: [] } } as never;
+    const selected = { mode: 'SELECTED', threatIds: ['intrusion-set-1'] } as never;
+    vi.mocked(getDefenseThreatsVersion).mockResolvedValue('threats-1');
+    await getThreatOverlay(draftContext, reader, filtered);
+    await getThreatOverlay(draftContext, reader, selected);
+    await getThreatOverlay(draftContext, reader, filtered);
+    expect(vi.mocked(fullEntitiesList)).toHaveBeenCalledTimes(1);
+    vi.mocked(getDefenseThreatsVersion).mockResolvedValue('threats-2');
+    await getThreatOverlay(draftContext, reader, filtered);
+    await getThreatOverlay(draftContext, reader, selected);
+    expect(vi.mocked(fullEntitiesList)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(1);
   });
 });
