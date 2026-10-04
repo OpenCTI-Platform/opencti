@@ -1,6 +1,14 @@
 import type { ComponentType, LazyExoticComponent, ReactNode } from 'react';
+import type { HubBadgeCount } from '../common/hub/HubCountBadge';
 
 export const PATH_DEFENSE = '/dashboard/defense';
+
+export interface DefenseAreaSection {
+  /** Route segment under the area. */
+  path: string;
+  /** English source string, translated by the hub. */
+  label: string;
+}
 
 export interface DefenseArea {
   /** Position in the menu: Hunts 10, Defense matrix 20, Dissemination assurance 30. */
@@ -9,12 +17,23 @@ export interface DefenseArea {
   path: string;
   /** English source string, translated by the menu. */
   label: string;
+  /** English source string: the question the area answers, shown by its first-use state. */
+  description?: string;
   icon: ReactNode;
   /** When set, the area is hidden with this entity type (Settings > Customization > Entity types). */
   entityType?: string;
   /** When set, the area is listed and routed only for a user granted one of these capabilities. */
   needs?: string[];
-  /** Mounted at `/dashboard/defense/<path>/*`. */
+  /** The area's pages, in order: the hub shows them as tabs and names the open one in the breadcrumb. */
+  sections?: DefenseAreaSection[];
+  /**
+   * True for a path below the area (`<id>/overview`, without the area segment) that the area renders as
+   * a page of its own, an entity page with its header and tabs: the hub adds no container or breadcrumb.
+   */
+  rendersOwnPage?: (subPath: string) => boolean;
+  /** Pending work in the area, shown on its menu item; never a total. */
+  useBadgeCount?: HubBadgeCount;
+  /** Mounted at `/dashboard/defense/<path>/*`; renders its content only, the hub owns the page. */
   component: LazyExoticComponent<ComponentType>;
 }
 
@@ -34,3 +53,8 @@ export const visibleDefenseAreas = (
 ): DefenseArea[] => areas
   .filter((area) => !area.entityType || !hiddenEntities.includes(area.entityType))
   .filter((area) => !area.needs || isGranted(area.needs));
+
+/** The section of `area` that `subPath` (the path below the area) opens, if any. */
+export const defenseAreaSection = (area: DefenseArea, subPath: string): DefenseAreaSection | undefined => (
+  area.sections?.find((section) => subPath === section.path || subPath.startsWith(`${section.path}/`))
+);

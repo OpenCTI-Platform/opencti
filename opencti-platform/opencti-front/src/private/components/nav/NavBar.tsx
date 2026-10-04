@@ -99,7 +99,12 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
       icon={sub.icon}
       aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
     >
-      {sub.label}
+      {sub.badge ? (
+        <span className="inline-flex items-center gap-2">
+          {sub.label}
+          {sub.badge}
+        </span>
+      ) : sub.label}
     </NavbarSubmenuItem>
   );
 
