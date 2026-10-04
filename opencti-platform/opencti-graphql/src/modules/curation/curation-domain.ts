@@ -50,6 +50,7 @@ import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './cu
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
 import { isGraphSimilarityAvailable } from './curation-scan';
 import { getTaxonomyMetadata } from './curation-taxonomy';
+import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, nextRunDate } from './curation-schedule';
 
 const MAX_BULK = 500;
 
@@ -99,6 +100,7 @@ export const curationStatistics = async (context: AuthContext, user: AuthUser) =
     getCurationSettings(context),
   ]);
   const asEntries = (aggregation: Array<{ label: string; value: number }>) => aggregation.map(({ label, value }) => ({ key: label, count: value }));
+  const scanScheduled = CURATION_MANAGER_ENABLED && settings.curation_enabled;
   return {
     open_count: openCount,
     ambiguous_count: ambiguousCount,
@@ -107,6 +109,11 @@ export const curationStatistics = async (context: AuthContext, user: AuthUser) =
     active_merge_records_count: activeMergeRecords,
     latest_health_score: latest?.health_score ?? null,
     last_scan_date: settings.last_scan_date,
+    curation_enabled: settings.curation_enabled,
+    next_scan_date: scanScheduled ? nextRunDate(settings.force_scan ? null : settings.last_scan_date, CURATION_SCAN_INTERVAL_MS) : null,
+    next_snapshot_date: CURATION_MANAGER_ENABLED
+      ? nextRunDate(settings.last_snapshot_date ?? latest?.snapshot_date, CURATION_SNAPSHOT_INTERVAL_MS)
+      : null,
   };
 };
 // endregion

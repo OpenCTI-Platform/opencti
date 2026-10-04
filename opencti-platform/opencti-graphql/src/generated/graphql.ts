@@ -7034,9 +7034,14 @@ export type CurationStatistics = {
   __typename?: 'CurationStatistics';
   active_merge_records_count: Scalars['Int']['output'];
   ambiguous_count: Scalars['Int']['output'];
+  curation_enabled: Scalars['Boolean']['output'];
   decided_by_status: Array<CurationStatisticsEntry>;
   last_scan_date?: Maybe<Scalars['DateTime']['output']>;
   latest_health_score?: Maybe<Scalars['Int']['output']>;
+  /** When the next scheduled scan is due; null when curation is turned off. */
+  next_scan_date?: Maybe<Scalars['DateTime']['output']>;
+  /** When the next Knowledge health snapshot is due; null when the curation manager is turned off. */
+  next_snapshot_date?: Maybe<Scalars['DateTime']['output']>;
   open_by_kind: Array<CurationStatisticsEntry>;
   open_count: Scalars['Int']['output'];
 };
@@ -47144,9 +47149,12 @@ export type CurationStalenessOverrideResolvers<ContextType = any, ParentType ext
 export type CurationStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationStatistics'] = ResolversParentTypes['CurationStatistics']> = ResolversObject<{
   active_merge_records_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ambiguous_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  curation_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   decided_by_status?: Resolver<Array<ResolversTypes['CurationStatisticsEntry']>, ParentType, ContextType>;
   last_scan_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latest_health_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  next_scan_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  next_snapshot_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   open_by_kind?: Resolver<Array<ResolversTypes['CurationStatisticsEntry']>, ParentType, ContextType>;
   open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;

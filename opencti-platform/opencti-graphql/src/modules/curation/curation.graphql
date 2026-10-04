@@ -142,6 +142,11 @@ type CurationStatistics {
   active_merge_records_count: Int!
   latest_health_score: Int
   last_scan_date: DateTime
+  curation_enabled: Boolean!
+  "When the next scheduled scan is due; null when curation is turned off."
+  next_scan_date: DateTime
+  "When the next Knowledge health snapshot is due; null when the curation manager is turned off."
+  next_snapshot_date: DateTime
 }
 
 type MergeRecordSource {

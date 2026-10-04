@@ -243,7 +243,7 @@ const trendLabel = (trend: number | null | undefined) => {
 export const buildDigestLines = (snapshot: BasicStoreEntityKnowledgeHealthSnapshot): string[] => {
   const metrics = snapshot.health_metrics;
   return [
-    `Knowledge Health score: ${snapshot.health_score}/100${trendLabel(snapshot.score_trend)}`,
+    `Knowledge health score: ${snapshot.health_score}/100${trendLabel(snapshot.score_trend)}`,
     `Estimated duplicates: ${metrics.duplicate_estimate} (${(metrics.duplicate_rate * 100).toFixed(1)}% of ${metrics.curated_entities_count} curated entities)`,
     `Open contradictions: ${metrics.contradiction_count}, stale entities: ${metrics.stale_count} (${(metrics.stale_share * 100).toFixed(1)}%)`,
     `Alias coverage: ${(metrics.alias_coverage * 100).toFixed(1)}%, source conflict rate: ${(metrics.source_conflict_rate * 100).toFixed(1)}%`,
@@ -262,7 +262,7 @@ export const sendKnowledgeHealthDigest = async (context: AuthContext, settings: 
   const recipients = await resolveRecipients(context, settings.digest_recipient_ids);
   if (recipients.length === 0) return 0;
   const lines = buildDigestLines(snapshot);
-  const title = 'Knowledge Health weekly digest';
+  const title = 'Knowledge health weekly digest';
   const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const curationUrl = `${(platformSettings?.platform_url ?? '').replace(/\/$/, '')}/dashboard/data/curation/health`;
   for (let index = 0; index < recipients.length; index += 1) {

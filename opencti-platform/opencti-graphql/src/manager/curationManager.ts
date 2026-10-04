@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { CURATION_MANAGER_USER, executionContext, INTERNAL_USERS } from '../utils/access';
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
@@ -25,6 +25,7 @@ import { completePendingMergeRecords, expireMergeRecords } from '../modules/cura
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isProcedureConflict } from '../modules/curation/curation-detectors';
 import { decideFieldAuthority } from '../modules/curation/curation-field-authority';
+import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isOlderThan } from '../modules/curation/curation-schedule';
 import {
   ACTION_SET_FIELD,
   AUTHORITY_SOURCE_CONNECTOR,
@@ -46,12 +47,9 @@ const CURATION_MANAGER_LABEL = 'Curation manager';
 const CURATION_MANAGER_CONTEXT = 'curation_manager';
 const CURATION_STREAM_STATE = 'curation_manager';
 
-const CURATION_MANAGER_ENABLED = booleanConf('curation_manager:enabled', true);
 const CURATION_MANAGER_LOCK_KEY = conf.get('curation_manager:lock_key') || 'curation_manager_lock';
 const CURATION_MANAGER_STREAM_LOCK_KEY = conf.get('curation_manager:stream_lock_key') || 'curation_manager_stream_lock';
 const CURATION_MANAGER_INTERVAL = Number(conf.get('curation_manager:interval') ?? 60000);
-const CURATION_SCAN_INTERVAL_MS = Number(conf.get('curation_manager:scan_interval') ?? 24 * 3600 * 1000);
-const CURATION_SNAPSHOT_INTERVAL_MS = Number(conf.get('curation_manager:snapshot_interval') ?? 24 * 3600 * 1000);
 const CURATION_POLICY_INTERVAL_MS = Number(conf.get('curation_manager:policy_interval') ?? 15 * 60 * 1000);
 const CURATION_ADJUDICATIONS_PER_TICK = Number(conf.get('curation_manager:adjudications_per_tick') ?? 5);
 const CURATION_STREAM_MAX_ENTITIES = Number(conf.get('curation_manager:stream_max_entities_per_batch') ?? 50);
@@ -64,8 +62,6 @@ let failedBatchKey: string | undefined;
 let failedBatchAttempts = 0;
 let lastPolicyRun = 0;
 let lastExpiryRun = 0;
-
-const isOlderThan = (date: string | null | undefined, intervalMs: number) => !date || Date.now() - new Date(date).getTime() >= intervalMs;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
