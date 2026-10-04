@@ -5,6 +5,9 @@ import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { createEntity, deleteElementById, mergeEntities, storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { getInstanceIds } from '../../schema/identifier';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
@@ -357,23 +360,39 @@ export const revertAppliedPatch = async (context: AuthContext, user: AuthUser, p
   const entries = Object.entries(byElement) as Array<[string, AppliedPatchOperation[]]>;
   for (let index = 0; index < entries.length; index += 1) {
     const [elementId, operations] = entries[index];
-    const element = await storeLoadByIdWithRefs<StoreObject>(context, user, elementId);
-    if (!element) {
+    const loaded = await storeLoadByIdWithRefs<StoreObject>(context, user, elementId);
+    if (!loaded) {
       operations.forEach((operation) => report.skipped_operations.push({ element_id: elementId, key: operation.key, reason: 'element not found' }));
       continue;
     }
-    controlUserConfidenceAgainstElement(user, element);
-    const changes: Record<string, unknown> = {};
-    operations.forEach((operation) => {
-      if (sameValue((element as Record<string, any>)[operation.key], operation.value)) {
-        changes[operation.key] = operation.previous;
-      } else {
-        report.skipped_operations.push({ element_id: elementId, key: operation.key, reason: 'value changed since the apply' });
+    // The comparison and the restore run under the element lock, which every update takes: no edit can land
+    // between them and be overwritten by the restored value.
+    const lockIds = getInstanceIds(loaded);
+    let lock;
+    try {
+      lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+      const element = await storeLoadByIdWithRefs<StoreObject>(context, user, elementId);
+      if (!element) {
+        operations.forEach((operation) => report.skipped_operations.push({ element_id: elementId, key: operation.key, reason: 'element not found' }));
+        continue;
       }
-    });
-    if (Object.keys(changes).length > 0) {
-      await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs(changes));
-      report.reverted_operations += Object.keys(changes).length;
+      controlUserConfidenceAgainstElement(user, element);
+      const changes: Record<string, unknown> = {};
+      operations.forEach((operation) => {
+        if (sameValue((element as Record<string, any>)[operation.key], operation.value)) {
+          changes[operation.key] = operation.previous;
+        } else {
+          report.skipped_operations.push({ element_id: elementId, key: operation.key, reason: 'value changed since the apply' });
+        }
+      });
+      if (Object.keys(changes).length > 0) {
+        await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs(changes), { locks: lockIds });
+        report.reverted_operations += Object.keys(changes).length;
+      }
+    } finally {
+      if (lock) {
+        await lock.unlock();
+      }
     }
   }
   const createdIds = patch.created_ids ?? [];

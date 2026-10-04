@@ -1139,6 +1139,23 @@ export const redisCurationGetCounters = async (name: string, days: string[]): Pr
   const values = await Promise.all(days.map((day) => getClientBase().get(`${CURATION_KEY_PREFIX}counter:${name}:${day}`)));
   return values.map((value) => (value ? Number(value) : 0));
 };
+
+// Stream events the curation manager could not process, kept for replay; the oldest are dropped past the bound.
+const CURATION_DEAD_LETTER_KEY = `${CURATION_KEY_PREFIX}stream_dead_letters`;
+const CURATION_DEAD_LETTERS_KEPT = 1000;
+
+export const redisCurationPushDeadLetters = async (entries: object[]) => {
+  if (entries.length === 0) return;
+  const client = getClientBase();
+  await client.rpush(CURATION_DEAD_LETTER_KEY, ...entries.map((entry) => JSON.stringify(entry)));
+  await client.ltrim(CURATION_DEAD_LETTER_KEY, -CURATION_DEAD_LETTERS_KEPT, -1);
+};
+
+/** Take the oldest dead letters out of the list, at most *count*. */
+export const redisCurationTakeDeadLetters = async <T>(count: number): Promise<T[]> => {
+  const raw = await getClientBase().lpop(CURATION_DEAD_LETTER_KEY, count);
+  return (raw ?? []).map((entry) => JSON.parse(entry) as T);
+};
 // endregion - curation
 
 // region - XTM One registration result

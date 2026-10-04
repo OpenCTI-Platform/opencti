@@ -7,7 +7,14 @@ import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
 import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../database/utils';
-import { redisCurationIncrementCounter, redisCurationSwapFieldWriter, redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
+import {
+  redisCurationIncrementCounter,
+  redisCurationPushDeadLetters,
+  redisCurationSwapFieldWriter,
+  redisCurationTakeDeadLetters,
+  redisGetManagerEventState,
+  redisSetManagerEventState,
+} from '../database/redis';
 import { fullEntitiesList, internalFindByIds } from '../database/middleware-loader';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
@@ -54,6 +61,8 @@ const CURATION_POLICY_INTERVAL_MS = Number(conf.get('curation_manager:policy_int
 const CURATION_ADJUDICATIONS_PER_TICK = Number(conf.get('curation_manager:adjudications_per_tick') ?? 5);
 const CURATION_STREAM_MAX_ENTITIES = Number(conf.get('curation_manager:stream_max_entities_per_batch') ?? 50);
 const CURATION_STREAM_MAX_ATTEMPTS = 5;
+const CURATION_DEAD_LETTERS_PER_TICK = 20;
+const CURATION_DEAD_LETTER_MAX_REPLAYS = 10;
 const FIELD_WRITER_TTL_SECONDS = 30 * 24 * 3600;
 const DIGEST_MIN_INTERVAL_MS = 6 * 24 * 3600 * 1000;
 
@@ -320,46 +329,113 @@ const processStreamEvent = async (context: AuthContext, settings: CurationSettin
   }
 };
 
+const runIncrementalDetection = async (context: AuthContext, settings: CurationSettings, changedEntityIds: Set<string>) => {
+  const batches = R.splitEvery(CURATION_STREAM_MAX_ENTITIES, [...changedEntityIds]);
+  for (let index = 0; index < batches.length; index += 1) {
+    await runIncrementalDuplicateDetection(context, settings, batches[index]);
+  }
+};
+
+interface CurationDeadLetter {
+  event: SseEvent<DataEvent>;
+  replays: number;
+}
+
 /**
- * The stream position is saved only once a batch is fully processed. A failing batch makes the handler throw: the
- * stream processor stops and the manager restarts it from the saved position, so the batch is processed again
- * (every step is idempotent). A batch failing CURATION_STREAM_MAX_ATTEMPTS times in a row is skipped, so that one
- * event that can never be processed does not block the curation of everything after it.
+ * The last attempt of a failing batch processes its events one by one: an event that still fails is kept as a dead
+ * letter for replay (its patch and its stream id are what the field authority and the procedure conflicts need, a
+ * later scan cannot rebuild them), and the others are processed, so the batch can be checkpointed without losing any.
+ */
+const processBatchIsolated = async (context: AuthContext, settings: CurationSettings, streamEvents: Array<SseEvent<DataEvent>>) => {
+  const changedEntityIds = new Set<string>();
+  const deadLetters: CurationDeadLetter[] = [];
+  for (let index = 0; index < streamEvents.length; index += 1) {
+    try {
+      await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
+    } catch (error) {
+      logApp.error('[CURATION] Stream event kept for replay', { cause: error, event_id: streamEvents[index].id, manager: CURATION_MANAGER_ID });
+      deadLetters.push({ event: streamEvents[index], replays: 0 });
+    }
+  }
+  await redisCurationPushDeadLetters(deadLetters);
+  // The duplicates of the changed entities are also found by the scheduled scans, which need no event.
+  try {
+    await runIncrementalDetection(context, settings, changedEntityIds);
+  } catch (error) {
+    logApp.error('[CURATION] Live duplicate detection failed, the scheduled scan covers these entities', { cause: error, manager: CURATION_MANAGER_ID });
+  }
+};
+
+/**
+ * The stream position is saved only once a batch is processed. A failing batch makes the handler throw: the stream
+ * processor stops and the manager restarts it from the saved position, so the batch is processed again (every step
+ * is idempotent). After CURATION_STREAM_MAX_ATTEMPTS failures in a row, the batch is processed event by event and the
+ * events that still fail are kept for replay, so one event that can never be processed does not block the others.
  */
 export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
   const batchKey = streamEvents[0]?.id ?? 'empty';
-  try {
-    const settings = await getCurationSettings(context);
-    if (settings.curation_enabled) {
+  const settings = await getCurationSettings(context);
+  if (settings.curation_enabled) {
+    try {
       const changedEntityIds = new Set<string>();
       for (let index = 0; index < streamEvents.length; index += 1) {
         await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
       }
-      const batches = R.splitEvery(CURATION_STREAM_MAX_ENTITIES, [...changedEntityIds]);
-      for (let index = 0; index < batches.length; index += 1) {
-        await runIncrementalDuplicateDetection(context, settings, batches[index]);
+      await runIncrementalDetection(context, settings, changedEntityIds);
+    } catch (error) {
+      failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
+      failedBatchKey = batchKey;
+      if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
+        logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
+        throw error;
       }
+      logApp.warn('[CURATION] Stream batch failed repeatedly, processing its events one by one', {
+        cause: error,
+        attempts: failedBatchAttempts,
+        first_event_id: batchKey,
+        last_event_id: lastEventId,
+      });
+      await processBatchIsolated(context, settings, streamEvents);
     }
-  } catch (error) {
-    failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
-    failedBatchKey = batchKey;
-    if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
-      logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
-      throw error;
-    }
-    logApp.error('[CURATION] Stream batch failed repeatedly and is skipped', {
-      cause: error,
-      attempts: failedBatchAttempts,
-      first_event_id: batchKey,
-      last_event_id: lastEventId,
-      manager: CURATION_MANAGER_ID,
-    });
   }
   failedBatchKey = undefined;
   failedBatchAttempts = 0;
   streamStartFrom = lastEventId;
   await redisSetManagerEventState(CURATION_STREAM_STATE, lastEventId);
+};
+
+/**
+ * Stream events kept after repeated failures are tried again at every manager tick; an event failing
+ * CURATION_DEAD_LETTER_MAX_REPLAYS more times is dropped, with an error naming it.
+ */
+const replayDeadLetters = async (context: AuthContext, settings: CurationSettings) => {
+  if (!settings.curation_enabled) return;
+  const deadLetters = await redisCurationTakeDeadLetters<CurationDeadLetter>(CURATION_DEAD_LETTERS_PER_TICK);
+  if (deadLetters.length === 0) return;
+  const changedEntityIds = new Set<string>();
+  const kept: CurationDeadLetter[] = [];
+  for (let index = 0; index < deadLetters.length; index += 1) {
+    const deadLetter = deadLetters[index];
+    try {
+      await processStreamEvent(context, settings, deadLetter.event, changedEntityIds);
+    } catch (error) {
+      const replays = deadLetter.replays + 1;
+      if (replays < CURATION_DEAD_LETTER_MAX_REPLAYS) {
+        kept.push({ ...deadLetter, replays });
+      } else {
+        logApp.error('[CURATION] Stream event dropped after its replays failed', { cause: error, event_id: deadLetter.event.id, replays, manager: CURATION_MANAGER_ID });
+      }
+    }
+  }
+  await redisCurationPushDeadLetters(kept);
+  await runIncrementalDetection(context, settings, changedEntityIds);
+};
+
+const curationManagerTickHandler = async () => {
+  await curationManagerCronHandler();
+  const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
+  await replayDeadLetters(context, await getCurationSettings(context));
 };
 // endregion
 
@@ -375,7 +451,7 @@ const CURATION_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
   cronSchedulerHandler: {
-    handler: curationManagerCronHandler,
+    handler: curationManagerTickHandler,
     interval: CURATION_MANAGER_INTERVAL,
     lockKey: CURATION_MANAGER_LOCK_KEY,
     runOnStart: true,
