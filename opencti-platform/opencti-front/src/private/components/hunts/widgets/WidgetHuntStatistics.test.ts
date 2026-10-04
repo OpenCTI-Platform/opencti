@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { huntWidgetVariables } from './WidgetHuntStatistics';
+import { huntPlatformSeries, huntVerdictData } from '../HuntStatistics';
+import type { Theme } from '../../../../components/Theme';
+
+describe('hunt statistics series', () => {
+  const t = (key: string) => `t:${key}`;
+  const statistics = {
+    runs_per_platform: [{ label: 'Splunk prod', value: 3 }, { label: 'internet', value: 2 }, { label: '', value: 1 }],
+    verdict_distribution: [{ label: 'true_positive', value: 1 }, { label: 'benign', value: 4 }, { label: 'pending', value: 2 }, { label: 'inconclusive', value: 0 }],
+  } as unknown as Parameters<typeof huntPlatformSeries>[0];
+
+  it('should name the internet and the platforms the reader cannot see instead of showing a slug or an identifier', () => {
+    const [series] = huntPlatformSeries(statistics, t) as unknown as { data: { x: string; y: number }[] }[];
+    expect(series.data.map((point) => point.x)).toEqual(['Splunk prod', 't:Internet', 't:Unavailable security platform']);
+  });
+
+  it('should colour each verdict slice with the tone of its chip', () => {
+    const theme = { palette: { error: { main: 'error' }, success: { main: 'success' }, warn: { main: 'warn' }, text: { secondary: 'neutral' } } } as unknown as Theme;
+    expect(huntVerdictData(statistics, t, theme).map((slice) => [slice.label, slice.entity?.color])).toEqual([
+      ['t:True positive', 'error'],
+      ['t:Benign', 'success'],
+      ['t:Pending', 'neutral'],
+    ]);
+  });
+});
 
 describe('huntWidgetVariables()', () => {
   const now = new Date('2026-10-03T12:00:00.000Z');

@@ -991,8 +991,9 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     last_run_at: lastRuns.length > 0 ? lastRuns[0].created_at : null,
     hits_over_time: hitsSeries,
     runs_over_time: runsSeries,
+    // A platform the reader cannot load (deleted or restricted) has an empty label, never its identifier
     runs_per_platform: platforms.map((bucket) => ({
-      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? bucket.label),
+      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? ''),
       value: bucket.count,
     })),
     verdict_distribution: verdicts.map((bucket) => ({ label: String(bucket.label), value: bucket.count })),

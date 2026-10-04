@@ -5561,6 +5561,7 @@
   "Unable to connect. Please check the configuration.": "Verbindung nicht möglich. Bitte überprüfen Sie die Konfiguration.",
   "Unable to validate remote OpenCTI URL": "Die OpenCTI-URL des Remote-Servers konnte nicht überprüft werden",
   "Unauthorized action, please refresh your browser": "Nicht autorisierte Aktion, bitte aktualisieren Sie Ihren Browser",
+  "Unavailable security platform": "Nicht verfügbare Sicherheitsplattform",
   "Unfix the nodes and re-apply forces": "Aufheben der Fixierung der Knoten und erneutes Anwenden der Kräfte",
   "Unique identifier": "Eindeutiger Bezeichner",
   "Unique values": "Our unique values",

@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -11,8 +12,9 @@ import WidgetVerticalBars from '../../../components/dashboard/WidgetVerticalBars
 import WidgetHorizontalBars from '../../../components/dashboard/WidgetHorizontalBars';
 import WidgetDonut from '../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../components/Loader';
+import type { Theme } from '../../../components/Theme';
 import { HuntStatisticsQuery } from './__generated__/HuntStatisticsQuery.graphql';
-import { huntVerdictLabel } from './hunt-utils';
+import { HUNT_PLATFORM_INTERNET, huntVerdictLabel } from './hunt-utils';
 
 export const huntStatisticsQuery = graphql`
   query HuntStatisticsQuery($huntId: ID, $startDate: DateTime, $endDate: DateTime, $interval: String) {
@@ -78,14 +80,34 @@ export const huntHitsSeries = (statistics: HuntStatisticsData, t_i18n: Translate
 
 export const huntHasTimeSeries = (statistics: HuntStatisticsData) => statistics.runs_over_time.some((point) => point.value > 0);
 
+// An empty label is a security platform the reader cannot see anymore (deleted or restricted)
+const huntStatisticsPlatformLabel = (label: string, t_i18n: Translate) => {
+  if (label === HUNT_PLATFORM_INTERNET) return t_i18n('Internet');
+  return label.length > 0 ? label : t_i18n('Unavailable security platform');
+};
+
 export const huntPlatformSeries = (statistics: HuntStatisticsData, t_i18n: Translate) => [{
   name: t_i18n('Runs'),
-  data: statistics.runs_per_platform.map((bucket) => ({ x: bucket.label, y: bucket.value })),
+  data: statistics.runs_per_platform.map((bucket) => ({ x: huntStatisticsPlatformLabel(bucket.label, t_i18n), y: bucket.value })),
 }] as ApexAxisChartSeries;
 
-export const huntVerdictData = (statistics: HuntStatisticsData, t_i18n: Translate) => statistics.verdict_distribution
+// Verdict slices take the tone of their chip: red only for a true positive, the state that calls for a response
+const huntVerdictColor = (theme: Theme, verdict: string) => {
+  switch (verdict) {
+    case 'true_positive': return theme.palette.error.main;
+    case 'benign': return theme.palette.success.main;
+    case 'inconclusive': return theme.palette.warn.main;
+    default: return theme.palette.text.secondary;
+  }
+};
+
+export const huntVerdictData = (statistics: HuntStatisticsData, t_i18n: Translate, theme?: Theme) => statistics.verdict_distribution
   .filter((bucket) => bucket.value > 0)
-  .map((bucket) => ({ label: t_i18n(huntVerdictLabel(bucket.label)), value: bucket.value }));
+  .map((bucket) => ({
+    label: t_i18n(huntVerdictLabel(bucket.label)),
+    value: bucket.value,
+    ...(theme ? { entity: { color: huntVerdictColor(theme, bucket.label) } } : {}),
+  }));
 
 const WIDGET_HEIGHT = 280;
 
@@ -96,6 +118,7 @@ interface HuntStatisticsComponentProps {
 }
 
 const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatisticsComponentProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
   const { huntStatistics: statistics } = usePreloadedQuery(huntStatisticsQuery, queryRef);
   const truePositiveRate = statistics.completed_runs_count > 0
@@ -106,7 +129,7 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
     : null;
   const hitsSeries = huntHitsSeries(statistics, t_i18n);
   const platformSeries = huntPlatformSeries(statistics, t_i18n);
-  const verdicts = huntVerdictData(statistics, t_i18n);
+  const verdicts = huntVerdictData(statistics, t_i18n, theme);
   const hasTimeSeries = huntHasTimeSeries(statistics);
 
   return (

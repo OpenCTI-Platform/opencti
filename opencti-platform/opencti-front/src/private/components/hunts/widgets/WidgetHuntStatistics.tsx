@@ -1,5 +1,7 @@
 import React, { ReactNode, Suspense, useMemo } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
@@ -48,6 +50,7 @@ interface ContentProps {
 }
 
 const Content = ({ type, interval, queryRef }: ContentProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntStatistics: statistics } = usePreloadedQuery(huntStatisticsQuery, queryRef);
   if (type === 'hunt-hits-over-time') {
@@ -60,7 +63,7 @@ const Content = ({ type, interval, queryRef }: ContentProps) => {
       ? <WidgetHorizontalBars series={huntPlatformSeries(statistics, t_i18n)} distributed />
       : <WidgetNoData />;
   }
-  const verdicts = huntVerdictData(statistics, t_i18n);
+  const verdicts = huntVerdictData(statistics, t_i18n, theme);
   return verdicts.length > 0 ? <WidgetDonut data={verdicts} groupBy="verdict" /> : <WidgetNoData />;
 };
 
