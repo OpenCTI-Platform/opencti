@@ -172,7 +172,7 @@ export interface ComputeState {
   pairs: Map<ScorecardPeriodValue, Map<string, number>>;
   scanned: number;
   truncated: boolean;
-  // Each page read by the scan: when it was requested, the last internal id it returned, when its signals were read
+  // Each page read by the scan: when it was requested, the last internal id it returned, when its signal lookups completed
   scanPages: Array<ScanTracePage>;
 }
 
@@ -185,7 +185,7 @@ export const createComputeState = (asOf: number): ComputeState => ({
   scanPages: [],
 });
 
-// Request time of a page, its last internal id and the time its signals were looked up (absent in older traces)
+// Request time of a page, its last internal id and the time the lookups of its signals completed (absent in older traces)
 export type ScanTracePage = [number, string, number?];
 
 /**
@@ -833,8 +833,9 @@ export const scanKnowledge = async (
     const scoredHits = hits.slice(0, remaining);
     if (scoredHits.length > 0) {
       const docs: ScanDocument[] = scoredHits.map((hit: any) => hit._source as ScanDocument);
-      state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id, Date.now()]);
       const pageLookups = await fetchPageLookups(context, docs, run);
+      // A signal given before its lookups completed counts as read by them: never applied again by the stream
+      state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id, Date.now()]);
       for (let i = 0; i < docs.length; i += 1) {
         await doYield();
         // Expiration is evaluated at the computation time: a backfilled day sees the indicators valid on that day
