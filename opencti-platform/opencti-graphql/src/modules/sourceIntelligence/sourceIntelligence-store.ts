@@ -114,6 +114,27 @@ export const findLiveScorecards = async (context: AuthContext, period: Scorecard
 };
 
 /**
+ * Daily snapshots of a source handed over to another one: the days the target has no snapshot of keep the history of
+ * the source, the snapshots of the target are never overwritten. Returns the number of snapshots moved; the source's
+ * own documents are left to the caller to delete.
+ */
+export const moveScorecardSnapshots = async (context: AuthContext, fromSourceId: string, toSourceId: string) => {
+  const [moving, kept] = await Promise.all([
+    searchAllScorecards(context, { sourceIds: [fromSourceId], live: false }),
+    searchAllScorecards(context, { sourceIds: [toSourceId], live: false }),
+  ]);
+  const covered = new Set(kept.map((scorecard) => `${scorecard.scorecard_period}|${scorecard.snapshot_date}`));
+  const moved = moving
+    .filter((scorecard) => !covered.has(`${scorecard.scorecard_period}|${scorecard.snapshot_date}`))
+    .map((scorecard) => {
+      const internalId = scorecardDocumentId(toSourceId, scorecard.scorecard_period, scorecard.snapshot_date, false);
+      return { ...scorecard, id: internalId, internal_id: internalId, standard_id: `source-scorecard--${internalId}`, source_id: toSourceId };
+    });
+  await writeScorecards(context, moved);
+  return moved.length;
+};
+
+/**
  * Sources scored with knowledge: a live scorecard of at least one period counts an object. Every tracked source gets
  * live scorecards at each computation, so a scorecard alone does not tell that a source was scored.
  */

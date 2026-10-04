@@ -68,6 +68,7 @@ import {
   deleteLiveScorecardsOfSources,
   deleteScorecardsOfSources,
   findLiveScorecards,
+  moveScorecardSnapshots,
   searchScorecards,
 } from './sourceIntelligence-store';
 import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
@@ -767,6 +768,46 @@ export const isKeptOutsideDiscovery = (source: BasicStoreEntitySource & { descri
     || revertableSourceIds.has(source.internal_id);
 };
 
+type CuratedSource = BasicStoreEntitySource & { description?: string | null };
+
+/**
+ * Two analyst sources reference the same user once their users were merged: the oldest is kept and takes over what the
+ * other one holds before it is removed. Its recommendations follow it, so a change applied to the other one can still
+ * be reverted; what a person curated on the other one is kept where the kept source has nothing of its own (a disabled
+ * or quarantined state wins, as the revert of the recommendation that set it now targets the kept source); its daily
+ * snapshots fill the days the kept source has no snapshot of.
+ */
+export const mergeDuplicateSource = async (context: AuthContext, duplicate: CuratedSource, kept: CuratedSource) => {
+  const recommendations = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+    filters: { mode: 'and', filters: [{ key: ['source_id'], values: [duplicate.internal_id], operator: 'eq', mode: 'or' }], filterGroups: [] },
+  } as any);
+  for (let i = 0; i < recommendations.length; i += 1) {
+    const recommendation = recommendations[i];
+    const revert = parseJsonRecord(recommendation.revert_payload);
+    const patch: Record<string, unknown> = { source_id: kept.internal_id };
+    if (revert.source_id === duplicate.internal_id) {
+      patch.revert_payload = JSON.stringify({ ...revert, source_id: kept.internal_id });
+    }
+    await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, recommendation.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
+  }
+  const curated: Record<string, unknown> = {};
+  if (!kept.source_cost && duplicate.source_cost) curated.source_cost = duplicate.source_cost;
+  if (!kept.description && duplicate.description) curated.description = duplicate.description;
+  if (!kept.owner_id && duplicate.owner_id) curated.owner_id = duplicate.owner_id;
+  const tags = [...new Set([...(kept.tags ?? []), ...(duplicate.tags ?? [])])];
+  if (tags.length > (kept.tags ?? []).length) curated.tags = tags;
+  if (duplicate.enabled === false && kept.enabled !== false) curated.enabled = false;
+  if (duplicate.quarantined === true && kept.quarantined !== true) {
+    curated.quarantined = true;
+    curated.quarantine_draft_id = kept.quarantine_draft_id ?? duplicate.quarantine_draft_id ?? null;
+  }
+  if (Object.keys(curated).length > 0) {
+    await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, kept.internal_id, ENTITY_TYPE_SOURCE, curated);
+  }
+  await moveScorecardSnapshots(context, duplicate.internal_id, kept.internal_id);
+  return { ...kept, ...curated } as CuratedSource;
+};
+
 /**
  * Materialize one Source per connector, ingestion feed, significant author and analyst, keeping user edits (cost,
  * tags, owner, enabled), removing sources whose connector or feed no longer exists and the authors and analysts that
@@ -776,19 +817,22 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
   const candidates = await collectSourceCandidates(context, settings);
   const existing = await listAllSources(context);
   // Two analyst sources reference the same user once their users were merged: the oldest one, with the longest
-  // history, is kept and the other is removed with its scorecards
+  // history, is kept, takes over what the other one holds, and the other one is removed
   const existingByKey = new Map<string, BasicStoreEntitySource>();
   const duplicates: BasicStoreEntitySource[] = [];
-  [...existing]
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    .forEach((source) => {
-      const key = `${source.source_kind}|${source.ref_id}`;
-      if (existingByKey.has(key)) {
-        duplicates.push(source);
-      } else {
-        existingByKey.set(key, source);
-      }
-    });
+  const sorted = [...existing].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  for (let i = 0; i < sorted.length; i += 1) {
+    const source = sorted[i];
+    const key = `${source.source_kind}|${source.ref_id}`;
+    const kept = existingByKey.get(key);
+    if (kept) {
+      // The merged curation decides below whether the kept source stays outside the discovery
+      existingByKey.set(key, await mergeDuplicateSource(context, source, kept));
+      duplicates.push(source);
+    } else {
+      existingByKey.set(key, source);
+    }
+  }
   const candidateKeys = new Set<string>();
   let created = 0;
   let updated = 0;

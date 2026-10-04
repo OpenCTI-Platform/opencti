@@ -5,12 +5,19 @@ import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUs
 import { runFullComputation } from '../../../../src/manager/sourceIntelligenceManager';
 import { getSourceIntelligenceSettings, listAllSources, syncSources, writeComputedSourceKpis } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { findOrCreateProposal, findRecommendationsByFingerprint, upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
-import { applyLiveScorecardCost, deleteScorecardsOfSources, findLiveScorecards } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
+import {
+  applyLiveScorecardCost,
+  deleteScorecardsOfSources,
+  findLiveScorecards,
+  searchScorecards,
+  writeScorecards,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
 import { computeCostPerActionable } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-scoring';
 import {
   type BasicStoreEntitySource,
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
+  ENTITY_TYPE_SOURCE_SCORECARD,
   REFERENCE_SCORECARD_PERIOD,
   SCORECARD_PERIOD_DAYS,
   SCORECARD_PERIODS,
@@ -482,6 +489,69 @@ describe('Source intelligence', () => {
     // The discovered sources are untouched
     expect(await storeLoadById(testContext, ADMIN_USER, sourceId, ENTITY_TYPE_SOURCE)).toBeTruthy();
     await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
+  });
+
+  it('should hand the recommendations, curation and history of a duplicate analyst source over to the kept one', async () => {
+    // Two analyst sources of one user, as a user merge leaves them: the oldest is kept
+    const refId = uuidv4();
+    const createAnalystSource = (name: string, extra: Record<string, unknown> = {}) => createEntity(testContext, ADMIN_USER, {
+      source_kind: 'manual',
+      ref_id: refId,
+      ref_type: 'User',
+      name,
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+      ...extra,
+    }, ENTITY_TYPE_SOURCE);
+    const kept = await createAnalystSource('Source intelligence merged analyst');
+    const duplicate = await createAnalystSource('Source intelligence merged analyst (duplicate)', { tags: ['reviewed'] });
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'retire',
+      source_id: duplicate.internal_id,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-merged-analyst`,
+      name: 'Retire the duplicate analyst source',
+      rationale: 'Integration test',
+      payload: { target: 'source' },
+      evidence: {},
+    }], settings, { kinds: [] });
+    await patchAttribute(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+      recommendation_status: 'applied',
+      revert_payload: JSON.stringify({ target: 'source', source_id: duplicate.internal_id, previous_enabled: true }),
+    });
+    const snapshotId = `${duplicate.internal_id}--${REFERENCE_SCORECARD_PERIOD}--2026-01-01`;
+    await writeScorecards(testContext, [{
+      id: snapshotId,
+      internal_id: snapshotId,
+      standard_id: `source-scorecard--${snapshotId}`,
+      entity_type: ENTITY_TYPE_SOURCE_SCORECARD,
+      source_id: duplicate.internal_id,
+      scorecard_period: REFERENCE_SCORECARD_PERIOD,
+      snapshot_date: '2026-01-01',
+      computed_at: '2026-01-01T23:59:59.999Z',
+      is_live: false,
+      volume_total: 3,
+      overlap: [],
+    } as any]);
+
+    await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1 });
+
+    expect(await storeLoadById(testContext, ADMIN_USER, duplicate.internal_id, ENTITY_TYPE_SOURCE)).toBeFalsy();
+    const merged = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, kept.internal_id, ENTITY_TYPE_SOURCE);
+    expect(merged?.tags).toEqual(['reviewed']);
+    const recommendation = await storeLoadById<BasicStoreEntity & { source_id: string; revert_payload: string }>(
+      testContext,
+      ADMIN_USER,
+      created[0].internal_id,
+      ENTITY_TYPE_SOURCE_RECOMMENDATION,
+    );
+    expect(recommendation?.source_id).toBe(kept.internal_id);
+    expect(JSON.parse(recommendation?.revert_payload ?? '{}').source_id).toBe(kept.internal_id);
+    const history = await searchScorecards(testContext, { sourceIds: [kept.internal_id], live: false });
+    expect(history.map((scorecard) => scorecard.snapshot_date)).toContain('2026-01-01');
+    await deleteElementById(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    await deleteElementById(testContext, ADMIN_USER, kept.internal_id, ENTITY_TYPE_SOURCE);
+    await deleteScorecardsOfSources(testContext, [kept.internal_id]);
   });
 
   it('should validate and persist the settings', async () => {
