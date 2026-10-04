@@ -150,9 +150,9 @@ const useGraphInteractions = () => {
     );
   };
 
-  /** Links the reader can see, by their two end ids. */
+  /** Links the reader can see, by their two end ids: neither end hidden, collapsed or faded by a filter. */
   const shownLinkEnds = () => {
-    const shownIds = new Set((graphData?.nodes ?? []).filter(isNodeShown).map((n) => n.id));
+    const shownIds = new Set((graphData?.nodes ?? []).filter((n) => isNodeShown(n) && !n.disabled).map((n) => n.id));
     return (graphData?.links ?? []).flatMap((link) => {
       const sourceId = endpointId(link.source) ?? link.source_id;
       const targetId = endpointId(link.target) ?? link.target_id;
