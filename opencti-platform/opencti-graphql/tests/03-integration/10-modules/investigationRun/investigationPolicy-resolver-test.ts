@@ -3,7 +3,11 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { testContext, USER_EDITOR } from '../../../utils/testQuery';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
-import { getDefaultInvestigationPolicy } from '../../../../src/modules/investigationRun/investigationPolicy-domain';
+import {
+  getDefaultInvestigationPolicy,
+  loadInvestigationPolicy,
+  updateInvestigationPolicyStreamPosition,
+} from '../../../../src/modules/investigationRun/investigationPolicy-domain';
 
 const POLICY_ADD = gql`
   mutation PolicyAdd($input: InvestigationPolicyAddInput!) {
@@ -34,6 +38,12 @@ const POLICIES = gql`
 `;
 const PACKS = gql`
   query Packs { investigationPacks { available reason packs { slug } } }
+`;
+const CONNECTORS = gql`
+  query PolicyConnectors { investigationEnrichmentConnectors { id name active } }
+`;
+const POLICY_READ = gql`
+  query PolicyRead($id: ID!) { investigationPolicy(id: $id) { id name is_default } }
 `;
 
 describe('Case Autopilot investigation policies', () => {
@@ -116,5 +126,45 @@ describe('Case Autopilot investigation policies', () => {
   it('says the pack catalog is not available when XTM One is not connected', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: PACKS, variables: {} });
     expect(data.investigationPacks).toEqual({ available: false, reason: 'engine_not_configured', packs: [] });
+  });
+
+  it('accepts only enrichment connectors and bounded pack options', async () => {
+    const connectors = await queryAsAdmin({ query: POLICY_ADD, variables: { input: { name: 'Unknown connector', enrichment_connector_ids: ['not-a-connector'] } } });
+    expect(connectors.errors?.[0]?.message).toContain('only accept enrichment connectors');
+    const options = await queryAsAdmin({ query: POLICY_ADD, variables: { input: { name: 'Numeric option', pack_options: { leads: 1 } } } });
+    expect(options.errors?.[0]?.message).toContain('Invalid pack option');
+    const { data } = await queryAsAdminWithSuccess({ query: CONNECTORS, variables: {} });
+    expect(Array.isArray(data.investigationEnrichmentConnectors)).toBe(true);
+  });
+
+  it('reads a policy by id and promotes another policy to default, the previous default stepping down', async () => {
+    const previous = await getDefaultInvestigationPolicy(testContext);
+    const read = await queryAsAdminWithSuccess({ query: POLICY_READ, variables: { id: created[0] } });
+    expect(read.data.investigationPolicy).toMatchObject({ id: created[0], name: 'SOC night shift', is_default: false });
+    try {
+      await queryAsAdminWithSuccess({ query: POLICY_PATCH, variables: { id: created[0], input: [{ key: 'is_default', value: [true] }] } });
+      const { data } = await queryAsAdminWithSuccess({ query: POLICIES, variables: {} });
+      const defaults = data.investigationPolicies.edges.filter((edge: { node: { is_default: boolean } }) => edge.node.is_default);
+      expect(defaults.map((edge: { node: { id: string } }) => edge.node.id)).toEqual([created[0]]);
+    } finally {
+      await queryAsAdminWithSuccess({ query: POLICY_PATCH, variables: { id: previous.internal_id, input: [{ key: 'is_default', value: [true] }] } });
+    }
+    const restored = await getDefaultInvestigationPolicy(testContext);
+    expect(restored.internal_id).toBe(previous.internal_id);
+  });
+
+  it('moves the request for information cursor only from where it stands, and only while the hook is on', async () => {
+    const policyId = created[0];
+    // The hook is off: the cursor does not move.
+    expect(await updateInvestigationPolicyStreamPosition(testContext, policyId, '', '2-0')).toBe(false);
+    // Turned on, the hook starts from that moment.
+    await queryAsAdminWithSuccess({ query: POLICY_PATCH, variables: { id: policyId, input: [{ key: 'trigger_on_case_rfi_creation', value: [true] }] } });
+    const enabled = await loadInvestigationPolicy(testContext, policyId);
+    expect(enabled?.last_event_id).toMatch(/^\d+-0$/);
+    const start = enabled?.last_event_id as string;
+    expect(await updateInvestigationPolicyStreamPosition(testContext, policyId, '1-0', '9999999999998-0')).toBe(false);
+    expect(await updateInvestigationPolicyStreamPosition(testContext, policyId, start, '9999999999998-0')).toBe(true);
+    expect(await updateInvestigationPolicyStreamPosition(testContext, policyId, '9999999999998-0', '9999999999999-0')).toBe(true);
+    await queryAsAdminWithSuccess({ query: POLICY_PATCH, variables: { id: policyId, input: [{ key: 'trigger_on_case_rfi_creation', value: [false] }] } });
   });
 });
