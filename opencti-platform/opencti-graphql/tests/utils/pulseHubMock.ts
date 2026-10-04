@@ -104,6 +104,13 @@ export class PulseHubMock {
     this.lostAnswers.push(operation);
   }
 
+  // Runs before the next answer of the operation reaches the platform: what happens on the platform meanwhile.
+  private answerHooks: Array<{ operation: string; hook: () => Promise<void> }> = [];
+
+  beforeNextAnswer(operation: string, hook: () => Promise<void>) {
+    this.answerHooks.push({ operation, hook });
+  }
+
   private server: http.Server | undefined;
 
   private now: () => Date = () => new Date();
@@ -159,6 +166,7 @@ export class PulseHubMock {
     this.refusedPurges = 0;
     this.batchReceipts.clear();
     this.lostAnswers = [];
+    this.answerHooks = [];
     this.now = () => new Date();
   }
 
@@ -168,7 +176,7 @@ export class PulseHubMock {
       req.on('data', (chunk) => {
         raw += chunk;
       });
-      req.on('end', () => {
+      req.on('end', async () => {
         const platformId = req.headers['xtm-hub-platform-id'] as string | undefined;
         const token = req.headers['xtm-hub-platform-token'] as string | undefined;
         let payload: unknown;
@@ -178,6 +186,12 @@ export class PulseHubMock {
         } catch (error) {
           const graphqlError = error instanceof GraphqlError ? error : new GraphqlError('INTERNAL_SERVER_ERROR', String(error));
           payload = { data: null, errors: [{ message: graphqlError.message, extensions: graphqlError.extensions }] };
+        }
+        const operation = this.requests[this.requests.length - 1]?.operation;
+        const hookIndex = this.answerHooks.findIndex((entry) => entry.operation === operation);
+        if (hookIndex >= 0) {
+          const [{ hook }] = this.answerHooks.splice(hookIndex, 1);
+          await hook();
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(payload));

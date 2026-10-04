@@ -756,23 +756,32 @@ const recordContributionError = async (code: string | undefined) => {
   }
 };
 
-const recordAcceptedContribution = async (platform: PulseHubPlatform, state: PulseOperationalState, pushedRecords: number, now: Date) => {
+// Under the push lock and only while the configuration of the cycle is current: a purge, an unregistration or a
+// configuration stored since the push removed the contribution state, and an earlier cycle never restores it.
+const recordAcceptedContribution = async (platform: PulseHubPlatform, generation: string, pushedRecords: number, now: Date) => {
   if (pushedRecords <= 0) {
     return;
   }
-  // The status XTM Hub returned before this contribution (lapsed, for instance) no longer applies.
-  await redisDeletePulseResponse(pulseStatusCacheKey(platform));
-  const opening = state.contribution_accepted !== 'true' || state.contribution_lapsed === 'true';
-  if (!opening) {
-    await redisSetPulseState({ last_push_at: now.toISOString(), contribution_accepted: 'true' });
-    return;
-  }
-  await redisSetPulseState({ last_push_at: now.toISOString() });
-  // The preview signal goes before the full experience opens; a failed cleanup is replayed by the next manager cycle,
-  // which opens it then.
-  if (await withPulsePushLock(() => cleanupPulseData('opening'))) {
-    logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
-  }
+  await withPulsePushLock(async () => {
+    if ((await redisGetPulseConfigGeneration()) !== generation) {
+      logApp.info('[THREAT PULSE] Configuration changed since the contribution was accepted, its state is left as is');
+      return;
+    }
+    // The status XTM Hub returned before this contribution (lapsed, for instance) no longer applies.
+    await redisDeletePulseResponse(pulseStatusCacheKey(platform));
+    const state = await redisGetPulseState();
+    const opening = state.contribution_accepted !== 'true' || state.contribution_lapsed === 'true';
+    if (!opening) {
+      await redisSetPulseState({ last_push_at: now.toISOString(), contribution_accepted: 'true' });
+      return;
+    }
+    await redisSetPulseState({ last_push_at: now.toISOString() });
+    // The preview signal goes before the full experience opens; a failed cleanup is replayed by the next manager cycle,
+    // which opens it then.
+    if (await cleanupPulseData('opening')) {
+      logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
+    }
+  });
 };
 
 interface PulseContributionCycle {
@@ -888,7 +897,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   // before it records or sends anything more.
   const generation = await redisGetPulseConfigGeneration();
   const policyGeneration = await redisGetPulsePolicyGeneration();
-  const { values, platform, state } = await loadPulseContext(context, { fresh: true });
+  const { values, platform } = await loadPulseContext(context, { fresh: true });
   if (!isPulseContributing(values) || !platform) {
     return { pushedRecords: 0 };
   }
@@ -901,7 +910,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   } finally {
     // Whatever stops the cycle after XTM Hub accepted records (an empty window, a failed collection), the accepted
     // contribution is recorded: it is what opens the full experience.
-    await recordAcceptedContribution(platform, state, pushedRecords, now);
+    await recordAcceptedContribution(platform, generation, pushedRecords, now);
     addThreatPulseRecordsCount(pushedRecords);
   }
   return { pushedRecords };

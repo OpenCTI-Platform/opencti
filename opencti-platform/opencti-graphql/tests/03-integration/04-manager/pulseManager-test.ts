@@ -16,6 +16,7 @@ import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifi
 import { runPulseContribution, runPulsePendingCleanup, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
 import {
   redisAddPulseActivity,
+  redisBumpPulseConfigGeneration,
   redisBumpPulsePolicyGeneration,
   redisClaimPulseOutbox,
   redisCommitPulseWindow,
@@ -398,6 +399,20 @@ describe('Threat Pulse manager and API', () => {
     expect(await redisTakePulseActivity(today, 100)).toEqual([]);
     await runPulseContribution(testContext);
     expect(detectedCount()).toBe(before + 3 * malwareKeys.length);
+  });
+
+  it('should never restore the contribution state a purge removed while a push was in flight', async () => {
+    const seenAgain = { internal_id: 'pulse-seen-during-purge', fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM };
+    await recordPulseSightingIncrease(testContext, seenAgain, 1);
+    await redisSetPulseState({ contribution_accepted: undefined });
+    // XTM Hub accepts the push; before its answer arrives, a purge moves the configuration generation.
+    hub.beforeNextAnswer('pushPulse', async () => {
+      await redisBumpPulseConfigGeneration();
+    });
+    const { pushedRecords } = await runPulseContribution(testContext);
+    expect(pushedRecords).toBeGreaterThan(0);
+    expect((await redisGetPulseState()).contribution_accepted).toBeUndefined();
+    await redisSetPulseState({ contribution_accepted: 'true' });
   });
 
   it('should claim the activity kept in Redis in bounded chunks, counting what a failed run left', async () => {
