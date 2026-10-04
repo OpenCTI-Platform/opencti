@@ -82,7 +82,12 @@ export const withCollapsedGroups = (
     if (source === sourceId && target === targetId) return;
     if (source === target) return;
     const id = `${GROUP_LINK_PREFIX}${source}|${target}|${link.relationship_type || link.entity_type}`;
-    if (groupLinks.has(id)) return;
+    const drawn = groupLinks.get(id);
+    if (drawn) {
+      // Faded only when every link the group link stands for is faded by the filters.
+      drawn.disabled = Boolean(drawn.disabled && link.disabled);
+      return;
+    }
     const existing = cache.links.get(id);
     const groupLink: GraphLink = existing && endpointId(existing.source) === source && endpointId(existing.target) === target
       ? existing

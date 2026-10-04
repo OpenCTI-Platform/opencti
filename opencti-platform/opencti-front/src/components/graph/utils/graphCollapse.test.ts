@@ -34,6 +34,15 @@ describe('withCollapsedGroups', () => {
     expect(groupLinks[0]).toMatchObject({ source: 'actor', target: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
   });
 
+  it('fades a group link only when every link it stands for is faded', () => {
+    const faded = graphLink(actor, m1, { disabled: true });
+    const kept = graphLink(actor, m2, { disabled: false });
+    const groupLink = (links: typeof data.links) => withCollapsedGroups({ nodes: data.nodes, links }, ['Malware'], label, createCollapseCache()).links.slice(links.length)[0];
+    expect(groupLink([faded, kept]).disabled).toBe(false);
+    expect(groupLink([kept, faded]).disabled).toBe(false);
+    expect(groupLink([faded, graphLink(actor, m2, { disabled: true })]).disabled).toBe(true);
+  });
+
   it('keeps the place of a group node from one computation to the next', () => {
     const cache = createCollapseCache();
     const first = withCollapsedGroups(data, ['Malware'], label, cache).nodes.find(isGroupNode);
