@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
 import {
   Chip,
@@ -29,7 +29,6 @@ import { useComputeLink } from '../../../../utils/hooks/useAppData';
 import useTimelineColors from './useTimelineColors';
 import type { TimelineListEvent } from './ContainerTimelineList';
 import TimelineSourceStateChip from './TimelineSourceStateChip';
-import { isStixDomainObjectTabAvailable } from '../stix_domain_objects/StixDomainObjectTabsBox';
 import { TIMELINE_KIND_LABELS, TIMELINE_LANE_LABELS, TIMELINE_PRECISION_LABELS, type TimelineLane, type TimelinePrecision } from './timelineUtils';
 
 interface TimelineElementRef {
@@ -100,7 +99,6 @@ const ContainerTimelineEventDrawer = ({
   const theme = useTheme();
   const colors = useTimelineColors();
   const computeLink = useComputeLink();
-  const location = useLocation();
   const [annotation, setAnnotation] = useState(event?.annotation ?? '');
   const [annotating, setAnnotating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -126,11 +124,6 @@ const ContainerTimelineEventDrawer = ({
   }) : undefined;
   const author = event.createdBy?.name ? event.createdBy : null;
   const authorLink = author?.id && author.entity_type ? computeLink({ id: author.id, entity_type: author.entity_type }) : undefined;
-  // An investigation event opens the run, on its step, in the Autopilot tab of the case when the platform has it
-  const runId = event.source_state?.run_id;
-  const autopilotLink = runId && isStixDomainObjectTabAvailable('autopilot')
-    ? `${location.pathname.replace(/\/timeline\/?$/, '/autopilot')}?${new URLSearchParams({ run: runId, ...(event.source_state?.step ? { step: event.source_state.step } : {}) })}`
-    : null;
   const hasConfidence = event.confidence !== null && event.confidence !== undefined;
   const markings = event.objectMarking ?? [];
   const annotationChanged = annotation !== (event.annotation ?? '');
@@ -185,9 +178,6 @@ const ContainerTimelineEventDrawer = ({
             <TimelineSourceStateChip state={event.source_state} />
             {event.pinned && <Chip label={t_i18n('Pinned')} severity="info" size="sm" />}
             {event.hidden && <Chip label={t_i18n('Hidden')} size="sm" />}
-            {autopilotLink && (
-              <Link to={autopilotLink} data-testid="timeline-event-autopilot">{t_i18n('Open in Case Autopilot')}</Link>
-            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: theme.spacing(2, 3) }} data-testid="timeline-event-metadata">
             <MetadataItem label={t_i18n('Time')}>

@@ -138,7 +138,7 @@ Click an event to open its details. The header shows the title of the event and 
 
 ![Details of a timeline event: header actions and metadata grid](assets/case-timeline-drawer-event.png)
 
-Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached), and open the run on that step in the **Autopilot** tab of the case. Hunt runs and indicator deployments appear on the timeline when those features are available on the platform; their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
+Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached). Hunt runs and indicator deployments appear on the timeline when those features are available on the platform; their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
 
 ### Pin, hide and annotate
 

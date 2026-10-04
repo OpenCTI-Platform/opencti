@@ -364,14 +364,27 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
     const otherIds = R.uniq(related.map((r) => (r.fromId === containerId ? r.toId : r.fromId)));
     entities = otherIds.length > 0 ? await internalFindByIds(context, SYSTEM_USER, otherIds) as unknown as AnyStoreElement[] : [];
   }
-  // Sightings of the indicators in scope by security platforms are the platform detections
+  // Sightings of the elements in scope: by a security platform, the platform detections of its indicators; at another
+  // element in scope (a victim, a location, a system), adversary activity. Their sightings anywhere else belong to other
+  // incidents and stay out, like the sightings explicitly added to a case, which come with its objects.
   const indicatorIds = entities.filter((e) => e.entity_type === ENTITY_TYPE_INDICATOR).map((e) => e.internal_id);
-  if (indicatorIds.length > 0) {
-    const sightingArgs = { fromId: indicatorIds, toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM] };
-    const platformSightings = await findBoundedRelations(context, bounds, STIX_SIGHTING_RELATIONSHIP, sightingArgs, TIMELINE_MAX_RELATED);
-    const known = new Set(relationships.map((r) => r.internal_id));
-    relationships = [...relationships, ...(platformSightings as unknown as AnyStoreElement[]).filter((s) => !known.has(s.internal_id))];
-  }
+  const entityIds = entities.map((e) => e.internal_id);
+  const sightedIds = isCase ? entityIds : [containerId, ...entityIds];
+  const [platformSightings, inScopeSightings] = await Promise.all([
+    indicatorIds.length > 0
+      ? findBoundedRelations(context, bounds, STIX_SIGHTING_RELATIONSHIP, { fromId: indicatorIds, toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM] }, TIMELINE_MAX_RELATED)
+      : Promise.resolve([]),
+    entityIds.length > 0
+      ? findBoundedRelations(context, bounds, STIX_SIGHTING_RELATIONSHIP, { fromId: sightedIds, toId: entityIds }, TIMELINE_MAX_RELATED)
+      : Promise.resolve([]),
+  ]);
+  const known = new Set(relationships.map((r) => r.internal_id));
+  const sightings = [...platformSightings, ...inScopeSightings].filter((sighting) => {
+    if (known.has(sighting.internal_id)) return false;
+    known.add(sighting.internal_id);
+    return true;
+  });
+  relationships = [...relationships, ...(sightings as unknown as AnyStoreElement[])];
   // Tasks, notes and opinions referencing the container
   const [tasks, notes, opinions] = await Promise.all([
     findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_TASK], [containerId], TIMELINE_MAX_RELATED),

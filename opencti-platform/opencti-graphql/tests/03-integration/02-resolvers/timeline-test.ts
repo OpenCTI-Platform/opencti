@@ -13,7 +13,8 @@ import { redisGetTelemetry } from '../../../src/database/redis';
 import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
 import * as timelineNotification from '../../../src/modules/timeline/timeline-notification';
 import { TIMELINE_KINDS } from '../../../src/modules/timeline/timeline-types';
-import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
 import { acknowledgeTimelineRegeneration, claimDueTimelineRegenerations, enqueueTimelineRegeneration } from '../../../src/modules/timeline/timeline-queue';
@@ -58,6 +59,11 @@ const RELATIONSHIP_ADD = gql`
 const CASE_INCIDENT_ADD = gql`
   mutation TimelineCaseIncidentAdd($input: CaseIncidentAddInput!) {
     caseIncidentAdd(input: $input) { id standard_id }
+  }
+`;
+const SIGHTING_ADD = gql`
+  mutation TimelineSightingAdd($input: StixSightingRelationshipAddInput!) {
+    stixSightingRelationshipAdd(input: $input) { id standard_id }
   }
 `;
 const EXTERNAL_REFERENCE_ADD = gql`
@@ -478,6 +484,31 @@ describe('Incident and case timeline', () => {
       const events = await listTimeline(caseIncident.id, { kinds: ['technique_used'] });
       expect(events).toHaveLength(1);
       expect(events[0]).toMatchObject({ element_id: attackPatternId, precision: 'exact', event_time: ADVERSARY_START, event_end_time: ADVERSARY_STOP, lane: 'adversary' });
+    });
+
+    it('should place a sighting between elements of a case in the adversary lane and leave out their sightings elsewhere', async () => {
+      const sightingCase = await queryAsAdminWithSuccess({
+        query: CASE_INCIDENT_ADD,
+        variables: { input: { name: 'Timeline sighting case', created: '2026-02-04T12:00:00.000Z', objects: [malware.id, TEST_ORGANIZATION.id] } },
+      });
+      const caseId = sightingCase.data.caseIncidentAdd.id;
+      const sighting = (toId: string, firstSeen: string) => queryAsAdminWithSuccess({
+        query: SIGHTING_ADD,
+        variables: { input: { fromId: malware.id, toId, first_seen: firstSeen, last_seen: '2026-02-03T10:00:00.000Z', attribute_count: 2 } },
+      });
+      const inScope = (await sighting(TEST_ORGANIZATION.id, '2026-02-03T08:00:00.000Z')).data.stixSightingRelationshipAdd.id;
+      const elsewhere = (await sighting(PLATFORM_ORGANIZATION.id, '2026-02-03T09:00:00.000Z')).data.stixSightingRelationshipAdd.id;
+      try {
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseId } });
+        const sightings = await listTimeline(caseId, { kinds: ['sighting'] });
+        expect(sightings).toHaveLength(1);
+        expect(sightings[0]).toMatchObject({ element_id: inScope, lane: 'adversary', event_time: '2026-02-03T08:00:00.000Z' });
+      } finally {
+        await deleteElementById(testContext, SYSTEM_USER, inScope, STIX_SIGHTING_RELATIONSHIP);
+        await deleteElementById(testContext, SYSTEM_USER, elsewhere, STIX_SIGHTING_RELATIONSHIP);
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
+        await deleteContainerTimeline(caseId);
+      }
     });
 
     it('should be idempotent: a second regeneration rewrites nothing and keeps the ids', async () => {

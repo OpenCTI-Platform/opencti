@@ -84,9 +84,6 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
-/** Whether an entity tab exists on this platform, for links into tabs that other modules contribute. */
-export const isStixDomainObjectTabAvailable = (tab: string): boolean => TABS_INFO.some((info) => info.tab === tab);
-
 type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;
   entityType: string;
