@@ -260,9 +260,11 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await page.keyboard.press('Escape');
     await expect(page.getByText('Add entities', { exact: true })).toBeHidden();
 
-    await graph.arrangeInMiddle([fixture.attackPattern.id]);
-    await graph.waitForGraph(5);
-    await graph.clickNode(fixture.attackPattern.id);
+    // Selected through the list mirroring the canvas: the positions pinned by the previous tests may
+    // put another entity on top of it.
+    await page.getByRole('listbox', { name: 'Elements of the graph' })
+      .getByRole('option', { name: new RegExp(`${fixture.attackPattern.name}, \\d+ relationships?(, |$)`) })
+      .dispatchEvent('click');
     await expect(graph.getSelectionSummary(1)).toBeVisible();
     await graph.getToolbarButton('Remove selected items').click();
     await expect(page.getByText('Do you want to remove these elements?')).toBeVisible();

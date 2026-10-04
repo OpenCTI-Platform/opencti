@@ -112,6 +112,8 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     expect(gx(fixture.malware.id)).toBeLessThan(gx(fixture.attackPattern.id));
     expect(gx(fixture.attackPattern.id)).toBeLessThan(gx(fixture.ipv4.id));
     await graph.getToolbarButton('Disable the layout by entity tier').click();
+    // The nodes glide back to their place: the drag starts from where the malware stands still.
+    await graph.waitForGraph(5);
 
     await graph.arrangeInMiddle([fixture.malware.id]);
     await graph.waitForGraph(5);
@@ -156,13 +158,16 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await expect.poll(async () => (await graph.snapshot()).zoom).toBeGreaterThan(before);
     await graph.getControl('Fit the whole graph').click();
 
-    await graph.getCanvas().hover({ position: { x: 300, y: 20 } });
+    // Over the canvas, in the middle of its top edge: clear of the panels and, once fitted, of the nodes.
+    const box = await graph.getCanvas().boundingBox();
+    const overCanvas = { position: { x: (box?.width ?? 1200) / 2, y: 20 } };
+    await graph.getCanvas().hover(overCanvas);
     await page.keyboard.press('?');
     const shortcuts = page.getByRole('dialog').filter({ hasText: 'Keyboard shortcuts' });
     await expect(shortcuts).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(shortcuts).toBeHidden();
-    await graph.getCanvas().hover({ position: { x: 300, y: 20 } });
+    await graph.getCanvas().hover(overCanvas);
     await page.keyboard.press('g');
     await expect(legend(page)).toBeHidden();
     await page.keyboard.press('g');

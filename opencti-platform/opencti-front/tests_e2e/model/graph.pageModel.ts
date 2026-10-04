@@ -125,13 +125,15 @@ export default class GraphPage {
       const state = await this.page.evaluate(readGraphSnapshot);
       return state?.nodes.length ?? 0;
     }, { timeout: 60000 }).toBeGreaterThanOrEqual(minNodes);
+    // Still over two intervals in a row: longer than the delay of the first framing of a graph.
     let previous = '';
+    let stillFor = 0;
     await expect.poll(async () => {
       const state = await this.page.evaluate(readGraphSnapshot);
       const current = JSON.stringify(state?.nodes.map(({ x, y }) => [Math.round(x), Math.round(y)]));
-      const settled = current === previous;
+      stillFor = current === previous ? stillFor + 1 : 0;
       previous = current;
-      return settled;
+      return stillFor >= 2;
     }, { timeout: 60000, intervals: [700] }).toBe(true);
   }
 
