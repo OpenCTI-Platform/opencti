@@ -101,11 +101,31 @@ In the deterministic layouts, which line entities up, a link that would run thro
 
 Details appear as they become readable: far out, nodes are plain discs; closer, icons, names, badges, arrowheads and relationship names appear. The entity hovered, selected or on a highlighted path always keeps a readable name.
 
+## The toolbar
+
+Every action on the graph lives in one toolbar docked under it; nothing covers the canvas unless you open it (the legend, a hover card, a dialog).
+
+![The toolbar of a report knowledge graph, with its counters, its groups of actions, the search and the More actions menu open](assets/graph-toolbar-more-actions.png)
+
+From left to right:
+
+| Group | Actions |
+|---|---|
+| Counters | The entities drawn one by one (the legend also counts the members of collapsed groups), the relationships, the entities you do not have access to (**restricted**) and the entities that **need attention** because they carry a warning or an error badge, such as a low confidence. Click a counter to select what it counts. |
+| View | Zoom in and out, **Fit the whole graph**, fit the selection, locate the selection, full screen. |
+| Layout | 3D mode, vertical and horizontal trees, layout by entity tier, radial layout, forces (see [Layouts](#layouts)). |
+| Selection | Rectangle and free-shape selection, the neighbours of the selection, the shortest path between two entities (see [Select](#select)). |
+| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
+| Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. |
+| Export and help | The high-resolution image export, the legend, the keyboard shortcuts. |
+
+The search field and the **More actions** menu close the toolbar. **More actions** holds the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) and, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way.
+
+Every tooltip names the action and its keyboard shortcut; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
+
 ## Navigate
 
-The controls on the top left of the graph zoom in and out, fit the whole graph, fit the selection, centre the view on the selection, show or hide the legend, show the graph full screen and export it. Fitting keeps every entity clear of the controls, the counters, the legend and the details panel. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or the control again to leave.
-
-Next to the controls, the **counter row** sums up the graph: the number of entities drawn one by one (the legend also counts the members of collapsed groups) and of relationships, the entities you do not have access to (**restricted**) and the entities that **need attention** because they carry a warning or an error badge, such as a low confidence. Click a counter to select what it counts, then fit the selection, open it or act on it from the toolbar.
+Fitting keeps every entity clear of the legend, the details panel and the toolbar. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or **Full screen** again to leave.
 
 ## Focus and hover cards
 
@@ -128,12 +148,16 @@ After a short moment on an element, a **hover card** opens with its key facts: t
 
 The legend on the bottom left counts the entities of each type and the relationships of each type drawn in the graph.
 
-- Click a counter to fade or restore every entity or relationship of that type, like the type filters of the toolbar.
+- Click a counter to fade or restore every entity or relationship of that type; these are the filters of **Filter by type** in the toolbar.
 - Use the button next to an entity type to **collapse** all its entities into a single group node, and again to expand it. A click on a group node expands it too. Relationships towards the members of a group are drawn once towards the group.
 - When entities are hidden, **Show the hidden entities** brings them back.
 - The **Badges** section lists only the badges present in the graph, with the number of entities carrying each; click one to select those entities.
 
-When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free. The legend always stays under the controls and the counter row; when the graph is too short to show it whole, it scrolls.
+**Minimize the legend** (the button in its header, or `G`) folds it to a small **Legend** pill in the same corner, which tells how many type filters are in use; click the pill, press `G` again or use **Legend** in the toolbar to open it. The choice is remembered for every graph you open.
+
+![The legend minimized to its pill, with two type filters in use](assets/graph-legend-minimized.png)
+
+When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free; when the graph is too short to show the legend whole, it scrolls.
 
 ## When nothing is drawn
 
@@ -147,7 +171,7 @@ The graph says why it is empty and offers the next step:
 
 ## Layouts
 
-The toolbar at the bottom offers several layouts. All of them except the forces are deterministic: the same graph is always drawn the same way, and nodes glide to their new place.
+The **Layout** group of the toolbar offers several layouts, each a toggle. All of them except the forces are deterministic: the same graph is always drawn the same way, and nodes glide to their new place.
 
 | Layout | Use it to |
 |---|---|
@@ -156,13 +180,13 @@ The toolbar at the bottom offers several layouts. All of them except the forces 
 | Layout by entity tier | Read an attack left to right: threats, arsenal, techniques, observables and indicators, victims, locations, then containers. |
 | Radial layout | Put one entity at the centre (the selected one, or the most connected) and the others on rings by distance. |
 
-**Unfix the nodes and re-apply forces** forgets the saved positions and lets the forces arrange the graph again.
+**Unfix the nodes and re-apply forces**, in **More actions**, forgets the saved positions and lets the forces arrange the graph again.
 
 ![Investigation graph in the horizontal tree layout](assets/graph-investigation-tree.png)
 
 ## Select
 
-Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the toolbar selects with a rectangle or a free shape, by entity type, all nodes, or the relationships of the selected nodes. It also:
+Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the toolbar selects with a rectangle or a free shape; **More actions** selects all nodes, the nodes of an entity type, or the relationships of the selected nodes. The toolbar also:
 
 - **selects the neighbours** of the selected nodes;
 - **highlights the shortest path** between two selected nodes, whatever the direction of the relationships; the path stays highlighted until the selection changes.
@@ -185,7 +209,7 @@ Shortcuts apply while the pointer is over the graph or the focus is inside it, n
 | `P` | Highlight the shortest path between the two selected nodes |
 | `H` / `Shift` + `H` | Hide the selection / show the hidden entities |
 | `Esc` | Clear the selection (leave full screen when nothing is selected) |
-| `G` | Show or hide the legend |
+| `G` | Show or minimize the legend |
 | `Shift` + `M` | Full screen |
 | `Shift` + `E` | Export the whole graph as a high-resolution image |
 | `/` | Search in the graph |
@@ -195,7 +219,7 @@ Shortcuts apply while the pointer is over the graph or the focus is inside it, n
 Two exports are available:
 
 - the **image export** of the container or workspace header captures the visible area of the page, in PNG or PDF;
-- the **Export the whole graph as a high-resolution image** control renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles.
+- **Export the whole graph as a high-resolution image**, in the toolbar, renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles.
 
 ## 3D mode
 
