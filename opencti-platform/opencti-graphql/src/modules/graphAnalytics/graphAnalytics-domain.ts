@@ -418,11 +418,35 @@ export interface GraphClustersArgs {
 
 const CLUSTER_IDS_CHUNK = 10000;
 const compareText = (a?: string | null, b?: string | null) => (a ?? '').localeCompare(b ?? '');
+// Relevance of a cluster found by a search ordered by _score: the first sort value of its hit.
+const searchScore = (cluster: BasicStoreEntityGraphCluster) => {
+  const score = cluster.sort?.[0];
+  return typeof score === 'number' ? score : 0;
+};
 const CLUSTER_SORTERS: Record<string, (a: BasicStoreEntityGraphCluster, b: BasicStoreEntityGraphCluster) => number> = {
   name: (a, b) => compareText(a.name, b.name),
   cluster_kind: (a, b) => compareText(a.cluster_kind, b.cluster_kind),
   members_count: (a, b) => a.members_count - b.members_count,
   last_computed_at: (a, b) => compareText(a.last_computed_at ? String(a.last_computed_at) : null, b.last_computed_at ? String(b.last_computed_at) : null),
+  _score: (a, b) => searchScore(a) - searchScore(b),
+};
+
+export interface RankedGraphCluster {
+  id: string;
+  members_count: number;
+  cluster: BasicStoreEntityGraphCluster;
+}
+
+/**
+ * Orders the clusters matched by every chunk of identifiers together: the engine only ranks each chunk within itself,
+ * so a page cut from the concatenated chunks would otherwise favour the earlier chunks. Ties are broken by id.
+ */
+export const rankGraphClusters = (entries: RankedGraphCluster[], orderBy: string, orderMode?: OrderingMode | null) => {
+  const sorter = CLUSTER_SORTERS[orderBy];
+  if (!sorter) return entries;
+  const direction = orderMode === OrderingMode.Asc ? 1 : -1;
+  return [...entries].sort((a, b) => (direction * sorter({ ...a.cluster, members_count: a.members_count }, { ...b.cluster, members_count: b.members_count }))
+    || a.id.localeCompare(b.id));
 };
 
 /** Clusters having at least one member visible to the caller; members_count is the visible count. */
@@ -440,7 +464,6 @@ export const findGraphClusters = async (context: AuthContext, user: AuthUser, ar
   const visibleCount = (cluster: BasicStoreEntityGraphCluster) => visible.get(cluster.internal_id.toLowerCase()) ?? visible.get(cluster.internal_id) ?? 0;
   const first = clamp(args.first, 25, 1, 500);
   const orderBy = args.orderBy ?? 'members_count';
-  const direction = args.orderMode === OrderingMode.Asc ? 1 : -1;
   // Clusters are ranked here and not by the engine: members_count must be the visible count, and the visible
   // clusters are matched by chunks of identifiers below the terms query limit.
   const matching: BasicStoreEntityGraphCluster[] = [];
@@ -457,12 +480,11 @@ export const findGraphClusters = async (context: AuthContext, user: AuthUser, ar
     });
     matching.push(...chunkMatches);
   }
-  const ranked = matching.map((cluster) => ({ id: cluster.internal_id, members_count: visibleCount(cluster), cluster }));
-  const sorter = CLUSTER_SORTERS[orderBy];
-  if (sorter) {
-    ranked.sort((a, b) => (direction * sorter({ ...a.cluster, members_count: a.members_count }, { ...b.cluster, members_count: b.members_count }))
-      || a.id.localeCompare(b.id));
-  }
+  const ranked = rankGraphClusters(
+    matching.map((cluster) => ({ id: cluster.internal_id, members_count: visibleCount(cluster), cluster })),
+    orderBy,
+    args.orderMode,
+  );
   const offset = args.after ? Math.max(0, (Number.parseInt(args.after, 10) || 0) + 1) : 0;
   const page = ranked.slice(offset, offset + first);
   const loaded = await loadGraphClusters(context, user, page.map((entry) => entry.id));
