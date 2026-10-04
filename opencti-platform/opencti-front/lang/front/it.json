@@ -3951,6 +3951,7 @@
   "Plain text": "Testo semplice",
   "Plan a hunt for this threat": "Pianifica una caccia per questa minaccia",
   "Plan a hunt with AI": "Pianifica una caccia con l'IA",
+  "Plan a hunt with AI, unavailable: {reason}": "Pianifica una caccia con l'IA, non disponibile: {reason}",
   "Plan from (threats, techniques, reports or indicators)": "Pianifica a partire da (minacce, tecniche, report o indicatori)",
   "Plan the hunt": "Pianifica la caccia",
   "Platform": "Piattaforma",

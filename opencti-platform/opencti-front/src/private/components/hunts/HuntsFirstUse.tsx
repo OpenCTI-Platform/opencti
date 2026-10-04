@@ -85,7 +85,7 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
                 {planDisabledReason ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span tabIndex={0} aria-label={`${t_i18n('Plan a hunt with AI')}: ${planDisabledReason}`}>{planButton}</span>
+                      <span tabIndex={0} aria-label={t_i18n('Plan a hunt with AI, unavailable: {reason}', { values: { reason: planDisabledReason } })}>{planButton}</span>
                     </TooltipTrigger>
                     <TooltipContent>{planDisabledReason}</TooltipContent>
                   </Tooltip>

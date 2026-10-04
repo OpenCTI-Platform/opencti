@@ -3951,6 +3951,7 @@
   "Plain text": "Обычный текст",
   "Plan a hunt for this threat": "Спланировать охоту на эту угрозу",
   "Plan a hunt with AI": "Спланировать охоту с помощью ИИ",
+  "Plan a hunt with AI, unavailable: {reason}": "Спланировать охоту с ИИ, недоступно: {reason}",
   "Plan from (threats, techniques, reports or indicators)": "Планировать на основе (угроз, техник, отчетов или индикаторов)",
   "Plan the hunt": "Спланировать охоту",
   "Platform": "Платформа",

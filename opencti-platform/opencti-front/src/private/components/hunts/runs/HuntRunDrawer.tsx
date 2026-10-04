@@ -304,7 +304,8 @@ const RunDetails = ({ run }: { run: Run }) => {
 };
 
 /** What failed, why, and the next action, instead of the raw error the connector reported. */
-const RunFailureAlert = ({ run, huntId, onRetry, retrying, canRetry }: { run: Run; huntId: string; onRetry: () => void; retrying: boolean; canRetry: boolean }) => {
+// Retry is the primary action of the status header: the alert carries the fix of the failure class
+const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [showDetails, setShowDetails] = useState(false);
@@ -313,12 +314,10 @@ const RunFailureAlert = ({ run, huntId, onRetry, retrying, canRetry }: { run: Ru
     return null;
   }
   const platform = runPlatformName(run, t_i18n);
-  const retryAction = canRetry ? (
-    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-      <Button variant="secondary" size="small" startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
-        {t_i18n('Retry')}
-      </Button>
-    </Security>
+  const checkConnector = run.connector_id ? (
+    <Button variant="secondary" size="small" component={Link} to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-check-connector">
+      {t_i18n('Check the connector')}
+    </Button>
   ) : undefined;
   let title: string;
   let action: React.ReactNode;
@@ -327,7 +326,7 @@ const RunFailureAlert = ({ run, huntId, onRetry, retrying, canRetry }: { run: Ru
       title = failure.timeoutSeconds
         ? t_i18n('The connector did not answer within {timeout}', { values: { timeout: formatHuntRunDuration(failure.timeoutSeconds * 1000) } })
         : t_i18n('The connector did not answer in time');
-      action = retryAction;
+      action = checkConnector;
       break;
     case 'translation':
       title = t_i18n('The Sigma rule could not be translated for {platform}', { values: { platform } });
@@ -344,15 +343,11 @@ const RunFailureAlert = ({ run, huntId, onRetry, retrying, canRetry }: { run: Ru
       title = failure.kind === 'refused'
         ? t_i18n('{platform} refused the query', { values: { platform } })
         : t_i18n('The hunt connector could not read the run sent by the platform');
-      action = run.connector_id ? (
-        <Button variant="secondary" size="small" component={Link} to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-check-connector">
-          {t_i18n('Check the connector')}
-        </Button>
-      ) : undefined;
+      action = checkConnector;
       break;
     default:
       title = t_i18n('The run failed in {platform}', { values: { platform } });
-      action = retryAction;
+      action = checkConnector;
   }
   return (
     <Alert
@@ -700,11 +695,11 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
         <Button onClick={onSetVerdict} data-testid="hunt-run-set-verdict">{t_i18n('Set the verdict')}</Button>
       </Security>
     );
-  } else if (failure && canRetry && failure.kind !== 'timeout' && failure.kind !== 'other') {
-    // Timeouts and unclassified failures carry Retry in their alert; the other classes lead with their own fix
+  } else if (failure && canRetry) {
+    // The failure alert below carries the fix of its class (check the connector, edit the rule)
     primary = (
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <Button variant="secondary" startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
+        <Button startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
           {t_i18n('Retry')}
         </Button>
       </Security>
@@ -732,7 +727,7 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
       )}
       {failure && (
         <div style={{ marginTop: theme.spacing(1.5) }}>
-          <RunFailureAlert run={run} huntId={huntId} canRetry={canRetry} retrying={retrying} onRetry={onRetry} />
+          <RunFailureAlert run={run} huntId={huntId} />
         </div>
       )}
     </Card>

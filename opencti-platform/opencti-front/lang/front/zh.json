@@ -3951,6 +3951,7 @@
   "Plain text": "纯文本",
   "Plan a hunt for this threat": "为此威胁规划狩猎",
   "Plan a hunt with AI": "使用 AI 规划狩猎",
+  "Plan a hunt with AI, unavailable: {reason}": "使用 AI 规划狩猎（不可用）：{reason}",
   "Plan from (threats, techniques, reports or indicators)": "规划依据（威胁、技术、报告或指标）",
   "Plan the hunt": "规划狩猎",
   "Platform": "平台",

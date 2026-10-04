@@ -3951,6 +3951,7 @@
   "Plain text": "Plain text",
   "Plan a hunt for this threat": "Plan a hunt for this threat",
   "Plan a hunt with AI": "Plan a hunt with AI",
+  "Plan a hunt with AI, unavailable: {reason}": "Plan a hunt with AI, unavailable: {reason}",
   "Plan from (threats, techniques, reports or indicators)": "Plan from (threats, techniques, reports or indicators)",
   "Plan the hunt": "Plan the hunt",
   "Platform": "Platform",

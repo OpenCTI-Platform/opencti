@@ -3951,6 +3951,7 @@
   "Plain text": "プレーンテキスト",
   "Plan a hunt for this threat": "この脅威のハントを計画",
   "Plan a hunt with AI": "AI でハントを計画",
+  "Plan a hunt with AI, unavailable: {reason}": "AI でハントを計画（利用不可）: {reason}",
   "Plan from (threats, techniques, reports or indicators)": "計画の元にする対象（脅威、手法、レポート、インジケーター）",
   "Plan the hunt": "ハントを計画",
   "Platform": "プラットフォーム",

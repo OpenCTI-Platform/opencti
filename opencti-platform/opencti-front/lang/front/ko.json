@@ -3951,6 +3951,7 @@
   "Plain text": "일반 텍스트",
   "Plan a hunt for this threat": "이 위협에 대한 헌트 계획",
   "Plan a hunt with AI": "AI로 헌트 계획",
+  "Plan a hunt with AI, unavailable: {reason}": "AI로 헌트 계획, 사용할 수 없음: {reason}",
   "Plan from (threats, techniques, reports or indicators)": "계획 기준(위협, 기법, 보고서 또는 지표)",
   "Plan the hunt": "헌트 계획",
   "Platform": "플랫폼",
