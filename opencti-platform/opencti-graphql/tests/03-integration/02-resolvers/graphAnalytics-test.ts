@@ -692,6 +692,13 @@ describe('Graph analytics resolvers', () => {
       const secondCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
       expect(secondCursor).toBeTruthy();
       expect(secondCursor).not.toEqual(firstCursor);
+      // a cap that is not a multiple of the batch size is never exceeded: the last page stops at the cap
+      await startFullPass();
+      const third = await runFullPassStep(context, user, { ...config, fullPassBatchSize: 2, fullPassMaxEntities: 3 }, 60000);
+      expect(third).toEqual({ processed: 3, outcome: 'capped' });
+      const thirdState = await redisGraphAnalyticsGetState();
+      expect(thirdState[GRAPH_STATE_FULL_PASS_PROCESSED]).toEqual('3');
+      expect(thirdState[GRAPH_STATE_FULL_PASS_CURSOR]).not.toEqual(secondCursor);
     } finally {
       await redisGraphAnalyticsDeleteState([
         GRAPH_STATE_FULL_PASS_CURSOR,

@@ -327,10 +327,22 @@ export const runFullPassStep = async (
   let processed = 0;
   let outcome: FullPassStepOutcome = 'in_progress';
   const staleBefore = Date.now() - STALE_SIMILARITY_DAYS * 24 * 3600 * 1000;
+  // the next pass resumes from the cursor, so entities beyond the cap are rotated in instead of never being swept
+  const reachedCap = () => {
+    if (processedTotal < config.fullPassMaxEntities) return false;
+    logApp.info('[OPENCTI-MODULE] Graph analytics full pass capped, the next pass resumes from its cursor', { max: config.fullPassMaxEntities });
+    return true;
+  };
   while (Date.now() - startTime < budgetMs) {
+    if (reachedCap()) {
+      outcome = 'capped';
+      break;
+    }
+    // the last page of a capped pass stops at the cap
+    const first = Math.min(config.fullPassBatchSize, config.fullPassMaxEntities - processedTotal);
     const page = await elPaginate<BasicStoreBase>(context, user, GRAPH_METRICS_ENTITY_INDICES, {
       types: [ABSTRACT_STIX_CORE_OBJECT],
-      first: config.fullPassBatchSize,
+      first,
       after: cursor,
       baseData: true,
       baseFields: [GRAPH_METRICS_ATTRIBUTE],
@@ -355,15 +367,13 @@ export const runFullPassStep = async (
       processed += carriers.length;
       processedTotal += carriers.length;
     }
-    if (!page.endCursor || carriers.length < config.fullPassBatchSize) {
+    if (!page.endCursor || carriers.length < first) {
       cursor = undefined;
       outcome = 'completed';
       break;
     }
     cursor = page.endCursor;
-    if (processedTotal >= config.fullPassMaxEntities) {
-      // the next pass resumes from here, so entities beyond the cap are rotated in instead of never being swept
-      logApp.info('[OPENCTI-MODULE] Graph analytics full pass capped, the next pass resumes from its cursor', { max: config.fullPassMaxEntities });
+    if (reachedCap()) {
       outcome = 'capped';
       break;
     }
