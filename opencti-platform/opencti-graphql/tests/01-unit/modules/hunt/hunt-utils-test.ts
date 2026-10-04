@@ -3,6 +3,7 @@ import {
   clampInteger,
   huntRunRestrictions,
   isAutonomousHunt,
+  maskEvidencePreview,
   normalizeNativeQueries,
   parseHuntFilterGroup,
   sanitizeEvidence,
@@ -64,6 +65,22 @@ describe('Hunt evidence sanitization', () => {
     ], 2);
     expect(evidence.map((item) => [item.field, item.count])).toEqual([['c', 3], ['b', 2]]);
     expect(sanitizeEvidence(null)).toEqual([]);
+  });
+
+  it('should mask the secrets and personal data of a preview before storing it', () => {
+    expect(maskEvidencePreview('curl -u admin -H "Authorization: Bearer abcdef1234567890" https://198.51.100.7/api?api_key=s3cr3tValue&x=1'))
+      .toBe('curl -u admin -H "Authorization: Bearer [masked]" https://198.51.100.7/api?api_key=[masked]&x=1');
+    expect(maskEvidencePreview('net user backup password=Winter2026! /add')).toBe('net user backup password=[masked] /add');
+    expect(maskEvidencePreview('jwt eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N')).toBe('jwt [masked token]');
+    expect(maskEvidencePreview('key AKIAIOSFODNN7EXAMPLE used')).toBe('key [masked key] used');
+    expect(maskEvidencePreview('mail from john.doe@mail.example.com')).toBe('mail from [masked]@mail.example.com');
+    expect(maskEvidencePreview('card 4111111111111111 event 4688')).toBe('card [masked number] event 4688');
+    expect(maskEvidencePreview('-----BEGIN RSA PRIVATE KEY-----\nMIIE\n-----END RSA PRIVATE KEY-----')).toBe('[masked private key]');
+    // Indicators stay readable, and masking an already masked value changes nothing
+    expect(maskEvidencePreview('powershell -nop -enc SQBFAFgA 198.51.100.7 c2.example.com')).toBe('powershell -nop -enc SQBFAFgA 198.51.100.7 c2.example.com');
+    expect(maskEvidencePreview('password=[masked] [masked]@example.com')).toBe('password=[masked] [masked]@example.com');
+    const [item] = sanitizeEvidence([{ field: 'process.command_line', value_hash: HASH, value_preview: 'runas /user:svc password=Hunter22', count: 1 }]);
+    expect(item.value_preview).toBe('runas /user:svc password=[masked]');
   });
 });
 

@@ -78,6 +78,23 @@ export const techniqueValidationStatus = (counts: { runs: number; detected: numb
   return counts.completed > 0 ? HuntTechniqueValidationStatus.NotDetected : HuntTechniqueValidationStatus.NotValidated;
 };
 
+// Secrets and personal data a telemetry value can carry, masked before a preview is stored whatever the connector sent.
+// Indicators (addresses, domains, hashes, command lines) stay readable: they are what an analyst triages.
+const EVIDENCE_MASKS: { pattern: RegExp; replacement: string }[] = [
+  { pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(-----END [A-Z ]*PRIVATE KEY-----|$)/g, replacement: '[masked private key]' },
+  { pattern: /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}/g, replacement: '[masked token]' },
+  { pattern: /\b(bearer|basic)\s+[\w~+/.-]{8,}=*/gi, replacement: '$1 [masked]' },
+  { pattern: /\b(password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|client[_-]?secret|authorization)(["']?\s*[:=]\s*["']?)(?!(?:bearer|basic)\s)[^\s"'&;,]+/gi, replacement: '$1$2[masked]' },
+  { pattern: /\b(AKIA|ASIA)[0-9A-Z]{16}\b/g, replacement: '[masked key]' },
+  { pattern: /\b[\w.%+-]+@((?:[\w-]+\.)+[a-z]{2,})\b/gi, replacement: '[masked]@$1' },
+  { pattern: /\b\d{9,}\b/g, replacement: '[masked number]' },
+];
+
+/** Masks the secrets and personal data of a telemetry value preview (credentials, tokens, keys, e-mail users, long numbers). */
+export const maskEvidencePreview = (value: string) => {
+  return EVIDENCE_MASKS.reduce((masked, { pattern, replacement }) => masked.replace(pattern, replacement), value);
+};
+
 export interface HuntEvidenceInputLike {
   field?: string | null;
   value_hash?: string | null;
@@ -86,7 +103,7 @@ export interface HuntEvidenceInputLike {
 }
 
 /**
- * Evidence never stores raw telemetry: the platform enforces its own caps whatever the connector sent.
+ * Evidence never stores raw telemetry: the platform masks previews and enforces its own caps whatever the connector sent.
  * A hash that is not a sha256 hexadecimal digest is hashed again so that a raw value can never be stored as a hash.
  */
 export const sanitizeEvidence = (
@@ -104,7 +121,7 @@ export const sanitizeEvidence = (
     const valueHash = SHA256_HEX.test(rawHash) ? rawHash : sha256(rawHash);
     const count = Number.isInteger(item.count) && (item.count as number) > 0 ? (item.count as number) : 1;
     const preview = typeof item.value_preview === 'string' && item.value_preview.length > 0
-      ? truncate(item.value_preview, maxValueLength)
+      ? truncate(maskEvidencePreview(item.value_preview), maxValueLength)
       : null;
     const key = `${field}:${valueHash}`;
     const existing = byKey.get(key);
