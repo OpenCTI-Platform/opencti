@@ -2521,6 +2521,16 @@ const updateAttributeRaw = async (
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
+    // A removal is resolved against the current aliases: the input becomes the aliases that remain, so the internal
+    // alias ids follow the result, and an upsert never cumulates the removed aliases back.
+    const isAliasesRemoval = aliasesInput?.operation === UPDATE_OPERATION_REMOVE;
+    if (aliasesInput && isAliasesRemoval) {
+      const removedAliases = (aliasesInput.value ?? []).map((a) => normalizeName(a));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      aliasesInput.value = (aliasedInstance[aliasField] ?? []).filter((a: string) => !removedAliases.includes(normalizeName(a)));
+      aliasesInput.operation = EditOperation.Replace;
+    }
     if (nameInput || aliasesInput) {
       const askedModificationName = nameInput ? R.head(nameInput.value) : undefined;
       // Cleanup the alias input.
@@ -2538,10 +2548,10 @@ const updateAttributeRaw = async (
         // If name change, we need to add the old name in aliases
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const aliases = [...(aliasedInstance[aliasField] ?? [])];
+        const aliases = isAliasesRemoval && aliasesInput ? [...aliasesInput.value] : [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
-          pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
+          if (!isAliasesRemoval) pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
           if (!aliases.includes(aliasedInstance.name)) {
             // If name changing is part of an upsert, the previous name must be copied into aliases
             aliases.push(aliasedInstance.name);
@@ -2571,7 +2581,7 @@ const updateAttributeRaw = async (
         preparedElements.push(aliasInput);
       } else if (aliasesInput) {
         // No name change asked but aliases addition
-        if (upsert) {
+        if (upsert && !isAliasesRemoval) {
           // In upsert we cumulate with current aliases
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -2585,7 +2595,10 @@ const updateAttributeRaw = async (
         const currentStixIds = aliasedInstance[IDS_STIX] ?? [];
         const removedAliasesIds = aliasedInstance[INTERNAL_IDS_ALIASES]?.filter((aid) => !aliasesId.includes(aid));
         const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-        if (stixIdsInput) {
+        if (stixIdsInput && stixIdsInput.operation === UPDATE_OPERATION_REMOVE) {
+          // The input lists the ids to remove: the purged alias ids join them
+          stixIdsInput.value = R.uniq([...stixIdsInput.value, ...currentStixIds.filter((sid) => removedAliasesIds?.includes(sid))]);
+        } else if (stixIdsInput) {
           stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds?.includes(sid));
         } else {
           const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds?.includes(sid));
