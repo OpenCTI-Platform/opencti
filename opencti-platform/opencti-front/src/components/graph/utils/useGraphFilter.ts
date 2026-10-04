@@ -1,14 +1,16 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useGraphContext } from '../GraphContext';
 import { isNotEmptyField } from '../../../utils/utils';
 
 /**
- * Sets the `disabled` flag of every node and link from the filters of the graph state. The flags
- * are set while rendering, before what is derived from them (collapsed groups, highlighted path)
- * is computed; the returned token changes every time they are set again, so derived values can
- * depend on it.
+ * Sets the `disabled` flag of every node and link from the filters of the graph state. The graph
+ * objects are shared with the renderer, so the flags are set once the filters are committed, in a
+ * layout effect, never while rendering; the returned token then changes, and what is derived from
+ * the flags (collapsed groups, highlighted path, empty state) is computed again before the frame
+ * is painted.
  */
 const useGraphFilter = (): object => {
+  const [token, setToken] = useState<object>({});
   const { graphData, graphState } = useGraphContext();
   const {
     disabledEntityTypes,
@@ -49,10 +51,10 @@ const useGraphFilter = (): object => {
     return targets;
   };
 
-  return useMemo(() => {
+  useLayoutEffect(() => {
     const disabledTargets = filterLinks();
     filterNodes(disabledTargets);
-    return {};
+    setToken({});
   }, [
     disabledEntityTypes,
     disabledCreators,
@@ -61,6 +63,7 @@ const useGraphFilter = (): object => {
     disabledRelationshipTypes,
     graphData,
   ]);
+  return token;
 };
 
 export default useGraphFilter;

@@ -24,7 +24,7 @@ const filters = (overrides: Partial<GraphState> = {}) => ({
 });
 
 describe('useGraphFilter', () => {
-  it('sets the flags while rendering, so a collapsed group derived in the same render follows its members', () => {
+  it('sets the flags once the filters are committed and changes its token, so a collapsed group follows its members', () => {
     context.current = { graphData, graphState: filters() };
     const cache = createCollapseCache();
     const { result, rerender } = renderHook(() => {
