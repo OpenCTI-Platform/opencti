@@ -59,7 +59,7 @@ The top of the Sources area tells you whether the scorecards are current:
 | Computing | A computation is running. | None, the state updates when it ends. |
 | Recompute requested | A computation starts in the next minutes. | None |
 | Failed | The last computation failed; the reason is shown below the header. | **Retry the computation** |
-| Not computed yet | No computation has run on this platform. | **Compute now** |
+| Not computed yet | No computation has run on this platform; the first one runs at the daily recompute hour. | **Compute now** |
 | Manager stopped | The source intelligence manager is not running. | **Open settings** |
 
 When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.

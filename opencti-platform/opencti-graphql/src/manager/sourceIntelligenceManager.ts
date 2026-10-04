@@ -576,14 +576,15 @@ const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenc
 };
 
 export const isFullComputationDue = (state: SourceIntelligenceState, settings: Pick<SourceIntelligenceSettings, 'recompute_hour_utc'>, now: number) => {
-  if (!state.last_full_run_day) {
-    return true;
-  }
   if (state.recompute_requested_at && (!state.last_full_run_start || state.recompute_requested_at > state.last_full_run_start)) {
     return true;
   }
-  const today = toSnapshotDate(now);
-  return state.last_full_run_day !== today && new Date(now).getUTCHours() >= settings.recompute_hour_utc;
+  const hour = new Date(now).getUTCHours();
+  // The first computation scans the whole knowledge: it waits for the configured hour, unless requested
+  if (!state.last_full_run_day) {
+    return hour === settings.recompute_hour_utc;
+  }
+  return state.last_full_run_day !== toSnapshotDate(now) && hour >= settings.recompute_hour_utc;
 };
 // endregion
 
