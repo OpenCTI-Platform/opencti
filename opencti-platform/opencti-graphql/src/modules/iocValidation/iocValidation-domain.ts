@@ -560,7 +560,9 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
         await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
       }
       const deployments = await findRequestDeployments(context, request.internal_id);
-      patch.results_summary = summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
+      const pairs = withPairOutcomes(request.pairs ?? [], deployments);
+      patch.pairs = pairs;
+      patch.results_summary = summarizeRequestPairs(pairs, request.skipped?.length ?? 0);
       const awaitingResults = deployments.some((d) => d.validation_status === VALIDATION_STATUS_REQUESTED);
       if (awaitingResults && isAllowedTransition(request.status, REQUEST_STATUS_RUNNING)) {
         // The result bundle is ingested separately: the maintenance completes the request once every pair has
@@ -679,10 +681,9 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
     await addIocValidationPlatformResultCount(updatedIndicatorIds.length);
     await refreshIndicatorDeploymentCounters(context, updatedIndicatorIds);
     await withRequestLock(request.internal_id, async () => {
-      const deployments = await findRequestDeployments(context, request.internal_id);
-      await setRequestAttributes(context, request, {
-        results_summary: summarizeValidationResults(request.pairs.length, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status)),
-      });
+      const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) ?? request;
+      const pairs = withPairOutcomes(current.pairs ?? [], await findRequestDeployments(context, request.internal_id));
+      await setRequestAttributes(context, current, { pairs, results_summary: summarizeRequestPairs(pairs, current.skipped?.length ?? 0) });
     });
   }
   return findIocValidationRequest(context, user, request.internal_id);
@@ -706,6 +707,19 @@ const setRequestAttributes = async (context: AuthContext, request: BasicStoreEnt
   await elUpdate(context, request._index, request.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
 };
 
+/**
+ * The pairs of a request with the outcome each one got for this request: the current status of the deployments still
+ * bound to it, the outcome recorded earlier for the pairs a newer request took over since.
+ */
+export const withPairOutcomes = (pairs: IocValidationPair[], boundDeployments: Array<{ internal_id: string; validation_status?: string | null }>) => {
+  const bound = new Map(boundDeployments.map((deployment) => [deployment.internal_id, deployment.validation_status]));
+  return pairs.map((pair) => (bound.has(pair.deployed_on_id) ? { ...pair, validation_status: bound.get(pair.deployed_on_id) ?? undefined } : pair));
+};
+
+export const summarizeRequestPairs = (pairs: IocValidationPair[], skipped: number) => {
+  return summarizeValidationResults(pairs.length, skipped, pairs.map((pair) => pair.validation_status).filter((status): status is string => !!status));
+};
+
 // Must run under the request lock: reads the request again and refreshes its summary, completion and timeout.
 const refreshIocValidationRequest = async (context: AuthContext, requestId: string, now: number) => {
   const request = await findIocValidationRequest(context, SYSTEM_USER, requestId);
@@ -714,15 +728,15 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
   }
   const deployments = await findRequestDeployments(context, request.internal_id);
   const isOpen = OPEN_REQUEST_STATUSES.includes(request.status);
-  // A final request whose pairs moved to a newer request keeps its recorded summary: those pairs now carry the outcome
-  // of the newer run, and counting them as waiting would make a completed request look pending again.
-  if (!isOpen && deployments.length < (request.pairs?.length ?? 0)) {
-    return false;
-  }
-  const summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
+  // Pairs moved to a newer request keep the outcome recorded for this one, so a completed request never looks pending.
+  const pairs = withPairOutcomes(request.pairs ?? [], deployments);
+  const summary = summarizeRequestPairs(pairs, request.skipped?.length ?? 0);
   const attributes: Record<string, unknown> = {};
   if (JSON.stringify(summary) !== JSON.stringify(request.results_summary)) {
     attributes.results_summary = summary;
+  }
+  if (JSON.stringify(pairs) !== JSON.stringify(request.pairs ?? [])) {
+    attributes.pairs = pairs;
   }
   const dispatchedAt = request.dispatched_at ? new Date(request.dispatched_at).getTime() : new Date(request.created_at as unknown as string).getTime();
   if (isOpen && isSummaryComplete(summary)) {
@@ -730,8 +744,9 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
     attributes.completed_at = new Date();
   } else if (isOpen && now - dispatchedAt > IOC_VALIDATION_TIMEOUT_MS) {
     await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
-    const expiredDeployments = await findRequestDeployments(context, request.internal_id);
-    attributes.results_summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, expiredDeployments.map((d) => d.validation_status));
+    const expiredPairs = withPairOutcomes(request.pairs ?? [], await findRequestDeployments(context, request.internal_id));
+    attributes.pairs = expiredPairs;
+    attributes.results_summary = summarizeRequestPairs(expiredPairs, request.skipped?.length ?? 0);
     attributes.status = REQUEST_STATUS_EXPIRED;
     attributes.status_message = 'No result received from OpenAEV before the timeout';
     attributes.completed_at = new Date();
@@ -878,8 +893,8 @@ export const readableResultsSummary = async (context: AuthContext, user: AuthUse
     && platforms.has(pair.platform_id)
     && readableDeploymentIds.has(pair.deployed_on_id));
   const skipped = await filterReadableSkipped(context, user, request);
-  const pairDeploymentIds = new Set(pairs.map((pair) => pair.deployed_on_id));
-  const deployments = readableDeployments.filter((d) => pairDeploymentIds.has(d.internal_id) && d.validation_run_id === request.internal_id);
-  return summarizeValidationResults(pairs.length, skipped.length, deployments.map((d) => d.validation_status));
+  // Outcomes of this request only: a pair taken over by a newer request keeps the outcome recorded for this one
+  const bound = readableDeployments.filter((d) => d.validation_run_id === request.internal_id);
+  return summarizeRequestPairs(withPairOutcomes(pairs, bound), skipped.length);
 };
 // endregion

@@ -86,6 +86,8 @@ export interface IocValidationPair {
   indicator_id: string;
   platform_id: string;
   deployed_on_id: string;
+  // Outcome of the pair for this request, kept when a newer request takes the deployment over
+  validation_status?: string;
 }
 
 export interface IocValidationSkipped {

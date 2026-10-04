@@ -167,6 +167,14 @@ describe('markings of the relationships generated for a pair', () => {
     expect(isReadableWithIndicator({ 'object-marking': ['tlp-green'] }, {})).toEqual(false);
   });
 
+  it('should accept the lower markings of a type the indicator carries a higher one of', () => {
+    const ranks = new Map([['tlp-green', { type: 'TLP', order: 2 }], ['tlp-red', { type: 'TLP', order: 4 }], ['pap-red', { type: 'PAP', order: 4 }]]);
+    // Readers cleared for TLP:RED are cleared for TLP:GREEN
+    expect(isReadableWithIndicator({ 'object-marking': ['tlp-red'] }, { 'object-marking': ['tlp-red'] }, { 'object-marking': ['tlp-green'] }, undefined, ranks)).toEqual(true);
+    expect(isReadableWithIndicator({ 'object-marking': ['tlp-red'] }, { 'object-marking': ['tlp-green'] }, { 'object-marking': ['tlp-red'] }, undefined, ranks)).toEqual(false);
+    expect(isReadableWithIndicator({}, { 'object-marking': ['tlp-red'] }, { 'object-marking': ['pap-red'] }, undefined, ranks)).toEqual(false);
+  });
+
   it('should not count a deployment shared with fewer organizations or members than the indicator', () => {
     const indicator = { granted: ['org-a', 'org-b'] };
     const sharing = { enforced: true, individualIds: new Set(['individual-1']) };

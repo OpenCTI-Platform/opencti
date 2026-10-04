@@ -275,6 +275,25 @@ def test_import_of_deployed_on_carries_the_lifecycle(local_api_client):
     }
 
 
+def test_import_of_deployed_on_ignores_the_inferred_date(local_api_client):
+    local_api_client.stix_core_relationship.create = MagicMock(
+        return_value={"id": "rel-1"}
+    )
+    stix_relation = {
+        "type": "relationship",
+        "id": "relationship--9b1d3f5a-3333-4c4d-9e5f-fedcbafedcba",
+        "relationship_type": "deployed-on",
+        "source_ref": "indicator--3f6b4c1e-8f5e-4c43-9e52-0f8d5f0e5a11",
+        "target_ref": "identity--7a0c2d4e-2222-4b3c-8d4e-abcdefabcdef",
+    }
+    local_api_client.stix_core_relationship.import_from_stix2(
+        stixRelation=stix_relation, extras={}, defaultDate="2026-09-01T00:00:00Z"
+    )
+    kwargs = local_api_client.stix_core_relationship.create.call_args.kwargs
+    assert kwargs["start_time"] is None
+    assert kwargs["stop_time"] is None
+
+
 def test_import_of_other_relationships_has_no_lifecycle(local_api_client):
     local_api_client.stix_core_relationship.create = MagicMock(
         return_value={"id": "rel-1"}

@@ -11,6 +11,7 @@ import {
   touchesValidationFields,
 } from '../../../../src/modules/iocValidation/iocValidation-validator';
 import { isTrustedDeploymentReporter } from '../../../../src/modules/iocValidation/iocValidation-utils';
+import { summarizeRequestPairs, withPairOutcomes } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
@@ -137,5 +138,18 @@ describe('Deployment identity guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { start_time: '2026-10-01T00:00:00.000Z' })).rejects.toThrow('no start or stop time');
     await expect(validatorUpdate(testContext, administrator, { stop_time: ['2026-12-31T00:00:00.000Z'] }, {})).rejects.toThrow('no start or stop time');
+  });
+});
+
+describe('Request pair outcomes', () => {
+  it('should keep the outcome of a pair that a newer request took over', () => {
+    const pairs = [
+      { indicator_id: 'i1', platform_id: 'p1', deployed_on_id: 'd1', validation_status: 'detected' },
+      { indicator_id: 'i2', platform_id: 'p1', deployed_on_id: 'd2' },
+    ];
+    // d1 now belongs to a newer request (not bound any more), d2 is still bound and missed
+    const withOutcomes = withPairOutcomes(pairs, [{ internal_id: 'd2', validation_status: 'missed' }]);
+    expect(withOutcomes.map((pair) => pair.validation_status)).toEqual(['detected', 'missed']);
+    expect(summarizeRequestPairs(withOutcomes, 1)).toEqual(expect.objectContaining({ total: 2, detected: 1, missed: 1, requested: 0, skipped: 1 }));
   });
 });

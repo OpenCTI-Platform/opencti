@@ -1442,6 +1442,9 @@ class StixCoreRelationship:
 
             deployment = None
             if stix_relation.get("relationship_type") == RELATION_DEPLOYED_ON:
+                # A deployment has no validity window: a date inferred from the
+                # external references would be refused, only explicit times are sent
+                default_date = None
                 deployment = {}
                 for key in DEPLOYED_ON_ATTRIBUTES:
                     value = stix_relation.get(key)
