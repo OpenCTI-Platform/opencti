@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { computeDocumentSignals, emptyPageLookups, type RunLookups, type ScanDocument } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
+import {
+  computeDocumentSignals,
+  emptyPageLookups,
+  periodCounting,
+  type RunLookups,
+  type ScanDocument,
+  toAssertionActivity,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
 
 const NOW = new Date('2026-10-01T00:00:00.000Z').getTime();
@@ -44,5 +51,29 @@ describe('Source intelligence document signals', () => {
     const sighted = computeDocumentSignals(indicator(), page, run, NOW);
     expect(sighted.negativelySighted).toBe(true);
     expect(sighted.negative).toBe(true);
+  });
+});
+
+describe('Source intelligence assertion activity', () => {
+  const DAY = 24 * 3600 * 1000;
+  const january = Date.UTC(2026, 0, 10);
+  const august = Date.UTC(2026, 7, 31);
+  const october = Date.UTC(2026, 9, 1);
+
+  it('should never count in a past snapshot an assertion made after it', () => {
+    // First asserted in January, asserted again in October: an August snapshot only knows the January assertion
+    const activity = toAssertionActivity({ sourceId: 'source-1', firstAt: january, lastAt: october }, january, october, august);
+    expect(activity.end).toEqual(january);
+    expect(periodCounting(activity, august - 30 * DAY, august)).toEqual({ inVolume: false, isNew: false, lastDay: false });
+  });
+
+  it('should keep the last assertion when it is known at the computation time', () => {
+    const activity = toAssertionActivity({ sourceId: 'source-1', firstAt: january, lastAt: august - DAY }, january, august, august);
+    expect(activity.end).toEqual(august - DAY);
+    expect(periodCounting(activity, august - 30 * DAY, august).inVolume).toBe(true);
+    // Undated assertions fall back to the object dates under the same rule
+    const undated = toAssertionActivity({ sourceId: 'source-1', firstAt: null, lastAt: null }, january, october, august);
+    expect(undated.start).toEqual(january);
+    expect(undated.end).toEqual(january);
   });
 });

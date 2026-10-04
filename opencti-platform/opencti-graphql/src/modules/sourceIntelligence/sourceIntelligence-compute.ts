@@ -335,13 +335,15 @@ export interface AssertionActivity extends ResolvedAssertion {
 
 /**
  * Span of the assertions of one source on one object, bounded by the computation time. Undated assertions fall back
- * to the creation and last update of the object.
+ * to the creation and last update of the object. Only the first and last assertions are stored: when the source
+ * asserted the object again after `asOf` (a past day of the history backfill), the last assertion known at `asOf`
+ * is the first one, so a past snapshot never counts an assertion it could not have seen.
  */
-export const toAssertionActivity = (assertion: ResolvedAssertion, docCreated: number, docUpdated: number, asOf: number): AssertionActivity => ({
-  ...assertion,
-  start: assertion.firstAt ?? docCreated,
-  end: Math.min(assertion.lastAt ?? docUpdated, asOf),
-});
+export const toAssertionActivity = (assertion: ResolvedAssertion, docCreated: number, docUpdated: number, asOf: number): AssertionActivity => {
+  const start = assertion.firstAt ?? docCreated;
+  const last = assertion.lastAt ?? docUpdated;
+  return { ...assertion, start, end: Math.min(last <= asOf ? last : start, asOf) };
+};
 
 /**
  * How an object counts for one source in the period starting at `windowStart`: in its volume when the source asserted
