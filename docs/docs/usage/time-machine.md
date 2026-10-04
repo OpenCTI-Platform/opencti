@@ -105,7 +105,7 @@ The **Landscape changes** page compares a whole set of entities between two date
     - **Custom view**: use every entity of the type targeted by a custom view.
 
     When no saved filter or no custom view exists yet, the page explains what Landscape changes compares and **Choose a scope** switches to filters.
-3. Optionally restrict the **Entity types** and choose how to **Group by** the results: entity type, relationship type or tactic.
+3. Optionally restrict the **Entity types** (filters and saved filters only: a custom view always compares the entity type it targets) and choose how to **Group by** the results: entity type, relationship type or tactic.
 4. Choose the period.
 5. Click **Compute the landscape changes**.
 
@@ -190,7 +190,7 @@ The time machine never bypasses markings or organization restrictions:
 - Related entities you cannot access are displayed as **Restricted**, without their name.
 - Entities deleted since are displayed as tombstones (**Deleted**).
 - A landscape diff is computed with the rights of the user who requested it and is only visible to that user. A stored result, including a cached widget result, is discarded as soon as one of the entities it names is no longer accessible to that user (for example after a new marking): it is computed again on the next request.
-- A change digest is computed with the rights of each recipient.
+- A change digest is computed with the rights of each recipient. Right before it is sent, everything it counts or names is checked again: if the access of the recipient changed during the computation, the digest is computed once more, and if it keeps changing, no digest is sent for that period.
 
 ## History retention and knowledge snapshots
 
