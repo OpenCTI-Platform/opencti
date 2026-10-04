@@ -56,7 +56,7 @@ import { ingestionCsvEditField } from '../ingestion/ingestion-csv-domain';
 import { ingestionJsonEditField } from '../ingestion/ingestion-json-domain';
 import { ConnectorRequestStatus, type EditInput } from '../../generated/graphql';
 import { addSourceRecommendationOutcome } from '../../manager/telemetryManager';
-import type { SourceIntelligenceSettings } from './sourceIntelligence-settings';
+import { MODULES_MODMANAGE, type SourceIntelligenceSettings } from './sourceIntelligence-settings';
 import {
   type BasicStoreEntitySource,
   type BasicStoreEntitySourceRecommendation,
@@ -99,7 +99,6 @@ import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 
 const DAY_MS = 24 * 3600 * 1000;
-const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
 const STOPPED_STATUSES = ['stopping', 'stopped'];
 // A failed recommendation stays the live entry of its fingerprint, to be retried, never proposed again beside it
@@ -144,7 +143,8 @@ export const assertTargetUnchanged = (what: string, previewed: unknown, current:
 };
 
 const requireCapability = (user: AuthUser, autonomous: boolean, ...capabilities: string[]) => {
-  // The autonomy policy acts as the source intelligence manager, its allow-list has been granted by an administrator
+  // The autonomy policy acts as the source intelligence manager: a kind enters its allow-list only from a person holding
+  // every capability of that kind (RECOMMENDATION_KIND_CAPABILITIES)
   if (autonomous) return;
   const missing = capabilities.filter((capability) => !isUserHasCapability(user, capability));
   if (missing.length > 0) {

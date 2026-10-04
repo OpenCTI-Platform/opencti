@@ -1,5 +1,42 @@
 import { FunctionalError } from '../../config/errors';
-import { RECOMMENDATION_KINDS, type RecommendationKindValue } from './sourceIntelligence-types';
+import type { AuthUser } from '../../types/user';
+import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION } from '../../utils/access';
+import {
+  RECOMMENDATION_ADD_CONNECTOR,
+  RECOMMENDATION_ADD_DECAY_RULE,
+  RECOMMENDATION_ADD_DENY_LIST,
+  RECOMMENDATION_CHANGE_SCHEDULE,
+  RECOMMENDATION_KINDS,
+  RECOMMENDATION_LOWER_CONFIDENCE,
+  RECOMMENDATION_QUARANTINE,
+  RECOMMENDATION_RAISE_CONFIDENCE,
+  RECOMMENDATION_RETIRE,
+  type RecommendationKindValue,
+} from './sourceIntelligence-types';
+
+export const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
+
+/**
+ * Capabilities a person needs to apply a recommendation kind by hand, whatever its target (a connector, a feed or a
+ * user). The autonomy policy applies the kinds it allows without checking them again: allowing a kind requires them all.
+ */
+export const RECOMMENDATION_KIND_CAPABILITIES: Record<RecommendationKindValue, readonly string[]> = {
+  [RECOMMENDATION_RAISE_CONFIDENCE]: [SETTINGS_SET_ACCESSES],
+  [RECOMMENDATION_LOWER_CONFIDENCE]: [SETTINGS_SET_ACCESSES],
+  [RECOMMENDATION_ADD_DECAY_RULE]: [SETTINGS_SETCUSTOMIZATION],
+  [RECOMMENDATION_ADD_DENY_LIST]: [SETTINGS_SETCUSTOMIZATION],
+  [RECOMMENDATION_CHANGE_SCHEDULE]: [INGESTION_SETINGESTIONS, MODULES_MODMANAGE],
+  [RECOMMENDATION_QUARANTINE]: [SETTINGS_SET_ACCESSES, INGESTION_SETINGESTIONS],
+  [RECOMMENDATION_RETIRE]: [INGESTION_SETINGESTIONS, MODULES_MODMANAGE],
+  [RECOMMENDATION_ADD_CONNECTOR]: [MODULES_MODMANAGE],
+};
+
+/** Capabilities the user lacks to allow the kinds an autonomy policy update adds; kinds already allowed or removed need none. */
+export const missingAutonomyCapabilities = (user: AuthUser, currentKinds: readonly string[], nextKinds: readonly RecommendationKindValue[]): string[] => {
+  const added = nextKinds.filter((kind) => !currentKinds.includes(kind));
+  const required = new Set(added.flatMap((kind) => RECOMMENDATION_KIND_CAPABILITIES[kind]));
+  return Array.from(required).filter((capability) => !isUserHasCapability(user, capability));
+};
 
 export interface SourceIntelligenceValueWeights {
   uniqueness: number;

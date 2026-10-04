@@ -1,9 +1,43 @@
 import { describe, expect, it } from 'vitest';
+import type { AuthUser } from '../../../../src/types/user';
 import {
   DEFAULT_SOURCE_INTELLIGENCE_SETTINGS,
+  missingAutonomyCapabilities,
+  RECOMMENDATION_KIND_CAPABILITIES,
   resolveSourceIntelligenceSettings,
   validateSourceIntelligenceSettingsInput,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
+import { RECOMMENDATION_KINDS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+
+const userWith = (...capabilities: string[]) => ({ id: 'user', capabilities: capabilities.map((name) => ({ name })) }) as unknown as AuthUser;
+
+describe('Source intelligence autonomy policy capabilities', () => {
+  it('should name the capabilities of every recommendation kind', () => {
+    RECOMMENDATION_KINDS.forEach((kind) => {
+      expect(RECOMMENDATION_KIND_CAPABILITIES[kind].length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should require the capabilities of the kinds an update adds', () => {
+    const customizer = userWith('SETTINGS_SETCUSTOMIZATION');
+    expect(missingAutonomyCapabilities(customizer, [], ['retire']).sort()).toEqual(['INGESTION_SETINGESTIONS', 'MODULES_MODMANAGE']);
+    expect(missingAutonomyCapabilities(customizer, [], ['raise_confidence', 'quarantine']).sort()).toEqual(['INGESTION_SETINGESTIONS', 'SETTINGS_SETACCESSES']);
+    expect(missingAutonomyCapabilities(customizer, [], ['add_decay_rule', 'add_deny_list'])).toEqual([]);
+  });
+
+  it('should not require anything to keep or remove kinds already allowed', () => {
+    const customizer = userWith('SETTINGS_SETCUSTOMIZATION');
+    expect(missingAutonomyCapabilities(customizer, ['retire', 'add_connector'], ['retire'])).toEqual([]);
+    expect(missingAutonomyCapabilities(customizer, ['retire'], [])).toEqual([]);
+  });
+
+  it('should let a user holding every capability, or the bypass, allow any kind', () => {
+    const allKinds = [...RECOMMENDATION_KINDS];
+    const administrator = userWith('SETTINGS_SETCUSTOMIZATION', 'SETTINGS_SETACCESSES', 'INGESTION_SETINGESTIONS', 'MODULES_MODMANAGE');
+    expect(missingAutonomyCapabilities(administrator, [], allKinds)).toEqual([]);
+    expect(missingAutonomyCapabilities(userWith('BYPASS'), [], allKinds)).toEqual([]);
+  });
+});
 
 describe('Source intelligence settings', () => {
   it('should fall back on the defaults for missing, invalid or unknown stored values', () => {

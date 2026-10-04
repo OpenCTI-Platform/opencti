@@ -37,6 +37,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/manag
 import { getManagerConfigurationFromCache } from '../managerConfiguration/managerConfiguration-domain';
 import {
   DEFAULT_SOURCE_INTELLIGENCE_SETTINGS,
+  missingAutonomyCapabilities,
   resolveSourceIntelligenceSettings,
   type SourceIntelligenceSettings,
   validateSourceIntelligenceSettingsInput,
@@ -150,6 +151,13 @@ export const editSourceIntelligenceSettings = async (context: AuthContext, user:
     throw ForbiddenAccess('The autonomy policy requires the Enterprise Edition');
   }
   const settings = validateSourceIntelligenceSettingsInput(current, settingsInput);
+  // The policy applies its kinds without the capability checks of a manual application
+  const missingCapabilities = missingAutonomyCapabilities(user, current.autonomy.auto_apply_kinds, settings.autonomy.auto_apply_kinds);
+  if (missingCapabilities.length > 0) {
+    throw ForbiddenAccess('Allowing these recommendation kinds in the autonomy policy requires the capabilities of their manual application', {
+      capabilities: missingCapabilities,
+    });
+  }
   const patch: Record<string, unknown> = { manager_setting: settings };
   if (typeof manager_running === 'boolean') {
     patch.manager_running = manager_running;
