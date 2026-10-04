@@ -54,6 +54,7 @@ import {
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   type TimelineDomain,
+  timelineExportWindow,
   type TimelineGrouping,
   type TimelineViewState,
   type TimelineZoomWindow,
@@ -570,18 +571,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
     });
   };
 
-  // The lanes view exports its visible window: the panned or zoomed domain, else the zoom window of the
-  // timeline bounds; the list view lists every event matching the filters
-  const exportWindow = useMemo((): TimelineDomain | null => {
-    if (state.view !== 'lanes') return null;
-    if (domain) return domain;
-    if (state.zoom === 'fit' || !summary) return null;
-    const times = [summary.first_event_time, summary.last_event_time, ...TIMELINE_ANCHOR_KEYS.map((key) => summary.anchors?.[key])]
-      .map((time) => (time ? new Date(time).getTime() : Number.NaN))
-      .filter((time) => Number.isFinite(time));
-    const extent: TimelineDomain | null = times.length > 0 ? [Math.min(...times), Math.max(...times)] : null;
-    return computeVisibleDomain(extent, state.zoom);
-  }, [state.view, state.zoom, domain, summary]);
+  const exportWindow = timelineExportWindow(state.view, state.zoom, domain, visibleDomain);
   const { exportTimeline } = useContainerTimelineExport({
     containerId,
     containerName,

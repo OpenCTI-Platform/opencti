@@ -21,8 +21,9 @@ const LIGHT_THEME = 'Filigran Light';
 /**
  * Content of the test
  * -------------------
- * Check that the timeline is a widget of the overview layout of incident responses: after the basic information, half of the row.
- * Hide another widget and capture the Overview layout tab.
+ * Check that the timeline is a widget of the overview layout of incident responses: after the basic information, half of the row,
+ * with Most recent history on a whole row so that every row is full, and capture the Overview layout tab.
+ * Hide another widget and capture the Overview layout tab again.
  * Check that the incident response overview shows the loaded card in the second row, as wide as its neighbour, and capture
  * the page in the dark and light themes.
  * Check that the knowledge graph of the case still renders next to the timeline.
@@ -67,6 +68,8 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     await expect(fullWidthHistory).toBeChecked();
     await expect(page.getByRole('switch', { name: 'Show External references at full width', exact: true })).not.toBeChecked();
     const displayHistory = page.getByRole('switch', { name: 'Display Most recent history', exact: true });
+    await displayHistory.scrollIntoViewIfNeeded();
+    await capture('overview-layout-default');
     await displayHistory.click();
     await expect(displayHistory).not.toBeChecked();
     await expect(fullWidthHistory).toBeDisabled();
@@ -94,6 +97,7 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     await page.goto(LAYOUT_URL);
     await expect(page.getByTestId('overview-layout-widget-timeline')).toBeVisible();
     await expect(displayHistory).not.toBeChecked();
+    await displayHistory.scrollIntoViewIfNeeded();
     await capture('overview-layout-light');
     await setUserTheme(request, null);
     lightTheme = false;

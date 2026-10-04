@@ -279,6 +279,22 @@ export const centerDomain = (domain: TimelineDomain, time: number): TimelineDoma
   const half = (domain[1] - domain[0]) / 2;
   return [time - half, time + half];
 };
+
+/**
+ * Window of an export: the lanes view exports the window it shows (panned or zoomed, else the zoom window of the events
+ * matching the filters); the fit of the lanes and the list view export every event matching the filters.
+ */
+export const timelineExportWindow = (
+  view: TimelineView,
+  zoom: TimelineZoomWindow,
+  domain: TimelineDomain | null,
+  visibleDomain: TimelineDomain | null,
+): TimelineDomain | null => {
+  if (view !== 'lanes') return null;
+  if (domain) return domain;
+  if (zoom === 'fit') return null;
+  return visibleDomain;
+};
 // endregion
 
 // region grouping buckets (local time, ISO weeks starting on Monday)

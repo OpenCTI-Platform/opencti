@@ -21,6 +21,8 @@ import {
   serializeTimelineViewState,
   TIMELINE_KINDS,
   TIMELINE_MIN_SPAN,
+  type TimelineDomain,
+  timelineExportWindow,
   type TimelineViewState,
   zoomDomain,
 } from './timelineUtils';
@@ -123,6 +125,17 @@ describe('Timeline time domain', () => {
   it('should never zoom below one minute', () => {
     const [start, end] = zoomDomain([0, 2 * TIMELINE_MIN_SPAN], 0.01, TIMELINE_MIN_SPAN);
     expect(end - start).toEqual(TIMELINE_MIN_SPAN);
+  });
+
+  it('should export the window the lanes show, and every matching event from the fit and the list', () => {
+    // Domain of the lanes once filtered, far from the latest event of the whole timeline
+    const shown: TimelineDomain = [10 * DAY, 17 * DAY];
+    const panned: TimelineDomain = [2 * DAY, 3 * DAY];
+    expect(timelineExportWindow('lanes', 'week', null, shown)).toEqual(shown);
+    expect(timelineExportWindow('lanes', 'week', panned, shown)).toEqual(panned);
+    expect(timelineExportWindow('lanes', 'fit', panned, shown)).toEqual(panned);
+    expect(timelineExportWindow('lanes', 'fit', null, shown)).toBeNull();
+    expect(timelineExportWindow('list', 'week', panned, shown)).toBeNull();
   });
 });
 
