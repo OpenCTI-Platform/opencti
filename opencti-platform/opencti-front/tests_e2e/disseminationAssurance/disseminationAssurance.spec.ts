@@ -1,6 +1,19 @@
 import { v4 as uuid } from 'uuid';
+import type { Page, TestInfo } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
-import { addIndicator, addSecurityPlatform, deleteIndicator, deleteSecurityPlatform, reportDeployment } from '../dataForTesting/indicatorDeployment.data';
+import {
+  addIndicator,
+  addSecurityPlatform,
+  completeValidationRequest,
+  deleteConnector,
+  deleteIndicator,
+  deleteSecurityPlatform,
+  deleteValidationRequest,
+  registerIocValidationConnector,
+  reportDeployment,
+  reportValidationResults,
+  requestValidation,
+} from '../dataForTesting/indicatorDeployment.data';
 
 /**
  * Content of the test
@@ -52,14 +65,126 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
     await expect(page.getByTestId('dissemination-assurance-overview-page')).toBeVisible();
     await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Lists', exact: true }).click();
+    await page.getByTestId('dissemination-assurance-tab-lists').click();
     await expect(page.getByTestId('dissemination-assurance-lists-page')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Validation requests', exact: true }).click();
+    await page.getByTestId('dissemination-assurance-tab-validations').click();
     await expect(page.getByTestId('ioc-validation-requests-page')).toBeVisible();
     // endregion
   } finally {
     await deleteIndicator(request, indicatorId);
     await deleteSecurityPlatform(request, platformId);
   }
+});
+
+// The screenshots of the user documentation (docs/docs/usage/assets/dissemination-assurance-<surface>-<state>.png)
+// are the captures of the test below, taken at the documented size and kept with the test results.
+const capture = async (page: Page, testInfo: TestInfo, name: string) => {
+  await page.screenshot({ path: testInfo.outputPath(`dissemination-assurance-${name}.png`) });
+};
+
+/** Answers the area metrics as on a platform where no stream connector ever reported a deployment. */
+const withoutAnyDeployment = async (page: Page) => {
+  await page.route('**/graphql', async (route) => {
+    if (!(route.request().postData() ?? '').includes('query DisseminationAssuranceMetricsQuery')) {
+      await route.fallback();
+      return;
+    }
+    const response = await route.fetch();
+    const body = await response.json();
+    const metrics = body?.data?.disseminationAssuranceMetrics;
+    if (metrics) {
+      metrics.deployment_statuses = [];
+      metrics.validation_statuses = [];
+    }
+    await route.fulfill({ response, json: body });
+  });
+};
+
+/**
+ * Content of the test
+ * -------------------
+ * Three live or failed deployments on a security platform, a validation request answered with one detected and one
+ * missed indicator: the area with its key figures and on first use, both Deployments tabs, the "Validate live
+ * deployments" preview and the completed request with its missed indicator.
+ */
+test.describe('Dissemination assurance documentation', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+
+  test('Dissemination assurance surfaces', { tag: ['@disseminationAssurance', '@mutation'] }, async ({ page, request }, testInfo) => {
+    const platformId = await addSecurityPlatform(request, 'Contoso SIEM');
+    const detectedId = await addIndicator(request, 'login-portal.example');
+    const missedId = await addIndicator(request, 'update-service.example');
+    const failedId = await addIndicator(request, 'cdn-assets.example');
+    const connectorId = uuid();
+    let requestId: string | undefined;
+
+    try {
+      await reportDeployment(request, detectedId, platformId, 'active');
+      await reportDeployment(request, missedId, platformId, 'active');
+      await reportDeployment(request, failedId, platformId, 'failed', 'The platform refused the indicator: quota of custom indicators reached');
+      await registerIocValidationConnector(request, connectorId, 'OpenAEV IOC validation');
+      requestId = await requestValidation(request, 'Weekly validation of live indicators', platformId, [detectedId, missedId], connectorId);
+      await reportValidationResults(request, requestId, platformId, [
+        { indicatorId: detectedId, status: 'detected' },
+        { indicatorId: missedId, status: 'missed' },
+      ]);
+      await completeValidationRequest(request, requestId);
+
+      // region Area with its key figures, then on first use
+      await page.goto('/dashboard/defense/assurance/overview');
+      await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
+      await expect(page.getByTestId('kpi-missed')).toBeVisible();
+      await expect(page.getByTestId('dissemination-funnel')).toBeVisible();
+      await capture(page, testInfo, 'area-kpi-strip');
+
+      await withoutAnyDeployment(page);
+      await page.reload();
+      await expect(page.getByTestId('dissemination-assurance-first-use')).toBeVisible();
+      await capture(page, testInfo, 'area-first-use');
+      await page.unroute('**/graphql');
+      // endregion
+
+      // region Indicator and security platform Deployments tabs
+      await page.goto(`/dashboard/observations/indicators/${missedId}/deployments`);
+      const indicatorDeployments = page.getByTestId('deployed-on-indicator');
+      await expect(indicatorDeployments.getByText('Contoso SIEM')).toBeVisible();
+      await expect(indicatorDeployments.getByTestId('deployment-status-active')).toBeVisible();
+      await capture(page, testInfo, 'indicator-deployments-live');
+
+      await page.goto(`/dashboard/entities/security_platforms/${platformId}/deployments`);
+      const platformDeployments = page.getByTestId('deployed-on-platform');
+      await expect(platformDeployments.getByText('cdn-assets.example')).toBeVisible();
+      await expect(platformDeployments.getByTestId('deployment-error')).toBeVisible();
+      await capture(page, testInfo, 'platform-deployments-failed');
+      // endregion
+
+      // region Validate live deployments, with what will be tested
+      await page.getByTestId('request-validation-button').click();
+      await expect(page.getByTestId('ioc-validation-tested-indicators')).toBeVisible();
+      await expect(page.getByTestId('ioc-validation-request-submit')).toBeEnabled();
+      await capture(page, testInfo, 'validate-live-deployments-preview');
+      await page.keyboard.press('Escape');
+      // endregion
+
+      // region Completed validation request with a missed indicator
+      await page.goto('/dashboard/defense/assurance/validations');
+      await page.getByText('Weekly validation of live indicators').first().click();
+      const details = page.getByTestId('ioc-validation-request-details');
+      await expect(details.getByTestId('ioc-validation-status-header')).toBeVisible();
+      await expect(details.getByTestId('ioc-validation-results-summary')).toHaveText('1 of 2 tests detected or prevented');
+      await expect(details.getByRole('link', { name: 'Open the deployment' })).toBeVisible();
+      await capture(page, testInfo, 'validation-request-completed-missed');
+      // endregion
+    } finally {
+      if (requestId) {
+        await deleteValidationRequest(request, requestId);
+      }
+      await deleteConnector(request, connectorId);
+      await deleteIndicator(request, detectedId);
+      await deleteIndicator(request, missedId);
+      await deleteIndicator(request, failedId);
+      await deleteSecurityPlatform(request, platformId);
+    }
+  });
 });

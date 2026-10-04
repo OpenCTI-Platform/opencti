@@ -7,6 +7,7 @@ import {
   VALIDATION_STATUSES,
   type ValidationStatus,
 } from './indicatorDeployment-types';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
 export const isDeploymentStatus = (value: unknown): value is DeploymentStatus => {
   return typeof value === 'string' && (DEPLOYMENT_STATUSES as readonly string[]).includes(value);
@@ -14,6 +15,17 @@ export const isDeploymentStatus = (value: unknown): value is DeploymentStatus =>
 
 export const isValidationStatus = (value: unknown): value is ValidationStatus => {
   return typeof value === 'string' && (VALIDATION_STATUSES as readonly string[]).includes(value);
+};
+
+type MarkedElement = { [RELATION_OBJECT_MARKING]?: string[] | null };
+
+/**
+ * Markings of a relationship generated for an (indicator, security platform) pair: the deployment, its hits sighting
+ * and the validation result sightings. Access to a relationship is checked on its own markings, so it carries those of
+ * both ends: a reader of the indicator never sees the deployments, hits or results of a more restricted platform.
+ */
+export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement): string[] => {
+  return [...new Set([...(indicator[RELATION_OBJECT_MARKING] ?? []), ...(platform[RELATION_OBJECT_MARKING] ?? [])])];
 };
 
 const OPTIONAL_DEPLOYED_ON_KEYS = [

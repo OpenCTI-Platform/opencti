@@ -70,7 +70,7 @@ testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 20;
+testUpdatedCounter.relationship = 21;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;

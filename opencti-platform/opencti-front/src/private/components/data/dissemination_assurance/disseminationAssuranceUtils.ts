@@ -149,6 +149,32 @@ export const sumStatuses = (buckets: ReadonlyArray<{ status: string; count: numb
 
 export type KpiId = 'disseminated' | 'deployed' | 'active' | 'validated' | 'missed';
 
+export interface DeploymentKpis {
+  disseminated: number;
+  deployed: number;
+  active: number;
+  failed: number;
+  validated: number;
+  missed: number;
+}
+
+/**
+ * Key figures of the KPI strip. They count deployments (one per indicator and security platform) from the status
+ * breakdowns, which use the same period and platform as the deployments listed under the strip, so a counter always
+ * equals the number of deployments its filter shows (see buildKpiFilters).
+ */
+export const computeDeploymentKpis = (
+  deploymentStatuses: ReadonlyArray<{ status: string; count: number }>,
+  validationStatuses: ReadonlyArray<{ status: string; count: number }>,
+): DeploymentKpis => ({
+  disseminated: sumStatuses(deploymentStatuses),
+  deployed: sumStatuses(deploymentStatuses, LIVE_DEPLOYMENT_STATUSES),
+  active: sumStatuses(deploymentStatuses, ['active']),
+  failed: sumStatuses(deploymentStatuses, ['failed']),
+  validated: sumStatuses(validationStatuses, PROVEN_VALIDATION_STATUSES),
+  missed: sumStatuses(validationStatuses, ['missed']),
+});
+
 const statusFilter = (key: string, values: string[]): FilterGroup => ({
   mode: 'and',
   filters: [{ key, values, operator: 'eq', mode: 'or' }],

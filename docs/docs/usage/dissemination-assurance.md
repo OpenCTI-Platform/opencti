@@ -90,9 +90,12 @@ From both tabs, an analyst with the *Update knowledge* capability can:
 
 Go to **Defense > Dissemination assurance**.
 
-- **Overview** shows the funnel from created to disseminated, deployed, validated and hit indicators, the
-  deployment and validation statuses, and the indicators that expired but are still deployed. The period can be
-  changed. An indicator counts as disseminated once a stream connector recorded it on a security platform, whatever
+- **Overview** starts with the key figures: disseminated, deployed, active, validated and missed. They count
+  deployments (one per indicator and security platform) recorded in the selected period, and each one filters the
+  list of deployments shown under it, so a figure always equals the number of deployments its list shows. Below,
+  the lifecycle funnel follows the indicators created in the period from created to disseminated, deployed,
+  validated and hit, with the indicators that expired but are still deployed, next to the deployment and validation
+  statuses. An indicator counts as disseminated once a stream connector recorded it on a security platform, whatever
   the outcome (pending, deployed, failed, removed or expired): the detection flag of an indicator is not evidence of
   dissemination.
 - **Lists** gives ready-made lists of the indicators that need attention: disseminated but not deployed (recorded

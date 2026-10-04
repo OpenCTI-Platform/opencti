@@ -15,6 +15,7 @@ import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types
 import { useDeploymentStatusLabel, useValidationStatusLabel } from './DisseminationStatusChips';
 import {
   buildKpiFilters,
+  computeDeploymentKpis,
   DISSEMINATION_ASSURANCE_DOCUMENTATION_URL,
   funnelShare,
   isDeploymentStatus,
@@ -173,34 +174,31 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDep
     return <FirstUseHero />;
   }
 
-  const reference = funnel.disseminated;
-  const failed = sumStatuses(metrics.deployment_statuses, ['failed']);
-  const missed = sumStatuses(metrics.validation_statuses, ['missed']);
-  const shareOfDisseminated = (value: number) => t_i18n('{share}% of the disseminated indicators', { values: { share: funnelShare(value, reference) } });
+  // The counters count the deployments listed under the strip, with the same period and platform.
+  const kpis = computeDeploymentKpis(metrics.deployment_statuses, metrics.validation_statuses);
+  const shareOfDisseminated = (value: number) => t_i18n('{share}% of the recorded deployments', { values: { share: funnelShare(value, kpis.disseminated) } });
   const counters: Array<Omit<KpiCounterProps, 'selected' | 'onSelect'>> = [
     {
       id: 'disseminated',
       label: t_i18n('Disseminated'),
-      value: n(funnel.disseminated),
-      caption: platformId
-        ? t_i18n('Indicators recorded on this platform')
-        : t_i18n('{share}% of the created indicators', { values: { share: funnelShare(funnel.disseminated, funnel.created) } }),
-      badge: failed > 0 ? t_i18n('{count, plural, one {# failed} other {# failed}}', { values: { count: failed } }) : undefined,
+      value: n(kpis.disseminated),
+      caption: t_i18n('Deployments recorded by the stream connectors'),
+      badge: kpis.failed > 0 ? t_i18n('{count, plural, one {# failed} other {# failed}}', { values: { count: kpis.failed } }) : undefined,
     },
-    { id: 'deployed', label: t_i18n('Deployed'), value: n(funnel.deployed), caption: shareOfDisseminated(funnel.deployed) },
+    { id: 'deployed', label: t_i18n('Deployed'), value: n(kpis.deployed), caption: shareOfDisseminated(kpis.deployed) },
     {
       id: 'active',
       label: t_i18n('Active'),
-      value: n(sumStatuses(metrics.deployment_statuses, ['active'])),
+      value: n(kpis.active),
       caption: t_i18n('Deployments the platform confirmed as live'),
     },
-    { id: 'validated', label: t_i18n('Validated'), value: n(funnel.validated), caption: shareOfDisseminated(funnel.validated) },
+    { id: 'validated', label: t_i18n('Validated'), value: n(kpis.validated), caption: shareOfDisseminated(kpis.validated) },
     {
       id: 'missed',
       label: t_i18n('Missed'),
-      value: n(missed),
+      value: n(kpis.missed),
       caption: t_i18n('Validation tests the platform did not catch'),
-      actionable: missed > 0,
+      actionable: kpis.missed > 0,
     },
   ];
   const selected = counters.find((counter) => counter.id === selectedKpi);
