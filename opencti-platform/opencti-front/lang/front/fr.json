@@ -4285,6 +4285,7 @@
   "Removal requested on this security platform": "Retrait demandé sur cette plateforme de sécurité",
   "REMOVE": "RETIRER",
   "Remove": "Retirer",
+  "Remove {indicator} from {platform}": "Retirer {indicator} de {platform}",
   "Remove access restrictions to the STIX bundle": "Supprimer les restrictions d'accès au STIX bundle",
   "Remove attribute": "Supprimer un attribut",
   "Remove bookmark": "Supprimer le favori",

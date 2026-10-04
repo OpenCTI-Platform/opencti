@@ -35,10 +35,12 @@ interface DeployedOnActionsProps {
   id: string;
   deploymentStatus: string | null | undefined;
   revoked: boolean | null | undefined;
+  indicatorName?: string | null;
+  platformName?: string | null;
 }
 
 /** Analyst actions on one deployment: ask the connector to deploy again, or withdraw it from this platform only. */
-const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsProps) => {
+const DeployedOnActions = ({ id, deploymentStatus, revoked, indicatorName, platformName }: DeployedOnActionsProps) => {
   const { t_i18n } = useFormatter();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [commitRetry, retrying] = useApiMutation<DeployedOnActionsRetryMutation>(deployedOnRetryMutation);
@@ -112,7 +114,9 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked }: DeployedOnActionsP
       <Dialog
         open={confirmRemove}
         onClose={() => setConfirmRemove(false)}
-        title={t_i18n('Remove from this platform')}
+        title={indicatorName && platformName
+          ? t_i18n('Remove {indicator} from {platform}', { values: { indicator: indicatorName, platform: platformName } })
+          : t_i18n('Remove from this platform')}
         size="small"
       >
         <Typography>
