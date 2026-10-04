@@ -690,6 +690,10 @@ export const collectDigestContent = async (
   return acc;
 };
 
+// Event types whose notification carries its own message (which timeline anchor changed, which milestone was added),
+// kept as it is by a digest instead of the generic message of the instance
+const EVENT_TYPES_WITH_OWN_MESSAGE: string[] = [TriggerEventType.TimelineAnchorChanged, TriggerEventType.TimelineMilestoneAdded];
+
 export const handleDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   // Get digest that need to be executed
@@ -716,11 +720,12 @@ export const handleDigestNotifications = async (context: AuthContext) => {
           const target = convertToNotificationUser(user, notifiers);
           const dataPromises = userNotifications.map(async (n) => {
             const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+            const ownMessage = userTarget && EVENT_TYPES_WITH_OWN_MESSAGE.includes(userTarget.type) ? userTarget.message : null;
             return ({
               notification_id: n.notification_id,
               type: userTarget?.type ?? type,
               instance: n.data,
-              message: await generateNotificationMessageForInstance(context, user, n.data),
+              message: ownMessage || await generateNotificationMessageForInstance(context, user, n.data),
               origin: n.origin,
               streamMessage: n.streamMessage,
             });

@@ -186,6 +186,20 @@ describe('handleDigestNotifications', () => {
     expect(digestEvent.data).toHaveLength(2); // only the two trigger-A events
   });
 
+  it('keeps the own message of timeline events and builds the message of the other events', async () => {
+    const milestoneMessage = '[timeline] `Ransomware on the file servers`: containment `Hosts isolated` at 2026-02-05T10:00:00.000Z';
+    const milestone = liveEvent('trigger-A', DIGEST_USER_ID);
+    milestone.targets = [{ ...milestone.targets[0], type: 'timeline_milestone_added', message: milestoneMessage }];
+    const created = liveEvent('trigger-A', DIGEST_USER_ID);
+    created.targets = [{ ...created.targets[0], type: 'create', message: 'm' }];
+    driveBatches([[milestone, created]]);
+    await handleDigestNotifications({} as AuthContext);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: { type: string; message: string }[] };
+    expect(digestEvent.data[0]).toMatchObject({ type: 'timeline_milestone_added', message: milestoneMessage });
+    expect(digestEvent.data[1].type).toEqual('create');
+    expect(digestEvent.data[1].message).toContain('repr');
+  });
+
   it('does not emit a digest event when no collected event matches the digest', async () => {
     driveBatches([[liveEvent('trigger-other', DIGEST_USER_ID)]]);
     await handleDigestNotifications({} as AuthContext);
