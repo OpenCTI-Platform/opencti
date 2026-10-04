@@ -271,10 +271,10 @@ const GraphClusters = () => {
       label: 'Representative entities',
       percentWidth: 38,
       isSortable: false,
-      render: ({ representatives, members_count }: GraphClusters_cluster$data) => {
+      render: ({ representatives }: GraphClusters_cluster$data) => {
         const shown = representatives.slice(0, REPRESENTATIVES_SHOWN);
-        const more = Math.max(0, members_count - shown.length);
         const hiddenNames = representatives.slice(REPRESENTATIVES_SHOWN).map((entity) => entity.representative.main);
+        const more = hiddenNames.length;
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
             {shown.map((entity) => (
@@ -287,7 +287,7 @@ const GraphClusters = () => {
                     <Text variant="content-caption" as="span">{t_i18n('and {count} more', { values: { count: more } })}</Text>
                   </span>
                 </TooltipTrigger>
-                {hiddenNames.length > 0 && <TooltipContent>{hiddenNames.join(', ')}</TooltipContent>}
+                <TooltipContent>{hiddenNames.join(', ')}</TooltipContent>
               </Tooltip>
             )}
           </Box>
