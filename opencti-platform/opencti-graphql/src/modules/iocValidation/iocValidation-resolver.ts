@@ -11,6 +11,7 @@ import {
   findIocValidationRequestsPaginated,
   loadRequestConnector,
   loadRequestDeployments,
+  loadRequestPairOutcomes,
   loadRequestPlatforms,
   readableResultsSummary,
   reportIocValidationResults,
@@ -36,6 +37,7 @@ const iocValidationResolvers: Resolvers = {
     iocs: async (request, _, context) => (await filterReadableIocs(context, context.user!, request as never)).iocs as never,
     skipped: (request, _, context) => filterReadableSkipped(context, context.user!, request as never) as never,
     deployments: (request, _, context) => loadRequestDeployments(context, context.user!, request as never) as never,
+    pair_outcomes: (request, _, context) => loadRequestPairOutcomes(context, context.user!, request as never),
     connector: (request, _, context) => loadRequestConnector(context, context.user!, request as never) as never,
     requested_by: (request, _, context) => {
       const requesterId = requesterIdOf(request as never);

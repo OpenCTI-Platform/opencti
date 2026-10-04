@@ -424,6 +424,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       expect(revoked.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toEqual(flaggedOnly + 1);
       const global = await queryAsAdminWithSuccess({ query: METRICS, variables: {} });
       expect(global.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toBeGreaterThanOrEqual(2);
+      // More expired indicators than live deployments on the platform: the count scans the live deployments instead
+      const first = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+      await elUpdate(testContext, first._index, indicatorId, setCounterScript('ctx._source.revoked = true'));
+      try {
+        const bothRevoked = await queryAsAdminWithSuccess({ query: METRICS, variables: { platformId } });
+        expect(bothRevoked.data?.disseminationAssuranceMetrics.funnel.expired_still_deployed).toEqual(flaggedOnly + 1);
+      } finally {
+        await elUpdate(testContext, first._index, indicatorId, setCounterScript('ctx._source.revoked = false'));
+      }
     } finally {
       await elUpdate(testContext, stored._index, secondIndicatorId, setCounterScript('ctx._source.revoked = false'));
     }

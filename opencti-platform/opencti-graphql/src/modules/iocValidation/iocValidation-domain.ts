@@ -331,6 +331,8 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
   // can never both take the same deployment (the keys are sorted, the locks released whatever happens).
   const lock = await lockResources([...new Set(pairs.map((pair) => pairLockKey(pair.indicator_id, pair.platform_id)))].sort());
   let request: StoreEntityIocValidationRequest;
+  // Outcome each earlier request got for the pairs taken over here, by request
+  const takenOver = new Map<string, Map<string, string>>();
   try {
     const claimed: IocValidationPair[] = [];
     const claimedDeployments: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
@@ -342,6 +344,11 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
       if (stillEligible) {
         claimed.push(pair);
         claimedDeployments.push(current);
+        if (current.validation_run_id && current.validation_status) {
+          const outcomes = takenOver.get(current.validation_run_id) ?? new Map<string, string>();
+          outcomes.set(current.internal_id, current.validation_status);
+          takenOver.set(current.validation_run_id, outcomes);
+        }
       } else {
         skipped.push({ indicator_id: pair.indicator_id, platform_id: pair.platform_id, reason: 'Already waiting for the results of another validation request' });
       }
@@ -375,6 +382,9 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
   } finally {
     await lock.unlock();
   }
+  await BluePromise.map([...takenOver.entries()], ([requestId, outcomes]) => {
+    return recordTakenOverOutcomes(contextOutOfDraft, requestId, outcomes);
+  }, { concurrency: CONCURRENCY });
   await addIocValidationRequestCreationCount();
   return dispatchIocValidationRequest(contextOutOfDraft, request);
 };
@@ -720,6 +730,22 @@ export const summarizeRequestPairs = (pairs: IocValidationPair[], skipped: numbe
   return summarizeValidationResults(pairs.length, skipped, pairs.map((pair) => pair.validation_status).filter((status): status is string => !!status));
 };
 
+// A newer request took these deployments over: the earlier request keeps the outcome it got for them.
+const recordTakenOverOutcomes = async (context: AuthContext, requestId: string, outcomes: Map<string, string>) => {
+  try {
+    await withRequestLock(requestId, async () => {
+      const request = await findIocValidationRequest(context, SYSTEM_USER, requestId);
+      if (!request) return;
+      const pairs = (request.pairs ?? []).map((pair) => {
+        return outcomes.has(pair.deployed_on_id) ? { ...pair, validation_status: outcomes.get(pair.deployed_on_id) } : pair;
+      });
+      await setRequestAttributes(context, request, { pairs, results_summary: summarizeRequestPairs(pairs, request.skipped?.length ?? 0) });
+    });
+  } catch (error) {
+    logApp.error('[IOC-VALIDATION] Cannot record the outcomes of a request taken over by a newer one', { cause: error, requestId });
+  }
+};
+
 // Must run under the request lock: reads the request again and refreshes its summary, completion and timeout.
 const refreshIocValidationRequest = async (context: AuthContext, requestId: string, now: number) => {
   const request = await findIocValidationRequest(context, SYSTEM_USER, requestId);
@@ -837,6 +863,15 @@ export const loadRequestPlatforms = (context: AuthContext, user: AuthUser, reque
 export const loadRequestDeployments = (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = (request.pairs ?? []).map((pair) => pair.deployed_on_id);
   return loadReadableByIds<BasicStoreRelationDeployedOn>(context, user, ids, RELATION_DEPLOYED_ON);
+};
+
+// The outcome of each readable pair for this request, never the verdict of a newer request on the same deployment
+export const loadRequestPairOutcomes = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+  const deployments = await loadRequestDeployments(context, user, request);
+  const readableIds = new Set(deployments.map((deployment) => deployment.internal_id));
+  const bound = deployments.filter((deployment) => deployment.validation_run_id === request.internal_id);
+  const pairs = (request.pairs ?? []).filter((pair) => readableIds.has(pair.deployed_on_id));
+  return withPairOutcomes(pairs, bound).map((pair) => ({ deployed_on_id: pair.deployed_on_id, validation_status: pair.validation_status ?? null }));
 };
 
 export const loadRequestConnector = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {

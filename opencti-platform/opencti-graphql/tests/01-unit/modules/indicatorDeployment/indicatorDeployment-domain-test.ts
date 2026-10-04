@@ -203,8 +203,10 @@ describe('deployment manager stream extraction', () => {
       update({ type: 'relationship', relationship_type: 'deployed-on', extensions: { [ext]: { id: 'deployment-1', source_ref: 'indicator-5' } } }, '/object_marking_refs/0'),
       // With organization sharing enforced, an individual creator reads the deployments it created
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-6', type: 'Indicator' } } }, '/created_by_ref'),
+      // A merge moves the pair relationships of the merged elements to the target, whatever its own fields
+      ({ id: '3', event: 'merge', data: { type: 'merge', data: { type: 'identity', extensions: { [ext]: { id: 'platform-3', type: 'SecurityPlatform' } } }, context: { patch: [] } } }) as unknown as SseEvent<DataEvent>,
     ]);
-    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5', 'indicator-6'], platformIds: ['platform-1', 'platform-2'] });
+    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5', 'indicator-6'], platformIds: ['platform-1', 'platform-2', 'platform-3'] });
     expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
   });
 });
