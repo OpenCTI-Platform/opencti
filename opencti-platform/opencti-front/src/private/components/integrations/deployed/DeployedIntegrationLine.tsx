@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -10,6 +10,7 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, so every
@@ -93,7 +94,6 @@ export interface DeployedIntegrationLineProps {
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -115,7 +115,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   return (
     <Box
       data-testid="integration-line"
-      onClick={() => navigate(item.detailUrl)}
+      // A real link, so ctrl/cmd and middle click open the detail in a new tab.
+      component={Link}
+      to={item.detailUrl}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -123,6 +125,8 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         paddingInline: 1.5,
         paddingBlock: 0.75,
         cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'inherit',
         transition: 'background-color 0.2s ease-in-out',
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -285,7 +289,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         )}
       </Box>
       {/* Status column. */}
-      <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
+      <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />
           : <ItemBoolean status={item.status === 'active'} label={statusText} />}
