@@ -159,6 +159,7 @@ import {
   organizationIdsOf,
   representativeNameOf,
   runCitedIds,
+  runReceivedIds,
   withheldRunContent,
   withoutMemberRestricted,
 } from './investigationRun-utils';
@@ -715,8 +716,13 @@ const deltaOf = async (exec: RunExecution, wave: InvestigationEnrichmentWave, re
     topRelationsList<BasicStoreRelation>(exec.draftContext, exec.runUser, STIX_RELATIONSHIP_TYPES, query) as unknown as Promise<BasicStoreRelation[]>,
   ]);
   const connectorNames = R.uniq(requests.map((request) => request.connector_name ?? request.connector_id));
+  // A relationship to an entity the run may not read is left out with it, as in the context.
+  const endpointIds = R.uniq(relationships.flatMap((relationship) => [relationship.fromId, relationship.toId]));
+  const readableEndpoints = new Set(withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, endpointIds))
+    .map((element) => element.internal_id));
+  const readableRelationships = relationships.filter((relationship) => readableEndpoints.has(relationship.fromId) && readableEndpoints.has(relationship.toId));
   // Sent to the engine: what is restricted to authorized members stays out, as in the context.
-  return withoutMemberRestricted([...entities, ...relationships])
+  return withoutMemberRestricted([...entities, ...readableRelationships])
     .filter((element) => (element as unknown as { draft_change?: { draft_operation?: string } }).draft_change?.draft_operation)
     .slice(0, INVESTIGATION_LIMITS.waveDelta)
     .map((element) => ({
@@ -726,6 +732,8 @@ const deltaOf = async (exec: RunExecution, wave: InvestigationEnrichmentWave, re
       representative: representativeNameOf(element),
       connector_name: connectorNames.length === 1 ? connectorNames[0] : null,
       action: (element as unknown as { draft_change?: { draft_operation?: string } }).draft_change?.draft_operation === 'create' ? 'created' : 'updated',
+      from_id: (element as unknown as { fromId?: string }).fromId ?? null,
+      to_id: (element as unknown as { toId?: string }).toId ?? null,
     }));
 };
 
@@ -867,26 +875,26 @@ const withLiveVersions = async (elements: BasicStoreCommon[], extraIds: string[]
 };
 
 // What a mirrored revision carries the access of: what it cites, its subject,
-// its case and the context the engine received.
+// its case and everything else the engine received.
 const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
   const ids = revisionCitedIds(evidence, conclusion);
   const cited = ids.length === 0 ? [] : withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
-  return withLiveVersions(cited, [exec.run.subject_id, exec.run.case_id, ...(exec.run.context_ids ?? [])].filter((id): id is string => !!id));
+  return withLiveVersions(cited, [exec.run.subject_id, exec.run.case_id, ...runReceivedIds(exec.run)].filter((id): id is string => !!id));
 };
 
 // A run and its outputs carry markings and organization sharing, never a member
 // restriction, and its markings were copied from what its identity read. The
 // run stops before anything more is sent to the engine or mirrored once its
 // subject or its case is no longer readable by that identity, or once one of
-// them, an object the engine received as context or an object it cites is
-// restricted to authorized members.
+// them, an object the engine received (context or enrichment result) or an
+// object it cites is restricted to authorized members.
 // Restrictions are read on the live objects by the manager, whoever they hide
 // the object from: the copy a draft holds of a live object keeps the
 // restrictions it had when it was copied, and a restriction that excludes the
 // run identity would hide the object from it.
 const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string } | null> => {
   const { run } = exec;
-  const ids = R.uniq([run.subject_id, run.case_id, ...(run.context_ids ?? []), ...citedIds].filter((id): id is string => !!id));
+  const ids = R.uniq([run.subject_id, run.case_id, ...runReceivedIds(run), ...citedIds].filter((id): id is string => !!id));
   const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
   const [allLive, readableLive, inDraft] = await Promise.all([
     findElements(managerContext, INVESTIGATION_MANAGER_USER, ids),

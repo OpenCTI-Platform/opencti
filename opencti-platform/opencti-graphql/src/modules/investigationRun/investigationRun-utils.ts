@@ -101,12 +101,23 @@ export const runCitedIds = (run: BasicStoreEntityInvestigationRun): string[] => 
   ...(run.recommendations ?? []).flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
 ])).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
 
-/** What a run carries the access of: its subject, its case, the context the engine received and what it cites. */
+/**
+ * What the engine received besides what it cites: the context of each start
+ * and what the enrichment waves brought, relationship endpoints included. The
+ * standard ids reach the live versions of what the waves created in the draft
+ * once it is validated.
+ */
+export const runReceivedIds = (run: BasicStoreEntityInvestigationRun): string[] => Array.from(new Set([
+  ...(run.context_ids ?? []),
+  ...(run.enrichment_waves ?? []).flatMap((wave) => (wave.delta ?? []).flatMap((object) => [object.id, object.standard_id, object.from_id, object.to_id])),
+].filter((id): id is string => !!id)));
+
+/** What a run carries the access of: its subject, its case, what the engine received and what it cites. */
 export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] => Array.from(new Set([
   run.subject_id,
   run.case_id,
   ...(run.case_ids ?? []),
-  ...(run.context_ids ?? []),
+  ...runReceivedIds(run),
   ...runCitedIds(run),
 ].filter((id): id is string => !!id)));
 

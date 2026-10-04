@@ -4,11 +4,18 @@ import {
   isCreationSharingWidened,
   isMemberRestricted,
   runCitedIds,
+  runReceivedIds,
   runSourceIds,
   withheldRunContent,
   withoutMemberRestricted,
 } from '../../../../src/modules/investigationRun/investigationRun-utils';
-import { InvestigationApprovalKind, InvestigationApprovalStatus, InvestigationEnrichmentRequestStatus, InvestigationStepStatus } from '../../../../src/generated/graphql';
+import {
+  InvestigationApprovalKind,
+  InvestigationApprovalStatus,
+  InvestigationEnrichmentRequestStatus,
+  InvestigationEnrichmentWaveStatus,
+  InvestigationStepStatus,
+} from '../../../../src/generated/graphql';
 import { buildRun } from './investigationRun-fixtures';
 import { RELATION_GRANTED_TO } from '../../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
@@ -94,6 +101,25 @@ describe('Case Autopilot access boundary of a run', () => {
   it('carries the access of the context the engine received, cited or not', () => {
     const run = { ...coursedRun(), context_ids: ['report-1', 'relationship-1', 'ip-1'] };
     expect(runSourceIds(run)).toEqual(['incident-1', 'case-1', 'case-incident--1', 'report-1', 'relationship-1', 'ip-1', 'indicator-1', 'apt28', 'coa-1']);
+  });
+
+  it('names what the engine received: the context and what the enrichment waves brought, endpoints included', () => {
+    const run = buildRun({
+      context_ids: ['report-1'],
+      enrichment_waves: [{
+        id: 'wave-1',
+        status: InvestigationEnrichmentWaveStatus.Completed,
+        requested_at: '2026-10-04T10:00:00.000Z',
+        request_ids: ['request-1'],
+        delta_computed: true,
+        delta: [
+          { id: 'domain-1', standard_id: 'domain-name--1', entity_type: 'Domain-Name', action: 'created' },
+          { id: 'rel-1', standard_id: 'relationship--1', entity_type: 'resolves-to', action: 'created', from_id: 'domain-1', to_id: 'ip-9' },
+        ],
+      }],
+    });
+    expect(runReceivedIds(run)).toEqual(['report-1', 'domain-1', 'domain-name--1', 'rel-1', 'relationship--1', 'ip-9']);
+    expect(runSourceIds(run)).toEqual(expect.arrayContaining(['report-1', 'domain-name--1', 'rel-1', 'ip-9']));
   });
 
   it('withholds everything a run derived, and the approvals and requests quoting it', () => {

@@ -277,6 +277,9 @@ export interface InvestigationDeltaObject {
   representative?: string | null;
   connector_name?: string | null;
   action: 'created' | 'updated';
+  // The endpoints of a relationship, sent to the engine with it.
+  from_id?: string | null;
+  to_id?: string | null;
 }
 
 // One call of the engine's enrichment querier: the jobs it asked for, and
