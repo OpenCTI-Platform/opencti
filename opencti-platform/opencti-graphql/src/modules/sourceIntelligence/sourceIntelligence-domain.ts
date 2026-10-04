@@ -23,6 +23,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalOb
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { ConnectorType, type EditInput, type FilterGroup } from '../../generated/graphql';
 import { extractFilterKeys } from '../../utils/filtering/filtering-utils';
+import { generateStandardId } from '../../schema/identifier';
 import {
   ENTITY_TYPE_INGESTION_CSV,
   ENTITY_TYPE_INGESTION_JSON,
@@ -771,8 +772,8 @@ export const isKeptOutsideDiscovery = (source: BasicStoreEntitySource & { descri
 type CuratedSource = BasicStoreEntitySource & { description?: string | null };
 
 /**
- * Two analyst sources reference the same user once their users were merged: the oldest is kept and takes over what the
- * other one holds before it is removed. Its recommendations follow it, so a change applied to the other one can still
+ * Two analyst sources reference the same user once their users were merged: the kept one takes over what the other
+ * one holds before it is removed. Its recommendations follow it, so a change applied to the other one can still
  * be reverted; what a person curated on the other one is kept where the kept source has nothing of its own (a disabled
  * or quarantined state wins, as the revert of the recommendation that set it now targets the kept source); its daily
  * snapshots fill the days the kept source has no snapshot of.
@@ -816,11 +817,13 @@ export const mergeDuplicateSource = async (context: AuthContext, duplicate: Cura
 export const syncSources = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
   const candidates = await collectSourceCandidates(context, settings);
   const existing = await listAllSources(context);
-  // Two analyst sources reference the same user once their users were merged: the oldest one, with the longest
-  // history, is kept, takes over what the other one holds, and the other one is removed
+  // Two analyst sources reference the same user once their users were merged: the one whose identity matches the
+  // shared kind and reference (the one a new discovery of it resolves to) is kept, takes over what the other one holds,
+  // and the other one is removed
   const existingByKey = new Map<string, BasicStoreEntitySource>();
   const duplicates: BasicStoreEntitySource[] = [];
-  const sorted = [...existing].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  const isCanonical = (source: BasicStoreEntitySource) => source.standard_id === generateStandardId(ENTITY_TYPE_SOURCE, source);
+  const sorted = [...existing].sort((a, b) => Number(isCanonical(b)) - Number(isCanonical(a)) || a.internal_id.localeCompare(b.internal_id));
   for (let i = 0; i < sorted.length; i += 1) {
     const source = sorted[i];
     const key = `${source.source_kind}|${source.ref_id}`;

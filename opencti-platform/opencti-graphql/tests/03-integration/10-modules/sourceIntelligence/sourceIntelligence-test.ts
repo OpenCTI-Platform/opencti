@@ -25,6 +25,7 @@ import {
 import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import { v4 as uuidv4 } from 'uuid';
 import { createEntity, deleteElementById, patchAttribute } from '../../../../src/database/middleware';
+import { elUpdate } from '../../../../src/database/engine';
 import { resolveFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../../src/types/store';
@@ -492,11 +493,12 @@ describe('Source intelligence', () => {
   });
 
   it('should hand the recommendations, curation and history of a duplicate analyst source over to the kept one', async () => {
-    // Two analyst sources of one user, as a user merge leaves them: the oldest is kept
+    // Two analyst sources of one user, as a user merge leaves them: the one created for the other user now references
+    // the kept user too, while its identity still comes from the user it was created for
     const refId = uuidv4();
-    const createAnalystSource = (name: string, extra: Record<string, unknown> = {}) => createEntity(testContext, ADMIN_USER, {
+    const createAnalystSource = (name: string, ref: string, extra: Record<string, unknown> = {}) => createEntity(testContext, ADMIN_USER, {
       source_kind: 'manual',
-      ref_id: refId,
+      ref_id: ref,
       ref_type: 'User',
       name,
       source_user_ids: [],
@@ -504,8 +506,10 @@ describe('Source intelligence', () => {
       quarantined: false,
       ...extra,
     }, ENTITY_TYPE_SOURCE);
-    const kept = await createAnalystSource('Source intelligence merged analyst');
-    const duplicate = await createAnalystSource('Source intelligence merged analyst (duplicate)', { tags: ['reviewed'] });
+    const kept = await createAnalystSource('Source intelligence merged analyst', refId);
+    const duplicate = await createAnalystSource('Source intelligence merged analyst (duplicate)', uuidv4(), { tags: ['reviewed'] });
+    const stored = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, duplicate.internal_id, ENTITY_TYPE_SOURCE);
+    await elUpdate(testContext, stored?._index as string, duplicate.internal_id, { doc: { ref_id: refId } });
     const { created } = await upsertProposals(testContext, [{
       kind: 'retire',
       source_id: duplicate.internal_id,
