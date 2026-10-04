@@ -126,7 +126,7 @@ const DEFENSE_TECHNIQUE = gql`
 const DEFENSE_GAPS = gql`
   query DefenseGaps($platformIds: [String!], $threatScope: DefenseThreatScope, $filter: DefenseGapsFilter) {
     defenseGaps(platformIds: $platformIds, threatScope: $threatScope, filter: $filter, first: 50) {
-      edges { node { id attack_pattern_id platform_id level recommended_action threats_count priority last_validation_requested_at } }
+      edges { node { id attack_pattern_id platform_id level recommended_action threats_count priority last_validation_requested_at requiredDataComponents { id } ruleCandidates(first: 3) { id } } }
       pageInfo { globalCount hasNextPage }
     }
   }
@@ -363,6 +363,9 @@ describe('Threat-informed defense matrix', () => {
       level: LEVEL_DETECTION_DEPLOYED,
       recommended_action: 'validate',
       threats_count: 1,
+      // The platform provides the detecting telemetry and the only rule is deployed on it
+      requiredDataComponents: [],
+      ruleCandidates: [],
     }));
     expect(gaps[0].priority).toBeGreaterThan(0);
     const usedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, threatScope: { mode: 'NONE' }, filter: { search: MITRE_ID, onlyUsedByThreats: true } } });

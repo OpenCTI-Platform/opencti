@@ -201,7 +201,11 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
     deployed: t_i18n('{count, plural, one {# deployed} other {# deployed}}', { values: { count: counts.deployed } }),
     gaps: t_i18n('{count, plural, one {# gap} other {# gaps}}', { values: { count: counts.gaps } }),
   };
-  const platformNames = scope.platformIds.map((id) => defensePlatforms.find((platform) => platform.id === id)?.name ?? id);
+  // A saved platform that was deleted or is no longer visible is left out, as the matrix itself does
+  const scopedPlatforms = scope.platformIds.flatMap((id) => {
+    const platform = defensePlatforms.find((p) => p.id === id);
+    return platform ? [{ id: platform.id, name: platform.name }] : [];
+  });
   const threatScopeLabel = scope.threatMode === 'SELECTED'
     ? t_i18n('{count, plural, one {# selected threat} other {# selected threats}}', { values: { count: scope.threats.length } })
     : t_i18n(DEFENSE_THREAT_SCOPE_LABELS[scope.threatMode]);
@@ -224,9 +228,9 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
         <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap spacing={2} data-testid="defense-matrix-header">
           <Stack spacing={1}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap aria-label={t_i18n('Scope')}>
-              {platformNames.length === 0
+              {scopedPlatforms.length === 0
                 ? <Chip label={t_i18n('All security platforms')} />
-                : platformNames.map((name) => <Chip key={name} label={name} />)}
+                : scopedPlatforms.map((platform) => <Chip key={platform.id} label={platform.name} />)}
               <Chip label={threatScopeLabel} />
             </Stack>
             <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap role="group" aria-label={t_i18n('Filter the matrix by defense level')}>
@@ -259,7 +263,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
         open={validating}
         onClose={() => setValidating(false)}
         techniques={validationTargets}
-        platforms={scope.platformIds.map((id, index) => ({ id, name: platformNames[index] }))}
+        platforms={scopedPlatforms}
         threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
       />
       <Card title={t_i18n('Defense coverage')}>

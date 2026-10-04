@@ -96,6 +96,7 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
   const [active, setActive] = useState(true);
   const [options, setOptions] = useState<NameOption[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestId = useRef(0);
   const [commitAdd, adding] = useApiMutation<DefenseLogsourceMappingFormAddMutation>(defenseLogsourceMappingFormAddMutation);
   const [commitPatch, patching] = useApiMutation<DefenseLogsourceMappingFormPatchMutation>(defenseLogsourceMappingFormPatchMutation);
 
@@ -115,10 +116,14 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
 
   const search = (input: string) => {
     if (timer.current) clearTimeout(timer.current);
+    // Only the response to the latest input may replace the options
+    requestId.current += 1;
+    const current = requestId.current;
     timer.current = setTimeout(() => {
       fetchQuery(defenseLogsourceMappingFormSearchQuery, { search: input })
         .toPromise()
         .then((data) => {
+          if (current !== requestId.current) return;
           const edges = (data as DefenseLogsourceMappingFormSearchQuery$data | undefined)?.dataComponents?.edges ?? [];
           setOptions(edges.flatMap((edge) => (edge?.node ? [toOption(edge.node.name)] : [])));
         });

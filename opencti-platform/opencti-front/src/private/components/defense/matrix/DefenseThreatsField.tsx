@@ -40,9 +40,10 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
 
   const search = (input: string) => {
     if (timer.current) clearTimeout(timer.current);
+    // New input makes the request in flight stale at once, not only when the debounce fires
+    requestId.current += 1;
+    const current = requestId.current;
     timer.current = setTimeout(() => {
-      requestId.current += 1;
-      const current = requestId.current;
       setLoading(true);
       fetchQuery(defenseThreatsFieldSearchQuery, { types: DEFENSE_THREAT_TYPES, search: input, first: SEARCH_SIZE })
         .toPromise()

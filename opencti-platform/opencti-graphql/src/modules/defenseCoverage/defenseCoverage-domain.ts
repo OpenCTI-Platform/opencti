@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import DataLoader from 'dataloader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
@@ -707,8 +708,41 @@ export const defenseTechniqueGaps = async (context: AuthContext, user: AuthUser,
   return attachGapRecords(context, user, gaps);
 };
 
+// Field resolvers run once per gap: the gaps of one page are resolved together, one lookup per field
+const requestLoaders = new WeakMap<AuthContext, Map<string, DataLoader<DefenseGapView, unknown>>>();
+const loaderForRequest = <V>(context: AuthContext, key: string, batch: (gaps: readonly DefenseGapView[]) => Promise<V[]>) => {
+  let loaders = requestLoaders.get(context);
+  if (!loaders) {
+    loaders = new Map();
+    requestLoaders.set(context, loaders);
+  }
+  let loader = loaders.get(key);
+  if (!loader) {
+    loader = new DataLoader<DefenseGapView, unknown>(batch, { cache: false });
+    loaders.set(key, loader);
+  }
+  return loader as DataLoader<DefenseGapView, V>;
+};
+
 export const defenseGapRequiredDataComponents = async (context: AuthContext, user: AuthUser, gap: DefenseGapView) => {
-  return findByIdsChunked<BasicStoreEntityDataComponent>(context, user, gap.required_data_component_ids, { type: ENTITY_TYPE_DATA_COMPONENT });
+  const loader = loaderForRequest<BasicStoreEntityDataComponent[]>(context, `required-data-components:${user.id}`, async (gaps) => {
+    const ids = uniq(gaps.flatMap((g) => g.required_data_component_ids));
+    const dataComponents = await findByIdsChunked<BasicStoreEntityDataComponent>(context, user, ids, { type: ENTITY_TYPE_DATA_COMPONENT });
+    const byId = new Map<string, BasicStoreEntityDataComponent>();
+    dataComponents.forEach((dc) => {
+      const stixIds = (dc as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
+      [dc.internal_id, dc.standard_id, ...stixIds].forEach((id) => byId.set(id, dc));
+    });
+    return gaps.map((g) => {
+      const resolved = new Map<string, BasicStoreEntityDataComponent>();
+      g.required_data_component_ids.forEach((id) => {
+        const dc = byId.get(id);
+        if (dc) resolved.set(dc.internal_id, dc);
+      });
+      return Array.from(resolved.values());
+    });
+  });
+  return loader.load(gap);
 };
 
 // Field resolvers run once per node: share the full lists they need for the duration of one request
@@ -778,8 +812,12 @@ const loadRuleCandidates = async (
 };
 
 export const defenseGapRuleCandidates = async (context: AuthContext, user: AuthUser, gap: DefenseGapView, first?: number | null) => {
-  const candidates = await loadRuleCandidates(context, user, [gap]);
-  return (candidates.get(gap.id) ?? []).slice(0, Math.min(Math.max(first ?? DEFAULT_RULE_CANDIDATES, 1), 50));
+  const loader = loaderForRequest<BasicStoreEntityIndicator[]>(context, `rule-candidates:${user.id}`, async (gaps) => {
+    const candidatesByGap = await loadRuleCandidates(context, user, [...gaps]);
+    return gaps.map((g) => candidatesByGap.get(g.id) ?? []);
+  });
+  const candidates = await loader.load(gap);
+  return candidates.slice(0, Math.min(Math.max(first ?? DEFAULT_RULE_CANDIDATES, 1), 50));
 };
 
 export const defenseGapValidationCoverage = async (context: AuthContext, user: AuthUser, request: DefenseGapValidationRequest) => {
