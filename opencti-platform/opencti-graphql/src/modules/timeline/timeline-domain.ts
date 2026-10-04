@@ -629,6 +629,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     if (current && !(await findTimelineEvent(context, user, internalId))) {
       throw ForbiddenAccess('A timeline event you cannot access already uses this external id');
     }
+    // Nor one above his confidence level, like any edit of the event
+    if (current) controlUserConfidenceAgainstElement(user, current as unknown as BasicStoreEntity);
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
@@ -806,15 +808,19 @@ const writeImportedContributions = async (
   const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
   const readableIds = new Set(readable.map((e) => e.internal_id));
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
+  const storedById = new Map(storedManual.map((e) => [e.internal_id, e]));
   const candidates = events.map((event) => {
     const existing = findKnownEvent(event);
     const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
     const overwritesUnreadable = storedIds.has(internalId) && !readableIds.has(internalId);
-    return { event, existing, internalId, markings: overwritesUnreadable ? null : importableMarkings(event) };
+    // Nor is a stored event above the confidence level of the user overwritten, like any edit of the event
+    const stored = existing ?? storedById.get(internalId);
+    const overwritesAboveConfidence = !!stored && !controlUserConfidenceAgainstElement(user, stored as unknown as BasicStoreEntity, true);
+    return { event, existing, internalId, markings: overwritesUnreadable || overwritesAboveConfidence ? null : importableMarkings(event) };
   });
   const skipped = candidates.filter((candidate) => candidate.markings === null).length;
   if (skipped > 0) {
-    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, or event not readable', { containerId: container.internal_id, skipped });
+    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, event not readable or above the confidence level', { containerId: container.internal_id, skipped });
   }
   // New milestones stay within the cap of the case, updates of known events always apply
   const accepted = candidates.filter((candidate) => candidate.markings !== null);
