@@ -14,7 +14,16 @@ import {
   topRelationsList,
 } from '../../database/middleware-loader';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elRawUpdateByQuery, elUpdate } from '../../database/engine';
-import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+  UPDATE_OPERATION_ADD,
+} from '../../database/utils';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { lockResources } from '../../lock/master-lock';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
@@ -268,6 +277,27 @@ const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
 
 type ReportOutcome = 'created' | 'updated' | 'unchanged';
 
+/**
+ * A pair relationship that lacks a marking of its indicator or of its security platform (created before the end got
+ * it) gets it on the next report, as a new one would: a report never leaves it less restricted than its ends.
+ */
+const ensurePairMarkings = async (
+  context: AuthContext,
+  user: AuthUser,
+  relation: { internal_id: string; entity_type: string; [RELATION_OBJECT_MARKING]?: string[] | null },
+  indicator: BasicStoreEntityIndicator,
+  platform: BasicStoreEntitySecurityPlatform,
+) => {
+  const current = relation[RELATION_OBJECT_MARKING] ?? [];
+  const cleaned = await cleanMarkings(context, [...current, ...pairMarkings(indicator, platform)]);
+  const missing = cleaned
+    .map((marking: { internal_id?: string } | string) => (typeof marking === 'string' ? marking : marking.internal_id))
+    .filter((id: string | undefined): id is string => !!id && !current.includes(id));
+  if (missing.length > 0) {
+    await patchAttribute(context, user, relation.internal_id, relation.entity_type, { [INPUT_MARKINGS]: missing }, { operations: { [INPUT_MARKINGS]: UPDATE_OPERATION_ADD } });
+  }
+};
+
 // Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
@@ -283,6 +313,9 @@ const applyDeploymentReport = async (
   try {
     const now = new Date();
     const existing = await findDeployedOn(context, user, indicator.internal_id, platform.internal_id);
+    if (existing) {
+      await ensurePairMarkings(context, user, existing, indicator, platform);
+    }
     const change = computeDeploymentChange(existing, report, now);
     if (!existing) {
       const element = await createRelation(context, user, {
@@ -404,6 +437,12 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       sightingStixId,
       { type: STIX_SIGHTING_RELATIONSHIP },
     );
+    if (existing) {
+      await ensurePairMarkings(context, user, existing, indicator, platform);
+    }
+    if (existingSighting) {
+      await ensurePairMarkings(context, user, existingSighting, indicator, platform);
+    }
     const createHitsSighting = (count: number, firstSeen: Date, lastSeen: Date) => createRelation(context, user, {
       fromId: indicator.internal_id,
       toId: platform.internal_id,

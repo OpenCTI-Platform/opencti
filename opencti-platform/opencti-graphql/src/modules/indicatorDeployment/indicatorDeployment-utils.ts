@@ -7,7 +7,7 @@ import {
   VALIDATION_STATUSES,
   type ValidationStatus,
 } from './indicatorDeployment-types';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
 export const isDeploymentStatus = (value: unknown): value is DeploymentStatus => {
   return typeof value === 'string' && (DEPLOYMENT_STATUSES as readonly string[]).includes(value);
@@ -18,6 +18,7 @@ export const isValidationStatus = (value: unknown): value is ValidationStatus =>
 };
 
 type MarkedElement = { [RELATION_OBJECT_MARKING]?: string[] | null };
+type RestrictedElement = MarkedElement & { [RELATION_GRANTED_TO]?: string[] | null; restricted_members?: unknown[] | null };
 
 /**
  * Markings of a relationship generated for an (indicator, security platform) pair: the deployment, its hits sighting
@@ -29,13 +30,21 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
 };
 
 /**
- * Whether every reader of the indicator can read the deployment: it carries no marking the indicator does not carry.
- * The counters stored on the indicator only count such deployments, so they never reveal the deployments, hits or
- * results of a security platform more restricted than the indicator.
+ * Whether every reader of the indicator can read the deployment. The counters stored on the indicator only count such
+ * deployments, so they never reveal the deployments, hits or results a reader of the indicator cannot read:
+ * - markings: the deployment carries no marking the indicator does not carry;
+ * - organizations: the deployment is shared with every organization the indicator is shared with (an indicator shared
+ *   with no organization is only read by the platform organization, which reads every deployment);
+ * - authorized members: the deployment has none.
  */
-export const isReadableWithIndicator = (deployment: MarkedElement, indicator: MarkedElement) => {
+export const isReadableWithIndicator = (deployment: RestrictedElement, indicator: RestrictedElement) => {
   const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
-  return (deployment[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking));
+  if (!(deployment[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))) {
+    return false;
+  }
+  const deploymentOrganizations = deployment[RELATION_GRANTED_TO] ?? [];
+  const sharedAsWidely = (indicator[RELATION_GRANTED_TO] ?? []).every((organization) => deploymentOrganizations.includes(organization));
+  return sharedAsWidely && (deployment.restricted_members ?? []).length === 0;
 };
 
 const OPTIONAL_DEPLOYED_ON_KEYS = [

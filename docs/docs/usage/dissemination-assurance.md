@@ -72,9 +72,12 @@ deployments without individual events, so the platform manager then recomputes t
 with deployments; it also rechecks them continuously in bounded batches.
 
 A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
-security platform, so only the users who can read both can read them. The counters stored on an indicator are
-visible to every reader of the indicator: they only count the deployments that carry no marking beyond the
-indicator's own, and never reveal the deployments of a security platform more restricted than the indicator.
+security platform, so only the users who can read both can read them. Creating or importing a `deployed-on`
+relationship without these markings is refused, and a deployment created before one of its ends got a marking
+receives it with the next report of its integration. The counters stored on an indicator are visible to every
+reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
+shared with every organization the indicator is shared with and have no authorized members, so they never reveal a
+deployment a reader of the indicator cannot read.
 On a platform with organization segregation, these relationships are shared like every relationship a connector
 creates: with the organizations of the connector account. Give the account of an integration only the organizations
 allowed to see the security platforms it reports on.
