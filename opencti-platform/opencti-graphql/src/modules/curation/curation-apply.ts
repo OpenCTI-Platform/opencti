@@ -29,12 +29,12 @@ import {
   type BasicStoreEntityCurationProposal,
   type BasicStoreEntityMergeRecord,
   type CurationSettings,
-  DECISION_ALIAS,
   ENTITY_TYPE_MERGE_RECORD,
   RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY,
   RELATIONSHIP_CONFLICT_MODE_PROCEDURES,
 } from './curation-types';
 import { unmergeFromRecord } from './curation-merge-record';
+import { effectiveProposalAction } from './curation-access';
 import { type ConflictingProcedure, procedureAdditions, procedureNoteInput, type ProcedureEntry } from './curation-procedures';
 import { ATTRIBUTE_ASSERTIONS, ATTRIBUTE_PROCEDURES } from '../provenance/provenance-types';
 
@@ -140,21 +140,29 @@ const addAliases = async (context: AuthContext, user: AuthUser, element: StoreOb
   return { appliedPatch: { operations: [patchOperation(element, aliasField, current, next)], applied_at: now() }, mergeRecordId: null };
 };
 
-const applyAddAliases = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions) => {
-  const payload = { ...parsePayload(proposal), ...(opts.payload ?? {}) };
-  const element = await loadSubject(context, user, proposal.target_id ?? proposal.subject_ids[0]);
-  return addAliases(context, user, element, (payload.aliases ?? []) as string[]);
-};
-
 /**
- * "alias" decision on a duplicate proposal: the names of the other subjects become aliases of the target, entities
- * stay separate (overlapping clusters, sub-groups).
+ * The names of the other subjects become aliases of the target, entities stay separate (overlapping clusters,
+ * sub-groups): an "alias" decision on a merge proposal, or an alias proposal applied to another target than its own.
  */
 const applyAliasDecision = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions) => {
   const targetId = opts.targetId ?? proposal.target_id ?? proposal.subject_ids[0];
+  if (!proposal.subject_ids.includes(targetId)) {
+    throw FunctionalError('The alias target must be one of the proposal subjects', { targetId });
+  }
   const target = await loadSubject(context, user, targetId);
   const others = proposal.subject_names.filter((_, index) => proposal.subject_ids[index] !== targetId);
   return addAliases(context, user, target, others);
+};
+
+const applyAddAliases = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions) => {
+  const proposedTargetId = proposal.target_id ?? proposal.subject_ids[0];
+  // The aliases of the payload name the other subjects for the proposed target: another target takes their names.
+  if (opts.targetId && opts.targetId !== proposedTargetId) {
+    return applyAliasDecision(context, user, proposal, opts);
+  }
+  const payload = { ...parsePayload(proposal), ...(opts.payload ?? {}) };
+  const element = await loadSubject(context, user, proposedTargetId);
+  return addAliases(context, user, element, (payload.aliases ?? []) as string[]);
 };
 
 const applyFixDates = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal): Promise<ApplyResult> => {
@@ -286,10 +294,11 @@ export const executeProposalAction = async (
   settings: CurationSettings,
   opts: ApplyOptions = {},
 ): Promise<ApplyResult> => {
-  if (proposal.recommended_action === ACTION_MERGE && opts.decision === DECISION_ALIAS) {
+  const action = effectiveProposalAction(proposal, opts.decision);
+  if (action === ACTION_ADD_ALIASES && proposal.recommended_action !== ACTION_ADD_ALIASES) {
     return applyAliasDecision(context, user, proposal, opts);
   }
-  switch (proposal.recommended_action) {
+  switch (action) {
     case ACTION_MERGE:
       return applyMerge(context, user, proposal, opts);
     case ACTION_ADD_ALIASES:

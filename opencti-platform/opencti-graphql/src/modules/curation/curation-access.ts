@@ -1,18 +1,39 @@
 import type { AuthUser } from '../../types/user';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE } from '../../utils/access';
-import { ACTION_MERGE, ACTION_RESOLVE_ATTRIBUTION, ACTION_UNMERGE, type BasicStoreEntityCurationProposal } from './curation-types';
+import {
+  ACTION_ADD_ALIASES,
+  ACTION_MERGE,
+  ACTION_RESOLVE_ATTRIBUTION,
+  ACTION_UNMERGE,
+  type BasicStoreEntityCurationProposal,
+  DECISION_ALIAS,
+  DECISION_MERGE,
+} from './curation-types';
 
 /**
- * Whether the user may apply the proposal: the capability its recommended action needs, whatever decision applies
- * it. Checked when a proposal is applied, and before a background task applying proposals is created for the user.
+ * The action applying a proposal runs. An adjudication decision applied to a duplicate proposal decides it: `merge`
+ * merges the subjects and `alias` adds the other names as aliases of the target, whatever the proposal recommended.
+ * Without a decision (an analyst's accept, a policy), the recommended action runs.
  */
-export const canUserApplyProposal = (user: AuthUser, proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action'>) => {
+export const effectiveProposalAction = (proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action'>, decision?: string | null) => {
+  const isDuplicateAction = proposal.recommended_action === ACTION_MERGE || proposal.recommended_action === ACTION_ADD_ALIASES;
+  if (isDuplicateAction && decision === DECISION_MERGE) return ACTION_MERGE;
+  if (isDuplicateAction && decision === DECISION_ALIAS) return ACTION_ADD_ALIASES;
+  return proposal.recommended_action;
+};
+
+/**
+ * Whether the user may apply the proposal: the capability of the action it runs (see effectiveProposalAction). Checked
+ * when a proposal is applied, and before a background task applying proposals is created for the user.
+ */
+export const canUserApplyProposal = (user: AuthUser, proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action'>, decision?: string | null) => {
   if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) return false;
-  if (proposal.recommended_action === ACTION_MERGE || proposal.recommended_action === ACTION_UNMERGE) {
+  const action = effectiveProposalAction(proposal, decision);
+  if (action === ACTION_MERGE || action === ACTION_UNMERGE) {
     return isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMERGE);
   }
   // Resolving an attribution conflict deletes the attributions that are not kept.
-  if (proposal.recommended_action === ACTION_RESOLVE_ATTRIBUTION) {
+  if (action === ACTION_RESOLVE_ATTRIBUTION) {
     return isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNDELETE);
   }
   return true;

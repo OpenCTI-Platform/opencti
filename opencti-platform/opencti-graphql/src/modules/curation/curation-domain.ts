@@ -157,7 +157,7 @@ const applyAndRecord = async (
   settings: CurationSettings,
   input: ApplyDecisionInput,
 ) => {
-  if (!canUserApplyProposal(user, proposal)) {
+  if (!canUserApplyProposal(user, proposal, input.decision)) {
     throw ForbiddenAccess('You are not allowed to apply this curation proposal');
   }
   const result = await executeProposalAction(context, user, proposal, settings, {
