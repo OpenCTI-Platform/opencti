@@ -6,7 +6,7 @@ import { getMainRepresentative, getSecondaryRepresentative } from '../../../util
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 import { collisionForce } from './collisionForce';
 import { neighbourhood, shortestPath } from './graphFocus';
-import { isCollapsedMember } from './graphCollapse';
+import { isCollapsedMember, isGroupLink } from './graphCollapse';
 import { frameBox, measureGraphPanels } from './graphFraming';
 
 /** Graph units between two linked nodes at rest, room for a label between two rings. */
@@ -298,8 +298,9 @@ const useGraphInteractions = () => {
     setGraphStateProp('selectFree', !selectFree);
   };
 
+  // Group links are never selected: the edition and removal of the selection act on its ids.
   const setSelectedLinks = (links: GraphLink[]) => {
-    setGraphStateProp('selectedLinks', links);
+    setGraphStateProp('selectedLinks', links.filter((link) => !isGroupLink(link)));
   };
 
   const setSelectedNodes = (nodes: GraphNode[]) => {
@@ -350,6 +351,7 @@ const useGraphInteractions = () => {
   // The additive selection reads the selection of the latest state: the click handlers the
   // rendering library holds can date from the render before a previous click.
   const toggleInSelection = (key: 'selectedNodes' | 'selectedLinks', element: GraphNode | GraphLink) => {
+    if (key === 'selectedLinks' && isGroupLink(element)) return;
     setGraphState((oldState) => {
       const current = (oldState[key] ?? []) as (GraphNode | GraphLink)[];
       const next = current.some((e) => e.id === element.id) ? current.filter((e) => e.id !== element.id) : [...current, element];
@@ -379,6 +381,7 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleLink: LibGraphProps['onLinkClick'] = (link, e) => {
+    if (isGroupLink(link)) return;
     if (e.ctrlKey || e.shiftKey || e.altKey) {
       toggleInSelection('selectedLinks', link);
     } else {

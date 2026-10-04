@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCollapseCache, GROUP_NODE_PREFIX, isCollapsedMember, isGroupNode, withCollapsedGroups } from './graphCollapse';
+import { createCollapseCache, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, withCollapsedGroups } from './graphCollapse';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', x: 0, y: 0 });
@@ -32,6 +32,12 @@ describe('withCollapsedGroups', () => {
     const groupLinks = result.links.slice(data.links.length);
     expect(groupLinks).toHaveLength(1);
     expect(groupLinks[0]).toMatchObject({ source: 'actor', target: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
+  });
+
+  it('tells the links drawn towards a group from the relationships of the platform', () => {
+    const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
+    expect(result.links.filter(isGroupLink)).toHaveLength(1);
+    expect(data.links.some(isGroupLink)).toBe(false);
   });
 
   it('leaves hidden entities out of the groups and out of the links redrawn towards them', () => {

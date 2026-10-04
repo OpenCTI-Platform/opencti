@@ -9,6 +9,7 @@ import GraphEmptyState from './GraphEmptyState';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
 import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
+import { GROUP_LINK_PREFIX } from '../utils/graphCollapse';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', label: 'APT-X', name: 'APT-X\n2025-01-01' });
 const malware = graphNode({ id: 'malware', label: 'Emotet' });
@@ -239,6 +240,14 @@ describe('GraphHoverCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Expand the group' }));
     expect(handlers.onExpandGroup).toHaveBeenCalledWith('Malware');
   });
+
+  it('offers no fact or action of a single relationship on a link drawn towards a group', () => {
+    const groupLink = { ...uses, id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, confidence: 15 };
+    testRender(<GraphHoverCard {...common} target={{ kind: 'link', link: groupLink }} badges={[]} relationshipCounts={[]} actions={actions()} />);
+    expect(screen.getByText(/APT-X/)).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Quick actions' })).toBeNull();
+    expect(screen.queryByText('Confidence level')).toBeNull();
+  });
 });
 
 describe('GraphAccessibleList', () => {
@@ -258,6 +267,13 @@ describe('GraphAccessibleList', () => {
     const loop = graphLink(malware, malware, { id: 'loop', relationship_type: 'variant-of', entity_type: 'variant-of' });
     testRender(<GraphAccessibleList nodes={[malware]} links={[loop]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     expect(screen.getByRole('option', { name: /^Malware Emotet, 1 relationship$/ })).toBeInTheDocument();
+  });
+
+  it('names the entities of a relationship whose endpoints are still ids', () => {
+    // Links arrive with the ids of their endpoints; the renderer replaces them by nodes later.
+    const pending = { ...uses, source: 'actor', target: 'malware' } as unknown as typeof uses;
+    testRender(<GraphAccessibleList nodes={[actor, malware]} links={[pending]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    expect(screen.getByRole('option', { name: 'APT-X uses Emotet' })).toBeInTheDocument();
   });
 
   it('mirrors each part of a nested relationship as its own option', () => {

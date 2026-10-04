@@ -22,6 +22,7 @@ import { graphNodeTitle, NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphPa
 import { buildGraphPalette, dataColorOutline } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import { APP_BASE_PATH } from '../../../relay/environment';
+import { isGroupLink } from '../utils/graphCollapse';
 
 export type GraphHoverCardTarget
   = | { kind: 'node'; node: GraphNode }
@@ -289,40 +290,44 @@ const GraphHoverCard = ({
     const targetLabel = targetNode ? targetNode.label : link.target_id;
     const linkMarkings = markings(link);
     const type = link.relationship_type || link.entity_type;
-    const canOpen = link.entity_type !== 'basic-relationship' && !!link.label;
+    // A group link stands for several relationships: no fact or action of one of them applies to it.
+    const isGroup = isGroupLink(link);
+    const canOpen = !isGroup && link.entity_type !== 'basic-relationship' && !!link.label;
     content = (
       <>
         {header('relationship', t_i18n(`relationship_${type}`), `${sourceLabel} \u2192 ${targetLabel}`, palette.link)}
-        {link.defaultDate && (
+        {!isGroup && link.defaultDate && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Date')}</span>
             {dateFact(link.defaultDate)}
           </div>
         )}
-        {typeof link.confidence === 'number' && (
+        {!isGroup && typeof link.confidence === 'number' && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Confidence level')}</span>
             <span>{link.confidence}</span>
           </div>
         )}
-        {(link.inferred || link.isNestedInferred) && (
+        {!isGroup && (link.inferred || link.isNestedInferred) && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Origin')}</span>
             <span style={{ color: palette.inferred }}>{t_i18n('Inferred relationship')}</span>
           </div>
         )}
-        {linkMarkings.length > 0 && (
+        {!isGroup && linkMarkings.length > 0 && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Markings')}</span>
             <span>{linkMarkings.map((marking) => marking.definition).join(', ')}</span>
           </div>
         )}
-        <div role="group" aria-label={t_i18n('Quick actions')} style={{ display: 'flex', gap: 2, marginTop: theme.spacing(1) }}>
-          {canOpen && (
-            <Action label={t_i18n('Open in a new tab')} icon={<OpenInNewOutlined fontSize="small" />} onClick={() => actions.onOpen(link.id)} />
-          )}
-          <Action label={t_i18n('Select this relationship')} icon={<LinkOutlined fontSize="small" />} onClick={() => actions.onSelectLink(link)} />
-        </div>
+        {!isGroup && (
+          <div role="group" aria-label={t_i18n('Quick actions')} style={{ display: 'flex', gap: 2, marginTop: theme.spacing(1) }}>
+            {canOpen && (
+              <Action label={t_i18n('Open in a new tab')} icon={<OpenInNewOutlined fontSize="small" />} onClick={() => actions.onOpen(link.id)} />
+            )}
+            <Action label={t_i18n('Select this relationship')} icon={<LinkOutlined fontSize="small" />} onClick={() => actions.onSelectLink(link)} />
+          </div>
+        )}
       </>
     );
   }

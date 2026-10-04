@@ -7,6 +7,12 @@ export const GROUP_LINK_PREFIX = 'group-link:';
 
 export const isGroupNode = (node: Pick<GraphNode, 'groupOf'> | null | undefined) => !!node?.groupOf;
 
+/**
+ * A link drawn towards a group node: it stands for every relationship between the group's members
+ * and one entity, so it is no object of the platform and is never selected or acted on.
+ */
+export const isGroupLink = (link: Pick<GraphLink, 'id'> | null | undefined) => !!link?.id?.startsWith(GROUP_LINK_PREFIX);
+
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
 /**

@@ -51,8 +51,12 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
       const badges = node.groupOf ? [] : badgesOfNode(node, { t_i18n }).map((badge) => badge.label);
       return { kind: 'node', node, text: [`${type} ${name}`, count, ...badges].join(', ') };
     });
+    // The renderer replaces the endpoint ids of a link by its nodes in place, after this list is
+    // built: the names are read from the nodes received, whichever form the endpoint has.
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
+    const endId = (end: GraphLink['source'], id: string) => (typeof end === 'string' ? end : endpoint(end)?.id ?? id);
     const endName = (end: GraphLink['source'], id: string) => {
-      const node = endpoint(end);
+      const node = nodesById.get(endId(end, id)) ?? endpoint(end);
       return node ? graphNodeTitle(node) : id;
     };
     const linkEntries: Entry[] = links.map((link) => ({
