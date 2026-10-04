@@ -73,7 +73,7 @@ const SourceMetricValue = ({ value, reason }: SourceMetricValueProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Box component="span" sx={{ color: 'text.disabled' }}>{t_i18n('Not measured')}</Box>
+        <Box component="span" tabIndex={0} sx={{ color: 'text.disabled' }}>{t_i18n('Not measured')}</Box>
       </TooltipTrigger>
       <TooltipContent>
         <Box component="span" sx={{ display: 'block', fontWeight: 'fontWeightMedium' }}>{t_i18n('Not measured')}</Box>
@@ -91,7 +91,7 @@ export const RelativeTime = ({ date }: { date: string }) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Box component="time" dateTime={date} sx={{ whiteSpace: 'nowrap' }}>{rd(date)}</Box>
+        <Box component="time" dateTime={date} tabIndex={0} sx={{ whiteSpace: 'nowrap' }}>{rd(date)}</Box>
       </TooltipTrigger>
       <TooltipContent>{fldt(date)}</TooltipContent>
     </Tooltip>
