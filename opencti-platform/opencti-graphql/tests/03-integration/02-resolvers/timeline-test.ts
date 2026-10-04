@@ -543,6 +543,12 @@ describe('Incident and case timeline', () => {
       const removedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedOpen] });
       expect(removedUpdate?.changed_event_ids).toEqual(['removed-event']);
       expect(removedUpdate).not.toHaveProperty('removed_events');
+      // The element of a removed event may be deleted: the markings of the event, which carry those of the element, decide
+      const removedAboutDeleted = { id: 'removed-event', element_id: '5a3c1e9e-1f4b-4b0e-8f1a-7d0c2b9e4a61', marking_ids: [] };
+      const deletedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutDeleted] });
+      expect(deletedUpdate?.changed_event_ids).toEqual(['removed-event']);
+      const removedAmberAboutDeleted = { ...removedAboutDeleted, marking_ids: [amber.internal_id] };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAmberAboutDeleted] })).toBeNull();
       // Updates about the container itself name no event and always go through
       expect(await timelineUpdateForUser(testContext, participate, { ...update, update_type: 'settings', changed_event_ids: [] })).toMatchObject({ update_type: 'settings', changed_event_ids: [] });
     });
@@ -964,6 +970,19 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: unknownMarking } });
       const manual = await listTimeline(secondCase.id, { sources: ['manual'] });
       expect(manual.map((event) => event.title)).not.toContain('Unknown marking milestone');
+      // A reference resolving to an object that is not a marking definition is no marking, even for a user who bypasses markings
+      const objectAsMarking = JSON.stringify({
+        events: [{
+          id: 'timeline-event--3d7a9c41-8e2b-4f6d-a0c5-9b1e7f2d4c38',
+          title: 'Object as marking milestone',
+          event_time: '2026-02-05T16:30:00.000Z',
+          object_marking_refs: [malware.standard_id],
+        }],
+        annotations: [],
+      });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: objectAsMarking } });
+      const afterObjectAsMarking = await listTimeline(secondCase.id, { sources: ['manual'] });
+      expect(afterObjectAsMarking.map((event) => event.title)).not.toContain('Object as marking milestone');
     });
 
     it('should keep the markings of a known milestone when an import updates it', async () => {

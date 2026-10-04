@@ -562,10 +562,20 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
     ...readableRemoved.map((event) => ({ internal_id: event.id, element_id: event.element_id }) as unknown as StoredTimelineEvent),
   ];
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
-  if (items.length === 0) {
+  const named = new Set(items.map((event) => event.internal_id));
+  // A removed event whose element was deleted resolves for nobody: it is read as its markings say, which carry the
+  // markings of its element. A removed event whose element still exists stays named only to the readers of the element.
+  const unresolvedRemoved = readableRemoved.filter((event) => !!event.element_id && !named.has(event.id));
+  const unresolvedElementIds = Array.from(new Set(unresolvedRemoved.map((event) => event.element_id as string)));
+  const existingElements = unresolvedElementIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, unresolvedElementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  const removedWithDeletedElement = unresolvedRemoved.filter((event) => !existingElements[event.element_id as string]).map((event) => event.id);
+  const changedEventIds = [...items.map((event) => event.internal_id), ...removedWithDeletedElement];
+  if (changedEventIds.length === 0) {
     return null;
   }
-  return { ...signal, changed_event_ids: items.map((event) => event.internal_id) };
+  return { ...signal, changed_event_ids: changedEventIds };
 };
 
 /**
@@ -901,10 +911,14 @@ const writeImportedContributions = async (
     }
     return null;
   };
-  // An event is never declassified: when one of its markings is unknown here or not allowed to the user, it is skipped
+  // An event is never declassified: when one of its markings is unknown here, is not a marking definition (a reference
+  // resolves to any object the user can read) or is not allowed to the user, it is skipped
   const importableMarkings = (event: StixTimelineExtensionEvent): string[] | null => {
-    const markingIds = (event.object_marking_refs ?? []).map((ref) => resolved[ref]?.internal_id);
-    return markingIds.every((id) => !!id && (isBypassUser(user) || allowedMarkings.has(id))) ? markingIds as string[] : null;
+    const markings = (event.object_marking_refs ?? []).map((ref) => resolved[ref]);
+    const isImportable = (marking: AnyStoreElement | undefined): marking is AnyStoreElement => !!marking
+      && marking.entity_type === ENTITY_TYPE_MARKING_DEFINITION
+      && (isBypassUser(user) || allowedMarkings.has(marking.internal_id));
+    return markings.every(isImportable) ? markings.map(({ internal_id }) => internal_id) : null;
   };
   // Nor is a stored event the user cannot read ever overwritten by an imported one
   const readableManual = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
@@ -926,7 +940,7 @@ const writeImportedContributions = async (
   });
   const skipped = candidates.filter((candidate) => candidate.markings === null).length;
   if (skipped > 0) {
-    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown or not allowed, event not readable or above the confidence level', { containerId: container.internal_id, skipped });
+    logApp.warn('[TIMELINE] Contributions skipped on import: markings unknown, not marking definitions or not allowed, event not readable or above the confidence level', { containerId: container.internal_id, skipped });
   }
   // New milestones stay within the cap of the case, updates of known events always apply
   const accepted = candidates.filter((candidate) => candidate.markings !== null);
