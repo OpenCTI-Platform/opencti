@@ -62,12 +62,19 @@ def test_default_selection_leaves_the_rule_metadata_out_on_an_older_platform(
     assert "x_opencti_rule_status" not in indicator.properties_with_files
 
 
-def test_a_failed_detection_is_retried_and_selects_no_rule_metadata(local_api_client):
+def test_a_failed_detection_selects_no_rule_metadata_until_it_is_retried(
+    local_api_client,
+):
     indicator = indicator_with(
-        local_api_client, [Exception("platform unavailable"), SUPPORTED_FIELDS]
+        local_api_client, [Exception("introspection disabled"), SUPPORTED_FIELDS]
     )
     assert "x_opencti_rule_status" not in indicator.properties
+    # The failure is kept until the retry delay is over, the platform is not asked again before
+    assert "x_opencti_rule_status" not in indicator.properties_with_files
+    assert local_api_client.query.call_count == 1
+    indicator._rule_metadata_retry_at = 0.0
     assert INDICATOR_RULE_PROPERTIES in indicator.properties
+    assert local_api_client.query.call_count == 2
 
 
 def test_rule_metadata_input_keeps_the_set_values_for_a_platform_that_knows_it(

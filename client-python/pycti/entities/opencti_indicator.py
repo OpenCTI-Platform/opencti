@@ -2,6 +2,7 @@
 
 import json
 import threading
+import time
 import uuid
 from typing import Optional
 
@@ -12,6 +13,9 @@ from .indicator.opencti_indicator_properties import (
     INDICATOR_PROPERTIES_WITH_FILES,
     INDICATOR_RULE_PROPERTIES,
 )
+
+# Seconds before a failed schema feature detection is tried again
+FEATURE_DETECTION_RETRY_DELAY = 300
 
 _INDICATOR_FIELDS_QUERY = """
     query IndicatorRuleMetadataFeatureDetection {
@@ -41,31 +45,46 @@ class Indicator:
         """
         self.opencti = opencti
         self._rule_metadata_supported: Optional[bool] = None
+        self._rule_metadata_retry_at = 0.0
         self._detection_lock = threading.Lock()
 
     def supports_rule_metadata(self) -> bool:
         """Tell if the platform knows the detection rule metadata of indicators (schema feature detection, cached).
 
+        A detection that fails (platform unavailable, introspection disabled) counts as unsupported and is tried again
+        after ``FEATURE_DETECTION_RETRY_DELAY`` seconds.
+
         :return: True when the Indicator type of the platform has ``x_opencti_rule_status``
         :rtype: bool
         """
-        if self._rule_metadata_supported is None:
-            with self._detection_lock:
-                if self._rule_metadata_supported is None:
-                    try:
-                        result = self.opencti.query(_INDICATOR_FIELDS_QUERY)
-                        fields = ((result.get("data") or {}).get("__type") or {}).get(
-                            "fields"
-                        ) or []
-                    except Exception as err:  # pylint: disable=broad-except
-                        self.opencti.app_logger.warning(
-                            "Cannot detect the indicator rule metadata support",
-                            {"error": str(err)},
-                        )
-                        return False
+        if (
+            self._rule_metadata_supported is not None
+            and time.monotonic() < self._rule_metadata_retry_at
+        ):
+            return self._rule_metadata_supported
+        with self._detection_lock:
+            if (
+                self._rule_metadata_supported is None
+                or time.monotonic() >= self._rule_metadata_retry_at
+            ):
+                try:
+                    result = self.opencti.query(_INDICATOR_FIELDS_QUERY)
+                    fields = ((result.get("data") or {}).get("__type") or {}).get(
+                        "fields"
+                    ) or []
                     self._rule_metadata_supported = "x_opencti_rule_status" in {
                         field["name"] for field in fields
                     }
+                    self._rule_metadata_retry_at = float("inf")
+                except Exception as err:  # pylint: disable=broad-except
+                    self.opencti.app_logger.warning(
+                        "Cannot detect the indicator rule metadata support",
+                        {"error": str(err)},
+                    )
+                    self._rule_metadata_supported = False
+                    self._rule_metadata_retry_at = (
+                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
         return self._rule_metadata_supported
 
     @property

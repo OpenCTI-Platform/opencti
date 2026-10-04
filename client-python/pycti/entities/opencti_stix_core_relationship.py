@@ -1,9 +1,24 @@
 # coding: utf-8
 
 import datetime
+import threading
+import time
 import uuid
+from typing import Optional
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from .opencti_indicator import FEATURE_DETECTION_RETRY_DELAY
+
+_RELATIONSHIP_INPUT_FIELDS_QUERY = """
+    query StixCoreRelationshipInputFeatureDetection {
+        __type(name: "StixCoreRelationshipAddInput") {
+            inputFields {
+                name
+            }
+        }
+    }
+"""
 
 RELATION_DEPLOYED_ON = "deployed-on"
 # Deployment lifecycle carried by deployed-on relationships (Indicator -> Security Platform).
@@ -39,6 +54,9 @@ class StixCoreRelationship:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
+        self._input_fields: Optional[set] = None
+        self._input_fields_retry_at = 0.0
+        self._detection_lock = threading.Lock()
         self.properties = """
             id
             entity_type
@@ -446,6 +464,45 @@ class StixCoreRelationship:
             data.get("start_time"),
             data.get("stop_time"),
         )
+
+    def supports_input_field(self, field: str) -> bool:
+        """Tell if the relationship creation input of the platform has a field (schema feature detection, cached).
+
+        A detection that fails (platform unavailable, introspection disabled) counts as no field and is tried again
+        after ``FEATURE_DETECTION_RETRY_DELAY`` seconds.
+
+        :param field: name of the input field
+        :type field: str
+        :return: True when ``StixCoreRelationshipAddInput`` has the field
+        :rtype: bool
+        """
+        if (
+            self._input_fields is not None
+            and time.monotonic() < self._input_fields_retry_at
+        ):
+            return field in self._input_fields
+        with self._detection_lock:
+            if (
+                self._input_fields is None
+                or time.monotonic() >= self._input_fields_retry_at
+            ):
+                try:
+                    result = self.opencti.query(_RELATIONSHIP_INPUT_FIELDS_QUERY)
+                    fields = ((result.get("data") or {}).get("__type") or {}).get(
+                        "inputFields"
+                    ) or []
+                    self._input_fields = {item["name"] for item in fields}
+                    self._input_fields_retry_at = float("inf")
+                except Exception as err:  # pylint: disable=broad-except
+                    self.opencti.app_logger.warning(
+                        "Cannot detect the relationship input fields of the platform",
+                        {"error": str(err)},
+                    )
+                    self._input_fields = set()
+                    self._input_fields_retry_at = (
+                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
+        return field in self._input_fields
 
     @staticmethod
     def convert_coverage_platforms(raw_coverage_platforms):
@@ -873,12 +930,18 @@ class StixCoreRelationship:
                     if key in DEPLOYED_ON_ATTRIBUTES and value is not None
                 }
             )
-        # Only sent when supplied, so the client keeps working with platforms that do not know the field;
-        # an empty list is sent to clear a previous per-platform attribution
+        # Only sent when supplied, and only to a platform that knows the field; an empty list is sent to clear a
+        # previous per-platform attribution
         if coverage_platforms_information is not None:
-            relationship_input["coverage_platforms_information"] = (
-                coverage_platforms_information
-            )
+            if self.supports_input_field("coverage_platforms_information"):
+                relationship_input["coverage_platforms_information"] = (
+                    coverage_platforms_information
+                )
+            else:
+                self.opencti.app_logger.warning(
+                    "The platform does not know the per security platform coverage of relationships, it is not sent",
+                    {"relationship_type": relationship_type},
+                )
         result = self.opencti.query(query, {"input": relationship_input})
         return self.opencti.process_multiple_fields(
             result["data"]["stixCoreRelationshipAdd"]
