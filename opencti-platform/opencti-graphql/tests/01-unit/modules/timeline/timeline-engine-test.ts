@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildContainerMarkingCoverage,
   buildTimelineEventDoc,
   computeDerivedEventId,
   computeManualEventId,
@@ -230,5 +231,35 @@ describe('Timeline STIX extension', () => {
     expect(result.events.map((e) => e.id)).toEqual(['timeline-event--0', 'timeline-event--1', 'timeline-event--2']);
     expect(result.annotations.map((a) => a.element_ref)).toEqual(['attack-pattern--0', 'attack-pattern--1']);
     expect(result.dropped).toEqual(4);
+  });
+});
+
+describe('Timeline container marking coverage', () => {
+  const markings = new Map([
+    ['tlp-clear', { definition_type: 'TLP', x_opencti_order: 1 }],
+    ['tlp-green', { definition_type: 'TLP', x_opencti_order: 2 }],
+    ['tlp-amber', { definition_type: 'TLP', x_opencti_order: 3 }],
+    ['tlp-red', { definition_type: 'TLP', x_opencti_order: 4 }],
+    ['pap-green', { definition_type: 'PAP', x_opencti_order: 2 }],
+  ]);
+
+  it('should cover the markings of the container and the lower markings of the same type', () => {
+    const covered = buildContainerMarkingCoverage(['tlp-amber'], markings);
+    expect(covered('tlp-amber')).toBe(true);
+    expect(covered('tlp-green')).toBe(true);
+    expect(covered('tlp-clear')).toBe(true);
+  });
+
+  it('should not cover a higher marking, another marking type or an unknown marking', () => {
+    const covered = buildContainerMarkingCoverage(['tlp-amber'], markings);
+    expect(covered('tlp-red')).toBe(false);
+    expect(covered('pap-green')).toBe(false);
+    expect(covered('unknown')).toBe(false);
+  });
+
+  it('should cover nothing beyond itself for a container without markings', () => {
+    const covered = buildContainerMarkingCoverage([], markings);
+    expect(covered('tlp-clear')).toBe(false);
+    expect(covered('tlp-green')).toBe(false);
   });
 });

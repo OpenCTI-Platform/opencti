@@ -1,7 +1,7 @@
 import { v5 as uuidv5 } from 'uuid';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { SYSTEM_USER } from '../../utils/access';
 import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
@@ -341,6 +341,28 @@ interface ContainerVisibilityScope {
 }
 
 /**
+ * Whether every reader of a container can read a marking: the container carries it, or a marking of the same type
+ * with an order at least as high (a reader allowed TLP:AMBER is allowed TLP:GREEN). An unknown marking is never covered.
+ */
+export const buildContainerMarkingCoverage = (containerMarkingIds: string[], markingsMap: Map<string, Pick<StoreMarkingDefinition, 'definition_type' | 'x_opencti_order'>>) => {
+  const containerMarkings = new Set(containerMarkingIds);
+  const maxOrderByType = new Map<string, number>();
+  containerMarkingIds.forEach((id) => {
+    const marking = markingsMap.get(id);
+    if (!marking) return;
+    const current = maxOrderByType.get(marking.definition_type);
+    if (current === undefined || marking.x_opencti_order > current) maxOrderByType.set(marking.definition_type, marking.x_opencti_order);
+  });
+  return (markingId: string): boolean => {
+    if (containerMarkings.has(markingId)) return true;
+    const marking = markingsMap.get(markingId);
+    if (!marking) return false;
+    const maxOrder = maxOrderByType.get(marking.definition_type);
+    return maxOrder !== undefined && marking.x_opencti_order <= maxOrder;
+  };
+};
+
+/**
  * What is stored once on the container (anchors, STIX exchange) is served to every user who can read the container:
  * it may only derive from events, and elements they reference, exactly as visible as the container.
  */
@@ -350,21 +372,27 @@ const resolveContainerVisibilityScope = async (
   events: StoredTimelineEvent[],
 ): Promise<ContainerVisibilityScope> => {
   const containerId = container.internal_id;
-  const containerMarkings = new Set(markingsOf(container));
   const containerGranted = grantedOf(container);
   const elementIds = uniq(events.map((e) => e.element_id).filter((id): id is string => !!id && id !== containerId));
   const authorIds = uniq(events.filter((e) => e.event_source === 'manual').map(authorOf).filter((id): id is string => !!id));
+  // Base data plus the access scope of each element: authorized members (base field), markings and organization sharing
   const resolved = elementIds.length + authorIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], {
+      toMap: true,
+      baseData: true,
+      baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_GRANTED_TO)],
+    }) as unknown as Record<string, AnyStoreElement>
     : {};
+  const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const isMarkingCoveredByContainer = buildContainerMarkingCoverage(markingsOf(container), markingsMap);
   const isElementAsVisibleAsContainer = (element: AnyStoreElement) => {
     if ((element.restricted_members ?? []).length > 0) return false;
-    if (!markingsOf(element).every((id) => containerMarkings.has(id))) return false;
+    if (!markingsOf(element).every(isMarkingCoveredByContainer)) return false;
     const granted = new Set(grantedOf(element));
     return containerGranted.every((id) => granted.has(id));
   };
   const isEventAsVisibleAsContainer = (event: StoredTimelineEvent) => {
-    if (!markingsOf(event).every((id) => containerMarkings.has(id))) return false;
+    if (!markingsOf(event).every(isMarkingCoveredByContainer)) return false;
     if (!event.element_id || event.element_id === containerId) return true;
     // The access scope of a deleted element is unknown while the event still speaks about it: never as visible as the container
     const element = resolved[event.element_id];
