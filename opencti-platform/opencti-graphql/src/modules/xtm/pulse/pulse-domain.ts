@@ -330,7 +330,7 @@ const describePulseMode = (mode: string) => {
 };
 
 export const configurePulse = async (context: AuthContext, user: AuthUser, input: PulseConfigurationInput) => {
-  const { settings, values: current, platform, access: currentAccess } = await loadPulseContext(context);
+  const { settings, values: current, platform } = await loadPulseContext(context);
   const mode = input.mode as string;
   if (!PULSE_MODE_VALUES.includes(mode as typeof PULSE_MODE_VALUES[number])) {
     throw FunctionalError('Invalid Threat Pulse mode', { mode });
@@ -378,7 +378,10 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   // A contribution cycle running under the former configuration records and sends nothing more from now on.
   await redisBumpPulseConfigGeneration();
   if (enabling && !wasContributing) {
+    // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet,
+    // a hunt) is never sent.
     await redisSetPulseCursor(new Date().toISOString());
+    await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
   }
   if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
@@ -391,8 +394,9 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     await redisDiscardPulseOutbox();
   }
   const modeChanged = mode !== current.mode;
-  if (modeChanged && (currentAccess === PulseAccess.Full || currentAccess === PulseAccess.Preview)) {
-    // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them.
+  if (modeChanged && current.mode !== PulseMode.Off) {
+    // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them. Whatever
+    // the connection to XTM Hub now, a mode that could write them is followed by a cleanup.
     await clearPulseNetworkInformation();
   } else if (!modeChanged && mode !== PulseMode.Off) {
     // The sector trends and the trending keys were read for the former sector or region: the stored statistics are
@@ -831,8 +835,10 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
           return [{ entity, doc: buildPulsePreviewDocument(keys, signal, updatedAt) }];
         }
         // The keys of the trending objects held here let the trending widget name them.
+        // Stored keys are kept current: an object renamed since never matches a trending entry through its former keys.
         const trending = refs.some((ref) => trendingRefs.has(ref));
-        const keysDoc = trending && !sameKeys(entity.pulse_keys, keys) ? { pulse_keys: keys } : {};
+        const storedKeys = (entity.pulse_keys ?? []).length > 0;
+        const keysDoc = (trending || storedKeys) && !sameKeys(entity.pulse_keys, keys) ? { pulse_keys: keys } : {};
         if (entity.pulse_information?.preview) {
           return [{ entity, doc: { ...PULSE_PREVIEW_CLEARED_DOCUMENT, ...keysDoc } }];
         }
@@ -1145,7 +1151,8 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
   }
   try {
     const day = utcDay();
-    const cacheKey = `benchmark:${platform.platformId}:${day}:${args.period}`;
+    // The sector and region of the answer are those configured when it was read: a change reads it again.
+    const cacheKey = `benchmark:${platform.platformId}:${day}:${args.period}:${values.sectorBucket ?? '*'}:${values.regionBucket ?? '*'}`;
     let result = await redisGetPulseResponse<Awaited<ReturnType<typeof xtmHubPulseClient.benchmark>>>(cacheKey);
     if (!result) {
       result = await xtmHubPulseClient.benchmark(platform, { day, period: args.period });

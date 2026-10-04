@@ -97,6 +97,8 @@ describe('ThreatPulseCard', () => {
       { ...PUBLISHED, published: false, prevalence: 'rare', platforms_bucket: null, trend: null, trend_series: [], sector_trend: null, community_uniqueness: 100 },
     );
     expect(await screen.findByText(/Fewer platforms than the anonymity threshold/)).toBeDefined();
+    // Never a prevalence XTM Hub did not publish
+    expect(screen.queryByTestId('threat-pulse-prevalence-gauge')).toBeNull();
     expect(screen.queryByText('Contributing platforms')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-sparkline')).toBeNull();
     expect(screen.getByText('100 out of 100')).toBeDefined();

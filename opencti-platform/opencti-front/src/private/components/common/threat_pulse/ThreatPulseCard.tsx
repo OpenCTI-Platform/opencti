@@ -186,7 +186,7 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
         <Box data-testid="threat-pulse-preview" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {information ? (
             <>
-              <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
+              {information.prevalence && <PrevalenceGauge prevalence={information.prevalence} />}
               {information.trend && (
                 <DetailRow label={t_i18n('Community trend')}>
                   <Chip label={t_i18n(PULSE_TREND_LABELS[information.trend])} severity={PULSE_TREND_SEVERITIES[information.trend]} />
@@ -249,7 +249,8 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
               {t_i18n(PULSE_UNAVAILABLE_MESSAGES[reason] ?? reason)}
             </Text>
           )}
-          <PrevalenceGauge prevalence={information.prevalence ?? 'rare'} />
+          {/* A prevalence only when XTM Hub published one: below the anonymity threshold, the explanation alone */}
+          {information.published && information.prevalence && <PrevalenceGauge prevalence={information.prevalence} />}
           {!information.published && (
             <Text variant="content-compact" style={secondary}>
               {t_i18n('Fewer platforms than the anonymity threshold observed this object: it is rare, or unique to this platform.')}
