@@ -7,6 +7,7 @@ import { registerEntityOverviewLayoutCustomization } from '../../schema/overview
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 
 const incidentDefaultOverviewLayout: OverviewLayoutCustomization[] = [
+  { key: 'timeline', width: 12, label: 'Timeline' },
   { key: 'details', width: 6, label: 'Entity details' },
   { key: 'basicInformation', width: 6, label: 'Basic information' },
   { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },

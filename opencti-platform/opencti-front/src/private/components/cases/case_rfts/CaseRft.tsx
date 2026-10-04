@@ -65,9 +65,6 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   );
   return (
     <div data-testid="rft-page">
-      <div style={{ marginBottom: 24 }}>
-        <ContainerTimelineStrip containerId={caseRft.id} basePath={`${resolveLink(caseRft.entity_type)}/${caseRft.id}`} />
-      </div>
       <Grid
         container={true}
         spacing={3}
@@ -76,6 +73,12 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
         {
           overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
+              case 'timeline':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ContainerTimelineStrip containerId={caseRft.id} basePath={`${resolveLink(caseRft.entity_type)}/${caseRft.id}`} />
+                  </Grid>
+                );
               case 'details':
                 return (
                   <Grid key={key} size={{ xs: width }}>

@@ -68,9 +68,6 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <ContainerTimelineStrip containerId={caseIncident.id} basePath={`${resolveLink(caseIncident.entity_type)}/${caseIncident.id}`} />
-      </div>
       <Grid
         container={true}
         spacing={3}
@@ -79,6 +76,12 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
         {
           caseIncidentResponseOverviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
+              case 'timeline':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ContainerTimelineStrip containerId={caseIncident.id} basePath={`${resolveLink(caseIncident.entity_type)}/${caseIncident.id}`} />
+                  </Grid>
+                );
               case 'details':
                 return (
                   <Grid key={key} size={{ xs: width }}>

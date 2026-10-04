@@ -26,6 +26,7 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft, Sti
     },
   },
   overviewLayoutCustomization: [
+    { key: 'timeline', width: 12, label: 'Timeline' },
     { key: 'details', width: 6, label: 'Entity details' },
     { key: 'basicInformation', width: 6, label: 'Basic information' },
     { key: 'task', width: 6, label: 'Tasks' },
