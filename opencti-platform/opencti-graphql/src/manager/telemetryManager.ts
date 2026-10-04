@@ -693,12 +693,13 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     // region Notifications adoption
     const triggers = await getEntitiesListFromCache<BasicStoreEntity & { trigger_type?: string }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_TRIGGER);
-    const liveTriggersCount = triggers.filter((trigger) => trigger.trigger_type === 'live').length;
+    // Change digests have their own gauge, the digest series only counts the regular digests
+    const countTriggers = (type: string) => triggers.filter((trigger) => trigger.trigger_type === type).length;
     manager.setTriggersByType([
-      { value: liveTriggersCount, attributes: { type: 'live' } },
-      { value: triggers.length - liveTriggersCount, attributes: { type: 'digest' } },
+      { value: countTriggers('live'), attributes: { type: 'live' } },
+      { value: countTriggers('digest'), attributes: { type: 'digest' } },
     ]);
-    manager.setChangeDigestTriggersCount(triggers.filter((trigger) => trigger.trigger_type === 'change_digest').length);
+    manager.setChangeDigestTriggersCount(countTriggers('change_digest'));
     manager.setKnowledgeSnapshotsCount(await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_KNOWLEDGE_SNAPSHOTS, { types: [ENTITY_TYPE_KNOWLEDGE_SNAPSHOT] }));
     const notifiers = await getEntitiesListFromCache<BasicStoreEntity & { notifier_connector_id?: string }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_NOTIFIER);
     const notifierConnectorLabel = (connectorId?: string) => {

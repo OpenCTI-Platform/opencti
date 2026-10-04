@@ -108,7 +108,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of security coverages results
 - The number of 'has covered' relationships
 - The number of activated inference rules
-- The number of notification triggers, broken down by type (`live`, `digest`)
+- The number of notification triggers, broken down by type (`live`, `digest`); change digests are counted on their own, under [Knowledge time machine](#knowledge-time-machine)
 - The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)
 - The number of notifications sent, broken down by channel (`email`, `webhook`, `ui`)
 - The number of export generations requested
