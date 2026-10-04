@@ -279,6 +279,8 @@ The enabled policies run automatically every 15 minutes, with the rights of the 
 
 Go to **Data > Curation > Knowledge health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. To follow the score on a dashboard, create one from the built-in template (**Dashboards**, **Create from template**, **Knowledge health**), or add the **Knowledge health score**, **Knowledge health trend** and **Open curation proposals by kind** widgets to an existing dashboard. These widgets take no filters: the score covers every curated entity of the platform. A widget without data says why: no snapshot yet, or a user who cannot access knowledge. Before the first snapshot, the Knowledge health tab says when the curation manager computes it.
 
+![Knowledge health tab with the score, its breakdown, the counters and the open proposals by kind](assets/curation-knowledge-health.png)
+
 ![Dashboard created from the Knowledge health template](assets/curation-dashboard-template.png)
 
 The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage customization` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
