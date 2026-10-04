@@ -52,7 +52,7 @@ const SourcesDistributionComponent = ({ queryRef, selection, widgetType, onMount
   const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
   const { sourceScorecardsDistribution } = usePreloadedQuery(sourcesDistributionQuery, queryRef);
-  const metric = findSourceWidgetMetric(selection.attribute);
+  const metric = findSourceWidgetMetric(selection.attribute, widgetType);
   const data = useMemo(() => sourceScorecardsDistribution
     .map((item) => ({
       label: item.label,
@@ -109,13 +109,13 @@ const SourcesDistribution = ({ widgetType, variant, height, dataSelection, param
   const buildQueryVariables = useCallback((resolved: WidgetDataSelection[], dashboardConfig: DashboardConfig): SourcesDistributionQuery['variables'] => {
     const selection = resolved[0];
     return {
-      metric: findSourceWidgetMetric(selection.attribute).key,
+      metric: findSourceWidgetMetric(selection.attribute, widgetType).key,
       period: periodFromDashboardConfig(dashboardConfig),
       filters: normalizeFilterGroupForBackend(selection.filters),
       first: selection.number ?? DEFAULT_ITEMS,
       orderMode: selection.sort_mode === 'asc' ? 'asc' : 'desc',
     };
-  }, []);
+  }, [widgetType]);
   const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<SourcesDistributionQuery>({
     perspective: 'sources',
     dataSelection,
@@ -127,7 +127,7 @@ const SourcesDistribution = ({ widgetType, variant, height, dataSelection, param
     buildQueryVariables,
   });
   const selection = resolvedDataSelection[0] ?? dataSelection[0];
-  const metric = findSourceWidgetMetric(selection?.attribute);
+  const metric = findSourceWidgetMetric(selection?.attribute, widgetType);
   return (
     <WidgetContainer
       padding="small"

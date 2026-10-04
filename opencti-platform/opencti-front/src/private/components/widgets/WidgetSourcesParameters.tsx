@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectVa
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { SOURCE_WIDGET_METRICS } from '../integrations/sources/sourceIntelligenceUtils';
+import { findSourceWidgetMetric, sourceWidgetMetricsFor } from '../integrations/sources/sourceIntelligenceUtils';
 
 interface WidgetSourcesParametersProps {
   type: string;
@@ -24,20 +24,21 @@ interface MetricSelectProps {
   value: string;
   onChange: (value: string) => void;
   testId: string;
+  widgetType?: string;
 }
 
-const MetricSelect = ({ label, value, onChange, testId }: MetricSelectProps) => {
+const MetricSelect = ({ label, value, onChange, testId, widgetType }: MetricSelectProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   return (
     <div className="mt-5">
-      <Select value={value} onValueChange={onChange}>
+      <Select value={findSourceWidgetMetric(value, widgetType).key} onValueChange={onChange}>
         <SelectLabel>{label}</SelectLabel>
         <SelectTrigger className="w-full" data-testid={testId}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent aria-label={label}>
-          {SOURCE_WIDGET_METRICS.filter((metric) => isEnterpriseEdition || !metric.enterprise).map((metric) => (
+          {sourceWidgetMetricsFor(widgetType).filter((metric) => isEnterpriseEdition || !metric.enterprise).map((metric) => (
             <SelectItem key={metric.key} value={metric.key}>{t_i18n(metric.label)}</SelectItem>
           ))}
         </SelectContent>
@@ -61,6 +62,7 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
         value={selection.attribute ?? (isBubble ? 'cost_per_actionable_object' : 'value_score')}
         onChange={(value) => onChange('attribute', value)}
         testId="widget-sources-metric"
+        widgetType={type}
       />
       {isBubble && (
         <>
