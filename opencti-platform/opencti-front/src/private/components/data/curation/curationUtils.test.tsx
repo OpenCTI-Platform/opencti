@@ -79,8 +79,8 @@ describe('CurationConfidence', () => {
     expect(screen.getByRole('progressbar', { name: 'Curation confidence' })).toHaveAttribute('aria-valuenow', '72');
   });
 
-  it('marks a proposal of the ambiguous band', () => {
+  it('marks a proposal that needs a decision', () => {
     testRender(<CurationConfidence value={0.6} ambiguous />);
-    expect(screen.getByTitle('In the ambiguous band: eligible for adjudication')).toBeInTheDocument();
+    expect(screen.getByTitle('Needs your decision: the evidence is not conclusive')).toBeInTheDocument();
   });
 });

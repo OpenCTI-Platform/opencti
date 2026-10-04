@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import Box from '@mui/material/Box';
@@ -15,6 +15,8 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
+import CurationFirstUse from './CurationFirstUse';
+import CurationSkeleton from './CurationSkeleton';
 import KnowledgeHealthScore from './KnowledgeHealthScore';
 import useCurationLabels, { CURATION_PROPOSALS_PATH, formatPercent, notifyPayloadErrors } from './curationUtils';
 import { KnowledgeHealthQuery } from './__generated__/KnowledgeHealthQuery.graphql';
@@ -64,6 +66,7 @@ const knowledgeHealthQuery = graphql`
         key
         count
       }
+      next_snapshot_date
     }
   }
 `;
@@ -90,12 +93,10 @@ const Counter = ({ label, value }: { label: string; value: string | number }) =>
   );
 };
 
-const KnowledgeHealth = () => {
+const KnowledgeHealthComponent = () => {
   const theme = useTheme<Theme>();
   const { t_i18n, n, fldt } = useFormatter();
   const labels = useCurationLabels();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Knowledge Health | Curation | Data'));
   const isGrantedToSettings = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const [fetchKey, setFetchKey] = useState(0);
   const data = useLazyLoadQuery<KnowledgeHealthQuery>(knowledgeHealthQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
@@ -107,7 +108,7 @@ const KnowledgeHealth = () => {
       variables: {},
       onCompleted: (_, errors) => {
         if (notifyPayloadErrors(errors)) return;
-        MESSAGING$.notifySuccess(t_i18n('The Knowledge Health snapshot has been refreshed'));
+        MESSAGING$.notifySuccess(t_i18n('The Knowledge health snapshot has been refreshed'));
         setFetchKey((key) => key + 1);
       },
     });
@@ -121,9 +122,10 @@ const KnowledgeHealth = () => {
   const header = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
       <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light} data-testid="knowledge-health-status">
-        {health
-          ? `${t_i18n('Snapshot of {date}', { values: { date: fldt(health.snapshot_date) } })}${health.digest_sent_at ? ` - ${t_i18n('Weekly digest sent on {date}', { values: { date: fldt(health.digest_sent_at) } })}` : ''}`
-          : t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')}
+        {health && (health.digest_sent_at
+          ? t_i18n('Snapshot of {date}, weekly digest sent on {digestDate}', { values: { date: fldt(health.snapshot_date), digestDate: fldt(health.digest_sent_at) } })
+          : t_i18n('Snapshot of {date}', { values: { date: fldt(health.snapshot_date) } }))}
+        {!health && t_i18n('No snapshot yet')}
       </Typography>
       {isGrantedToSettings && (
         <Button onClick={refresh} disabled={refreshing} data-testid="knowledge-health-refresh">
@@ -136,10 +138,20 @@ const KnowledgeHealth = () => {
   return (
     <div data-testid="knowledge-health-page">
       {header}
+      {!health && (
+        <Box sx={{ marginBottom: 2 }}>
+          <CurationFirstUse
+            testId="knowledge-health-first-use"
+            title={t_i18n('No Knowledge health snapshot yet')}
+            description={t_i18n('The curation manager computes the Knowledge health score once a day from the duplicates, contradictions, stale knowledge, alias coverage and source conflicts of the curated entities.')}
+            nextRunDate={data.curationStatistics.next_snapshot_date}
+          />
+        </Box>
+      )}
       {health && (
         <>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 2, marginBottom: 2 }}>
-            <Card title={t_i18n('Knowledge Health score')}>
+            <Card title={t_i18n('Knowledge health score')}>
               <KnowledgeHealthScore score={health.health_score} />
               <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 1 }}>
                 {health.score_trend !== null && health.score_trend !== undefined ? (
@@ -201,7 +213,7 @@ const KnowledgeHealth = () => {
         <Card title={t_i18n('Score history')}>
           <Box sx={{ height: 260 }}>
             {history.length > 1 ? (
-              <WidgetMultiLines series={[{ name: t_i18n('Knowledge Health score'), data: history }]} interval="day" />
+              <WidgetMultiLines series={[{ name: t_i18n('Knowledge health score'), data: history }]} interval="day" />
             ) : (
               <Typography variant="body2" color={theme.palette.text.light}>{t_i18n('The history appears after two snapshots.')}</Typography>
             )}
@@ -223,6 +235,17 @@ const KnowledgeHealth = () => {
         </Card>
       </Box>
     </div>
+  );
+};
+
+const KnowledgeHealth = () => {
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Knowledge health | Curation | Data'));
+  return (
+    <Suspense fallback={<CurationSkeleton blocks={[40, 280, 160, 280]} />}>
+      <KnowledgeHealthComponent />
+    </Suspense>
   );
 };
 

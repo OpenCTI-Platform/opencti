@@ -16,7 +16,7 @@ const CurationConfidence = ({ value, ambiguous = false, width = '100%' }: Curati
   return (
     <Box
       sx={{ display: 'flex', alignItems: 'center', gap: 1, width }}
-      title={ambiguous ? t_i18n('In the ambiguous band: eligible for adjudication') : undefined}
+      title={ambiguous ? t_i18n('Needs your decision: the evidence is not conclusive') : undefined}
     >
       <LinearProgress
         variant="determinate"

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
+import { Alert } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
@@ -88,11 +89,21 @@ const CurationProposalsToolBar = ({ onDone }: CurationProposalsToolBarProps) => 
         background: theme.palette.background.accent,
       }}
     >
-      <Typography variant="body2" sx={{ flex: 1 }}>
-        {t_i18n('{count} selected', { values: { count: numberOfSelectedElements } })}
-        {openIds.length !== numberOfSelectedElements && ` - ${t_i18n('{count} still open', { values: { count: openIds.length } })}`}
-        {tooMany && ` - ${t_i18n('Select at most 500 proposals')}`}
+      <Typography variant="body2" sx={{ flex: 1 }} data-testid="curation-proposals-selection">
+        {t_i18n('{count, plural, one {# proposal selected} other {# proposals selected}}', { values: { count: numberOfSelectedElements } })}
       </Typography>
+      {openIds.length !== numberOfSelectedElements && (
+        <Alert
+          severity="warning"
+          title={t_i18n('{count, plural, =0 {None of the selected proposals is still open: decided proposals are left out} one {Only # selected proposal is still open: decided proposals are left out} other {Only # selected proposals are still open: decided proposals are left out}}', { values: { count: openIds.length } })}
+        />
+      )}
+      {tooMany && (
+        <Alert
+          severity="warning"
+          title={t_i18n('Select at most {max} proposals at a time', { values: { max: MAX_BULK_PROPOSALS } })}
+        />
+      )}
       <Button size="small" onClick={handleAccept} disabled={disabled}>
         {t_i18n('Accept')}
       </Button>

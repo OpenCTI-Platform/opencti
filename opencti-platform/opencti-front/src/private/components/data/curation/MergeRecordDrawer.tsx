@@ -10,19 +10,20 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import { Checkbox } from '@filigran/design-system';
+import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Label from '@common/label/Label';
 import Tag from '@common/tag/Tag';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMERGE } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
+import CurationSkeleton from './CurationSkeleton';
 import useCurationLabels, { CURATION_PROPOSALS_PATH, notifyPayloadErrors } from './curationUtils';
 import { MergeRecordDrawerQuery } from './__generated__/MergeRecordDrawerQuery.graphql';
 import { MergeRecordDrawerUnmergeMutation } from './__generated__/MergeRecordDrawerUnmergeMutation.graphql';
@@ -116,6 +117,19 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
   const toggle = (id: string) => setSelected((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
   const targetLink = mergeRecord.target ? resolveLink(mergeRecord.target.entity_type) : null;
   const sourceNames = new Map(mergeRecord.sources.map((source) => [source.id, source.name]));
+  const comingBack = (selected.length > 0 ? restorable.filter((source) => selected.includes(source.id)) : restorable).map((source) => source.name);
+  const sourceName = (sourceId: string) => {
+    const name = sourceNames.get(sourceId);
+    if (name) return name;
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>{t_i18n('Unknown source')}</span>
+        </TooltipTrigger>
+        <TooltipContent>{sourceId}</TooltipContent>
+      </Tooltip>
+    );
+  };
 
   const unmerge = () => {
     commitUnmerge({
@@ -132,19 +146,33 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} data-testid="merge-record-details">
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-        <div>
-          <Label>{t_i18n('Merged entity')}</Label>
-          <Typography variant="body2">
-            {mergeRecord.target && targetLink
-              ? <Link to={`${targetLink}/${mergeRecord.target.id}`}>{mergeRecord.target.representative.main}</Link>
-              : mergeRecord.merge_target_name}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="merge-record-header">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Tag
+            label={labels.mergeStatus(mergeRecord.merge_status, mergeRecord.reversible_until)}
+            color={labels.statusColor(mergeRecord.merge_status)}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+            <ItemIcon type={mergeRecord.target?.entity_type ?? mergeRecord.merge_target_type} />
+            <Typography variant="h3" sx={{ margin: 0 }}>
+              {mergeRecord.target && targetLink
+                ? <Link to={`${targetLink}/${mergeRecord.target.id}`}>{mergeRecord.target.representative.main}</Link>
+                : mergeRecord.merge_target_name}
+            </Typography>
+          </Box>
+          {canUnmerge && (
+            <Button intent="destructive" onClick={() => setConfirmOpen(true)} disabled={unmerging} data-testid="merge-record-unmerge">
+              {selected.length > 0 ? t_i18n('Undo the merge of the selected sources') : t_i18n('Undo the merge')}
+            </Button>
+          )}
+        </Box>
+        {!mergeRecord.is_reversible && mergeRecord.merge_status !== 'reverted' && (
+          <Typography variant="caption" color={theme.palette.text.light} data-testid="merge-record-reversibility">
+            {t_i18n('This merge could be undone until {date}.', { values: { date: fldt(mergeRecord.reversible_until) } })}
           </Typography>
-        </div>
-        <div>
-          <Label>{t_i18n('Status')}</Label>
-          <Tag label={labels.mergeStatus(mergeRecord.merge_status)} color={labels.statusColor(mergeRecord.merge_status)} />
-        </div>
+        )}
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
         <div>
           <Label>{t_i18n('Merged by')}</Label>
           <Typography variant="body2">{mergeRecord.mergedBy?.name ?? '-'} - {fldt(mergeRecord.created_at)}</Typography>
@@ -234,7 +262,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
               {mergeRecord.alias_provenance.map((provenance) => (
                 <TableRow key={`${provenance.source_id}-${provenance.alias}`}>
                   <TableCell>{provenance.alias}</TableCell>
-                  <TableCell>{sourceNames.get(provenance.source_id) ?? provenance.source_id}</TableCell>
+                  <TableCell>{sourceName(provenance.source_id)}</TableCell>
                   <TableCell>{n(provenance.relationships_count)}</TableCell>
                 </TableRow>
               ))}
@@ -242,28 +270,26 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
           </Table>
         </div>
       )}
-      {canUnmerge && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-          <Button intent="destructive" onClick={() => setConfirmOpen(true)} disabled={unmerging} data-testid="merge-record-unmerge">
-            {selected.length > 0 ? t_i18n('Unmerge the selected sources') : t_i18n('Unmerge all sources')}
-          </Button>
-        </Box>
-      )}
       {!isGrantedToMerge && mergeRecord.is_reversible && (
         <Typography variant="body2" color={theme.palette.text.light}>
-          {t_i18n('Unmerging requires the capability to merge knowledge')}
+          {t_i18n('Undoing a merge requires the capability to merge knowledge')}
         </Typography>
       )}
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} title={t_i18n('Unmerge')}>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} title={t_i18n('Undo the merge')}>
+        <Typography variant="body2" sx={{ marginBottom: 1 }} data-testid="merge-record-unmerge-preview">
+          {t_i18n('{count, plural, one {# entity comes back: {names}.} other {# entities come back: {names}.}}', {
+            values: { count: comingBack.length, names: comingBack.join(', ') },
+          })}
+        </Typography>
         <Typography variant="body2">
-          {t_i18n('The merged sources are recreated with their original identifiers, aliases and relationships, and the relationships they brought are moved back to them.')}
+          {t_i18n('Each one gets back its identifiers, aliases and relationships, and the relationships it brought move back to it.')}
         </Typography>
         <DialogActions>
           <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={unmerging}>
             {t_i18n('Cancel')}
           </Button>
           <Button intent="destructive" onClick={unmerge} disabled={unmerging} data-testid="merge-record-unmerge-confirm">
-            {t_i18n('Unmerge')}
+            {t_i18n('Undo the merge')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -282,7 +308,7 @@ const MergeRecordDrawer = ({ recordId, onClose, onUnmerged }: MergeRecordDrawerP
   return (
     <Drawer title={t_i18n('Merge record')} open={!!recordId} onClose={onClose} size="large">
       {recordId ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Suspense fallback={<CurationSkeleton blocks={[40, 160, 200]} />}>
           <MergeRecordDetails recordId={recordId} onUnmerged={onUnmerged} />
         </Suspense>
       ) : null}

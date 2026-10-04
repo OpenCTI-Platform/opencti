@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import { Link, useParams } from 'react-router';
 import Box from '@mui/material/Box';
@@ -12,12 +12,14 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../components/Theme';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import CurationProposalActions from './CurationProposalActions';
-import CurationProposalCompare from './CurationProposalCompare';
+import CurationProposalCompare, { buildMergePreview, compareFragment } from './CurationProposalCompare';
 import CurationProposalEvidence from './CurationProposalEvidence';
 import CurationConfidence from './CurationConfidence';
-import useCurationLabels, { CURATION_MERGES_PATH, parseJsonObject } from './curationUtils';
+import CurationSkeleton from './CurationSkeleton';
+import useCurationLabels, { CURATION_MERGES_PATH, formatPercent, parseJsonObject } from './curationUtils';
 import { CurationProposalQuery } from './__generated__/CurationProposalQuery.graphql';
 import { CurationProposal_proposal$key } from './__generated__/CurationProposal_proposal.graphql';
+import { CurationProposalCompare_proposal$key } from './__generated__/CurationProposalCompare_proposal.graphql';
 
 const proposalDetailsFragment = graphql`
   fragment CurationProposal_proposal on CurationProposal {
@@ -82,7 +84,7 @@ const PAYLOAD_HIDDEN_KEYS = ['element_id', 'relationship_id'];
 
 const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: CurationProposal_proposal$key; adjudicationAvailable: boolean }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const labels = useCurationLabels();
   const proposal = useFragment(proposalDetailsFragment, data);
   const payload = parseJsonObject(proposal.action_payload);
@@ -100,24 +102,41 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
   const survivorIndex = survivorId ? proposal.subject_ids.indexOf(survivorId) : -1;
   const survivorName = survivorIndex >= 0 ? proposal.subject_names[survivorIndex] ?? null : null;
   const payloadEntries = payload ? Object.entries(payload).filter(([key]) => !PAYLOAD_HIDDEN_KEYS.includes(key)) : [];
+  const compare = useFragment<CurationProposalCompare_proposal$key>(compareFragment, proposal);
+  const preview = isTargeted && !isAttribution ? buildMergePreview(compare, survivorId) : null;
+  const summary = isOpen
+    ? t_i18n('Recommended: {action}, with {confidence} confidence.', {
+        values: { action: labels.action(proposal.recommended_action), confidence: formatPercent(proposal.confidence_score) },
+      })
+    : t_i18n('{status} {relative}: {action}.', {
+        values: { status: labels.status(proposal.proposal_status), relative: rd(proposal.decided_at ?? proposal.updated_at), action: labels.action(proposal.recommended_action) },
+      });
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{proposal.name}</Typography>
-        <Tag label={labels.kind(proposal.proposal_kind)} />
-        <Tag label={labels.status(proposal.proposal_status)} color={labels.statusColor(proposal.proposal_status)} />
-        <Box sx={{ flex: 1 }} />
-        <CurationProposalActions
-          proposal={proposal}
-          survivorId={survivorId}
-          survivorName={survivorName}
-          adjudicationAvailable={adjudicationAvailable}
-        />
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2, marginBottom: 2 }}>
+      <Card sx={{ marginBottom: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }} data-testid="curation-proposal-header">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 320 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Tag label={labels.status(proposal.proposal_status)} color={labels.statusColor(proposal.proposal_status)} />
+              <Tag label={labels.kind(proposal.proposal_kind)} />
+              {isOpen && proposal.in_ambiguous_band && <Tag label={t_i18n('Needs your decision')} color={theme.palette.warn.main} />}
+            </Box>
+            <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{proposal.name}</Typography>
+            <Typography variant="body1" data-testid="curation-proposal-summary">{summary}</Typography>
+          </Box>
+          <CurationProposalActions
+            proposal={proposal}
+            survivorId={survivorId}
+            survivorName={survivorName}
+            preview={preview}
+            adjudicationAvailable={adjudicationAvailable}
+          />
+        </Box>
+      </Card>
+      <Box sx={{ marginBottom: 2 }}>
         <Card title={t_i18n('Recommendation')}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 2 }}>
             <div>
               <Label>{t_i18n('Recommended action')}</Label>
               <Typography variant="body2">{labels.action(proposal.recommended_action)}</Typography>
@@ -151,26 +170,6 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
             )}
           </Box>
         </Card>
-        <Card title={t_i18n('Decision')}>
-          {isOpen ? (
-            <Typography variant="body2" color={theme.palette.text.light}>
-              {t_i18n('This proposal waits for a decision')}
-            </Typography>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="body2">
-                {labels.status(proposal.proposal_status)}
-                {proposal.decided_at && ` - ${fldt(proposal.decided_at)}`}
-              </Typography>
-              {proposal.decidedBy && <Typography variant="body2">{t_i18n('By')} {proposal.decidedBy.name}</Typography>}
-              {proposal.policy && <Typography variant="body2">{t_i18n('Curation policy')}: {proposal.policy.name}</Typography>}
-              {proposal.decision_rationale && <Typography variant="body2">{proposal.decision_rationale}</Typography>}
-              {proposal.merge_record_id && (
-                <Link to={`${CURATION_MERGES_PATH}?record=${proposal.merge_record_id}`}>{t_i18n('Open the merge record')}</Link>
-              )}
-            </Box>
-          )}
-        </Card>
       </Box>
       <Box sx={{ marginBottom: 2 }}>
         <CurationProposalCompare
@@ -181,8 +180,31 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
           selectedLabel={isAttribution ? t_i18n('Attribution kept') : undefined}
         />
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2 }}>
+      <Box sx={{ marginBottom: 2 }}>
         <CurationProposalEvidence data={proposal} />
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+        <Card title={t_i18n('Decision')}>
+          {isOpen ? (
+            <Typography variant="body2" color={theme.palette.text.light}>
+              {t_i18n('This proposal waits for a decision')}
+            </Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="curation-decision">
+              <Typography variant="body2">
+                {proposal.decided_at
+                  ? t_i18n('{status} on {date}', { values: { status: labels.status(proposal.proposal_status), date: fldt(proposal.decided_at) } })
+                  : labels.status(proposal.proposal_status)}
+              </Typography>
+              {proposal.decidedBy && <Typography variant="body2">{t_i18n('By {name}', { values: { name: proposal.decidedBy.name } })}</Typography>}
+              {proposal.policy && <Typography variant="body2">{t_i18n('Applied by the curation policy {name}', { values: { name: proposal.policy.name } })}</Typography>}
+              {proposal.decision_rationale && <Typography variant="body2">{proposal.decision_rationale}</Typography>}
+              {proposal.merge_record_id && (
+                <Link to={`${CURATION_MERGES_PATH}?record=${proposal.merge_record_id}`}>{t_i18n('Open the merge record')}</Link>
+              )}
+            </Box>
+          )}
+        </Card>
         <Card title={t_i18n('Adjudication')}>
           {proposal.adjudication ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="curation-adjudication">
@@ -199,9 +221,13 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
           ) : (
             <Typography variant="body2" color={theme.palette.text.light}>
               {proposal.adjudicable
-                ? t_i18n('This proposal is in the ambiguous band: the OpenCTI Curator can adjudicate it (Enterprise Edition).')
-                : t_i18n('Only duplicate proposals (merge or alias) in the ambiguous band are adjudicated.')}
-              {proposal.adjudication_requested_at && ` ${t_i18n('Last requested on {date}.', { values: { date: fldt(proposal.adjudication_requested_at) } })}`}
+                ? t_i18n('The evidence is not conclusive: the OpenCTI Curator can adjudicate this proposal (Enterprise Edition).')
+                : t_i18n('Only duplicate proposals whose evidence is not conclusive are adjudicated.')}
+            </Typography>
+          )}
+          {!proposal.adjudication && proposal.adjudication_requested_at && (
+            <Typography variant="caption" color={theme.palette.text.light} title={fldt(proposal.adjudication_requested_at)}>
+              {t_i18n('Adjudication last requested {relative}.', { values: { relative: rd(proposal.adjudication_requested_at) } })}
             </Typography>
           )}
         </Card>
@@ -210,11 +236,7 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
   );
 };
 
-const CurationProposal = () => {
-  const { t_i18n } = useFormatter();
-  const { proposalId } = useParams() as { proposalId: string };
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Curation proposal | Curation | Data'));
+const CurationProposalComponent = ({ proposalId }: { proposalId: string }) => {
   const data = useLazyLoadQuery<CurationProposalQuery>(curationProposalQuery, { id: proposalId }, { fetchPolicy: 'store-and-network' });
   if (!data.curationProposal) {
     return <ErrorNotFound />;
@@ -226,6 +248,18 @@ const CurationProposal = () => {
         adjudicationAvailable={data.curationSettings.adjudication_available && data.curationSettings.adjudication_enabled}
       />
     </div>
+  );
+};
+
+const CurationProposal = () => {
+  const { t_i18n } = useFormatter();
+  const { proposalId } = useParams() as { proposalId: string };
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Curation proposal | Curation | Data'));
+  return (
+    <Suspense fallback={<CurationSkeleton blocks={[140, 160, 360, 240]} />}>
+      <CurationProposalComponent proposalId={proposalId} />
+    </Suspense>
   );
 };
 

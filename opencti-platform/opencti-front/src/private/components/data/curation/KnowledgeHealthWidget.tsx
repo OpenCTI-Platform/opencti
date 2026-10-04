@@ -5,9 +5,9 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
+import CurationSkeleton from './CurationSkeleton';
 import KnowledgeHealthScore from './KnowledgeHealthScore';
 import useCurationLabels from './curationUtils';
 import { KnowledgeHealthWidgetQuery$data } from './__generated__/KnowledgeHealthWidgetQuery.graphql';
@@ -74,18 +74,22 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
   }, []);
 
   const defaultTitles: Record<KnowledgeHealthWidgetType, string> = {
-    'knowledge-health-score': t_i18n('Knowledge Health score'),
-    'knowledge-health-trend': t_i18n('Knowledge Health trend'),
+    'knowledge-health-score': t_i18n('Knowledge health score'),
+    'knowledge-health-trend': t_i18n('Knowledge health trend'),
     'curation-open-proposals': t_i18n('Open curation proposals by kind'),
   };
 
   const renderContent = () => {
     if (state.loading) {
-      return <Loader variant={LoaderVariant.inElement} />;
+      return <CurationSkeleton blocks={[160]} />;
     }
     const { data } = state;
+    if (!data) {
+      return <WidgetNoData message={t_i18n('Knowledge health is not available here: it needs the capability to access knowledge.')} />;
+    }
+    const noSnapshot = t_i18n('No Knowledge health snapshot yet: the curation manager computes one once a day.');
     if (variant === 'knowledge-health-score') {
-      if (!data?.knowledgeHealth) return <WidgetNoData message={t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')} />;
+      if (!data.knowledgeHealth) return <WidgetNoData message={noSnapshot} />;
       const { health_score: score, score_trend: trend } = data.knowledgeHealth;
       return (
         <Box sx={{ textAlign: 'center' }} data-testid="knowledge-health-widget-score">
@@ -99,15 +103,15 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
       );
     }
     if (variant === 'knowledge-health-trend') {
-      const points = (data?.knowledgeHealthSnapshots?.edges ?? [])
+      const points = (data.knowledgeHealthSnapshots?.edges ?? [])
         .map((edge) => edge?.node)
         .filter((node): node is NonNullable<typeof node> => !!node)
         .map((node) => ({ x: new Date(node.snapshot_date).getTime(), y: node.health_score }))
         .sort((left, right) => left.x - right.x);
-      if (points.length === 0) return <WidgetNoData message={t_i18n('No Knowledge Health snapshot yet: the curation manager computes one every night.')} />;
-      return <WidgetMultiLines series={[{ name: t_i18n('Knowledge Health score'), data: points }]} interval="day" hasLegend={false} />;
+      if (points.length === 0) return <WidgetNoData message={noSnapshot} />;
+      return <WidgetMultiLines series={[{ name: t_i18n('Knowledge health score'), data: points }]} interval="day" hasLegend={false} />;
     }
-    const entries = [...(data?.curationStatistics?.open_by_kind ?? [])]
+    const entries = [...(data.curationStatistics?.open_by_kind ?? [])]
       .filter((entry) => entry.count > 0)
       .sort((left, right) => right.count - left.count);
     if (entries.length === 0) return <WidgetNoData message={t_i18n('No open curation proposal: the detectors found nothing to review.')} />;

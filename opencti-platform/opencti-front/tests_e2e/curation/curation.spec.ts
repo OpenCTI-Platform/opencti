@@ -5,13 +5,47 @@ import CurationPage from '../model/curation.pageModel';
 import SearchPageModel from '../model/search.pageModel';
 import { addIntrusionSet, deleteDashboard, deleteIntrusionSet, intrusionSetExists, mergeIntrusionSets, openProposalIds } from '../dataForTesting/curation.data';
 
-// The screenshots of the user documentation (docs/docs/usage/assets/knowledge-curation-*.png) are the captures of
-// these tests, taken at the documented size and kept with the test results.
+// The screenshots of the user documentation (docs/docs/usage/assets/curation-<surface>-<state>.png) are the captures
+// of these tests, taken at the documented size and kept with the test results.
 test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
 
 const capture = async (page: Page, testInfo: TestInfo, name: string) => {
-  await page.screenshot({ path: testInfo.outputPath(`knowledge-curation-${name}.png`) });
+  await page.screenshot({ path: testInfo.outputPath(`curation-${name}.png`) });
 };
+
+/** Answers the curation statistics as on a platform where no proposal was ever raised. */
+const withoutAnyProposal = async (page: Page) => {
+  await page.route('**/graphql', async (route) => {
+    if (!(route.request().postData() ?? '').includes('query CurationStatisticsBarQuery')) {
+      await route.fallback();
+      return;
+    }
+    const response = await route.fetch();
+    const body = await response.json();
+    const statistics = body?.data?.curationStatistics;
+    if (statistics) {
+      statistics.open_count = 0;
+      statistics.ambiguous_count = 0;
+      statistics.decided_by_status = [];
+    }
+    await route.fulfill({ response, json: body });
+  });
+};
+
+/**
+ * Content of the test
+ * -------------------
+ * Inbox on first use: with no proposal ever raised, the Inbox explains what fills it and when the next scan runs.
+ */
+test('Curation inbox on first use', { tag: ['@ce'] }, async ({ page }, testInfo) => {
+  const curationPage = new CurationPage(page);
+  await withoutAnyProposal(page);
+  await curationPage.gotoHub();
+  const firstUse = page.getByTestId('curation-inbox-first-use');
+  await expect(firstUse).toBeVisible();
+  await expect(page.getByTestId('curation-inbox-first-use-schedule')).toBeVisible();
+  await capture(page, testInfo, 'inbox-first-use');
+});
 
 /**
  * Content of the test
@@ -72,8 +106,9 @@ test('Unmerge from the Changes tab of the merged entity', { tag: ['@ce'] }, asyn
 
     await expect(curationPage.getMergeRecordDetails()).toBeVisible();
     await expect(curationPage.getUnmergeButton()).toBeVisible();
-    await capture(page, testInfo, 'merge-record');
+    await capture(page, testInfo, 'merge-record-undo');
     await curationPage.getUnmergeButton().click();
+    await expect(page.getByTestId('merge-record-unmerge-preview')).toContainText(sourceName);
     await curationPage.getUnmergeConfirmButton().click();
     await expect(curationPage.getUnmergeButton()).toBeHidden({ timeout: 30000 });
     await expect.poll(() => intrusionSetExists(request, sourceId), { timeout: 30000 }).toBe(true);
@@ -98,9 +133,9 @@ test('Create the Knowledge health dashboard from its template', { tag: ['@ce'] }
   const dashboardId = page.url().match(/dashboards\/([0-9a-f-]{36})/)?.[1];
 
   try {
-    await expect(page.getByText('Knowledge Health score').first()).toBeVisible();
+    await expect(page.getByText('Knowledge health score').first()).toBeVisible();
     await expect(page.getByText('Open curation proposals by kind').first()).toBeVisible();
-    await expect(page.getByText('Knowledge Health trend').first()).toBeVisible();
+    await expect(page.getByText('Knowledge health trend').first()).toBeVisible();
     await capture(page, testInfo, 'dashboard-template');
   } finally {
     if (dashboardId) await deleteDashboard(request, dashboardId);
@@ -133,33 +168,46 @@ test('Curation proposal from detection to decision', { tag: ['@ce'] }, async ({ 
 
     await curationPage.gotoHub();
     await expect(curationPage.getInbox()).toBeVisible();
-    await capture(page, testInfo, 'inbox');
+    await expect(page.getByTestId('curation-statistics')).toBeVisible();
+    await capture(page, testInfo, 'inbox-kpis');
+    // The counters of the strip filter the table below.
+    await page.getByTestId('curation-stat-needs-decision').click();
+    await expect(page.getByTestId('curation-stat-needs-decision')).toHaveAttribute('data-active', 'true');
+    await page.getByTestId('curation-stat-open').click();
+    await expect(page.getByTestId('curation-stat-open')).toHaveAttribute('data-active', 'true');
     await new SearchPageModel(page).addSearch(suffix);
     await expect(curationPage.getInbox().getByText(firstName).first()).toBeVisible();
     await capture(page, testInfo, 'inbox-search');
 
     await page.goto(`/dashboard/data/curation/inbox/${proposalId}`);
     await expect(page.getByTestId('curation-proposal-page')).toBeVisible();
+    await expect(page.getByTestId('curation-proposal-summary')).toBeVisible();
     await expect(page.getByTestId('curation-compare-table')).toBeVisible();
-    await capture(page, testInfo, 'proposal');
+    await capture(page, testInfo, 'proposal-compare');
     await page.getByTestId('curation-evidence-table').scrollIntoViewIfNeeded();
+    await expect(page.getByTestId('curation-evidence-share').first()).toBeVisible();
     await capture(page, testInfo, 'proposal-evidence');
+    await page.getByTestId('curation-proposal-review').click();
+    await expect(page.getByTestId('curation-accept-preview')).toBeVisible();
+    await capture(page, testInfo, 'proposal-accept-dialog');
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByTestId('curation-accept-preview')).toBeHidden();
 
     await page.goto(`/dashboard/threats/intrusion_sets/${firstId}`);
     await expect(page.getByTestId('curation-possible-duplicate')).toBeVisible();
-    await capture(page, testInfo, 'possible-duplicate');
+    await capture(page, testInfo, 'possible-duplicate-chip');
 
     await curationPage.gotoHub();
     await curationPage.getHubTab('merges').click();
     await expect(curationPage.getMerges()).toBeVisible();
-    await capture(page, testInfo, 'merges');
+    await capture(page, testInfo, 'merges-list');
 
     await curationPage.getHubTab('health').click();
     await expect(curationPage.getKnowledgeHealth()).toBeVisible();
     const healthStatus = page.getByTestId('knowledge-health-status');
     const statusBeforeRefresh = (await healthStatus.textContent()) ?? '';
     await page.getByTestId('knowledge-health-refresh').click();
-    await expect(page.getByText('The Knowledge Health snapshot has been refreshed')).toBeVisible({ timeout: 120000 });
+    await expect(page.getByText('The Knowledge health snapshot has been refreshed')).toBeVisible({ timeout: 120000 });
     await expect(healthStatus).not.toHaveText(statusBeforeRefresh, { timeout: 60000 });
     await expect(page.getByTestId('knowledge-health-score')).toBeVisible();
     await capture(page, testInfo, 'knowledge-health');

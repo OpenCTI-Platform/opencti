@@ -176,8 +176,8 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
       label: 'Status',
       percentWidth: 12,
       isSortable: true,
-      render: ({ merge_status }: MergeRecords_record$data) => (
-        <Tag label={labels.mergeStatus(merge_status)} color={labels.statusColor(merge_status)} />
+      render: ({ merge_status, reversible_until }: MergeRecords_record$data) => (
+        <Tag label={labels.mergeStatus(merge_status, reversible_until)} color={labels.statusColor(merge_status)} />
       ),
     },
     merged_by: {

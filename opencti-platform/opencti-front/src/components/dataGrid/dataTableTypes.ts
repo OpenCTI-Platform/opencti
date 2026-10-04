@@ -161,7 +161,7 @@ export interface DataTableProps {
   hideSavedFilters?: boolean;
   message?: string;
   isLocalStorageEnabled?: boolean;
-  emptyStateMessage?: string;
+  emptyStateMessage?: ReactNode;
   trashOperationsEnabled?: boolean;
   disableBulkEnroll?: boolean;
   deleteDisable?: boolean;
@@ -174,7 +174,7 @@ export interface DataTableBodyProps {
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight'];
   pageSize: number;
   pageStart: number;
-  emptyStateMessage?: string;
+  emptyStateMessage?: ReactNode;
   hideHeaders: DataTableProps['hideHeaders'];
   searchTerm?: string;
 }

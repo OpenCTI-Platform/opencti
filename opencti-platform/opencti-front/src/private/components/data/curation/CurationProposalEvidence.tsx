@@ -1,4 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
+import { ProgressBar, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -68,7 +69,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
             <TableRow>
               <TableCell>{t_i18n('Evidence')}</TableCell>
               <TableCell sx={{ width: 200 }}>{t_i18n('Score')}</TableCell>
-              <TableCell sx={{ width: 110 }}>{t_i18n('Weight')}</TableCell>
+              <TableCell sx={{ width: 170 }}>{t_i18n('Share of the decision')}</TableCell>
               <TableCell>{t_i18n('Explanation')}</TableCell>
             </TableRow>
           </TableHead>
@@ -82,8 +83,28 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
                   <TableCell sx={{ verticalAlign: 'top' }}>
                     <CurationConfidence value={item.score} />
                   </TableCell>
-                  <TableCell sx={{ verticalAlign: 'top' }} title={t_i18n('{share}% of the total weight', { values: { share } })}>
-                    {item.weight.toFixed(2)}
+                  <TableCell sx={{ verticalAlign: 'top' }}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} data-testid="curation-evidence-share">
+                          {item.weight > 0 ? (
+                            <>
+                              <Box sx={{ flex: 1 }}>
+                                <ProgressBar value={share} aria-label={labels.evidence(item.evidence_type)} />
+                              </Box>
+                              <span style={{ minWidth: 36, textAlign: 'right' }}>{`${share}%`}</span>
+                            </>
+                          ) : (
+                            <span>{t_i18n('Lowers the confidence')}</span>
+                          )}
+                        </Box>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {item.weight > 0
+                          ? t_i18n('Weight {weight}: {share}% of the total weight', { values: { weight: item.weight.toFixed(2), share } })
+                          : t_i18n('Weight {weight}: this signal counts against the proposal', { values: { weight: item.weight.toFixed(2) } })}
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell sx={{ verticalAlign: 'top' }}>
                     <div>{item.description}</div>

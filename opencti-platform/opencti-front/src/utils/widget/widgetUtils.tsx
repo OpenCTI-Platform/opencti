@@ -50,7 +50,7 @@ const widgetVisualizationTypes = [
   },
   {
     key: 'knowledge-health-score',
-    name: 'Knowledge Health score',
+    name: 'Knowledge health score',
     dataSelectionLimit: undefined,
     category: 'curation',
     availableParameters: [],
@@ -60,7 +60,7 @@ const widgetVisualizationTypes = [
   },
   {
     key: 'knowledge-health-trend',
-    name: 'Knowledge Health trend',
+    name: 'Knowledge health trend',
     dataSelectionLimit: undefined,
     category: 'curation',
     availableParameters: [],

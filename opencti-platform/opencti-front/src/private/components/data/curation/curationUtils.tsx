@@ -12,6 +12,8 @@ export const CURATION_WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 export const CURATION_PROPOSALS_PATH = '/dashboard/data/curation/inbox';
 export const CURATION_MERGES_PATH = '/dashboard/data/curation/merges';
 export const CURATION_HEALTH_PATH = '/dashboard/data/curation/health';
+export const CURATION_SETTINGS_PATH = '/dashboard/settings/customization/curation/settings';
+export const CURATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/knowledge-curation/';
 
 /** Actions that move data and therefore need the merge capability, mirroring the backend can_apply rule. */
 export const CURATION_MERGE_ACTIONS = ['merge', 'unmerge'];
@@ -112,10 +114,10 @@ const useCurationLabels = () => {
     field_conflict: t_i18n('Field conflict'),
   };
   const mergeStatusLabels: Record<string, string> = {
-    active: t_i18n('Active'),
-    reverted: t_i18n('Reverted'),
-    partially_reverted: t_i18n('Partially reverted'),
-    irreversible: t_i18n('Irreversible'),
+    active: t_i18n('Applied'),
+    reverted: t_i18n('Undone'),
+    partially_reverted: t_i18n('Partially undone'),
+    irreversible: t_i18n('Not reversible'),
   };
   const decisionLabels: Record<string, string> = {
     alias: t_i18n('Alias'),
@@ -202,7 +204,11 @@ const useCurationLabels = () => {
     action: (key?: string | null) => label(actionLabels, key),
     detector: (key?: string | null) => label(detectorLabels, key),
     evidence: (key?: string | null) => label(evidenceLabels, key),
-    mergeStatus: (key?: string | null) => label(mergeStatusLabels, key),
+    /** A merge whose retention window is over reads "Expired"; other irreversible merges read "Not reversible". */
+    mergeStatus: (key?: string | null, reversibleUntil?: string | null) => {
+      if (key === 'irreversible' && reversibleUntil && new Date(reversibleUntil).getTime() <= Date.now()) return t_i18n('Expired');
+      return label(mergeStatusLabels, key);
+    },
     decision: (key?: string | null) => label(decisionLabels, key),
     sourceClass: (key?: string | null) => label(sourceClassLabels, key),
     conflictMode: (key?: string | null) => label(conflictModeLabels, key),

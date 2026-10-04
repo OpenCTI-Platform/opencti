@@ -1,5 +1,7 @@
+import { Suspense, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
+import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -10,10 +12,11 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import CurationConfidence from './CurationConfidence';
+import CurationFirstUse from './CurationFirstUse';
 import CurationProposalsToolBar from './CurationProposalsToolBar';
-import CurationStatisticsBar from './CurationStatisticsBar';
+import CurationStatisticsBar, { CurationInboxFilter, CurationStatisticsBarSkeleton, hasNoProposalYet, useCurationStatistics } from './CurationStatisticsBar';
 import useCurationLabels, { CURATION_PROPOSALS_PATH } from './curationUtils';
 import { CurationProposalsListQuery, CurationProposalsListQuery$variables } from './__generated__/CurationProposalsListQuery.graphql';
 import { CurationProposals_proposals$data } from './__generated__/CurationProposals_proposals.graphql';
@@ -95,18 +98,33 @@ export const curationProposalsListQuery = graphql`
 
 const LOCAL_STORAGE_KEY = 'curation_proposals';
 
-export const openProposalsFilter: FilterGroup = {
-  mode: 'and',
-  filters: [{ key: 'proposal_status', values: ['open'], operator: 'eq', mode: 'or' }],
-  filterGroups: [],
+const OPEN_STATUS_FILTER: Filter = { key: 'proposal_status', values: ['open'], operator: 'eq', mode: 'or' };
+const AMBIGUOUS_FILTER: Filter = { key: 'in_ambiguous_band', values: ['true'], operator: 'eq', mode: 'or' };
+
+export const openProposalsFilter: FilterGroup = { mode: 'and', filters: [OPEN_STATUS_FILTER], filterGroups: [] };
+const needsDecisionFilter: FilterGroup = { mode: 'and', filters: [OPEN_STATUS_FILTER, AMBIGUOUS_FILTER], filterGroups: [] };
+
+const isFilterOf = (filter: Filter, expected: Filter) => {
+  return filter.key === expected.key && (filter.operator ?? 'eq') === 'eq' && filter.values.length === 1 && filter.values[0] === expected.values[0];
 };
 
-const CurationProposals = () => {
+/** The counter of the statistics strip that the current filters match, if any. */
+const activeInboxFilter = (filters: FilterGroup | undefined): CurationInboxFilter | null => {
+  const items = filters?.filters ?? [];
+  if ((filters?.filterGroups ?? []).length > 0) return null;
+  if (items.length === 1 && isFilterOf(items[0], OPEN_STATUS_FILTER)) return 'open';
+  if (items.length === 2 && items.some((item) => isFilterOf(item, OPEN_STATUS_FILTER)) && items.some((item) => isFilterOf(item, AMBIGUOUS_FILTER))) {
+    return 'needs_decision';
+  }
+  return null;
+};
+
+const CurationProposalsComponent = () => {
   const { t_i18n } = useFormatter();
   const labels = useCurationLabels();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Inbox | Curation | Data'));
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+  const [statisticsKey, setStatisticsKey] = useState(0);
+  const statistics = useCurationStatistics(statisticsKey);
 
   const initialValues = {
     searchTerm: '',
@@ -125,7 +143,13 @@ const CurationProposals = () => {
     filters: contextFilters,
   } as unknown as CurationProposalsListQuery$variables;
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<CurationProposalsListQuery>(curationProposalsListQuery, queryPaginationOptions);
-  const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
+  const refresh = () => {
+    loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
+    setStatisticsKey((key) => key + 1);
+  };
+  const applyInboxFilter = (filter: CurationInboxFilter) => {
+    helpers.handleSetFilters(filter === 'open' ? openProposalsFilter : needsDecisionFilter);
+  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -185,9 +209,32 @@ const CurationProposals = () => {
     },
   };
 
+  const statisticsBar = (
+    <CurationStatisticsBar statistics={statistics} activeFilter={activeInboxFilter(viewStorage.filters)} onFilter={applyInboxFilter} />
+  );
+  if (hasNoProposalYet(statistics)) {
+    return (
+      <>
+        {statisticsBar}
+        <CurationFirstUse
+          testId="curation-inbox-first-use"
+          title={t_i18n('No curation proposal yet')}
+          description={t_i18n('The curation manager scans your knowledge every night and lists here the duplicates, contradictions and stale knowledge it finds, each with its evidence and a recommended action.')}
+          nextRunDate={statistics.next_scan_date}
+        />
+      </>
+    );
+  }
+  const filteredEmptyState = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, paddingY: 4 }} data-testid="curation-inbox-filtered-empty">
+      <span>{t_i18n('No proposal matches these filters')}</span>
+      <Button variant="secondary" size="small" onClick={() => helpers.handleClearAllFilters()}>{t_i18n('Clear filters')}</Button>
+    </Box>
+  );
+
   return (
-    <div data-testid="curation-proposals-page">
-      <CurationStatisticsBar />
+    <>
+      {statisticsBar}
       {queryRef && (
         <DataTable
           removeSelectAll
@@ -197,6 +244,7 @@ const CurationProposals = () => {
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
+          emptyStateMessage={viewStorage.searchTerm ? undefined : filteredEmptyState}
           preloadedPaginationProps={{
             linesQuery: curationProposalsListQuery,
             linesFragment: proposalsFragment,
@@ -211,6 +259,19 @@ const CurationProposals = () => {
           customToolbar={<CurationProposalsToolBar onDone={refresh} />}
         />
       )}
+    </>
+  );
+};
+
+const CurationProposals = () => {
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Inbox | Curation | Data'));
+  return (
+    <div data-testid="curation-proposals-page">
+      <Suspense fallback={<CurationStatisticsBarSkeleton />}>
+        <CurationProposalsComponent />
+      </Suspense>
     </div>
   );
 };

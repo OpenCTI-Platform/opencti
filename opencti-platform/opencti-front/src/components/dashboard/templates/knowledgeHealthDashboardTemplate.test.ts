@@ -29,7 +29,7 @@ describe('Knowledge health dashboard template', () => {
     expect(Object.keys(manifest.widgets)).toHaveLength(3);
     const score = manifest.widgets['0a05c0de-0001-4c05-9a05-000000000001'];
     expect(score).toMatchObject({ type: 'knowledge-health-score', perspective: null, dataSelection: [] });
-    expect(score.parameters.title).toBe('[Knowledge Health score]');
+    expect(score.parameters.title).toBe('[Knowledge health score]');
     expect(score.layout).toMatchObject({ i: score.id, x: 0, y: 0, w: 4, h: 4 });
   });
 

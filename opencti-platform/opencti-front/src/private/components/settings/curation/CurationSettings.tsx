@@ -296,7 +296,9 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
         <Form data-testid="curation-settings-form">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
             <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light}>
-              {t_i18n('Last scan')}: {dateOrNever(settings.last_scan_date)} - {t_i18n('Last Knowledge Health snapshot')}: {dateOrNever(settings.last_snapshot_date)} - {t_i18n('Last weekly digest')}: {dateOrNever(settings.last_digest_date)}
+              {t_i18n('Last scan: {scan} - last Knowledge health snapshot: {snapshot} - last weekly digest: {digest}', {
+                values: { scan: dateOrNever(settings.last_scan_date), snapshot: dateOrNever(settings.last_snapshot_date), digest: dateOrNever(settings.last_digest_date) },
+              })}
             </Typography>
             <Button variant="secondary" onClick={requestScan} disabled={scanning || scanRequested} data-testid="curation-scan-request">
               {scanRequested ? t_i18n('Scan scheduled') : t_i18n('Run a scan now')}
@@ -435,7 +437,7 @@ const CurationSettingsForm = ({ settings }: { settings: Settings }) => {
                 style={fieldSpacingContainerStyle}
               />
             </Card>
-            <Card title={t_i18n('Knowledge Health weekly digest')}>
+            <Card title={t_i18n('Knowledge health weekly digest')}>
               <Field component={SwitchField} type="checkbox" name="digest_enabled" label={t_i18n('Send the weekly digest')} />
               <Field component={SelectFieldFds} name="digest_day" label={t_i18n('Day of the week (UTC)')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
                 {CURATION_WEEK_DAYS.map((day) => <SelectItem key={day} value={String(day)}>{labels.weekDay(day)}</SelectItem>)}

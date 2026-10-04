@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../../utils/String';
-import { CURATION_PROPOSALS_PATH } from './curationUtils';
+import { CURATION_PROPOSALS_PATH, formatPercent } from './curationUtils';
 import { CurationPossibleDuplicateQuery$data } from './__generated__/CurationPossibleDuplicateQuery.graphql';
 
 const possibleDuplicateQuery = graphql`
@@ -33,6 +33,7 @@ interface PossibleDuplicate {
   proposalId: string;
   count: number;
   otherName: string | null;
+  confidence: number;
   proposedAt: string;
 }
 
@@ -41,7 +42,7 @@ interface PossibleDuplicate {
  * It never blocks the header: a failed lookup simply shows nothing.
  */
 const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const draftContext = useDraftContext();
   const [duplicate, setDuplicate] = useState<PossibleDuplicate | null>(null);
 
@@ -60,7 +61,7 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
         }
         const [first] = duplicates;
         const otherName = first.subject_names.find((_, index) => first.subject_ids[index] !== entityId) ?? null;
-        setDuplicate({ proposalId: first.id, count: duplicates.length, otherName, proposedAt: first.created_at });
+        setDuplicate({ proposalId: first.id, count: duplicates.length, otherName, confidence: first.confidence_score, proposedAt: first.created_at });
       })
       .catch(() => {
         if (active) setDuplicate(null);
@@ -72,7 +73,9 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
 
   if (!duplicate) return null;
   const describe = (name: string | null) => {
-    if (duplicate.count > 1) return t_i18n('{count} possible duplicates', { values: { count: duplicate.count } });
+    if (duplicate.count > 1) {
+      return t_i18n('{count, plural, one {# possible duplicate} other {# possible duplicates}}', { values: { count: duplicate.count } });
+    }
     return name ? t_i18n('Possible duplicate of {name}', { values: { name } }) : t_i18n('Possible duplicate');
   };
   return (
@@ -90,7 +93,9 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
       <TooltipContent>
         {describe(duplicate.otherName)}
         <br />
-        {t_i18n('Proposed on {date}', { values: { date: fldt(duplicate.proposedAt) } })}
+        {t_i18n('{confidence} confidence, proposed {relative} ({date})', {
+          values: { confidence: formatPercent(duplicate.confidence), relative: rd(duplicate.proposedAt), date: fldt(duplicate.proposedAt) },
+        })}
       </TooltipContent>
     </Tooltip>
   );

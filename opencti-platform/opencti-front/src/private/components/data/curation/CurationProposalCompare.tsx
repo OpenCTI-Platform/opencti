@@ -18,9 +18,9 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
 import type { Theme } from '../../../../components/Theme';
-import { CurationProposalCompare_proposal$key } from './__generated__/CurationProposalCompare_proposal.graphql';
+import { CurationProposalCompare_proposal$data, CurationProposalCompare_proposal$key } from './__generated__/CurationProposalCompare_proposal.graphql';
 
-const compareFragment = graphql`
+export const compareFragment = graphql`
   fragment CurationProposalCompare_proposal on CurationProposal {
     id
     subject_ids
@@ -94,6 +94,7 @@ interface StixDocument {
   description?: string;
   aliases?: string[];
   x_opencti_aliases?: string[];
+  external_references?: unknown[];
   first_seen?: string;
   last_seen?: string;
 }
@@ -105,6 +106,41 @@ const parseStix = (value: string | null | undefined): StixDocument => {
   } catch {
     return {};
   }
+};
+
+/** What a merge or an alias addition moves to the surviving entity, for the approval of the change. */
+export interface CurationMergePreview {
+  /** Subjects merged into, or named as aliases of, the survivor. */
+  count: number;
+  relationships: number;
+  aliases: string[];
+  externalReferences: number;
+}
+
+export const buildMergePreview = (proposal: CurationProposalCompare_proposal$data, survivorId: string | null): CurationMergePreview | null => {
+  if (!survivorId) return null;
+  const subjects = proposal.subjects.filter((subject) => !!subject?.id);
+  const survivor = subjects.find((subject) => subject.id === survivorId);
+  if (!survivor) return null;
+  const others = subjects.filter((subject) => subject.id !== survivorId);
+  const namesOf = (subject: (typeof subjects)[number]) => {
+    const document = parseStix(subject.toStix);
+    return [subject.representative?.main ?? document.name, ...(document.aliases ?? document.x_opencti_aliases ?? [])].filter((name): name is string => !!name);
+  };
+  const known = new Set(namesOf(survivor).map((name) => name.toLowerCase()));
+  const aliases: string[] = [];
+  others.flatMap(namesOf).forEach((name) => {
+    if (!known.has(name.toLowerCase())) {
+      known.add(name.toLowerCase());
+      aliases.push(name);
+    }
+  });
+  return {
+    count: Math.max(0, proposal.subject_ids.length - 1),
+    relationships: others.reduce((total, subject) => total + (subject.numberOfConnectedElement ?? 0), 0),
+    aliases,
+    externalReferences: others.reduce((total, subject) => total + (parseStix(subject.toStix).external_references ?? []).length, 0),
+  };
 };
 
 interface CurationProposalCompareProps {
@@ -160,7 +196,8 @@ const CurationProposalCompare = ({ data, survivorId, onSelectSurvivor, selectabl
       render: (index) => {
         const subject = subjects[index];
         if (!subject.relationship_type) return '-';
-        return `${subject.from?.representative?.main ?? '?'} ${t_i18n(`relationship_${subject.relationship_type}`)} ${subject.to?.representative?.main ?? '?'}`;
+        const restricted = t_i18n('Restricted');
+        return `${subject.from?.representative?.main ?? restricted} ${t_i18n(`relationship_${subject.relationship_type}`)} ${subject.to?.representative?.main ?? restricted}`;
       },
     },
     { label: t_i18n('Author'), render: (index) => subjects[index].createdBy?.name ?? '-' },
@@ -203,7 +240,7 @@ const CurationProposalCompare = ({ data, survivorId, onSelectSurvivor, selectabl
     <Card title={t_i18n('Side-by-side comparison')} padding="none">
       {proposal.restricted_subjects_count > 0 && (
         <Typography variant="body2" sx={{ paddingX: 3, paddingTop: 2 }} color="warning.main">
-          {proposal.restricted_subjects_count} {t_i18n('subject(s) are outside of your access and are not displayed.')}
+          {t_i18n('{count, plural, one {# subject is restricted: it is outside of your access and is not displayed.} other {# subjects are restricted: they are outside of your access and are not displayed.}}', { values: { count: proposal.restricted_subjects_count } })}
         </Typography>
       )}
       <Box sx={{ overflowX: 'auto' }}>
