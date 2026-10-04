@@ -24,12 +24,10 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
 
   const expectGraphScreenshot = async (page: Page, target: Locator, name: string, mask: Locator[] = []) => {
     await expect(target).toHaveScreenshot(name, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
-    // The toolbar docked under the canvas, neither hovered nor focused, in the form its baseline takes.
+    // The toolbar docked under the canvas, neither hovered nor focused: counters, groups, search and More actions.
     await page.mouse.move(5, 5);
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    await new GraphPage(page).getToolbar().screenshot({
-      path: test.info().outputPath(`toolbar-${name}`), animations: 'disabled', caret: 'hide', scale: 'css', mask,
-    });
+    await expect(new GraphPage(page).getToolbar()).toHaveScreenshot(`toolbar-${name}`, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
     // The documentation shows the same states on the whole page, details panel included.
     await page.screenshot({ path: test.info().outputPath(`page-${name}`), animations: 'disabled' });
   };
