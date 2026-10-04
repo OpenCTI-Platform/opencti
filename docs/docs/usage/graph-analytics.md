@@ -138,6 +138,8 @@ Every entity carries graph metrics, refreshed in the background without changing
 
 You can filter on **Graph degree** and **Graph cluster** in lists and dashboards, sort lists by these metrics, and display them as list widget columns. For instance, a list widget of intrusion sets sorted by graph degree shows the hubs of your threat landscape.
 
+![List widget of threats and malware ranked by graph degree, with the graph degree and graph cluster size columns](assets/graph-analytics-widget-hubs.png)
+
 ### Graph metrics and access restrictions
 
 The metrics computed in the background count every relationship of the platform. They are shown as computed, and can be used to filter, sort and rank, only by users who can read every relationship: users with the **Bypass** capability, and users who hold every marking definition and, when a platform organization is set, belong to it.
@@ -159,6 +161,8 @@ Three widgets are dedicated to graph analytics (see [widget creation](widgets.md
 - **Top hubs**: the most connected entities of the selection ranked by graph degree, up to 50 entities; click a bar to open the entity.
 
 All three are available in public dashboards. Like any ranking on graph metrics, the top hubs are only shown to users who can read every relationship of the platform; in a public dashboard, this depends on the access of its author and on the markings the dashboard shares.
+
+![Similarity matrix widget: pairwise similarity of the most connected threats, in percent](assets/graph-analytics-widget-similarity.png)
 
 To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the largest clusters with their members over time, the similarity of the most connected threats, two lists ranked by graph degree (the threat and malware hubs and the infrastructure hubs) and the top hubs of the whole knowledge graph. Like any dashboard, it can then be edited, shared or made public. A cluster widget without data says so: clusters appear when an analytics pass finds entities sharing infrastructure.
 
