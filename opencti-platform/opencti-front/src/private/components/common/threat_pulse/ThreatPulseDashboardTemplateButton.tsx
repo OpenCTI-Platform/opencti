@@ -15,7 +15,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseDashboardTemplateButtonQuery } from './__generated__/ThreatPulseDashboardTemplateButtonQuery.graphql';
 import { ThreatPulseDashboardTemplateButtonMutation } from './__generated__/ThreatPulseDashboardTemplateButtonMutation.graphql';
-import { buildSectorBenchmarkDashboard } from './threatPulseDashboardTemplate';
+import { buildSectorBenchmarkDashboard, lockedSectorBenchmarkWidgets } from './threatPulseDashboardTemplate';
+import { ThreatPulseLockedRow } from './ThreatPulseUnlock';
 
 const threatPulseDashboardTemplateButtonQuery = graphql`
   query ThreatPulseDashboardTemplateButtonQuery {
@@ -44,8 +45,10 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
   if (pulseStatus.access !== 'preview' && pulseStatus.access !== 'full') {
     return null;
   }
-  const manifest = buildSectorBenchmarkDashboard(t_i18n);
+  const preview = pulseStatus.access === 'preview';
+  const manifest = buildSectorBenchmarkDashboard(t_i18n, { preview });
   const widgetTitles = Object.values(manifest.widgets).map((widget) => widget.parameters?.title ?? '');
+  const lockedTitles = preview ? lockedSectorBenchmarkWidgets(t_i18n) : [];
   const purpose = t_i18n('What rises in your sector and how this platform compares with the sector median, from Threat Pulse.');
   const create = () => {
     commit({
@@ -87,9 +90,14 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
             <Box component="ul" sx={{ margin: 0, paddingLeft: 2.5, display: 'flex', flexDirection: 'column', gap: 0.25 }} data-testid="threat-pulse-template-widgets">
               {widgetTitles.map((title) => <li key={title}><Text variant="content-compact">{title}</Text></li>)}
             </Box>
-            {pulseStatus.access === 'preview' && (
+            {lockedTitles.length > 0 && (
+              <Box data-testid="threat-pulse-template-locked">
+                {lockedTitles.map((title) => <ThreatPulseLockedRow key={title} label={title} />)}
+              </Box>
+            )}
+            {preview && (
               <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="threat-pulse-template-preview-note">
-                {t_i18n('In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.')}
+                {t_i18n('In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.')}
               </Text>
             )}
           </Box>

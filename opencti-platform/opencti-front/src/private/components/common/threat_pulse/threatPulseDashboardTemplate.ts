@@ -47,54 +47,69 @@ const toWidget = ({ type, title, layout, dataSelection = [], parameters = {} }: 
   };
 };
 
+// `fullOnly`: the widget reads an attribute the preview never writes (sector trend, network first seen), so it would
+// show an empty or zero value instead of naming what contributing unlocks.
+const sectorBenchmarkWidgets = (t_i18n: (key: string) => string): Array<TemplateWidget & { fullOnly?: boolean }> => [
+  { type: 'pulse-trending', title: t_i18n('Objects trending in your sector'), layout: { x: 0, y: 0, w: 6, h: 8 } },
+  { type: 'pulse-benchmark', title: t_i18n('Activity of this platform against the sector median'), layout: { x: 6, y: 0, w: 6, h: 8 } },
+  {
+    type: 'number',
+    title: t_i18n('Indicators rising in the community this week'),
+    layout: { x: 0, y: 8, w: 3, h: 2 },
+    dataSelection: [selection('', filterGroup(['Indicator'], 'pulse_trend', ['rising']))],
+  },
+  {
+    type: 'number',
+    title: t_i18n('Threats rising in your sector this week'),
+    layout: { x: 3, y: 8, w: 3, h: 2 },
+    dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']))],
+    fullOnly: true,
+  },
+  {
+    type: 'donut',
+    title: t_i18n('Community prevalence of indicators - last 30 days'),
+    layout: { x: 6, y: 8, w: 3, h: 6 },
+    dataSelection: [selection('', filterGroup(['Indicator']), { attribute: 'pulse_prevalence' })],
+  },
+  {
+    type: 'horizontal-bar',
+    title: t_i18n('Community trend of threats this week'),
+    layout: { x: 9, y: 8, w: 3, h: 6 },
+    dataSelection: [selection('', filterGroup(THREAT_TYPES), { attribute: 'pulse_trend' })],
+  },
+  {
+    type: 'list',
+    title: t_i18n('Top 10 threats rising in your sector this week'),
+    layout: { x: 0, y: 10, w: 6, h: 8 },
+    dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']), { number: 10 })],
+    fullOnly: true,
+  },
+  {
+    type: 'line',
+    title: t_i18n('Indicators per week of network first seen'),
+    layout: { x: 6, y: 14, w: 6, h: 6 },
+    dataSelection: [selection(t_i18n('Indicators'), filterGroup(['Indicator']), { date_attribute: PULSE_DATE_ATTRIBUTE })],
+    parameters: { interval: 'week', legend: false },
+    fullOnly: true,
+  },
+];
+
 /**
  * The "Sector benchmark" dashboard: the Threat Pulse widgets (trending in the sector, benchmark against the sector
- * median) next to knowledge widgets on the stored community signal of the entities this platform holds.
+ * median) next to knowledge widgets on the stored community signal of the entities this platform holds. Built in
+ * preview, it leaves out the widgets of the full experience (`lockedSectorBenchmarkWidgets` names them).
  */
-export const buildSectorBenchmarkDashboard = (t_i18n: (key: string) => string): DashboardManifest => {
-  const widgets = [
-    toWidget({ type: 'pulse-trending', title: t_i18n('Objects trending in your sector'), layout: { x: 0, y: 0, w: 6, h: 8 } }),
-    toWidget({ type: 'pulse-benchmark', title: t_i18n('Activity of this platform against the sector median'), layout: { x: 6, y: 0, w: 6, h: 8 } }),
-    toWidget({
-      type: 'number',
-      title: t_i18n('Indicators rising in the community this week'),
-      layout: { x: 0, y: 8, w: 3, h: 2 },
-      dataSelection: [selection('', filterGroup(['Indicator'], 'pulse_trend', ['rising']))],
-    }),
-    toWidget({
-      type: 'number',
-      title: t_i18n('Threats rising in your sector this week'),
-      layout: { x: 3, y: 8, w: 3, h: 2 },
-      dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']))],
-    }),
-    toWidget({
-      type: 'donut',
-      title: t_i18n('Community prevalence of indicators - last 30 days'),
-      layout: { x: 6, y: 8, w: 3, h: 6 },
-      dataSelection: [selection('', filterGroup(['Indicator']), { attribute: 'pulse_prevalence' })],
-    }),
-    toWidget({
-      type: 'horizontal-bar',
-      title: t_i18n('Community trend of threats this week'),
-      layout: { x: 9, y: 8, w: 3, h: 6 },
-      dataSelection: [selection('', filterGroup(THREAT_TYPES), { attribute: 'pulse_trend' })],
-    }),
-    toWidget({
-      type: 'list',
-      title: t_i18n('Top 10 threats rising in your sector this week'),
-      layout: { x: 0, y: 10, w: 6, h: 8 },
-      dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']), { number: 10 })],
-    }),
-    toWidget({
-      type: 'line',
-      title: t_i18n('Indicators per week of network first seen'),
-      layout: { x: 6, y: 14, w: 6, h: 6 },
-      dataSelection: [selection(t_i18n('Indicators'), filterGroup(['Indicator']), { date_attribute: PULSE_DATE_ATTRIBUTE })],
-      parameters: { interval: 'week', legend: false },
-    }),
-  ];
+export const buildSectorBenchmarkDashboard = (t_i18n: (key: string) => string, { preview = false } = {}): DashboardManifest => {
+  const widgets = sectorBenchmarkWidgets(t_i18n)
+    .filter((widget) => !(preview && widget.fullOnly))
+    .map((widget) => toWidget(widget));
   return {
     config: {},
     widgets: Object.fromEntries(widgets.map((widget) => [widget.id, widget])),
   };
+};
+
+// The titles of the widgets a dashboard created in preview leaves out: the template card shows them locked.
+export const lockedSectorBenchmarkWidgets = (t_i18n: (key: string) => string): string[] => {
+  return sectorBenchmarkWidgets(t_i18n).filter((widget) => widget.fullOnly).map((widget) => widget.title);
 };

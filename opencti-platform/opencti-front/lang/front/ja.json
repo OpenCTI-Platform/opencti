@@ -2681,7 +2681,7 @@
   "In containers": "コンテナ",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "OpenCTIでは、1つまたは複数の属性からSTIX IDが生成されます。",
   "In platform": "プラットホームで",
-  "In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.": "プレビューでは、セクターベンチマークとセクター傾向は、このプラットフォームが貢献したときに表示される内容を示します。",
+  "In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.": "プレビューでは、セクターベンチマークは表示される内容を示し、完全なエクスペリエンスのウィジェットは、このプラットフォームが貢献した後に作成するダッシュボードに追加されます。",
   "in progress": "進行中",
   "In progress": "進行中",
   "In progress messages": "処理中のメッセージ",

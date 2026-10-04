@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import DataLoader from 'dataloader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
@@ -5,6 +6,8 @@ import type { BasicStoreEntity, StoreMarkingDefinition } from '../../../types/st
 import conf, { BUS_TOPICS, logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../database/cache';
+import { elCount } from '../../../database/engine';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
 import { updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
@@ -379,7 +382,14 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     await clearPulseNetworkInformation({ entityTypes: removedScopes, markingIds: addedExclusions });
   }
   if (modeChanged) {
-    await redisSetPulseState({ contribution_lapsed: undefined, last_refresh_at: undefined, preview_refresh_at: undefined, preview_matched: undefined });
+    await redisSetPulseState({
+      contribution_lapsed: undefined,
+      last_refresh_at: undefined,
+      refresh_offset: undefined,
+      preview_refresh_at: undefined,
+      preview_offset: undefined,
+      preview_matched: undefined,
+    });
     addThreatPulseModeChangeCount(mode as PulseMode);
   }
   let message = `updates the Threat Pulse configuration (${describePulseMode(mode)})`;
@@ -746,12 +756,20 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   });
   const trendingRefs = new Set(decodeHubItems(salt, digest.trending.items).map(({ item, key }) => `${item.object_type}|${key}`));
   const updatedAt = new Date();
+  // A pass handles up to PREVIEW_MAX_ENTITIES objects; the next one goes on after them and starts over once the
+  // scope is covered, so that every object in scope is matched on a large platform.
+  const offset = Math.max(0, Number(state.preview_offset ?? 0) || 0);
   let scanned = 0;
+  let handled = 0;
   let matched = 0;
   await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
     noFiltersChecking: true,
     callback: async (entities) => {
-      const updates: PulseDocumentUpdate[] = entities.flatMap((entity) => {
+      const start = Math.max(0, offset - scanned);
+      scanned += entities.length;
+      const batch = entities.slice(start, start + PREVIEW_MAX_ENTITIES - handled);
+      handled += batch.length;
+      const updates: PulseDocumentUpdate[] = batch.flatMap((entity) => {
         const objectType = PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type];
         const keys = computeStableKeys(entity);
         const refs = keys.map((key) => `${objectType}|${key}`);
@@ -769,30 +787,41 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
         return Object.keys(keysDoc).length > 0 ? [{ entity, doc: keysDoc }] : [];
       });
       await writePulseDocuments(context, updates);
-      scanned += entities.length;
-      return scanned < PREVIEW_MAX_ENTITIES;
+      return handled < PREVIEW_MAX_ENTITIES;
     },
+  });
+  const covered = handled < PREVIEW_MAX_ENTITIES;
+  // Every object the preview signal is on, whichever pass wrote it: only preview documents carry a prevalence here.
+  const matchedTotal = await elCount(context, PULSE_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    types: values.scopes,
+    filters: { mode: FilterMode.And, filters: [{ key: ['pulse_prevalence'], values: [], operator: FilterOperator.NotNil }], filterGroups: [] },
+    noFiltersChecking: true,
   });
   await redisSetPulseState({
     preview_refresh_at: updatedAt.toISOString(),
+    preview_offset: covered ? undefined : String(offset + handled),
     preview_digest_day: digest.day,
     preview_digest_items: String(digest.items.length),
-    preview_matched: String(matched),
-    preview_since: matched > 0 ? state.preview_since ?? updatedAt.toISOString() : state.preview_since,
+    preview_matched: String(matchedTotal),
+    preview_since: matchedTotal > 0 ? state.preview_since ?? updatedAt.toISOString() : state.preview_since,
   });
-  logApp.info('[THREAT PULSE] Preview refreshed from the digest', { digestItems: digest.items.length, scanned, matched });
+  logApp.info('[THREAT PULSE] Preview refreshed from the digest', { digestItems: digest.items.length, offset, handled, matched, matchedTotal, covered });
   return matched;
 };
 
 // Lookups of entities opened at the same time are sent to XTM Hub in one batch per object type.
 const lookupLoaders = new Map<string, DataLoader<string, PulseHubLookupResult | null>>();
 const getLookupLoader = (platform: PulseHubPlatform, day: string, salt: string, objectType: PulseObjectType) => {
-  const loaderKey = `${platform.platformId}|${day}|${objectType}`;
+  // A new registration brings a new token: its loader never reuses the one holding the former token.
+  const scope = `${platform.platformId}|${day}|${objectType}`;
+  const loaderKey = `${scope}|${createHash('sha256').update(platform.platformToken).digest('hex').slice(0, 16)}`;
   const existing = lookupLoaders.get(loaderKey);
   if (existing) {
     return existing;
   }
-  Array.from(lookupLoaders.keys()).filter((key) => !key.includes(`|${day}|`)).forEach((key) => lookupLoaders.delete(key));
+  Array.from(lookupLoaders.keys())
+    .filter((key) => !key.includes(`|${day}|`) || key.startsWith(`${scope}|`))
+    .forEach((key) => lookupLoaders.delete(key));
   const loader = new DataLoader<string, PulseHubLookupResult | null>(async (keys) => {
     const results = await lookupKeys(platform, day, salt, objectType, [...keys]);
     return keys.map((key) => results.get(key) ?? null);
@@ -1045,9 +1074,7 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
     metrics: [],
     entries: [],
   };
-  if (!await isEnterpriseEdition(context)) {
-    return { ...base, unavailable_reason: PulseUnavailableReason.EnterpriseEditionRequired };
-  }
+  // The access state first: a platform in preview gets the locked benchmark tiles, whatever its edition.
   if (access === PulseAccess.NotConnected || !platform) {
     return { ...base, unavailable_reason: PulseUnavailableReason.NotRegistered };
   }
@@ -1056,6 +1083,9 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
   }
   if (access === PulseAccess.Preview) {
     return { ...base, unavailable_reason: PulseUnavailableReason.ContributionRequired };
+  }
+  if (!await isEnterpriseEdition(context)) {
+    return { ...base, unavailable_reason: PulseUnavailableReason.EnterpriseEditionRequired };
   }
   try {
     const day = utcDay();

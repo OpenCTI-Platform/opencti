@@ -2681,7 +2681,7 @@
   "In containers": "컨테이너에서",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "OpenCTI에서는 엔터티의 하나 또는 여러 속성을 기반으로 예측 가능한 STIX ID가 생성됩니다.",
   "In platform": "플랫폼에서",
-  "In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.": "미리보기에서는 섹터 벤치마크와 섹터 추세가 이 플랫폼이 기여하면 표시될 내용을 알려줍니다.",
+  "In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.": "미리보기에서는 섹터 벤치마크가 표시될 내용을 알려 주며, 전체 기능의 위젯은 이 플랫폼이 기여한 후 만드는 대시보드에 추가됩니다.",
   "in progress": "진행 중",
   "In progress": "진행 중",
   "In progress messages": "진행 중인 메시지",

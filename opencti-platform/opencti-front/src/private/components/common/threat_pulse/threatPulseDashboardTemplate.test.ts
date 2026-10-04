@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSectorBenchmarkDashboard } from './threatPulseDashboardTemplate';
+import { buildSectorBenchmarkDashboard, lockedSectorBenchmarkWidgets } from './threatPulseDashboardTemplate';
 import { checkIfDateAttributeValid, indexedVisualizationTypes, isParametersOnlyWidget } from '../../../../utils/widget/widgetUtils';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../components/dashboard/dashboard-utils';
 
@@ -23,6 +23,20 @@ describe('Sector benchmark dashboard template', () => {
     });
     // One title per widget: the template card lists them
     expect(new Set(widgets.map((widget) => widget.parameters?.title)).size).toBe(widgets.length);
+  });
+
+  it('should leave out the widgets of the full experience in preview and name them', () => {
+    const previewWidgets = Object.values(buildSectorBenchmarkDashboard(translate, { preview: true }).widgets);
+    expect(previewWidgets.map((widget) => widget.type)).toEqual(['pulse-trending', 'pulse-benchmark', 'number', 'donut', 'horizontal-bar']);
+    expect(lockedSectorBenchmarkWidgets(translate)).toEqual([
+      '[Threats rising in your sector this week]',
+      '[Top 10 threats rising in your sector this week]',
+      '[Indicators per week of network first seen]',
+    ]);
+    // Every widget read in preview has a value there: none reads the sector trend or the network first seen
+    previewWidgets.forEach((widget) => {
+      expect(JSON.stringify(widget.dataSelection)).not.toMatch(/pulse_sector_trend|pulse_first_seen_network/);
+    });
   });
 
   it('should configure the Threat Pulse widgets with parameters only', () => {

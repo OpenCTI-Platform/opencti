@@ -132,6 +132,8 @@ export interface PulseOperationalState {
   // 'true' once XTM Hub answered contribution_required to a contributing platform, until its next accepted push.
   contribution_lapsed?: string;
   preview_refresh_at?: string;
+  // How many objects in scope the next preview pass skips: the ones the previous passes covered.
+  preview_offset?: string;
   preview_digest_day?: string;
   preview_digest_items?: string;
   preview_matched?: string;

@@ -2681,7 +2681,7 @@
   "In containers": "В контейнерах",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "В OpenCTI предсказуемый STIX ID генерируется на основе одного или нескольких атрибутов сущности.",
   "In platform": "На платформе",
-  "In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.": "В режиме предпросмотра сравнение с сектором и тренды сектора указывают, что они покажут, когда эта платформа начнёт участвовать.",
+  "In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.": "В режиме предпросмотра сравнение с сектором указывает, что оно покажет, а виджеты полного режима добавляются в панель, созданную после того, как эта платформа начнёт участвовать.",
   "in progress": "в процессе",
   "In progress": "В процессе",
   "In progress messages": "Сообщения о ходе выполнения",

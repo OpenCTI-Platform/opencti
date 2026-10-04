@@ -2681,7 +2681,7 @@
   "In containers": "集装箱",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "在 OpenCTI 中，基于实体的一个或多个属性生成可预测的 STIX ID。",
   "In platform": "在平台上",
-  "In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.": "在预览中，行业基准和行业趋势会说明本平台参与贡献后将显示的内容。",
+  "In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.": "在预览中，行业基准会说明其将显示的内容；完整体验的小组件会添加到本平台参与贡献后创建的仪表板中。",
   "in progress": "进行中",
   "In progress": "进行中",
   "In progress messages": "进行中的消息",

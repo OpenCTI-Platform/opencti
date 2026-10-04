@@ -240,7 +240,8 @@ describe('Threat Pulse manager and API', () => {
       trending.entries.forEach((entry: { platforms_bucket: string | null }) => expect(entry.platforms_bucket).toBeNull());
       const benchmark = await queryAsAdminWithSuccess({ query: PULSE_BENCHMARK, variables: { period: 'last_30_days' } });
       expect(benchmark.data?.pulseBenchmark.readable).toBe(false);
-      expect(['contribution_required', 'enterprise_edition_required']).toContain(benchmark.data?.pulseBenchmark.unavailable_reason);
+      // The access state comes before the edition: the preview gets the locked benchmark tiles in both editions
+      expect(benchmark.data?.pulseBenchmark.unavailable_reason).toBe('contribution_required');
     });
 
     it('should never contribute, look up, read trending or benchmarks in preview, whatever runs', async () => {

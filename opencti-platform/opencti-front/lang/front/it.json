@@ -2681,7 +2681,7 @@
   "In containers": "Nei contenitori",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "In OpenCTI, un ID STIX prevedibile viene generato in base a uno o più attributi dell'entità.",
   "In platform": "Nella piattaforma",
-  "In preview, the sector benchmark and the sector trends name what they would show once this platform contributes.": "In anteprima, il benchmark di settore e le tendenze di settore indicano cosa mostrerebbero quando questa piattaforma contribuisce.",
+  "In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.": "In anteprima, il benchmark di settore indica cosa mostrerebbe, e i widget dell'esperienza completa vengono aggiunti da una dashboard creata quando questa piattaforma contribuisce.",
   "in progress": "in corso",
   "In progress": "In corso",
   "In progress messages": "Messaggi in corso",
