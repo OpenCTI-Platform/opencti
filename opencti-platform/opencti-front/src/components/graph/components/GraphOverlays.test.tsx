@@ -264,6 +264,18 @@ describe('GraphHoverCard', () => {
 });
 
 describe('GraphAccessibleList', () => {
+  it('says the badges of an entity after its name and relationships', () => {
+    const marked = graphNode({
+      id: 'marked',
+      label: 'Qakbot',
+      confidence: 20,
+      markedBy: [{ id: 'tlp-amber', definition: 'TLP:AMBER', x_opencti_color: '#ffc000' }] as never,
+    });
+    testRender(<GraphAccessibleList nodes={[marked]} links={[]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    // The most severe badge first, as on the canvas.
+    expect(screen.getByRole('option', { name: 'Malware Qakbot, 0 relationships, Low confidence (20), TLP:AMBER' })).toBeInTheDocument();
+  });
+
   it('mirrors the drawing as options a keyboard can select', () => {
     const onSelectNode = vi.fn();
     const onSelectLink = vi.fn();

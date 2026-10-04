@@ -2,6 +2,7 @@ import React, { KeyboardEvent, useId, useMemo, useState } from 'react';
 import { useFormatter } from '../../i18n';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { graphNodeTitle } from '../utils/useGraphParser';
+import { badgesOfNode, useGraphBadgeRegistryVersion } from '../badges';
 
 /**
  * Options mounted on each side of the active one. Every element of the graph stays in the list and
@@ -30,6 +31,7 @@ type Entry = { kind: 'node'; node: GraphNode; text: string } | { kind: 'link'; l
  */
 const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelectLink }: GraphAccessibleListProps) => {
   const { t_i18n } = useFormatter();
+  const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const listId = useId();
   const [active, setActive] = useState(0);
 
@@ -44,7 +46,9 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
       const type = node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`);
       const name = graphNodeTitle(node);
       const count = t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: degree.get(node.id) ?? 0 } });
-      return { kind: 'node', node, text: `${type} ${name}, ${count}` };
+      // Every badge, drawn or not, as the hover card lists them: what the canvas says by colour and icon.
+      const badges = node.groupOf ? [] : badgesOfNode(node, { t_i18n }).map((badge) => badge.label);
+      return { kind: 'node', node, text: [`${type} ${name}`, count, ...badges].join(', ') };
     });
     const endName = (end: GraphLink['source'], id: string) => {
       const node = endpoint(end);
@@ -56,7 +60,7 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
       text: `${endName(link.source, link.source_id)} ${link.label || t_i18n(`relationship_${link.relationship_type || link.entity_type}`)} ${endName(link.target, link.target_id)}`,
     }));
     return [...nodeEntries, ...linkEntries];
-  }, [nodes, links]);
+  }, [nodes, links, badgeRegistryVersion]);
 
   const activeIndex = Math.min(active, Math.max(0, entries.length - 1));
   const windowStart = Math.max(0, activeIndex - ACCESSIBLE_LIST_WINDOW_RADIUS);
