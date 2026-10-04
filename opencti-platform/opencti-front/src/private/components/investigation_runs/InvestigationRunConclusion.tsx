@@ -22,7 +22,7 @@ import { Chip } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
-import { CONFIDENCE_LABELS, elementPath, formatProbability, isRunActive, PRIORITY_LABELS, prioritySeverity } from './investigationRunUtils';
+import { CONFIDENCE_LABELS, elementPath, emptySectionSentence, PRIORITY_LABELS, prioritySeverity } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
 type Run = InvestigationRunView_run$data;
@@ -47,9 +47,7 @@ const InvestigationRunConclusion = ({ run, onOpenReport }: InvestigationRunConcl
       <Stack spacing={2} data-testid="investigation-run-conclusion">
         {empty && (
           <Typography variant="body2" color="text.secondary">
-            {isRunActive(run.run_status)
-              ? t_i18n('The conclusion appears once the investigation has weighed its hypotheses.')
-              : t_i18n('No conclusion was written.')}
+            {emptySectionSentence(run, t_i18n, t_i18n('The conclusion appears once the investigation has weighed its hypotheses.'), t_i18n('No conclusion was written.'))}
           </Typography>
         )}
         {leading && (
@@ -57,7 +55,6 @@ const InvestigationRunConclusion = ({ run, onOpenReport }: InvestigationRunConcl
             <Typography variant="caption" color="text.secondary">{t_i18n('Leading hypothesis')}</Typography>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
               <Link to={elementPath(leading.candidate_id)}>{leading.candidate_name ?? t_i18n('Unknown actor')}</Link>
-              <Typography variant="body2" color="text.secondary">{formatProbability(leading.probability)}</Typography>
               <Chip
                 size="sm"
                 severity={leading.confidence !== null && leading.confidence !== undefined ? 'info' : 'neutral'}

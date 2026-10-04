@@ -32,7 +32,7 @@ import InvestigationRunFeedback from './InvestigationRunFeedback';
 import {
   elementPath,
   feedbackDecisionFor,
-  isRunActive,
+  emptySectionSentence,
   PRIORITY_LABELS,
   prioritySeverity,
   RECOMMENDATION_ACTION_LABELS,
@@ -80,7 +80,7 @@ const InvestigationRunRecommendations = ({ run }: InvestigationRunRecommendation
     >
       {recommendations.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          {isRunActive(run.run_status) ? t_i18n('Recommendations are proposed as the investigation concludes.') : t_i18n('No recommendation was proposed.')}
+          {emptySectionSentence(run, t_i18n, t_i18n('Recommendations are proposed as the investigation concludes.'), t_i18n('No recommendation was proposed.'))}
         </Typography>
       ) : (
         <Stack spacing={2} divider={<Divider flexItem />}>

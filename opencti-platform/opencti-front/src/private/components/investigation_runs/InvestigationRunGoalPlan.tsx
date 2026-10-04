@@ -44,7 +44,7 @@ import {
   goalObjective,
   type InvestigationStepStatusValue,
   isEngineRunOver,
-  isRunActive,
+  emptySectionSentence,
   stepStatusLabel,
   stepStatusSeverity,
 } from './investigationRunUtils';
@@ -350,7 +350,7 @@ const InvestigationRunGoalPlan = ({ run, handlers }: InvestigationRunGoalPlanPro
         )}
         {total === 0 && view.otherSteps.length === 0 && (
           <Typography variant="body2" color="text.secondary">
-            {isRunActive(run.run_status) ? t_i18n('The goal plan appears once the investigation engine has started.') : t_i18n('No goal plan was produced.')}
+            {emptySectionSentence(run, t_i18n, t_i18n('The goal plan appears once the investigation engine has started.'), t_i18n('No goal plan was produced.'))}
           </Typography>
         )}
         {visibleActions.length > 0 && (

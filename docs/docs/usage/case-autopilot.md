@@ -68,6 +68,8 @@ An investigation carries the markings and the organization sharing of what it re
 
 When the investigated entity, its case or an object the engine cites becomes restricted to authorized members while the investigation runs, or the identity of the investigation can no longer read the entity or its case, the investigation stops before it records anything more: its engine run is stopped, what it had found (goal plan, evidence, hypotheses, recommendations, summary and report) is withheld, the approvals it was waiting for are rejected and its draft is deleted with what it wrote there.
 
+When an entity became restricted to authorized members, the header of the investigation says what to do next: remove that entity from the case or ask an administrator for access, then **Retry**. The goal plan, the conclusion, the hypotheses, the recommendations and the evidence each say that their findings are withheld and why.
+
 ![An investigation stopped because an entity became restricted to authorized members](assets/case-autopilot/member-restricted-dark.png)
 
 ### Hypotheses

@@ -37,7 +37,7 @@ import {
   evidenceObjectPath,
   feedbackDecisionFor,
   formatProbability,
-  isRunActive,
+  emptySectionSentence,
 } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
@@ -138,7 +138,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
     >
       {hypotheses.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          {isRunActive(run.run_status) ? t_i18n('Hypotheses appear once the evidence is linked to candidate threats.') : t_i18n('No attribution hypothesis was proposed.')}
+          {emptySectionSentence(run, t_i18n, t_i18n('Hypotheses appear once the evidence is linked to candidate threats.'), t_i18n('No attribution hypothesis was proposed.'))}
         </Typography>
       ) : (
         <Stack spacing={2}>

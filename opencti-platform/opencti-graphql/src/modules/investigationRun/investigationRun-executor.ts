@@ -175,6 +175,7 @@ const ENGINE_FAILURE_REASONS: Record<string, string> = {
   [ENGINE_UNREACHABLE]: 'The XTM One investigation engine cannot be reached',
 };
 const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer accessible to the identity of the run';
+const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: 'subject_inaccessible' };
 const MEMBER_RESTRICTED_CODE = 'member_restricted';
 const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
 // Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
@@ -476,7 +477,7 @@ const initializeRun = async (exec: RunExecution) => {
   const { run, runUser, liveContext } = exec;
   const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, run.subject_id);
   if (!subject) {
-    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
+    await stopAtCarryBoundary(exec, SUBJECT_INACCESSIBLE);
     return;
   }
   if (!run.case_id && run.create_case) {
@@ -562,7 +563,7 @@ const startEngine = async (exec: RunExecution) => {
   }
   const subject = await loadSubject(exec);
   if (!subject) {
-    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
+    await stopAtCarryBoundary(exec, SUBJECT_INACCESSIBLE);
     return;
   }
   // A continuation starts long after the launch checked the subject and its case.
@@ -821,7 +822,7 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
   // Only a case the run created exists in its draft alone.
   const caseReadable = !run.case_id || readableIds.has(run.case_id) || (run.create_case && idsOf(inDraft).has(run.case_id));
   if (!readableIds.has(run.subject_id) || !caseReadable) {
-    return { reason: SUBJECT_INACCESSIBLE_REASON, code: null };
+    return SUBJECT_INACCESSIBLE;
   }
   const liveIds = idsOf(allLive);
   // Objects the run created exist in its draft alone: their draft version is their only one.
@@ -1262,7 +1263,7 @@ const ingestRun = async (exec: RunExecution) => {
   const { run, runUser, now, policy } = exec;
   const subject = await loadSubject(exec);
   if (!subject) {
-    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
+    await stopAtCarryBoundary(exec, SUBJECT_INACCESSIBLE);
     return;
   }
   // The final state of the engine run; what was mirrored when it cannot be read.

@@ -29,7 +29,16 @@ import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_S
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
 import { NextAction, type StepActionHandlers } from './InvestigationRunStepNextAction';
-import { budgetPercent, buildGoalPlanView, engineReasonLabel, investigationGraphPath, isEngineRunOver, isRunActive, reportMutationOutcome } from './investigationRunUtils';
+import {
+  budgetPercent,
+  buildGoalPlanView,
+  engineReasonLabel,
+  investigationGraphPath,
+  isEngineRunOver,
+  isRunActive,
+  MEMBER_RESTRICTED_CODE,
+  reportMutationOutcome,
+} from './investigationRunUtils';
 import { CASE_AUTOPILOT_DOCS_URL, formatDuration, POLICIES_PATH, runReasonNext, runStatusSentence } from './investigationRunOutcomes';
 import { draftChangeCount } from './investigationRunDraftChanges';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
@@ -97,6 +106,8 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   const reasonNext = runReasonNext(run.status_reason, run.end_reason_code);
   const { budget } = run;
   const iterationsSpent = budget.max_iterations > 0 && budget.used_iterations >= budget.max_iterations;
+  // The error tone is kept for failures: a run that used its budget and concluded did not fail.
+  const budgetFailed = iterationsSpent && run.run_status === 'failed';
   const usedMinutes = Math.round(budget.used_minutes * 100) / 100;
   const sentence = run.run_status === 'failed' && reasonText ? reasonText : runStatusSentence({
     run_status: run.run_status,
@@ -156,7 +167,8 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
         </Button>
       );
     }
-    if (run.run_status === 'failed' && canCustomize) {
+    // Policies cannot lift a member restriction: the stop sentence says what can.
+    if (run.run_status === 'failed' && canCustomize && run.end_reason_code !== MEMBER_RESTRICTED_CODE) {
       secondary.push(<Button key="policies" size="small" variant="secondary" component={Link} to={POLICIES_PATH}>{t_i18n('Open the investigation policies')}</Button>);
     }
   } else if (active && run.workspace_id) {
@@ -234,7 +246,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
           )}
         </Stack>
         <Stack spacing={0.5}>
-          <Typography variant="body2" id={`investigation-iterations-${run.id}`} color={iterationsSpent ? 'error.main' : undefined}>
+          <Typography variant="body2" id={`investigation-iterations-${run.id}`} color={budgetFailed ? 'error.main' : undefined}>
             {iterationsSpent
               ? t_i18n('Budget spent - {used} of {max} iterations', { values: { used: n(budget.used_iterations), max: n(budget.max_iterations) } })
               : t_i18n('{used} of {max} iterations', { values: { used: n(budget.used_iterations), max: n(budget.max_iterations) } })}
@@ -242,7 +254,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
           <ProgressBar
             aria-labelledby={`investigation-iterations-${run.id}`}
             value={budgetPercent(budget.used_iterations, budget.max_iterations)}
-            tone={iterationsSpent ? 'error' : 'default'}
+            tone={budgetFailed ? 'error' : 'default'}
           />
           <Typography variant="caption" color="text.secondary">
             {t_i18n('{usedJobs} of {maxJobs} enrichment jobs - {usedTime} of {maxTime}', {

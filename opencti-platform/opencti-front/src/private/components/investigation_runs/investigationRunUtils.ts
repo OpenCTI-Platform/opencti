@@ -92,8 +92,11 @@ export const stepStatusLabel = (status: string) => STEP_STATUS_LABELS[status as 
 
 export const stepStatusSeverity = (status: string): ChipSeverity => STEP_STATUS_SEVERITIES[status as InvestigationStepStatusValue] ?? 'neutral';
 
-// Why a run ended without the engine, by end_reason_code.
+export const MEMBER_RESTRICTED_CODE = 'member_restricted';
+
+// Why a run ended without the engine or was stopped by OpenCTI, by end_reason_code.
 export const ENGINE_REASON_LABELS: Record<string, string> = {
+  [MEMBER_RESTRICTED_CODE]: 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found. Remove that entity from the case or ask an administrator for access, then run again.',
   engine_not_configured: 'XTM One is not connected to this platform: Case Autopilot runs on the XTM One investigation engine.',
   engine_disabled: 'The connected XTM One does not run investigations. Ask your XTM One administrator to turn on Deep Investigation.',
   engine_unavailable: 'The connected XTM One does not provide the investigation engine. Upgrade XTM One to run Case Autopilot.',
@@ -103,6 +106,26 @@ export const ENGINE_REASON_LABELS: Record<string, string> = {
 };
 
 export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);
+
+// Investigations stopped at an access boundary, whose findings are withheld: why their sections are empty.
+const WITHHELD_SECTION_REASONS: Record<string, string> = {
+  [MEMBER_RESTRICTED_CODE]: 'Withheld: an entity of the investigation became restricted to authorized members.',
+  subject_inaccessible: 'Withheld: the investigated entity is no longer accessible to the identity of the investigation.',
+};
+
+export const withheldSectionReason = (code: string | null | undefined) => (code ? WITHHELD_SECTION_REASONS[code] ?? null : null);
+
+/** The sentence of an empty section: why its findings are withheld, else what to expect while the run is active, else that nothing came. */
+export const emptySectionSentence = (
+  run: { run_status: string; end_reason_code?: string | null },
+  t: (message: string) => string,
+  whileActive: string,
+  ended: string,
+) => {
+  const withheld = withheldSectionReason(run.end_reason_code);
+  if (withheld) return t(withheld);
+  return isRunActive(run.run_status) ? whileActive : ended;
+};
 
 // Analysis of Competing Hypotheses notation, from strongly inconsistent to
 // strongly consistent.

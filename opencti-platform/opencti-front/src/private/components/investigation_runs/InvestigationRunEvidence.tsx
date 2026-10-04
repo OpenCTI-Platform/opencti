@@ -21,7 +21,7 @@ import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import InvestigationRunEvidenceItem from './InvestigationRunEvidenceItem';
-import { citationNumbers, isEarlierEvidence, isRunActive } from './investigationRunUtils';
+import { citationNumbers, emptySectionSentence, isEarlierEvidence } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
 const VISIBLE_EVIDENCE = 25;
@@ -58,7 +58,7 @@ const InvestigationRunEvidence = ({ run }: InvestigationRunEvidenceProps) => {
     >
       {evidence.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          {isRunActive(run.run_status) ? t_i18n('Evidence appears as the investigation finds it.') : t_i18n('No evidence was collected.')}
+          {emptySectionSentence(run, t_i18n, t_i18n('Evidence appears as the investigation finds it.'), t_i18n('No evidence was collected.'))}
         </Typography>
       ) : (
         <Stack spacing={1}>

@@ -8,6 +8,7 @@ import {
   consistencyOf,
   consumeGraphAutoOpen,
   decideInvestigationApprovals,
+  emptySectionSentence,
   engineReasonLabel,
   evidenceHref,
   evidenceObjectPath,
@@ -21,6 +22,7 @@ import {
   runStatusSeverity,
   stepStatusLabel,
   stepStatusSeverity,
+  withheldSectionReason,
 } from './investigationRunUtils';
 
 const step = (id: string, action: string | null, status: string, position: number, investigation_id = 'inv-1') => ({
@@ -182,8 +184,20 @@ describe('Case Autopilot run helpers', () => {
 
   it('renders the engine reasons in words', () => {
     expect(engineReasonLabel('engine_disabled')).toContain('Deep Investigation');
+    expect(engineReasonLabel('member_restricted')).toContain('ask an administrator for access, then run again');
     expect(engineReasonLabel('other')).toBeNull();
     expect(engineReasonLabel(null)).toBeNull();
+  });
+
+  it('says why the sections of an investigation stopped at an access boundary are empty', () => {
+    const t = (message: string) => `t:${message}`;
+    expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'member_restricted' }, t, 'while active', 'ended'))
+      .toBe('t:Withheld: an entity of the investigation became restricted to authorized members.');
+    expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'subject_inaccessible' }, t, 'while active', 'ended'))
+      .toBe('t:Withheld: the investigated entity is no longer accessible to the identity of the investigation.');
+    expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'engine_disabled' }, t, 'while active', 'ended')).toBe('ended');
+    expect(emptySectionSentence({ run_status: 'running', end_reason_code: null }, t, 'while active', 'ended')).toBe('while active');
+    expect(withheldSectionReason(null)).toBeNull();
   });
 
   it('opens the investigation graph once per remembered run', () => {
