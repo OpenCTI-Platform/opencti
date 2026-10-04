@@ -37518,6 +37518,8 @@ export type TimelineAnchors = {
 export type TimelineEvent = BasicObject & InternalObject & {
   __typename?: 'TimelineEvent';
   analyst_fields: Array<Scalars['String']['output']>;
+  /** Whether the current user can pin, hide and annotate the event: a container the user can update, outside drafts, and an event within the confidence level of the user */
+  annotatable: Scalars['Boolean']['output'];
   annotation?: Maybe<Scalars['String']['output']>;
   confidence?: Maybe<Scalars['Int']['output']>;
   container_id: Scalars['String']['output'];
@@ -37525,7 +37527,7 @@ export type TimelineEvent = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
-  /** Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts (derived events can only be pinned, hidden and annotated) */
+  /** Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts, within the confidence level of the user (derived events can only be pinned, hidden and annotated) */
   editable: Scalars['Boolean']['output'];
   element?: Maybe<StixObjectOrStixRelationship>;
   element_id?: Maybe<Scalars['String']['output']>;
@@ -56145,6 +56147,7 @@ export type TimelineAnchorsResolvers<ContextType = any, ParentType extends Resol
 
 export type TimelineEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineEvent'] = ResolversParentTypes['TimelineEvent']> = ResolversObject<{
   analyst_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  annotatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   annotation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

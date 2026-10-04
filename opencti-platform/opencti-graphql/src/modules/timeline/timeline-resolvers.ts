@@ -1,5 +1,5 @@
 import type { Resolvers, TimelineEventSource, TimelinePrecision } from '../../generated/graphql';
-import type { AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { BUS_TOPICS } from '../../config/conf';
@@ -33,6 +33,14 @@ import {
 // Ordering values exposed on the lists of the timeline containers, resolved to the anchors attribute paths
 const anchorOrdering = Object.fromEntries([...TIMELINE_ANCHOR_KEYS, 'computed_at', 'changed_at'].map((key) => [`timeline_${key}`, `${ATTRIBUTE_TIMELINE_ANCHORS}.${key}`]));
 
+// Same rule as the mutations: the container can be updated outside drafts and the confidence of the event is reached
+const canChangeTimelineEvent = async (context: AuthContext, event: { container_id: string }) => {
+  // Incidents and cases share the Stix-Domain-Object parent type
+  const container = await context.batch?.idsBatchLoader.load({ id: event.container_id, type: ABSTRACT_STIX_DOMAIN_OBJECT });
+  return canContributeToTimeline(context, context.user as AuthUser, container)
+    && controlUserConfidenceAgainstElement(context.user as AuthUser, event as unknown as BasicStoreEntity, true);
+};
+
 const timelineResolvers: Resolvers = {
   Query: {
     containerTimeline: (_, args, context) => findContainerTimeline(context, context.user, args),
@@ -52,12 +60,9 @@ const timelineResolvers: Resolvers = {
     analyst_fields: (event) => event.analyst_fields ?? [],
     editable: async (event, _, context) => {
       if (event.event_source !== 'manual') return false;
-      // Incidents and cases share the Stix-Domain-Object parent type
-      const container = await context.batch.idsBatchLoader.load({ id: event.container_id, type: ABSTRACT_STIX_DOMAIN_OBJECT });
-      // Same rule as the mutations: the container can be updated and the confidence of the event is reached
-      return canContributeToTimeline(context, context.user, container)
-        && controlUserConfidenceAgainstElement(context.user as AuthUser, event as unknown as BasicStoreEntity, true);
+      return canChangeTimelineEvent(context, event);
     },
+    annotatable: (event, _, context) => canChangeTimelineEvent(context, event),
     element: (event, _, context) => {
       // Only STIX elements belong to the element union: internal soft-check sources (hunt or investigation
       // runs) keep their id and type on the event but are not resolved here

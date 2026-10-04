@@ -127,8 +127,10 @@ type TimelineEvent implements InternalObject & BasicObject {
   source_state: TimelineSourceState
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
-  "Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts (derived events can only be pinned, hidden and annotated)"
+  "Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts, within the confidence level of the user (derived events can only be pinned, hidden and annotated)"
   editable: Boolean!
+  "Whether the current user can pin, hide and annotate the event: a container the user can update, outside drafts, and an event within the confidence level of the user"
+  annotatable: Boolean!
 }
 
 type TimelineEventEdge {

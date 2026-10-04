@@ -116,6 +116,8 @@ const ContainerTimelineEventDrawer = ({
     return <Drawer title={t_i18n('Timeline event')} open={false} onClose={onClose} />;
   }
   const lane = event.lane as TimelineLane;
+  // Pin, hide and annotate follow the rights of the user on this event (container and confidence of the event)
+  const canContribute = canEdit && event.annotatable !== false;
   const element = event.element && event.element.id ? event.element : null;
   const elementLink = element ? computeLink({
     id: element.id,
@@ -142,7 +144,7 @@ const ContainerTimelineEventDrawer = ({
           {t_i18n('Edit')}
         </Button>
       )}
-      {canEdit && (
+      {canContribute && (
         <Button variant="secondary" size="small" startIcon={<PushPinOutlined sx={ICON} />} onClick={() => onTogglePin(event)} data-testid="timeline-event-pin">
           {event.pinned ? t_i18n('Unpin') : t_i18n('Pin')}
         </Button>
@@ -156,7 +158,7 @@ const ContainerTimelineEventDrawer = ({
             <CenterFocusStrongOutlined sx={ICON} />
             {t_i18n('Center on the timeline')}
           </MenuItem>
-          {canEdit && (
+          {canContribute && (
             <MenuItem onSelect={() => onToggleHide(event)} data-testid="timeline-event-hide">
               {event.hidden ? <VisibilityOutlined sx={ICON} /> : <VisibilityOffOutlined sx={ICON} />}
               {event.hidden ? t_i18n('Show') : t_i18n('Hide')}
@@ -253,7 +255,7 @@ const ContainerTimelineEventDrawer = ({
           {(event.annotation || annotating) && (
             <div>
               <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Annotation')}</Text>
-              {canEdit && annotating ? (
+              {canContribute && annotating ? (
                 <>
                   <Textarea
                     value={annotation}
@@ -293,14 +295,14 @@ const ContainerTimelineEventDrawer = ({
               )}
             </div>
           )}
-          {canEdit && !annotating && (
+          {canContribute && !annotating && (
             <div>
               <Button variant="tertiary" size="small" startIcon={<EditOutlined sx={ICON} />} onClick={() => setAnnotating(true)} data-testid="timeline-event-annotate">
                 {event.annotation ? t_i18n('Edit the annotation') : t_i18n('Add an annotation')}
               </Button>
             </div>
           )}
-          {!event.editable && canEdit && (
+          {!event.editable && canContribute && (
             <Text variant="content-caption" as="p" style={{ color: colors.textSecondary }}>
               {t_i18n('Derived events follow the knowledge of the case: they can be pinned, hidden and annotated, not edited.')}
             </Text>

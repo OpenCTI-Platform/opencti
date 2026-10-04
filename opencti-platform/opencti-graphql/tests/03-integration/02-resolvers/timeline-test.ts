@@ -102,6 +102,7 @@ const TIMELINE_EVENT_FIELDS = `
   external_id
   analyst_fields
   editable
+  annotatable
   objectMarking { id standard_id }
   createdBy { id }
 `;
@@ -281,6 +282,7 @@ interface TimelineEventNode {
   external_id: string | null;
   analyst_fields: string[];
   editable: boolean;
+  annotatable: boolean;
   objectMarking: { id: string; standard_id: string }[];
   createdBy: { id: string } | null;
 }
@@ -709,11 +711,13 @@ describe('Incident and case timeline', () => {
       const editorManual = editorEvents.filter((event) => event.source === 'manual');
       expect(editorManual.length).toBeGreaterThan(0);
       expect(editorManual.every((event) => event.editable)).toBe(true);
+      expect(editorManual.every((event) => event.annotatable)).toBe(true);
       expect(editorEvents.filter((event) => event.source === 'derived').some((event) => event.editable)).toBe(false);
       const participate = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500, sources: ['manual'] } });
       const participateManual: TimelineEventNode[] = participate.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node);
       expect(participateManual.length).toBeGreaterThan(0);
       expect(participateManual.some((event) => event.editable)).toBe(false);
+      expect(participateManual.some((event) => event.annotatable)).toBe(false);
     });
 
     it('should count the openings of the timeline tab', async () => {

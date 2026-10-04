@@ -19,6 +19,8 @@ import {
 
 export interface TimelineListEvent extends TimelineChartEvent {
   element_name?: string | null;
+  // The user can pin, hide and annotate this event (container rights and confidence of the event)
+  annotatable?: boolean;
 }
 
 interface ContainerTimelineListProps {
@@ -62,8 +64,9 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
       Enter: () => onSelect(event.id),
       ' ': () => onSelect(event.id),
     };
-    if (canEdit && onTogglePin) actions.p = () => onTogglePin(event);
-    if (canEdit && onToggleHide) actions.h = () => onToggleHide(event);
+    const canContribute = canEdit && event.annotatable !== false;
+    if (canContribute && onTogglePin) actions.p = () => onTogglePin(event);
+    if (canContribute && onToggleHide) actions.h = () => onToggleHide(event);
     const action = actions[keyEvent.key];
     if (action) {
       keyEvent.preventDefault();

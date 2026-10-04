@@ -181,6 +181,7 @@ const containerTimelineEventsFragment = graphql`
             step
           }
           editable
+          annotatable
           createdBy {
             ... on Identity {
               id
