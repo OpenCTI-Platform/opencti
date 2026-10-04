@@ -32,6 +32,10 @@ The dialog also lists the previous investigations of the entity, each with its s
 
 ![The Run Case Autopilot dialog](assets/case-autopilot-run-dialog.png)
 
+When the selected policy runs enrichments and your role does not allow enriching knowledge, the dialog says so under the policy and the launch waits until you pick a policy without enrichment.
+
+![The launch dialog when the policy runs enrichments your role cannot run](assets/case-autopilot/launch-warning-dark.png)
+
 The overview of an indicator or an observable shows a compact **Latest investigation** link with the state of its latest investigation; it opens the Autopilot tab of the case of that investigation.
 
 ## The Autopilot tab
