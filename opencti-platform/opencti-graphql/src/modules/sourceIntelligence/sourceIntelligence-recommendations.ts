@@ -275,6 +275,11 @@ const collectFalsePositiveValues = async (context: AuthContext, source: BasicSto
   return valuesByType;
 };
 
+// Set by an action right before its first write: a failure before it changed nothing and can be retried
+interface ApplyProgress {
+  writing: boolean;
+}
+
 const executeApply = async (
   context: AuthContext,
   user: AuthUser,
@@ -283,6 +288,7 @@ const executeApply = async (
   settings: SourceIntelligenceSettings,
   autonomous: boolean,
   input: { connector_id?: string | null },
+  progress: ApplyProgress,
 ): Promise<ExecutionResult> => {
   const payload = parseJson<Record<string, any>>(recommendation.payload, {});
   switch (recommendation.recommendation_kind) {
@@ -294,6 +300,7 @@ const executeApply = async (
       if (!target) throw FunctionalError('Source user not found', { user_id: payload.user_id });
       const previous = target.user_confidence_level ?? null;
       const next = { max_confidence: payload.proposed_max_confidence, overrides: previous?.overrides ?? [] };
+      progress.writing = true;
       await userEditField(context, user, payload.user_id, [{ key: 'user_confidence_level', value: [next] }]);
       return {
         apply_result: `Max confidence of user ${target.name} set to ${payload.proposed_max_confidence}`,
@@ -313,6 +320,7 @@ const executeApply = async (
       } else {
         throw FunctionalError('Unsupported quarantine target', { target: payload.target });
       }
+      progress.writing = true;
       const draft = await addDraftWorkspace(context, user, {
         name: `Quarantine - ${source.name}`,
         description: `Data routed by Source Intelligence while the source ${source.name} is quarantined (recommendation ${recommendation.internal_id}).`,
@@ -340,6 +348,7 @@ const executeApply = async (
     }
     case RECOMMENDATION_ADD_DECAY_RULE: {
       requireCapability(user, autonomous, SETTINGS_SETCUSTOMIZATION);
+      progress.writing = true;
       const decayRule = await addDecayRule(context, user, {
         name: payload.name,
         description: payload.description,
@@ -363,6 +372,7 @@ const executeApply = async (
         throw FunctionalError('No false positive value found for this source anymore');
       }
       const content = values.join('\n');
+      progress.writing = true;
       const exclusionList = await addExclusionListFile(context, user, {
         name: `Source Intelligence - ${source.name} false positives`,
         description: `False positives of the source ${source.name}, created by Source Intelligence (recommendation ${recommendation.internal_id}).`,
@@ -374,6 +384,7 @@ const executeApply = async (
     case RECOMMENDATION_RETIRE: {
       if (payload.target === 'ingestion_feed') {
         requireCapability(user, autonomous, INGESTION_SETINGESTIONS);
+        progress.writing = true;
         await feedEditFunction(payload.feed_type)(context, user, payload.feed_id, [{ key: 'ingestion_running', value: [false] }]);
         return { apply_result: 'Ingestion feed stopped', revert_payload: { target: 'ingestion_feed', feed_id: payload.feed_id, feed_type: payload.feed_type } };
       }
@@ -382,11 +393,13 @@ const executeApply = async (
       if (!connector) throw FunctionalError('Connector not found', { connector_id: payload.connector_id });
       if (connector.manager_contract_image) {
         const previousStatus = connector.manager_requested_status ?? ConnectorRequestStatus.Starting;
+        progress.writing = true;
         await updateConnectorRequestedStatus(context, user, { id: connector.id, status: ConnectorRequestStatus.Stopping });
         return { apply_result: 'Managed connector stopped through XTM Composer', revert_payload: { target: 'connector', connector_id: connector.id, previous_status: previousStatus } };
       }
       // Externally deployed connectors cannot be stopped by the platform: stop tracking the source and say so
       if (source) {
+        progress.writing = true;
         const { element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { enabled: false });
         await clearDisabledSourcesLiveData(context, [element as unknown as BasicStoreEntitySource]);
       }
@@ -398,6 +411,7 @@ const executeApply = async (
     case RECOMMENDATION_CHANGE_SCHEDULE: {
       if (payload.target === 'ingestion_feed') {
         requireCapability(user, autonomous, INGESTION_SETINGESTIONS);
+        progress.writing = true;
         await feedEditFunction(payload.feed_type)(context, user, payload.feed_id, [{ key: 'scheduling_period', value: [payload.proposed_value] }]);
         return { apply_result: `Feed schedule set to ${payload.proposed_value}`, revert_payload: { ...payload, previous_value: payload.current_value } };
       }
@@ -405,6 +419,7 @@ const executeApply = async (
       const connector = await storeLoadById<BasicStoreEntityConnector & { title?: string }>(context, SYSTEM_USER, payload.connector_id, ENTITY_TYPE_CONNECTOR);
       if (!connector || !connector.manager_contract_image) throw FunctionalError('Managed connector not found', { connector_id: payload.connector_id });
       const current = connectorScheduleOf(connector);
+      progress.writing = true;
       await managedConnectorEdit(context, user, {
         id: connector.id,
         name: connector.name,
@@ -430,6 +445,7 @@ const executeApply = async (
       if (!payload.contract_image) {
         throw FunctionalError('This connector is not available in the local catalog, deploy it from the catalog page');
       }
+      progress.writing = true;
       const created = await managedConnectorAdd(context, user, {
         name: payload.title,
         catalog_id: payload.catalog_id,
@@ -556,10 +572,6 @@ const withRecommendationTransition = async <T>(
     }
   }
 };
-
-// Business errors (validation, refusal) are raised before anything is written
-const isBusinessError = (err: any) => err?.extensions?.data?.genre === 'BUSINESS';
-
 const applyLockedRecommendation = async (
   context: AuthContext,
   user: AuthUser,
@@ -578,8 +590,9 @@ const applyLockedRecommendation = async (
   // and cannot be undone, the recommendation stays applying and no retry runs the side effect a second time
   await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: RECOMMENDATION_STATUS_APPLYING });
   let patch: Record<string, unknown>;
+  const progress: ApplyProgress = { writing: false };
   try {
-    const result = await executeApply(context, user, recommendation, source, settings, autonomous, input);
+    const result = await executeApply(context, user, recommendation, source, settings, autonomous, input, progress);
     patch = {
       recommendation_status: RECOMMENDATION_STATUS_APPLIED,
       applied_by_id: user.id,
@@ -590,17 +603,16 @@ const applyLockedRecommendation = async (
       autonomous,
     };
   } catch (err: any) {
-    // A missing capability refuses the request, it is not an execution failure of the recommendation
-    if (err?.extensions?.code === FORBIDDEN_ACCESS) {
+    // Before the first write, nothing changed: a missing capability refuses the request (the previous status comes
+    // back) and any other error fails the recommendation, which can be retried. After it, the outcome is unknown
+    // (a service account or a draft may exist): the recommendation stays applying and is never applied again.
+    if (!progress.writing && err?.extensions?.code === FORBIDDEN_ACCESS) {
       await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status });
       throw err;
     }
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });
-    // A business error refuses the change before anything is written: it can be retried. Any other error can come
-    // after a write (a created connector, a routed draft): the outcome is unknown, it stays applying, never retried
-    const refused = isBusinessError(err);
     patch = {
-      recommendation_status: refused ? RECOMMENDATION_STATUS_FAILED : RECOMMENDATION_STATUS_APPLYING,
+      recommendation_status: progress.writing ? RECOMMENDATION_STATUS_APPLYING : RECOMMENDATION_STATUS_FAILED,
       error_message: err?.message ?? String(err),
       autonomous,
     };
