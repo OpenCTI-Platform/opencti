@@ -81,6 +81,8 @@ export interface SourceIntelligenceState {
   last_run_message?: string | null;
   last_scanned_objects?: number | null;
   last_scan_truncated?: boolean | null;
+  // JSON ScanTrace of the last full computation, read by the live accounting of deletions
+  last_scan_trace?: string | null;
   backfill_next_day?: string | null;
   backfill_done?: boolean | null;
   // Planned range of the history backfill: first day, and day before which the days are already covered

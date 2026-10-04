@@ -50,6 +50,8 @@ import {
   prepareRunLookups,
   resolveSoftJoinAvailability,
   scanKnowledge,
+  type ScanTrace,
+  countedByLastScan,
   toAssertionActivity,
 } from '../modules/sourceIntelligence/sourceIntelligence-compute';
 import { applyLiveIncrements, type LiveIncrement, purgeScorecardSnapshots, writeScorecards } from '../modules/sourceIntelligence/sourceIntelligence-store';
@@ -261,6 +263,7 @@ export const computeEventIncrements = async (
     enterprise: boolean;
     huntRunType: string | null;
     lookups?: Partial<EventLookups>;
+    scanTrace?: ScanTrace | null;
   },
 ) => {
   const lookups: EventLookups = { ...defaultEventLookups(context, options.huntRunType), ...options.lookups };
@@ -353,6 +356,11 @@ export const computeEventIncrements = async (
   const deletedIds = [...deleted.map(({ eventDocument }) => eventDocument.internal_id), ...deletedSightings.map(({ sightingId }) => sightingId)];
   const trashed = deletedIds.length > 0 ? await lookups.deletedDocuments(deletedIds) : new Map<string, StoredDocument>();
   deleted.forEach(({ entityType, time, eventDocument }) => {
+    // An object deleted while the last full computation scanned is removed only if the scan counted it
+    const createdAt = eventDocument.created_at ? new Date(eventDocument.created_at).getTime() : null;
+    if (!countedByLastScan(options.scanTrace, eventDocument.internal_id, createdAt, time)) {
+      return;
+    }
     const document = trashed.get(eventDocument.internal_id) ?? eventDocument;
     mergePeriodIncrements(periodIncrements, deletionDecrements(resolver, entityType, document, time));
   });
@@ -410,6 +418,18 @@ export const mergeBatchIncrements = (
   return merged;
 };
 
+export const parseScanTrace = (value: string | null | undefined): ScanTrace | null => {
+  if (!value) {
+    return null;
+  }
+  try {
+    const trace = JSON.parse(value);
+    return typeof trace?.started_at === 'number' && Array.isArray(trace.pages) ? trace as ScanTrace : null;
+  } catch {
+    return null;
+  }
+};
+
 /** Events of a replayed batch: the ones up to its recorded end, never the later ones fetched with them. */
 export const eventsUpTo = <T extends { id: string }>(events: T[], end: string) => {
   return events.filter((event) => laterStreamEventId(event.id, end) === end);
@@ -438,6 +458,7 @@ const processStreamIncrements = async (context: AuthContext) => {
   const disabledSourceIds = new Set(sources.filter((source) => source.enabled === false).map((source) => source.internal_id));
   const enterprise = await isEnterpriseEdition(context);
   const { huntRunType } = resolveSoftJoinAvailability();
+  const scanTrace = parseScanTrace((await getSourceIntelligenceState()).last_scan_trace);
   for (let batch = 0; batch < MAX_STREAM_BATCHES_PER_RUN; batch += 1) {
     const events: Array<SseEvent<DataEvent>> = [];
     const { lastEventId: nextEventId } = await fetchStreamEventsRangeFromEventId<DataEvent>(
@@ -455,7 +476,7 @@ const processStreamIncrements = async (context: AuthContext) => {
     }
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, batchEnd);
     if (batchEvents.length > 0) {
-      const { increments, periodIncrements } = await computeEventIncrements(context, batchEvents, resolver, { enterprise, huntRunType });
+      const { increments, periodIncrements } = await computeEventIncrements(context, batchEvents, resolver, { enterprise, huntRunType, scanTrace });
       await applyLiveIncrements(context, mergeBatchIncrements(increments, periodIncrements, disabledSourceIds), batchEnd);
     }
     lastEventId = batchEnd;
@@ -500,6 +521,8 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     const enterprise = await isEnterpriseEdition(context);
     const sources = await syncSources(context, settings);
     const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise });
+    const trace: ScanTrace = { started_at: now, pages: state.scanPages };
+    await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace) });
     // The live scorecards now count everything up to the computation time: the stream resumes after it, so the events
     // the scan already counted are never applied again and the later ones are kept
     const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
