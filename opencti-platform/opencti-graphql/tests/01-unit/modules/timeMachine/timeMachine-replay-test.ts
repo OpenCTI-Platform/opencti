@@ -8,6 +8,7 @@ import {
   flagReplayBeyondWindow,
   forwardOperationsForChange,
   isMultipleAttribute,
+  normalizeDocument,
   rebuildElementAt,
   replayBackward,
   replayForward,
@@ -105,6 +106,29 @@ describe('Time machine replay', () => {
     expect(values.x_opencti_stix_ids).toBeUndefined();
     expect(values.creator_id).toBeUndefined();
     expect(values.i_aliases_ids).toBeUndefined();
+  });
+
+  it('should treat the dates that mean not set as absent and never keep the id attribute', () => {
+    const element = {
+      entity_type: ENTITY_TYPE,
+      id: 'entity-id',
+      name: 'APT-TEST',
+      first_seen: '1970-01-01T00:00:00.000Z',
+      last_seen: '5138-11-16T09:46:40.000Z',
+    };
+    const values = extractAttributeValues(element);
+    expect(values.first_seen).toBeUndefined();
+    expect(values.last_seen).toBeUndefined();
+    expect(values.id).toBeUndefined();
+    // A first seen date set during the period is rewound to not set
+    const operations = reverseOperationsForChange({ first_seen: ['2026-02-01T00:00:00.000Z'] }, ENTITY_TYPE, {
+      field: `${ENTITY_TYPE}--first_seen`,
+      changes_added: [{ raw: '2026-02-01T00:00:00.000Z' }],
+      changes_removed: [{ raw: '1970-01-01T00:00:00.000Z' }],
+    });
+    expect(operations).toEqual([{ op: 'remove', path: '/first_seen' }]);
+    // Snapshots stored before this rule are read with it
+    expect(normalizeDocument(ENTITY_TYPE, { id: ['entity-id'], name: ['APT-TEST'], last_seen: ['5138-11-16T09:46:40.000Z'] })).toEqual({ name: ['APT-TEST'] });
   });
 
   it('should decode history change fields and attribute multiplicity', () => {

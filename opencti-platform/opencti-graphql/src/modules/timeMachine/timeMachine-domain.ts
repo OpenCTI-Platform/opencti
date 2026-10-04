@@ -29,6 +29,7 @@ import {
   extractAttributeValues,
   firstNumber,
   flagReplayBeyondWindow,
+  normalizeDocument,
   rebuildElementAt,
   replayBackward,
   replayForward,
@@ -431,7 +432,8 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       max: MAX_REPLAY_EVENTS + 1,
       order: 'asc',
     });
-    const replay = replayForward(before.snapshot_document.attributes, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
+    const beforeDocument = normalizeDocument(element.entity_type, before.snapshot_document.attributes);
+    const replay = replayForward(beforeDocument, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
     flagReplayBeyondWindow(replay, before.history_cursor, date, MAX_REPLAY_DAYS);
     return {
       replay,
@@ -443,7 +445,7 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       anchorSnapshot: before,
     };
   }
-  const anchorDocument = after ? after.snapshot_document.attributes : extractAttributeValues(element as any);
+  const anchorDocument = after ? normalizeDocument(element.entity_type, after.snapshot_document.attributes) : extractAttributeValues(element as any);
   const anchorContainerObjectsCount = after ? (after.snapshot_document.container_objects_count ?? null) : currentContainerObjectsCount(element as any);
   const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {
     from: date,

@@ -2,13 +2,14 @@ import * as jsonpatch from 'fast-json-patch';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { AttributeDefinition, RefAttribute } from '../../schema/attribute-definition';
-import { utcDate } from '../../utils/format';
+import { FROM_START_STR, UNTIL_END_STR, utcDate } from '../../utils/format';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import type { AttributeDelta, AttributeValues, HistoryChange, ReplayResult, TimeMachineHistoryEvent } from './timeMachine-types';
 
 // Attributes that are maintained by the platform itself and never describe the knowledge.
 // They are excluded from as-of documents and diffs.
 const TECHNICAL_ATTRIBUTES = new Set<string>([
+  'id',
   'internal_id',
   'standard_id',
   'entity_type',
@@ -61,6 +62,25 @@ const resolveDefinition = (entityType: string, key: string): AttributeDefinition
   return schemaRelationsRefDefinition.getRelationRef(entityType, key);
 };
 
+// The platform stores "no date" as the first and the last representable dates: these values are not set
+const UNSET_DATES = new Set([FROM_START_STR, UNTIL_END_STR]);
+
+const isDateAttribute = (entityType: string, key: string) => resolveDefinition(entityType, key)?.type === 'date';
+
+/**
+ * A stored document (knowledge snapshot) with the rules of the documents built today: technical attributes
+ * dropped, dates that mean "not set" removed.
+ */
+export const normalizeDocument = (entityType: string, document: AttributeValues): AttributeValues => {
+  const normalized: AttributeValues = {};
+  Object.entries(document).forEach(([key, raws]) => {
+    if (TECHNICAL_ATTRIBUTES.has(key) || key.startsWith('i_')) return;
+    const kept = isDateAttribute(entityType, key) ? raws.filter((raw) => !UNSET_DATES.has(raw)) : raws;
+    if (kept.length > 0) normalized[key] = kept;
+  });
+  return normalized;
+};
+
 export const isMultipleAttribute = (entityType: string, key: string): boolean => {
   const definition = resolveDefinition(entityType, key);
   return definition?.multiple ?? false;
@@ -79,7 +99,9 @@ export const toRawValue = (definition: AttributeDefinition | RefAttribute, value
   }
   if (definition.type === 'date') {
     const date = utcDate(value as string);
-    return date.isValid() ? date.toISOString() : null;
+    if (!date.isValid()) return null;
+    const iso = date.toISOString();
+    return UNSET_DATES.has(iso) ? null : iso;
   }
   if (definition.type === 'boolean' || definition.type === 'numeric') {
     return String(value);
@@ -204,6 +226,12 @@ export const containerObjectsCountAt = (knownCount: number, events: TimeMachineH
 
 const rawsOf = (values?: { raw: string }[]) => (values ?? []).map((v) => v.raw).filter((raw) => raw !== null && raw !== undefined);
 
+// Raw values of a change, without the dates that mean "not set"
+const changeRaws = (entityType: string, key: string, values?: { raw: string }[]) => {
+  const raws = rawsOf(values);
+  return isDateAttribute(entityType, key) ? raws.filter((raw) => !UNSET_DATES.has(raw)) : raws;
+};
+
 const attributePath = (key: string) => `/${jsonpatch.escapePathComponent(key)}`;
 
 /**
@@ -220,8 +248,8 @@ export const reverseOperationsForChange = (
   if (key === CONTAINER_OBJECTS_KEY || TECHNICAL_ATTRIBUTES.has(key) || key.startsWith('i_')) {
     return [];
   }
-  const added = rawsOf(change.changes_added);
-  const removed = rawsOf(change.changes_removed);
+  const added = changeRaws(entityType, key, change.changes_added);
+  const removed = changeRaws(entityType, key, change.changes_removed);
   const path = attributePath(key);
   const exists = Object.prototype.hasOwnProperty.call(document, key);
   let previous: string[];
@@ -252,8 +280,8 @@ export const forwardOperationsForChange = (
   if (key === CONTAINER_OBJECTS_KEY || TECHNICAL_ATTRIBUTES.has(key) || key.startsWith('i_')) {
     return [];
   }
-  const added = rawsOf(change.changes_added);
-  const removed = rawsOf(change.changes_removed);
+  const added = changeRaws(entityType, key, change.changes_added);
+  const removed = changeRaws(entityType, key, change.changes_removed);
   const path = attributePath(key);
   const exists = Object.prototype.hasOwnProperty.call(document, key);
   let next: string[];
