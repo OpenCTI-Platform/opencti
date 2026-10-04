@@ -80,6 +80,9 @@ export const withCollapsedGroups = (
     return node;
   });
 
+  // The renderer replaces the ends of a link by their nodes; a group node is a new object at every
+  // computation, so a link kept from the cache is pointed at the nodes of this computation.
+  const nodeOf = new Map<string, GraphNode>([...data.nodes, ...groupNodes].map((node) => [node.id, node]));
   const groupLinks = new Map<string, GraphLink>();
   data.links.forEach((link) => {
     const sourceId = endpointId(link.source) ?? link.source_id;
@@ -97,9 +100,8 @@ export const withCollapsedGroups = (
       return;
     }
     const existing = cache.links.get(id);
-    const groupLink: GraphLink = existing && endpointId(existing.source) === source && endpointId(existing.target) === target
-      ? existing
-      : { ...link, id, source, target, source_id: source, target_id: target, raw: undefined };
+    const fields = { ...link, id, source: nodeOf.get(source) ?? source, target: nodeOf.get(target) ?? target, source_id: source, target_id: target, raw: undefined };
+    const groupLink: GraphLink = existing ? Object.assign(existing, fields) : fields;
     groupLink.disabled = link.disabled;
     cache.links.set(id, groupLink);
     groupLinks.set(id, groupLink);

@@ -31,7 +31,7 @@ describe('withCollapsedGroups', () => {
     const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
     const groupLinks = result.links.slice(data.links.length);
     expect(groupLinks).toHaveLength(1);
-    expect(groupLinks[0]).toMatchObject({ source: 'actor', target: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
+    expect(groupLinks[0]).toMatchObject({ source_id: 'actor', target_id: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
   });
 
   it('tells the links drawn towards a group from the relationships of the platform', () => {
@@ -48,7 +48,7 @@ describe('withCollapsedGroups', () => {
     const group = result.nodes.find(isGroupNode);
     expect(group?.label).toBe('2 Malware');
     expect(group?.groupOf?.memberIds).toEqual(['m1', 'm2']);
-    expect(result.links.slice(withHidden.links.length).map((link) => link.target)).toEqual([`${GROUP_NODE_PREFIX}Malware`]);
+    expect(result.links.slice(withHidden.links.length).map((link) => link.target_id)).toEqual([`${GROUP_NODE_PREFIX}Malware`]);
     // Every member hidden: no group at all.
     expect(withCollapsedGroups(withHidden, ['Malware'], label, createCollapseCache(), new Set(['m1', 'm2', 'm3'])).nodes.some(isGroupNode)).toBe(false);
   });
@@ -72,6 +72,17 @@ describe('withCollapsedGroups', () => {
     const second = withCollapsedGroups({ ...data }, ['Malware'], label, cache).nodes.find(isGroupNode);
     expect(second?.x).toBe(500);
     expect(second?.y).toBe(600);
+  });
+
+  it('keeps a group link from one computation to the next, pointed at the group node of the latest one', () => {
+    const cache = createCollapseCache();
+    const first = withCollapsedGroups(data, ['Malware'], label, cache);
+    const second = withCollapsedGroups({ ...data }, ['Malware'], label, cache);
+    const firstLink = first.links.find(isGroupLink);
+    const secondLink = second.links.find(isGroupLink);
+    expect(secondLink).toBe(firstLink);
+    expect(secondLink?.target).toBe(second.nodes.find(isGroupNode));
+    expect(secondLink?.source).toBe(actor);
   });
 
   it('tells the members hidden behind a group', () => {
