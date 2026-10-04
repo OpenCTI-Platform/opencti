@@ -35,6 +35,11 @@ const MAX_SIDE = 8000;
 const DEFAULT_PIXELS_PER_UNIT = 5;
 /** Graph units around the drawing, for the labels and badges the node positions do not cover. */
 const DRAWING_MARGIN = 40;
+/**
+ * Pixels the badges reach around a node at the least: they keep a minimum size in pixels, so once a
+ * large graph is scaled down they cover more graph units than `DRAWING_MARGIN`.
+ */
+const DECORATION_MIN_PX = 48;
 const LEGEND_WIDTH = 280;
 const LEGEND_ROW = 26;
 const HEADER_HEIGHT = 72;
@@ -75,23 +80,33 @@ export const renderGraphImage = (
   });
   const bounds = boundsOf([...positions.values(), ...controlPoints]);
   if (!bounds) return null;
-  const graphWidthUnits = bounds.maxX - bounds.minX + DRAWING_MARGIN * 2;
-  const graphHeightUnits = bounds.maxY - bounds.minY + DRAWING_MARGIN * 2;
+  const extentX = bounds.maxX - bounds.minX;
+  const extentY = bounds.maxY - bounds.minY;
+  const marginAt = (k: number) => Math.max(DRAWING_MARGIN, DECORATION_MIN_PX / k);
   const legendHeight = PADDING * 2 + LEGEND_ROW * (legend.entities.length + legend.lineStyles.length + 2);
   let scale = input.pixelsPerUnit ?? DEFAULT_PIXELS_PER_UNIT;
   const sizeAt = (k: number) => ({
-    width: Math.ceil(graphWidthUnits * k + LEGEND_WIDTH + PADDING * 2),
-    height: Math.ceil(Math.max(graphHeightUnits * k, legendHeight) + HEADER_HEIGHT + PADDING),
+    width: Math.ceil((extentX + marginAt(k) * 2) * k + LEGEND_WIDTH + PADDING * 2),
+    height: Math.ceil(Math.max((extentY + marginAt(k) * 2) * k, legendHeight) + HEADER_HEIGHT + PADDING),
   });
+  // The largest scale at which an extent and its margins fit in the pixels available: the margin is
+  // `DRAWING_MARGIN` graph units, or `DECORATION_MIN_PX` pixels once the scale makes that larger.
+  const fitScale = (available: number, extent: number) => {
+    const withUnitMargin = available / (extent + DRAWING_MARGIN * 2);
+    if (withUnitMargin >= DECORATION_MIN_PX / DRAWING_MARGIN) return withUnitMargin;
+    return extent > 0 ? (available - DECORATION_MIN_PX * 2) / extent : Infinity;
+  };
   let size = sizeAt(scale);
   if (size.width > MAX_SIDE || size.height > MAX_SIDE) {
     // One pixel of margin, which the rounding up of the sizes may take.
-    scale *= Math.min(
-      (MAX_SIDE - 1 - LEGEND_WIDTH - PADDING * 2) / (graphWidthUnits * scale),
-      (MAX_SIDE - 1 - HEADER_HEIGHT - PADDING) / (graphHeightUnits * scale),
+    scale = Math.min(
+      scale,
+      fitScale(MAX_SIDE - 1 - LEGEND_WIDTH - PADDING * 2, extentX),
+      fitScale(MAX_SIDE - 1 - HEADER_HEIGHT - PADDING, extentY),
     );
     size = sizeAt(scale);
   }
+  const margin = marginAt(scale);
   const canvas = createCanvas();
   canvas.width = size.width;
   canvas.height = size.height;
@@ -116,7 +131,7 @@ export const renderGraphImage = (
   // Drawing.
   const detail = levelOfDetail(Math.max(scale, 4), 0);
   ctx.save();
-  ctx.translate(PADDING - (bounds.minX - DRAWING_MARGIN) * scale, HEADER_HEIGHT - (bounds.minY - DRAWING_MARGIN) * scale);
+  ctx.translate(PADDING - (bounds.minX - margin) * scale, HEADER_HEIGHT - (bounds.minY - margin) * scale);
   ctx.scale(scale, scale);
   const labels: LinkLabel[] = [];
   links.forEach((link) => {

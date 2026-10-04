@@ -127,6 +127,23 @@ describe('renderGraphImage', () => {
     expect(big.height).toBeLessThanOrEqual(8000);
   });
 
+  it('keeps room for the badges of the boundary nodes once a huge drawing is scaled down', () => {
+    const recording = createRecordingContext();
+    const far = graphNode({ id: 'far', x: 50000, y: 50000 });
+    const big = { width: 0, height: 0, getContext: () => recording } as unknown as HTMLCanvasElement;
+    renderGraphImage({ ...input, nodes: [a, far], links: [] }, () => big);
+    const [scale] = recording.callsOf('scale')[0].args as number[];
+    const [x, y] = recording.callsOf('translate')[0].args as number[];
+    // The drawing starts at the node at (0, 0), after the 32 px padding and the 72 px header; the
+    // badges keep at least 10 px whatever the scale, so the room around it is counted in pixels.
+    expect(scale).toBeLessThan(1);
+    expect(x - 32).toBeGreaterThanOrEqual(48);
+    expect(y - 72).toBeGreaterThanOrEqual(48);
+    expect(x + 50000 * scale + 48).toBeLessThanOrEqual(big.width - 280 - 32 + 1);
+    expect(big.width).toBeLessThanOrEqual(8000);
+    expect(big.height).toBeLessThanOrEqual(8000);
+  });
+
   it('sizes the image on the curves and self-loops reaching beyond the nodes', () => {
     const sizeWith = (curvature: number, links = [graphLink(a, b)]) => {
       const sized = { width: 0, height: 0, getContext: () => createRecordingContext() } as unknown as HTMLCanvasElement;
