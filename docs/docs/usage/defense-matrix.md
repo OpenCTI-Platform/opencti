@@ -53,7 +53,7 @@ Detection rules are Indicators whose pattern type is a rule language. The rule m
 
 Connectors import public rule repositories (SigmaHQ, Valhalla, ...) and the rules deployed in your SIEM and EDR (Splunk saved searches, Elastic, Microsoft Sentinel, CrowdStrike custom IOA rules, Google SecOps YARA-L rules). Rules deployed on a platform are linked to it with the `deployed-on` relationship and its deployment status.
 
-A rule whose detection logic is not its query alone is imported with the whole logic as pattern, so that a change of any part of it is a new rule: Elastic threshold, new terms and indicator match rules (`elastic-rule`), Microsoft Sentinel scheduled rules with a trigger other than "more than 0 results" (`sentinel-rule`) and Splunk saved searches with a trigger condition (`splunk-rule`) carry the canonical JSON of their query and conditions.
+A rule whose detection logic is not its query alone is imported with the whole logic as pattern, so that a change of any part of it is a new rule: Elastic threshold, new terms and indicator match rules (`elastic-rule`), Microsoft Sentinel scheduled rules, whose lookback and trigger are part of their logic (`sentinel-rule`), and Splunk saved searches with a trigger condition (`splunk-rule`) carry the canonical JSON of their query and conditions.
 
 ## Matrix
 
