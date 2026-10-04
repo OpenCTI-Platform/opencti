@@ -862,12 +862,13 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
     if (TIMELINE_KINDS.every((kind) => hidden.has(kind))) throw FunctionalError('At least one kind must stay visible');
     patch.hidden_kinds = Array.from(hidden);
   }
-  // Read again under the lock: a change of the access to the container made while this write waited applies to it
-  const settings = await withTimelineLock(container.internal_id, async () => {
+  // Read again under the lock: a change of the access to the container, or of its anchors by a regeneration, made while
+  // this write waited applies to it and to the update published
+  const { settings, anchors } = await withTimelineLock(container.internal_id, async () => {
     const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
-    return upsertTimelineSettings(context, locked, patch);
+    return { settings: await upsertTimelineSettings(context, locked, patch), anchors: locked[ATTRIBUTE_TIMELINE_ANCHORS] ?? null };
   });
-  await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'settings', changed_event_ids: [], anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null }, user);
+  await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'settings', changed_event_ids: [], anchors }, user);
   return settingsWithDefaults(container.internal_id, settings);
 };
 

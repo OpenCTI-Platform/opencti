@@ -22,6 +22,8 @@ import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
 import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
+import * as timelineEngine from '../../../src/modules/timeline/timeline-engine';
+import { elUpdate } from '../../../src/database/engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 import { createEntity, deleteElementById } from '../../../src/database/middleware';
@@ -837,6 +839,29 @@ describe('Incident and case timeline', () => {
       expect(result.data.timelineSettingsUpdate).toMatchObject({ enabled_lanes: ['adversary', 'response'], default_grouping: 'week', default_zoom_window: 'fit', hidden_kinds: ['relation_created'] });
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { enabled_lanes: [] } } }, 'At least one lane must be enabled');
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: [...TIMELINE_KINDS] } } }, 'At least one kind must stay visible');
+    });
+
+    it('should publish with a settings update the anchors read under the timeline lock', async () => {
+      type LoadedCase = { _index: string; x_opencti_timeline_anchors?: Record<string, unknown> | null };
+      const loaded = await internalLoadById(testContext, SYSTEM_USER, caseIncident.id) as unknown as LoadedCase;
+      const previousAnchors = loaded.x_opencti_timeline_anchors ?? null;
+      const closure = '2026-02-09T09:00:00.000Z';
+      // A regeneration writes new anchors while the settings update waits for the lock of the timeline
+      const withLock = timelineEngine.withTimelineLock;
+      const lock = vi.spyOn(timelineEngine, 'withTimelineLock').mockImplementationOnce(async (containerId, write) => {
+        await elUpdate(testContext, loaded._index, caseIncident.id, { doc: { x_opencti_timeline_anchors: { ...(previousAnchors ?? {}), closure } } });
+        return withLock(containerId, write);
+      });
+      const published = vi.spyOn(timelineEngine, 'publishTimelineUpdate');
+      try {
+        await queryAsAdminWithSuccess({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { default_grouping: 'week' } } });
+        const update = published.mock.calls.map(([payload]) => payload).find((payload) => payload.update_type === 'settings' && payload.container_id === caseIncident.id);
+        expect(iso(update?.anchors?.closure as string | undefined)).toEqual(closure);
+      } finally {
+        lock.mockRestore();
+        published.mockRestore();
+        await elUpdate(testContext, loaded._index, caseIncident.id, { doc: { x_opencti_timeline_anchors: previousAnchors } });
+      }
     });
 
     it('should filter and order the containers on their anchors', async () => {
