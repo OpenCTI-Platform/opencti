@@ -32,6 +32,7 @@ import {
   getSourceIntelligenceSettings,
   getSourceIntelligenceState,
   isSourceIntelligenceRunning,
+  listAllSources,
   type SourceIntelligenceState,
   syncSources,
   updateSourceIntelligenceState,
@@ -417,12 +418,16 @@ const computeAndStore = async (
   asOf: number,
   options: { live: boolean; snapshot: boolean; enterprise: boolean },
 ) => {
-  const tracked = sources.filter((source) => source.enabled !== false);
   // Every source takes part in the attribution, so that disabling a source does not inflate the uniqueness of the others
   const resolver = buildResolverFromSources(sources);
   const state = createComputeState(asOf);
   const run = await prepareRunLookups(context, settings, options.enterprise, asOf);
   await scanKnowledge(context, state, resolver, settings, run);
+  // A source can be disabled, deleted or given a cost during the scan: the scorecards use its current state
+  const currentById = new Map((await listAllSources(context)).map((source) => [source.internal_id, source]));
+  const tracked = sources
+    .map((source) => currentById.get(source.internal_id))
+    .filter((source): source is BasicStoreEntitySource => !!source && source.enabled !== false);
   const documents = buildScorecardDocuments(state, tracked, settings, {
     enterprise: options.enterprise,
     availability: run.availability,
@@ -467,7 +472,9 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     }
     // The latest KPIs are side-channel writes: the cached sources (telemetry, quarantine routing) are refreshed once
     await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
-    await clearDisabledSourcesLiveData(context, sources.filter((source) => source.enabled === false));
+    // Sources disabled while the scorecards were written lose the live data this run gave them
+    const latestSources = await listAllSources(context);
+    await clearDisabledSourcesLiveData(context, latestSources.filter((source) => source.enabled === false));
     await purgeScorecardSnapshots(context, settings.snapshot_retention_days, now);
     if (enterprise) {
       await generateSourceRecommendations(context, tracked, settings);
@@ -534,7 +541,7 @@ const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenc
   }
   const dayEnd = new Date(`${state.backfill_next_day}T23:59:59.999Z`).getTime();
   const enterprise = await isEnterpriseEdition(context);
-  const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
+  const sources = await listAllSources(context);
   await computeAndStore(context, settings, sources, dayEnd, { live: false, snapshot: true, enterprise });
   const nextDay = toSnapshotDate(dayEnd + 1);
   await updateSourceIntelligenceState({ backfill_next_day: nextDay, backfill_done: nextDay >= until });
