@@ -61,6 +61,7 @@ import {
   computeDerivedEventId,
   computeManualEventId,
   containerAccessFields,
+  createConcurrencyLimiter,
   deleteTimelineDocuments,
   getTimelineRules,
   loadStoredTimelineEvents,
@@ -87,7 +88,8 @@ import { isContainerClosed } from './timeline-loader';
 import { notifyTimelineMilestoneAdded } from './timeline-notification';
 import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
-import { logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
+import { enqueueTimelineRegeneration } from './timeline-queue';
 
 type AnyStoreElement = BasicStoreBase & Record<string, any>;
 
@@ -176,15 +178,33 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
 // endregion
 
 // region reads
+// First openings build their timeline in the read path, within a limit per platform node; beyond the readers waiting for
+// a slot, the container goes to the timeline manager, whose batches and concurrency bound the work
+const TIMELINE_FIRST_USE_CONCURRENCY = conf.get('timeline_manager:first_use_concurrency') ?? 2;
+const TIMELINE_FIRST_USE_MAX_WAITING = 50;
+const runFirstUseGeneration = createConcurrencyLimiter(TIMELINE_FIRST_USE_CONCURRENCY, TIMELINE_FIRST_USE_MAX_WAITING);
+const firstUseGenerations = new Map<string, Promise<boolean>>();
+
 const ensureTimelineGenerated = async (context: AuthContext, container: AnyStoreElement) => {
   if (container[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return container;
   // First opening of a container that was never processed: build its timeline now, always on the
   // live knowledge (never inside the draft the reader may be working in). Concurrent first reads
-  // (summary and events are resolved in parallel) wait for the regeneration in flight instead of
-  // reading a partial timeline, and do not run it a second time.
+  // (summary and events are resolved in parallel) share the generation in flight instead of
+  // reading a partial timeline, and do not run it a second time (another node waits for its lock).
+  const containerId = container.internal_id;
   const generationContext = executionContext('timeline_generation');
-  await regenerateContainerTimeline(generationContext, container.internal_id, { wait: true, skipIfGenerated: true });
-  const generated = await internalLoadById<AnyStoreElement>(generationContext, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
+  let generation = firstUseGenerations.get(containerId);
+  if (!generation) {
+    generation = runFirstUseGeneration(() => regenerateContainerTimeline(generationContext, containerId, { wait: true, skipIfGenerated: true }))
+      .then((result) => result.started)
+      .finally(() => firstUseGenerations.delete(containerId));
+    firstUseGenerations.set(containerId, generation);
+  }
+  if (!(await generation)) {
+    await enqueueTimelineRegeneration([containerId], 0);
+    throw FunctionalError('The timeline of this case is being built, open it again in a moment', { id: containerId });
+  }
+  const generated = await internalLoadById<AnyStoreElement>(generationContext, SYSTEM_USER, containerId, { type: TIMELINE_CONTAINER_TYPES });
   return generated ?? container;
 };
 

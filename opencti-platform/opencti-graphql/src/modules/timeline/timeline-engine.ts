@@ -106,6 +106,38 @@ export const computeManualEventId = (containerId: string, externalId: string): s
 
 export const timelineEventStandardId = (internalId: string) => `timeline-event--${internalId}`;
 
+/**
+ * At most `limit` tasks run at once and up to `maxWaiting` others wait for a slot, in order; beyond them a task is not
+ * run and resolves to `{ started: false }`.
+ */
+export const createConcurrencyLimiter = (limit: number, maxWaiting: number) => {
+  const slots = Math.max(1, limit);
+  let running = 0;
+  const waiting: Array<() => void> = [];
+  const release = () => {
+    const next = waiting.shift();
+    // A released slot goes straight to the next waiting task
+    if (next) next();
+    else running -= 1;
+  };
+  return async <T>(task: () => Promise<T>): Promise<{ started: true; value: T } | { started: false }> => {
+    if (running < slots) {
+      running += 1;
+    } else if (waiting.length < maxWaiting) {
+      await new Promise<void>((resolve) => {
+        waiting.push(resolve);
+      });
+    } else {
+      return { started: false };
+    }
+    try {
+      return { started: true, value: await task() };
+    } finally {
+      release();
+    }
+  };
+};
+
 const derivedEventKey = (event: DerivedTimelineEvent) => {
   return event.discriminator ? `${event.element_id ?? ''}|${event.discriminator}` : event.element_id;
 };

@@ -4,6 +4,7 @@ import {
   buildTimelineEventDoc,
   computeDerivedEventId,
   computeManualEventId,
+  createConcurrencyLimiter,
   derivedEventMarkings,
   getTimelineRules,
   isPendingAnnotationApplicable,
@@ -282,6 +283,33 @@ describe('Timeline container marking coverage', () => {
     const covered = buildContainerMarkingCoverage([], markings);
     expect(covered('tlp-clear')).toBe(false);
     expect(covered('tlp-green')).toBe(false);
+  });
+});
+
+describe('Timeline first-use generation limit', () => {
+  it('should run at most the limit at once, let the others wait in order and refuse beyond the waiting line', async () => {
+    const run = createConcurrencyLimiter(1, 1);
+    const started: string[] = [];
+    let finishFirst: () => void = () => {};
+    const first = run(() => new Promise<string>((resolve) => {
+      started.push('first');
+      finishFirst = () => resolve('first');
+    }));
+    const second = run(async () => {
+      started.push('second');
+      return 'second';
+    });
+    expect(await run(async () => 'third')).toEqual({ started: false });
+    expect(started).toEqual(['first']);
+    finishFirst();
+    expect(await first).toEqual({ started: true, value: 'first' });
+    expect(await second).toEqual({ started: true, value: 'second' });
+    expect(started).toEqual(['first', 'second']);
+    // A failed task gives its slot back as well
+    await expect(run(async () => {
+      throw new Error('failed');
+    })).rejects.toThrow('failed');
+    expect(await run(async () => 'fourth')).toEqual({ started: true, value: 'fourth' });
   });
 });
 
