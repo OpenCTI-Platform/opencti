@@ -4999,6 +4999,7 @@
   "The refresh of the community data of your objects failed: the next hourly run tries again.": "L'aggiornamento dei dati della community dei tuoi oggetti non è riuscito: la prossima esecuzione oraria riprova.",
   "The relations attached to selected entities will be copied to the merged entity.": "La relazione allegata alle entità selezionate verrà copiata nell'entità unita.",
   "The relationship type to apply to all created relationships.": "Il tipo di relazione da applicare a tutte le relazioni create.",
+  "The removal of community data that is no longer current failed: the next hourly run tries again.": "La rimozione dei dati della community non più aggiornati non è riuscita: la prossima esecuzione oraria riprova.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "Il codice di ripristino inserito non è valido o è scaduto. È possibile richiedere un nuovo codice dopo un ritardo di 30 secondi.",
   "The reset code you entered is invalid or has expired. You can request a new code.": "Il codice di ripristino inserito non è valido o è scaduto. È possibile richiedere un nuovo codice.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "La politica di conservazione sarà applicata ai log delle attività (eventi di amministrazione come login, logout e azioni di sicurezza)",

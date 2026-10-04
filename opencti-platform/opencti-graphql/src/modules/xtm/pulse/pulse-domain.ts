@@ -191,19 +191,68 @@ const loadPulseContext = async (context: AuthContext, { fresh = false } = {}) =>
   return { settings, values, platform, state, access };
 };
 
+// region cleanup
+// The community data of the platform goes whenever it stops being current: contribution lapsed or opened, purge,
+// unregistration. The cleanup can fail (Elasticsearch, Redis): the pending marker is written before it and removed once
+// it succeeded, and every manager cycle replays a pending cleanup, registered on XTM Hub or not.
+type PulseCleanup = 'network' | 'registration';
+
+const runPulseCleanup = async (cleanup: PulseCleanup) => {
+  if (cleanup === 'registration') {
+    // The registration is gone: what was collected for it goes with its contribution state.
+    await redisDiscardPulseOutbox();
+    await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+    await redisSetPulseState({
+      contribution_accepted: undefined,
+      contribution_lapsed: undefined,
+      last_refresh_at: undefined,
+      refresh_offset: undefined,
+      preview_refresh_at: undefined,
+      preview_offset: undefined,
+      preview_matched: undefined,
+      preview_since: undefined,
+    });
+  }
+  await clearPulseNetworkInformation();
+  await redisSetPulseState({ cleanup_pending: undefined });
+};
+
+// Whether the cleanup succeeded: a failure is logged and left to the next manager cycle.
+const cleanupPulseData = async (cleanup: PulseCleanup) => {
+  let pending = cleanup;
+  try {
+    // A pending cleanup of the registration covers the network information too.
+    pending = (await redisGetPulseState()).cleanup_pending === 'registration' ? 'registration' : cleanup;
+    await redisSetPulseState({ cleanup_pending: pending });
+    await runPulseCleanup(pending);
+    return true;
+  } catch (error) {
+    logApp.error('[THREAT PULSE] Community data not cleaned, the next manager cycle retries', { cause: error, cleanup: pending });
+    return false;
+  }
+};
+
+export const runPulsePendingCleanup = async () => {
+  const { cleanup_pending: pending } = await redisGetPulseState();
+  if (pending === 'network' || pending === 'registration') {
+    await withPulsePushLock(() => runPulseCleanup(pending));
+  }
+};
+// endregion
+
 // XTM Hub enforces the reciprocity: a contributing platform it answers contribution_required to (no accepted
 // contribution within the grace period) falls back to the preview until its next accepted contribution. The full
-// statistics it held are removed, so nothing stale passes for current.
+// statistics it held are removed first, so nothing stale passes for current: until they are, the platform is not
+// marked lapsed and the next contribution_required answer retries, like the next manager cycle.
 const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
   if (!(error instanceof PulseHubError) || error.code !== 'contribution_required' || !isPulseContributing(values)) {
     return;
   }
   const state = await redisGetPulseState();
-  if (state.contribution_lapsed === 'true') {
+  if (state.contribution_lapsed === 'true' || !(await cleanupPulseData('network'))) {
     return;
   }
   await redisSetPulseState({ contribution_lapsed: 'true', preview_refresh_at: undefined });
-  await clearPulseNetworkInformation();
   logApp.info('[THREAT PULSE] XTM Hub requires a contribution, falling back to the preview until the next accepted contribution');
 };
 
@@ -556,13 +605,18 @@ const recordAcceptedContribution = async (state: PulseOperationalState, pushedRe
     return;
   }
   const opening = state.contribution_accepted !== 'true' || state.contribution_lapsed === 'true';
+  // The preview signal goes before the full experience opens: until it is removed, the platform stays in preview and
+  // the next accepted contribution opens it.
+  if (opening && !(await cleanupPulseData('network'))) {
+    await redisSetPulseState({ last_push_at: now.toISOString() });
+    return;
+  }
   await redisSetPulseState({
     last_push_at: now.toISOString(),
     contribution_accepted: 'true',
     ...(opening ? { contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined } : {}),
   });
   if (opening) {
-    await clearPulseNetworkInformation();
     logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
   }
 };
@@ -1280,25 +1334,9 @@ export const unregisterFromPulse = async (
     await redisBumpPulseConfigGeneration();
     const { values } = await loadPulseContext(context, { fresh: true });
     await unregister(isPulseContributing(values) ? [{ key: PULSE_SETTINGS_MODE, value: [PulseMode.Preview] }] : []);
-    try {
-      await redisDiscardPulseOutbox();
-      await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
-      await redisSetPulseState({
-        contribution_accepted: undefined,
-        contribution_lapsed: undefined,
-        last_refresh_at: undefined,
-        refresh_offset: undefined,
-        preview_refresh_at: undefined,
-        preview_offset: undefined,
-        preview_matched: undefined,
-        preview_since: undefined,
-      });
-      await clearPulseNetworkInformation();
-    } catch (error) {
-      // The unregistration stands; the generations already stop every cycle started before it, and the next one finds
-      // no registration and sends nothing.
-      logApp.error('[THREAT PULSE] Community data not cleaned after the XTM Hub unregistration', { cause: error });
-    }
+    // The unregistration stands whatever happens to the cleanup: the generations already stop every cycle started
+    // before it, and a failed cleanup is replayed by the next manager cycle without any registration.
+    await cleanupPulseData('registration');
   });
 };
 
@@ -1330,7 +1368,8 @@ export const purgePulseContributions = async (context: AuthContext, user: AuthUs
     // XTM Hub no longer holds a contribution of the platform: the full reads wait for the next accepted one.
     await redisSetPulseState({ contribution_accepted: undefined, contribution_lapsed: undefined, last_push_at: undefined, last_refresh_at: undefined, refresh_offset: undefined });
     if (access === PulseAccess.Full) {
-      await clearPulseNetworkInformation();
+      // The purge stands: a failed cleanup of the full statistics is replayed by the next manager cycle.
+      await cleanupPulseData('network');
     }
     return purged;
   });

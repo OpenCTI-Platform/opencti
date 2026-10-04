@@ -176,7 +176,7 @@ export class TelemetryMeterManager {
   // Number of PIR
   pirCount = 0;
 
-  // Threat Pulse contribution is enabled (0 or 1)
+  // Threat Pulse full experience: a contribution accepted by XTM Hub and not lapsed (0 or 1)
   isThreatPulseEnabled = 0;
 
   // Number of Threat Pulse records (hash and count) contributed to XTM Hub
@@ -185,7 +185,7 @@ export class TelemetryMeterManager {
   // Number of Threat Pulse lookups (hashes) sent to XTM Hub
   threatPulseLookupsCount = 0;
 
-  // Threat Pulse runs in preview: registered on XTM Hub, not contributing, not turned off (0 or 1)
+  // Threat Pulse runs in preview: registered on XTM Hub, not turned off, without the full experience (0 or 1)
   isThreatPulsePreview = 0;
 
   // Threat Pulse preview impressions and calls to action, by event and surface
@@ -786,10 +786,10 @@ export class TelemetryMeterManager {
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
-    this.registerGauge('is_threat_pulse_enabled', 'Threat Pulse contribution is enabled', 'isThreatPulseEnabled', { unit: 'boolean' });
+    this.registerGauge('is_threat_pulse_enabled', 'Threat Pulse full experience (contribution accepted, not lapsed)', 'isThreatPulseEnabled', { unit: 'boolean' });
     this.registerGauge('threat_pulse_records_count', 'Number of Threat Pulse records contributed to XTM Hub', 'threatPulseRecordsCount');
     this.registerGauge('threat_pulse_lookups_count', 'Number of Threat Pulse lookups sent to XTM Hub', 'threatPulseLookupsCount');
-    this.registerGauge('is_threat_pulse_preview', 'Threat Pulse runs in preview (registered, not contributing)', 'isThreatPulsePreview', { unit: 'boolean' });
+    this.registerGauge('is_threat_pulse_preview', 'Threat Pulse runs in preview (registered, not turned off, no full experience)', 'isThreatPulsePreview', { unit: 'boolean' });
     this.registerDimensionalGauge('threat_pulse_preview_event_count', 'Threat Pulse preview impressions and calls to action by event and surface', 'threatPulsePreviewEventItems');
     this.registerDimensionalGauge('threat_pulse_mode_change_count', 'Threat Pulse mode changes by mode chosen', 'threatPulseModeChangeItems');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');

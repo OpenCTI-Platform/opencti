@@ -129,6 +129,7 @@ export const PULSE_UNAVAILABLE_MESSAGES: Record<string, string> = {
 // The last error of the hourly Threat Pulse cycle: the code a step of the cycle leaves when it fails, then the codes of
 // the XTM Hub client for the contribution.
 export const PULSE_PUSH_ERROR_MESSAGES: Record<string, string> = {
+  cleanup_failed: 'The removal of community data that is no longer current failed: the next hourly run tries again.',
   contribution_failed: 'The last contribution failed on this platform: the next hourly run tries again with the pending records.',
   network_refresh_failed: 'The refresh of the community data of your objects failed: the next hourly run tries again.',
   trending_notifications_failed: 'The notifications of objects trending in your sector failed: the next hourly run tries again.',

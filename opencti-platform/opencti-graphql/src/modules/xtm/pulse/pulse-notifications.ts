@@ -66,7 +66,6 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
     triggers.flatMap(({ trigger }) => rising.map((entry) => pairOf(trigger.internal_id, entry.entity.internal_id))),
     TRENDING_NOTIFICATION_MEMORY_DAYS,
   ));
-  const notifiedPairs: string[] = [];
   const notifiedObjects = new Set<string>();
   let notifications = 0;
   for (let entryIndex = 0; entryIndex < rising.length; entryIndex += 1) {
@@ -105,13 +104,13 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
           origin: { user_id: PULSE_MANAGER_USER.id, socket: 'internal' },
         };
         await storeNotificationEvent(context, event);
+        // Remembered right away: a failure on a later event never sends this one again.
+        await redisMarkTrendingNotified([pairOf(trigger.internal_id, entry.entity.internal_id)]);
         notifications += targets.length;
-        notifiedPairs.push(pairOf(trigger.internal_id, entry.entity.internal_id));
         notifiedObjects.add(entry.entity.internal_id);
       }
     }
   }
-  await redisMarkTrendingNotified(notifiedPairs);
   if (notifications > 0) {
     logApp.info('[THREAT PULSE] Trending notifications sent', { objects: notifiedObjects.size, notifications });
   }

@@ -57,7 +57,7 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { FilterMode, PulseMode, PulseSurface, PulseTelemetryEvent } from '../generated/graphql';
+import { FilterMode, PulseAccess, PulseMode, PulseSurface, PulseTelemetryEvent } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -65,7 +65,8 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { isPulseContributing, readPulseSettings } from '../modules/xtm/pulse/pulse-settings';
+import { getPulseAccess, getPulseHubPlatform, hasPulseReadAccess, readPulseSettings } from '../modules/xtm/pulse/pulse-settings';
+import { redisGetPulseState } from '../modules/xtm/pulse/pulse-cache';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -498,9 +499,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsChatbotCguAccepted(settings.filigran_chatbot_ai_cgu_status === 'enabled' ? 1 : 0);
     manager.setIsOrganizationSegregationEnabled(settings.platform_organization ? 1 : 0);
     manager.setIsXtmHubRegistered(settings.xtm_hub_registration_status === 'registered' ? 1 : 0);
-    const pulseValues = readPulseSettings(settings);
-    manager.setIsThreatPulseEnabled(isPulseContributing(pulseValues) ? 1 : 0);
-    manager.setIsThreatPulsePreview(pulseValues.mode === PulseMode.Preview && !!settings.xtm_hub_token ? 1 : 0);
+    // The experience the platform gets, not the configured mode: a contributing platform before its first accepted
+    // contribution, or once its contribution lapsed, reads the preview.
+    const pulseAccess = getPulseAccess(readPulseSettings(settings), getPulseHubPlatform(settings) !== null, hasPulseReadAccess(await redisGetPulseState()));
+    manager.setIsThreatPulseEnabled(pulseAccess === PulseAccess.Full ? 1 : 0);
+    manager.setIsThreatPulsePreview(pulseAccess === PulseAccess.Preview ? 1 : 0);
     // endregion
 
     // region Cluster information

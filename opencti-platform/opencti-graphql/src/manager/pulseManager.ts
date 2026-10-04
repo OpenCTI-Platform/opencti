@@ -1,7 +1,7 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext } from '../utils/access';
-import { runPulseContribution, runPulsePreview, runPulseRefresh } from '../modules/xtm/pulse/pulse-domain';
+import { runPulseContribution, runPulsePendingCleanup, runPulsePreview, runPulseRefresh } from '../modules/xtm/pulse/pulse-domain';
 import { runPulseTrendingNotifications } from '../modules/xtm/pulse/pulse-notifications';
 import { redisGetPulseState, redisSetPulseState } from '../modules/xtm/pulse/pulse-cache';
 
@@ -29,6 +29,7 @@ const runStep = async (step: string, run: () => Promise<unknown>) => {
 
 /**
  * Hourly Threat Pulse cycle of a platform registered on XTM Hub.
+ * First, registered or not, it replays a cleanup of the community data that failed (unregistration, purge, lapse).
  * In preview (the default), it only downloads the daily digest and matches it locally, once a day: nothing leaves.
  * Contributing, it sends the activity of the last window (hashes and counts only), refreshes the network information
  * of the objects in scope once a day, and notifies the triggers listening to objects trending in the platform's sector.
@@ -36,6 +37,7 @@ const runStep = async (step: string, run: () => Promise<unknown>) => {
  */
 export const pulseManager = async () => {
   const context = executionContext('pulse_manager');
+  await runStep('Cleanup', () => runPulsePendingCleanup());
   await runStep('Contribution', () => runPulseContribution(context));
   await runStep('Network refresh', () => runPulseRefresh(context));
   await runStep('Trending notifications', () => runPulseTrendingNotifications(context));

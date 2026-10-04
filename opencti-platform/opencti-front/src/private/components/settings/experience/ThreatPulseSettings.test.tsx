@@ -130,6 +130,7 @@ describe('ThreatPulseSettings', () => {
   });
 
   it.each([
+    ['cleanup_failed', 'The removal of community data that is no longer current failed: the next hourly run tries again.'],
     ['network_refresh_failed', 'The refresh of the community data of your objects failed: the next hourly run tries again.'],
     ['trending_notifications_failed', 'The notifications of objects trending in your sector failed: the next hourly run tries again.'],
     ['preview_refresh_failed', 'The preview refresh failed: the next hourly run tries again.'],

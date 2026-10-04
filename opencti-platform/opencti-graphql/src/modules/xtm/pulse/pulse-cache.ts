@@ -219,6 +219,8 @@ export interface PulseOperationalState {
   preview_digest_items?: string;
   preview_matched?: string;
   preview_since?: string;
+  // 'network' or 'registration' while a cleanup of the community data that failed waits for the next manager cycle.
+  cleanup_pending?: string;
 }
 
 export const redisGetPulseState = async (): Promise<PulseOperationalState> => {

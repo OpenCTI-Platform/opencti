@@ -12,7 +12,7 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { runPulseContribution, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { runPulseContribution, runPulsePendingCleanup, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
 import {
   redisAddPulseActivity,
   redisBumpPulsePolicyGeneration,
@@ -738,5 +738,24 @@ describe('Threat Pulse manager and API', () => {
       written = pulseUpdates;
     });
     expect(written).toEqual([]);
+  });
+
+  it('should replay a cleanup that failed with the next manager cycle, registered on XTM Hub or not', async () => {
+    const today = utcDay();
+    // A cleanup of the registration left pending: the state and the activity collected for it go
+    await redisSetPulseState({ cleanup_pending: 'registration', contribution_accepted: 'true', preview_matched: '5' });
+    await redisAddPulseActivity(today, malwareId, 'sighted', 1);
+    await runPulsePendingCleanup();
+    const afterRegistration = await redisGetPulseState();
+    expect({ pending: afterRegistration.cleanup_pending, accepted: afterRegistration.contribution_accepted, matched: afterRegistration.preview_matched })
+      .toEqual({ pending: undefined, accepted: undefined, matched: undefined });
+    expect(await redisTakePulseActivity(today, 10)).toEqual([]);
+    // A cleanup of the network information left pending: the contribution state stays
+    await redisSetPulseState({ cleanup_pending: 'network', contribution_accepted: 'true' });
+    await runPulsePendingCleanup();
+    const afterNetwork = await redisGetPulseState();
+    expect({ pending: afterNetwork.cleanup_pending, accepted: afterNetwork.contribution_accepted }).toEqual({ pending: undefined, accepted: 'true' });
+    expect((await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeUndefined();
+    await redisSetPulseState({ contribution_accepted: undefined });
   });
 });

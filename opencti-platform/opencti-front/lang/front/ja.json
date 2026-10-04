@@ -4999,6 +4999,7 @@
   "The refresh of the community data of your objects failed: the next hourly run tries again.": "オブジェクトのコミュニティデータの更新に失敗しました。次の毎時実行で再試行します。",
   "The relations attached to selected entities will be copied to the merged entity.": "選択されたエンティティに付属するリレーションは、マージされたエンティティにコピーされます。",
   "The relationship type to apply to all created relationships.": "作成されたすべての関係に適用する関係タイプ。",
+  "The removal of community data that is no longer current failed: the next hourly run tries again.": "最新ではなくなったコミュニティデータの削除に失敗しました。次の毎時実行で再試行します。",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "入力されたリセットコードが無効であるか、有効期限が切れています。30秒後に新しいコードをリクエストできます。",
   "The reset code you entered is invalid or has expired. You can request a new code.": "入力されたリセットコードが無効であるか、有効期限が切れています。新しいコードをリクエストしてください。",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "保存ポリシーは、アクティビティログ（ログイン、ログアウト、セキュリティアクションなどの管理イベント）に適用されます。",
