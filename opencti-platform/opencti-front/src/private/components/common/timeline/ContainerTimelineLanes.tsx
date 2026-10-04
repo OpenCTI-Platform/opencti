@@ -8,6 +8,7 @@ import useTimelineColors from './useTimelineColors';
 import { resolveTimelineSourceState, type TimelineSourceStateValue } from './timelineSourceStates';
 import {
   clusterLaneEvents,
+  groupOverflowItems,
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
@@ -151,7 +152,30 @@ const ContainerTimelineLanes = ({
       const { rows, rowCount } = layoutLaneRows(items.map(({ id, x1, x2 }) => ({ id, x1, x2 })));
       const visibleRows = Math.min(rowCount, maxRows);
       const height = LANE_PADDING * 2 + visibleRows * ROW_HEIGHT;
-      const layout = { lane, y, height, items, rows, maxRows };
+      let drawnItems = items;
+      if (rowCount > maxRows) {
+        // The last drawn row and the rows beyond it collapse into count bubbles that zoom in on click, never stacked items
+        const lastRow = maxRows - 1;
+        const isOverflow = (item: LaneItem) => (rows.get(item.id) ?? 0) >= lastRow;
+        const groups = groupOverflowItems(items.filter(isOverflow).map((item) => ({
+          id: item.id,
+          x1: item.x1 - 11,
+          x2: item.x2 + 11,
+          events: item.type === 'event' ? [item.event] : item.cluster.events,
+          item,
+        })));
+        const collapsed: LaneItem[] = groups.map((group, index) => {
+          if (group.length === 1) return group[0].item;
+          const groupEvents = group.flatMap((entry) => entry.events);
+          const times = groupEvents.flatMap((event) => [toTime(event.event_time), toTime(event.event_end_time)]).filter((t): t is number => t !== null);
+          const cluster = { id: `${lane}-overflow-${index}`, lane, start: Math.min(...times), end: Math.max(...times), events: groupEvents };
+          const x = scale(new Date(cluster.start + (cluster.end - cluster.start) / 2));
+          return { type: 'cluster', id: cluster.id, cluster, x1: x - 11, x2: x + 11 };
+        });
+        collapsed.forEach((item) => rows.set(item.id, lastRow));
+        drawnItems = [...items.filter((item) => !isOverflow(item)), ...collapsed];
+      }
+      const layout = { lane, y, height, items: drawnItems, rows, maxRows };
       y += height;
       return layout;
     });

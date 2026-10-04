@@ -389,6 +389,23 @@ export const layoutAnchorLabels = <K extends string>(
   return placed.map(({ key, x, label }) => ({ key, x, label, row: rows.get(key) ?? 0 }));
 };
 
+/** Items beyond the rows a lane can draw, in groups of items overlapping on the x axis: each group becomes one count bubble. */
+export const groupOverflowItems = <I extends { x1: number; x2: number }>(items: I[], gap = 4): I[][] => {
+  const sorted = [...items].sort((a, b) => a.x1 - b.x1 || a.x2 - b.x2);
+  const groups: I[][] = [];
+  let groupEnd = Number.NEGATIVE_INFINITY;
+  sorted.forEach((item) => {
+    if (groups.length > 0 && item.x1 <= groupEnd + gap) {
+      groups[groups.length - 1].push(item);
+      groupEnd = Math.max(groupEnd, item.x2);
+    } else {
+      groups.push([item]);
+      groupEnd = item.x2;
+    }
+  });
+  return groups;
+};
+
 export interface LaneLayoutItem {
   id: string;
   x1: number;

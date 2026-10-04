@@ -11,6 +11,7 @@ import {
   effectiveLanes,
   fitSvgToWidth,
   groupEventsByBucket,
+  groupOverflowItems,
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
@@ -210,6 +211,23 @@ describe('Timeline filters', () => {
     expect(effectiveLanes(['response'], ['adversary'])).toEqual(['response']);
     expect(effectiveLanes([], ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'])).toBeNull();
     expect(effectiveLanes([], ['response', 'adversary'])).toEqual(['adversary', 'response']);
+  });
+});
+
+describe('Timeline lane overflow', () => {
+  it('should group the overflow items that overlap on the x axis', () => {
+    const groups = groupOverflowItems([
+      { id: 'c', x1: 300, x2: 320 },
+      { id: 'a', x1: 100, x2: 140 },
+      { id: 'b', x1: 130, x2: 150 },
+      { id: 'd', x1: 322, x2: 330 },
+    ]);
+    expect(groups.map((group) => group.map((item) => item.id))).toEqual([['a', 'b'], ['c', 'd']]);
+  });
+
+  it('should keep apart the items separated by more than the gap', () => {
+    const groups = groupOverflowItems([{ id: 'a', x1: 0, x2: 10 }, { id: 'b', x1: 20, x2: 30 }], 4);
+    expect(groups).toHaveLength(2);
   });
 });
 
