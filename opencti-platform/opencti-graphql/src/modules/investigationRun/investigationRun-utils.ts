@@ -101,11 +101,12 @@ export const runCitedIds = (run: BasicStoreEntityInvestigationRun): string[] => 
   ...(run.recommendations ?? []).flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
 ])).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
 
-/** What a run carries the access of: its subject, its case and what it cites. */
+/** What a run carries the access of: its subject, its case, the context the engine received and what it cites. */
 export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] => Array.from(new Set([
   run.subject_id,
   run.case_id,
   ...(run.case_ids ?? []),
+  ...(run.context_ids ?? []),
   ...runCitedIds(run),
 ].filter((id): id is string => !!id)));
 

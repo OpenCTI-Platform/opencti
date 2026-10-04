@@ -151,7 +151,8 @@ export const isInvestigationRunWithheld = (run: BasicStoreEntityInvestigationRun
  * A run copies the markings and organization sharing of what it reads, never a
  * member restriction, and the manager refreshes them only while the run is
  * active. What a run derived is therefore served to a reader only while its
- * subject, its case and every object it cites, as live objects now, are:
+ * subject, its case, the context the engine received and every object it
+ * cites, as live objects now, are:
  * - not restricted to authorized members, whoever reads;
  * - readable by that reader, so a marking or a sharing tightened on one of
  *   them after the run read it withholds the findings from those it excludes.

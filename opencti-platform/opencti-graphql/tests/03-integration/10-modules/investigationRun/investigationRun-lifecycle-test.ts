@@ -437,18 +437,24 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     const query = gql`query GenericRunLookup($id: String!) { stixObjectOrStixRelationship(id: $id) { ... on InvestigationRun { id } } }`;
     const withEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
     expect(withEdition.data.stixObjectOrStixRelationship).toMatchObject({ id: runId });
-    // The raw STIX serialization of any object, by id.
+    // The raw STIX serialization of any object, by id: never a run, whose own
+    // fields withhold what it derived; a policy only under the edition.
     const raw = gql`query GenericRunRaw($id: String!) { stix(id: $id) stixCoreObjectRaw(id: $id) }`;
-    const rawWithEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: runId } });
-    expect(rawWithEdition.data.stix).toContain(runId);
-    expect(rawWithEdition.data.stixCoreObjectRaw).toContain(runId);
+    const policyId = (await loadInvestigationRun(testContext, runId))?.policy_id as string;
+    expect(policyId).toBeTruthy();
+    const rawRun = await queryAsAdminWithSuccess({ query: raw, variables: { id: runId } });
+    expect(rawRun.data.stix || null).toBeNull();
+    expect(rawRun.data.stixCoreObjectRaw || null).toBeNull();
+    const rawPolicy = await queryAsAdminWithSuccess({ query: raw, variables: { id: policyId } });
+    expect(rawPolicy.data.stix).toContain(policyId);
+    expect(rawPolicy.data.stixCoreObjectRaw).toContain(policyId);
     const edition = vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     try {
       const withoutEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
       expect(withoutEdition.data.stixObjectOrStixRelationship).toBeNull();
-      const rawWithoutEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: runId } });
-      expect(rawWithoutEdition.data.stix || null).toBeNull();
-      expect(rawWithoutEdition.data.stixCoreObjectRaw || null).toBeNull();
+      const rawPolicyWithoutEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: policyId } });
+      expect(rawPolicyWithoutEdition.data.stix || null).toBeNull();
+      expect(rawPolicyWithoutEdition.data.stixCoreObjectRaw || null).toBeNull();
       // The generic listing reads STIX objects and relationships only: never these internal types.
       const listing = gql`
         query GenericRunList($filters: FilterGroup) {
@@ -811,6 +817,8 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(started.context_ids).toContain(otherCase.id);
       expect(runCitedIds(started)).not.toContain(otherCase.id);
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: otherCase.id, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      // Withheld on every read from now on, before the manager stops the run.
+      expect(await readRun(runId)).toMatchObject({ run_status: 'running', end_reason_code: 'member_restricted', evidence: [] });
       await processInvestigationRun(testContext, runId);
       expect(await readRun(runId)).toMatchObject({
         run_status: 'failed',

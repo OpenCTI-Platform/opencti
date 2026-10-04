@@ -257,7 +257,7 @@ import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
-import { INVESTIGATION_ENTERPRISE_EDITION_TYPES } from '../modules/investigationRun/investigationRun-types';
+import { ENTITY_TYPE_INVESTIGATION_RUN, INVESTIGATION_ENTERPRISE_EDITION_TYPES } from '../modules/investigationRun/investigationRun-types';
 import { pushAll } from '../utils/arrayUtil';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -718,7 +718,9 @@ export const stixLoadByIdStringify = async (
     return '';
   }
   const instance = await storeLoadByIdWithRefs(context, user, id);
-  if (!instance) {
+  // A run is served only by its own queries and fields, which withhold what it
+  // derived from a reader beyond its live sources: it is never serialized raw.
+  if (!instance || instance.entity_type === ENTITY_TYPE_INVESTIGATION_RUN) {
     return '';
   }
   if (INVESTIGATION_ENTERPRISE_EDITION_TYPES.includes(instance.entity_type) && !(await isEnterpriseEdition(context))) {

@@ -91,6 +91,11 @@ describe('Case Autopilot access boundary of a run', () => {
     expect(runSourceIds(coursedRun())).toEqual(['incident-1', 'case-1', 'case-incident--1', 'ip-1', 'indicator-1', 'apt28', 'coa-1']);
   });
 
+  it('carries the access of the context the engine received, cited or not', () => {
+    const run = { ...coursedRun(), context_ids: ['report-1', 'relationship-1', 'ip-1'] };
+    expect(runSourceIds(run)).toEqual(['incident-1', 'case-1', 'case-incident--1', 'report-1', 'relationship-1', 'ip-1', 'indicator-1', 'apt28', 'coa-1']);
+  });
+
   it('withholds everything a run derived, and the approvals and requests quoting it', () => {
     const run = buildRun({
       goal_plan: { objective: 'Investigate the phishing wave' },
