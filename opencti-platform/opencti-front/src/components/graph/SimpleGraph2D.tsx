@@ -90,6 +90,7 @@ const SimpleGraph2D = ({
         selectedKeys={NO_SELECTION}
         onSelectNode={(node) => onNodeClick?.(node, new MouseEvent('click'))}
         onSelectLink={(link) => onLinkClick?.(link, new MouseEvent('click'))}
+        onActiveChange={setHovered}
       />
     </>
   );

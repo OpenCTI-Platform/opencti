@@ -1,7 +1,8 @@
-import React, { KeyboardEvent, useId, useMemo, useState } from 'react';
+import React, { KeyboardEvent, useEffect, useId, useMemo, useState } from 'react';
 import { useFormatter } from '../../i18n';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { graphNodeTitle } from '../utils/useGraphParser';
+import { type GraphHoverTarget, linkHoverTarget } from '../utils/useGraphPainter';
 import { badgesOfNode, useGraphBadgeRegistryVersion } from '../badges';
 
 /**
@@ -18,6 +19,11 @@ export interface GraphAccessibleListProps {
   selectedKeys: ReadonlySet<string>;
   onSelectNode: (node: GraphNode, additive: boolean) => void;
   onSelectLink: (link: GraphLink, additive: boolean) => void;
+  /**
+   * The element the keyboard is on while the list has focus, `null` when it leaves: the canvas
+   * highlights it, so a sighted keyboard user sees what Enter selects.
+   */
+  onActiveChange?: (target: GraphHoverTarget | null) => void;
 }
 
 const endpoint = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end : null);
@@ -38,11 +44,12 @@ type Entry = { kind: 'node'; node: GraphNode; text: string } | { kind: 'link'; l
  * only a keyboard or a screen reader reaches: arrows move, Enter or Space selects like a click on
  * the canvas, with Shift to add to the selection.
  */
-const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelectLink }: GraphAccessibleListProps) => {
+const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelectLink, onActiveChange }: GraphAccessibleListProps) => {
   const { t_i18n } = useFormatter();
   const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const listId = useId();
   const [active, setActive] = useState(0);
+  const [focused, setFocused] = useState(false);
 
   const entries = useMemo<Entry[]>(() => {
     const degree = new Map<string, number>();
@@ -85,6 +92,13 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
     else onSelectLink(entry.link, additive);
   };
 
+  const activeEntry = entries.at(activeIndex);
+  const activeKey = activeEntry ? graphElementKey(activeEntry) : null;
+  useEffect(() => {
+    if (!focused || !activeEntry) return;
+    onActiveChange?.(activeEntry.kind === 'node' ? { kind: 'node', id: activeEntry.node.id } : linkHoverTarget(activeEntry.link));
+  }, [focused, activeKey]);
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (entries.length === 0) return;
     const moves: Record<string, number> = { ArrowDown: 1, ArrowUp: -1, PageDown: 10, PageUp: -10 };
@@ -111,6 +125,11 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
       aria-label={t_i18n('Elements of the graph')}
       aria-activedescendant={entries.length > 0 ? `${listId}-${activeIndex}` : undefined}
       onKeyDown={onKeyDown}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        onActiveChange?.(null);
+      }}
     >
       {entries.slice(windowStart, windowEnd).map((entry, offset) => (
         <div

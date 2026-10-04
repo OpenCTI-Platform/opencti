@@ -1,7 +1,4 @@
-import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { createServer, type Server } from 'node:net';
 import { APIRequestContext } from '@playwright/test';
 import { graphqlQuery } from './query-utils';
 
@@ -80,50 +77,37 @@ export const getThemeIdByName = async (request: APIRequestContext, name: string)
   return theme.id;
 };
 
-const PLATFORM_THEME_LOCK = join(tmpdir(), 'opencti-e2e-platform-theme.lock');
-const PLATFORM_THEME_LOCK_OWNER = join(PLATFORM_THEME_LOCK, 'owner');
-// The holder renews its lease this often, however long it holds the lock.
-const PLATFORM_THEME_LOCK_HEARTBEAT_MS = 5 * 1000;
-// A lease not renewed for this long belongs to a run that was killed.
-const PLATFORM_THEME_LOCK_STALE_MS = 60 * 1000;
+// A localhost port only one process can listen on: the operating system frees it when its holder
+// exits, killed or not, so the lock never outlives its holder and is never taken over.
+const PLATFORM_THEME_LOCK_PORT = 47813;
 const PLATFORM_THEME_LOCK_RETRY_MS = 250;
 
-const takePlatformThemeLock = async (owner: string): Promise<void> => {
-  try {
-    await mkdir(PLATFORM_THEME_LOCK);
-    await writeFile(PLATFORM_THEME_LOCK_OWNER, owner);
-  } catch (error) {
-    if ((error as { code?: string }).code !== 'EEXIST') throw error;
-    const age = await stat(PLATFORM_THEME_LOCK).then((info) => Date.now() - info.mtimeMs, () => 0);
-    if (age > PLATFORM_THEME_LOCK_STALE_MS) {
-      await rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
-    } else {
-      await new Promise((resolve) => {
-        setTimeout(resolve, PLATFORM_THEME_LOCK_RETRY_MS);
-      });
-    }
-    await takePlatformThemeLock(owner);
-  }
-};
+const listenOnLockPort = () => new Promise<Server | null>((resolve, reject) => {
+  const server = createServer();
+  server.once('error', (error) => {
+    if ((error as { code?: string }).code === 'EADDRINUSE') resolve(null);
+    else reject(error);
+  });
+  server.listen(PLATFORM_THEME_LOCK_PORT, '127.0.0.1', () => resolve(server));
+});
 
 /**
  * Waits until no other test file holds the platform theme, takes it, and returns the function
  * that gives it back. The platform theme colours every page of every test: a file that changes
  * it, or that compares screenshots, holds it so that local runs, which execute several files at
- * once, never overlap them. The lock is a directory, created atomically by one worker only; its
- * holder renews the lease while it holds it, so only a lock left by a killed run expires, and the
- * lock is removed by its owner only.
+ * once, never overlap them.
  */
 export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
-  const owner = `${process.pid}-${randomUUID()}`;
-  await takePlatformThemeLock(owner);
-  const heartbeat = setInterval(() => {
-    const now = new Date();
-    utimes(PLATFORM_THEME_LOCK, now, now).catch(() => undefined);
-  }, PLATFORM_THEME_LOCK_HEARTBEAT_MS);
-  return async () => {
-    clearInterval(heartbeat);
-    const holder = await readFile(PLATFORM_THEME_LOCK_OWNER, 'utf8').catch(() => null);
-    if (holder === owner) await rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
-  };
+  const server = await listenOnLockPort();
+  if (!server) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, PLATFORM_THEME_LOCK_RETRY_MS);
+    });
+    return acquirePlatformThemeLock();
+  }
+  // Held, the lock never keeps a worker alive on its own.
+  server.unref();
+  return () => new Promise<void>((resolve) => {
+    server.close(() => resolve());
+  });
 };

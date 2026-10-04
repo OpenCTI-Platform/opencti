@@ -318,6 +318,19 @@ describe('GraphAccessibleList', () => {
     expect(screen.getByRole('option', { name: /APT-X, 2 relationships$/ })).toBeInTheDocument();
   });
 
+  it('tells the canvas which element the keyboard is on while the list has focus', async () => {
+    const onActiveChange = vi.fn();
+    const { user } = testRender(
+      <GraphAccessibleList nodes={[actor, malware]} links={[uses]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} onActiveChange={onActiveChange} />,
+    );
+    await user.tab();
+    expect(onActiveChange).toHaveBeenLastCalledWith({ kind: 'node', id: 'actor' });
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(onActiveChange).toHaveBeenLastCalledWith({ kind: 'link', id: 'uses-1', sourceId: 'actor', targetId: 'malware' });
+    await user.tab();
+    expect(onActiveChange).toHaveBeenLastCalledWith(null);
+  });
+
   it('names the entities of a relationship whose endpoints are still ids', () => {
     // Links arrive with the ids of their endpoints; the renderer replaces them by nodes later.
     const pending = { ...uses, source: 'actor', target: 'malware' } as unknown as typeof uses;

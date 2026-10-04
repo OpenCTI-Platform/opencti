@@ -227,7 +227,7 @@ The 3D mode shows the same graph in three dimensions, with the same filters, hid
 
 ## Accessibility
 
-Every entity and relationship drawn is mirrored in a list box that keyboard and screen reader users can reach with `Tab`: the arrow keys move in the list, `Enter` or `Space` selects the element (with `Shift` to add it to the selection), and the keyboard shortcuts above apply.
+Every entity and relationship drawn is mirrored in a list box that keyboard and screen reader users can reach with `Tab`: the arrow keys move in the list, the element reached is highlighted on the canvas, `Enter` or `Space` selects it (with `Shift` to add it to the selection), and the keyboard shortcuts above apply.
 
 ## Extend the graph
 

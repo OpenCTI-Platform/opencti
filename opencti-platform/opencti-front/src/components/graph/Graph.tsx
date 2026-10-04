@@ -874,6 +874,7 @@ const Graph = ({
               setSelectedLinks([link]);
             }
           }}
+          onActiveChange={setHovered}
         />
         <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
         <GraphViewContext.Provider value={viewActions}>
