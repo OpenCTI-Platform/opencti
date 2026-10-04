@@ -37,6 +37,8 @@ A security platform, or a system, declares the MITRE data components it collects
 
 ![Coverage tab of a security platform](assets/defense-matrix-platform-coverage.png)
 
+![Declaring telemetry from log sources](assets/defense-matrix-logsources-dialog.png)
+
 Telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source. An inferred telemetry counts for a reader only if this reader can access the rule, its deployment and the `indicates` relationship linking the rule to the technique.
 
 ### Telemetry mappings
@@ -114,7 +116,11 @@ Validation needs OpenAEV connected to the platform: an OpenAEV platform reads th
 
 ![Validation dialog](assets/defense-matrix-validation-dialog.png)
 
-Each request listed in the technique drawer tells where OpenAEV stands: **Waiting for OpenAEV** while no OpenAEV platform has read its security coverage, then **Read by OpenAEV, waiting for the first results** until the scenario sends results. When OpenAEV sends the results back, they update the validation layer. OpenAEV runs the scenario on endpoints, not on a security platform: every platform watching these endpoints reports through its own collector, and OpenAEV attributes each result to the security platform that produced it. The level of a technique on a platform only counts the results of that platform, so a selected platform that reports nothing keeps its gap open, and the results of a platform you did not select still update the levels of that platform.
+Each request listed in the technique drawer tells where OpenAEV stands: **Waiting for OpenAEV** while no OpenAEV platform has read its security coverage, then **Read by OpenAEV, waiting for the first results** until the scenario sends results.
+
+![Validation requests waiting for OpenAEV](assets/defense-matrix-drawer-requests.png)
+
+When OpenAEV sends the results back, they update the validation layer. OpenAEV runs the scenario on endpoints, not on a security platform: every platform watching these endpoints reports through its own collector, and OpenAEV attributes each result to the security platform that produced it. The level of a technique on a platform only counts the results of that platform, so a selected platform that reports nothing keeps its gap open, and the results of a platform you did not select still update the levels of that platform.
 
 Applications requesting a validation through the API (`defenseGapsValidate` mutation) can pass an `external_reference_url`, an http or https link to what asked for the validation (a risk scenario, a ticket). It is stored as an external reference of the security coverage, named after the host of the link.
 

@@ -255,17 +255,21 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
             <PeriodicityField
               name="periodicity"
               label={t_i18n('Coverage validity period')}
-              helperText={t_i18n('How often OpenAEV runs the scenario again, each run refreshing the validation results')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
+              {t_i18n('How often OpenAEV runs the scenario again, each run refreshing the validation results')}
+            </Typography>
             <PeriodicityField
               name="duration"
               label={t_i18n('Duration')}
-              helperText={t_i18n('How long each run of the scenario lasts')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
+              {t_i18n('How long each run of the scenario lasts')}
+            </Typography>
             <Field
               component={SelectFieldFds}
               variant="outlined"
