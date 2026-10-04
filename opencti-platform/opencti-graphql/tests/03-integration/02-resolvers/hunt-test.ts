@@ -6,6 +6,7 @@ import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, quer
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import * as huntStats from '../../../src/modules/hunt/hunt-stats';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { internalLoadById } from '../../../src/database/middleware-loader';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
@@ -336,12 +337,15 @@ describe('Hunt resolvers', () => {
           status: 'completed',
           hits_count: 5,
           distinct_entities: 2,
-          result_ids: [intrusionSetStandardId],
+          result_ids: [intrusionSetStandardId, 'not a STIX id', 'indicator--not-a-uuid'],
           evidence_sample: [{ field: 'process.command_line', value_hash: 'powershell -enc AAAA', value_preview: 'powershell -enc AAAA', count: 5 }],
         },
       },
     });
     const run = completed.data?.huntRunReport;
+    // Only STIX identifiers are recorded from a connector report
+    const stored = await internalLoadById<BasicStoreEntity & { result_ids?: string[] }>(testContext, ADMIN_USER, secondRunId, { type: ENTITY_TYPE_HUNT_RUN });
+    expect(stored.result_ids).toEqual([intrusionSetStandardId]);
     expect(run.verdict).toEqual('pending');
     expect(run.incident_id).toBeTruthy();
     expect(run.draft_id).toBeTruthy();

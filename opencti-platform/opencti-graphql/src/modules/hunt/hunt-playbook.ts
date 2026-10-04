@@ -5,6 +5,8 @@ import { stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
+import { resolveUserByIdFromCache } from '../user/user-domain';
+import { listHuntConnectors } from './hunt-dispatch';
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
@@ -83,17 +85,55 @@ export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): Hun
  * Continues a playbook execution waiting on a hunt step (PLAYBOOK_HUNT_COMPONENT): the step executor runs with the
  * bundle of the step, completed with the knowledge produced by the runs when configured.
  */
+/**
+ * Objects recorded by the runs, loaded with the identity of the hunt connector of each run. The playbook processes
+ * them with the automation identity: an object the connector cannot read itself is never added to the bundle.
+ */
+export const loadHuntRunResultsForPlaybook = async (context: AuthContext, runs: BasicStoreEntityHuntRun[], knownIds: Set<string>) => {
+  const connectorUsers = new Map((await listHuntConnectors(context, false)).map((connector) => [connector.internal_id, connector.connector_user_id]));
+  const idsByUser = new Map<string, string[]>();
+  const taken = new Set<string>(knownIds);
+  let count = 0;
+  runs.forEach((run) => {
+    const userId = run.connector_id ? connectorUsers.get(run.connector_id) : undefined;
+    if (!userId) {
+      if ((run.result_ids ?? []).length > 0) {
+        logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the hunt connector of the run has no user', { runId: run.internal_id, connectorId: run.connector_id });
+      }
+      return;
+    }
+    const userIds = idsByUser.get(userId) ?? [];
+    (run.result_ids ?? []).forEach((id) => {
+      if (count < HUNT_PLAYBOOK_MAX_RESULTS && !taken.has(id)) {
+        taken.add(id);
+        count += 1;
+        userIds.push(id);
+      }
+    });
+    if (userIds.length > 0) {
+      idsByUser.set(userId, userIds);
+    }
+  });
+  const results: StixObject[] = [];
+  const groups = Array.from(idsByUser.entries());
+  for (let index = 0; index < groups.length; index += 1) {
+    const [userId, ids] = groups[index];
+    const connectorUser = await resolveUserByIdFromCache(context, userId);
+    if (connectorUser) {
+      const loaded = await stixLoadByIds(context, connectorUser, ids) as StixObject[];
+      results.push(...loaded.filter((result) => !!result));
+    } else {
+      logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the user of the hunt connector cannot be found', { userId });
+    }
+  }
+  return results;
+};
+
 export const resumeHuntPlaybookStep = async (context: AuthContext, playbookContext: HuntPlaybookContext, runs: BasicStoreEntityHuntRun[]) => {
   const bundle = JSON.parse(playbookContext.bundle) as StixBundle;
   if (playbookContext.include_results) {
     const knownIds = new Set<string>(bundle.objects.map((object) => object.id));
-    const resultIds = Array.from(new Set(runs.flatMap((run) => run.result_ids ?? [])))
-      .filter((id) => !knownIds.has(id))
-      .slice(0, HUNT_PLAYBOOK_MAX_RESULTS);
-    if (resultIds.length > 0) {
-      const results = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, resultIds) as StixObject[];
-      bundle.objects.push(...results.filter((result) => !!result));
-    }
+    bundle.objects.push(...await loadHuntRunResultsForPlaybook(context, runs, knownIds));
   }
   // Imported lazily: the playbook manager loads the playbook components, this module included
   const { playbookStepExecution } = await import('../../manager/playbookManager/playbookManager');

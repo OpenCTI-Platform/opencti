@@ -77,6 +77,9 @@ import {
 const ERROR_MESSAGE_MAX_LENGTH = 4000;
 const TRANSLATED_QUERY_MAX_LENGTH = 65536;
 const RESULT_IDS_MAX = 5000;
+// The objects of a report are sent after it (contract section 5): their STIX ids are kept, and every reader loads
+// them with its own identity, the playbook with the one of the hunt connector of the run
+const STIX_ID_PATTERN = /^[a-z][a-z0-9-]*--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const TRIAGE_HISTORY_SIZE = 10;
 const MAX_LANGUAGES = 20;
 
@@ -610,7 +613,7 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       patch.hits_count = Math.max(0, Math.round(input.hits_count ?? 0));
       patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
       patch.evidence_sample = sanitizeEvidence(input.evidence_sample);
-      patch.result_ids = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && id.length > 0))).slice(0, RESULT_IDS_MAX);
+      patch.result_ids = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id)))).slice(0, RESULT_IDS_MAX);
     }
     if (typeof input.cost_ms === 'number') {
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));

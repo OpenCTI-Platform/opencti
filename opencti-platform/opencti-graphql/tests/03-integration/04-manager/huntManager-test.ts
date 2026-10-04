@@ -44,6 +44,9 @@ import {
 import { redisSetManagerEventState } from '../../../src/database/redis';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
+import { loadHuntRunResultsForPlaybook } from '../../../src/modules/hunt/hunt-playbook';
+import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const CONNECTOR_ID = '6d2f4c1e-8a3b-4f6e-9c7d-2b5a1e0f3d02';
 const SIGMA_RULE = `title: Hunt manager test encoded command
@@ -309,6 +312,30 @@ describe('Hunt manager', () => {
     expect(secondPage.pageInfo).toMatchObject({ globalCount: 2, hasNextPage: false, hasPreviousPage: true });
     expect(await findHuntRunResultIds(testContext, ADMIN_USER, recorded)).toEqual([intrusionSetId, securityPlatformId]);
     await expireHuntRun(testContext, recorded, 'Hunt manager test');
+  });
+
+  it('should give a playbook only the results the hunt connector of the run can read', async () => {
+    // The test connector group only holds TLP:GREEN
+    const restricted = await queryAsAdminWithSuccess({
+      query: gql`mutation IntrusionSetAdd($input: IntrusionSetAddInput!) { intrusionSetAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Hunt manager test restricted intrusion set', objectMarking: [MARKING_TLP_RED] } },
+    });
+    const restrictedId = restricted.data?.intrusionSetAdd.id;
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    try {
+      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: CONNECTOR_ID, result_ids: [intrusionSetId, restrictedId] });
+      const results = await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set());
+      const loadedIds = results.map((result) => result.extensions[STIX_EXT_OCTI].id);
+      expect(loadedIds).toContain(intrusionSetId);
+      expect(loadedIds).not.toContain(restrictedId);
+      // A run without a hunt connector gives the playbook nothing
+      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: null });
+      expect(await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set())).toEqual([]);
+    } finally {
+      await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
+      await deleteElementById(testContext, ADMIN_USER, restrictedId, ENTITY_TYPE_INTRUSION_SET);
+    }
   });
 
   it('should refuse to execute a hunt whose logic was cleared while paused', async () => {

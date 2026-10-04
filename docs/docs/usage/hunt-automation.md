@@ -30,7 +30,7 @@ With **PIR activation**, a hunt is **armed** while at least one of its targets i
 
 Two playbook components orchestrate hunts. See [Playbook components](playbook-components.md).
 
-- **Run hunts** runs hunts for the entities of the bundle: the hunts targeting them, or a fixed list of hunts. It can wait for the results: the playbook execution is suspended until every run of the step is settled (completed, failed or timed out with no retry left), then continues with the bundle, optionally completed with the knowledge produced by the runs. A step whose hunts cannot run continues through its `no-hunt` output.
+- **Run hunts** runs hunts for the entities of the bundle: the hunts targeting them, or a fixed list of hunts. It can wait for the results: the playbook execution is suspended until every run of the step is settled (completed, failed or timed out with no retry left), then continues with the bundle, optionally completed with the knowledge produced by the runs. That knowledge is read with the user of the hunt connector of each run: an object this user cannot read is never added to the bundle. A step whose hunts cannot run continues through its `no-hunt` output.
 - **Match hunt results** routes the bundle on the outcome of the hunt runs of the execution: their verdicts (the verdicts proposed by the triage agent can stand for the runs still pending), a minimum number of hits, an Incident draft opened. Bundles that do not match continue through its `no-match` output.
 
 ## Validation from OpenAEV
