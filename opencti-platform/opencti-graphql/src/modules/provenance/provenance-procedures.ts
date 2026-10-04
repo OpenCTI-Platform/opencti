@@ -2,20 +2,23 @@ import type { EditInput } from '../../generated/graphql';
 import { EditOperation } from '../../generated/graphql';
 import { RELATION_USES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
-import type { BasicStoreSettings } from '../../types/settings';
+import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 import type { AssertionSource, StoreProcedure } from './provenance-types';
 
 export const PROCEDURES_POLICY_LONGEST = 'longest';
 export const PROCEDURES_POLICY_MOST_RECENT = 'most_recent';
 export type ProceduresDescriptionPolicy = typeof PROCEDURES_POLICY_LONGEST | typeof PROCEDURES_POLICY_MOST_RECENT;
 
-// On by default, including platforms upgraded before the setting existed.
-export const isProceduresPreservationEnabled = (settings: Pick<BasicStoreSettings, 'platform_procedures_preservation'> | undefined | null) => {
-  return settings?.platform_procedures_preservation ?? true;
+// Settings of the relationship entity setting, on by default. Procedures are only recorded while the provenance of
+// relationships is tracked.
+export const isProceduresPreservationEnabled = (entitySetting: Pick<BasicStoreEntityEntitySetting, 'procedures_preservation'> | undefined | null) => {
+  return entitySetting?.procedures_preservation ?? true;
 };
 
-export const getProceduresDescriptionPolicy = (settings: Pick<BasicStoreSettings, 'platform_procedures_description_policy'> | undefined | null): ProceduresDescriptionPolicy => {
-  return settings?.platform_procedures_description_policy === PROCEDURES_POLICY_MOST_RECENT ? PROCEDURES_POLICY_MOST_RECENT : PROCEDURES_POLICY_LONGEST;
+export const getProceduresDescriptionPolicy = (
+  entitySetting: Pick<BasicStoreEntityEntitySetting, 'procedures_description_policy'> | undefined | null,
+): ProceduresDescriptionPolicy => {
+  return entitySetting?.procedures_description_policy === PROCEDURES_POLICY_MOST_RECENT ? PROCEDURES_POLICY_MOST_RECENT : PROCEDURES_POLICY_LONGEST;
 };
 
 export const isProcedureRelationship = (relationshipType: string, toType: string | undefined | null) => {

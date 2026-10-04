@@ -43,6 +43,8 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
   provenance_tracking?: boolean | null;
+  procedures_preservation?: boolean | null;
+  procedures_description_policy?: 'longest' | 'most_recent' | null;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {

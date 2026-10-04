@@ -82,9 +82,9 @@ Dates, counters, scores, confidence and technical fields never produce conflicts
 
 ## Procedures
 
-When several sources describe how a threat uses a technique, each `uses` relationship keeps the procedure provided by every source instead of overwriting the description. The "Use as description" action of the sources panel makes a procedure the description of the relationship.
+When several sources describe how a threat uses a technique, each `uses` relationship to an attack pattern keeps the procedure provided by every source instead of overwriting the description. The "Use as description" action of the sources panel makes a procedure the description of the relationship.
 
-Two parameters are available in the "Procedures" card of "Settings > Parameters":
+Procedures are recorded with the provenance of relationships: they are only preserved when provenance is tracked on the "Relationship" entity type (disabled by default). Two parameters are available in the "Procedures" card of "Settings > Customization > Entity types > Relationship":
 
 - **Procedures preservation on uses relationships**: enable or disable the preservation of the procedures (enabled by default).
 - **Procedures description policy**: when a new procedure arrives, keep the longest one or the most recent one as the description (longest by default).

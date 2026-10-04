@@ -3875,6 +3875,7 @@
   "Private key (leave empty to keep current)": "私钥（留空以保持当前）",
   "Privileges Required (PR)": "所需权限 (PR)",
   "Procedures": "过程",
+  "Procedures are preserved while the provenance of relationships is tracked.": "在追踪关系来源期间，程序会被保留。",
   "Processed time": "处理时间",
   "Processes currently running": "当前运行的进程",
   "Processing": "处理",

@@ -3875,6 +3875,7 @@
   "Private key (leave empty to keep current)": "Clave privada (dejar vacío para mantener la actual)",
   "Privileges Required (PR)": "Privilegios requeridos (PR)",
   "Procedures": "Procedimientos",
+  "Procedures are preserved while the provenance of relationships is tracked.": "Los procedimientos se conservan mientras se sigue la procedencia de las relaciones.",
   "Processed time": "Hora de procesamiento",
   "Processes currently running": "Procesos en ejecución",
   "Processing": "Procesamiento",

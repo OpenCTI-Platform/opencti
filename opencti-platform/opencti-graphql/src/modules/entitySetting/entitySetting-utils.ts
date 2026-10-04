@@ -91,7 +91,7 @@ const templateObjectSettings = ['attributes_configuration', 'platform_entity_fil
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id', 'provenance_tracking'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id', 'provenance_tracking'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id', 'provenance_tracking', 'procedures_preservation', 'procedures_description_policy'],
   [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id', 'provenance_tracking'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_hidden_type', 'provenance_tracking'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['platform_hidden_type'],

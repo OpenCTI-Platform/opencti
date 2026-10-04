@@ -33,8 +33,6 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
-import { getProceduresDescriptionPolicy, isProceduresPreservationEnabled } from '../modules/provenance/provenance-procedures';
-
 const settingsResolvers = {
   Query: {
     about: () => getApplicationInfo(),
@@ -73,8 +71,6 @@ const settingsResolvers = {
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
-    platform_procedures_preservation: (settings) => isProceduresPreservationEnabled(settings),
-    platform_procedures_description_policy: (settings) => getProceduresDescriptionPolicy(settings),
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     caller_ip: (_, __, context) => context.req?.ip ?? null,

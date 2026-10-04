@@ -9,6 +9,8 @@ export const entitySettingsFragment = graphql`
     enforce_reference
     sync_workflow_status_by_name
     provenance_tracking
+    procedures_preservation
+    procedures_description_policy
     availableSettings
     mandatoryAttributes
     scaleAttributes {

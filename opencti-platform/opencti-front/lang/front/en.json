@@ -3875,6 +3875,7 @@
   "Private key (leave empty to keep current)": "Private key (leave empty to keep current)",
   "Privileges Required (PR)": "Privileges Required (PR)",
   "Procedures": "Procedures",
+  "Procedures are preserved while the provenance of relationships is tracked.": "Procedures are preserved while the provenance of relationships is tracked.",
   "Processed time": "Data sent",
   "Processes currently running": "Processes currently running",
   "Processing": "Processing",

@@ -19,13 +19,14 @@ test('Navigate the provenance tabs of the curation hub', { tag: ['@ce'] }, async
   await expect(page.getByTestId('provenance-stale-page')).toBeVisible();
 });
 
-test('Follow the provenance backfill and the procedures parameters', { tag: ['@ce'] }, async ({ page }) => {
+test('Follow the provenance backfill and the provenance settings of relationships', { tag: ['@ce'] }, async ({ page }) => {
   await page.goto('/dashboard/data/processing/tasks');
   await expect(page.getByTestId('provenance-backfill')).toBeVisible();
   await expect(page.getByTestId('provenance-backfill-status')).toBeVisible();
 
-  await page.goto('/dashboard/settings');
-  await expect(page.getByTestId('settings-procedures')).toBeVisible();
+  await page.goto('/dashboard/settings/customization/entity_types/stix-core-relationship');
+  await expect(page.getByTestId('entity-setting-provenance')).toBeVisible();
+  await expect(page.getByTestId('entity-setting-procedures')).toBeVisible();
 });
 
 test('Display the sources of a created entity and confirm it', { tag: ['@ce'] }, async ({ page }) => {

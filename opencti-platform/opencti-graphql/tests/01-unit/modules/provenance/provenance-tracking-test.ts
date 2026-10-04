@@ -3,6 +3,7 @@ import '../../../../src/modules/index';
 import { getEntitiesListFromCache } from '../../../../src/database/cache';
 import { isProvenanceTrackedForType, isProvenanceTrackingEnabled, listProvenanceTrackedTypes } from '../../../../src/modules/provenance/provenance-tracking';
 import { getOverviewLayoutCustomization, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
+import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
 import type { BasicStoreEntityEntitySetting } from '../../../../src/modules/entitySetting/entitySetting-types';
 import type { AuthContext } from '../../../../src/types/user';
 
@@ -48,6 +49,17 @@ describe('Provenance tracking per entity type', () => {
     expect(tracked).not.toContain('Malware');
     expect(tracked).not.toContain('Attack-Pattern');
     expect(tracked).not.toContain('stix-sighting-relationship');
+  });
+});
+
+describe('Procedures preservation, a setting of relationships', () => {
+  it('should follow the relationship entity setting for uses relationships to attack patterns', async () => {
+    const input = { description: 'Spearphishing with macros', to: { entity_type: 'Attack-Pattern' } };
+    const preservationDisabled = { ...setting('stix-core-relationship', true), procedures_preservation: false } as BasicStoreEntityEntitySetting;
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([preservationDisabled]);
+    expect(await creationProceduresBuilder(context, 'uses', input)).toBeUndefined();
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([setting('stix-core-relationship', true)]);
+    expect(await creationProceduresBuilder(context, 'uses', input)).toBeTypeOf('function');
   });
 });
 

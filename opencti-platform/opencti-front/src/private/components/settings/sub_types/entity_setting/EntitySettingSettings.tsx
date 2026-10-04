@@ -6,6 +6,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsFragment_entitySetting$key } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
 import EntitySettingReferences from './EntitySettingReferences';
 import EntitySettingProvenance from './EntitySettingProvenance';
+import EntitySettingProcedures from './EntitySettingProcedures';
 import { entitySettingsFragment } from './EntitySettingsFragment';
 import EntitySettingVisibility from './EntitySettingVisibility';
 import { useFormatter } from '../../../../../components/i18n';
@@ -35,7 +36,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
 
   const [commit] = useApiMutation(entitySettingPatch);
 
-  const handleSubmitField = (name: string, value: boolean) => {
+  const handleSubmitField = (name: string, value: boolean | string) => {
     commit({
       variables: {
         ids: [entitySetting.id],
@@ -65,6 +66,16 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
         <Grid item xs={6}>
           <Card title={t_i18n('Provenance')}>
             <EntitySettingProvenance
+              entitySetting={entitySetting}
+              handleSubmitField={handleSubmitField}
+            />
+          </Card>
+        </Grid>
+      )}
+      {entitySetting.availableSettings.includes('procedures_preservation') && (
+        <Grid item xs={6}>
+          <Card title={t_i18n('Procedures')}>
+            <EntitySettingProcedures
               entitySetting={entitySetting}
               handleSubmitField={handleSubmitField}
             />

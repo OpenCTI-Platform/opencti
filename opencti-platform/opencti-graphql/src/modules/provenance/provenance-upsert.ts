@@ -1,11 +1,8 @@
-import { getEntityFromCache } from '../../database/cache';
 import type { EditInput } from '../../generated/graphql';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { iAttributes } from '../../schema/attribute-definition';
-import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
+import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { logApp } from '../../config/conf';
 import { isNotEmptyField } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -104,8 +101,8 @@ export const prepareUpsertProvenance = async (
     let proceduresAdd: StoreProcedure[] = [];
     const skipFields: string[] = [];
     if (isProcedureRelationship(type, element.toType)) {
-      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-      if (isProceduresPreservationEnabled(settings)) {
+      const relationshipSetting = await getEntitySettingFromCache(context, type);
+      if (isProceduresPreservationEnabled(relationshipSetting)) {
         const previousOwner = await resolveCurrentValueOwner(context, element, 'description');
         const procedureUpsert = computeProcedureUpsert({
           element: element as ProcedureUpsertArgs['element'],
@@ -113,7 +110,7 @@ export const prepareUpsertProvenance = async (
           source,
           previousSource: previousOwner?.source ?? null,
           at,
-          policy: getProceduresDescriptionPolicy(settings),
+          policy: getProceduresDescriptionPolicy(relationshipSetting),
           isConfidenceMatch,
           inputs,
         });
@@ -209,8 +206,7 @@ export const creationProceduresBuilder = async (context: AuthContext, relationsh
   if (description.length === 0 || !isProcedureRelationship(relationshipType, input.to?.entity_type)) {
     return undefined;
   }
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  if (!isProceduresPreservationEnabled(settings)) {
+  if (!isProceduresPreservationEnabled(await getEntitySettingFromCache(context, relationshipType))) {
     return undefined;
   }
   return (source: AssertionSource, at: string) => [buildProcedure(description, source, at)];

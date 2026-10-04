@@ -9212,6 +9212,8 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  procedures_description_policy: ProceduresDescriptionPolicy;
+  procedures_preservation: Scalars['Boolean']['output'];
   provenance_tracking: Scalars['Boolean']['output'];
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -32076,8 +32078,6 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
-  platform_procedures_description_policy: ProceduresDescriptionPolicy;
-  platform_procedures_preservation: Scalars['Boolean']['output'];
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
@@ -47181,6 +47181,8 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
+  procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   provenance_tracking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -53808,8 +53810,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  platform_procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
-  platform_procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

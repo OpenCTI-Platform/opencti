@@ -3875,6 +3875,7 @@
   "Private key (leave empty to keep current)": "개인 키 (현재 유지하려면 비워 둠)",
   "Privileges Required (PR)": "필요한 권한(PR)",
   "Procedures": "절차",
+  "Procedures are preserved while the provenance of relationships is tracked.": "관계의 출처가 추적되는 동안 절차가 보존됩니다.",
   "Processed time": "처리 시간",
   "Processes currently running": "현재 실행 중인 프로세스",
   "Processing": "처리 중",

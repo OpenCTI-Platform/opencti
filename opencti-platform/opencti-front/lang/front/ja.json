@@ -3875,6 +3875,7 @@
   "Private key (leave empty to keep current)": "秘密鍵（現在のものを維持する場合は空のままにしてください）",
   "Privileges Required (PR)": "必要な特権 (PR)",
   "Procedures": "手順",
+  "Procedures are preserved while the provenance of relationships is tracked.": "リレーションシップの出所が追跡されている間、手順は保持されます。",
   "Processed time": "処理時間",
   "Processes currently running": "現在実行中のプロセス",
   "Processing": "処理",

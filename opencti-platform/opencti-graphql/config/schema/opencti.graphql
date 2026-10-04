@@ -1418,9 +1418,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_available_news_feed_types: [String!]
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
-  # Provenance
-  platform_procedures_preservation: Boolean!
-  platform_procedures_description_policy: ProceduresDescriptionPolicy!
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
