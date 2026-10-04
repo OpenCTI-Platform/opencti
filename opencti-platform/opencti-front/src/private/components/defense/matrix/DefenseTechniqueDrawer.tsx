@@ -152,6 +152,7 @@ export const defenseTechniqueDrawerQuery = graphql`
         validation_requests {
           security_coverage_id
           requested_at
+          status
           securityCoverage {
             id
             name
@@ -486,6 +487,13 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
                     <>
                       {`${platformName(gap.platform_id)} - `}
                       <RelativeDate date={request.requested_at} />
+                      {request.status !== 'results' && (
+                        <Typography component="span" variant="body2" display="block" color={request.status === 'waiting' ? 'warning.main' : 'text.secondary'} data-testid="defense-validation-request-status">
+                          {request.status === 'waiting'
+                            ? t_i18n('Waiting for OpenAEV: no OpenAEV platform has read the security coverages yet')
+                            : t_i18n('Read by OpenAEV, waiting for the first results')}
+                        </Typography>
+                      )}
                     </>
                   )}
                 />

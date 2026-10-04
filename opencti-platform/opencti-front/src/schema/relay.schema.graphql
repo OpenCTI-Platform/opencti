@@ -17734,12 +17734,19 @@ type DefenseTechnique {
   gaps: [DefenseGap!]!
 }
 
+enum DefenseValidationRequestStatus {
+  waiting
+  running
+  results
+}
+
 type DefenseValidationRequest {
   security_coverage_id: String!
   grouping_id: String!
   threat_id: String
   requested_at: DateTime!
   requested_by: String!
+  status: DefenseValidationRequestStatus!
   securityCoverage: SecurityCoverage
 }
 

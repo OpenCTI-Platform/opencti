@@ -7982,8 +7982,15 @@ export type DefenseValidationRequest = {
   requested_by: Scalars['String']['output'];
   securityCoverage?: Maybe<SecurityCoverage>;
   security_coverage_id: Scalars['String']['output'];
+  status: DefenseValidationRequestStatus;
   threat_id?: Maybe<Scalars['String']['output']>;
 };
+
+export enum DefenseValidationRequestStatus {
+  Results = 'results',
+  Running = 'running',
+  Waiting = 'waiting'
+}
 
 export type DefenseValidationResult = {
   __typename?: 'DefenseValidationResult';
@@ -42815,6 +42822,7 @@ export type ResolversTypes = ResolversObject<{
   DefenseValidationInput: DefenseValidationInput;
   DefenseValidationPlatformScore: ResolverTypeWrapper<DefenseValidationPlatformScoreView>;
   DefenseValidationRequest: ResolverTypeWrapper<DefenseGapValidationRequest>;
+  DefenseValidationRequestStatus: DefenseValidationRequestStatus;
   DefenseValidationResult: ResolverTypeWrapper<DefenseValidationResultView>;
   DefenseValidationStatus: DefenseValidationStatus;
   DefinitionRefRelationship: ResolverTypeWrapper<Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversTypes['StixObjectOrStixRelationshipOrCreator'] }>;
@@ -47768,6 +47776,7 @@ export type DefenseValidationRequestResolvers<ContextType = any, ParentType exte
   requested_by?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   security_coverage_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['DefenseValidationRequestStatus'], ParentType, ContextType>;
   threat_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 

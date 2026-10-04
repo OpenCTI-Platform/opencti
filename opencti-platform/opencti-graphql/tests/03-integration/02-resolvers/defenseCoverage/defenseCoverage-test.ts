@@ -127,7 +127,7 @@ const DEFENSE_TECHNIQUE = gql`
       rules { indicator { id } deployments { platform { id } status } }
       mitigations { id }
       threats { threat { id } confidence }
-      gaps { platform_id level validation_requests { security_coverage_id grouping_id threat_id } }
+      gaps { platform_id level validation_requests { security_coverage_id grouping_id threat_id status } }
     }
   }
 `;
@@ -424,13 +424,13 @@ describe('Threat-informed defense matrix', () => {
     expect(objectIds).toEqual(expect.arrayContaining([created.attackPattern, created.threat, created.platform]));
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
-    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
     // A recomputation refreshes the computed fields of the gap and keeps its validation requests
     await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
     const recomputed = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const recomputedGap = recomputed.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(recomputedGap.level).toEqual(platformGap.level);
-    expect(recomputedGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+    expect(recomputedGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
   });
 
   it('should track a validation request queued after a failed tracking at the next manager run', async () => {
@@ -454,7 +454,7 @@ describe('Threat-informed defense matrix', () => {
     // A reader never sees a tracked request whose Security Coverage he cannot access
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
-    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
   });
 
   it('should leave no grouping behind when the security coverage of a validation request cannot be created', async () => {

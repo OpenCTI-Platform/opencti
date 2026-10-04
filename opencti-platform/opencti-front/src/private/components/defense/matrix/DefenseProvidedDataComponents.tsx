@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery, useQ
 import { Link } from 'react-router';
 import { Box, DialogActions, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
 import { DeleteOutlined } from '@mui/icons-material';
-import { IconButton, Input } from '@filigran/design-system';
+import { IconButton, Input, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
@@ -23,6 +23,16 @@ import { DefenseProvidedDataComponentsLogsourcesMutation } from './__generated__
 
 const PROVIDES = 'provides';
 const PROVIDED_PAGE_SIZE = 100;
+
+// A disabled button receives no pointer event: the reason is shown on a focusable wrapper
+const DisabledReason = ({ reason, children }: { reason?: string; children: React.ReactElement }) => (reason ? (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span tabIndex={0} aria-label={reason} style={{ display: 'inline-flex' }}>{children}</span>
+    </TooltipTrigger>
+    <TooltipContent>{reason}</TooltipContent>
+  </Tooltip>
+) : children);
 
 const defenseProvidedDataComponentsQuery = graphql`
   query DefenseProvidedDataComponentsQuery($fromId: [String], $count: Int!, $cursor: ID) {
@@ -136,8 +146,13 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
         <Input label={t_i18n('Category')} value={current.category} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
         <Input label={t_i18n('Product')} value={current.product} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
         <Input label={t_i18n('Service')} value={current.service} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
-        <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
+        <DisabledReason reason={canAdd ? undefined : t_i18n('Enter a category, a product or a service')}>
+          <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
+        </DisabledReason>
       </Box>
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }} data-testid="defense-logsource-help">
+        {t_i18n('A log source names the data a rule reads, with the Sigma fields category, product and service. One of the three is enough.')}
+      </Typography>
       {logsources.length > 0 && (
         <List dense aria-label={t_i18n('Log sources')}>
           {logsources.map((logsource, index) => (
@@ -178,9 +193,11 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
       )}
       <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>
         <Button variant="secondary" onClick={close}>{t_i18n('Close')}</Button>
-        <Button onClick={submit} disabled={inFlight || logsources.length === 0} data-testid="defense-logsource-submit">
-          {t_i18n('Declare')}
-        </Button>
+        <DisabledReason reason={!inFlight && logsources.length === 0 ? t_i18n('Add at least one log source') : undefined}>
+          <Button onClick={submit} disabled={inFlight || logsources.length === 0} data-testid="defense-logsource-submit">
+            {t_i18n('Declare')}
+          </Button>
+        </DisabledReason>
       </DialogActions>
     </Dialog>
   );

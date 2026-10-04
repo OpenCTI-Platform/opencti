@@ -5,6 +5,7 @@ import {
   defenseGapRequiredDataComponents,
   defenseGapRuleCandidates,
   defenseGapValidationCoverage,
+  defenseGapValidationStatus,
   defenseTechniqueDataComponents,
   defenseTechniqueGaps,
   defenseTechniqueMitigations,
@@ -68,6 +69,7 @@ const defenseCoverageResolvers: Resolvers = {
   },
   DefenseValidationRequest: {
     securityCoverage: (request, _, context) => defenseGapValidationCoverage(context, context.user, request),
+    status: (request, _, context) => defenseGapValidationStatus(context, context.user, request),
   },
   DefenseLogsourceMapping: {
     logsource_category: (mapping) => mapping.x_opencti_rule_logsource?.category ?? null,

@@ -27,6 +27,8 @@ import { addDefenseGapExportCount, addDefenseValidationRequestCount } from '../.
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
 import { logApp } from '../../config/conf';
 import type { DefenseGapsFilter, DefenseGapsOrdering, DefenseLogsourceInput, DefenseValidationInput, OrderingMode } from '../../generated/graphql';
+import { DefenseValidationRequestStatus } from '../../generated/graphql';
+import { worksForSource } from '../../domain/work';
 import {
   DEFENSE_AGGREGATE_PLATFORM,
   DEFENSE_LEVEL_MAX,
@@ -836,6 +838,22 @@ export const defenseGapRuleCandidates = async (context: AuthContext, user: AuthU
 
 export const defenseGapValidationCoverage = async (context: AuthContext, user: AuthUser, request: DefenseGapValidationRequest) => {
   return storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, request.security_coverage_id, ENTITY_TYPE_SECURITY_COVERAGE);
+};
+
+/**
+ * Where OpenAEV stands on a validation request: results received on its security coverage, the security coverage read
+ * by an OpenAEV platform (its enrichment work was received) with no result yet, or waiting for an OpenAEV platform to
+ * read it.
+ */
+export const defenseGapValidationStatus = async (context: AuthContext, user: AuthUser, request: DefenseGapValidationRequest) => {
+  const coverage = await defenseGapValidationCoverage(context, user, request);
+  if ((coverage as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result) {
+    return DefenseValidationRequestStatus.Results;
+  }
+  // Works are platform records: only whether a connector received the enrichment of the security coverage is used
+  const works = await worksForSource(context, SYSTEM_USER, request.security_coverage_id) as Array<{ status?: string; received_time?: string }>;
+  const received = works.some((work) => !!work.received_time || work.status === 'progress' || work.status === 'complete');
+  return received ? DefenseValidationRequestStatus.Running : DefenseValidationRequestStatus.Waiting;
 };
 
 const EXPORT_HEADERS = [

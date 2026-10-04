@@ -11,6 +11,7 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
@@ -19,6 +20,7 @@ import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
+import Alert from '../../../../components/Alert';
 import TextField from '../../../../components/TextField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
@@ -46,6 +48,7 @@ const defenseValidationDialogMutation = graphql`
 `;
 
 const NO_THREAT = 'none';
+const DEFENSE_VALIDATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/#validate-in-openaev';
 // Techniques listed in the preview before the count of the others
 const PREVIEW_TECHNIQUES = 6;
 
@@ -166,6 +169,18 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
             <Typography variant="body2">
               {t_i18n('A security coverage will be created for the selected techniques. OpenAEV generates a scenario restricted to these techniques and sends back its results, which update the validation layer.')}
             </Typography>
+            <Box sx={{ marginTop: 2 }} data-testid="defense-validation-setup">
+              <Alert
+                severity="info"
+                content={(
+                  <>
+                    {t_i18n('Validation needs an OpenAEV platform that reads the security coverages of this platform through its collector. The OpenCTI account of that collector needs the Connector role.')}
+                    {' '}
+                    <a href={DEFENSE_VALIDATION_DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('How to connect OpenAEV')}</a>
+                  </>
+                )}
+              />
+            </Box>
             <Box
               component="section"
               aria-label={t_i18n('What will be validated')}
@@ -226,6 +241,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
                 variant="outlined"
                 name="threatId"
                 label={t_i18n('Threat to emulate')}
+                helpertext={t_i18n('The threat the validation is for, recorded with the security coverage. OpenAEV tests the selected techniques either way.')}
                 fullWidth
                 onChange={(name: string, value: string) => setFieldValue(name, value)}
                 containerstyle={fieldSpacingContainerStyle}
@@ -239,12 +255,14 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
             <PeriodicityField
               name="periodicity"
               label={t_i18n('Coverage validity period')}
+              helperText={t_i18n('How often OpenAEV runs the scenario again, each run refreshing the validation results')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <PeriodicityField
               name="duration"
               label={t_i18n('Duration')}
+              helperText={t_i18n('How long each run of the scenario lasts')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
@@ -253,6 +271,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
               variant="outlined"
               name="type_affinity"
               label={t_i18n('Type affinity')}
+              helpertext={t_i18n('The kind of targets OpenAEV runs the scenario on, endpoints for now')}
               fullWidth
               onChange={(name: string, value: string) => setFieldValue(name, value)}
               containerstyle={fieldSpacingContainerStyle}
@@ -282,6 +301,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
                   </ComboboxControls>
                 </ComboboxField>
                 <ComboboxContent emptyMessage={t_i18n('No results')} listAriaLabel={t_i18n('Platform affinity')} />
+                <ComboboxHelperText>{t_i18n('The operating systems of the endpoints the scenario runs on, any of them when empty')}</ComboboxHelperText>
               </Combobox>
             </Box>
             <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>

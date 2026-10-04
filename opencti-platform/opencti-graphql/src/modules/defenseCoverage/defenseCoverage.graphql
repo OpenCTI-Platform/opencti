@@ -148,12 +148,20 @@ type DefenseTechnique {
   gaps: [DefenseGap!]!
 }
 
+# Where OpenAEV stands on a validation request: no OpenAEV platform has read its security coverage yet, read with no
+# result yet, or results received
+enum DefenseValidationRequestStatus {
+  waiting
+  running
+  results
+}
 type DefenseValidationRequest {
   security_coverage_id: String!
   grouping_id: String!
   threat_id: String
   requested_at: DateTime!
   requested_by: String!
+  status: DefenseValidationRequestStatus!
   securityCoverage: SecurityCoverage
 }
 

@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useIntl } from 'react-intl';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { ArrowDownwardOutlined, ArrowUpwardOutlined, FileDownloadOutlined } from '@mui/icons-material';
 import {
   Combobox,
@@ -230,8 +230,14 @@ const DefenseGaps = () => {
             checked={usedByThreatsFilter}
             disabled={scope.threatMode === 'NONE'}
             onCheckedChange={(checked) => setOnlyUsedByThreats(checked)}
+            aria-describedby={scope.threatMode === 'NONE' ? 'defense-gaps-only-threats-reason' : undefined}
             data-testid="defense-gaps-only-threats"
           />
+          {scope.threatMode === 'NONE' && (
+            <Typography id="defense-gaps-only-threats-reason" variant="caption" color="text.secondary" component="p">
+              {t_i18n('Choose threats in the scope first')}
+            </Typography>
+          )}
         </Box>
         <SearchInput variant="thin" onSubmit={setSearch} />
         <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
