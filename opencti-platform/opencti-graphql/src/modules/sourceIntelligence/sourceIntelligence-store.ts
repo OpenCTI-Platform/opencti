@@ -272,15 +272,15 @@ const LIVE_INCREMENT_SCRIPT = `
     if (params.event_id != null) {
       ctx._source.live_stream_event_id = params.event_id;
     }
-    ctx._source.computed_at = params.now;
     ctx._source.updated_at = params.now;
   }
 `;
 
 /**
  * Apply the streaming increments of one stream batch on the live scorecards, one update per source and period,
- * marked with the last event id of the batch. Counters only: ratios and medians stay as computed by the last full
- * recomputation, which also corrects any drift of the counters.
+ * marked with the last event id of the batch. Volume and signal counters only: the counts depending on the whole
+ * knowledge (noise, uniqueness, corroboration, accuracy, actionable objects), ratios, medians and `computed_at` stay as
+ * set by the last full recomputation, which also corrects any drift of the counters; `updated_at` is the live update.
  */
 export const applyLiveIncrements = async (
   context: AuthContext,

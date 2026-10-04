@@ -173,10 +173,11 @@ const TREND_METRICS: Array<{ key: string; label: string; type: ScorecardMetricTy
 const TREND_DAYS = 90;
 const RECOMMENDATIONS_ANCHOR = 'source-recommendations';
 
+// The daily computation sets the score and the ratios; between two computations only volumes and signals move
 const SCORED_WINDOW_SENTENCES: Record<ScorecardPeriod, string> = {
-  LAST_7_DAYS: 'Scored over the last 7 days, refreshed {time}.',
-  LAST_30_DAYS: 'Scored over the last 30 days, refreshed {time}.',
-  LAST_90_DAYS: 'Scored over the last 90 days, refreshed {time}.',
+  LAST_7_DAYS: 'Value score and ratios of the last 7 days computed {time}; volumes and signals follow the knowledge since.',
+  LAST_30_DAYS: 'Value score and ratios of the last 30 days computed {time}; volumes and signals follow the knowledge since.',
+  LAST_90_DAYS: 'Value score and ratios of the last 90 days computed {time}; volumes and signals follow the knowledge since.',
 };
 
 interface MetricTileProps {
