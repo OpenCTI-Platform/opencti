@@ -305,6 +305,7 @@ const SOURCE_RECOMMENDATION_DEFINITION: ModuleDefinition<StoreEntitySourceRecomm
     longText('rationale', 'Rationale'),
     json('payload', 'Recommendation payload'),
     json('evidence', 'Evidence'),
+    json('named_authors', 'Named author sources'),
     json('revert_payload', 'Revert payload'),
     longText('apply_result', 'Apply result'),
     longText('error_message', 'Apply error'),

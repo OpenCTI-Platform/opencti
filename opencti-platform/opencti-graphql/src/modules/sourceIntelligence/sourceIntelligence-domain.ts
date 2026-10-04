@@ -190,15 +190,20 @@ export const requestSourceIntelligenceRecompute = async (context: AuthContext, u
 // endregion
 
 // region sources access
+// Identities among the given ones that the user can access: an identity that cannot be read any more is not part of it
+const accessibleIdentityIds = async (context: AuthContext, user: AuthUser, identityIds: string[]) => {
+  const ids = Array.from(new Set(identityIds.filter((id) => !!id)));
+  if (ids.length === 0) {
+    return new Set<string>();
+  }
+  const accessible = await internalFindByIds(context, user, ids, { baseData: true, baseFields: ['internal_id'] }) as unknown as BasicStoreEntity[];
+  return new Set(accessible.map((element) => element.internal_id));
+};
+
 const sourceVisibleIds = async (context: AuthContext, user: AuthUser, sources: BasicStoreEntitySource[]) => {
   // Author sources reference identities that can be restricted by markings or organizations: the source stays visible
   // (counts only) but its name is masked for users who cannot access the identity.
-  const authorRefIds = sources.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.ref_id);
-  if (authorRefIds.length === 0) {
-    return new Set<string>();
-  }
-  const accessible = await internalFindByIds(context, user, authorRefIds, { baseData: true, baseFields: ['internal_id'] }) as unknown as BasicStoreEntity[];
-  return new Set(accessible.map((element) => element.internal_id));
+  return accessibleIdentityIds(context, user, sources.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.ref_id));
 };
 
 export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(context: AuthContext, user: AuthUser, sources: T[]): Promise<T[]> => {
@@ -223,14 +228,67 @@ const parseJsonRecord = (value: string | null | undefined): Record<string, unkno
   }
 };
 
+interface RecommendationTexts {
+  source_id?: string | null;
+  payload?: string | null;
+  named_authors?: string | null;
+}
+
+interface NamedAuthor {
+  ref_id: string;
+  name: string;
+}
+
+const parseNamedAuthors = (value: string | null | undefined): NamedAuthor[] => {
+  try {
+    const parsed = value ? JSON.parse(value) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((author) => author && typeof author.ref_id === 'string' && typeof author.name === 'string' && author.name.length > 0)
+      : [];
+  } catch {
+    return [];
+  }
+};
+
 /**
- * Names of the author sources a recommendation refers to (its source, and the peer source of a redundancy) that the
- * user cannot access. Recommendations persist these names in their texts at proposal time.
+ * Author sources a recommendation names in its texts (its source, and the peer source of a redundancy): the ones it
+ * recorded when its texts were written, and its sources as they are now (the given ones first, then the cache).
+ */
+const namedAuthorsOf = async (context: AuthContext, recommendation: RecommendationTexts, knownSources: BasicStoreEntitySource[] = []) => {
+  const peerSourceId = parseJsonRecord(recommendation.payload).peer_source_id;
+  const sourceIds = [recommendation.source_id, typeof peerSourceId === 'string' ? peerSourceId : null].filter((id): id is string => !!id);
+  const sourcesById = sourceIds.length > 0
+    ? await getEntitiesMapFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE)
+    : new Map<string, BasicStoreEntitySource>();
+  const known = new Map(knownSources.map((source) => [source.internal_id, source]));
+  const current = sourceIds
+    .map((id) => known.get(id) ?? sourcesById.get(id))
+    .filter((source): source is BasicStoreEntitySource => source !== undefined && source.source_kind === SOURCE_KIND_AUTHOR && !!source.name)
+    .map((source) => ({ ref_id: source.ref_id, name: source.name }));
+  const named = new Map<string, NamedAuthor>();
+  [...parseNamedAuthors(recommendation.named_authors), ...current].forEach((author) => {
+    named.set(JSON.stringify([author.ref_id, author.name]), author);
+  });
+  return Array.from(named.values());
+};
+
+/**
+ * Value of `named_authors` to store with texts written now: the authors already recorded plus the current names of the
+ * recommendation's author sources, so a later rename or removal of the source never unmasks a name the texts kept.
+ */
+export const recordNamedAuthors = async (context: AuthContext, recommendation: RecommendationTexts, knownSources: BasicStoreEntitySource[] = []) => {
+  return JSON.stringify(await namedAuthorsOf(context, recommendation, knownSources));
+};
+
+/**
+ * Names a recommendation's texts may quote for authors the user cannot access: every name recorded when the texts were
+ * written and the current names of its author sources. Access is checked on the author identity itself, so a renamed or
+ * removed source stays masked, and an identity that cannot be read any more keeps its names masked.
  */
 export const restrictedRecommendationNames = (
   context: AuthContext,
   user: AuthUser,
-  recommendation: { internal_id: string; source_id?: string | null; payload?: string | null },
+  recommendation: RecommendationTexts & { internal_id: string },
 ): Promise<string[]> => {
   let memo = restrictedNamesByContext.get(context);
   if (!memo) {
@@ -242,20 +300,12 @@ export const restrictedRecommendationNames = (
     return cached;
   }
   const resolution = (async () => {
-    const peerSourceId = parseJsonRecord(recommendation.payload).peer_source_id;
-    const sourceIds = [recommendation.source_id, typeof peerSourceId === 'string' ? peerSourceId : null].filter((id): id is string => !!id);
-    if (sourceIds.length === 0) {
-      return [];
-    }
-    const sourcesById = await getEntitiesMapFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
-    const authors = sourceIds
-      .map((id) => sourcesById.get(id))
-      .filter((source): source is BasicStoreEntitySource => source !== undefined && source.source_kind === SOURCE_KIND_AUTHOR);
+    const authors = await namedAuthorsOf(context, recommendation);
     if (authors.length === 0) {
       return [];
     }
-    const accessible = await sourceVisibleIds(context, user, authors);
-    return authors.filter((source) => !accessible.has(source.ref_id) && !!source.name).map((source) => source.name);
+    const accessible = await accessibleIdentityIds(context, user, authors.map((author) => author.ref_id));
+    return Array.from(new Set(authors.filter((author) => !accessible.has(author.ref_id)).map((author) => author.name)));
   })();
   memo.set(recommendation.internal_id, resolution);
   return resolution;
@@ -265,7 +315,8 @@ export const maskRestrictedNames = (text: string | null | undefined, names: stri
   if (!text || names.length === 0) {
     return text;
   }
-  return names.reduce((masked, name) => masked.split(name).join(RESTRICTED_AUTHOR_NAME), text);
+  // Longest first: a name containing another one (a former name extended by a rename) is masked whole
+  return [...names].sort((a, b) => b.length - a.length).reduce((masked, name) => masked.split(name).join(RESTRICTED_AUTHOR_NAME), text);
 };
 
 const maskJsonValue = (value: unknown, names: string[]): unknown => {

@@ -167,6 +167,8 @@ A revert works the same way: while it runs, the recommendation shows **Reverting
 
 While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed. Feed data already waiting to be processed for the closed draft goes to the new quarantine draft as well.
 
+Recommendations quote the names of the sources they are about. For an author you cannot access (because of its markings or organization restrictions), the name shows as **Restricted** in every text of the recommendation, including recommendations proposed before the author was renamed or stopped being tracked.
+
 A recommendation that no longer matches the situation is withdrawn automatically. Every application, rejection and revert is recorded in the [activity logs](../administration/audit/configuration.md).
 
 ### Autonomy policy

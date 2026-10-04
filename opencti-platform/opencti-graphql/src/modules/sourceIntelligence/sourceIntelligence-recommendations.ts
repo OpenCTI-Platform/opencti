@@ -93,7 +93,7 @@ import {
   type RuleSourceUser,
   SCHEDULE_CONFIGURATION_KEY,
 } from './sourceIntelligence-rules';
-import { buildResolverFromSources, clearDisabledSourcesLiveData } from './sourceIntelligence-domain';
+import { buildResolverFromSources, clearDisabledSourcesLiveData, recordNamedAuthors } from './sourceIntelligence-domain';
 import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
@@ -685,7 +685,8 @@ const applyLockedRecommendation = async (
   }
   let element;
   try {
-    ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch));
+    const namedAuthors = await recordNamedAuthors(context, recommendation, source ? [source] : []);
+    ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...patch, named_authors: namedAuthors }));
   } catch (persistError) {
     // The action ran but could not be recorded: it is undone, and the recommendation goes back to its previous status
     // only once nothing of it is left; otherwise it stays applying, which no retry applies again
@@ -766,7 +767,8 @@ const revertLockedRecommendation = async (context: AuthContext, user: AuthUser, 
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation revert failed', { cause: err, id, kind: recommendation.recommendation_kind });
     patch = { recommendation_status: RECOMMENDATION_STATUS_REVERTING, error_message: err?.message ?? String(err) };
   }
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
+  const namedAuthors = await recordNamedAuthors(context, recommendation, source ? [source] : []);
+  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...patch, named_authors: namedAuthors });
   const reverted = patch.recommendation_status === RECOMMENDATION_STATUS_REVERTED;
   await publishUserAction({
     user,
@@ -830,11 +832,13 @@ const loadAllRecommendations = async (context: AuthContext) => {
 };
 
 const createProposal = async (context: AuthContext, proposal: RecommendationProposal, nowIso: string) => {
+  const payload = JSON.stringify(proposal.payload);
   const recommendation = await createEntity(context, SOURCE_INTELLIGENCE_MANAGER_USER, {
     name: proposal.name,
     rationale: proposal.rationale,
-    payload: JSON.stringify(proposal.payload),
+    payload,
     evidence: JSON.stringify(proposal.evidence),
+    named_authors: await recordNamedAuthors(context, { source_id: proposal.source_id, payload }),
     recommendation_kind: proposal.kind,
     recommendation_status: RECOMMENDATION_STATUS_PROPOSED,
     source_id: proposal.source_id,
@@ -927,7 +931,8 @@ export const upsertProposals = async (
     };
     if (current && ACTIVE_STATUSES.includes(current.recommendation_status as typeof ACTIVE_STATUSES[number])) {
       if (current.recommendation_status === RECOMMENDATION_STATUS_PROPOSED) {
-        await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, current.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, fields);
+        const namedAuthors = await recordNamedAuthors(context, { source_id: current.source_id, payload: fields.payload, named_authors: current.named_authors });
+        await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, current.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...fields, named_authors: namedAuthors });
       }
       continue;
     }

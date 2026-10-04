@@ -287,6 +287,8 @@ interface SourceRecommendationFields {
   payload: string;
   // JSON snapshot of the metrics that triggered the recommendation
   evidence: string;
+  // JSON list of the author sources its texts name ({ ref_id, name }), with every name the texts were written with
+  named_authors?: string | null;
   // JSON snapshot of the state before apply, used to revert
   revert_payload?: string | null;
   apply_result?: string | null;
