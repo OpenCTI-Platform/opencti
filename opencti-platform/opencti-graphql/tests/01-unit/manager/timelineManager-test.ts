@@ -64,8 +64,10 @@ describe('Timeline consistency pass schedule', () => {
   const at = (iso: string) => Date.parse(iso);
 
   it('should run once a day after the configured hour', () => {
-    expect(isTimelineConsistencyPassDue(null, at('2026-10-03T01:00:00.000Z'), 2)).toBe(false);
+    // The first pass (backfill of an existing platform) never waits for the scheduled hour
+    expect(isTimelineConsistencyPassDue(null, at('2026-10-03T01:00:00.000Z'), 2)).toBe(true);
     expect(isTimelineConsistencyPassDue(null, at('2026-10-03T02:00:00.000Z'), 2)).toBe(true);
+    expect(isTimelineConsistencyPassDue(at('2026-10-03T00:30:00.000Z'), at('2026-10-03T01:00:00.000Z'), 2)).toBe(false);
     expect(isTimelineConsistencyPassDue(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T03:00:00.000Z'), 2)).toBe(true);
     expect(isTimelineConsistencyPassDue(at('2026-10-03T02:00:05.000Z'), at('2026-10-03T23:00:00.000Z'), 2)).toBe(false);
   });

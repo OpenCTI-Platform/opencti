@@ -104,7 +104,7 @@ When the case holds no dated knowledge yet, the Timeline tab explains what fills
 
 ### Live updates
 
-The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects. A nightly consistency pass also regenerates the timelines of the cases changed since the previous pass, and of those not regenerated for 30 days. Users who can update the case can also use **Regenerate the timeline**.
+The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects. A nightly consistency pass also regenerates the timelines of the cases changed since the previous pass, and of those not regenerated for 30 days. After an upgrade, the first pass runs as soon as the platform starts and computes the timelines of the existing incidents and cases progressively, in the background. Users who can update the case can also use **Regenerate the timeline**.
 
 ### Event details
 

@@ -162,7 +162,7 @@ export const timelineStreamEventsHandler = async (context: AuthContext, streamEv
 const resolveStreamStart = async (): Promise<string> => {
   const state = await redisGetManagerEventState(TIMELINE_MANAGER_STATE);
   if (state) return state;
-  // First start: listen from now on, the existing containers are backfilled by migration and consistency pass. When the
+  // First start: listen from now on, the existing containers are backfilled by the first consistency pass. When the
   // stream position cannot be read, the error stops this run and the next run retries: never replay the whole stream
   const info = await fetchStreamInfo();
   return info.lastEventId ?? '0-0';
@@ -199,12 +199,17 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
   }, { concurrency: TIMELINE_MANAGER_MAX_CONCURRENCY });
 };
 
-/** Once a day, the timeline containers that may be stale are scheduled for regeneration (spread by the queue batch size). */
+/**
+ * Once a day, the timeline containers that may be stale are scheduled for regeneration (spread by the queue batch size).
+ * The very first pass runs at the first manager run: it is the backfill of the incidents and cases of an existing
+ * platform (all never computed), scheduled in the background so that the startup never waits for it.
+ */
 export const isTimelineConsistencyPassDue = (lastRun: number | null, nowTime: number, hour: number): boolean => {
+  if (lastRun === null) return true;
   const today = new Date(nowTime);
   const scheduled = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), hour);
   if (nowTime < scheduled) return false;
-  return lastRun === null || lastRun < scheduled;
+  return lastRun < scheduled;
 };
 
 /**
