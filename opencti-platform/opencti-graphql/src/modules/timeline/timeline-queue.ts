@@ -27,19 +27,28 @@ export const TIMELINE_CLAIM_LEASE_MS = conf.get('timeline_manager:claim_lease_ms
 const RECLAIM_BATCH = 1000;
 
 // One atomic step: expired leases go back to the queue (a newer schedule keeps its due time), then the due
-// containers move from the queue to the in-flight set. A schedule added while a claim runs is never absorbed by it.
+// containers move from the queue to the in-flight set. A schedule added while a claim runs is never absorbed by it:
+// a container still in flight under its lease stays queued until that claim is acknowledged or expires, so it is never
+// regenerated twice at once and no acknowledgement removes the lease of a later claim. The due range is read past the
+// in-flight members it skips, so that a batch still fills up to its limit.
 const CLAIM_DUE_SCRIPT = `
 local expired = redis.call('ZRANGEBYSCORE', KEYS[2], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[4]))
 for _, id in ipairs(expired) do
   redis.call('ZREM', KEYS[2], id)
   redis.call('ZADD', KEYS[1], 'NX', ARGV[1], id)
 end
-local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[2]))
+local limit = tonumber(ARGV[2])
+local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, limit + redis.call('ZCARD', KEYS[2]))
+local claimed = {}
 for _, id in ipairs(due) do
-  redis.call('ZREM', KEYS[1], id)
-  redis.call('ZADD', KEYS[2], ARGV[3], id)
+  if #claimed >= limit then break end
+  if not redis.call('ZSCORE', KEYS[2], id) then
+    redis.call('ZREM', KEYS[1], id)
+    redis.call('ZADD', KEYS[2], ARGV[3], id)
+    table.insert(claimed, id)
+  end
 end
-return due
+return claimed
 `;
 
 /**

@@ -31,13 +31,15 @@ vi.mock('../../../../src/database/redis', () => ({
       return 1;
     },
     zrem: async (_key: string, id: string) => (inFlight.delete(id) ? 1 : 0),
-    // The claim script: expired leases back to the queue (NX), then the due members, at most `limit`, moved in flight
+    // The claim script: expired leases back to the queue (NX), then the due members not in flight, at most `limit`,
+    // moved in flight
     eval: async (_script: string, _numKeys: number, _queueKey: string, _inFlightKey: string, max: number, limit: number, leaseEnd: number) => {
       [...inFlight.entries()].filter(([, end]) => end <= max).forEach(([id]) => {
         inFlight.delete(id);
         if (!queue.has(id)) queue.set(id, max);
       });
-      const due = [...queue.entries()].filter(([, score]) => score <= max).sort((a, b) => a[1] - b[1]).slice(0, limit).map(([id]) => id);
+      const due = [...queue.entries()].filter(([id, score]) => score <= max && !inFlight.has(id))
+        .sort((a, b) => a[1] - b[1]).slice(0, limit).map(([id]) => id);
       due.forEach((id) => {
         queue.delete(id);
         inFlight.set(id, leaseEnd);
@@ -71,6 +73,8 @@ describe('Timeline regeneration queue', () => {
       const due = queue.get('case-1') as number;
       expect(due).toBeGreaterThanOrEqual(before + retryDelayMs(attempt));
       expect(await claimDueTimelineRegenerations(10)).toEqual(retryDelayMs(attempt) === 0 ? ['case-1'] : []);
+      // Like the manager: the claim of the failed attempt is acknowledged once its retry is scheduled
+      await acknowledgeTimelineRegeneration('case-1');
       queue.delete('case-1');
     }
     expect(await retryTimelineRegeneration('case-1')).toBe(false);
@@ -96,6 +100,19 @@ describe('Timeline regeneration queue', () => {
     expect(await claimDueTimelineRegenerations(10)).toEqual([]);
     await acknowledgeTimelineRegeneration('case-3');
     expect(inFlight.has('case-3')).toBe(false);
+  });
+
+  it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {
+    await enqueueTimelineRegeneration(['case-5'], 0);
+    expect(await claimDueTimelineRegenerations(10)).toEqual(['case-5']);
+    const lease = inFlight.get('case-5');
+    // A change while the regeneration runs: the new schedule waits, the running lease is left untouched
+    await enqueueTimelineRegeneration(['case-5'], 0);
+    expect(await claimDueTimelineRegenerations(10)).toEqual([]);
+    expect(queue.has('case-5')).toBe(true);
+    expect(inFlight.get('case-5')).toEqual(lease);
+    await acknowledgeTimelineRegeneration('case-5');
+    expect(await claimDueTimelineRegenerations(10)).toEqual(['case-5']);
   });
 
   it('should hand out again a claim whose lease expired before it was acknowledged', async () => {
