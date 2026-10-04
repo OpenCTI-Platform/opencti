@@ -1039,6 +1039,23 @@ const sameKeys = (stored: string[] | undefined, keys: string[]) => {
   return current.length === keys.length && keys.every((key) => current.includes(key));
 };
 
+type PulsePreviewScanState = Pick<PulseOperationalState, 'preview_refresh_at' | 'preview_offset' | 'preview_digest_day'>;
+
+// Whether a preview pass runs now: once per refresh interval, and at every manager cycle while a scan has not covered
+// the scope yet, so that a large platform is covered within the day of its digest.
+export const isPulsePreviewPassDue = (state: PulsePreviewScanState, now: number, intervalMs: number, force = false) => {
+  return force || state.preview_offset !== undefined || !state.preview_refresh_at || now - Date.parse(state.preview_refresh_at) >= intervalMs;
+};
+
+// Where a preview pass starts: where the scan stopped while the digest day is the one it started with, from the start
+// otherwise - an object never keeps the signal of an older digest once the scan covered the scope.
+export const pulsePreviewPassOffset = (state: PulsePreviewScanState, digestDay: string) => {
+  if (state.preview_offset === undefined || state.preview_digest_day !== digestDay) {
+    return 0;
+  }
+  return Math.max(0, Number(state.preview_offset) || 0);
+};
+
 /**
  * The preview: zero outbound. The digest (the most prevalent published keys of the community, with their prevalence
  * and trend) is downloaded, the keys of the platform's own objects are computed locally and matched, and the coarse
@@ -1052,7 +1069,7 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   if (access !== PulseAccess.Preview || !platform) {
     return 0;
   }
-  if (!force && state.preview_refresh_at && Date.now() - Date.parse(state.preview_refresh_at) < REFRESH_INTERVAL_MS) {
+  if (!isPulsePreviewPassDue(state, Date.now(), REFRESH_INTERVAL_MS, force)) {
     return 0;
   }
   const day = utcDay();
@@ -1064,9 +1081,12 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   });
   const trendingRefs = new Set(decodeHubItems(salt, digest.trending.items).map(({ item, key }) => `${item.object_type}|${key}`));
   const updatedAt = new Date();
-  // A pass handles up to PREVIEW_MAX_ENTITIES objects; the next one goes on after them and starts over once the
-  // scope is covered, so that every object in scope is matched on a large platform.
-  const offset = Math.max(0, Number(state.preview_offset ?? 0) || 0);
+  // A pass handles up to PREVIEW_MAX_ENTITIES objects; the next one goes on after them with the same digest day and
+  // starts over once the scope is covered, so that every object in scope is matched on a large platform.
+  const offset = pulsePreviewPassOffset(state, digest.day);
+  if (offset === 0 && state.preview_offset !== undefined) {
+    logApp.info('[THREAT PULSE] A new digest day started before the preview scan covered the scope, the scan starts over', { from: state.preview_digest_day, to: digest.day });
+  }
   let scanned = 0;
   let handled = 0;
   let matched = 0;
