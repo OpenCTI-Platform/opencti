@@ -166,7 +166,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
             </Button>
           )}
         </Box>
-        {!mergeRecord.is_reversible && mergeRecord.merge_status !== 'reverted' && (
+        {!mergeRecord.is_reversible && mergeRecord.merge_status !== 'reverted' && !mergeRecord.irreversible_reason && (
           <Typography variant="caption" color={theme.palette.text.light} data-testid="merge-record-reversibility">
             {t_i18n('This merge could be undone until {date}.', { values: { date: fldt(mergeRecord.reversible_until) } })}
           </Typography>
@@ -179,7 +179,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
         </div>
         <div>
           <Label>{t_i18n('Reversible until')}</Label>
-          <Typography variant="body2">{fldt(mergeRecord.reversible_until)}</Typography>
+          <Typography variant="body2">{mergeRecord.irreversible_reason ? '-' : fldt(mergeRecord.reversible_until)}</Typography>
         </div>
         <div>
           <Label>{t_i18n('Relationships redirected')}</Label>

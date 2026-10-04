@@ -15,11 +15,11 @@ import {
   storeLoadByIdWithRefs,
   updateAttribute,
 } from '../../database/middleware';
-import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
 import { ES_DEFAULT_PAGINATION } from '../../database/engine';
 import { lockResources } from '../../lock/master-lock';
 import { getDraftContext } from '../../utils/draftContext';
-import { SYSTEM_USER } from '../../utils/access';
+import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -382,10 +382,31 @@ export const findMergeRecordById = async (context: AuthContext, user: AuthUser, 
 
 const MAX_PAGE_REFILLS = 5;
 
-/** A page of records the user may read: pages emptied by the participant check are refilled from the next ones. */
+/** How many of the records matching the query the user may read, so the count never includes the hidden ones. */
+const countReadableRecords = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
+  let count = 0;
+  await fullEntitiesList<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], {
+    ...R.omit(['first', 'after', 'orderBy', 'orderMode'], opts),
+    baseData: true,
+    baseFields: ['merge_target_id', 'merge_source_ids'],
+    callback: async (records: BasicStoreEntityMergeRecord[]) => {
+      count += (await withReadableParticipants(context, user, records)).length;
+    },
+  } as EntityOptions<BasicStoreEntityMergeRecord>);
+  return count;
+};
+
+/**
+ * A page of records the user may read: pages emptied by the participant check are refilled from the next ones, the
+ * cursor is the one of the last record returned and the count only includes readable records.
+ */
 export const findMergeRecordsPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
+  if (isBypassUser(user)) {
+    return pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], opts);
+  }
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
   const edges: BasicConnection<BasicStoreEntityMergeRecord>['edges'] = [];
+  const globalCount = await countReadableRecords(context, user, opts);
   let connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], { ...opts, first });
   for (let refill = 0; ; refill += 1) {
     const readable = new Set(await withReadableParticipants(context, user, connection.edges.map((edge) => edge.node)));
@@ -398,7 +419,7 @@ export const findMergeRecordsPaginated = async (context: AuthContext, user: Auth
     if (isFull || !connection.pageInfo.hasNextPage || refill >= MAX_PAGE_REFILLS) {
       const endCursor = isFull ? edges[edges.length - 1].cursor : (pageEdges[pageEdges.length - 1]?.cursor ?? connection.pageInfo.endCursor);
       const hasNextPage = isFull ? (moreInPage || connection.pageInfo.hasNextPage) : connection.pageInfo.hasNextPage;
-      return { edges, pageInfo: { ...connection.pageInfo, endCursor, hasNextPage } };
+      return { edges, pageInfo: { ...connection.pageInfo, endCursor, hasNextPage, globalCount } };
     }
     connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], {
       ...opts,
