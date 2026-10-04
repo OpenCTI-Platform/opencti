@@ -84,7 +84,7 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 
 ## Overview layout
 
-On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**:
+On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**, next to **Tasks** on cases and **Latest created relationships** on incidents. **Most recent history** takes a whole row further down, so every row of the overview stays full:
 
 ![Timeline widget on the overview of an incident response, next to Tasks](assets/case-timeline-overview-widget.png)
 
@@ -94,9 +94,9 @@ Administrators arrange it like the other widgets in **Settings > Customization >
 - switch on **Full width** to give it the whole row;
 - switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at its default width, half of the row.
 
-![Overview layout of incident responses: the Timeline row after Basic information, External references hidden](assets/case-timeline-overview-layout.png)
+![Overview layout of incident responses: the Timeline row after Basic information, Most recent history hidden](assets/case-timeline-overview-layout.png)
 
-An overview layout customized before the timeline existed shows the strip right after **Basic information**, on half of the row, until an administrator moves, resizes or hides it.
+An overview layout customized before the timeline existed shows the strip right after **Basic information**, on half of the row, until an administrator moves, resizes or hides it. If a widget further down is then alone on its row, switch on **Full width** for it; the preview of the **Overview layout** tab shows the result.
 
 The Timeline tab is the timeline of the case. The **Timeline** mode of the **Knowledge** tab is a different view: it places the relationships of the knowledge graph of the case on a time axis, and stays available unchanged next to the graph, correlation and matrix modes.
 

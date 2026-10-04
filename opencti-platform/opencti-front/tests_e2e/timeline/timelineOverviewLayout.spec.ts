@@ -62,10 +62,14 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     await expect(page.getByTestId('overview-layout-widget-timeline')).toBeVisible();
     await expect(displayTimeline).toBeChecked();
     await expect(fullWidthTimeline).not.toBeChecked();
-    const displayReferences = page.getByRole('switch', { name: 'Display External references', exact: true });
-    await displayReferences.click();
-    await expect(displayReferences).not.toBeChecked();
-    await expect(page.getByRole('switch', { name: 'Show External references at full width', exact: true })).toBeDisabled();
+    // Most recent history takes the row below External references, so every row of the default layout is full
+    const fullWidthHistory = page.getByRole('switch', { name: 'Show Most recent history at full width', exact: true });
+    await expect(fullWidthHistory).toBeChecked();
+    await expect(page.getByRole('switch', { name: 'Show External references at full width', exact: true })).not.toBeChecked();
+    const displayHistory = page.getByRole('switch', { name: 'Display Most recent history', exact: true });
+    await displayHistory.click();
+    await expect(displayHistory).not.toBeChecked();
+    await expect(fullWidthHistory).toBeDisabled();
     await capture('overview-layout');
     // endregion
 
@@ -89,7 +93,7 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     await captureOverview(page, testInfo, 'overview-widget-light');
     await page.goto(LAYOUT_URL);
     await expect(page.getByTestId('overview-layout-widget-timeline')).toBeVisible();
-    await expect(displayReferences).not.toBeChecked();
+    await expect(displayHistory).not.toBeChecked();
     await capture('overview-layout-light');
     await setUserTheme(request, null);
     lightTheme = false;

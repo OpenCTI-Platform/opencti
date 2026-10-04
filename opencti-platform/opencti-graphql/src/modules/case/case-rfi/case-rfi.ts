@@ -34,7 +34,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi, Sti
     { key: 'observables', width: 6, label: 'Observables' },
     { key: 'relatedEntities', width: 6, label: 'Related entities' },
     { key: 'externalReferences', width: 6, label: 'External references' },
-    { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+    { key: 'mostRecentHistory', width: 12, label: 'Most recent history' },
     { key: 'notes', width: 12, label: 'Notes about this entity' },
   ],
   attributes: [

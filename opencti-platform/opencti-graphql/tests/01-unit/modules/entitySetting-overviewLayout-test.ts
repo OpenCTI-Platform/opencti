@@ -12,6 +12,24 @@ import { schemaOverviewLayoutCustomization } from '../../../src/schema/schema-ov
 
 const TIMELINE_WIDGET = { key: 'timeline', width: 6, label: 'Timeline' };
 
+// The overview grid has 12 columns: a widget wider than what remains of a row starts the next row and leaves a gap
+const GRID_COLUMNS = 12;
+const rowGaps = (layout: OverviewLayoutCustomization[]) => {
+  const gaps: string[] = [];
+  let filled = 0;
+  layout.forEach(({ key, width }) => {
+    if (filled + width > GRID_COLUMNS) {
+      gaps.push(`before ${key}`);
+      filled = 0;
+    }
+    filled = (filled + width) % GRID_COLUMNS;
+  });
+  if (filled > 0) {
+    gaps.push('at the end');
+  }
+  return gaps;
+};
+
 const entitySetting = (targetType: string, layout?: OverviewLayoutCustomization[]) => {
   return { target_type: targetType, overview_layout_customization: layout } as BasicStoreEntityEntitySetting;
 };
@@ -38,6 +56,12 @@ describe('Overview layout of the timeline containers', () => {
       expect(basicInformation).toBeGreaterThan(0);
       expect(defaultLayout[basicInformation + 1]).toEqual(TIMELINE_WIDGET);
       expect(defaultLayout.filter(({ key }) => key === TIMELINE_WIDGET.key)).toHaveLength(1);
+    });
+  });
+
+  it('fills every row of the default layout of every timeline container type, without a widget alone on half of a row', () => {
+    TIMELINE_CONTAINER_TYPES.forEach((type) => {
+      expect(rowGaps(schemaOverviewLayoutCustomization.get(type) ?? []), type).toEqual([]);
     });
   });
 

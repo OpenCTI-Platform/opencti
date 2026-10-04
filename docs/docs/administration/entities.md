@@ -134,4 +134,4 @@ The widgets can be reordered, extended to their full width, or hidden: switch of
 
 To reset the layout to its default version, click the button next to the section title.
 
-When a new version of OpenCTI adds a widget to the overview of an entity type, a layout customized before the upgrade shows it where the default layout places it, after the widget that precedes it by default. For example, the **Timeline** of incidents and cases comes right after **Basic information**, on half of the row (see [Incident and case timeline](../usage/case-timeline.md#overview-layout)).
+When a new version of OpenCTI adds a widget to the overview of an entity type, a layout customized before the upgrade shows it where the default layout places it, after the widget that precedes it by default. For example, the **Timeline** of incidents and cases comes right after **Basic information**, on half of the row (see [Incident and case timeline](../usage/case-timeline.md#overview-layout)). If the new widget leaves another one alone on its row, switch on **Full width** for that widget.
