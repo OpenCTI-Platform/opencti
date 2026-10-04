@@ -241,17 +241,17 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     if (label) frameLabels.current.push(label);
   };
 
-  /** To call before a frame: forgets the labels of the previous one. */
+  /** To call before a frame: forgets the labels of the previous one, reusing the same buffers. */
   const framePrePaint = () => {
-    frameLabels.current = [];
-    frameNodeBoxes.current = [];
+    frameLabels.current.length = 0;
+    frameNodeBoxes.current.length = 0;
   };
 
   /** To call after a frame: draws the link labels that do not overlap. */
   const framePostPaint = (ctx: CanvasRenderingContext2D, globalScale: number) => {
     paintLinkLabels(ctx, frameLabels.current, { palette, globalScale, obstacles: frameNodeBoxes.current });
-    frameLabels.current = [];
-    frameNodeBoxes.current = [];
+    frameLabels.current.length = 0;
+    frameNodeBoxes.current.length = 0;
   };
 
   /**

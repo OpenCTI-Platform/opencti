@@ -33,7 +33,7 @@ describe('GraphToolbar', () => {
     renderToolbar();
     const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
     expect(within(toolbar).getByRole('group', { name: 'Graph summary' })).toBeInTheDocument();
-    ['View', 'Layout', 'Selection', 'Filters', 'Export', 'Help'].forEach((name) => {
+    ['View', 'Layout', 'Selection', 'Creation and removal', 'Filters', 'Export', 'Help'].forEach((name) => {
       expect(within(toolbar).getByRole('group', { name })).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: 'Fit the whole graph' })).toHaveAttribute('aria-keyshortcuts', 'F');

@@ -358,22 +358,28 @@ const Graph = ({
 
   useEffect(() => {
     readerMoved.current = false;
+    let framing: ReturnType<typeof setTimeout> | undefined;
     // A short timeout to be sure graph is ready.
-    setTimeout(() => {
-      if (!isLoadingData) {
-        initForces();
-        if (withForces) applyForces();
+    const init = setTimeout(() => {
+      if (isLoadingData) return;
+      initForces();
+      if (withForces) applyForces();
 
-        // Another short timeout to wait forces to be applied
-        setTimeout(() => {
-          if (zoom) setZoom(zoom);
-          else {
-            zoomToFit();
-            frameWhenSettled.current = withForces && !readerMoved.current;
-          }
-        }, 1000);
-      }
+      // Another short timeout to wait forces to be applied
+      framing = setTimeout(() => {
+        if (readerMoved.current) return;
+        if (zoom) setZoom(zoom);
+        else {
+          zoomToFit();
+          frameWhenSettled.current = withForces;
+        }
+      }, 1000);
     }, 100);
+    return () => {
+      clearTimeout(init);
+      clearTimeout(framing);
+      frameWhenSettled.current = false;
+    };
   }, [mode3D, isLoadingData]);
 
   const selectedEntities = [...selectedLinks, ...selectedNodes];

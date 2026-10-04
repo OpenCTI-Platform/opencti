@@ -38,8 +38,15 @@ const GAP_PX = 4;
 const SEARCH_WIDTH = 220;
 
 /** Pinned parts never move to the "More actions" menu: their width is measured, the rest is planned. */
-const Pinned = ({ children, style }: { children: ReactNode; style?: React.CSSProperties }) => (
-  <div data-toolbar-pinned="" style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, flexShrink: 0, ...style }}>{children}</div>
+const Pinned = ({ children, style, label }: { children: ReactNode; style?: React.CSSProperties; label?: string }) => (
+  <div
+    data-toolbar-pinned=""
+    role={label ? 'group' : undefined}
+    aria-label={label}
+    style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, flexShrink: 0, ...style }}
+  >
+    {children}
+  </div>
 );
 
 const GroupDivider = () => <Divider orientation="vertical" aria-hidden sx={{ height: 24, marginX: 1, flexShrink: 0 }} />;
@@ -198,7 +205,7 @@ const GraphToolbar = ({
         {editable && (
           <>
             <GroupDivider />
-            <Pinned>
+            <Pinned label={t_i18n('Creation and removal')}>
               {context === 'investigation' && (
                 <GraphToolbarExpandTools
                   onInvestigationExpand={onInvestigationExpand}

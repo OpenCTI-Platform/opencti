@@ -59,6 +59,7 @@ const useGraphInteractions = () => {
     disabledMarkings,
     disabledCreators,
     selectedNodes,
+    selectedLinks,
     layoutMode,
     hiddenNodeIds = [],
     collapsedEntityTypes = [],
@@ -119,10 +120,18 @@ const useGraphInteractions = () => {
     setGraphStateProp('showLegend', !showLegend);
   };
 
+  /** Whether the link has an end among the given nodes. */
+  const touches = (link: GraphLink, isGone: (nodeId: string) => boolean) => [
+    endpointId(link.source) ?? link.source_id,
+    endpointId(link.target) ?? link.target_id,
+  ].some((nodeId) => !!nodeId && isGone(nodeId));
+
   const hideNodes = (nodeIds: string[]) => {
     if (nodeIds.length === 0) return;
     setGraphStateProp('hiddenNodeIds', [...new Set([...hiddenNodeIds, ...nodeIds])]);
     setGraphStateProp('selectedNodes', selectedNodes.filter((n) => !nodeIds.includes(n.id)));
+    // The relationships of a hidden entity are no longer drawn: they leave the selection with it.
+    setGraphStateProp('selectedLinks', selectedLinks.filter((link) => !touches(link, (id) => nodeIds.includes(id))));
   };
 
   const showHiddenNodes = () => {
@@ -136,7 +145,10 @@ const useGraphInteractions = () => {
       collapsing ? [...collapsedEntityTypes, type] : collapsedEntityTypes.filter((t) => t !== type),
     );
     if (collapsing) {
-      setGraphStateProp('selectedNodes', selectedNodes.filter((n) => n.entity_type !== type));
+      const members = new Set((graphData?.nodes ?? []).filter((n) => isCollapsedMember(n, [type])).map((n) => n.id));
+      setGraphStateProp('selectedNodes', selectedNodes.filter((n) => !members.has(n.id)));
+      // The relationships of the members are drawn towards their group: they leave the selection too.
+      setGraphStateProp('selectedLinks', selectedLinks.filter((link) => !touches(link, (id) => members.has(id))));
     }
   };
 
