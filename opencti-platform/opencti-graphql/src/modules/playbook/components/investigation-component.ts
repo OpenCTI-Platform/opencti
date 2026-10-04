@@ -20,12 +20,11 @@ import { filterBundleElements, isBundleElementInScope } from '../playbook-utils'
 import { logApp } from '../../../config/conf';
 import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
-import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { InvestigationRunTrigger } from '../../../generated/graphql';
 import type { StixObject } from '../../../types/stix-2-1-common';
-import { addInvestigationRun } from '../../investigationRun/investigationRun-domain';
+import { addInvestigationRun, resolveRunIdentity } from '../../investigationRun/investigationRun-domain';
 import { ENTITY_TYPE_INVESTIGATION_POLICY, type BasicStoreEntityInvestigationPolicy } from '../../investigationRun/investigationRun-types';
 import { resolveRunAsUserId } from './ai-agent-shared';
 
@@ -113,9 +112,9 @@ export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationCo
     }
     // Like the AI agent components: the configured identity, or the seeded platform admin.
     const runAsUserId = resolveRunAsUserId(run_as) ?? OPENCTI_ADMIN_UUID;
-    const runUser = await resolveUserByIdFromCache(context, runAsUserId);
+    const runUser = await resolveRunIdentity(context, runAsUserId);
     if (!runUser) {
-      logApp.warn('[PLAYBOOK CASE AUTOPILOT] The run-as identity cannot be resolved, no investigation started', { playbookId, runAsUserId });
+      logApp.warn('[PLAYBOOK CASE AUTOPILOT] The run-as identity cannot be resolved or can no longer use the platform, no investigation started', { playbookId, runAsUserId });
       return { output_port: 'out', bundle };
     }
     // One run per subject: addInvestigationRun returns the active run of a subject already investigated.

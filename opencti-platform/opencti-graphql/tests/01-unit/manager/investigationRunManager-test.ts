@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { caseRfiCreationHandler, type CaseRfiHookProgress, isRetryableHookError, nextCaseRfiHookPosition, startCaseRfiHook } from '../../../src/manager/investigationRunManager';
-import { addInvestigationRun } from '../../../src/modules/investigationRun/investigationRun-domain';
-import { resolveUserByIdFromCache } from '../../../src/modules/user/user-domain';
+import { addInvestigationRun, resolveRunIdentity } from '../../../src/modules/investigationRun/investigationRun-domain';
 import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, MissingReferenceError } from '../../../src/config/errors';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -13,11 +12,7 @@ import type { BasicStoreEntityInvestigationPolicy } from '../../../src/modules/i
 vi.mock('../../../src/modules/investigationRun/investigationRun-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../src/modules/investigationRun/investigationRun-domain')>(),
   addInvestigationRun: vi.fn(),
-}));
-
-vi.mock('../../../src/modules/user/user-domain', async (importOriginal) => ({
-  ...await importOriginal<typeof import('../../../src/modules/user/user-domain')>(),
-  resolveUserByIdFromCache: vi.fn(),
+  resolveRunIdentity: vi.fn(),
 }));
 
 const context = { source: 'test' } as unknown as AuthContext;
@@ -39,8 +34,8 @@ const otherEvent = (eventId: string) => ({
 describe('Case Autopilot manager - request for information hook', () => {
   beforeEach(() => {
     vi.mocked(addInvestigationRun).mockReset();
-    vi.mocked(resolveUserByIdFromCache).mockReset();
-    vi.mocked(resolveUserByIdFromCache).mockResolvedValue(runUser);
+    vi.mocked(resolveRunIdentity).mockReset();
+    vi.mocked(resolveRunIdentity).mockResolvedValue(runUser);
   });
 
   it('retries technical failures and skips refusals', () => {
@@ -82,7 +77,7 @@ describe('Case Autopilot manager - request for information hook', () => {
   });
 
   it('keeps the requests for the next run while the identity of the policy does not resolve', async () => {
-    vi.mocked(resolveUserByIdFromCache).mockResolvedValueOnce(undefined as never);
+    vi.mocked(resolveRunIdentity).mockResolvedValueOnce(null);
     const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
     await caseRfiCreationHandler(context, policy, progress)([otherEvent('1-0'), rfiCreation('2-0', 'rfi-1'), otherEvent('3-0')]);
     expect(addInvestigationRun).not.toHaveBeenCalled();
@@ -110,7 +105,7 @@ describe('Case Autopilot manager - request for information hook', () => {
   it('does not wait for an identity when the batch holds no new request for information', async () => {
     const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
     await caseRfiCreationHandler(context, policy, progress)([otherEvent('1-0'), otherEvent('2-0')]);
-    expect(resolveUserByIdFromCache).not.toHaveBeenCalled();
+    expect(resolveRunIdentity).not.toHaveBeenCalled();
     expect(addInvestigationRun).not.toHaveBeenCalled();
     expect(progress).toEqual({ handledEventId: '2-0', retry: false });
   });

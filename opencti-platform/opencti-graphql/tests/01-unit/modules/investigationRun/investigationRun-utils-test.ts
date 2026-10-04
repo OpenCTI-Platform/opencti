@@ -98,7 +98,7 @@ describe('Case Autopilot access boundary of a run', () => {
       enrichment_waves: [{ id: 'w1', status: 'completed', requested_at: '2026-10-01T10:00:00.000Z', request_ids: ['q1'], delta: [{ id: 'ip-2', entity_type: 'IPv4-Addr' }], delta_computed: true }],
       approvals: [
         { id: 'a1', kind: InvestigationApprovalKind.Recommendation, status: InvestigationApprovalStatus.Pending, description: 'Block 185.12.4.2', reason: 'C2 server', recommendation_id: 'r1', created_at: '2026-10-01T10:00:00.000Z' },
-        { id: 'a2', kind: InvestigationApprovalKind.DraftValidation, status: InvestigationApprovalStatus.Pending, description: 'Approve the investigation draft', reason: 'Most likely APT28', created_at: '2026-10-01T10:00:00.000Z' },
+        { id: 'a2', kind: InvestigationApprovalKind.DraftValidation, status: InvestigationApprovalStatus.Pending, description: 'Approve the investigation draft', reason: 'Most likely APT28', rejection_reason: 'APT28 is a decoy here', created_at: '2026-10-01T10:00:00.000Z' },
       ],
       enrichment_requests: [{ id: 'q1', entity_id: 'ip-1', connector_id: 'c1', reason: 'Resolve the C2', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'engine', created_at: '2026-10-01T10:00:00.000Z' }],
       analyst_feedback: [{ item_type: 'hypothesis', item_ref: 'apt28', decision: 'accepted', comment: 'APT28 confirmed by the SOC', user_id: 'user-1', ts: '2026-10-01T10:00:00.000Z' }],
@@ -119,7 +119,7 @@ describe('Case Autopilot access boundary of a run', () => {
     });
     expect(withheld.steps).toEqual([expect.objectContaining({ id: 's1', source_name: 'Read the case', action: null, detail_params: null, findings_count: 2 })]);
     expect(withheld.enrichment_waves).toEqual([expect.objectContaining({ id: 'w1', delta: [] })]);
-    expect(withheld.approvals).toEqual([expect.objectContaining({ id: 'a2', status: InvestigationApprovalStatus.Pending, reason: null })]);
+    expect(withheld.approvals).toEqual([expect.objectContaining({ id: 'a2', status: InvestigationApprovalStatus.Pending, reason: null, rejection_reason: null })]);
     expect(withheld.enrichment_requests).toEqual([expect.objectContaining({ id: 'q1', status: InvestigationEnrichmentRequestStatus.Completed, reason: null })]);
   });
 });

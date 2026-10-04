@@ -65,7 +65,6 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { executionContext, INVESTIGATION_MANAGER_USER, isUserHasCapability, isUserInPlatformOrganization, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
-import { resolveUserByIdFromCache } from '../user/user-domain';
 import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { addWorkspace, findById as findWorkspaceById, workspaceDelete, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
@@ -103,7 +102,14 @@ import {
   type InvestigationOutputs,
   type InvestigationRecommendation,
 } from './investigationRun-types';
-import { listPolicyEnrichmentConnectors, loadInvestigationRun, stopCancelledEngineRun, updateInvestigationRun, withRunActions } from './investigationRun-domain';
+import {
+  listPolicyEnrichmentConnectors,
+  loadInvestigationRun,
+  resolveRunIdentity,
+  stopCancelledEngineRun,
+  updateInvestigationRun,
+  withRunActions,
+} from './investigationRun-domain';
 import { loadInvestigationPolicy } from './investigationPolicy-domain';
 import {
   boundApprovals,
@@ -181,8 +187,8 @@ const ENGINE_FAILURE_REASONS: Record<string, string> = {
 };
 const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer accessible to the identity of the run';
 const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: SUBJECT_INACCESSIBLE_CODE };
-// A deleted identity reads nothing any more: the same boundary as a subject it can no longer read.
-const IDENTITY_DELETED = { reason: 'The identity of the run no longer exists', code: SUBJECT_INACCESSIBLE_CODE };
+// A deleted, locked or expired identity reads nothing any more: the same boundary as a subject it can no longer read.
+const IDENTITY_UNAVAILABLE = { reason: 'The identity of the run no longer exists or can no longer use the platform', code: SUBJECT_INACCESSIBLE_CODE };
 const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
 // Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
 const STOPPED_RUN_STATUSES: string[] = [InvestigationRunStatus.Cancelled, InvestigationRunStatus.Failed];
@@ -1586,9 +1592,9 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
     return;
   }
   try {
-    const runUser = await resolveUserByIdFromCache(context, run.run_as_id);
+    const runUser = await resolveRunIdentity(context, run.run_as_id);
     if (!runUser) {
-      await stopRunAtCarryBoundary(context, runId, IDENTITY_DELETED);
+      await stopRunAtCarryBoundary(context, runId, IDENTITY_UNAVAILABLE);
       return;
     }
     const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;
@@ -1649,9 +1655,9 @@ export const revalidateAwaitingInvestigationRun = async (context: AuthContext, r
   try {
     await withRunActions(context, runId, async (run) => {
       if (run.run_status !== InvestigationRunStatus.AwaitingApproval) return;
-      const runUser = await resolveUserByIdFromCache(context, run.run_as_id);
+      const runUser = await resolveRunIdentity(context, run.run_as_id);
       if (!runUser) {
-        await stopRunAtCarryBoundary(context, runId, IDENTITY_DELETED);
+        await stopRunAtCarryBoundary(context, runId, IDENTITY_UNAVAILABLE);
         return;
       }
       const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;

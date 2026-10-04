@@ -136,7 +136,7 @@ export const withheldRunContent = (run: BasicStoreEntityInvestigationRun) => ({
   analyst_feedback: [],
   approvals: (run.approvals ?? [])
     .filter((approval) => approval.kind !== InvestigationApprovalKind.Recommendation)
-    .map((approval) => ({ ...approval, reason: null })),
+    .map((approval) => ({ ...approval, reason: null, rejection_reason: null })),
   enrichment_requests: (run.enrichment_requests ?? []).map((request) => ({ ...request, reason: null })),
 });
 

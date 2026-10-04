@@ -56,7 +56,7 @@ import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../do
 import { taskAdd } from '../task/task-domain';
 import { findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { connectorsForEnrichment } from '../../database/repository';
-import { resolveUserByIdFromCache } from '../user/user-domain';
+import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
 import {
@@ -121,6 +121,18 @@ const outOfDraft = (context: AuthContext): AuthContext => ({ ...context, draft_c
 
 export const isInvestigableEntityType = (entityType: string) => {
   return INVESTIGATION_SUBJECT_TYPES.includes(entityType) || isStixCyberObservable(entityType);
+};
+
+/**
+ * The identity a run acts as, while it may still use the platform: an account
+ * deleted, locked or expired since is no identity at all, by the rules applied
+ * when it authenticates.
+ */
+export const resolveRunIdentity = async (context: AuthContext, userId: string): Promise<AuthUser | null> => {
+  const user = await resolveUserByIdFromCache(context, userId);
+  if (!user) return null;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+  return isUserAccountValid(user, settings) ? user : null;
 };
 
 export const loadInvestigationRun = (context: AuthContext, id: string) => {
@@ -384,9 +396,9 @@ const resolveRunAsUser = async (context: AuthContext, user: AuthUser, runAsUserI
   if (!runAsUserId || runAsUserId === user.id) {
     return user;
   }
-  const runAsUser = await resolveUserByIdFromCache(context, runAsUserId);
+  const runAsUser = await resolveRunIdentity(context, runAsUserId);
   if (!runAsUser) {
-    throw FunctionalError('The run-as user of the investigation cannot be found', { runAsUserId });
+    throw FunctionalError('The run-as user of the investigation cannot be found or can no longer use the platform', { runAsUserId });
   }
   return runAsUser;
 };

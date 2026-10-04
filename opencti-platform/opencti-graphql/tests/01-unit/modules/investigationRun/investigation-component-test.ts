@@ -7,8 +7,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn(async () => mocks.policies) }));
-vi.mock('../../../../src/modules/user/user-domain', () => ({ resolveUserByIdFromCache: vi.fn(async () => mocks.runUser) }));
-vi.mock('../../../../src/modules/investigationRun/investigationRun-domain', () => ({ addInvestigationRun: mocks.addInvestigationRun }));
+vi.mock('../../../../src/modules/investigationRun/investigationRun-domain', () => ({
+  addInvestigationRun: mocks.addInvestigationRun,
+  resolveRunIdentity: vi.fn(async () => mocks.runUser),
+}));
 vi.mock('../../../../src/modules/playbook/playbook-utils', () => ({
   isBundleElementInScope: () => true,
   filterBundleElements: async (_: unknown, elements: unknown[]) => elements,
@@ -63,7 +65,7 @@ describe('Run Case Autopilot playbook component', () => {
     expect(mocks.addInvestigationRun.mock.calls[1][4]).toEqual({ trigger: 'playbook', runAsUserId: 'user-run-as' });
   });
 
-  it('starts nothing without an incident or case, or without a run-as identity', async () => {
+  it('starts nothing without an incident or case, or without a run-as identity that may use the platform', async () => {
     await run({ applyToElements: 'allElements' }, [bundle.objects[3]]);
     expect(mocks.addInvestigationRun).not.toHaveBeenCalled();
     mocks.runUser = null;

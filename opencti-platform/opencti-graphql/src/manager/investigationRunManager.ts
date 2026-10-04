@@ -29,7 +29,6 @@ import { EVENT_TYPE_CREATE } from '../database/utils';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { InvestigationRunTrigger } from '../generated/graphql';
-import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import {
   INVESTIGATION_MANAGER_CONTEXT,
@@ -38,7 +37,7 @@ import {
   processInvestigationRun,
   revalidateAwaitingInvestigationRun,
 } from '../modules/investigationRun/investigationRun-executor';
-import { addInvestigationRun } from '../modules/investigationRun/investigationRun-domain';
+import { addInvestigationRun, resolveRunIdentity } from '../modules/investigationRun/investigationRun-domain';
 import { listCaseRfiTriggerPolicies, updateInvestigationPolicyStreamPosition } from '../modules/investigationRun/investigationPolicy-domain';
 import type { BasicStoreEntityInvestigationPolicy } from '../modules/investigationRun/investigationRun-types';
 
@@ -54,12 +53,13 @@ const INVESTIGATION_RUN_MANAGER_STREAM_BATCH_SIZE = conf.get('investigation_run_
 
 // The hook runs as the policy identity, like the AI agent playbook components
 // default to the seeded platform admin when none is configured. A configured
-// identity that no longer exists never falls back to the administrator.
+// identity that no longer exists or can no longer use the platform never falls
+// back to the administrator.
 export const resolveHookUser = async (context: AuthContext, policy: BasicStoreEntityInvestigationPolicy) => {
   if (policy.run_as_id) {
-    return resolveUserByIdFromCache(context, policy.run_as_id);
+    return resolveRunIdentity(context, policy.run_as_id);
   }
-  return resolveUserByIdFromCache(context, OPENCTI_ADMIN_UUID);
+  return resolveRunIdentity(context, OPENCTI_ADMIN_UUID);
 };
 
 // A refusal (the request is gone, not investigable, not visible to the
