@@ -19,6 +19,8 @@ import { notifyProvenanceChange } from '../../../../src/modules/provenance/prove
 import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
 import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
+import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
+import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
 
 const MALWARE_NAME = 'Provenance malware';
 
@@ -141,6 +143,7 @@ describe('Provenance: every fact knows who said it', () => {
   let ruleId = '';
   let takeoverRuleId = '';
   let triggerId = '';
+  const retentionMalwareIds: string[] = [];
 
   afterAll(async () => {
     if (ruleId) {
@@ -161,6 +164,9 @@ describe('Provenance: every fact knows who said it', () => {
     }
     if (attackPatternId) {
       await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: attackPatternId } });
+    }
+    for (let index = 0; index < retentionMalwareIds.length; index += 1) {
+      await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: retentionMalwareIds[index] } });
     }
   });
 
@@ -288,6 +294,29 @@ describe('Provenance: every fact knows who said it', () => {
     const dismissed = await loadMalware(malwareId);
     expect(dismissed.has_conflicts).toEqual(false);
     expect(dismissed.x_opencti_conflicts ?? []).toEqual([]);
+  });
+
+  it('should only count the conflicts older than the retention date in the retention preview', async () => {
+    const withConflict = async (name: string, lastAssertedAt: string) => {
+      const created = await createEntity(testContext, ADMIN_USER, { name, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);
+      const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, created.id);
+      const conflicts = [{
+        field: 'description',
+        values: [{ value_hash: `hash-${name}`, display: 'Other description', value: '"Other description"', source_id: 'feed-retention', source_kind: SOURCE_KIND_FEED, source_name: 'Feed retention', confidence: 50, last_asserted_at: lastAssertedAt }],
+      }];
+      await elUpdate(testContext, element._index, element.internal_id, {
+        script: { source: 'ctx._source.x_opencti_conflicts = params.conflicts; ctx._source.has_conflicts = true;', lang: 'painless', params: { conflicts } },
+      });
+      retentionMalwareIds.push(created.id);
+      return created.id;
+    };
+    const freshId = await withConflict(`${MALWARE_NAME} fresh conflict`, new Date().toISOString());
+    const outdatedId = await withConflict(`${MALWARE_NAME} outdated conflict`, '2020-01-01T00:00:00.000Z');
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['internal_id'], values: [freshId, outdatedId] }], filterGroups: [] });
+    const count = await checkRetentionRule(testContext, {
+      name: 'Outdated conflicts', filters, max_retention: 30, retention_unit: RetentionUnit.Days, scope: RetentionRuleScope.Conflicts,
+    });
+    expect(count).toEqual(1);
   });
 
   it('should preserve distinct procedures on uses relationships', async () => {
