@@ -662,9 +662,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   const element = await resolveElement(context, user, input.element_id);
   const author = await resolveAuthor(context, user, input.createdBy);
   const internalId = input.external_id ? computeManualEventId(container.internal_id, input.external_id) : uuidv4();
-  const access = containerAccessFields(container);
   const kind = input.kind ?? 'milestone';
-  const buildManualEventDoc = (previous: StoredTimelineEvent | null) => buildTimelineEventDoc({
+  const buildManualEventDoc = (previous: StoredTimelineEvent | null, access: ReturnType<typeof containerAccessFields>) => buildTimelineEventDoc({
     internal_id: internalId,
     container_id: container.internal_id,
     name: input.title.trim(),
@@ -692,6 +691,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     restricted_members: access.restricted_members,
   }, previous);
   const { stored, existing } = await withTimelineLock(container.internal_id, async () => {
+    // Read again under the lock: a change of the access to the container made while this write waited applies to it
+    const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
     const current = input.external_id
       ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
       : null;
@@ -704,8 +705,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
-    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current)]);
-    await afterTimelineChange(context, user, container, 'manual', [internalId]);
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current, containerAccessFields(locked))]);
+    await afterTimelineChange(context, user, locked, 'manual', [internalId]);
     return { stored: await reloadEvent(context, user, internalId), existing: current };
   });
   if (!existing) {
@@ -831,7 +832,11 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
   if (input.default_grouping) patch.default_grouping = input.default_grouping;
   if (input.default_zoom_window) patch.default_zoom_window = input.default_zoom_window;
   if (input.hidden_kinds) patch.hidden_kinds = Array.from(new Set(input.hidden_kinds));
-  const settings = await withTimelineLock(container.internal_id, () => upsertTimelineSettings(context, container, patch));
+  // Read again under the lock: a change of the access to the container made while this write waited applies to it
+  const settings = await withTimelineLock(container.internal_id, async () => {
+    const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
+    return upsertTimelineSettings(context, locked, patch);
+  });
   await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'settings', changed_event_ids: [], anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null }, user);
   return settingsWithDefaults(container.internal_id, settings);
 };
@@ -1024,10 +1029,14 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
     ...events.flatMap((e) => [e.element_ref, e.created_by_ref, ...(e.object_marking_refs ?? [])]),
     ...annotations.map((a) => a.element_ref),
   ].filter((ref): ref is string => !!ref)));
-  const resolved = refs.length > 0
-    ? await internalFindByIds(context, user, refs, { toMap: true, mapWithAllIds: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
-    : {};
-  const createdMilestoneIds = await withTimelineLock(container.internal_id, () => writeImportedContributions(context, user, container, contributions, resolved));
+  // The container and the references are read under the lock: a change of access made while the import waited applies to it
+  const createdMilestoneIds = await withTimelineLock(container.internal_id, async () => {
+    const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
+    const resolved = refs.length > 0
+      ? await internalFindByIds(context, user, refs, { toMap: true, mapWithAllIds: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+      : {};
+    return writeImportedContributions(context, user, locked, contributions, resolved);
+  });
   const regenerated = await regenerateContainerTimeline(context, container.internal_id, { wait: true });
   if (createdMilestoneIds.length > 0) {
     notifyMilestonesAdded(context, user, container.internal_id, createdMilestoneIds)
