@@ -73,8 +73,11 @@ with deployments; it also rechecks them continuously in bounded batches.
 
 A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
 security platform, so only the users who can read both can read them. Creating or importing a `deployed-on`
-relationship without these markings is refused, and a deployment created before one of its ends got a marking
-receives it with the next report of its integration. The counters stored on an indicator are visible to every
+relationship without these markings is refused, a deployment whose indicator or security platform gets a new
+marking receives it at once, and the counters follow every change of markings, sharing or authorized members of
+either end. An indicator has one deployment per security
+platform: a `deployed-on` relationship has no start or stop time (its dates are the deployment, synchronization and
+removal dates), so creating or importing it again updates the existing one. The counters stored on an indicator are visible to every
 reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
 shared with every organization the indicator is shared with and have no authorized members, so they never reveal a
 deployment a reader of the indicator cannot read.

@@ -6,6 +6,7 @@ import {
   computeHitsSightingValues,
   computeProvenShare,
   hitsSightingStixId,
+  isExpiredForRemoval,
   isHitsSightingUpToDate,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
@@ -198,8 +199,21 @@ describe('deployment manager stream extraction', () => {
       // Other changes and other types are ignored
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-2', type: 'Indicator' } } }, '/x_opencti_score'),
       update({ type: 'identity', extensions: { [ext]: { id: 'organization-1', type: 'Organization' } } }, '/object_marking_refs/0'),
+      update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-4', type: 'Indicator' } } }, '/extensions/' + ext + '/authorized_members/0'),
     ]);
-    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3'], platformIds: ['platform-1', 'platform-2'] });
+    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4'], platformIds: ['platform-1', 'platform-2'] });
     expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
+  });
+});
+
+describe('expiry of live deployments', () => {
+  const threshold = '2026-10-03T00:00:00.000Z';
+  it('should select indicators past their validity or revoked before the grace threshold', () => {
+    expect(isExpiredForRemoval({ valid_until: '2026-10-01T00:00:00.000Z' }, threshold)).toEqual(true);
+    expect(isExpiredForRemoval({ valid_until: '2026-10-05T00:00:00.000Z' }, threshold)).toEqual(false);
+    expect(isExpiredForRemoval({ revoked: true, updated_at: '2026-10-02T00:00:00.000Z' }, threshold)).toEqual(true);
+    // Revoked within the grace period: the connector still has time to confirm the removal
+    expect(isExpiredForRemoval({ revoked: true, updated_at: '2026-10-03T12:00:00.000Z' }, threshold)).toEqual(false);
+    expect(isExpiredForRemoval({}, threshold)).toEqual(false);
   });
 });
