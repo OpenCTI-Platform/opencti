@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCollapseCache, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, withCollapsedGroups } from './graphCollapse';
+import { createCollapseCache, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, relationshipTotal, withCollapsedGroups } from './graphCollapse';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', x: 0, y: 0 });
@@ -39,6 +39,16 @@ describe('withCollapsedGroups', () => {
     expect(withCollapsedGroups(data, ['Malware'], label, cache).links.find(isGroupLink)?.represents).toBe(2);
     const fewer = { nodes: data.nodes, links: [graphLink(actor, m1)] };
     expect(withCollapsedGroups(fewer, ['Malware'], label, cache).links.find(isGroupLink)?.represents).toBe(1);
+  });
+
+  it('totals the relationships drawn as the legend counts them', () => {
+    const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
+    const drawnNodes = result.nodes.filter((node) => !isCollapsedMember(node, ['Malware']));
+    const drawnLinks = result.links.filter(isGroupLink);
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
+    const connector = graphLink(actor, nested, { id: 'nested', label: '' });
+    // Two `uses` drawn as one link towards the group, one nested relationship, its connector not counted.
+    expect(relationshipTotal([...drawnNodes, nested], [...drawnLinks, connector])).toBe(3);
   });
 
   it('tells the links drawn towards a group from the relationships of the platform', () => {

@@ -112,6 +112,16 @@ export const withCollapsedGroups = (
   return { nodes: [...data.nodes, ...groupNodes], links: [...data.links, ...groupLinks.values()] };
 };
 
+/**
+ * The number of relationships the drawn elements stand for, as the legend counts them: a link drawn
+ * towards a group node counts every relationship it stands for, and a nested relationship is drawn
+ * as a node between two unlabelled connector links.
+ */
+export const relationshipTotal = (nodes: readonly GraphNode[], links: readonly GraphLink[]) => links
+  .filter((link) => !!link.label)
+  .reduce((sum, link) => sum + (link.represents ?? 1), 0)
+  + nodes.filter((node) => !!node.relationship_type && !node.groupOf).length;
+
 /** Whether a member of a collapsed type, hidden behind its group node. */
 export const isCollapsedMember = (node: Pick<GraphNode, 'entity_type' | 'relationship_type' | 'groupOf'>, collapsedTypes: readonly string[]) => !node.groupOf
   && !node.relationship_type

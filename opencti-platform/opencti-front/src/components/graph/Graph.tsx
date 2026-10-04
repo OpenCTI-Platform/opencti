@@ -23,7 +23,7 @@ import GraphAccessibleList, { graphElementKey } from './components/GraphAccessib
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
-import { createCollapseCache, isCollapsedMember, isGroupLink, withCollapsedGroups } from './utils/graphCollapse';
+import { createCollapseCache, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
 import { entityTier, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
@@ -532,8 +532,7 @@ const Graph = ({
       entry.count += node.groupOf ? node.groupOf.memberIds.length : 1;
       families.set(type, entry);
     });
-    const relationshipCount = shownLinks.filter((l) => !!l.label).length
-      + shownNodes.filter((node) => !!node.relationship_type && !node.groupOf).length;
+    const relationshipCount = relationshipTotal(shownNodes, shownLinks);
     const canvas = renderGraphImage({
       nodes: shownNodes,
       links: shownLinks,
