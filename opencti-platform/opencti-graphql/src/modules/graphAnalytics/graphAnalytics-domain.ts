@@ -167,17 +167,17 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
   const minScore = args.minScore ?? 0;
   const config = getGraphAnalyticsComputeConfig();
   const [source] = await loadFeatureProfilesBatched(context, user, [{ id: entity.internal_id, entity_type: entity.entity_type }], config, true);
-  // The stored rows are scanned by windows until enough of them qualify for the caller (types, access, visible
-  // evidence, security coverage), so a filter never hides candidates stored beyond a fixed prefetch.
-  const windowSize = Math.min(first * 4 + 20, SIMILARITY_SCAN_WINDOW);
+  // Every stored row (the top-N of the entity, bounded by SIMILARITY_MAX_SCANNED_ROWS) is scored again for the caller
+  // before ranking: once the part of the graph the caller cannot see is left out, a row stored lower can score higher,
+  // so the scan never stops at the first rows that qualify (types, access, visible evidence, security coverage).
   const qualifying: QualifyingSimilarity[] = [];
   const coverages = new Map<string, BasicStoreEntity>();
   let scanned = 0;
   let exhausted = !source;
-  while (!exhausted && qualifying.length <= first && scanned < SIMILARITY_MAX_SCANNED_ROWS) {
-    const rows = await listSimilarityRows(context, user, entity.internal_id, windowSize, 0, scanned);
+  while (!exhausted && scanned < SIMILARITY_MAX_SCANNED_ROWS) {
+    const rows = await listSimilarityRows(context, user, entity.internal_id, SIMILARITY_SCAN_WINDOW, 0, scanned);
     scanned += rows.length;
-    exhausted = rows.length < windowSize;
+    exhausted = rows.length < SIMILARITY_SCAN_WINDOW;
     const typedRows = rows.filter((row) => matchesEntityTypes(row.similarity_target_type, args.entityTypes)
       && isSameComparisonGroup(entity.entity_type, row.similarity_target_type));
     const targets = await accessibleMap<BasicStoreEntity>(context, user, typedRows.map((r) => r.similarity_target_id));
