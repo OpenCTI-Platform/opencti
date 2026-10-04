@@ -1109,6 +1109,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "In dieser Liste werden alle Entitäten angezeigt, für die eine Zugriffsbeschränkung aktiviert ist, d. h., sie sind nur für bestimmte Benutzer zugänglich. Sie können diese Zugriffsbeschränkung auf diesem Bildschirm aufheben.",
   "Threat actor types": "Typen von Bedrohungsakteuren",
   "Threat hunting": "Bedrohungsjagd",
+  "Threat Pulse": "Threat Pulse",
   "Threat Pulse consent date": "Datum der Threat-Pulse-Einwilligung",
   "Threat Pulse consent user": "Benutzer der Threat-Pulse-Einwilligung",
   "Threat Pulse consent version": "Version der Threat-Pulse-Einwilligung",

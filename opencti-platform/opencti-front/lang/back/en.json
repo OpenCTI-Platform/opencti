@@ -1109,6 +1109,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.",
   "Threat actor types": "Threat actor types",
   "Threat hunting": "Threat hunting",
+  "Threat Pulse": "Threat Pulse",
   "Threat Pulse consent date": "Threat Pulse consent date",
   "Threat Pulse consent user": "Threat Pulse consent user",
   "Threat Pulse consent version": "Threat Pulse consent version",

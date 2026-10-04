@@ -1109,6 +1109,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、一部のアクセス制限が有効になっている、つまり一部の特定のユーザーしかアクセスできないエンティティがすべて表示されます。この画面では、このアクセス制限を削除できます。",
   "Threat actor types": "洗練度",
   "Threat hunting": "ログソース",
+  "Threat Pulse": "Threat Pulse",
   "Threat Pulse consent date": "Threat Pulse 同意日",
   "Threat Pulse consent user": "Threat Pulse 同意ユーザー",
   "Threat Pulse consent version": "Threat Pulse 同意バージョン",

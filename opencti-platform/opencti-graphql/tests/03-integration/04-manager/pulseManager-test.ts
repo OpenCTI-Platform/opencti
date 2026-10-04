@@ -575,12 +575,12 @@ describe('Threat Pulse manager and API', () => {
     const greenIndicatorId = green.data?.indicatorAdd.id;
     await seedPeers(greenIndicatorId, ENTITY_TYPE_INDICATOR);
     await runPulseRefresh(testContext, true);
-    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeDefined();
+    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_information?.updated_at).toBeTruthy();
     const scopes: string[] = (await queryAsAdminWithSuccess({ query: PULSE_SETTINGS })).data?.pulseSettings.scopes;
 
     // A new exclusion: only the objects with that marking lose their statistics
     await configure({ excluded_markings: [MARKING_TLP_GREEN] });
-    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeUndefined();
+    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_information).toBeUndefined();
     expect((await load(sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBe('widespread');
 
     // A narrower scope: only the objects of the removed type lose theirs
@@ -600,7 +600,10 @@ describe('Threat Pulse manager and API', () => {
     const indicatorId = created.data?.indicatorAdd.id;
     await seedPeers(indicatorId, ENTITY_TYPE_INDICATOR);
     await runPulseRefresh(testContext, true);
-    expect((await load(indicatorId)).pulse_prevalence).toBeTruthy();
+    // Four peers, below the anonymity threshold: statistics without a prevalence
+    const refreshed = await load(indicatorId);
+    expect(refreshed.pulse_information?.updated_at).toBeTruthy();
+    expect(refreshed.pulse_community_uniqueness).toBe(100);
     await queryAsAdminWithSuccess({ query: ADD_MARKING, variables: { id: indicatorId, input: { toId: MARKING_TLP_RED, relationship_type: 'object-marking' } } });
     await runPulseRefresh(testContext, true);
     const marked = await load(indicatorId);

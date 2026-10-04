@@ -99,6 +99,11 @@ Narrowing the scopes or excluding a new marking removes the community statistics
 
 The overview of indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools shows a "Threat Pulse" widget, half width, right after Basic information. It is a widget of the overview layout like the others: administrators move it or make it full width in "Settings > Customization > <entity type> > Overview layout", where it is listed as "Threat Pulse" (indicators get this tab with the widget). A layout customized before Threat Pulse existed receives the widget at the same place, after Basic information, with its default width; the rest of the customization is kept.
 
+| | Dark | Light |
+|:--|:--|:--|
+| Overview | ![Overview of an intrusion set with the Threat Pulse widget in preview next to the latest created relationships](assets/threat-pulse-overview.png) | ![Overview of an intrusion set with the Threat Pulse widget, light theme](assets/threat-pulse-overview-light.png) |
+| Overview layout | ![Overview layout of the intrusion sets listing the Threat Pulse widget right after Basic information](assets/threat-pulse-overview-layout.png) | ![Overview layout listing the Threat Pulse widget, light theme](assets/threat-pulse-overview-layout-light.png) |
+
 The widget shows:
 
 - **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates (the first and last days of the weeks in which enough platforms reported the object, never the day a single platform reported it), the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count or prevalence, and with a community uniqueness of 100, a value published objects never reach (they go from 0 to 75); a value XTM Hub did not publish is left out rather than shown empty.
@@ -107,10 +112,10 @@ The widget shows:
 
 The widget always shows a card, so the overview never has a gap. With the full experience, an object without community data yet shows why instead: XTM Hub could not be reached, its rate limit is reached, the markings or restricted access of the object keep it on the platform, or the object has no name, identifier or supported pattern to compare with other platforms. When Threat Pulse is off, when the entity type is left out of its scope, or when the platform cannot reach XTM Hub, the card says so in one sentence, and administrators get the way to the Threat Pulse settings.
 
-| Not connected | Preview | Full |
-|:--------------|:--------|:-----|
-| ![Threat Pulse card of a platform not connected to XTM Hub with the Connect to XTM Hub button](assets/threat-pulse-card-not-connected.png) | ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-contributing.png) |
-| ![Threat Pulse card of a platform not connected to XTM Hub, light theme](assets/threat-pulse-card-not-connected-light.png) | ![Threat Pulse card in preview, light theme](assets/threat-pulse-card-preview-light.png) | ![Threat Pulse card of a contributing platform, light theme](assets/threat-pulse-card-contributing-light.png) |
+| Not connected | Preview | Full | Off |
+|:--------------|:--------|:-----|:----|
+| ![Threat Pulse card of a platform not connected to XTM Hub with the Connect to XTM Hub button](assets/threat-pulse-card-not-connected.png) | ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-contributing.png) | ![Threat Pulse card when Threat Pulse is turned off, with the way to its settings for an administrator](assets/threat-pulse-card-off.png) |
+| ![Threat Pulse card of a platform not connected to XTM Hub, light theme](assets/threat-pulse-card-not-connected-light.png) | ![Threat Pulse card in preview, light theme](assets/threat-pulse-card-preview-light.png) | ![Threat Pulse card of a contributing platform, light theme](assets/threat-pulse-card-contributing-light.png) | ![Threat Pulse card when Threat Pulse is turned off, light theme](assets/threat-pulse-card-off-light.png) |
 
 ### Filters, columns and exports
 

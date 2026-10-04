@@ -1109,6 +1109,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все сущности, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "Threat actor types": "Типы субъектов угроз",
   "Threat hunting": "Охота за угрозами",
+  "Threat Pulse": "Threat Pulse",
   "Threat Pulse consent date": "Дата согласия Threat Pulse",
   "Threat Pulse consent user": "Пользователь, давший согласие Threat Pulse",
   "Threat Pulse consent version": "Версия согласия Threat Pulse",
