@@ -62,13 +62,19 @@ The top of the Sources area tells you whether the scorecards are current:
 | Not computed yet | No computation has run on this platform. | **Compute now** |
 | Manager stopped | The source intelligence manager is not running. | **Open settings** |
 
-When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
+When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
+
+![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.png)
+
+Before the first computation, or while no source has written knowledge yet, the area explains which sources it will score and when the scorecards appear:
+
+![Sources area before the first scorecards](assets/source-intelligence-sources-first-use.png)
 
 A value that could not be measured (for example lead time for a source that shares no object with another source) reads **Not measured**; hover it to see why.
 
 ### Leaderboard and scorecard page
 
-The **Leaderboard** tab lists the sources with their value score and their main metrics. You can sort, filter and search the list. Click a source to open its scorecard page:
+The **Leaderboard** tab lists the sources with their value score and their main metrics. You can sort, filter and search the list, and show the corroboration and last seen columns from the column settings. Click a source to open its scorecard page. Its header answers first: the value score, how it moved over the trend window, one sentence explaining it (how often other sources confirm its objects and how often it reports them first), and the next action, **Review the recommendations** when some are pending, otherwise **Set a cost** or **Edit the cost**. Below the header:
 
 - the value score with its components,
 - trends of any metric over the selected window,
@@ -77,17 +83,23 @@ The **Leaderboard** tab lists the sources with their value score and their main 
 - its open recommendations (EE),
 - a switch to exclude the source from the computation.
 
+![Scorecard page of a source](assets/source-intelligence-source-detail.png)
+
 The **Sources** card of an entity, an observable or a relationship (see [Provenance and corroboration](provenance.md)) links each connector, feed, author and analyst to its scorecard page. An author without a scorecard (below the minimum volume, or when you cannot access the Sources area) opens the author entity instead.
 
 ### Cost
 
-Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page. The cost is normalized to each window to compute the cost per actionable object.
+Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object.
+
+![Cost editor of a source](assets/source-intelligence-cost-editor.png)
 
 Costs are never converted between currencies. A widget showing a cost metric (number, list, bubble or trend) only aggregates the sources using the currency declared by most of the selected sources; filter the widget on a set of sources to look at another currency.
 
 ### Overlap
 
 The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects, the share of each source and the Jaccard index. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement.
+
+![Overlap heatmap of the sources](assets/source-intelligence-overlap.png)
 
 ## Collection gaps (EE)
 
@@ -97,7 +109,15 @@ The **Collection gaps** tab checks every criterion of every [PIR](pir.md) agains
 - diversity (40%): distinct sources contributing to it, against a target of 3,
 - freshness (20%): share of the 90-day matches that are recent.
 
-A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations; when it is not, or when the XTM Hub cannot be reached, only the connectors of the local catalog are recommended and the gap says so. When more integrations match than the XTM Hub ranks, the gap shows that the ranking is partial: its first matches are combined with the local catalog. A recommended connector available in the local catalog as a managed connector can be deployed in one click through XTM Composer; the deployment runs as an "Add a connector" recommendation, so it is recorded in the recommendations inbox with its audit trail and can be reverted. Other recommended connectors open in the catalog.
+A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations; when it is not, or when the XTM Hub cannot be reached, only the connectors of the local catalog are recommended and the gap says so. When more integrations match than the XTM Hub ranks, the gap shows that the ranking is partial: its first matches are combined with the local catalog. A recommended connector available in the local catalog as a managed connector can be deployed in one click through XTM Composer; the deployment runs as an "Add a connector" recommendation, so it is recorded in the recommendations inbox with its audit trail and can be reverted. Other recommended connectors open in the catalog. A recommendation coming from the XTM Hub deploys the latest catalog version compatible with your platform.
+
+When the criteria of a PIR have different weights, each gap shows its priority (high, medium or low) relative to the other criteria of the PIR; hover it to see the weight. When no integration of the catalog covers a criterion yet, **Browse the XTM Hub catalog** opens the XTM Hub integrations filtered on the object types, sectors and regions of the criterion (**Browse the catalog** when the platform has no XTM Hub address).
+
+![Collection gaps of a PIR with their recommended integrations](assets/source-intelligence-collection-gaps.png)
+
+Without an Enterprise Edition license, the Collection gaps and Recommendations tabs explain how to activate it:
+
+![Collection gaps tab without an Enterprise Edition license](assets/source-intelligence-collection-gaps-locked.png)
 
 ## Recommendations (EE)
 
@@ -116,9 +136,13 @@ The manager turns scorecards and gaps into recommendations. They are listed in t
 
 Sources below a minimum volume (50 objects) do not get recommendations. All thresholds are configurable.
 
+Each recommendation is an approval: it shows its rationale and a preview of the change, setting by setting, with the current value ("Not set" when there is none) and the value after applying. The primary button names the change, for example **Apply - lower the confidence to 40** or **Deploy MISP**.
+
+![Recommendation with the preview of its change](assets/source-intelligence-recommendations-preview.png)
+
 For each recommendation you can:
 
-- **Apply** it. Applying requires the capability matching the action (for example, managing accesses to change a user confidence level).
+- **Apply** it. Applying requires the capability matching the action (for example, managing accesses to change a user confidence level). When it cannot be applied, the recommendation says that nothing was changed and offers **Retry**, and **Open the connector** when the connector refused the change; **Show details** gives the cause.
 - **Dismiss** it, with an optional reason. A dismissed recommendation is not proposed again before a cooldown (30 days by default).
 - **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
@@ -134,7 +158,11 @@ In the settings, an administrator can allow some recommendation kinds to be appl
 
 Dashboard widgets can use the **Sources** perspective to display any scorecard metric: number, list, distribution, horizontal bars, donut, time series and bubble chart (for example volume against value score). The dashboard time range selects the 7, 30 or 90-day window.
 
+Widget titles name the metric, its aggregation and the scoring window (for example "Operational value score (0 to 100), average over the last 30 days"), axes carry their unit, and a widget without data says that no source was scored in the period.
+
 Click **Create ROI dashboard** in the Sources header to create the ready-made "Intelligence ROI" dashboard with the main metrics. Sources widgets are not available in public dashboards.
+
+![Intelligence ROI dashboard](assets/source-intelligence-roi-dashboard.png)
 
 ## Settings
 
@@ -145,4 +173,6 @@ The settings are in **Settings > Customization > Source intelligence** (also rea
 - the recommendation thresholds and tuning steps,
 - the autonomy policy and the collection gap parameters (EE).
 
-Scorecards are computed once a day. Between two computations, the volume counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Ratios, scores and medians are refreshed by the daily computation. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.
+![Source intelligence settings](assets/source-intelligence-settings.png)
+
+Scorecards are computed once a day. Between two computations, the counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Sightings, revocations, PIR links and hunt detections are credited to each source in the periods where it asserted the object, and withdrawn when the sighting, the PIR link or the true positive verdict is removed. Ratios, scores and medians are refreshed by the daily computation. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.
