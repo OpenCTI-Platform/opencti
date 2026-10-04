@@ -1516,8 +1516,22 @@ const ingest = async (exec: RunExecution) => withRunActions(exec.liveContext, ex
 
 // region validation
 
+// What the run wrote in its draft gets a live version, under a new internal id,
+// once the validation work ingested it: it is read by its standard id as well.
+const validationCitedIds = (run: BasicStoreEntityInvestigationRun) => R.uniq([
+  ...runCitedIds(run),
+  ...run.evidence.filter((evidence) => evidence.in_draft && evidence.standard_id).map((evidence) => evidence.standard_id as string),
+]);
+
 const completeValidation = async (exec: RunExecution) => {
   const { run, runUser, now } = exec;
+  // Read on every tick while the validation is processed, as in the other
+  // phases of a running run: a run is never completed beyond its boundary.
+  const crossed = await findCarryBoundary(exec, validationCitedIds(run));
+  if (crossed) {
+    await stopAtCarryBoundary(exec, crossed);
+    return;
+  }
   const work = run.validation_work_id ? await loadWork(exec.liveContext, run.validation_work_id) : null;
   const startedAt = run.wave_started_at ? new Date(run.wave_started_at).getTime() : now.getTime();
   const timedOut = now.getTime() - startedAt > VALIDATION_TIMEOUT_MS;
