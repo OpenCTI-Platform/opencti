@@ -132,6 +132,17 @@ import {
 
 const ONE_DAY_MS = 24 * 3600 * 1000;
 const PULSE_PUSH_LOCK_KEY = conf.get('pulse_manager:push_lock_key') || 'pulse_push_lock';
+
+// One lock for what reaches XTM Hub or writes community data (a push, a page of the nightly refresh or of the preview)
+// and for what changes the policy (a narrowing configuration, a purge): neither runs halfway through the other.
+const withPulsePushLock = async <T>(run: () => Promise<T>): Promise<T> => {
+  const lock = await lockResources([PULSE_PUSH_LOCK_KEY]);
+  try {
+    return await run();
+  } finally {
+    await lock.unlock();
+  }
+};
 const LOOKUP_CACHE_TTL_SECONDS = conf.get('pulse_manager:lookup_cache_ttl_seconds') ?? 6 * 3600;
 const RESPONSE_CACHE_TTL_SECONDS = conf.get('pulse_manager:response_cache_ttl_seconds') ?? 900;
 const STATUS_CACHE_TTL_SECONDS = 300;
@@ -381,64 +392,68 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   const narrowing = wasContributing && (!enabling
     || current.scopes.some((scope) => !scopes.includes(scope))
     || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)));
-  if (narrowing) {
+  const modeChanged = mode !== current.mode;
+  // Serialized with the pushes and with the pages of the nightly refresh and of the preview: none of them runs halfway
+  // through the change, and the ones after it read the new configuration (generation).
+  await withPulsePushLock(async () => {
+    if (narrowing) {
     // Before the settings change: from now on no batch built under the former, wider policy is sent, even when a
     // step below fails.
-    await redisBumpPulsePolicyGeneration();
-  }
-  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
-  // A contribution cycle running under the former configuration records and sends nothing more from now on.
-  await redisBumpPulseConfigGeneration();
-  if (enabling && !wasContributing) {
+      await redisBumpPulsePolicyGeneration();
+    }
+    await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
+    // A contribution cycle running under the former configuration records and sends nothing more from now on.
+    await redisBumpPulseConfigGeneration();
+    if (enabling && !wasContributing) {
     // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet,
     // a hunt) is never sent.
-    await redisSetPulseCursor(new Date().toISOString());
-    await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
-  }
-  if (!enabling) {
+      await redisSetPulseCursor(new Date().toISOString());
+      await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+    }
+    if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
-    await redisDiscardPulseOutbox();
-    await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
-  } else if (narrowing) {
+      await redisDiscardPulseOutbox();
+      await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+    } else if (narrowing) {
     // The batches not sent yet were built under the former, wider policy: they never leave (the policy generation
     // already refuses them; this frees them). Their activity was already acknowledged, so it is not contributed again;
     // the next run collects from there under the new policy.
-    await redisDiscardPulseOutbox();
-  }
-  const modeChanged = mode !== current.mode;
-  if (modeChanged && current.mode !== PulseMode.Off) {
+      await redisDiscardPulseOutbox();
+    }
+    if (modeChanged && current.mode !== PulseMode.Off) {
     // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them. Whatever
     // the connection to XTM Hub now, a mode that could write them is followed by a cleanup.
-    await clearPulseNetworkInformation();
-  } else if (!modeChanged && mode !== PulseMode.Off) {
+      await clearPulseNetworkInformation();
+    } else if (!modeChanged && mode !== PulseMode.Off) {
     // The sector trends and the trending keys were read for the former sector or region: the stored statistics are
     // removed and the next cycle reads them again for the new one.
-    const bucketsChanged = sectorBucket !== current.sectorBucket || regionBucket !== current.regionBucket;
-    if (bucketsChanged && enabling) {
-      await clearPulseNetworkInformation();
-    } else {
+      const bucketsChanged = sectorBucket !== current.sectorBucket || regionBucket !== current.regionBucket;
+      if (bucketsChanged && enabling) {
+        await clearPulseNetworkInformation();
+      } else {
       // A more restrictive configuration: the objects it takes out lose the statistics they received before. The
       // preview sends nothing, so its signal stays on every object in scope whatever the markings.
-      const removedScopes = current.scopes.filter((scope) => !scopes.includes(scope));
-      const addedExclusions = enabling ? (excludedMarkingIds as string[]).filter((markingId) => !current.excludedMarkingIds.includes(markingId)) : [];
-      await clearPulseNetworkInformation({ entityTypes: removedScopes, markingIds: addedExclusions });
+        const removedScopes = current.scopes.filter((scope) => !scopes.includes(scope));
+        const addedExclusions = enabling ? (excludedMarkingIds as string[]).filter((markingId) => !current.excludedMarkingIds.includes(markingId)) : [];
+        await clearPulseNetworkInformation({ entityTypes: removedScopes, markingIds: addedExclusions });
+      }
+      if (bucketsChanged) {
+        await redisSetPulseState({ last_refresh_at: undefined, refresh_offset: undefined, preview_refresh_at: undefined, preview_offset: undefined });
+      }
     }
-    if (bucketsChanged) {
-      await redisSetPulseState({ last_refresh_at: undefined, refresh_offset: undefined, preview_refresh_at: undefined, preview_offset: undefined });
+    if (modeChanged) {
+      await redisSetPulseState({
+        contribution_lapsed: undefined,
+        contribution_accepted: undefined,
+        last_refresh_at: undefined,
+        refresh_offset: undefined,
+        preview_refresh_at: undefined,
+        preview_offset: undefined,
+        preview_matched: undefined,
+      });
+      addThreatPulseModeChangeCount(mode as PulseMode);
     }
-  }
-  if (modeChanged) {
-    await redisSetPulseState({
-      contribution_lapsed: undefined,
-      contribution_accepted: undefined,
-      last_refresh_at: undefined,
-      refresh_offset: undefined,
-      preview_refresh_at: undefined,
-      preview_offset: undefined,
-      preview_matched: undefined,
-    });
-    addThreatPulseModeChangeCount(mode as PulseMode);
-  }
+  });
   let message = `updates the Threat Pulse configuration (${describePulseMode(mode)})`;
   if (enabling && !wasContributing) {
     message = `enables the Threat Pulse contribution (${describePulseMode(mode)}) and accepts the consent version \`${PULSE_CONSENT_VERSION}\``;
@@ -485,13 +500,8 @@ interface PushOutcome {
 // stay claimed, so the next run claims them again. Nothing more leaves once the configuration changed since the cycle
 // read it (generation).
 const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string, generation: string): Promise<PushOutcome> => {
-  // Serialized with the purge: a batch claimed before a purge never reaches XTM Hub after it.
-  const lock = await lockResources([PULSE_PUSH_LOCK_KEY]);
-  try {
-    return await pushClaimedPulseOutbox(platform, oldestAcceptedDay, generation);
-  } finally {
-    await lock.unlock();
-  }
+  // Serialized with the purge and the configuration: a batch claimed before either never reaches XTM Hub after it.
+  return withPulsePushLock(() => pushClaimedPulseOutbox(platform, oldestAcceptedDay, generation));
 };
 
 const pushClaimedPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string, generation: string): Promise<PushOutcome> => {
@@ -724,7 +734,9 @@ export const refreshPulseEntities = async (context: AuthContext, platform: Pulse
 // matched or was read are computed here. A run handles up to REFRESH_MAX_ENTITIES objects and the next one goes on
 // after them, starting over once the scope is covered, so that no object waits for ever on a large platform.
 export const runPulseRefresh = async (context: AuthContext, force = false) => {
-  const { values, platform, state, access } = await loadPulseContext(context);
+  // Read before the settings, which come from the database: each page checks it under the lock of the configuration.
+  const generation = await redisGetPulseConfigGeneration();
+  const { values, platform, state, access } = await loadPulseContext(context, { fresh: true });
   if (access !== PulseAccess.Full || !platform) {
     return 0;
   }
@@ -741,10 +753,16 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
   // Set once an eligible object past the cap was seen: the next run starts there. A run that fills the cap with the
   // last object of the scope reads one more page to know it, and the next run starts over.
   let remaining = false;
+  let stopped = false;
   try {
     await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
       noFiltersChecking: true,
-      callback: async (entities) => {
+      callback: async (entities) => withPulsePushLock(async () => {
+        // A configuration stored since the run started stops it before it looks anything more up.
+        if ((await redisGetPulseConfigGeneration()) !== generation) {
+          stopped = true;
+          return false;
+        }
         // An object that became restricted or received an excluded marking since its last refresh loses its statistics.
         const ineligible = entities.filter((entity) => !isPulseContributable(entity, policy, values.scopes) && hasPulseNetworkData(entity));
         await writePulseDocuments(context, ineligible.map((entity) => ({ entity, doc: PULSE_PREVIEW_CLEARED_DOCUMENT })));
@@ -759,11 +777,15 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
           processed += await refreshPulseEntities(context, platform, day, salt, batch);
         }
         return !remaining;
-      },
+      }),
     });
   } catch (error) {
     await handlePulseReadError(values, error);
     throw error;
+  }
+  if (stopped) {
+    logApp.info('[THREAT PULSE] Configuration changed during the network refresh, the next run reads under the new one');
+    return processed;
   }
   const covered = !remaining;
   await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
@@ -818,7 +840,9 @@ const sameKeys = (stored: string[] | undefined, keys: string[]) => {
  * request ever leaves the platform here; nothing leaves, so every object in scope is matched, whatever its markings.
  */
 export const runPulsePreview = async (context: AuthContext, force = false) => {
-  const { values, platform, state, access } = await loadPulseContext(context);
+  // As in the nightly refresh: each page checks the configuration generation under the lock of the configuration.
+  const generation = await redisGetPulseConfigGeneration();
+  const { values, platform, state, access } = await loadPulseContext(context, { fresh: true });
   if (access !== PulseAccess.Preview || !platform) {
     return 0;
   }
@@ -842,9 +866,15 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   let matched = 0;
   // Set once an object past the cap was seen, as in the nightly refresh.
   let remaining = false;
+  let stopped = false;
   await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
     noFiltersChecking: true,
-    callback: async (entities) => {
+    callback: async (entities) => withPulsePushLock(async () => {
+      // A configuration stored since the pass started stops it before it writes anything more.
+      if ((await redisGetPulseConfigGeneration()) !== generation) {
+        stopped = true;
+        return false;
+      }
       const start = Math.max(0, offset - scanned);
       const room = PREVIEW_MAX_ENTITIES - handled;
       scanned += entities.length;
@@ -872,8 +902,12 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
       });
       await writePulseDocuments(context, updates);
       return !remaining;
-    },
+    }),
   });
+  if (stopped) {
+    logApp.info('[THREAT PULSE] Configuration changed during the preview pass, the next pass reads under the new one');
+    return matched;
+  }
   const covered = !remaining;
   // Every object the preview signal is on, whichever pass wrote it: only preview documents carry a prevalence here.
   const matchedTotal = await elCount(context, PULSE_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
