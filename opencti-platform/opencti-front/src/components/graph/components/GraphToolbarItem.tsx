@@ -1,12 +1,12 @@
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import React, { ReactNode } from 'react';
+import React, { MouseEvent, ReactNode } from 'react';
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 
 interface GraphToolbarItemProps {
   title: string;
-  color: IconButtonProps['color'];
+  /** `secondary` marks a tool that is on (a mode, a layout, a filter in use). */
+  color: 'primary' | 'secondary';
   Icon: ReactNode;
-  onClick: IconButtonProps['onClick'];
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
 }
 
@@ -18,14 +18,18 @@ const GraphToolbarItem = ({
   disabled,
 }: GraphToolbarItemProps) => {
   return (
-    <Tooltip title={title}>
-      <IconButton
-        color={color}
-        onClick={onClick}
-        disabled={disabled}
-      >
-        {Icon}
-      </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton
+          priority="tertiary"
+          aria-label={title}
+          active={color === 'secondary'}
+          onClick={onClick}
+          disabled={disabled}
+          icon={Icon}
+        />
+      </TooltipTrigger>
+      <TooltipContent>{title}</TooltipContent>
     </Tooltip>
   );
 };

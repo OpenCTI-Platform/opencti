@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
-import useGraphParser, { ObjectToParse } from './useGraphParser';
+import useGraphParser, { isRestrictedObject, ObjectToParse } from './useGraphParser';
 import type { GraphNode, GraphLink, OctiGraphPositions } from '../graph.types';
 
 /**
@@ -44,6 +44,20 @@ describe('useGraphParser', () => {
     );
     const { result } = renderHook(() => useGraphParser(), { wrapper });
     parser = result.current;
+  });
+
+  describe('restricted entities', () => {
+    it('names an entity the reader may not see "Restricted", never with a blank name', () => {
+      const restricted = parser.buildNode(constructEntity({ id: 'hidden', name: 'Restricted' } as Partial<ObjectToParse>), emptyPositions);
+      expect(restricted.isRestricted).toBe(true);
+      expect(restricted.label).toBe('Restricted');
+      const visible = parser.buildNode(constructEntity({ id: 'visible', name: 'Emotet' } as Partial<ObjectToParse>), emptyPositions);
+      expect(visible.isRestricted).toBe(false);
+    });
+
+    it('never takes a relationship for a restricted entity', () => {
+      expect(isRestrictedObject(constructRelationship({ name: 'Restricted' } as Partial<ObjectToParse>))).toBe(false);
+    });
   });
 
   describe('buildNode', () => {

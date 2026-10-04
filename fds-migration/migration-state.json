@@ -339,6 +339,63 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
       ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "graph experience: the panels floating over the graph canvas (view controls, counter row, legend, hover card, empty state), padding owned by the padding prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: every graph tool button (toolbar items, view controls, legend and hover card actions); the active state of a tool is the active prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the counters of the counter row and the next action of the empty states",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the tooltips of the graph tool buttons, counters, legend entries and hover card badges",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
     }
   ]
 }

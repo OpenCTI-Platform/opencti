@@ -1,9 +1,26 @@
 import { NodeObject } from 'react-force-graph-2d';
 import { useGraphContext } from '../GraphContext';
-import { GraphNode, LibGraphProps, GraphState, GraphLink } from '../graph.types';
+import { GraphNode, LibGraphProps, GraphState, GraphLink, GraphLayoutMode } from '../graph.types';
 import { RectangleSelectionProps } from '../components/RectangleSelection';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../utils/defaultRepresentatives';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
+import { collisionForce } from './collisionForce';
+import { neighbourhood, shortestPath } from './graphFocus';
+import { isCollapsedMember } from './graphCollapse';
+import { frameBox, measureGraphPanels } from './graphFraming';
+
+/** Graph units between two linked nodes at rest, room for a label between two rings. */
+const LINK_DISTANCE = 64;
+const CHARGE_STRENGTH = -120;
+/** Two nodes are kept this far apart, centre to centre, so neither discs nor labels overlap. */
+const COLLISION_DISTANCE = 22;
+const ZOOM_STEP = 1.4;
+const ZOOM_MS = 300;
+const MIN_LOCATE_ZOOM = 2.5;
+/** Fitting a few nodes never zooms in further: a single node then reads at a comfortable size. */
+const MAX_FIT_ZOOM = 6;
+
+const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
 const useGraphInteractions = () => {
   const {
@@ -17,6 +34,8 @@ const useGraphInteractions = () => {
   const {
     graphRef2D,
     graphRef3D,
+    viewportRef,
+    toolbarRef,
     graphData,
     graphState,
     rawPositions,
@@ -39,9 +58,17 @@ const useGraphInteractions = () => {
     disabledEntityTypes,
     disabledMarkings,
     disabledCreators,
-    selectedLinks,
     selectedNodes,
+    layoutMode,
+    hiddenNodeIds = [],
+    collapsedEntityTypes = [],
+    disabledRelationshipTypes = [],
+    showLegend = true,
   } = graphState;
+
+  /** Whether the reader can see and pick the node: neither hidden nor folded into a group. */
+  const isNodeShown = (node: GraphNode) => !hiddenNodeIds.includes(node.id)
+    && !isCollapsedMember(node, collapsedEntityTypes);
 
   /**
    * Internal function to easily modify one property in the state.
@@ -62,11 +89,144 @@ const useGraphInteractions = () => {
   const toggleVerticalTree = () => {
     const isNotVertical = modeTree !== 'td';
     setGraphStateProp('modeTree', isNotVertical ? 'td' : null);
+    if (isNotVertical) setGraphStateProp('layoutMode', null);
   };
 
   const toggleHorizontalTree = () => {
     const isNotHorizontal = modeTree !== 'lr';
     setGraphStateProp('modeTree', isNotHorizontal ? 'lr' : null);
+    if (isNotHorizontal) setGraphStateProp('layoutMode', null);
+  };
+
+  /**
+   * Switches a deterministic layout on or off; one layout at a time, so the tree modes go off.
+   * The radial layout is centred on the first selected node when there is one.
+   */
+  const toggleLayoutMode = (mode: GraphLayoutMode) => {
+    const enabling = layoutMode !== mode;
+    setGraphStateProp('layoutMode', enabling ? mode : null);
+    if (enabling) setGraphStateProp('modeTree', null);
+    if (mode === 'radial') setGraphStateProp('layoutCentreId', enabling ? (selectedNodes[0]?.id ?? null) : null);
+  };
+
+  const centreRadialLayoutOn = (nodeId: string) => {
+    setGraphStateProp('modeTree', null);
+    setGraphStateProp('layoutMode', 'radial');
+    setGraphStateProp('layoutCentreId', nodeId);
+  };
+
+  const toggleLegend = () => {
+    setGraphStateProp('showLegend', !showLegend);
+  };
+
+  const hideNodes = (nodeIds: string[]) => {
+    if (nodeIds.length === 0) return;
+    setGraphStateProp('hiddenNodeIds', [...new Set([...hiddenNodeIds, ...nodeIds])]);
+    setGraphStateProp('selectedNodes', selectedNodes.filter((n) => !nodeIds.includes(n.id)));
+  };
+
+  const showHiddenNodes = () => {
+    setGraphStateProp('hiddenNodeIds', []);
+  };
+
+  const toggleCollapsedEntityType = (type: string) => {
+    const collapsing = !collapsedEntityTypes.includes(type);
+    setGraphStateProp(
+      'collapsedEntityTypes',
+      collapsing ? [...collapsedEntityTypes, type] : collapsedEntityTypes.filter((t) => t !== type),
+    );
+    if (collapsing) {
+      setGraphStateProp('selectedNodes', selectedNodes.filter((n) => n.entity_type !== type));
+    }
+  };
+
+  const toggleRelationshipType = (type: string) => {
+    setGraphStateProp(
+      'disabledRelationshipTypes',
+      disabledRelationshipTypes.includes(type)
+        ? disabledRelationshipTypes.filter((t) => t !== type)
+        : [...disabledRelationshipTypes, type],
+    );
+  };
+
+  /** Links the reader can see, by their two end ids: neither end hidden, collapsed or faded by a filter. */
+  const shownLinkEnds = () => {
+    const shownIds = new Set((graphData?.nodes ?? []).filter((n) => isNodeShown(n) && !n.disabled).map((n) => n.id));
+    return (graphData?.links ?? []).flatMap((link) => {
+      const sourceId = endpointId(link.source) ?? link.source_id;
+      const targetId = endpointId(link.target) ?? link.target_id;
+      if (link.disabled || !shownIds.has(sourceId) || !shownIds.has(targetId)) return [];
+      return [{ id: link.id, sourceId, targetId }];
+    });
+  };
+
+  /**
+   * Highlights the shortest path between the two selected nodes, whatever the direction of the
+   * relationships. Returns `false` when they are not connected by what is drawn.
+   */
+  const highlightShortestPath = (fromId?: string, toId?: string): boolean => {
+    const ends = fromId && toId ? [fromId, toId] : selectedNodes.map((n) => n.id);
+    if (ends.length !== 2) return false;
+    const path = shortestPath(shownLinkEnds(), ends[0], ends[1]);
+    setGraphStateProp('highlightedPath', path);
+    return path !== null;
+  };
+
+  const clearHighlightedPath = () => {
+    setGraphStateProp('highlightedPath', null);
+  };
+
+  /** Selects the given nodes (the selection by default) and every node one relationship away. */
+  const selectNeighbours = (centreIds?: string[]) => {
+    const { nodeIds } = neighbourhood(shownLinkEnds(), centreIds ?? selectedNodes.map((n) => n.id));
+    setGraphStateProp('selectedLinks', []);
+    setGraphStateProp('selectedNodes', (graphData?.nodes ?? []).filter((n) => nodeIds.has(n.id)));
+  };
+
+  const zoomBy = (factor: number) => {
+    const graph = graphRef2D.current;
+    if (graph) graph.zoom(graph.zoom() * factor, ZOOM_MS);
+  };
+  const zoomIn = () => zoomBy(ZOOM_STEP);
+  const zoomOut = () => zoomBy(1 / ZOOM_STEP);
+
+  /**
+   * Frames the 2D nodes kept by `filter`, all of them by default, clear of the panels floating
+   * over the canvas. False when there is nothing to frame yet.
+   */
+  const frameNodes = (padding: number, duration: number, filter?: (node: NodeObject<GraphNode>) => boolean) => {
+    const graph = graphRef2D.current;
+    const viewport = viewportRef.current;
+    const canvas = viewport?.querySelector('canvas');
+    if (!graph || !viewport || !canvas) return false;
+    const box = graph.getGraphBbox(filter);
+    if (!box || !Number.isFinite(box.x[0]) || !Number.isFinite(box.y[0])) return false;
+    const { width, height } = canvas.getBoundingClientRect();
+    const frame = frameBox(box, { width, height }, measureGraphPanels(viewport, canvas, [toolbarRef.current]), { padding, maxZoom: MAX_FIT_ZOOM });
+    graph.centerAt(frame.x, frame.y, duration);
+    graph.zoom(frame.k, duration);
+    return true;
+  };
+
+  /** Frames the selected nodes, or the given ones. */
+  const zoomToSelection = (nodeIds?: string[]) => {
+    const ids = new Set(nodeIds ?? selectedNodes.map((n) => n.id));
+    if (ids.size === 0) return;
+    const padding = ids.size === 1 ? 200 : 80;
+    if (!frameNodes(padding, ZOOM_MS * 1.5, (node) => ids.has(String(node.id)))) {
+      graphRef2D.current?.zoomToFit(ZOOM_MS * 1.5, padding, (node) => ids.has(String(node.id)));
+    }
+    graphRef3D.current?.zoomToFit(ZOOM_MS * 1.5, padding, (node) => ids.has(String(node.id)));
+  };
+
+  /** Centres the view on a node (the first selected one by default), zooming in when far out. */
+  const locateNode = (nodeId?: string) => {
+    const id = nodeId ?? selectedNodes[0]?.id;
+    const node = (graphData?.nodes ?? []).find((n) => n.id === id);
+    const graph = graphRef2D.current;
+    if (!node || !graph) return;
+    graph.centerAt(node.x, node.y, ZOOM_MS);
+    if (graph.zoom() < MIN_LOCATE_ZOOM) graph.zoom(MIN_LOCATE_ZOOM, ZOOM_MS);
   };
 
   const toggleForces = () => {
@@ -93,7 +253,7 @@ const useGraphInteractions = () => {
     } else if (nbOfNodes < 4) padding = 200;
     else if (nbOfNodes < 8) padding = 100;
     // Different padding depending on the number of nodes in the graph.
-    graphRef2D.current?.zoomToFit(400, padding);
+    if (!frameNodes(padding, 400)) graphRef2D.current?.zoomToFit(400, padding);
     graphRef3D.current?.zoomToFit(400, padding);
   };
 
@@ -111,9 +271,12 @@ const useGraphInteractions = () => {
       graphRef2D.current?.d3Force('charge')?.strength(-1000);
       graphRef3D.current?.d3Force('charge')?.strength(-1000);
     } else {
-      graphRef2D.current?.d3Force('link')?.distance(50);
+      graphRef2D.current?.d3Force('link')?.distance(LINK_DISTANCE);
+      graphRef2D.current?.d3Force('charge')?.strength(CHARGE_STRENGTH);
       graphRef3D.current?.d3Force('link')?.distance(50);
     }
+    // Keeps the rings and the labels under them apart, which the repulsion alone does not.
+    graphRef2D.current?.d3Force('collide', collisionForce(COLLISION_DISTANCE));
   };
 
   const applyForces = () => {
@@ -184,22 +347,14 @@ const useGraphInteractions = () => {
     setGraphStateProp('zoom', z);
   };
 
-  const addSelectedLink = (link: GraphLink) => {
-    const existing = selectedLinks.find((l) => l.id === link.id);
-    if (!existing) setSelectedLinks([...selectedLinks, link]);
-  };
-
-  const removeSelectedLink = (link: GraphLink) => {
-    setSelectedLinks(selectedLinks.filter((l) => l.id !== link.id));
-  };
-
-  const addSelectedNode = (node: GraphNode) => {
-    const existing = selectedNodes.find((n) => n.id === node.id);
-    if (!existing) setSelectedNodes([...selectedNodes, node]);
-  };
-
-  const removeSelectedNode = (node: GraphNode) => {
-    setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
+  // The additive selection reads the selection of the latest state: the click handlers the
+  // rendering library holds can date from the render before a previous click.
+  const toggleInSelection = (key: 'selectedNodes' | 'selectedLinks', element: GraphNode | GraphLink) => {
+    setGraphState((oldState) => {
+      const current = (oldState[key] ?? []) as (GraphNode | GraphLink)[];
+      const next = current.some((e) => e.id === element.id) ? current.filter((e) => e.id !== element.id) : [...current, element];
+      return { ...oldState, [key]: next };
+    });
   };
 
   /**
@@ -209,10 +364,8 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleNode: LibGraphProps['onNodeClick'] = (node, e) => {
-    const clickedNode = selectedNodes.find((n) => n.id === node.id);
     if (e.ctrlKey || e.shiftKey || e.altKey) {
-      if (clickedNode) removeSelectedNode(node);
-      else addSelectedNode(node);
+      toggleInSelection('selectedNodes', node);
     } else {
       setSelectedLinks([]);
       setSelectedNodes([node]);
@@ -226,10 +379,8 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleLink: LibGraphProps['onLinkClick'] = (link, e) => {
-    const clickedLink = selectedLinks.find((l) => l.id === link.id);
     if (e.ctrlKey || e.shiftKey || e.altKey) {
-      if (clickedLink) removeSelectedLink(link);
-      else addSelectedLink(link);
+      toggleInSelection('selectedLinks', link);
     } else {
       setSelectedNodes([]);
       setSelectedLinks([link]);
@@ -290,6 +441,7 @@ const useGraphInteractions = () => {
     setSelectedLinks([]);
     setGraphStateProp('search', undefined);
     setGraphStateProp('detailsPreviewSelected', undefined);
+    setGraphStateProp('highlightedPath', null);
   };
 
   /**
@@ -307,7 +459,7 @@ const useGraphInteractions = () => {
     const graphTarget = graphRef2D.current?.screen2GraphCoords(target[0], target[1]);
     if (graphOrigin && graphTarget) {
       const selected = (graphData?.nodes ?? []).filter((node) => {
-        return (
+        return isNodeShown(node) && (
           node.x >= graphOrigin.x
           && node.x <= graphTarget.x
           && node.y >= graphOrigin.y
@@ -321,13 +473,13 @@ const useGraphInteractions = () => {
 
   const selectByEntityType = (entityType: string) => {
     clearSelection();
-    const matchingNodes = (graphData?.nodes ?? []).filter(({ entity_type }) => entity_type === entityType);
+    const matchingNodes = (graphData?.nodes ?? []).filter((node) => node.entity_type === entityType && isNodeShown(node));
     setSelectedNodes(matchingNodes);
   };
 
   const selectAllNodes = () => {
     clearSelection();
-    setSelectedNodes(graphData?.nodes ?? []);
+    setSelectedNodes((graphData?.nodes ?? []).filter(isNodeShown));
   };
 
   const selectBySearch = (search: string) => {
@@ -335,7 +487,7 @@ const useGraphInteractions = () => {
     setGraphStateProp('search', search);
     if (search) {
       const searchLow = search.toLowerCase();
-      const matchingNodes = (graphData?.nodes ?? []).filter((node) => {
+      const matchingNodes = (graphData?.nodes ?? []).filter(isNodeShown).filter((node) => {
         return (getMainRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
           || (getSecondaryRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
           || (node.entity_type || '').toLowerCase().indexOf(searchLow) !== -1;
@@ -375,6 +527,7 @@ const useGraphInteractions = () => {
     setGraphStateProp('disabledEntityTypes', []);
     setGraphStateProp('disabledMarkings', []);
     setGraphStateProp('disabledCreators', []);
+    setGraphStateProp('disabledRelationshipTypes', []);
     setGraphStateProp('selectedTimeRangeInterval', undefined);
   };
 
@@ -547,6 +700,22 @@ const useGraphInteractions = () => {
     setZoom,
     setIsExpandOpen,
     updateNode,
+    isNodeShown,
+    toggleLayoutMode,
+    centreRadialLayoutOn,
+    toggleLegend,
+    hideNodes,
+    showHiddenNodes,
+    toggleCollapsedEntityType,
+    toggleRelationshipType,
+    highlightShortestPath,
+    clearHighlightedPath,
+    selectNeighbours,
+    zoomIn,
+    zoomOut,
+    zoomToSelection,
+    frameNodes,
+    locateNode,
   };
 };
 

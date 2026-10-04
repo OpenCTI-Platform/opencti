@@ -181,6 +181,7 @@ nav:
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
       - Defense: usage/defense-hub.md
+      - Work with graphs: usage/graphs.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
       - Automated import:

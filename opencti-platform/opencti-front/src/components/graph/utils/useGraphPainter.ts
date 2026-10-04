@@ -1,55 +1,157 @@
+import { useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import SpriteText from 'three-spritetext';
 import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
+import { useFormatter } from '../../i18n';
+import { buildGraphPalette } from './graphPalette';
+import { type Box, computeLinkCurvatures, computeObstacleBends } from './graphGeometry';
+import type { LayoutPositions } from './graphLayouts';
+import { type GraphFocus, neighbourhood } from './graphFocus';
+import {
+  type LevelOfDetail,
+  levelOfDetail,
+  type LinkLabel,
+  linkLabelText,
+  NODE_RADIUS,
+  paintGraphLink,
+  paintGraphNode,
+  paintGraphNodeHitArea,
+  paintLinkLabels,
+} from './graphPainting';
+import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
+
+export { corroborationRingWidth } from './graphPainting';
 
 interface PaintOptions {
   showNbConnectedElements?: boolean;
+  /** Zoom level handed by the rendering library; fixes the level of detail. */
+  globalScale?: number;
 }
 
-// Corroboration ring: invisible for single-sourced knowledge, thicker with every additional source
-const MAX_RING_SOURCES = 8;
-export const corroborationRingWidth = (corroborationCount: number | undefined) => {
-  if (!corroborationCount || corroborationCount < 2) {
-    return 0;
-  }
-  return 0.25 + 0.15 * (Math.min(corroborationCount, MAX_RING_SOURCES) - 1);
-};
+export interface GraphHoverTarget {
+  kind: 'node' | 'link';
+  id: string;
+}
 
 interface UseGraphPainterArgs {
   selectedLinks: GraphLink[];
   selectedNodes: GraphNode[];
   detailsPreviewSelected: GraphLink | GraphNode | undefined;
   search: string | undefined;
+  /** Links drawn, for the focus on a neighbourhood and the fan-out of parallel links. */
+  links?: readonly GraphLink[];
+  hovered?: GraphHoverTarget | null;
+  highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;
+  nodeCount?: number;
+  /** Where a deterministic layout puts the nodes: straight links then bend around the nodes on their way. */
+  layoutTargets?: LayoutPositions | null;
 }
+
+/** Room kept between a bent link and a node it passes: the ring, its halo and a little air. */
+const OBSTACLE_CLEARANCE = NODE_RADIUS + 5;
+
+/** A zoom where every detail shows, for callers that do not hand one. */
+const DEFAULT_SCALE = 3;
+
+const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
 const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const {
     selectedLinks = [],
     selectedNodes = [],
     detailsPreviewSelected,
     search,
+    links = [],
+    hovered = null,
+    highlightedPath = null,
+    nodeCount = 0,
+    layoutTargets = null,
   } = args ?? {};
 
-  const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
+  const palette = useMemo(() => buildGraphPalette(theme), [theme]);
   const colors = {
-    selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
-    numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
-    corroborated: theme.palette.success?.main ?? DEFAULT_COLOR,
-    text: theme.palette.text?.secondary ?? DEFAULT_COLOR,
-    disabled: theme.palette.background.paper ?? DEFAULT_COLOR,
+    selected: palette.accent,
+    inferred: palette.inferred,
+    disabled: palette.disabled,
   };
+
+  const linkEnds = useMemo(() => links.map((link) => ({
+    id: link.id,
+    sourceId: endpointId(link.source) ?? link.source_id,
+    targetId: endpointId(link.target) ?? link.target_id,
+  })), [links]);
+  const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
+  const bends = useMemo(
+    () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
+    [layoutTargets, linkEnds, curvatures],
+  );
+
+  const selectedNodeIds = useMemo(() => new Set(selectedNodes.map((n) => n.id)), [selectedNodes]);
+  const selectedLinkIds = useMemo(() => new Set(selectedLinks.map((l) => l.id)), [selectedLinks]);
+  const pathNodeIds = useMemo(() => new Set(highlightedPath?.nodeIds ?? []), [highlightedPath]);
+  const pathLinkIds = useMemo(() => new Set(highlightedPath?.linkIds ?? []), [highlightedPath]);
+
+  /**
+   * What stays at full strength: a highlighted path alone, otherwise the selection and the hovered
+   * element with their direct neighbours. `null` when nothing is focused, so nothing fades.
+   */
+  const focus = useMemo<GraphFocus | null>(() => {
+    if (highlightedPath && highlightedPath.nodeIds.length > 0) {
+      return { nodeIds: pathNodeIds, linkIds: pathLinkIds };
+    }
+    const centres = new Set(selectedNodeIds);
+    selectedLinks.forEach((link) => {
+      centres.add(endpointId(link.source) ?? link.source_id);
+      centres.add(endpointId(link.target) ?? link.target_id);
+    });
+    if (hovered?.kind === 'node') centres.add(hovered.id);
+    if (hovered?.kind === 'link') {
+      const link = linkEnds.find(({ id }) => id === hovered.id);
+      if (link) {
+        centres.add(link.sourceId);
+        centres.add(link.targetId);
+      }
+    }
+    if (centres.size === 0) return null;
+    const reached = neighbourhood(linkEnds, centres);
+    const linkIds = new Set(reached.linkIds);
+    selectedLinkIds.forEach((id) => linkIds.add(id));
+    if (hovered?.kind === 'link') linkIds.add(hovered.id);
+    return { nodeIds: reached.nodeIds, linkIds };
+  }, [highlightedPath, selectedNodeIds, selectedLinks, hovered, linkEnds, pathNodeIds, pathLinkIds, selectedLinkIds]);
+
+  const typeLabels = useRef(new Map<string, string>());
+  const typeLabel = (node: GraphNode) => {
+    const key = node.relationship_type ? `relationship_${node.relationship_type}` : `entity_${node.entity_type}`;
+    let label = typeLabels.current.get(key);
+    if (label === undefined) {
+      label = t_i18n(key);
+      typeLabels.current.set(key, label);
+    }
+    return label;
+  };
+
+  const badgeCache = useRef(new WeakMap<GraphNode, { version: number; badges: GraphBadge[] }>());
+  const badgesOf = (node: GraphNode) => {
+    const cached = badgeCache.current.get(node);
+    if (cached && cached.version === badgeRegistryVersion) return cached.badges;
+    const badges = badgesOfNode(node, { t_i18n });
+    badgeCache.current.set(node, { version: badgeRegistryVersion, badges });
+    return badges;
+  };
+
+  const detailOf = (globalScale: number): LevelOfDetail => levelOfDetail(globalScale, nodeCount);
 
   /**
    * Draws a node in canvas.
    *
-   * @param ctx Context of the canvas.
    * @param data Data associated to the node.
+   * @param ctx Context of the canvas.
    * @param opts Options to change drawing.
    */
   const nodePaint = (
@@ -57,74 +159,25 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     ctx: CanvasRenderingContext2D,
     opts: PaintOptions = {},
   ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id, corroborationCount } = data;
-    const { showNbConnectedElements } = opts;
-
-    const hasSelection = selectedNodes.length > 0;
-    const previewSelected = detailsPreviewSelected?.id === id;
-    const selected = !!selectedNodes.find((n) => n.id === data.id);
-
-    ctx.globalAlpha = hasSelection && !selected ? 0.3 : 1;
-
-    const ringWidth = corroborationRingWidth(corroborationCount);
-    if (ringWidth > 0 && !disabled) {
-      ctx.beginPath();
-      ctx.arc(x, y, 6 + ringWidth / 2, 0, 2 * Math.PI, false);
-      ctx.lineWidth = ringWidth;
-      ctx.strokeStyle = colors.corroborated;
-      ctx.stroke();
-    }
-
-    ctx.beginPath();
-    ctx.fillStyle = disabled ? colors.disabled : color;
-    ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
-    ctx.fill();
-
-    if (previewSelected) {
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = colors.selected;
-      ctx.stroke();
-    } else if (selected) {
-      ctx.lineWidth = 0.5;
-      ctx.strokeStyle = colors.selected;
-      ctx.setLineDash([2, 1]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    } else if (isNestedInferred) {
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = colors.inferred;
-      ctx.stroke();
-    }
-
-    const size = 8;
-    ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-    ctx.font = '4px IBM Plex Sans';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = disabled ? colors.disabled : colors.text;
-    ctx.fillText(label, x, y + 9);
-    ctx.fillStyle = disabled ? colors.disabled : color;
-
-    const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
-    if (showNbConnectedElements && validConnectedElements) {
-      ctx.beginPath();
-      ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
-      ctx.lineWidth = 0.4;
-      ctx.strokeStyle = color;
-      ctx.stroke();
-      ctx.fillStyle = colors.numbersBackground;
-      ctx.fill();
-      ctx.fillStyle = colors.text;
-      let numberLabel = '?';
-      if (numberOfConnectedElement !== undefined) {
-        numberLabel = `${numberOfConnectedElement}`;
-      }
-      if (numberLabel !== '?') {
-        numberLabel = (numberOfConnectedElement ?? 0) > 99 ? '99+' : `${numberLabel}+`;
-      }
-      ctx.font = '1.5px IBM Plex Sans';
-      ctx.fillText(numberLabel, x + 4, y - 2.9);
-    }
+    const globalScale = opts.globalScale ?? DEFAULT_SCALE;
+    const detail = detailOf(globalScale);
+    const covered = paintGraphNode(ctx, data, {
+      palette,
+      globalScale,
+      detail,
+      visual: {
+        selected: selectedNodeIds.has(data.id),
+        preview: detailsPreviewSelected?.id === data.id,
+        hovered: hovered?.kind === 'node' && hovered.id === data.id,
+        faded: focus ? !focus.nodeIds.has(data.id) : false,
+        onPath: pathNodeIds.has(data.id),
+      },
+      badges: badgesOf(data),
+      showConnectedCount: opts.showNbConnectedElements,
+      typeLabel: typeLabel(data),
+    });
+    // Link labels are placed clear of the nodes only at zooms where they are all drawn.
+    if (detail.linkLabels) frameNodeBoxes.current.push(...covered);
   };
 
   /**
@@ -133,22 +186,15 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param data Data of the node.
    * @param color The color to use.
    * @param ctx Context of the canvas.
+   * @param globalScale Zoom level, the label is hit only where it is drawn.
    */
   const nodePointerAreaPaint = (
     data: GraphNode,
     color: string,
     ctx: CanvasRenderingContext2D,
+    globalScale = DEFAULT_SCALE,
   ) => {
-    const { name, x, y } = data;
-
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
-    ctx.fill();
-    ctx.font = '4px IBM Plex Sans';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(name, x, y + 10);
+    paintGraphNodeHitArea(ctx, data, color, detailOf(globalScale).labels);
   };
 
   /**
@@ -158,17 +204,71 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @returns The color for the link.
    */
   const linkColorPaint = (link: GraphLink) => {
-    const selected = !!selectedLinks.find((l) => l.id === link.id);
+    const selected = selectedLinkIds.has(link.id);
 
     if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
     if (link.isNestedInferred || link.inferred) return colors.inferred;
     if (link.disabled) return colors.disabled;
-    return theme.palette.primary.main;
+    return palette.link;
+  };
+
+  const curvatureOf = (link: GraphLink) => {
+    const bend = bends?.get(link.id);
+    if (bend !== undefined) return { curvature: bend, rotation: 0 };
+    return curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+  };
+  const linkCurvature = (link: GraphLink) => curvatureOf(link).curvature;
+
+  /** Labels collected while the links are drawn, painted over the nodes at the end of the frame. */
+  const frameLabels = useRef<LinkLabel[]>([]);
+  /** What the nodes of the frame cover, which the link labels keep clear of. */
+  const frameNodeBoxes = useRef<Box[]>([]);
+
+  /**
+   * Draws a link: curve, arrowhead and dash; its label is drawn at the end of the frame.
+   *
+   * @param link Link object from the lib of graphs.
+   * @param ctx Context of the canvas.
+   * @param globalScale Zoom level handed by the library.
+   */
+  const linkPaint = (link: GraphLink, ctx: CanvasRenderingContext2D, globalScale = DEFAULT_SCALE) => {
+    const { curvature, rotation } = curvatureOf(link);
+    const selected = selectedLinkIds.has(link.id);
+    const label = paintGraphLink(ctx, link, {
+      palette,
+      globalScale,
+      detail: detailOf(globalScale),
+      color: link.disabled || (search && !selected) ? palette.textSecondary : linkColorPaint(link),
+      curvature,
+      rotation,
+      confidence: link.confidence,
+      visual: {
+        selected,
+        hovered: hovered?.kind === 'link' && hovered.id === link.id,
+        faded: focus ? !focus.linkIds.has(link.id) : false,
+        onPath: pathLinkIds.has(link.id),
+      },
+    });
+    if (label) frameLabels.current.push(label);
+  };
+
+  /** To call before a frame: forgets the labels of the previous one. */
+  const framePrePaint = () => {
+    frameLabels.current = [];
+    frameNodeBoxes.current = [];
+  };
+
+  /** To call after a frame: draws the link labels that do not overlap. */
+  const framePostPaint = (ctx: CanvasRenderingContext2D, globalScale: number) => {
+    paintLinkLabels(ctx, frameLabels.current, { palette, globalScale, obstacles: frameNodeBoxes.current });
+    frameLabels.current = [];
+    frameNodeBoxes.current = [];
   };
 
   /**
    * Draws link between two nodes.
+   * Kept for the callers drawing the default straight links: the label alone, at mid-link.
    *
    * @param link Link object from the lib of graphs.
    * @param ctx Context of the canvas.
@@ -176,6 +276,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const linkLabelPaint = (
     link: GraphLink,
     ctx: CanvasRenderingContext2D,
+    globalScale = DEFAULT_SCALE,
   ) => {
     const start = link.source;
     const end = link.target;
@@ -183,36 +284,17 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       link.disabled
       || typeof start !== 'object'
       || typeof end !== 'object'
-      || start.x === undefined
-      || end.x === undefined
-      || start.y === undefined
-      || end.y === undefined) {
+      || !Number.isFinite(start.x)
+      || !Number.isFinite(end.x)
+      || !link.label
+    ) {
       return;
     }
-
-    const textPos = {
-      x: start.x + (end.x - start.x) / 2,
-      y: start.y + (end.y - start.y) / 2,
-    };
-    const relLink = {
-      x: end.x - start.x,
-      y: end.y - start.y,
-    };
-
-    let textAngle = Math.atan2(relLink.y, relLink.x);
-    if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
-    if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
-    const fontSize = 3;
-    ctx.font = `${fontSize}px IBM Plex Sans`;
-    ctx.save();
-    ctx.translate(textPos.x, textPos.y);
-    ctx.rotate(textAngle);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = colors.text;
-    const corroboration = link.corroborationCount ?? 0;
-    ctx.fillText(corroboration >= 2 ? `${link.label} (${corroboration})` : link.label, 0, 0);
-    ctx.restore();
+    const middle = { x: start.x + (end.x - start.x) / 2, y: start.y + (end.y - start.y) / 2 };
+    let angle = Math.atan2(end.y - start.y, end.x - start.x);
+    if (angle > Math.PI / 2) angle -= Math.PI;
+    if (angle < -Math.PI / 2) angle += Math.PI;
+    paintLinkLabels(ctx, [{ text: linkLabelText(link), x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
   };
 
   /**
@@ -222,7 +304,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const nodeThreePaint = (node: GraphNode) => {
     const sprite = new SpriteText(node.label);
-    sprite.color = colors.text;
+    sprite.color = node.disabled ? palette.disabled : palette.textSecondary;
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -234,7 +316,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const linkThreePaint = (link: GraphLink) => {
     const sprite = new SpriteText(link.label);
-    sprite.color = 'lightgrey';
+    sprite.color = palette.textSecondary;
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -255,10 +337,17 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   return {
+    palette,
+    focus,
     nodePaint,
     nodePointerAreaPaint,
     linkLabelPaint,
     linkColorPaint,
+    linkPaint,
+    linkCurvature,
+    curvatureOf,
+    framePrePaint,
+    framePostPaint,
     nodeThreePaint,
     linkThreePaint,
     linkThreeLabelPosition,
