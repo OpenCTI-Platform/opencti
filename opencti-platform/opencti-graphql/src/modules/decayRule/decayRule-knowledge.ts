@@ -55,7 +55,7 @@ export const KNOWLEDGE_DECAY_FIELDS = ['target_types', 'freshness_policy', 'stal
 const NUMERIC_KNOWLEDGE_DECAY_FIELDS = ['order', 'stale_after_days', 'freshness_confidence_step'];
 // Changing one of these fields releases the knowledge the rule flagged: the freshness manager skips flagged
 // knowledge, so only a release lets it be evaluated again under the new configuration (fresh again, new policy).
-const FRESHNESS_RESET_FIELDS = ['active', 'target_types', 'decay_filters', 'stale_after_days', 'freshness_policy'];
+const FRESHNESS_RESET_FIELDS = ['active', 'target_types', 'decay_filters', 'stale_after_days', 'freshness_policy', 'freshness_confidence_step'];
 // Edits that can make a rule take over elements targeted by lower priority rules
 export const KNOWLEDGE_PRIORITY_FIELDS = ['active', 'order', 'target_types', 'decay_filters'];
 
