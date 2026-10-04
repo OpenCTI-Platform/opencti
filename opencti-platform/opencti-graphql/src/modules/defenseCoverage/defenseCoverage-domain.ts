@@ -20,6 +20,8 @@ import type { BasicStoreEntityDataComponent } from '../dataComponent/dataCompone
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { addSecurityCoverage } from '../securityCoverage/securityCoverage-domain';
 import { addGrouping } from '../grouping/grouping-domain';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { deleteElementById } from '../../database/middleware';
 import { addExternalReference } from '../../domain/externalReference';
 import { addDefenseGapExportCount, addDefenseValidationRequestCount } from '../../manager/telemetryManager';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
@@ -299,7 +301,7 @@ const prepareEvaluation = async (
   ]);
   const platformById = new Map(platforms.map((p) => [p.id, p]));
   // A selection left empty by deleted or inaccessible platforms falls back to every platform, as the UI shows it
-  const validIds = (platformIds ?? []).filter((id) => platformById.has(id));
+  const validIds = uniq((platformIds ?? []).filter((id) => platformById.has(id)));
   const selected = validIds.length > 0 ? validIds : undefined;
   return { snapshot, can, platforms, platformById, selected, overlay };
 };
@@ -1043,26 +1045,38 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   }
   const requestedAt = now();
   const name = requestedName || `Defense validation - ${threat?.name ?? `${attackPatterns.length} techniques`} - ${requestedAt.substring(0, 10)}`;
+  // An external reference is shared by every element with the same URL: it is resolved first and never removed
+  const externalReference = referenceUrl
+    ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
+    : undefined;
   const grouping = await addGrouping(context, user, {
     name,
     description: input.description ?? 'Techniques selected from the defense gap backlog for validation with OpenAEV.',
     context: 'defense-validation',
     objects: [...attackPatterns.map((ap) => ap.internal_id), ...(threat ? [threat.internal_id] : [])],
   });
-  const externalReference = referenceUrl
-    ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
-    : undefined;
-  const securityCoverage = await addSecurityCoverage(context, user, {
-    name,
-    description: input.description,
-    objectCovered: grouping.id,
-    auto_enrichment_disable: false,
-    periodicity: input.periodicity,
-    duration: input.duration,
-    type_affinity: input.type_affinity,
-    platforms_affinity: input.platforms_affinity,
-    ...(externalReference ? { externalReferences: [externalReference.id] } : {}),
-  });
+  let securityCoverage: BasicStoreEntitySecurityCoverage;
+  try {
+    securityCoverage = await addSecurityCoverage(context, user, {
+      name,
+      description: input.description,
+      objectCovered: grouping.id,
+      auto_enrichment_disable: false,
+      periodicity: input.periodicity,
+      duration: input.duration,
+      type_affinity: input.type_affinity,
+      platforms_affinity: input.platforms_affinity,
+      ...(externalReference ? { externalReferences: [externalReference.id] } : {}),
+    });
+  } catch (error) {
+    // A failed request leaves no Grouping behind, so retrying it never duplicates one
+    try {
+      await deleteElementById(context, user, grouping.id, ENTITY_TYPE_CONTAINER_GROUPING);
+    } catch (cleanupError) {
+      logApp.error('[DEFENSE-COVERAGE] Grouping of a failed validation request not removed', { cause: cleanupError, grouping_id: grouping.id });
+    }
+    throw error;
+  }
   const request: DefenseGapValidationRequest = {
     security_coverage_id: securityCoverage.id,
     grouping_id: grouping.id,

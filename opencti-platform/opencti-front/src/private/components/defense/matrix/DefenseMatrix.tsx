@@ -375,13 +375,16 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
           const status = data?.defenseCoverageStatus;
           if (status && !status.full_computation_requested) {
             setRecomputeRequested(false);
-            fetchQuery<DefenseMatrixQuery>(
+            return fetchQuery<DefenseMatrixQuery>(
               defenseMatrixQuery,
               { platformIds: scope.platformIds, threatScope: toThreatScopeInput(scope) },
               { fetchPolicy: 'network-only' },
             ).toPromise();
           }
-        });
+          return undefined;
+        })
+        // A failed poll is retried at the next tick
+        .catch(() => undefined);
     }, RECOMPUTE_POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [pending, scope]);

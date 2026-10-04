@@ -52,6 +52,10 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
           const edges = (data as DefenseThreatsFieldSearchQuery$data | undefined)?.stixDomainObjects?.edges ?? [];
           setOptions(edges.map(({ node }) => ({ value: node.id, label: node.representative.main, type: node.entity_type })));
         })
+        .catch(() => {
+          // Options of an earlier input are never shown as the results of a failed search
+          if (current === requestId.current) setOptions([]);
+        })
         .finally(() => {
           if (current === requestId.current) setLoading(false);
         });

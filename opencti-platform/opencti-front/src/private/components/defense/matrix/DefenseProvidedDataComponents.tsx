@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, DialogActions, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
 import { DeleteOutlined } from '@mui/icons-material';
@@ -16,15 +16,29 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseProvidedDataComponentsQuery } from './__generated__/DefenseProvidedDataComponentsQuery.graphql';
+import { DefenseProvidedDataComponentsRefetchQuery } from './__generated__/DefenseProvidedDataComponentsRefetchQuery.graphql';
+import { DefenseProvidedDataComponents_data$key } from './__generated__/DefenseProvidedDataComponents_data.graphql';
 import { DefenseProvidedDataComponentsDeleteMutation } from './__generated__/DefenseProvidedDataComponentsDeleteMutation.graphql';
 import { DefenseProvidedDataComponentsLogsourcesMutation } from './__generated__/DefenseProvidedDataComponentsLogsourcesMutation.graphql';
 
 const PROVIDES = 'provides';
-const MAX_PROVIDED = 500;
+const PROVIDED_PAGE_SIZE = 100;
 
 const defenseProvidedDataComponentsQuery = graphql`
-  query DefenseProvidedDataComponentsQuery($fromId: [String], $first: Int) {
-    stixCoreRelationships(fromId: $fromId, relationship_type: ["provides"], first: $first, orderBy: created_at, orderMode: desc) {
+  query DefenseProvidedDataComponentsQuery($fromId: [String], $count: Int!, $cursor: ID) {
+    ...DefenseProvidedDataComponents_data @arguments(fromId: $fromId, count: $count, cursor: $cursor)
+  }
+`;
+
+const defenseProvidedDataComponentsFragment = graphql`
+  fragment DefenseProvidedDataComponents_data on Query
+  @argumentDefinitions(
+    fromId: { type: "[String]" }
+    count: { type: "Int", defaultValue: 100 }
+    cursor: { type: "ID" }
+  ) @refetchable(queryName: "DefenseProvidedDataComponentsRefetchQuery") {
+    stixCoreRelationships(fromId: $fromId, relationship_type: ["provides"], first: $count, after: $cursor, orderBy: created_at, orderMode: desc)
+    @connection(key: "Pagination_defenseProvidedDataComponents_stixCoreRelationships") {
       edges {
         node {
           id
@@ -37,6 +51,10 @@ const defenseProvidedDataComponentsQuery = graphql`
             }
           }
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -170,10 +188,14 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
 
 const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<DefenseProvidedDataComponentsQuery>; onDeleted: () => void }) => {
   const { t_i18n } = useFormatter();
-  const { stixCoreRelationships } = usePreloadedQuery(defenseProvidedDataComponentsQuery, queryRef);
+  const queryData = usePreloadedQuery(defenseProvidedDataComponentsQuery, queryRef);
+  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<DefenseProvidedDataComponentsRefetchQuery, DefenseProvidedDataComponents_data$key>(
+    defenseProvidedDataComponentsFragment,
+    queryData,
+  );
   const [commitDelete, deleting] = useApiMutation<DefenseProvidedDataComponentsDeleteMutation>(defenseProvidedDataComponentsDeleteMutation);
   const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
-  const relations = (stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id);
+  const relations = (data.stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id);
   if (relations.length === 0) {
     return <Typography variant="body2" color="text.secondary">{t_i18n('No data component is declared as provided.')}</Typography>;
   }
@@ -197,6 +219,13 @@ const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<Defens
         </DialogActions>
       </Dialog>
       <ProvidedListItems relations={relations} onRemove={setToRemove} />
+      {hasNext && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+          <Button variant="secondary" disabled={isLoadingNext} onClick={() => loadNext(PROVIDED_PAGE_SIZE)} data-testid="defense-provided-load-more">
+            {t_i18n('Load more')}
+          </Button>
+        </Box>
+      )}
     </>
   );
 };
@@ -249,7 +278,7 @@ const DefenseProvidedDataComponents = ({ entityId }: DefenseProvidedDataComponen
   const [queryRef, loadQuery] = useQueryLoader<DefenseProvidedDataComponentsQuery>(defenseProvidedDataComponentsQuery);
   const [logsourcesOpen, setLogsourcesOpen] = useState(false);
 
-  const reload = () => loadQuery({ fromId: [entityId], first: MAX_PROVIDED }, { fetchPolicy: 'network-only' });
+  const reload = () => loadQuery({ fromId: [entityId], count: PROVIDED_PAGE_SIZE }, { fetchPolicy: 'network-only' });
   React.useEffect(() => {
     reload();
   }, [entityId]);

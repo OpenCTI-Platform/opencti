@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
@@ -9,7 +9,12 @@ import { trackPendingValidationRequests } from '../../../../src/modules/defenseC
 import { consumeFullComputationRequest, listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { type BasicStoreEntityDefenseGap, ENTITY_TYPE_DEFENSE_GAP } from '../../../../src/modules/defenseCoverage/defenseGap/defenseGap-types';
 import { redisSetDefensePendingValidationTracking } from '../../../../src/database/redis';
-import { internalFindByIds } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, internalFindByIds } from '../../../../src/database/middleware-loader';
+import * as streamHandler from '../../../../src/database/stream/stream-handler';
+import * as securityCoverageDomain from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
+import { FunctionalError } from '../../../../src/config/errors';
+import type { BasicStoreEntity } from '../../../../src/types/store';
 import { notifyDefenseLevelChanges } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
 import { addTrigger, triggerDelete } from '../../../../src/modules/notification/notification-domain';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
@@ -368,6 +373,9 @@ describe('Threat-informed defense matrix', () => {
       ruleCandidates: [],
     }));
     expect(gaps[0].priority).toBeGreaterThan(0);
+    // A platform requested twice is one scope entry
+    const duplicated = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, platformIds: [created.platform, created.platform] } });
+    expect(duplicated.data?.defenseGaps.pageInfo.globalCount).toEqual(1);
     const usedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, threatScope: { mode: 'NONE' }, filter: { search: MITRE_ID, onlyUsedByThreats: true } } });
     expect(usedOnly.data?.defenseGaps.edges).toEqual([]);
     const csv = await queryAsAdminWithSuccess({ query: DEFENSE_GAP_EXPORT, variables });
@@ -430,6 +438,28 @@ describe('Threat-informed defense matrix', () => {
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+  });
+
+  it('should leave no grouping behind when the security coverage of a validation request cannot be created', async () => {
+    const name = 'Defense matrix test failed validation';
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const mocks = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(securityCoverageDomain, 'addSecurityCoverage').mockRejectedValue(FunctionalError('Defense matrix test coverage failure')),
+    ];
+    try {
+      await queryAsAdminWithError(
+        { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], name } } },
+        'Defense matrix test coverage failure',
+      );
+    } finally {
+      mocks.forEach((mock) => mock.mockRestore());
+    }
+    const groupings = await fullEntitiesList<BasicStoreEntity>(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_GROUPING]);
+    expect(groupings.filter((grouping) => grouping.name === name)).toEqual([]);
   });
 
   it('should reject an empty or unknown validation request', async () => {

@@ -126,6 +126,10 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
           if (current !== requestId.current) return;
           const edges = (data as DefenseLogsourceMappingFormSearchQuery$data | undefined)?.dataComponents?.edges ?? [];
           setOptions(edges.flatMap((edge) => (edge?.node ? [toOption(edge.node.name)] : [])));
+        })
+        .catch(() => {
+          // Options of an earlier input are never shown as the results of a failed search
+          if (current === requestId.current) setOptions([]);
         });
     }, 300);
   };
