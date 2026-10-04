@@ -34,6 +34,7 @@ import {
   ENTITY_TYPE_MERGE_RECORD,
   MERGE_STATUS_ACTIVE,
   MERGE_STATUS_PARTIALLY_REVERTED,
+  MERGE_STATUS_REVERTED,
   PROPOSAL_STATUS_ACCEPTED,
   PROPOSAL_STATUS_AUTO_APPLIED,
   PROPOSAL_STATUS_OPEN,
@@ -42,7 +43,7 @@ import {
   CURATION_DETECTORS,
 } from './curation-types';
 import { executeProposalAction, isProceduresAttributeAvailable, isProvenanceAvailable, revertAppliedPatch } from './curation-apply';
-import { unmergeFromRecord } from './curation-merge-record';
+import { findMergeRecordById, unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from './curation-adjudication';
 import { canUserApplyProposal, canUserRevertProposal } from './curation-access';
@@ -447,8 +448,15 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   }
   let report: Record<string, unknown>;
   if (proposal.merge_record_id) {
-    const result = await unmergeFromRecord(context, user, proposal.merge_record_id);
-    report = { restored_ids: result.restored_ids, skipped_relationship_ids: result.skipped_relationship_ids };
+    // A revert retried after its graph change failed to close the proposal: the merge record is already fully undone,
+    // so only the proposal is left to close. A partially undone record is completed by the unmerge.
+    const record = await findMergeRecordById(context, user, proposal.merge_record_id);
+    if (record?.merge_status === MERGE_STATUS_REVERTED) {
+      report = { restored_ids: [], skipped_relationship_ids: [], already_reverted: true };
+    } else {
+      const result = await unmergeFromRecord(context, user, proposal.merge_record_id);
+      report = { restored_ids: result.restored_ids, skipped_relationship_ids: result.skipped_relationship_ids };
+    }
   } else if (proposal.applied_patch) {
     report = { ...(await revertAppliedPatch(context, user, proposal.applied_patch)) };
   } else {

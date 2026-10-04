@@ -386,8 +386,12 @@ export const revertAppliedPatch = async (context: AuthContext, user: AuthUser, p
       controlUserConfidenceAgainstElement(user, element);
       const changes: Record<string, unknown> = {};
       operations.forEach((operation) => {
-        if (sameValue((element as Record<string, any>)[operation.key], operation.value)) {
+        const current = (element as Record<string, any>)[operation.key];
+        if (sameValue(current, operation.value)) {
           changes[operation.key] = operation.previous;
+        } else if (sameValue(current, operation.previous)) {
+          // Already restored, by a revert retried after it failed to close the proposal.
+          report.reverted_operations += 1;
         } else {
           report.skipped_operations.push({ element_id: elementId, key: operation.key, reason: 'value changed since the apply' });
         }
