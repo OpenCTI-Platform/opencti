@@ -1,9 +1,10 @@
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useTheme } from '@mui/material/styles';
 import { Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
-import { TIMELINE_ANCHOR_KEYS, TIMELINE_ANCHOR_LABELS, type TimelineAnchorKey, toTime } from './timelineUtils';
+import { elapsedBetween, TIMELINE_ANCHOR_KEYS, TIMELINE_ANCHOR_LABELS, type TimelineAnchorKey, toTime } from './timelineUtils';
 import type { TimelineChartAnchors } from './ContainerTimelineLanes';
 
 const ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
@@ -16,25 +17,82 @@ const ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
 
 interface ContainerTimelineAnchorsProps {
   anchors: TimelineChartAnchors;
+  // Overview card: a compact list with the time to the minute and the time elapsed since the first adversary activity
   dense?: boolean;
   onAnchorClick?: (time: number) => void;
 }
 
-/** Per-case anchor timestamps (no aggregated metric): one tile per anchor, empty when not reached yet. */
 const ellipsis: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
-const DENSE_TILE_MIN_WIDTH = 136;
 
-const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
-  const { t_i18n, fldt, nsdt } = useFormatter();
+/** Time elapsed since the first adversary activity, in the two largest units ("2d 22h later"). */
+const useElapsedLabel = () => {
+  const intl = useIntl();
+  const { t_i18n } = useFormatter();
+  const unit = (value: number, name: 'day' | 'hour' | 'minute') => intl.formatNumber(value, { style: 'unit', unit: name, unitDisplay: 'narrow' });
+  return (origin: number, time: number) => {
+    const { sign, days, hours, minutes } = elapsedBetween(origin, time);
+    if (sign === 0) return t_i18n('At the same time');
+    let duration = unit(minutes, 'minute');
+    if (days > 0) duration = `${unit(days, 'day')} ${unit(hours, 'hour')}`;
+    else if (hours > 0) duration = `${unit(hours, 'hour')} ${unit(minutes, 'minute')}`;
+    return t_i18n(sign > 0 ? '{duration} later' : '{duration} earlier', { values: { duration } });
+  };
+};
+
+const ContainerTimelineAnchorList = ({ anchors }: { anchors: TimelineChartAnchors }) => {
+  const { t_i18n } = useFormatter();
+  const intl = useIntl();
   const theme = useTheme();
   const colors = useTimelineColors();
-  // The dense tiles of an overview card wrap onto a second row rather than truncate when the card is half of the row
-  const columns = dense ? `repeat(auto-fit, minmax(${DENSE_TILE_MIN_WIDTH}px, 1fr))` : `repeat(${TIMELINE_ANCHOR_KEYS.length}, minmax(0, 1fr))`;
+  const elapsedLabel = useElapsedLabel();
+  const origin = toTime(anchors?.first_adversary_activity);
+  return (
+    <div role="list" aria-label={t_i18n('Timeline anchors')} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }} data-testid="timeline-anchors">
+      {TIMELINE_ANCHOR_KEYS.map((key) => {
+        const time = toTime(anchors?.[key]);
+        const elapsed = time !== null && origin !== null && key !== 'first_adversary_activity' ? elapsedLabel(origin, time) : null;
+        return (
+          <Tooltip key={key}>
+            <TooltipTrigger asChild>
+              <div
+                role="listitem"
+                style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, auto)', columnGap: theme.spacing(1.5), alignItems: 'baseline' }}
+                data-testid={`timeline-anchor-${key}`}
+              >
+                <Text variant="content-caption" as="span" style={{ ...ellipsis, color: colors.textSecondary }}>
+                  {t_i18n(TIMELINE_ANCHOR_LABELS[key])}
+                </Text>
+                <Text variant="content-compact-medium" as="span" style={time !== null ? ellipsis : { ...ellipsis, color: colors.textSecondary }}>
+                  {time !== null
+                    ? intl.formatDate(time, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+                    : t_i18n('Not reached')}
+                </Text>
+                <Text variant="content-caption" as="span" style={{ ...ellipsis, color: colors.textSecondary, textAlign: 'right' }} data-testid={`timeline-anchor-${key}-elapsed`}>
+                  {elapsed}
+                </Text>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{t_i18n(ANCHOR_HELP[key])}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
+};
+
+/** Per-case anchor timestamps (no aggregated metric): one tile per anchor, empty when not reached yet. */
+const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
+  const { t_i18n, fldt } = useFormatter();
+  const theme = useTheme();
+  const colors = useTimelineColors();
+  if (dense) {
+    return <ContainerTimelineAnchorList anchors={anchors} />;
+  }
   return (
     <div
       role="list"
       aria-label={t_i18n('Timeline anchors')}
-      style={{ display: 'grid', gridTemplateColumns: columns, gap: theme.spacing(dense ? 0.75 : 1.25) }}
+      style={{ display: 'grid', gridTemplateColumns: `repeat(${TIMELINE_ANCHOR_KEYS.length}, minmax(0, 1fr))`, gap: theme.spacing(1.25) }}
       data-testid="timeline-anchors"
     >
       {TIMELINE_ANCHOR_KEYS.map((key) => {
@@ -47,7 +105,7 @@ const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: Con
           boxSizing: 'border-box',
           border: `1px solid ${colors.grid}`,
           borderRadius: theme.shape.borderRadius,
-          padding: dense ? theme.spacing(0.5, 1) : theme.spacing(1, 1.25),
+          padding: theme.spacing(1, 1.25),
           minWidth: 0,
           background: 'none',
           color: 'inherit',
@@ -59,8 +117,8 @@ const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: Con
             <Text variant="content-caption" as="div" style={{ ...ellipsis, color: colors.textSecondary }}>
               {t_i18n(TIMELINE_ANCHOR_LABELS[key])}
             </Text>
-            <Text variant={dense ? 'content-compact-medium' : 'content-base-medium'} as="div" style={value ? ellipsis : { ...ellipsis, color: colors.textSecondary }}>
-              {value ? (dense ? nsdt(value) : fldt(value)) : t_i18n('Not reached')}
+            <Text variant="content-base-medium" as="div" style={value ? ellipsis : { ...ellipsis, color: colors.textSecondary }}>
+              {value ? fldt(value) : t_i18n('Not reached')}
             </Text>
           </>
         );

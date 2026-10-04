@@ -50,6 +50,7 @@ import {
   effectiveLanes,
   parseTimelineViewState,
   serializeTimelineViewState,
+  TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   type TimelineDomain,
@@ -423,7 +424,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const urlTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [liveUpdates, setLiveUpdates] = useState(0);
   const [formEvent, setFormEvent] = useState<TimelineEventDetails | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  // Coming from "Add a milestone" on the overview card: the form opens once, for users who may edit
+  const [formOpen, setFormOpen] = useState(() => searchParams.has(TIMELINE_ADD_MILESTONE_PARAM) && !!summary?.can_edit);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [visibleDomain, setVisibleDomain] = useState<TimelineDomain | null>(null);
@@ -436,6 +438,14 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   }, [defaults, setSearchParams]);
 
   useEffect(() => () => clearTimeout(urlTimer.current), []);
+  useEffect(() => {
+    if (!searchParams.has(TIMELINE_ADD_MILESTONE_PARAM)) return;
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete(TIMELINE_ADD_MILESTONE_PARAM);
+      return next;
+    }, { replace: true });
+  }, []);
   // A new zoom window (or a URL change from the outside) resets the visible domain
   useEffect(() => {
     setDomain(state.domain);

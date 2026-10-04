@@ -4,11 +4,13 @@ import {
   buildTimelineFileName,
   centerDomain,
   clusterLaneEvents,
+  compactDayTicks,
   computeTimelineExtent,
   computeVisibleDomain,
   describeTimelineSpan,
   effectiveKinds,
   effectiveLanes,
+  elapsedBetween,
   fitSvgToWidth,
   groupEventsByBucket,
   groupOverflowItems,
@@ -252,5 +254,35 @@ describe('Timeline anchor labels', () => {
     expect(left.x - ('First response'.length * 5.5) / 2).toBeGreaterThanOrEqual(100);
     const [right] = layoutAnchorLabels([{ key: 'closure', x: 999, label: 'Closure' }], 100, 1000);
     expect(right.x + ('Closure'.length * 5.5) / 2).toBeLessThanOrEqual(1000);
+  });
+});
+
+describe('Timeline compact views', () => {
+  // Local dates: the ticks are local midnights, whatever the time zone of the test machine
+  const at = (day: number, hour = 12) => new Date(2026, 1, day, hour, 0, 0, 0).getTime();
+
+  it('steps the day ticks so that at most five fit', () => {
+    const ticks = compactDayTicks([at(1, 9), at(20, 9)]);
+    expect(ticks.length).toBeLessThanOrEqual(5);
+    expect(ticks[0].getTime()).toEqual(new Date(2026, 1, 2).getTime());
+    ticks.forEach((tick) => expect([tick.getHours(), tick.getMinutes()]).toEqual([0, 0]));
+    const steps = ticks.slice(1).map((tick, index) => Math.round((tick.getTime() - ticks[index].getTime()) / DAY));
+    expect(new Set(steps).size).toEqual(1);
+  });
+
+  it('gives one tick per day on a short span', () => {
+    expect(compactDayTicks([at(1, 9), at(4, 9)]).map((tick) => tick.getDate())).toEqual([2, 3, 4]);
+  });
+
+  it('names the day of a span without any midnight', () => {
+    const ticks = compactDayTicks([at(3, 8), at(3, 18)]);
+    expect(ticks).toHaveLength(1);
+    expect(ticks[0].getDate()).toEqual(3);
+  });
+
+  it('measures the time elapsed since the first adversary activity', () => {
+    expect(elapsedBetween(at(1, 9), at(3, 7) + 30 * 60 * 1000)).toEqual({ sign: 1, days: 1, hours: 22, minutes: 30 });
+    expect(elapsedBetween(at(3, 9), at(3, 7))).toEqual({ sign: -1, days: 0, hours: 2, minutes: 0 });
+    expect(elapsedBetween(at(3, 9), at(3, 9) + 20 * 1000)).toEqual({ sign: 0, days: 0, hours: 0, minutes: 0 });
   });
 });

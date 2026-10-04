@@ -8,6 +8,7 @@ import useTimelineColors from './useTimelineColors';
 import { resolveTimelineSourceState, type TimelineSourceStateValue } from './timelineSourceStates';
 import {
   clusterLaneEvents,
+  compactDayTicks,
   groupOverflowItems,
   layoutAnchorLabels,
   layoutLaneRows,
@@ -49,7 +50,7 @@ interface ContainerTimelineLanesProps {
   grouping: TimelineGrouping;
   anchors?: TimelineChartAnchors;
   selectedId?: string | null;
-  // Strip and widget mode: no lane labels, no row stacking beyond 2 rows, no zoom
+  // Overview card mode: narrow lane labels, day ticks, no row stacking beyond 2 rows, no event labels, no zoom
   compact?: boolean;
   onDomainChange?: (domain: TimelineDomain) => void;
   onFit?: () => void;
@@ -60,6 +61,9 @@ interface ContainerTimelineLanesProps {
 }
 
 const LABEL_WIDTH = 116;
+const COMPACT_LABEL_WIDTH = 84;
+const COMPACT_LABEL_CHARS = 12;
+const COMPACT_MAX_TICKS = 5;
 const AXIS_HEIGHT = 30;
 const ANCHOR_HEIGHT = 18;
 const ROW_HEIGHT = 20;
@@ -121,7 +125,7 @@ const ContainerTimelineLanes = ({
     return () => observer.disconnect();
   }, []);
 
-  const labelWidth = compact ? 0 : LABEL_WIDTH;
+  const labelWidth = compact ? COMPACT_LABEL_WIDTH : LABEL_WIDTH;
   const plotLeft = labelWidth + 8;
   const plotRight = Math.max(width - 12, plotLeft + 50);
   const plotWidth = plotRight - plotLeft;
@@ -182,11 +186,13 @@ const ContainerTimelineLanes = ({
   }, [lanes, events, grouping, scale, compact, plotLeft, plotRight]);
 
   const lanesBottom = laneLayouts.length > 0 ? laneLayouts[laneLayouts.length - 1].y + laneLayouts[laneLayouts.length - 1].height : AXIS_HEIGHT;
-  const ticks = useMemo(() => scale.ticks(Math.max(2, Math.floor(plotWidth / 120))), [scale, plotWidth]);
+  // A half-width card names at most five days, never overlapping; the full views follow the zoom
+  const ticks = useMemo(() => (compact ? compactDayTicks(domain, COMPACT_MAX_TICKS) : scale.ticks(Math.max(2, Math.floor(plotWidth / 120)))), [compact, domain, scale, plotWidth]);
   const span = domain[1] - domain[0];
   // The label follows the tick step, so two ticks of the same day never read the same
   const tickStep = ticks.length > 1 ? ticks[1].getTime() - ticks[0].getTime() : span;
   const formatTick = useCallback((tick: Date) => {
+    if (compact) return intl.formatDate(tick, { month: 'short', day: 'numeric' });
     const day = 24 * 3600 * 1000;
     if (tickStep < day) {
       return span <= 2 * day
@@ -195,7 +201,13 @@ const ContainerTimelineLanes = ({
     }
     if (tickStep < 28 * day) return intl.formatDate(tick, { month: 'short', day: 'numeric' });
     return intl.formatDate(tick, { year: 'numeric', month: 'short' });
-  }, [intl, span, tickStep]);
+  }, [compact, intl, span, tickStep]);
+  // The labels at both ends of a compact axis stay inside the drawing
+  const tickAnchor = (x: number) => {
+    if (!compact) return 'middle';
+    if (x < plotLeft + 24) return 'start';
+    return x > plotRight - 24 ? 'end' : 'middle';
+  };
 
   // region interactions
   const zoomAt = useCallback((factor: number, clientX?: number) => {
@@ -413,14 +425,11 @@ const ContainerTimelineLanes = ({
         {laneLayouts.map((layout, index) => (
           <g key={layout.lane}>
             <rect x={0} y={layout.y} width={width} height={layout.height} fill={index % 2 === 0 ? colors.laneBackground : 'transparent'} />
-            {!compact && (
-              <>
-                <rect x={8} y={layout.y + layout.height / 2 - 7} width={4} height={14} rx={2} fill={colors.lanes[layout.lane]} />
-                <text x={18} y={layout.y + layout.height / 2 + 4} fill={colors.text} fontSize={12} fontWeight="bold">
-                  {t_i18n(TIMELINE_LANE_LABELS[layout.lane])}
-                </text>
-              </>
-            )}
+            <rect x={8} y={layout.y + layout.height / 2 - 7} width={4} height={14} rx={2} fill={colors.lanes[layout.lane]} />
+            <text x={18} y={layout.y + layout.height / 2 + 4} fill={colors.text} fontSize={compact ? 11 : 12} fontWeight="bold">
+              <title>{t_i18n(TIMELINE_LANE_LABELS[layout.lane])}</title>
+              {compact ? truncate(t_i18n(TIMELINE_LANE_LABELS[layout.lane]), COMPACT_LABEL_CHARS) : t_i18n(TIMELINE_LANE_LABELS[layout.lane])}
+            </text>
           </g>
         ))}
         <line x1={plotLeft} y1={AXIS_HEIGHT - 6} x2={plotRight} y2={AXIS_HEIGHT - 6} stroke={colors.grid} />
@@ -429,7 +438,7 @@ const ContainerTimelineLanes = ({
           return (
             <g key={tick.getTime()}>
               <line x1={x} y1={AXIS_HEIGHT - 10} x2={x} y2={lanesBottom} stroke={colors.grid} strokeDasharray="2 4" />
-              <text x={x} y={AXIS_HEIGHT - 14} fill={colors.textSecondary} textAnchor="middle">{formatTick(tick)}</text>
+              <text x={x} y={AXIS_HEIGHT - 14} fill={colors.textSecondary} textAnchor={tickAnchor(x)}>{formatTick(tick)}</text>
             </g>
           );
         })}

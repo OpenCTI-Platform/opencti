@@ -475,3 +475,52 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
   return enabled.length === TIMELINE_LANES.length ? null : enabled;
 };
 // endregion
+
+// region compact views (overview card)
+// Opening the Timeline tab with this parameter opens the milestone form once (the overview card links to it)
+export const TIMELINE_ADD_MILESTONE_PARAM = 'add_milestone';
+
+/**
+ * At most `maxTicks` local midnights inside the domain, evenly stepped by whole days, for a day-precision axis.
+ * A domain that holds no midnight gets one tick in its middle, so the day is always named.
+ */
+export const compactDayTicks = (domain: TimelineDomain, maxTicks = 5): Date[] => {
+  const first = new Date(domain[0]);
+  first.setHours(0, 0, 0, 0);
+  if (first.getTime() < domain[0]) first.setDate(first.getDate() + 1);
+  const last = new Date(domain[1]);
+  last.setHours(0, 0, 0, 0);
+  if (last.getTime() < first.getTime()) return [new Date((domain[0] + domain[1]) / 2)];
+  // Rounded: a change of daylight saving time makes a day 23 or 25 hours long
+  const days = Math.round((last.getTime() - first.getTime()) / DAY);
+  const step = Math.max(1, Math.ceil((days + 1) / maxTicks));
+  const ticks: Date[] = [];
+  for (let offset = 0; offset <= days && ticks.length < maxTicks; offset += step) {
+    const tick = new Date(first);
+    tick.setDate(first.getDate() + offset);
+    ticks.push(tick);
+  }
+  return ticks;
+};
+
+export interface TimelineElapsed {
+  // 1 when the time is after the origin, -1 before, 0 within the same minute
+  sign: 1 | -1 | 0;
+  days: number;
+  hours: number;
+  minutes: number;
+}
+
+/** Elapsed time between an origin and a time, in whole days, hours and minutes. */
+export const elapsedBetween = (origin: number, time: number): TimelineElapsed => {
+  const delta = time - origin;
+  const totalMinutes = Math.floor(Math.abs(delta) / (60 * 1000));
+  if (totalMinutes === 0) return { sign: 0, days: 0, hours: 0, minutes: 0 };
+  return {
+    sign: delta > 0 ? 1 : -1,
+    days: Math.floor(totalMinutes / (24 * 60)),
+    hours: Math.floor((totalMinutes % (24 * 60)) / 60),
+    minutes: totalMinutes % 60,
+  };
+};
+// endregion
