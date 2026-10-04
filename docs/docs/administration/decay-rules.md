@@ -144,6 +144,14 @@ The list and the page of each rule state its effect in one sentence built from i
 
     ![The Knowledge decay rules tab in the light theme](./assets/knowledge-decay-rules-light.png)
 
+The creation and edition form explains each field below it and links to this section ("Learn more about knowledge decay rules").
+
+![The knowledge decay rule form: a help line under the target scope, the relationship types, the stale after delay, the policy, the confidence step, the order and the active switch](./assets/knowledge-decay-rule-form.png)
+
+??? example "The same form in the light theme"
+
+    ![The knowledge decay rule form in the light theme](./assets/knowledge-decay-rule-form-light.png)
+
 Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating or deleting a rule, or changing its targets, filters, delay, policy or confidence step, clears the flags it set: the next run evaluates that knowledge again under the new configuration, so a new policy also applies to the knowledge already flagged.
 
 Three built-in knowledge decay rules are shipped **disabled**: `communicates-with` relationships after 180 days, `uses` relationships after 24 months and infrastructures after one year. They can only be activated or deactivated: create your own rule to change their configuration.

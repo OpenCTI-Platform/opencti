@@ -174,6 +174,14 @@ Both only count the types on which provenance is tracked: the knowledge of an un
 
     ![The provenance widgets in the light theme](assets/provenance-widgets-light.png)
 
+While provenance is disabled (see [Configuration](#configuration)), a provenance widget already saved on a dashboard keeps its place and runs no query: it states that provenance is disabled, that an administrator enables it in the platform configuration, and links to this documentation.
+
+![The same dashboard while provenance is disabled: each provenance widget keeps its title and reads "Provenance is disabled on this platform.", the next step and a "Learn more" link](assets/provenance-widget-disabled.png)
+
+??? example "The same dashboard in the light theme"
+
+    ![The provenance widgets of a dashboard while provenance is disabled, in the light theme](assets/provenance-widget-disabled-light.png)
+
 ## Notifications
 
 Two trigger event types are dedicated to provenance in [live triggers](notifications.md#triggers):
