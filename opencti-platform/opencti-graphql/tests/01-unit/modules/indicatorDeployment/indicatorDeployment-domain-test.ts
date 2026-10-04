@@ -200,8 +200,9 @@ describe('deployment manager stream extraction', () => {
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-2', type: 'Indicator' } } }, '/x_opencti_score'),
       update({ type: 'identity', extensions: { [ext]: { id: 'organization-1', type: 'Organization' } } }, '/object_marking_refs/0'),
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-4', type: 'Indicator' } } }, '/extensions/' + ext + '/authorized_members/0'),
+      update({ type: 'relationship', relationship_type: 'deployed-on', extensions: { [ext]: { id: 'deployment-1', source_ref: 'indicator-5' } } }, '/object_marking_refs/0'),
     ]);
-    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4'], platformIds: ['platform-1', 'platform-2'] });
+    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5'], platformIds: ['platform-1', 'platform-2'] });
     expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
   });
 });

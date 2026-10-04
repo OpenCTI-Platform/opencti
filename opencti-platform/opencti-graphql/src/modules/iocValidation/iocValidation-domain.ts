@@ -305,7 +305,6 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
   ]);
   const requesterReadable = new Set(requesterDeployments.map((d) => d.internal_id));
   const pairs: IocValidationPair[] = [];
-  const pairDeployments: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
   iocs.forEach((ioc) => {
     resolvedPlatforms.forEach((platform) => {
       // A deployment the requester cannot read is reported like a missing one, so its existence is not revealed
@@ -321,7 +320,6 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Already waiting for the results of another validation request' });
       } else {
         pairs.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, deployed_on_id: deployment.internal_id });
-        pairDeployments.push(deployment);
       }
     });
   });
@@ -329,30 +327,54 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
     const reasons = [...new Set(skipped.map((s) => s.reason))];
     throw FunctionalError(`Nothing to validate: ${reasons.join(', ')}`, { skipped: skipped.length });
   }
-  const pairIndicatorIds = new Set(pairs.map((p) => p.indicator_id));
-  const validatedIocs = iocs.filter((ioc) => pairIndicatorIds.has(ioc.indicator_id));
-  const name = args.name?.trim() || `Validation of ${pairIndicatorIds.size} indicator(s) on ${resolvedPlatforms.length} security platform(s)`;
-  // Module internal objects are not dated by the data builder: the creation date is part of the request.
-  const createdAt = new Date();
-  const request = await createInternalObject<StoreEntityIocValidationRequest>(contextOutOfDraft, user, {
-    name,
-    created_at: createdAt,
-    updated_at: createdAt,
-    description: args.description ?? undefined,
-    platform_ids: resolvedPlatforms.map((p) => p.internal_id),
-    indicator_ids: [...pairIndicatorIds],
-    test_kinds: testKinds,
-    status: REQUEST_STATUS_PENDING,
-    connector_id: connector.internal_id,
-    results_summary: emptyResultsSummary(pairs.length, skipped.length),
-    iocs: validatedIocs,
-    pairs,
-    skipped,
-  }, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
-  await setPairsValidationStatus(contextOutOfDraft, pairDeployments, {
-    validation_status: VALIDATION_STATUS_REQUESTED,
-    validation_run_id: request.internal_id,
-  });
+  // 04. Claim: the pairs are re-read and marked under the pair locks of the report paths, so two concurrent requests
+  // can never both take the same deployment (the keys are sorted, the locks released whatever happens).
+  const lock = await lockResources([...new Set(pairs.map((pair) => pairLockKey(pair.indicator_id, pair.platform_id)))].sort());
+  let request: StoreEntityIocValidationRequest;
+  try {
+    const claimed: IocValidationPair[] = [];
+    const claimedDeployments: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
+    await BluePromise.map(pairs, async (pair) => {
+      const current = await findDeployedOn(contextOutOfDraft, SYSTEM_USER, pair.indicator_id, pair.platform_id) as (BasicStoreRelationDeployedOn & { _index: string }) | undefined;
+      const stillEligible = current && current.internal_id === pair.deployed_on_id
+        && LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status) && current.revoked !== true
+        && !(current.validation_status === VALIDATION_STATUS_REQUESTED && current.validation_run_id);
+      if (stillEligible) {
+        claimed.push(pair);
+        claimedDeployments.push(current);
+      } else {
+        skipped.push({ indicator_id: pair.indicator_id, platform_id: pair.platform_id, reason: 'Already waiting for the results of another validation request' });
+      }
+    }, { concurrency: CONCURRENCY });
+    if (claimed.length === 0) {
+      throw FunctionalError('Nothing to validate: Already waiting for the results of another validation request', { skipped: skipped.length });
+    }
+    const claimedIndicatorIds = new Set(claimed.map((p) => p.indicator_id));
+    const name = args.name?.trim() || `Validation of ${claimedIndicatorIds.size} indicator(s) on ${resolvedPlatforms.length} security platform(s)`;
+    // Module internal objects are not dated by the data builder: the creation date is part of the request.
+    const createdAt = new Date();
+    request = await createInternalObject<StoreEntityIocValidationRequest>(contextOutOfDraft, user, {
+      name,
+      created_at: createdAt,
+      updated_at: createdAt,
+      description: args.description ?? undefined,
+      platform_ids: resolvedPlatforms.map((p) => p.internal_id),
+      indicator_ids: [...claimedIndicatorIds],
+      test_kinds: testKinds,
+      status: REQUEST_STATUS_PENDING,
+      connector_id: connector.internal_id,
+      results_summary: emptyResultsSummary(claimed.length, skipped.length),
+      iocs: iocs.filter((ioc) => claimedIndicatorIds.has(ioc.indicator_id)),
+      pairs: claimed,
+      skipped,
+    }, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
+    await setPairsValidationStatus(contextOutOfDraft, claimedDeployments, {
+      validation_status: VALIDATION_STATUS_REQUESTED,
+      validation_run_id: request.internal_id,
+    });
+  } finally {
+    await lock.unlock();
+  }
   await addIocValidationRequestCreationCount();
   return dispatchIocValidationRequest(contextOutOfDraft, request);
 };
