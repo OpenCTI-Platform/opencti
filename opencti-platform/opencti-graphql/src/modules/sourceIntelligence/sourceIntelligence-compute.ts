@@ -172,8 +172,8 @@ export interface ComputeState {
   pairs: Map<ScorecardPeriodValue, Map<string, number>>;
   scanned: number;
   truncated: boolean;
-  // Each page read by the scan: when it was requested and the last internal id it returned
-  scanPages: Array<[number, string]>;
+  // Each page read by the scan: when it was requested, the last internal id it returned, when its signals were read
+  scanPages: Array<ScanTracePage>;
 }
 
 export const createComputeState = (asOf: number): ComputeState => ({
@@ -185,10 +185,16 @@ export const createComputeState = (asOf: number): ComputeState => ({
   scanPages: [],
 });
 
-/** Pages of the last full computation, started at `started_at`, kept to know which deleted objects it counted. */
+// Request time of a page, its last internal id and the time its signals were looked up (absent in older traces)
+export type ScanTracePage = [number, string, number?];
+
+/**
+ * Pages of the last full computation, started at `started_at`, kept to know which deleted objects and which signals
+ * given while it scanned it counted.
+ */
 export interface ScanTrace {
   started_at: number;
-  pages: Array<[number, string]>;
+  pages: Array<ScanTracePage>;
 }
 
 /**
@@ -203,6 +209,29 @@ export const countedByLastScan = (trace: ScanTrace | null | undefined, objectId:
   }
   const page = trace.pages.find(([, lastId]) => objectId <= lastId);
   return page !== undefined && time > page[0];
+};
+
+/**
+ * Whether the last full computation already counted a signal given to an object at `time` while it scanned (a
+ * revocation, read with the object, or a sighting, PIR match or hunt verdict, read with the signals of its page): the
+ * scan read it after the event. The stream applies the signal otherwise, so a change made during the scan counts once.
+ */
+export const signalSeenByLastScan = (
+  trace: ScanTrace | null | undefined,
+  objectId: string,
+  createdAt: number | null,
+  time: number,
+  readWith: 'object' | 'signals',
+): boolean => {
+  if (!trace || time <= trace.started_at || (createdAt !== null && createdAt > trace.started_at)) {
+    return false;
+  }
+  const page = trace.pages.find(([, lastId]) => objectId <= lastId);
+  if (page === undefined) {
+    return false;
+  }
+  const [requestedAt, , signalsAt] = page;
+  return time < (readWith === 'signals' ? (signalsAt ?? requestedAt) : requestedAt);
 };
 
 const accumulatorOf = (state: ComputeState, period: ScorecardPeriodValue, sourceId: string): SourceAccumulator => {
@@ -804,7 +833,7 @@ export const scanKnowledge = async (
     const scoredHits = hits.slice(0, remaining);
     if (scoredHits.length > 0) {
       const docs: ScanDocument[] = scoredHits.map((hit: any) => hit._source as ScanDocument);
-      state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id]);
+      state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id, Date.now()]);
       const pageLookups = await fetchPageLookups(context, docs, run);
       for (let i = 0; i < docs.length; i += 1) {
         await doYield();

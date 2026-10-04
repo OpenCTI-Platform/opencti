@@ -9,6 +9,7 @@ import {
   type ScanDocument,
   scanPageSize,
   type ScanTrace,
+  signalSeenByLastScan,
   toAssertionActivity,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
@@ -71,6 +72,26 @@ describe('Source intelligence scan trace', () => {
     expect(countedByLastScan(trace, 'c', 1050, 1150)).toBe(true);
     expect(countedByLastScan(trace, 'c', 500, 900)).toBe(true);
     expect(countedByLastScan(null, 'c', 500, 1150)).toBe(true);
+  });
+
+  it('should skip a signal given during the scan only when the scan read it after the event', () => {
+    // Page 'm' requested at 1200, its signals looked up at 1250
+    const withSignals: ScanTrace = { started_at: 1000, pages: [[1100, 'b', 1150], [1200, 'm', 1250], [1300, 't', 1350]] };
+    // A revocation is read with the object: before the page request it is already counted, after it is not
+    expect(signalSeenByLastScan(withSignals, 'c', 500, 1190, 'object')).toBe(true);
+    expect(signalSeenByLastScan(withSignals, 'c', 500, 1210, 'object')).toBe(false);
+    // A sighting, PIR match or hunt verdict is read with the signals of the page
+    expect(signalSeenByLastScan(withSignals, 'c', 500, 1210, 'signals')).toBe(true);
+    expect(signalSeenByLastScan(withSignals, 'c', 500, 1260, 'signals')).toBe(false);
+    // A trace without lookup times falls back to the page request time
+    expect(signalSeenByLastScan(trace, 'c', 500, 1190, 'signals')).toBe(true);
+    expect(signalSeenByLastScan(trace, 'c', 500, 1210, 'signals')).toBe(false);
+    // Before the computation, on an object created after its start or beyond the scanned range, or without a trace:
+    // the stream applies the signal
+    expect(signalSeenByLastScan(withSignals, 'c', 500, 900, 'signals')).toBe(false);
+    expect(signalSeenByLastScan(withSignals, 'c', 1050, 1100, 'signals')).toBe(false);
+    expect(signalSeenByLastScan(withSignals, 'z', 500, 1100, 'signals')).toBe(false);
+    expect(signalSeenByLastScan(null, 'c', 500, 1100, 'signals')).toBe(false);
   });
 });
 

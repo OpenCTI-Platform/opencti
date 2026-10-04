@@ -52,6 +52,7 @@ import {
   scanKnowledge,
   type ScanTrace,
   countedByLastScan,
+  signalSeenByLastScan,
   toAssertionActivity,
 } from '../modules/sourceIntelligence/sourceIntelligence-compute';
 import { applyLiveIncrements, type LiveIncrement, purgeScorecardSnapshots, writeScorecards } from '../modules/sourceIntelligence/sourceIntelligence-store';
@@ -272,7 +273,8 @@ export const computeEventIncrements = async (
   // Deleted objects and signals, applied only to the periods that count the object for each source
   const periodIncrements: PeriodIncrements = new Map();
   const deleted: Array<{ entityType: string; time: number; eventDocument: ProvenanceDocument }> = [];
-  const signals: Array<{ objectId: string; patch: LiveIncrement; time: number }> = [];
+  // A revocation is read by the scan with the object, the other signals with the signals of its page
+  const signals: Array<{ objectId: string; patch: LiveIncrement; time: number; readWith?: 'object' }> = [];
   const deletedSightings: Array<{ sightingId: string; objectId: string; time: number }> = [];
   const huntRuns: Array<{ runId: string; sign: number; time: number }> = [];
   for (let i = 0; i < events.length; i += 1) {
@@ -311,7 +313,7 @@ export const computeEventIncrements = async (
         const revoked = patchSetsValue(updateEvent, '/revoked', true);
         const wasRevoked = reversePatchSetsValue(updateEvent, '/revoked', true);
         if (revoked !== wasRevoked) {
-          signals.push({ objectId: extension.id, patch: { revoked_count: revoked ? 1 : -1 }, time });
+          signals.push({ objectId: extension.id, patch: { revoked_count: revoked ? 1 : -1 }, time, readWith: 'object' });
         }
       }
       if (options.huntRunType && entityType === options.huntRunType) {
@@ -390,11 +392,17 @@ export const computeEventIncrements = async (
   const documents = signalObjectIds.length > 0 ? await lookups.documents(signalObjectIds) : new Map<string, StoredDocument>();
   const missingIds = signalObjectIds.filter((objectId) => !documents.has(objectId) && !trashed.has(objectId));
   const trashedSignalObjects = missingIds.length > 0 ? await lookups.deletedDocuments(missingIds) : new Map<string, StoredDocument>();
-  signals.forEach(({ objectId, patch, time }) => {
+  signals.forEach(({ objectId, patch, time, readWith }) => {
     const document = documents.get(objectId) ?? trashed.get(objectId) ?? trashedSignalObjects.get(objectId);
-    if (document) {
-      mergePeriodIncrements(periodIncrements, signalIncrements(resolver, document, patch, time));
+    if (!document) {
+      return;
     }
+    // A signal given while the last full computation scanned is already counted if the scan read it after the event
+    const createdAt = document.created_at ? new Date(document.created_at).getTime() : null;
+    if (signalSeenByLastScan(options.scanTrace, objectId, createdAt, time, readWith ?? 'signals')) {
+      return;
+    }
+    mergePeriodIncrements(periodIncrements, signalIncrements(resolver, document, patch, time));
   });
   return { increments, periodIncrements };
 };

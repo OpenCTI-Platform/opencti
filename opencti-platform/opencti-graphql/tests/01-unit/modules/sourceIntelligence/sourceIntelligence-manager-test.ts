@@ -290,6 +290,34 @@ describe('Source intelligence live signal accounting', () => {
     });
   });
 
+  it('should not count again a revocation or a sighting the full computation read after the event', async () => {
+    const revocation = event('update', { id: 'indicator-1', type: 'Indicator' }, {
+      context: {
+        patch: [{ op: 'replace', path: '/revoked', value: true }],
+        reverse_patch: [{ op: 'replace', path: '/revoked', value: false }],
+      },
+    });
+    const events = [revocation, event('create', sighting)] as any;
+    const incrementsWith = async (pageRequestedAt: number, signalsAt: number) => {
+      const scanTrace = { started_at: AT - 10 * 60 * 1000, pages: [[pageRequestedAt, 'indicator-9', signalsAt]] as Array<[number, string, number]> };
+      const { periodIncrements } = await computeEventIncrements({} as AuthContext, events, resolver, {
+        enterprise: false,
+        huntRunType: null,
+        lookups: { documents },
+        scanTrace,
+      });
+      return byPeriod(periodIncrements as any).LAST_7_DAYS;
+    };
+    // Page read before both events: the stream counts them
+    expect(await incrementsWith(AT - 60 * 1000, AT - 30 * 1000)).toEqual({
+      'source-feed': { revoked_count: 1, sightings_count: 1, security_platform_sightings_count: 1 },
+    });
+    // Object read before the revocation, signals read after the sighting: only the revocation is counted
+    expect(await incrementsWith(AT - 60 * 1000, AT + 30 * 1000)).toEqual({ 'source-feed': { revoked_count: 1 } });
+    // Page read after both events: the scan already counted them
+    expect(await incrementsWith(AT + 30 * 1000, AT + 60 * 1000)).toBeUndefined();
+  });
+
   it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
     const verdictChange = event('update', { id: 'run-1', type: HUNT_RUN_TYPE }, {
       context: {
