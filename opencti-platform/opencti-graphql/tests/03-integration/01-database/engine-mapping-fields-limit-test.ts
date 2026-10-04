@@ -22,7 +22,7 @@ import { logApp } from '../../../src/config/conf';
 // mapped field. When a release adds attributes, the startup mapping update of such an index must fit its legacy fields,
 // its schema and the new attributes, which can exceed the default fields limit. A fresh index only holds the current
 // schema, so tests running on a fresh platform cannot reproduce it: this file builds a long-lived index on purpose.
-const LIMIT_RAISE_WARNING = '[SEARCH] Index mapping above the default fields limit, raising the limit of the index';
+const LIMIT_RAISE_WARNING = '[SEARCH] Index fields limit raised above the default to keep the headroom over the mapping';
 // Fields added to the schema by the release the long-lived platform upgrades to.
 const SCHEMA_GROWTH_FIELDS = 200;
 // Fields still free under the default limit before the upgrade: fewer than the schema growth, so the new mapping
