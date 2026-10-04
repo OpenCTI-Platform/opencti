@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import {
   awaitUntilCondition,
@@ -11,6 +11,7 @@ import {
 } from '../../utils/testQueryHelper';
 import { redisGetTelemetry } from '../../../src/database/redis';
 import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
+import * as timelineNotification from '../../../src/modules/timeline/timeline-notification';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
@@ -849,10 +850,14 @@ describe('Incident and case timeline', () => {
       const extension = JSON.stringify(JSON.parse(source.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE]);
       const manualEventCount = () => redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT);
       const countBefore = await manualEventCount();
+      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestoneAdded');
       const imported = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(imported.data.timelineImport.manual_count).toEqual(2);
-      // The milestones created by the import count like the ones added by an analyst (telemetry writes are fire-and-forget)
+      // The milestones created by the import count and notify like the ones added by an analyst (both fire-and-forget)
       await awaitUntilCondition(async () => (await manualEventCount()) === countBefore + 2, 3000, { message: 'Imported milestones were not counted in time' });
+      await awaitUntilCondition(async () => notified.mock.calls.length === 2, 3000, { message: 'Imported milestones were not notified in time' });
+      expect(notified.mock.calls.map(([, , containerId]) => containerId)).toEqual([secondCase.id, secondCase.id]);
+      expect(notified.mock.calls.map(([, , , milestone]) => milestone.name).sort()).toEqual(['Hosts isolated by the SOC', 'Regulator notified (CNIL)']);
       const again = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(again.data.timelineImport.manual_count).toEqual(2);
       const pinnedOnly = await listTimeline(secondCase.id, { pinnedOnly: true });
@@ -861,8 +866,10 @@ describe('Incident and case timeline', () => {
       // Coming back to the platform it was exported from, an event updates itself
       const back = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: caseIncident.id, extension } });
       expect(back.data.timelineImport.manual_count).toEqual(2);
-      // Updates of known events are not counted again
+      // Updates of known events are neither counted nor notified again
       expect(await manualEventCount()).toEqual(countBefore + 2);
+      expect(notified).toHaveBeenCalledTimes(2);
+      notified.mockRestore();
     });
 
     it('should reject an invalid extension', async () => {
@@ -961,6 +968,25 @@ describe('Incident and case timeline', () => {
       // Handed back to the queue for the tests that follow
       await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
       await enqueueTimelineRegeneration(claimed, 0);
+    });
+
+    it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {
+      const containerId = `timeline-queue-${Date.now()}`;
+      // The other due containers are handed back to the queue for the tests that follow
+      const claimOnly = async () => {
+        const claimed = await claimDueTimelineRegenerations(1000);
+        const others = claimed.filter((id) => id !== containerId);
+        await Promise.all(others.map((id) => acknowledgeTimelineRegeneration(id)));
+        await enqueueTimelineRegeneration(others, 0);
+        return claimed.includes(containerId);
+      };
+      await enqueueTimelineRegeneration([containerId], 0);
+      expect(await claimOnly()).toBe(true);
+      await enqueueTimelineRegeneration([containerId], 0);
+      expect(await claimOnly()).toBe(false);
+      await acknowledgeTimelineRegeneration(containerId);
+      expect(await claimOnly()).toBe(true);
+      await acknowledgeTimelineRegeneration(containerId);
     });
 
     it('should drop the timeline of a deleted container', async () => {

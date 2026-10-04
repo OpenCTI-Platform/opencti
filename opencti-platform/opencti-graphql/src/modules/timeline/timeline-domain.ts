@@ -841,7 +841,7 @@ export const regenerateTimeline = async (context: AuthContext, user: AuthUser, c
   return regenerateContainerTimeline(context, container.internal_id, { wait: true });
 };
 
-/** Write the imported contributions; runs under the timeline lock of the container. */
+/** Write the imported contributions and return the ids of the milestones created; runs under the timeline lock of the container. */
 const writeImportedContributions = async (
   context: AuthContext,
   user: AuthUser,
@@ -956,11 +956,14 @@ const writeImportedContributions = async (
       restricted_members: access.restricted_members,
     }, existing);
   });
+  let createdMilestoneIds: string[] = [];
   if (docs.length > 0) {
     await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, docs);
-    // Milestones created by the import count like the ones added by an analyst; updates of known events do not
-    const created = importable.filter((candidate) => !isKnown(candidate)).length;
-    if (created > 0) addTimelineManualEventCount(created);
+    // Milestones created by the import count and notify like the ones added by an analyst; updates of known events do not
+    const created = importable.filter((candidate) => !isKnown(candidate));
+    if (created.length > 0) addTimelineManualEventCount(created.length);
+    createdMilestoneIds = created.filter(({ event }) => (TIMELINE_MILESTONE_KINDS as readonly string[]).includes(event.kind))
+      .map(({ internalId }) => internalId);
   }
   const pending: TimelinePendingAnnotation[] = annotations
     .filter((a) => a.element_ref && resolved[a.element_ref] && a.rule_id && a.kind)
@@ -987,6 +990,15 @@ const writeImportedContributions = async (
       logApp.warn('[TIMELINE] Imported annotations beyond the cap of the case were skipped', { containerId: container.internal_id, skipped: skippedAnnotations });
     }
     await upsertTimelineSettings(context, container, { pending_annotations: Array.from(byId.values()) }, settings ?? null);
+  }
+  return createdMilestoneIds;
+};
+
+/** Notify the "Timeline milestone added" trigger for milestones just written, one after the other, as read by their author. */
+const notifyMilestonesAdded = async (context: AuthContext, user: AuthUser, containerId: string, milestoneIds: string[]) => {
+  for (let index = 0; index < milestoneIds.length; index += 1) {
+    const stored = await reloadEvent(context, user, milestoneIds[index]);
+    if (stored) await notifyTimelineMilestoneAdded(context, user, containerId, stored);
   }
 };
 
@@ -1015,7 +1027,12 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
   const resolved = refs.length > 0
     ? await internalFindByIds(context, user, refs, { toMap: true, mapWithAllIds: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
-  await withTimelineLock(container.internal_id, () => writeImportedContributions(context, user, container, contributions, resolved));
-  return regenerateContainerTimeline(context, container.internal_id, { wait: true });
+  const createdMilestoneIds = await withTimelineLock(container.internal_id, () => writeImportedContributions(context, user, container, contributions, resolved));
+  const regenerated = await regenerateContainerTimeline(context, container.internal_id, { wait: true });
+  if (createdMilestoneIds.length > 0) {
+    notifyMilestonesAdded(context, user, container.internal_id, createdMilestoneIds)
+      .catch((error) => logApp.error('[TIMELINE] Unable to notify imported milestones', { cause: error, containerId: container.internal_id }));
+  }
+  return regenerated;
 };
 // endregion

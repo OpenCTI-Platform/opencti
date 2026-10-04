@@ -25,6 +25,18 @@ describe('Timeline manager impact collection', () => {
     expect(Array.from(collector.references)).toEqual(['case-incident--1']);
   });
 
+  it('should reach the cases of a task whose labels changed, published as an update of the task', () => {
+    // A label is a ref of the task: adding or removing it is streamed as an update of the task, never as a relationship
+    const collector = newCollector();
+    const event = streamEvent({ type: 'task', labels: ['containment'], object_refs: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'task-1', type: 'Task' } } });
+    (event.data as any).context = {
+      patch: [{ op: 'add', path: '/labels', value: ['containment'] }],
+      reverse_patch: [{ op: 'remove', path: '/labels' }],
+    };
+    collectTimelineImpacts(event, collector);
+    expect(Array.from(collector.references)).toEqual(['case-incident--1']);
+  });
+
   it('should follow the labels and kill chain phases the derivation reads through tasks and techniques', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({ type: 'label', extensions: { [STIX_EXT_OCTI]: { id: 'label-1', type: 'Label' } } }), collector);
