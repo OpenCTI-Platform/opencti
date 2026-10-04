@@ -50,6 +50,7 @@ const SIMILAR_QUERY = gql`
           evidence { family entities { id } }
         }
       }
+      pageInfo { globalCount hasNextPage }
     }
   }
 `;
@@ -246,6 +247,7 @@ describe('Graph analytics resolvers', () => {
     const { data } = await queryAsAdminWithSuccess({ query: SIMILAR_QUERY, variables: { id: ids.isA, first: 10 } });
     const nodes = data.similarEntities.edges.map((e: any) => e.node);
     expect(nodes.map((n: any) => n.entity.id)).toEqual([ids.isB]);
+    expect(data.similarEntities.pageInfo).toEqual({ globalCount: 1, hasNextPage: false });
     const [similar] = nodes;
     expect(similar.score).toBeGreaterThan(0.3);
     const evidence = Object.fromEntries(similar.evidence.map((e: any) => [e.family, e.entities.map((x: any) => x.id).sort()]));

@@ -221,7 +221,7 @@ export const findSimilarEntities = async (context: AuthContext, user: AuthUser, 
       securityCoverage: coverages.get(target.internal_id) ?? null,
     }));
   addGraphSimilarityQueryCount();
-  return buildConnection(nodes, nodes.length, qualifying.length > nodes.length);
+  return buildConnection(nodes, qualifying.length, qualifying.length > nodes.length);
 };
 
 export interface GraphSimilarityMatrixArgs {
