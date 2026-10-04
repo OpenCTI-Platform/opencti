@@ -166,4 +166,14 @@ describe('markings of the relationships generated for a pair', () => {
     expect(isReadableWithIndicator({ 'object-marking': ['tlp-green', 'tlp-red'] }, indicator)).toEqual(false);
     expect(isReadableWithIndicator({ 'object-marking': ['tlp-green'] }, {})).toEqual(false);
   });
+
+  it('should not count a deployment shared with fewer organizations or members than the indicator', () => {
+    const indicator = { granted: ['org-a', 'org-b'] };
+    expect(isReadableWithIndicator({ granted: ['org-a', 'org-b', 'org-c'] }, indicator)).toEqual(true);
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, indicator)).toEqual(false);
+    expect(isReadableWithIndicator({}, indicator)).toEqual(false);
+    // An indicator shared with no organization is only read by the platform organization, which reads every deployment
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, {})).toEqual(true);
+    expect(isReadableWithIndicator({ restricted_members: [{ id: 'user-1', access_right: 'view' }] }, {})).toEqual(false);
+  });
 });

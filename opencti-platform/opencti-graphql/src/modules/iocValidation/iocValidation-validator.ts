@@ -1,5 +1,9 @@
 import { ForbiddenAccess } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
+import { INPUT_MARKINGS } from '../../schema/general';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
+import { pairMarkings } from '../indicatorDeployment/indicatorDeployment-utils';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
@@ -77,10 +81,36 @@ const findExistingDeployment = async (context: AuthContext, user: AuthUser, inst
   return findDeployedOn(context, user, from.internal_id, to.internal_id);
 };
 
+const markingIdsOf = (values: unknown): string[] => (Array.isArray(values) ? values : [values])
+  .map((value) => (typeof value === 'string' ? value : (value as { internal_id?: string } | null)?.internal_id))
+  .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+/**
+ * Whether a created or upserted deployment carries the markings of its indicator and of its security platform, as the
+ * write-back mutations give it: adding them would not make the cleaned markings (highest of each type) any stricter.
+ */
+export const coversPairMarkings = async (context: AuthContext, instance: Record<string, unknown>) => {
+  const from = instance.from as { [RELATION_OBJECT_MARKING]?: string[] | null } | undefined;
+  const to = instance.to as { [RELATION_OBJECT_MARKING]?: string[] | null } | undefined;
+  if (!from || !to) {
+    return true;
+  }
+  const provided = markingIdsOf(instance[INPUT_MARKINGS]);
+  const cleaned = await cleanMarkings(context, [...provided, ...pairMarkings(from, to)]);
+  return cleaned.every((marking: { internal_id?: string } | string) => provided.includes(typeof marking === 'string' ? marking : marking.internal_id ?? ''));
+};
+
+const refuseMarkings = (user: AuthUser) => {
+  throw ForbiddenAccess('A deployment carries the markings of its indicator and of its security platform', { user_id: user.id });
+};
+
 // Creation, including the upsert of an existing deployment (stixCoreRelationshipAdd with update, bundle ingestion),
 // whose writes never reach the edition validator: a new deployment only takes the defaults from a regular editor,
 // and an existing one is changed under the edition rules, resets included.
 const validatorCreation: ValidatorFn = async (context, user, instance) => {
+  if (!await coversPairMarkings(context, instance)) {
+    return refuseMarkings(user);
+  }
   if (isBypassUser(user)) {
     return true;
   }

@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import '../../../../src/modules/index';
 import {
   carriesLifecycleState,
   carriesValidationProof,
+  coversPairMarkings,
   isLifecycleWriter,
   touchesLifecycleFields,
   touchesValidationFields,
@@ -12,6 +14,12 @@ import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn 
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
 import { testContext } from '../../../utils/testQuery';
+
+// Marking definitions come from the platform cache: here every marking is of its own type, so cleaning keeps them all.
+vi.mock('../../../../src/utils/markingDefinition-utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/markingDefinition-utils')>()),
+  cleanMarkings: async (_context: unknown, values: string[]) => [...new Set(values)].map((id) => ({ internal_id: id })),
+}));
 
 describe('Deployment validation fields guard', () => {
   it('should be registered for creation and update of deployed-on relationships', () => {
@@ -94,5 +102,25 @@ describe('Deployment lifecycle fields guard', () => {
     expect(isTrustedDeploymentReporter(upserted, connector)).toEqual(true);
     expect(isTrustedDeploymentReporter({ creator_id: 'connector-user' }, connector)).toEqual(false);
     expect(isTrustedDeploymentReporter({ creator_id: null }, administrator)).toEqual(false);
+  });
+});
+
+describe('Deployment markings guard', () => {
+  const from = { 'object-marking': ['tlp-amber'] };
+  const to = { 'object-marking': ['pap-red'] };
+
+  it('should require the markings of the indicator and of the security platform on creation', async () => {
+    expect(await coversPairMarkings(testContext, { from, to, objectMarking: ['tlp-amber', 'pap-red'] })).toEqual(true);
+    expect(await coversPairMarkings(testContext, { from, to, objectMarking: [{ internal_id: 'tlp-amber' }, { internal_id: 'pap-red' }] })).toEqual(true);
+    expect(await coversPairMarkings(testContext, { from, to, objectMarking: ['tlp-amber'] })).toEqual(false);
+    expect(await coversPairMarkings(testContext, { from, to })).toEqual(false);
+    expect(await coversPairMarkings(testContext, { deployment_status: 'pending' })).toEqual(true);
+  });
+
+  it('should refuse a deployment less restricted than its security platform, whoever creates it', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber'] })).rejects.toThrow('markings of its indicator');
+    await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber', 'pap-red'] })).resolves.toEqual(true);
   });
 });
