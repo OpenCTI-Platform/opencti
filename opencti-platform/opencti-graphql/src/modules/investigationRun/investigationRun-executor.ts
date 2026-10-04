@@ -67,7 +67,7 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { executionContext, INVESTIGATION_MANAGER_USER, isUserHasCapability, isUserInPlatformOrganization, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
-import { addDraftWorkspace, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { addWorkspace, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
 import { loadWorkById } from '../../domain/work';
@@ -116,6 +116,7 @@ import {
   remainingMinutes,
   statusTransition,
   VALIDATION_TIMEOUT_MS,
+  type DraftChanges,
   type TimelineSource,
 } from './investigationRun-state';
 import {
@@ -802,15 +803,20 @@ const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence
 // run stops before anything more is sent to the engine or mirrored once its
 // subject or its case is no longer readable by that identity, or once one of
 // them, or an object the engine cites, is restricted to authorized members.
+// Access is read on the live version: the copy a draft holds of a live object
+// keeps the restrictions it had when it was copied.
 const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string | null } | null> => {
   const { run } = exec;
-  const anchors = [run.subject_id, run.case_id].filter((id): id is string => !!id);
-  const elements = await findElements(exec.draftContext, exec.runUser, R.uniq([...anchors, ...citedIds]));
-  const found = new Set(elements.flatMap((element) => [element.internal_id, element.standard_id]));
-  if (anchors.some((id) => !found.has(id))) {
+  const ids = R.uniq([run.subject_id, run.case_id, ...citedIds].filter((id): id is string => !!id));
+  const [live, inDraft] = await Promise.all([findElements(exec.liveContext, exec.runUser, ids), findElements(exec.draftContext, exec.runUser, ids)]);
+  const idsOf = (elements: BasicStoreCommon[]) => new Set(elements.flatMap((element) => [element.internal_id, element.standard_id]));
+  const liveIds = idsOf(live);
+  // Only a case the run created exists in its draft alone.
+  const caseReadable = !run.case_id || liveIds.has(run.case_id) || (run.create_case && idsOf(inDraft).has(run.case_id));
+  if (!liveIds.has(run.subject_id) || !caseReadable) {
     return { reason: SUBJECT_INACCESSIBLE_REASON, code: null };
   }
-  const restricted = elements.filter((element) => isMemberRestricted(element));
+  const restricted = [...live, ...inDraft].filter((element) => isMemberRestricted(element));
   if (restricted.length > 0) {
     logApp.warn('[CASE AUTOPILOT] Investigation stopped at a member restriction', { runId: run.internal_id, ids: restricted.map((element) => element.internal_id) });
     return { reason: MEMBER_RESTRICTED_REASON, code: MEMBER_RESTRICTED_CODE };
@@ -818,14 +824,18 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
   return null;
 };
 
-// What the engine wrote is withheld from the run: it may describe what the run can no longer carry.
+// Everything the run derived from what it read is withheld, as it may describe
+// what the run can no longer carry: the engine's text, the conclusion OpenCTI
+// scored from it, the references to its outputs, and its draft, deleted with
+// what it wrote there. Gates still waiting are rejected, jobs not started skipped.
 const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string | null }) => {
   const now = new Date();
-  const stop = { done: false, engineRunning: false };
+  const stop: { done: boolean; engineRunning: boolean; draftId: string | null } = { done: false, engineRunning: false, draftId: null };
   await updateInvestigationRun(exec.liveContext, exec.run.internal_id, (current) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
     stop.done = true;
     stop.engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
+    stop.draftId = current.draft_id ?? null;
     return {
       ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, boundary.reason),
       end_reason_code: boundary.code,
@@ -833,14 +843,34 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
       goal_plan: null,
       steps: (current.steps ?? []).map((step) => ({ ...step, action: null, detail_params: null })),
       evidence: [],
+      hypotheses: [],
+      timeline: [],
+      recommendations: [],
       summary: null,
       report: null,
       report_sources: [],
+      outputs: EMPTY_OUTPUTS,
+      draft_id: null,
+      approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
+        ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), rejection_reason: 'Investigation stopped' }
+        : approval)),
+      enrichment_requests: current.enrichment_requests.map((request) => (request.status === InvestigationEnrichmentRequestStatus.Queued
+        || request.status === InvestigationEnrichmentRequestStatus.AwaitingApproval
+        ? { ...request, status: InvestigationEnrichmentRequestStatus.Skipped, error: 'Investigation stopped', completed_at: now.toISOString() }
+        : request)),
+      enrichment_waves: (current.enrichment_waves ?? []).map((wave) => ({ ...wave, delta: [] })),
       ...(stop.engineRunning ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
     };
   });
   if (!stop.done) return;
   addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
+  if (stop.draftId) {
+    try {
+      await deleteDraftWorkspace(exec.liveContext, INVESTIGATION_MANAGER_USER, stop.draftId);
+    } catch (cause) {
+      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted', { runId: exec.run.internal_id, draftId: stop.draftId, cause });
+    }
+  }
   if (stop.engineRunning) {
     await stopCancelledEngineRun(exec.liveContext, exec.run.internal_id);
   }
@@ -1181,16 +1211,22 @@ const writeOutputs = async (
   return { outputs, caseId, caseIds, failures };
 };
 
-const listDraftTypes = async (exec: RunExecution) => {
+const DRAFT_TYPES_PAGE = 500;
+
+const listDraftChanges = async (exec: RunExecution): Promise<DraftChanges> => {
   const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
+  const page = draftQuery(undefined, DRAFT_TYPES_PAGE);
   const [entities, relationships] = await Promise.all([
-    topEntitiesList<BasicStoreEntity>(draftContext, INVESTIGATION_MANAGER_USER, [ABSTRACT_STIX_CORE_OBJECT], draftQuery()),
-    topRelationsList<BasicStoreRelation>(draftContext, INVESTIGATION_MANAGER_USER, STIX_RELATIONSHIP_TYPES, draftQuery()) as unknown as Promise<BasicStoreRelation[]>,
+    topEntitiesList<BasicStoreEntity>(draftContext, INVESTIGATION_MANAGER_USER, [ABSTRACT_STIX_CORE_OBJECT], page),
+    topRelationsList<BasicStoreRelation>(draftContext, INVESTIGATION_MANAGER_USER, STIX_RELATIONSHIP_TYPES, page) as unknown as Promise<BasicStoreRelation[]>,
   ]);
   // The investigated entity is loaded in the draft at creation without being changed.
   const changed = [...entities, ...relationships].filter((element) => element.internal_id !== exec.run.subject_id
     || (element as unknown as { draft_change?: { draft_operation?: string } }).draft_change?.draft_operation);
-  return R.uniq(changed.map((element) => element.entity_type));
+  return {
+    types: R.uniq(changed.map((element) => element.entity_type)),
+    complete: entities.length < DRAFT_TYPES_PAGE && relationships.length < DRAFT_TYPES_PAGE,
+  };
 };
 
 // Markings and organization sharing of everything the run read or wrote about,
@@ -1296,7 +1332,8 @@ const ingestRun = async (exec: RunExecution) => {
       recommendation_id: recommendation.id,
       created_at: now.toISOString(),
     }));
-  const draftTypes = run.draft_id ? await listDraftTypes(exec) : [];
+  const draftChanges: DraftChanges = run.draft_id ? await listDraftChanges(exec) : { types: [], complete: true };
+  const draftTypes = draftChanges.types;
   const leadingConfidence = hypotheses[0]?.confidence ?? null;
   let validationWorkId: string | null = null;
   let nextStatus = InvestigationRunStatus.AwaitingApproval;
@@ -1310,7 +1347,7 @@ const ingestRun = async (exec: RunExecution) => {
   if (!run.draft_id || draftTypes.length === 0) {
     nextStatus = InvestigationRunStatus.Completed;
     nextPhase = InvestigationRunPhase.Done;
-  } else if (canAutoApproveDraft(policy, draftTypes, leadingConfidence)) {
+  } else if (canAutoApproveDraft(policy, draftChanges, leadingConfidence)) {
     // Only low-risk objects (notes, observed data) above the confidence threshold.
     const work = await validateDraftWorkspace(exec.liveContext, runUser, run.draft_id);
     validationWorkId = work?.id ?? null;

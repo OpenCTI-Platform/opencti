@@ -577,6 +577,7 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       engineStage = 'running';
       const mirrored = await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 1);
       expect(mirrored.evidence).toHaveLength(1);
+      expect(mirrored.draft_id).toBeTruthy();
       vi.mocked(investigationXtm.cancelInvestigation).mockClear();
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       engineStage = 'completed';
@@ -590,9 +591,15 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         summary: null,
         report: null,
         report_sources: [],
+        report_id: null,
         hypotheses: [],
+        recommendations: [],
+        draft_id: null,
       });
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
+      // The draft of the run is deleted with what it wrote there.
+      const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: mirrored.draft_id } });
+      expect(draft.data?.draftWorkspace ?? null).toBeNull();
       expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
       expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancelled');
     } finally {

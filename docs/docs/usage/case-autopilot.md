@@ -14,7 +14,9 @@ Case Autopilot is the OpenCTI face of the XTM One investigation engine (Deep Inv
 - XTM One connected to the platform (see the [XTM Suite configuration](../deployment/configuration.md#xtm-suite)), in a version that provides the investigation engine. When XTM One is not connected or does not run investigations, the Autopilot tab and the launch dialog say so and no investigation starts.
 - To start or continue an investigation: the capability to update knowledge, and the capability to enrich knowledge when the policy of the investigation runs enrichments. Without the latter, the launch dialog explains why a policy with enrichments cannot be picked. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the same capabilities.
 - To manage investigation policies: the capability to manage customization.
-- The investigated entity and its case must not be restricted to authorized members: an investigation carries the markings and the organization sharing of what it reads and cites, but not a member restriction. When the investigated entity, its case or an object the engine cites becomes restricted to authorized members while the investigation runs, or the identity of the investigation can no longer read the entity or its case, the investigation stops before it records anything more, its engine run is stopped, and what it had found (goal plan, evidence, summary and report) is withheld from the investigation.
+- The investigated entity and its case must not be restricted to authorized members: an investigation carries the markings and the organization sharing of what it reads and cites, but not a member restriction. When the investigated entity, its case or an object the engine cites becomes restricted to authorized members while the investigation runs, or the identity of the investigation can no longer read the entity or its case, the investigation stops before it records anything more, its engine run is stopped, what it had found (goal plan, evidence, hypotheses, recommendations, summary and report) is withheld from the investigation, the approvals it was waiting for are rejected and its draft is deleted with what it wrote there.
+
+![An investigation stopped because an entity became restricted to authorized members](assets/case-autopilot/member-restricted-dark.png)
 
 ## Run Case Autopilot
 
@@ -97,7 +99,7 @@ Investigation policies are managed in **Settings > Customization > Investigation
 | Actions allowed without asking | What the investigation may do without an approval: run enrichment connectors, create a case, add evidence to the case, write the summary note, write the attribution relationship. |
 | Enrichment connectors | The connectors the investigation may use (all when empty). |
 | Connectors that need an approval | Connectors whose every enrichment waits for an analyst approval. |
-| Low-risk automatic approval | Approve the draft automatically when it holds only notes and observed data and the leading hypothesis reaches the minimum confidence. |
+| Low-risk automatic approval | Approve the draft automatically when it holds only notes and observed data and the leading hypothesis reaches the minimum confidence. A draft holding 500 entities or 500 relationships or more is always left to an analyst. |
 | Minimum confidence to write an attribution | The attribution relationship is written to the draft only above this confidence. |
 | Budget | Maximum iterations of the engine, maximum enrichment jobs and maximum duration. OpenCTI enforces the budget and cancels the engine run when the duration is exceeded. |
 | Investigate every new request for information | Start an investigation automatically when a request for information is created. |
