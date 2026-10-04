@@ -53,9 +53,22 @@ describe('GraphToolbar', () => {
   it('keeps one fit action and disables what cannot run, saying why', () => {
     renderToolbar();
     expect(screen.getAllByRole('button', { name: /^Fit/ }).map((button) => button.getAttribute('aria-label'))).toEqual(['Fit the whole graph', 'Fit the selection']);
-    expect(screen.getByRole('button', { name: 'Fit the selection' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Filter by type' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Clear all filters' })).toBeDisabled();
+    ['Fit the selection', 'Filter by type', 'Clear all filters'].forEach((name) => {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-disabled', 'true');
+    });
+    expect(screen.getByRole('button', { name: 'Fit the selection' })).toHaveAccessibleDescription('Select entities first');
+    expect(screen.getByRole('button', { name: 'Clear all filters' })).toHaveAccessibleDescription('No filter is active');
+  });
+
+  it('keeps the disabled actions in the keyboard path of the toolbar, where they do nothing', async () => {
+    const { user } = renderToolbar();
+    const fitSelection = screen.getByRole('button', { name: 'Fit the selection' });
+    const fitGraph = screen.getByRole('button', { name: 'Fit the whole graph' });
+    fitGraph.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(fitSelection).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(fitSelection).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('lists the rare actions in "More actions" only, by group', async () => {

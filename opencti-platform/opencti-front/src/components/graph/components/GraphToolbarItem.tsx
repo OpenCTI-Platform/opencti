@@ -1,4 +1,4 @@
-import React, { MouseEvent, ReactNode } from 'react';
+import React, { MouseEvent, ReactNode, useId } from 'react';
 import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 
@@ -31,6 +31,7 @@ const GraphToolbarItem = ({
   badge,
 }: GraphToolbarItemProps) => {
   const { t_i18n } = useFormatter();
+  const reasonId = useId();
   const isDisabled = disabled || !!disabledReason;
   // The icon button announces `active` as pressed: a plain action leaves it unset.
   const active = pressed ?? (color === 'secondary' ? true : undefined);
@@ -43,7 +44,8 @@ const GraphToolbarItem = ({
       onClick={onClick}
       disabled={isDisabled}
       icon={Icon}
-      // A disabled button receives no pointer event: its wrapper opens the tooltip saying why.
+      // Disabled, the button is only drawn: its wrapper is the control, and opens the tooltip saying why.
+      aria-hidden={isDisabled || undefined}
       style={isDisabled ? { pointerEvents: 'none' } : undefined}
     />
   );
@@ -57,7 +59,22 @@ const GraphToolbarItem = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        {isDisabled ? <span style={{ display: 'inline-flex' }}>{control}</span> : control}
+        {isDisabled ? (
+          // A disabled tool stays in the keyboard path of the toolbar, so that the reason can be read
+          // (WAI-ARIA toolbar pattern); the library button has no focusable disabled state.
+          <span
+            role="button"
+            aria-label={title}
+            aria-disabled
+            aria-pressed={pressed}
+            aria-keyshortcuts={shortcut}
+            aria-describedby={disabledReason ? reasonId : undefined}
+            className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-focus focus-visible:ring-filigran-brand-primary"
+          >
+            {control}
+            {disabledReason && <span id={reasonId} hidden>{disabledReason}</span>}
+          </span>
+        ) : control}
       </TooltipTrigger>
       <TooltipContent side="top">
         {shortcut ? `${title} (${shortcut})` : title}
