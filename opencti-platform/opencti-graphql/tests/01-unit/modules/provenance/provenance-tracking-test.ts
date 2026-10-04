@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { getEntitiesListFromCache } from '../../../../src/database/cache';
-import { isProvenanceTrackedForType, isProvenanceTrackingEnabled, listProvenanceTrackedTypes } from '../../../../src/modules/provenance/provenance-tracking';
+import {
+  isProvenanceTrackedForType,
+  isProvenanceTrackingEnabled,
+  listProvenanceTrackedTypes,
+  listProvenanceUntrackedTypesOfSetting,
+} from '../../../../src/modules/provenance/provenance-tracking';
 import { getOverviewLayoutCustomization, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
 import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
 import type { BasicStoreEntityEntitySetting } from '../../../../src/modules/entitySetting/entitySetting-types';
@@ -10,7 +15,7 @@ import type { AuthContext } from '../../../../src/types/user';
 vi.mock('../../../../src/modules/provenance/provenance-config', () => ({
   PROVENANCE_ENABLED: true,
   PROVENANCE_REASSERTION_WINDOW_MS: 24 * 60 * 60 * 1000,
-  PROVENANCE_DEFAULT_TRACKED_TYPES: ['Indicator', 'Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Malware'],
+  PROVENANCE_DEFAULT_TRACKED_TYPES: ['Indicator', 'Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Malware', 'uses', 'IPv4-Addr'],
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -49,6 +54,25 @@ describe('Provenance tracking per entity type', () => {
     expect(tracked).not.toContain('Malware');
     expect(tracked).not.toContain('Attack-Pattern');
     expect(tracked).not.toContain('stix-sighting-relationship');
+  });
+
+  it('should evaluate an unset inherited setting against the concrete type, and keep an explicit inherited value', async () => {
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([setting('stix-core-relationship'), setting('Stix-Cyber-Observable')]);
+    expect(await isProvenanceTrackedForType(context, 'uses')).toEqual(true);
+    expect(await isProvenanceTrackedForType(context, 'targets')).toEqual(false);
+    expect(await isProvenanceTrackedForType(context, 'IPv4-Addr')).toEqual(true);
+    expect(await isProvenanceTrackedForType(context, 'Domain-Name')).toEqual(false);
+    const untrackedRelationships = await listProvenanceUntrackedTypesOfSetting(context, setting('stix-core-relationship'));
+    expect(untrackedRelationships).toContain('targets');
+    expect(untrackedRelationships).not.toContain('uses');
+    const untrackedObservables = await listProvenanceUntrackedTypesOfSetting(context, setting('Stix-Cyber-Observable'));
+    expect(untrackedObservables).toContain('Domain-Name');
+    expect(untrackedObservables).not.toContain('IPv4-Addr');
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([setting('stix-core-relationship', false)]);
+    expect(await isProvenanceTrackedForType(context, 'uses')).toEqual(false);
+    expect(await listProvenanceUntrackedTypesOfSetting(context, setting('stix-core-relationship', false))).toContain('uses');
+    expect(await listProvenanceUntrackedTypesOfSetting(context, setting('Intrusion-Set'))).toEqual([]);
+    expect(await listProvenanceUntrackedTypesOfSetting(context, setting('Attack-Pattern'))).toEqual(['Attack-Pattern']);
   });
 });
 

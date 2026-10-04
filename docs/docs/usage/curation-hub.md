@@ -11,6 +11,10 @@ Other data-quality pages join the hub as new tabs when they become available, wi
 
 ![The Data menu expanded on Curation, with the Conflicts tab open under the breadcrumb Data, Curation, Conflicts](assets/curation-hub-conflicts-open.png)
 
+??? example "The same page in the light theme"
+
+    ![The Data menu expanded on Curation in the light theme, with the Conflicts tab open](assets/curation-hub-conflicts-open-light.png)
+
 ## When the entry is shown
 
 - **Curation** appears in the **Data** menu, right after **Relationships**, as soon as one of its tabs is available on your platform.

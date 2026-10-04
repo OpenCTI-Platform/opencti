@@ -97,6 +97,8 @@ describe('Knowledge decay rules', () => {
     expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['0'] }])).toThrow();
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['400'] }])).toEqual(true);
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'name', value: ['Renamed'] }])).toEqual(false);
+    // The knowledge flagged under the previous policy is evaluated again under the new one
+    expect(checkDecayRulePatch(knowledgeRule, [{ key: 'freshness_policy', value: ['flag'] }])).toEqual(true);
     // Built-in knowledge rules ship disabled and can only be (de)activated
     const builtIn = storedRule({ built_in: true, active: false });
     expect(checkDecayRulePatch(builtIn, [{ key: 'active', value: ['true'] }])).toEqual(true);

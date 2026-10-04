@@ -7,6 +7,7 @@ import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types
 import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
 import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
 import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
+import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
 
 const STALE_FILTERS: FilterGroup = {
   mode: 'and',
@@ -23,6 +24,7 @@ const StaleKnowledge = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Stale knowledge | Curation | Data'));
   const [tab, setTab] = useState('entities');
+  const filters = useProvenanceTrackedFilters(STALE_FILTERS);
   return (
     <div data-testid="provenance-stale-page">
       <Typography variant="body2" sx={{ marginBottom: 2 }}>
@@ -35,13 +37,13 @@ const StaleKnowledge = () => {
           <TabsTrigger value="sightings">{t_i18n('Sightings')}</TabsTrigger>
         </TabsList>
         <TabsContent value="entities">
-          {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-stale-entities" fixedFilters={STALE_FILTERS} />}
+          {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-stale-entities" fixedFilters={filters} />}
         </TabsContent>
         <TabsContent value="relationships">
-          {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-stale-relationships" fixedFilters={STALE_FILTERS} />}
+          {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-stale-relationships" fixedFilters={filters} />}
         </TabsContent>
         <TabsContent value="sightings">
-          {tab === 'sightings' && <ProvenanceKnowledgeSightings storageKey="provenance-stale-sightings" fixedFilters={STALE_FILTERS} />}
+          {tab === 'sightings' && <ProvenanceKnowledgeSightings storageKey="provenance-stale-sightings" fixedFilters={filters} />}
         </TabsContent>
       </Tabs>
     </div>

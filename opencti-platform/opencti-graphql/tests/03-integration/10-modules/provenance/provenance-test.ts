@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PLATFORM_ADMIN } from '../../../utils/testQuery';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { elUpdate } from '../../../../src/database/engine';
 import { createEntity } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
@@ -16,8 +16,8 @@ import { PROVENANCE_BACKFILL_LOCK_KEY, restartProvenanceBackfill, runProvenanceB
 import { lockResources } from '../../../../src/lock/master-lock';
 import { wait } from '../../../../src/database/utils';
 import { notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
-import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT } from '../../../../src/modules/provenance/provenance-write';
+import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
+import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
 
 const MALWARE_NAME = 'Provenance malware';
@@ -389,6 +389,21 @@ describe('Provenance: every fact knows who said it', () => {
     );
   });
 
+  it('should keep the provenance entity settings to the customization capability', async () => {
+    const setting = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { id } }` });
+    const PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id provenance_tracking } }`;
+    const keys = ['provenance_tracking', 'procedures_preservation', 'procedures_description_policy'];
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+      await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, {
+        query: PATCH,
+        variables: { ids: [setting.data?.entitySettingByType.id], input: [{ key, value: [key === 'procedures_description_policy' ? 'longest' : 'false'] }] },
+      });
+    }
+    const unchanged = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { provenance_tracking } }` });
+    expect(unchanged.data?.entitySettingByType.provenance_tracking).toEqual(true);
+  });
+
   it('should restart the backfill only once the batch in progress released its lock', async () => {
     const batchLock = await lockResources([PROVENANCE_BACKFILL_LOCK_KEY], { retryCount: 0 });
     let restartedAt = 0;
@@ -423,6 +438,28 @@ describe('Provenance: every fact knows who said it', () => {
     const status = await queryAsAdminWithSuccess({ query: gql`query { provenanceBackfill { status processed expected errors } }` });
     expect(status.data?.provenanceBackfill).toMatchObject({ status: 'completed', errors: 0 });
     expect(status.data?.provenanceBackfill.processed).toBeGreaterThan(0);
+  });
+
+  it('should report a conflict value as new only to the write that created it, even from a stale element', async () => {
+    const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, malwareId);
+    const value: StoreConflictValue = {
+      value_hash: 'provenance-test-concurrent-hash',
+      display: 'Concurrent description',
+      value: JSON.stringify('Concurrent description'),
+      source_id: 'provenance-test-concurrent-source',
+      source_kind: SOURCE_KIND_FEED,
+      source_name: 'Concurrent source',
+      confidence: 50,
+      last_asserted_at: new Date().toISOString(),
+    };
+    const update = { conflictsAdd: [{ field: 'description', value }] };
+    const first = await writeProvenanceUpdate(testContext, element, update, { withCurrent: true });
+    const second = await writeProvenanceUpdate(testContext, element, update, { withCurrent: true });
+    expect(first.newConflicts).toHaveLength(1);
+    expect(second.newConflicts).toHaveLength(0);
+    const stored = (second.current?.x_opencti_conflicts ?? []).find((conflict) => conflict.field === 'description');
+    expect(stored?.values.filter((entry) => entry.value_hash === value.value_hash)).toHaveLength(1);
+    await writeProvenanceUpdate(testContext, element, { conflictsRemove: [{ field: 'description', value_hash: value.value_hash }] }, { refresh: true });
   });
 
   it('should notify corroboration triggers when the threshold is reached', async () => {

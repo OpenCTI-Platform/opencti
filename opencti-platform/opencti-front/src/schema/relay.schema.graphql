@@ -11236,6 +11236,7 @@ type EntitySetting implements InternalObject & BasicObject {
   enforce_reference: Boolean
   sync_workflow_status_by_name: Boolean
   provenance_tracking: Boolean!
+  provenance_untracked_types: [String!]!
   procedures_preservation: Boolean!
   procedures_description_policy: ProceduresDescriptionPolicy!
   attributes_configuration: String

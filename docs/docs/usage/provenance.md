@@ -8,7 +8,7 @@ Provenance is available in the Community Edition. It is deterministic: no AI is 
 
 Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware.
 
-To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed.
+To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them.
 
 The default set of tracked types can be changed with the `provenance:default_tracked_types` parameter (see [Configuration](#configuration)): it applies to the types whose setting was never changed in the interface.
 
@@ -27,7 +27,7 @@ An assertion links a piece of knowledge to one source. A source can be:
 
 For each source, OpenCTI keeps the first and last assertion dates, the number of times the source asserted the knowledge and the confidence it provided. When a source sends the same knowledge again, only its assertion is updated: no new history entry is written, and the modification date of the knowledge does not change.
 
-To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
+To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, resolves a stored conflict (the value it sends is now the current value of the field, so it is no longer listed as an alternative), or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
 
 The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters.
 
@@ -36,6 +36,8 @@ Assertions are recorded after deduplication, on the stored object. A source asse
 !!! note "Data created before provenance tracking"
 
     The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform, for the tracked entity types only. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it, for instance after enabling provenance on a new type. Replays are idempotent: existing assertions are merged, never duplicated.
+
+    ![The Provenance backfill card of Data > Processing > Tasks, completed, with its Restart the backfill button](assets/provenance-backfill-card.png)
 
 ## Corroboration and freshness
 
@@ -47,6 +49,8 @@ From the assertions, OpenCTI derives:
 
 These values are available as columns, sorts and filters in the lists of entities and relationships ("Corroboration", "Last assertion date", "Freshness (days since last assertion)", "Single sourced", "Has source conflicts" and "Stale knowledge"). They can be used in triggers, retention policies, dashboards and CSV exports.
 
+![Data > Entities with the Corroboration column: APT29 asserted by 4 sources, Emotet and IcedID by 2, QakBot by a single source](assets/provenance-corroboration-list.png)
+
 In investigation graphs, nodes are surrounded by a ring whose width grows with their corroboration, and relationship labels show the number of sources between brackets.
 
 ## Sources card and sources panel
@@ -57,6 +61,8 @@ The overview of the elements of a tracked type shows a "Sources" card. On the en
 - the five most recent sources, each with its kind, its first and last assertion dates and its confidence. A source links to the page that describes it when there is one, for instance the organization or individual of an author;
 - the fields on which sources disagree.
 
+![The Sources card of the intrusion set APT29: 4 sources, three connectors and the ACME CERT author, with their assertion dates and confidence, and the fields on which they disagree](assets/provenance-sources-card.png)
+
 When no source asserted the element yet, the widget says so; outside the overview layout, the card is not displayed.
 
 The "View all", "more sources" and "Review conflicts" buttons of the card open the sources panel, which lists:
@@ -66,6 +72,14 @@ The "View all", "more sources" and "Review conflicts" buttons of the card open t
 - **Procedures**: for `uses` relationships, the procedures described by each source (see below).
 
 The "Confirm still valid" button re-asserts the knowledge in your name. It adds or refreshes your own assertion and clears a stale flag.
+
+![The sources panel of APT29: the four sources with their kind, assertion dates, number of assertions and confidence, then the alternative values proposed for the description and the primary motivation, each with Adopt this value and Dismiss](assets/provenance-sources-panel.png)
+
+??? example "The same panel in the light theme"
+
+    ![The sources panel of APT29 in the light theme](assets/provenance-sources-panel-light.png)
+
+    ![The Sources card of APT29 in the light theme](assets/provenance-sources-card-light.png)
 
 ## Source conflicts
 
@@ -96,7 +110,17 @@ The "Data > Curation" hub gathers the data-quality views of the platform. Proven
 - **Conflicts**: the entities, relationships and sightings with source conflicts, with direct access to their sources panel to adopt or dismiss the alternative values.
 - **Stale knowledge**: the entities, relationships and sightings flagged as stale by a [knowledge decay rule](../administration/decay-rules.md#knowledge-decay-rules), with direct access to their sources panel to confirm them.
 
-Once the sources panel of a row is closed after a change, the list is refreshed: a row whose conflicts are all resolved, or which is confirmed, leaves the tab.
+Once the sources panel of a row is closed after a change, the list is refreshed: a row whose conflicts are all resolved, or which is confirmed, leaves the tab. Elements of a type whose provenance tracking is switched off are not listed.
+
+![The Conflicts tab of Data > Curation listing IcedID and APT29 with their conflicting fields, corroboration and freshness](assets/provenance-conflicts-tab.png)
+
+![The Stale knowledge tab of Data > Curation listing QakBot and IcedID, last asserted 75 days ago](assets/provenance-stale-knowledge-tab.png)
+
+??? example "The same tabs in the light theme"
+
+    ![The Conflicts tab in the light theme](assets/provenance-conflicts-tab-light.png)
+
+    ![The Stale knowledge tab in the light theme](assets/provenance-stale-knowledge-tab-light.png)
 
 ## Widgets
 

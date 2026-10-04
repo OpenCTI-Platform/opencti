@@ -32,6 +32,7 @@ import {
   MAX_CONFLICT_FIELDS_PER_ELEMENT,
   MAX_PROCEDURES_PER_RELATIONSHIP,
   PROVENANCE_PROTECTED_INPUT_FIELDS,
+  PROVENANCE_SIDE_CHANNEL_FIELDS,
   type StoreAssertion,
   type StoreProcedure,
   type StoreProvenanceFields,
@@ -337,6 +338,72 @@ export const readUpdatedSource = (response: any): Partial<StoreProvenanceFields>
   return (response?.get ?? response?.body?.get)?._source ?? null;
 };
 
+const CONDITIONAL_WRITE_ATTEMPTS = 5;
+
+const isVersionConflictError = (err: any) => {
+  const cause = err?.extensions?.data?.cause ?? err;
+  return (cause?.meta?.statusCode ?? cause?.statusCode) === 409;
+};
+
+/** Conflict values of the additions that the element does not hold yet. */
+export const newConflictAdditions = (element: Partial<StoreProvenanceFields>, conflictsAdd: ConflictAddition[]) => {
+  const knownValues = new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
+  return conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
+};
+
+export interface ProvenanceWriteResult {
+  response: any;
+  /** Conflict values created by this write: counted by exactly one write, even under concurrent writes. */
+  newConflicts: ConflictAddition[];
+  /** Provenance stored right after the write, when requested: exact without waiting for a refresh. */
+  current: Partial<StoreProvenanceFields> | null;
+}
+
+/**
+ * Apply a provenance update and report what it created. An update adding conflict values reads the
+ * conflicts in real time with the document version and applies only on that same version, re-reading
+ * after a concurrent write: a conflict value is reported as new by the one write that created it.
+ */
+export const writeProvenanceUpdate = async (
+  context: AuthContext,
+  target: ProvenanceTarget,
+  update: ProvenanceUpdate,
+  opts: { refresh?: boolean; withCurrent?: boolean } = {},
+): Promise<ProvenanceWriteResult> => {
+  const conflictsAdd = update.conflictsAdd ?? [];
+  const updateOpts = { refresh: opts.refresh, returnFields: opts.withCurrent ? PROVENANCE_SIDE_CHANNEL_FIELDS : undefined };
+  const result = (response: any, newConflicts: ConflictAddition[]) => ({
+    response,
+    newConflicts,
+    current: opts.withCurrent ? readUpdatedSource(response) : null,
+  });
+  if (conflictsAdd.length === 0) {
+    return result(await applyProvenanceUpdate(context, target, update, updateOpts), []);
+  }
+  const id = target._id ?? target.internal_id;
+  let newConflicts = conflictsAdd;
+  for (let attempt = 0; attempt < CONDITIONAL_WRITE_ATTEMPTS; attempt += 1) {
+    const snapshot = await elRawGet({ id, index: target._index, _source_includes: [ATTRIBUTE_CONFLICTS] } as { id: string; index: string });
+    newConflicts = newConflictAdditions((snapshot?._source ?? {}) as Partial<StoreProvenanceFields>, conflictsAdd);
+    try {
+      const response = await elUpdate(context, target._index, id, { script: buildProvenanceScript(update) }, undefined, {
+        refresh: opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE,
+        sourceIncludes: updateOpts.returnFields,
+        ifSeqNo: snapshot._seq_no,
+        ifPrimaryTerm: snapshot._primary_term,
+      });
+      return result(response, newConflicts);
+    } catch (err) {
+      if (!isVersionConflictError(err)) {
+        throw err;
+      }
+    }
+  }
+  // Still contended after every attempt: the update is applied anyway, judged against the last read
+  logApp.warn('[PROVENANCE] Element under contention, conflicts judged against the last read', { id: target.internal_id });
+  return result(await applyProvenanceUpdate(context, target, update, updateOpts), newConflicts);
+};
+
 /**
  * Provenance fields indexed together with a newly created element.
  * A restored element (trash) keeps the provenance it had when deleted.
@@ -383,19 +450,18 @@ export interface UpsertProvenanceRecord {
 }
 
 /**
- * Corroboration and conflicts change produced by a write, computed from the element as loaded before it.
+ * Corroboration change produced by a write, computed from the element as loaded before it, and the
+ * conflict change made of the conflict values the write created (see writeProvenanceUpdate).
  */
 export const computeProvenanceChange = (
   element: Partial<StoreProvenanceFields>,
   sourceIds: string[],
-  conflictsAdd: ConflictAddition[] = [],
+  newConflicts: ConflictAddition[] = [],
 ): ProvenanceChange => {
   const storedSourceIds = element[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? [];
   const previousSources = new Set([...storedSourceIds, ...(element[ATTRIBUTE_ASSERTIONS] ?? []).map((assertion) => assertion.source_id)]);
   const from = previousSources.size;
   const to = new Set([...previousSources, ...sourceIds]).size;
-  const knownValues = new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
-  const newConflicts = conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
   return {
     corroboration: to > from ? { from, to } : undefined,
     conflictFields: [...new Set(newConflicts.map((addition) => addition.field))],
@@ -403,10 +469,19 @@ export const computeProvenanceChange = (
   };
 };
 
-export const publishProvenanceChange = async (context: AuthContext, element: ProvenanceTarget, change: ProvenanceChange) => {
+/**
+ * Count the new conflict values and notify the listening triggers. `current` is the provenance stored by
+ * the write itself: triggers are evaluated on it, as the element may not be visible to searches yet.
+ */
+export const publishProvenanceChange = async (
+  context: AuthContext,
+  element: ProvenanceTarget,
+  change: ProvenanceChange,
+  current: Partial<StoreProvenanceFields> | null = null,
+) => {
   await addProvenanceConflictDetectedCount(change.newConflictValues ?? 0);
   if (change.corroboration || (change.conflictFields ?? []).length > 0) {
-    await notifyProvenanceChange(context, element, change);
+    await notifyProvenanceChange(context, element, change, current);
   }
 };
 
@@ -487,8 +562,6 @@ export const coalesceReassertion = (
   return { redundant, conflictsAdd, proceduresAdd };
 };
 
-const ASSERTED_SNAPSHOT_FIELDS = [`${ATTRIBUTE_ASSERTIONS}.source_id`, `${ATTRIBUTE_ASSERTIONS}.first_asserted_at`, ATTRIBUTE_ASSERTION_SOURCE_IDS];
-
 /**
  * Corroboration change read from the element returned by the update itself, exact without any refresh:
  * the writing source is new when this write created its assertion and the loaded element did not count it.
@@ -532,20 +605,19 @@ export const recordUpsertProvenance = async (
       return { source, assertion };
     }
     const isTriggerListening = await hasProvenanceTriggers(context);
-    const response = await applyProvenanceUpdate(context, element, {
+    const { newConflicts, current } = await writeProvenanceUpdate(context, element, {
       assertions: [assertion],
       countMode: 'sum',
       conflictsAdd: coalesced.conflictsAdd,
       conflictsRemove: record.conflictsRemove,
       proceduresAdd: coalesced.proceduresAdd,
       resetFreshness: true,
-    }, { refresh: opts.refresh, returnFields: isTriggerListening ? ASSERTED_SNAPSHOT_FIELDS : undefined });
-    const change = computeProvenanceChange(element, [source.source_id], coalesced.conflictsAdd);
-    const updated = isTriggerListening ? readUpdatedSource(response) : null;
-    if (updated) {
-      change.corroboration = computeAssertedCorroboration(updated, element, source.source_id, at);
+    }, { refresh: opts.refresh, withCurrent: isTriggerListening });
+    const change = computeProvenanceChange(element, [source.source_id], newConflicts);
+    if (current) {
+      change.corroboration = computeAssertedCorroboration(current, element, source.source_id, at);
     }
-    await publishProvenanceChange(context, element, change);
+    await publishProvenanceChange(context, element, change, current);
     return { source, assertion };
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to record the assertion', { cause: err, id: element.internal_id, type: element.entity_type });

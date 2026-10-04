@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { elRawGet, elUpdate } from '../../../../src/database/engine';
 import { hasProvenanceTriggers, notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { coalesceReassertion, computeAssertedCorroboration, recordUpsertProvenance } from '../../../../src/modules/provenance/provenance-write';
-import type { AssertionSource, StoreAssertion, StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
+import { coalesceReassertion, computeAssertedCorroboration, recordUpsertProvenance, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
+import { type AssertionSource, PROVENANCE_SIDE_CHANNEL_FIELDS, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const HOUR = 60 * 60 * 1000;
@@ -172,7 +172,36 @@ describe('Provenance upsert recording', () => {
     expect(elRawGet).not.toHaveBeenCalled();
     expect(elUpdate).toHaveBeenCalledTimes(1);
     const updateOpts = vi.mocked(elUpdate).mock.calls[0][5];
-    expect(updateOpts?.sourceIncludes).toEqual(['x_opencti_assertions.source_id', 'x_opencti_assertions.first_asserted_at', 'assertion_source_ids']);
-    expect(notifyProvenanceChange).toHaveBeenCalledWith(context, element, expect.objectContaining({ corroboration: { from: 1, to: 2 } }));
+    expect(updateOpts?.sourceIncludes).toEqual(PROVENANCE_SIDE_CHANNEL_FIELDS);
+    expect(notifyProvenanceChange).toHaveBeenCalledWith(
+      context,
+      element,
+      expect.objectContaining({ corroboration: { from: 1, to: 2 } }),
+      expect.objectContaining({ assertion_source_ids: [OTHER_SOURCE_ID, SOURCE_ID] }),
+    );
+  });
+
+  it('should count a conflict value created by a concurrent write only once, re-reading after a version conflict', async () => {
+    vi.mocked(hasProvenanceTriggers).mockResolvedValue(false);
+    const addition = { field: 'description', value: conflictValue('new-value', SOURCE_ID, AT) };
+    // The element was loaded before another write added the same conflict value
+    const element = { ...target, x_opencti_assertions: [stored(SOURCE_ID, hoursBefore(48))] };
+    vi.mocked(elRawGet)
+      .mockResolvedValueOnce({ _seq_no: 7, _primary_term: 1, _source: {} } as never)
+      .mockResolvedValueOnce({ _seq_no: 8, _primary_term: 1, _source: { x_opencti_conflicts: [{ field: 'description', values: [addition.value] }] } } as never);
+    const versionConflict = { extensions: { data: { cause: { meta: { statusCode: 409 } } } } };
+    vi.mocked(elUpdate).mockRejectedValueOnce(versionConflict).mockResolvedValueOnce({ result: 'updated' } as never);
+    const { newConflicts } = await writeProvenanceUpdate(context, element, { conflictsAdd: [addition] });
+    expect(newConflicts).toEqual([]);
+    expect(vi.mocked(elUpdate).mock.calls.map((call) => [call[5]?.ifSeqNo, call[5]?.ifPrimaryTerm])).toEqual([[7, 1], [8, 1]]);
+  });
+
+  it('should report the conflict values a write creates, applied on the version it read', async () => {
+    const addition = { field: 'description', value: conflictValue('new-value', SOURCE_ID, AT) };
+    vi.mocked(elRawGet).mockResolvedValueOnce({ _seq_no: 3, _primary_term: 2, _source: {} } as never);
+    vi.mocked(elUpdate).mockResolvedValueOnce({ result: 'updated' } as never);
+    const { newConflicts } = await writeProvenanceUpdate(context, target, { conflictsAdd: [addition] });
+    expect(newConflicts).toEqual([addition]);
+    expect(vi.mocked(elUpdate).mock.calls[0][5]).toMatchObject({ ifSeqNo: 3, ifPrimaryTerm: 2 });
   });
 });

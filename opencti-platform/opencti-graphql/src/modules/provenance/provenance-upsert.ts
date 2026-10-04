@@ -40,13 +40,14 @@ import {
 import { type FreshnessState, isFreshAfterMerge } from './provenance-freshness';
 import { getActiveKnowledgeDecayRules } from '../decayRule/decayRule-knowledge';
 import {
-  applyProvenanceUpdate,
   computeProvenanceChange,
   isProvenanceRecordable,
   publishProvenanceChange,
   resolveProvenanceBeforeWrite,
   type UpsertProvenanceRecord,
+  writeProvenanceUpdate,
 } from './provenance-write';
+import { hasProvenanceTriggers } from './provenance-notification';
 
 type UpsertElement = Record<string, any> & { entity_type: string; internal_id: string };
 
@@ -187,9 +188,14 @@ export const mergeProvenanceOnEntitiesMerge = async (
     const resetFreshness = target[ATTRIBUTE_FRESHNESS_STALE] === true
       && isFreshAfterMerge(target as FreshnessState, inheritedLastAssertedAt, await getActiveKnowledgeDecayRules(context));
     const before = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
-    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness });
-    const change = computeProvenanceChange(before, [...sourceIdsAdd, ...assertions.map((assertion) => assertion.source_id)], conflictsAdd);
-    await publishProvenanceChange(context, target, change);
+    const { newConflicts, current } = await writeProvenanceUpdate(
+      context,
+      target,
+      { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness },
+      { withCurrent: await hasProvenanceTriggers(context) },
+    );
+    const change = computeProvenanceChange(before, [...sourceIdsAdd, ...assertions.map((assertion) => assertion.source_id)], newConflicts);
+    await publishProvenanceChange(context, target, change, current);
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to merge the provenance of merged entities', { cause: err, id: target.internal_id });
   }

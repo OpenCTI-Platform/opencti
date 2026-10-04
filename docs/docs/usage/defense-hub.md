@@ -28,6 +28,10 @@ Opening a link to Defense when none of its areas is available to you shows a pag
 
 ![The Defense page saying that nothing in Defense is available to the reader, with a button back to the dashboard](assets/defense-hub-no-access.png)
 
+??? example "The same page in the light theme"
+
+    ![The Defense no-access page in the light theme](assets/defense-hub-no-access-light.png)
+
 ## Related pages
 
 - [Security Coverage](security-coverage.md): the coverage of a security platform, also shown on the platform itself.

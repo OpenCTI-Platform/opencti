@@ -2,11 +2,11 @@ import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_D
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
-import { isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
+import { ENTITY_SETTING_PROVENANCE_TRACKING, isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
-import { SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
@@ -15,7 +15,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 import type { BasicConnection, BasicStoreEntity } from '../../types/store';
@@ -77,7 +77,14 @@ export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser,
   return pageEntitiesConnection<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
+// Provenance settings belong to "Settings > Customization": the parameters capability alone cannot change them
+const CUSTOMIZATION_ONLY_KEYS = [ENTITY_SETTING_PROVENANCE_TRACKING, 'procedures_preservation', 'procedures_description_policy'];
+
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
+  const customizationKeys = input.map(({ key }) => key).filter((key) => CUSTOMIZATION_ONLY_KEYS.includes(key));
+  if (customizationKeys.length > 0 && !isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION)) {
+    throw ForbiddenAccess('Changing these entity settings requires the customization capability', { keys: customizationKeys });
+  }
   const authorizedMembersEdit = input
     .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
     .flatMap(({ value }) => JSON.parse(value[0]))
