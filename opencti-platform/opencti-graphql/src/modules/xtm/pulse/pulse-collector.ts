@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreRelation } from '../../../types/store';
 import { FilterMode, FilterOperator, type FilterGroup } from '../../../generated/graphql';
-import { fullEntitiesList, fullRelationsList } from '../../../database/middleware-loader';
+import { buildRelationsFilter, fullEntitiesList, fullRelationsList } from '../../../database/middleware-loader';
 import { elCount, elFindByIds } from '../../../database/engine';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../schema/stixSightingRelationship';
@@ -46,15 +46,24 @@ const createdInWindowFilter = (since: Date, until: Date): FilterGroup => ({
   filterGroups: [],
 });
 
+// The same scoped queries as collectPulseActivity: a window is sized by the activity it collects, never by the traffic
+// of relationships between objects out of scope.
 export const countPulseActivity = async (context: AuthContext, user: AuthUser, scopes: string[], since: Date, until: Date) => {
+  if (scopes.length === 0) {
+    return 0;
+  }
   const filters = createdInWindowFilter(since, until);
-  const [created, sightings, references, relationships] = await Promise.all([
+  const countRelations = (type: string, sides: { fromTypes?: string[]; toTypes?: string[] }) => {
+    return elCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, buildRelationsFilter(type, { ...sides, filters }));
+  };
+  const counts = await Promise.all([
     elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: scopes, filters }),
-    elCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, { types: [STIX_SIGHTING_RELATIONSHIP], filters }),
-    elCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, { types: [RELATION_OBJECT], filters }),
-    elCount(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, { types: [ABSTRACT_STIX_CORE_RELATIONSHIP], filters }),
+    countRelations(STIX_SIGHTING_RELATIONSHIP, { fromTypes: scopes }),
+    countRelations(RELATION_OBJECT, { toTypes: scopes }),
+    countRelations(ABSTRACT_STIX_CORE_RELATIONSHIP, { fromTypes: scopes }),
+    countRelations(ABSTRACT_STIX_CORE_RELATIONSHIP, { toTypes: scopes }),
   ]);
-  return created + sightings + references + relationships;
+  return counts.reduce((total, count) => total + count, 0);
 };
 
 // Local activity on in-scope objects during [since, until): creations, sightings (detections when sighted by a

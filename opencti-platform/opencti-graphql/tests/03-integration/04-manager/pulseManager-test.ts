@@ -13,7 +13,7 @@ import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
-import { redisClaimPulseOutbox, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
+import { redisBumpPulsePolicyGeneration, redisClaimPulseOutbox, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
@@ -78,6 +78,7 @@ const GREEN_IP = '198.51.100.214';
 const LOST_ANSWER_IP = '198.51.100.215';
 const MARKED_LATER_IP = '198.51.100.216';
 const NARROWED_IP = '198.51.100.217';
+const STALE_POLICY_IP = '198.51.100.218';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -495,6 +496,22 @@ describe('Threat Pulse manager and API', () => {
     expect(contributed()).toBe(0);
     expect(await redisClaimPulseOutbox()).toEqual([]);
     await configure({ scopes });
+    await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should never send a pending batch built under a policy narrowed since, even when its discard did not happen', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: STALE_POLICY_IP, pattern: `[ipv4-addr:value = '${STALE_POLICY_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const indicatorId = created.data?.indicatorAdd.id;
+    const keys = computeStableKeys(await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR));
+    const contributed = () => hub.ledger.filter((row) => row.platformId === settingsId && keys.includes(row.key)).length;
+    hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    // The policy narrowed, but a failure left the pending batches in place
+    await redisBumpPulsePolicyGeneration();
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    expect(await redisClaimPulseOutbox()).toEqual([]);
     await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 

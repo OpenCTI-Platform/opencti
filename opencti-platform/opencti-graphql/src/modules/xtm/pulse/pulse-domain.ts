@@ -19,6 +19,7 @@ import { publishUserAction } from '../../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { getSettings, getSettingsFromDatabase } from '../../../domain/settings';
 import { addThreatPulseLookupsCount, addThreatPulseModeChangeCount, addThreatPulsePreviewEventCount, addThreatPulseRecordsCount } from '../../../manager/telemetryManager';
+import { lockResources } from '../../../lock/master-lock';
 import {
   FilterMode,
   FilterOperator,
@@ -73,12 +74,14 @@ import {
   redisAddPulseActivity,
   redisClaimPulseOutbox,
   redisBumpPulseConfigGeneration,
+  redisBumpPulsePolicyGeneration,
   redisCommitPulseWindow,
   redisDiscardPulseActivity,
   redisDiscardPulseOutbox,
   redisClearPulseContributionState,
   redisGetPulseContributionStats,
   redisGetPulseConfigGeneration,
+  redisGetPulsePolicyGeneration,
   redisGetPulseCursor,
   redisGetPulseEntityLookup,
   redisGetPulseResponse,
@@ -128,6 +131,7 @@ import {
 } from './pulse-types';
 
 const ONE_DAY_MS = 24 * 3600 * 1000;
+const PULSE_PUSH_LOCK_KEY = conf.get('pulse_manager:push_lock_key') || 'pulse_push_lock';
 const LOOKUP_CACHE_TTL_SECONDS = conf.get('pulse_manager:lookup_cache_ttl_seconds') ?? 6 * 3600;
 const RESPONSE_CACHE_TTL_SECONDS = conf.get('pulse_manager:response_cache_ttl_seconds') ?? 900;
 const STATUS_CACHE_TTL_SECONDS = 300;
@@ -374,6 +378,14 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
       { key: PULSE_SETTINGS_CONSENT_USER, value: [user.id] },
     );
   }
+  const narrowing = wasContributing && (!enabling
+    || current.scopes.some((scope) => !scopes.includes(scope))
+    || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)));
+  if (narrowing) {
+    // Before the settings change: from now on no batch built under the former, wider policy is sent, even when a
+    // step below fails.
+    await redisBumpPulsePolicyGeneration();
+  }
   await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
   // A contribution cycle running under the former configuration records and sends nothing more from now on.
   await redisBumpPulseConfigGeneration();
@@ -387,10 +399,10 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // Nothing collected before the opt-out may leave afterwards.
     await redisDiscardPulseOutbox();
     await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
-  } else if (wasContributing && (current.scopes.some((scope) => !scopes.includes(scope))
-    || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)))) {
-    // The batches not sent yet were built under the former, wider policy: they never leave. Their activity was already
-    // acknowledged, so it is not contributed again; the next run collects from there under the new policy.
+  } else if (narrowing) {
+    // The batches not sent yet were built under the former, wider policy: they never leave (the policy generation
+    // already refuses them; this frees them). Their activity was already acknowledged, so it is not contributed again;
+    // the next run collects from there under the new policy.
     await redisDiscardPulseOutbox();
   }
   const modeChanged = mode !== current.mode;
@@ -473,15 +485,27 @@ interface PushOutcome {
 // stay claimed, so the next run claims them again. Nothing more leaves once the configuration changed since the cycle
 // read it (generation).
 const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string, generation: string): Promise<PushOutcome> => {
+  // Serialized with the purge: a batch claimed before a purge never reaches XTM Hub after it.
+  const lock = await lockResources([PULSE_PUSH_LOCK_KEY]);
+  try {
+    return await pushClaimedPulseOutbox(platform, oldestAcceptedDay, generation);
+  } finally {
+    await lock.unlock();
+  }
+};
+
+const pushClaimedPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string, generation: string): Promise<PushOutcome> => {
   const claimed = await redisClaimPulseOutbox();
-  const expired = claimed.filter((entry) => entry.batch.day < oldestAcceptedDay);
-  if (expired.length > 0) {
-    logApp.warn('[THREAT PULSE] Pending batches older than the accepted salt days are dropped', { dropped: expired.length });
-    for (let index = 0; index < expired.length; index += 1) {
-      await redisSettlePulseOutboxEntry(expired[index], false);
+  const policy = await redisGetPulsePolicyGeneration();
+  // Past the accepted salt days, or built under a wider privacy policy than the current one.
+  const dropped = claimed.filter((entry) => entry.batch.day < oldestAcceptedDay || (entry.policy ?? '0') !== policy);
+  if (dropped.length > 0) {
+    logApp.warn('[THREAT PULSE] Pending batches XTM Hub no longer accepts or built under a former policy are dropped', { dropped: dropped.length });
+    for (let index = 0; index < dropped.length; index += 1) {
+      await redisSettlePulseOutboxEntry(dropped[index], false);
     }
   }
-  const retryable = claimed.filter((entry) => entry.batch.day >= oldestAcceptedDay);
+  const retryable = claimed.filter((entry) => !dropped.includes(entry));
   let pushedRecords = 0;
   for (let index = 0; index < retryable.length; index += 1) {
     const entry = retryable[index];
@@ -538,6 +562,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   // Read before the settings, which come from the database: a configuration stored after this point stops the cycle
   // before it records or sends anything more.
   const generation = await redisGetPulseConfigGeneration();
+  const policyGeneration = await redisGetPulsePolicyGeneration();
   const { values, platform, state } = await loadPulseContext(context, { fresh: true });
   if (!isPulseContributing(values) || !platform) {
     return { pushedRecords: 0 };
@@ -603,7 +628,8 @@ export const runPulseContribution = async (context: AuthContext) => {
     records += aggregation.records.length;
     excluded += aggregation.excludedCount;
     if (aggregation.records.length > 0) {
-      windowItems.push(...buildPulseOutboxItems(aggregation.records, await getPulseSalt(platform, day), day, buckets));
+      const items = buildPulseOutboxItems(aggregation.records, await getPulseSalt(platform, day), day, buckets);
+      windowItems.push(...items.map((item) => ({ ...item, policy: policyGeneration })));
       await storePulseKeys(context, aggregation.contributedEntities);
     }
   }
@@ -1218,18 +1244,26 @@ export const purgePulseContributions = async (context: AuthContext, user: AuthUs
     throw FunctionalError('Register the platform on XTM Hub to purge its Threat Pulse contributions');
   }
   let result: { success: boolean; deleted_records: number };
+  // Serialized with the pushes of the contribution: no push runs during the purge, and a cycle started before it
+  // records and sends nothing after it (generation). The pending work goes with the purge.
+  const lock = await lockResources([PULSE_PUSH_LOCK_KEY]);
   try {
-    result = await xtmHubPulseClient.purge(platform);
-  } catch (error) {
-    throw FunctionalError('XTM Hub could not purge the Threat Pulse contributions, retry later', { reason: toPulseUnavailableReason(error) });
+    await redisBumpPulseConfigGeneration();
+    try {
+      result = await xtmHubPulseClient.purge(platform);
+    } catch (error) {
+      throw FunctionalError('XTM Hub could not purge the Threat Pulse contributions, retry later', { reason: toPulseUnavailableReason(error) });
+    }
+    if (!result.success) {
+      // The contributions are still on XTM Hub: the local tracking stays, and nothing is audited as purged.
+      logApp.warn('[THREAT PULSE] XTM Hub did not purge the Threat Pulse contributions');
+      return result;
+    }
+    await redisClearPulseContributionState(lastUtcDays(STATS_DAYS + 1));
+    await redisSetPulseCursor(new Date().toISOString());
+  } finally {
+    await lock.unlock();
   }
-  if (!result.success) {
-    // The contributions are still on XTM Hub: the local tracking stays, and nothing is audited as purged.
-    logApp.warn('[THREAT PULSE] XTM Hub did not purge the Threat Pulse contributions');
-    return result;
-  }
-  await redisClearPulseContributionState(lastUtcDays(STATS_DAYS + 1));
-  await redisSetPulseCursor(new Date().toISOString());
   // XTM Hub no longer holds a contribution of the platform: the full reads wait for the next accepted one.
   await redisSetPulseState({ contribution_accepted: undefined, contribution_lapsed: undefined, last_push_at: undefined, last_refresh_at: undefined, refresh_offset: undefined });
   if (access === PulseAccess.Full) {

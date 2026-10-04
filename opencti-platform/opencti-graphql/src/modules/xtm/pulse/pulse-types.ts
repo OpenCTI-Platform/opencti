@@ -142,6 +142,8 @@ export interface PulseBatchStats {
 export interface PulseOutboxItem {
   batch: PulseBatch;
   stats: PulseBatchStats;
+  // The privacy policy generation the batch was built under: a batch of an earlier one is never sent.
+  policy?: string;
 }
 
 // Hub answers (contract section 3).

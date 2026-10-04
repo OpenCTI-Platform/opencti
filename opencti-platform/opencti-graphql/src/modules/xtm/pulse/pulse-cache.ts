@@ -12,7 +12,10 @@ const OUTBOX_INFLIGHT_KEY = '{pulse}:outbox:inflight';
 const CONFIG_GENERATION_KEY = '{pulse}:config:generation';
 const STATE_KEY = '{pulse}:state';
 const STATS_DAY_PREFIX = '{pulse}:stats:day:';
+// The per-type counters of the first builds, one hash for all days: only deleted now.
 const STATS_TYPE_KEY = '{pulse}:stats:types';
+const STATS_TYPE_FIELD_PREFIX = 'type:';
+const POLICY_GENERATION_KEY = '{pulse}:policy:generation';
 const ACTIVITY_PREFIX = '{pulse}:activity:';
 const TAKEN_SUFFIX = ':taken';
 const TRENDING_NOTIFIED_KEY = '{pulse}:trending:notified';
@@ -75,6 +78,14 @@ export const redisBumpPulseConfigGeneration = async () => {
   await getClientBase().incr(CONFIG_GENERATION_KEY);
 };
 
+// Moves before the privacy policy narrows (a scope removed, a marking excluded, the contribution stopped): every batch
+// carries the policy generation it was built under, and a batch of an earlier one is never sent.
+export const redisGetPulsePolicyGeneration = async (): Promise<string> => (await getClientBase().get(POLICY_GENERATION_KEY)) ?? '0';
+
+export const redisBumpPulsePolicyGeneration = async () => {
+  await getClientBase().incr(POLICY_GENERATION_KEY);
+};
+
 // KEYS: generation, outbox, cursor, then the activity keys to acknowledge. ARGV: the generation of the cycle, the
 // cursor, then the batches.
 const COMMIT_WINDOW_SCRIPT = `
@@ -127,15 +138,16 @@ return redis.call('LRANGE', inflight, 0, -1)
 
 // Removes a settled batch and, when XTM Hub accepted it, adds its statistics: both happen once, in one script, however
 // many times a run settles the same entry.
+// The records per entity type are kept per day, next to the day's totals, so that they age with them.
 const SETTLE_OUTBOX_SCRIPT = `
 local removed = redis.call('LREM', KEYS[1], 1, ARGV[1])
 if removed == 1 and ARGV[2] == '1' then
   redis.call('HINCRBY', KEYS[2], 'records', tonumber(ARGV[3]))
   redis.call('HINCRBY', KEYS[2], 'objects', tonumber(ARGV[4]))
-  redis.call('EXPIRE', KEYS[2], tonumber(ARGV[5]))
   for index = 6, #ARGV, 2 do
-    redis.call('HINCRBY', KEYS[3], ARGV[index], tonumber(ARGV[index + 1]))
+    redis.call('HINCRBY', KEYS[2], '${STATS_TYPE_FIELD_PREFIX}' .. ARGV[index], tonumber(ARGV[index + 1]))
   end
+  redis.call('EXPIRE', KEYS[2], tonumber(ARGV[5]))
 end
 return removed
 `;
@@ -170,10 +182,9 @@ export const redisSettlePulseOutboxEntry = async (entry: PulseOutboxEntry, accep
   const typeArgs = Object.entries(entry.stats.by_type).flatMap(([entityType, records]) => [entityType, String(records)]);
   await getClientBase().eval(
     SETTLE_OUTBOX_SCRIPT,
-    3,
+    2,
     OUTBOX_INFLIGHT_KEY,
     `${STATS_DAY_PREFIX}${entry.batch.day}`,
-    STATS_TYPE_KEY,
     entry.raw,
     accepted ? '1' : '0',
     String(entry.stats.records),
@@ -229,14 +240,19 @@ export const redisSetPulseState = async (state: PulseOperationalState) => {
 
 export const redisGetPulseContributionStats = async (days: string[]) => {
   const client = getClientBase();
+  const byType = new Map<string, number>();
   const perDay = await Promise.all(days.map(async (day) => {
-    const values = await client.hgetall(`${STATS_DAY_PREFIX}${day}`);
-    return { day, records: Number(values?.records ?? 0), objects: Number(values?.objects ?? 0) };
+    const values = (await client.hgetall(`${STATS_DAY_PREFIX}${day}`)) ?? {};
+    Object.entries(values).filter(([field]) => field.startsWith(STATS_TYPE_FIELD_PREFIX)).forEach(([field, records]) => {
+      const entityType = field.slice(STATS_TYPE_FIELD_PREFIX.length);
+      byType.set(entityType, (byType.get(entityType) ?? 0) + Number(records));
+    });
+    return { day, records: Number(values.records ?? 0), objects: Number(values.objects ?? 0) };
   }));
-  const byType = await client.hgetall(STATS_TYPE_KEY);
+  // Over the same days as the totals
   return {
     days: perDay,
-    byType: Object.entries(byType ?? {}).map(([entityType, records]) => ({ entity_type: entityType, records: Number(records) })),
+    byType: Array.from(byType.entries()).map(([entityType, records]) => ({ entity_type: entityType, records })),
   };
 };
 
