@@ -296,6 +296,34 @@ describe('Provenance: every fact knows who said it', () => {
     expect(dismissed.x_opencti_conflicts ?? []).toEqual([]);
   });
 
+  it('should keep the attribution of every source proposing the same conflicting value', async () => {
+    const created = await createEntity(testContext, ADMIN_USER, { name: `${MALWARE_NAME} shared proposal`, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);
+    retentionMalwareIds.push(created.id);
+    const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, created.id);
+    const proposal = (sourceId: string, at: string): StoreConflictValue => ({
+      value_hash: 'shared-hash', display: 'Shared description', value: '"Shared description"', source_id: sourceId, source_kind: SOURCE_KIND_FEED, source_name: `Feed ${sourceId}`, confidence: 50, last_asserted_at: at,
+    });
+    const params = buildProvenanceScriptParams({
+      conflictsAdd: [
+        { field: 'description', value: proposal('feed-a', '2026-09-01T00:00:00.000Z') },
+        { field: 'description', value: proposal('feed-b', '2026-09-02T00:00:00.000Z') },
+        { field: 'description', value: proposal('feed-a', '2026-09-03T00:00:00.000Z') },
+      ],
+    });
+    await elUpdate(testContext, element._index, element.internal_id, { script: { source: PROVENANCE_UPDATE_SCRIPT, lang: 'painless', params } });
+    const malware = await loadMalware(created.id);
+    const conflict = malware.x_opencti_conflicts.find((entry: { field: string }) => entry.field === 'description');
+    // One proposal per source: the repeated proposal of feed-a refreshes its own record
+    expect(conflict.values.map((value: { value_hash: string; source_id: string }) => `${value.value_hash}:${value.source_id}`).sort()).toEqual([
+      'shared-hash:feed-a',
+      'shared-hash:feed-b',
+    ]);
+    // Dismissing the value removes the proposal of every source
+    await queryAsAdminWithSuccess({ query: CONFLICT_DISMISS, variables: { id: created.id, field: 'description', hash: 'shared-hash' } });
+    const dismissed = await loadMalware(created.id);
+    expect(dismissed.has_conflicts).toEqual(false);
+  });
+
   it('should only count the conflicts older than the retention date in the retention preview', async () => {
     const withConflict = async (name: string, lastAssertedAt: string) => {
       const created = await createEntity(testContext, ADMIN_USER, { name, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);

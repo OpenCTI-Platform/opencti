@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import { Button } from '@filigran/design-system';
+import { Alert, Button } from '@filigran/design-system';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -30,16 +28,15 @@ const HubNoAccess = ({ hub: hubLabel, parents = [], back }: HubNoAccessProps) =>
       />
       <Alert
         severity="info"
-        variant="outlined"
+        data-testid="hub-no-access"
+        title={t_i18n('Nothing in {hub} is available to you', { values: { hub } })}
+        description={t_i18n('Its pages are hidden on this platform or need a permission your account does not have. Ask your administrator if you need them.')}
         action={(
           <Button priority="secondary" size="sm" asChild>
             <Link to={back.link}>{t_i18n(back.label)}</Link>
           </Button>
         )}
-      >
-        <AlertTitle>{t_i18n('Nothing in {hub} is available to you', { values: { hub } })}</AlertTitle>
-        {t_i18n('Its pages are hidden on this platform or need a permission your account does not have. Ask your administrator if you need them.')}
-      </Alert>
+      />
     </PageContainer>
   );
 };

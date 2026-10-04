@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Text, Thumbnail } from '@filigran/design-system';
+import { Button, Hero, HeroBody, HeroHeader, Text, Thumbnail } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import { useHubEntry } from './HubEntryContext';
 
@@ -22,23 +22,21 @@ const HubFirstUse = ({ action, documentationUrl }: HubFirstUseProps) => {
     return null;
   }
   return (
-    <Card data-testid="hub-first-use">
-      <CardHeader icon={entry.icon ? <Thumbnail>{entry.icon}</Thumbnail> : undefined} action={action}>
-        <CardTitle>{t_i18n(entry.label)}</CardTitle>
-      </CardHeader>
-      {entry.description && (
-        <CardContent clamp={0}>
-          <Text variant="content-base">{t_i18n(entry.description)}</Text>
-        </CardContent>
+    <Hero data-testid="hub-first-use">
+      <HeroHeader icon={entry.icon ? <Thumbnail>{entry.icon}</Thumbnail> : undefined} action={action}>
+        <Text variant="title-md">{t_i18n(entry.label)}</Text>
+      </HeroHeader>
+      {(entry.description || documentationUrl) && (
+        <HeroBody>
+          {entry.description && <Text variant="content-base">{t_i18n(entry.description)}</Text>}
+          {documentationUrl && (
+            <Button priority="tertiary" size="sm" asChild>
+              <a href={documentationUrl} target="_blank" rel="noreferrer">{t_i18n('Read the documentation')}</a>
+            </Button>
+          )}
+        </HeroBody>
       )}
-      {documentationUrl && (
-        <CardFooter>
-          <Button priority="tertiary" size="sm" asChild>
-            <a href={documentationUrl} target="_blank" rel="noreferrer">{t_i18n('Read the documentation')}</a>
-          </Button>
-        </CardFooter>
-      )}
-    </Card>
+    </Hero>
   );
 };
 

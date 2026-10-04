@@ -2308,3 +2308,8 @@ a page-level empty / first-use surface (`Hero`) in a release the product can pin
 **Removal test.** Bump the pin to a release that exports both, swap
 `common/hub/HubNoAccess.tsx` and `common/hub/HubFirstUse.tsx` back to them, and the
 Defense `Root.test.tsx` still passes unchanged.
+
+**Resolved by 1.2.0.** The pin moved to 1.2.0, which exports `Alert` and `Hero`;
+`HubNoAccess.tsx` renders the design-system `Alert` (title, description, action) and
+`HubFirstUse.tsx` the `Hero` / `HeroHeader` / `HeroBody` composition. The MUI `Alert`
+and the `Card` fallback are gone.

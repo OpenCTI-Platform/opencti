@@ -93,6 +93,8 @@ describe('Provenance re-assertion coalescing', () => {
     expect(fresh.conflictsAdd.map(({ value }) => value.value_hash)).toEqual(['h2']);
     const otherSource = coalesceReassertion(element, SOURCE_ID, AT, { conflictsAdd: [{ field: 'description', value: conflictValue('h1', OTHER_SOURCE_ID, AT) }] }, WINDOW);
     expect(otherSource.redundant).toEqual(false);
+    // The same value proposed by another source is kept as a proposal of its own
+    expect(otherSource.conflictsAdd.map(({ value }) => [value.value_hash, value.source_id])).toEqual([['h1', OTHER_SOURCE_ID]]);
     expect(coalesceReassertion(element, SOURCE_ID, AT, { conflictsRemove: [{ field: 'description', value_hash: 'h1' }] }, WINDOW).redundant).toEqual(false);
     expect(coalesceReassertion(element, SOURCE_ID, AT, { conflictsRemove: [{ field: 'description', value_hash: 'h9' }] }, WINDOW).redundant).toEqual(true);
   });

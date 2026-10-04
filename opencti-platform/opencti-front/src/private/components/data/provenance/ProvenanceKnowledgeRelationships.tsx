@@ -173,16 +173,16 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    fromType: { percentWidth: 9 },
-    fromName: { percentWidth: withConflicts ? 13 : 16 },
-    relationship_type: { percentWidth: 10 },
-    toType: { percentWidth: 9 },
-    toName: { percentWidth: withConflicts ? 13 : 16 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
-    corroboration_count: { percentWidth: 10 },
+    fromType: { percentWidth: 8 },
+    fromName: { percentWidth: withConflicts ? 11 : 15 },
+    relationship_type: { percentWidth: 9 },
+    toType: { percentWidth: 8 },
+    toName: { percentWidth: withConflicts ? 11 : 15 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
+    corroboration_count: { percentWidth: 11 },
     freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: 11 },
-    objectMarking: { percentWidth: 9, isSortable: false },
+    last_asserted_at: { percentWidth: withConflicts ? 9 : 10 },
+    objectMarking: { percentWidth: withConflicts ? 7 : 9, isSortable: false },
   };
 
   const preloadedPaginationProps = {

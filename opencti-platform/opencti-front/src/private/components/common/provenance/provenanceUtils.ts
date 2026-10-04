@@ -111,11 +111,11 @@ export const corroborationColor = (theme: Theme, count: number | null | undefine
 
 // Freshness buckets, in days since the last assertion of any source
 export const FRESHNESS_BUCKET_LABELS: Record<string, string> = {
-  '0-30': 'Less than a month',
-  '31-90': '1 to 3 months',
-  '91-180': '3 to 6 months',
-  '181-365': '6 months to a year',
-  '366+': 'More than a year',
+  '0-30': '0-30 days',
+  '31-90': '31-90 days',
+  '91-180': '91-180 days',
+  '181-365': '181-365 days',
+  '366+': 'Over 365 days',
   unknown: 'Never asserted',
 };
 
@@ -134,6 +134,28 @@ export const freshnessColor = (theme: Theme, days: number | null | undefined, st
 
 export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined) => {
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
+};
+
+export interface ConflictValueGroup {
+  readonly value_hash: string;
+  readonly display: string;
+  readonly adoptable: boolean;
+  readonly proposals: ProvenanceConflictValue[];
+}
+
+/**
+ * Conflicting values are kept per source: the same value proposed by several sources is shown once, with every
+ * proposal (source, date, confidence). Adopting or dismissing the value acts on all of them.
+ */
+export const groupConflictValues = (values: ReadonlyArray<ProvenanceConflictValue>): ConflictValueGroup[] => {
+  const groups = new Map<string, { value_hash: string; display: string; adoptable: boolean; proposals: ProvenanceConflictValue[] }>();
+  values.forEach((value) => {
+    const group = groups.get(value.value_hash) ?? { value_hash: value.value_hash, display: value.display, adoptable: false, proposals: [] };
+    group.adoptable = group.adoptable || value.adoptable;
+    group.proposals.push(value);
+    groups.set(value.value_hash, group);
+  });
+  return [...groups.values()];
 };
 
 export interface ProcedureGroup {

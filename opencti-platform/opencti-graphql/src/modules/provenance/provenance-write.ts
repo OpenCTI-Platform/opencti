@@ -223,7 +223,9 @@ export const PROVENANCE_UPDATE_SCRIPT = `
       }
       if (entry.values == null) { entry.values = new ArrayList(); }
       def existing = null;
-      for (def value : entry.values) { if (value.value_hash == addition.value.value_hash) { existing = value; break; } }
+      for (def value : entry.values) {
+        if (value.value_hash == addition.value.value_hash && value.source_id == addition.value.source_id) { existing = value; break; }
+      }
       if (existing == null) {
         entry.values.add(new HashMap(addition.value));
       } else if (existing.last_asserted_at == null || addition.value.last_asserted_at.compareTo(existing.last_asserted_at) >= 0) {
@@ -544,10 +546,12 @@ export const coalesceReassertion = (
     return stored !== undefined && stored.source_id === expectedSourceId && isWithinReassertionWindow(stored.last_asserted_at, at, windowMs);
   };
   const conflicts = element[ATTRIBUTE_CONFLICTS] ?? [];
-  const findConflictValue = (field: string, valueHash: string) => {
-    return conflicts.find((conflict) => conflict.field === field)?.values?.find((value) => value.value_hash === valueHash);
+  // A conflicting value is kept per source: the same value proposed by another source is a new proposal
+  const findConflictValue = (field: string, valueHash: string, sourceId?: string) => {
+    return conflicts.find((conflict) => conflict.field === field)?.values
+      ?.find((value) => value.value_hash === valueHash && (sourceId === undefined || value.source_id === sourceId));
   };
-  const conflictsAdd = (record.conflictsAdd ?? []).filter(({ field, value }) => !isFresh(findConflictValue(field, value.value_hash), value.source_id));
+  const conflictsAdd = (record.conflictsAdd ?? []).filter(({ field, value }) => !isFresh(findConflictValue(field, value.value_hash, value.source_id), value.source_id));
   const removesStoredConflict = (record.conflictsRemove ?? []).some(({ field, value_hash }) => findConflictValue(field, value_hash) !== undefined);
   const procedures = element[ATTRIBUTE_PROCEDURES] ?? [];
   // A procedure is kept per source: the same text asserted by another source is a new attribution

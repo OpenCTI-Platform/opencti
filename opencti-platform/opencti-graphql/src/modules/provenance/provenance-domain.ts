@@ -256,13 +256,14 @@ const loadEditableTrackedElement = async (context: AuthContext, user: AuthUser, 
   return element as StoreObject & Record<string, any>;
 };
 
-const findConflictValue = (element: Record<string, any>, field: string, valueHash: string): StoreConflictValue => {
+// Every proposal of a conflicting value: the same value proposed by several sources is kept once per source
+const findConflictProposals = (element: Record<string, any>, field: string, valueHash: string): StoreConflictValue[] => {
   const conflict = ((element[ATTRIBUTE_CONFLICTS] ?? []) as StoreConflict[]).find((entry) => entry.field === field);
-  const value = conflict?.values?.find((candidate) => candidate.value_hash === valueHash);
-  if (!value) {
+  const proposals = (conflict?.values ?? []).filter((candidate) => candidate.value_hash === valueHash);
+  if (proposals.length === 0) {
     throw FunctionalError('Cannot find the conflicting value', { id: element.internal_id, field });
   }
-  return value;
+  return proposals;
 };
 
 // History is read with the rights of each reader: user and author names are never written into it.
@@ -274,6 +275,10 @@ export const describeProposalSource = (proposal: Pick<StoreConflictValue, 'sourc
     return 'an author source';
   }
   return `\`${proposal.source_name ?? proposal.source_id}\``;
+};
+
+export const describeProposalSources = (proposals: Pick<StoreConflictValue, 'source_kind' | 'source_name' | 'source_id'>[]) => {
+  return R.uniq(proposals.map(describeProposalSource)).join(', ');
 };
 
 const publishProvenanceAction = async (user: AuthUser, element: BasicStoreObject, message: string, input: Record<string, unknown>) => {
@@ -298,8 +303,9 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
   if (!attribute || !isConflictTrackedAttribute(attribute) || attribute.update === false) {
     throw FunctionalError('This field cannot be adopted from a source', { field });
   }
-  const proposal = findConflictValue(element, field, valueHash);
-  if (proposal.value === null || proposal.value === undefined) {
+  const proposals = findConflictProposals(element, field, valueHash);
+  const proposal = proposals.find((candidate) => candidate.value !== null && candidate.value !== undefined);
+  if (!proposal?.value) {
     throw FunctionalError('This value is too large to be adopted, edit the field directly', { field });
   }
   const adoptedValue = JSON.parse(proposal.value);
@@ -311,7 +317,7 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
     conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
   }
   await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
-  await publishProvenanceAction(user, element, `adopts the value proposed by ${describeProposalSource(proposal)} for \`${field}\``, { field, value_hash: valueHash });
+  await publishProvenanceAction(user, element, `adopts the value proposed by ${describeProposalSources(proposals)} for \`${field}\``, { field, value_hash: valueHash });
   await addProvenanceConflictAdoptionCount();
   return loadTrackedElement(context, user, element.internal_id);
 };
@@ -340,9 +346,9 @@ export const assertElement = async (context: AuthContext, user: AuthUser, id: st
 
 export const dismissConflictValue = async (context: AuthContext, user: AuthUser, id: string, field: string, valueHash: string) => {
   const element = await loadEditableTrackedElement(context, user, id);
-  const proposal = findConflictValue(element, field, valueHash);
+  const proposals = findConflictProposals(element, field, valueHash);
   await applyProvenanceUpdate(context, element, { conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
-  await publishProvenanceAction(user, element, `dismisses the value proposed by ${describeProposalSource(proposal)} for \`${field}\``, { field, value_hash: valueHash });
+  await publishProvenanceAction(user, element, `dismisses the value proposed by ${describeProposalSources(proposals)} for \`${field}\``, { field, value_hash: valueHash });
   return loadTrackedElement(context, user, element.internal_id);
 };
 
