@@ -50,7 +50,7 @@ const GraphSimilarityMatrix = ({ entities, cells, disableLinks = false }: GraphS
             <th style={{ width: LABEL_WIDTH }} aria-label={t_i18n('Entity')} />
             {entities.map((entity) => (
               <th key={entity.id} style={{ width: CELL_SIZE, height: LABEL_WIDTH, verticalAlign: 'bottom' }}>
-                <Box sx={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxHeight: LABEL_WIDTH, fontSize: 12 }}>
+                <Box sx={{ typography: 'caption', writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxHeight: LABEL_WIDTH }}>
                   {entity.representative.main}
                 </Box>
               </th>
@@ -60,40 +60,47 @@ const GraphSimilarityMatrix = ({ entities, cells, disableLinks = false }: GraphS
         <tbody>
           {entities.map((row) => (
             <tr key={row.id}>
-              <th scope="row" style={{ textAlign: 'left', fontWeight: 400 }}>
+              <Box component="th" scope="row" sx={{ textAlign: 'left', fontWeight: 'fontWeightRegular' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: LABEL_WIDTH }}>
                   <ItemIcon type={row.entity_type} size="small" />
                   {disableLinks ? (
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                    <Box component="span" sx={{ typography: 'caption', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {row.representative.main}
-                    </span>
+                    </Box>
                   ) : (
-                    <Link to={`${resolveLink(row.entity_type)}/${row.id}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                    <Box
+                      component={Link}
+                      to={`${resolveLink(row.entity_type)}/${row.id}`}
+                      sx={{ typography: 'caption', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    >
                       {row.representative.main}
-                    </Link>
+                    </Box>
                   )}
                 </Box>
-              </th>
+              </Box>
               {entities.map((column) => {
                 if (row.id === column.id) {
                   return <td key={column.id} style={{ width: CELL_SIZE, height: CELL_SIZE, background: theme.palette.divider }} />;
                 }
                 const cell = byPair.get(`${row.id}|${column.id}`);
                 const score = cell?.score ?? 0;
+                const description = t_i18n('{source} and {target}: {score} similar, {count, plural, one {# shared element} other {# shared elements}}', {
+                  values: { source: row.representative.main, target: column.representative.main, score: formatSimilarityScore(score), count: cell?.shared_count ?? 0 },
+                });
                 return (
                   <td key={column.id} style={{ width: CELL_SIZE, height: CELL_SIZE, padding: 0 }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Box
                           tabIndex={0}
-                          aria-label={`${row.representative.main} / ${column.representative.main}: ${formatSimilarityScore(score)}`}
+                          aria-label={description}
                           sx={{
+                            typography: 'caption',
                             width: CELL_SIZE,
                             height: CELL_SIZE,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: 11,
                             borderRadius: 1,
                             background: cellColor(score),
                             border: `1px solid ${theme.palette.divider}`,
@@ -102,9 +109,7 @@ const GraphSimilarityMatrix = ({ entities, cells, disableLinks = false }: GraphS
                           {score > 0 ? Math.round(score * 100) : ''}
                         </Box>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {`${row.representative.main} / ${column.representative.main}: ${formatSimilarityScore(score)} (${cell?.shared_count ?? 0} ${t_i18n('shared elements')})`}
-                      </TooltipContent>
+                      <TooltipContent>{description}</TooltipContent>
                     </Tooltip>
                   </td>
                 );
