@@ -72,6 +72,28 @@ const DAY_MS = 24 * 3600 * 1000;
 const HUNT_VERDICT_TRUE_POSITIVE = 'true_positive';
 
 // region streaming increments
+// Highest sequence of a stream event id: `<time>-<max>` is the last possible event of that millisecond
+const STREAM_ID_MAX_SEQUENCE = '18446744073709551615';
+
+/** Stream position right after every event of the given time and before. */
+export const streamBoundaryOf = (time: number) => `${time}-${STREAM_ID_MAX_SEQUENCE}`;
+
+const parseStreamEventId = (id: string): [bigint, bigint] => {
+  const [time, sequence] = id.split('-');
+  return [BigInt(time || '0'), BigInt(sequence || '0')];
+};
+
+/** The later of two stream positions; a missing position is before any other. */
+export const laterStreamEventId = (current: string | null | undefined, candidate: string): string => {
+  if (!current) {
+    return candidate;
+  }
+  const [currentTime, currentSequence] = parseStreamEventId(current);
+  const [candidateTime, candidateSequence] = parseStreamEventId(candidate);
+  const currentIsLater = currentTime > candidateTime || (currentTime === candidateTime && currentSequence >= candidateSequence);
+  return currentIsLater ? current : candidate;
+};
+
 const addIncrement = (increments: Map<string, LiveIncrement>, sourceIds: string[], patch: LiveIncrement) => {
   sourceIds.forEach((sourceId) => {
     const current = increments.get(sourceId) ?? {};
@@ -445,6 +467,10 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     const enterprise = await isEnterpriseEdition(context);
     const sources = await syncSources(context, settings);
     const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise });
+    // The live scorecards now count everything up to the computation time: the stream resumes after it, so the events
+    // the scan already counted are never applied again and the later ones are kept
+    const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, laterStreamEventId(cursor, streamBoundaryOf(now)));
     const computedAt = new Date(now).toISOString();
     const references = new Map(documents
       .filter((doc) => doc.is_live && doc.scorecard_period === REFERENCE_SCORECARD_PERIOD)
