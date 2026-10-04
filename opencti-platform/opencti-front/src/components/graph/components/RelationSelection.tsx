@@ -55,10 +55,14 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
     if (!activated) return undefined;
     const lineContext = () => lineRef.current?.getContext('2d') as LineContext | null | undefined;
     const strokeColor = () => (latest.current.theme.palette.success as SimplePaletteColorOptions)?.main ?? latest.current.theme.palette.common.white;
+    // The canvas box and the pointer, both in viewport coordinates: a scrolled page offsets neither.
     const reposition = (event: MouseEvent) => {
       const { left, top } = lineRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-      return { x: event.pageX - left, y: event.pageY - top };
+      return { x: event.clientX - left, y: event.clientY - top };
     };
+    // The canvases of this graph, the drawing and its overlays, share the parent of this one.
+    const isGraphCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement
+      && !!lineRef.current?.parentElement?.contains(target);
 
     const onMove = (event: MouseEvent) => {
       const ctx = lineContext();
@@ -77,7 +81,7 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
     const onDown = (event: MouseEvent) => {
       const ctx = lineContext();
       ctx?.reset();
-      if ((event.target as HTMLElement | null)?.tagName !== 'CANVAS' || !ctx) {
+      if (!isGraphCanvas(event.target) || !ctx) {
         return;
       }
       if (event.button !== 2) {
@@ -128,7 +132,10 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       latest.current.setSelectedNodes(new Set([firstNode, lastNode]));
     };
 
-    const onContextMenu = (event: MouseEvent) => event.preventDefault();
+    // The right button drags over the graph only: the rest of the page keeps its context menu.
+    const onContextMenu = (event: MouseEvent) => {
+      if (isGraphCanvas(event.target)) event.preventDefault();
+    };
 
     document.addEventListener('mousedown', onDown);
     document.addEventListener('mouseup', onUp);

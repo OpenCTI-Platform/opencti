@@ -52,10 +52,14 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   useEffect(() => {
     if (!activated) return undefined;
     const lassoContext = () => lassoRef.current?.getContext('2d') as LassoContext | null | undefined;
+    // The canvas box and the pointer, both in viewport coordinates: a scrolled page offsets neither.
     const reposition = (event: MouseEvent) => {
       const { left, top } = lassoRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-      return { x: event.pageX - left, y: event.pageY - top };
+      return { x: event.clientX - left, y: event.clientY - top };
     };
+    // The canvases of this graph, the drawing and its overlays, share the parent of this one.
+    const isGraphCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement
+      && !!lassoRef.current?.parentElement?.contains(target);
 
     const onMove = (event: MouseEvent) => {
       const ctx = lassoContext();
@@ -69,7 +73,7 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
 
     const onDown = (event: MouseEvent) => {
       const ctx = lassoContext();
-      if ((event.target as HTMLElement | null)?.tagName !== 'CANVAS' || !ctx) {
+      if (!isGraphCanvas(event.target) || !ctx) {
         return;
       }
       if (event.button === 2) {

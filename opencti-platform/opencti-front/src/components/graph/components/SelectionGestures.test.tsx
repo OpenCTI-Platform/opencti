@@ -43,6 +43,30 @@ describe('LassoSelection', () => {
     fireEvent.mouseUp(canvas, at(10, 100));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
   });
+
+  it('reads the pointer in viewport coordinates, like the canvas box, on a scrolled page', () => {
+    const scroll = { scrollX: 0, scrollY: 400, pageXOffset: 0, pageYOffset: 400 };
+    Object.entries(scroll).forEach(([key, value]) => Object.defineProperty(window, key, { value, configurable: true }));
+    try {
+      const { setSelectedNodes, canvas } = renderLasso();
+      fireEvent.mouseDown(canvas, at(10, 10));
+      [at(10, 10), at(100, 10), at(100, 100), at(10, 100)].forEach((point) => fireEvent.mouseMove(document, point));
+      fireEvent.mouseUp(canvas, at(10, 100));
+      expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([inside]);
+    } finally {
+      Object.keys(scroll).forEach((key) => Object.defineProperty(window, key, { value: 0, configurable: true }));
+    }
+  });
+
+  it('starts nothing on a canvas outside the graph', () => {
+    const { setSelectedNodes } = renderLasso();
+    const elsewhere = document.createElement('canvas');
+    document.body.appendChild(elsewhere);
+    fireEvent.mouseDown(elsewhere, at(10, 10));
+    fireEvent.mouseUp(elsewhere, at(10, 100));
+    expect(setSelectedNodes).not.toHaveBeenCalled();
+    elsewhere.remove();
+  });
 });
 
 describe('RelationSelection', () => {
@@ -78,6 +102,15 @@ describe('RelationSelection', () => {
     expect(onWindowUp).toHaveBeenCalledTimes(2);
     expect(setSelectedNodes).not.toHaveBeenCalled();
     window.removeEventListener('mouseup', onWindowUp);
+    button.remove();
+  });
+
+  it('keeps the context menu of the page, suppressing it over the graph only', () => {
+    const { canvas } = renderRelation();
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+    expect(fireEvent.contextMenu(button)).toBe(true);
+    expect(fireEvent.contextMenu(canvas)).toBe(false);
     button.remove();
   });
 });
