@@ -54,7 +54,7 @@ import { notifyClusterMemberships } from './graphAnalytics-notification';
 import { computeSimilarityScore, type GraphSimilarityScore } from './graphAnalytics-scoring';
 import {
   addClusterPromotion,
-  computeDegreeMetrics,
+  computeVisibleDegreeMetrics,
   countSimilarityRows,
   finalizeClusteringRun,
   GRAPH_METRICS_ENTITY_INDICES,
@@ -265,7 +265,7 @@ const loadMatrixEntities = async (context: AuthContext, user: AuthUser, args: Gr
     first: MATRIX_MAX_CANDIDATES,
     maxSize: MATRIX_MAX_CANDIDATES,
   });
-  const degrees = await computeDegreeMetrics(context, user, candidates.map((candidate) => candidate.internal_id));
+  const degrees = await computeVisibleDegreeMetrics(context, user, candidates.map((candidate) => candidate.internal_id));
   return candidates
     .map((entity, index) => ({ entity, index, degree: degrees.get(entity.internal_id)?.degree ?? 0 }))
     .sort((a, b) => (b.degree - a.degree) || (a.index - b.index))
@@ -377,7 +377,7 @@ export const batchGraphMetrics = async (context: AuthContext, user: AuthUser, el
   const measuredIds = elements.filter((_, index) => stored[index]).map((element) => element.internal_id);
   const clusterIds = Array.from(new Set(stored.map((metrics) => metrics?.cluster_id).filter((id): id is string => !!id)));
   const [degrees, clusterSizes] = await Promise.all([
-    computeDegreeMetrics(context, user, measuredIds),
+    computeVisibleDegreeMetrics(context, user, measuredIds),
     countVisibleMembersOfClusters(context, user, clusterIds),
   ]);
   return elements.map((element, index) => {

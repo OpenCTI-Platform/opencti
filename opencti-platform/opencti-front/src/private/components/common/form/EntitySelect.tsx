@@ -51,6 +51,8 @@ interface EntitySelectComponentProps extends EntitySelectBaseProps {
   multiple: boolean;
   value: EntityOption | EntityOption[] | null;
   onChange?: (val: EntityOption | EntityOption[] | null) => void;
+  // entities that cannot be chosen here, for instance the entity the selection starts from
+  excludedIds?: string[];
 }
 
 const EntitySelectComponent = ({
@@ -61,17 +63,20 @@ const EntitySelectComponent = ({
   onChange,
   onInputChange,
   queryRef,
+  excludedIds,
 }: EntitySelectComponentProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const throttleSearch = useDebounceCallback(onInputChange, 400);
   const { stixCoreObjects } = usePreloadedQuery(entitySelectSearchQuery, queryRef);
 
-  const options: EntityOption[] = (stixCoreObjects?.edges ?? []).map((sco) => ({
-    label: sco.node.representative.main,
-    value: sco.node.id,
-    type: sco.node.entity_type,
-  }));
+  const options: EntityOption[] = (stixCoreObjects?.edges ?? [])
+    .filter((sco) => !excludedIds?.includes(sco.node.id))
+    .map((sco) => ({
+      label: sco.node.representative.main,
+      value: sco.node.id,
+      type: sco.node.entity_type,
+    }));
 
   return (
     <Combobox<EntityOption>

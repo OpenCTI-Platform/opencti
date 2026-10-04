@@ -9,7 +9,7 @@ Graph analytics rely on two components:
 - The **graph analytics manager**, part of the platform and enabled by default. It computes the degree of every entity, the top similar entities of the profiled entity types, and the infrastructure clusters. Path queries are computed on demand by the API, as the requesting user.
 - The **analytics process** (`opencti-analytics`), optional, for large platforms. It loads the knowledge graph in memory to detect communities, build infrastructure, campaign and tooling clusters, and compute the approximate betweenness of every entity, then writes the results back through the API.
 
-Analytics never create or modify STIX objects or relationships. The metrics are stored in the `x_opencti_graph_metrics` attribute of the entities and the similarities in a dedicated `graph_similarity` index; both contain identifiers only. They are written without generating stream events nor changing the modification date of the entities.
+Analytics never create or modify STIX objects or relationships. The metrics are stored in the `x_opencti_graph_metrics` attribute of the entities and the similarities in a dedicated `opencti_graph_similarity` index (the `opencti` part being the index prefix of the platform); both contain identifiers only. They are written without generating stream events nor changing the modification date of the entities.
 
 ## Graph analytics manager
 
