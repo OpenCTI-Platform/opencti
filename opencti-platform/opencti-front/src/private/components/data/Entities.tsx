@@ -56,12 +56,12 @@ const Entities = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 13 },
-    name: {},
+    name: { percentWidth: 20 },
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: {},
-    corroboration_count: { percentWidth: 9 },
-    created_at: {},
+    objectLabel: { percentWidth: 10 },
+    corroboration_count: { percentWidth: 11 },
+    created_at: { percentWidth: 14 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 

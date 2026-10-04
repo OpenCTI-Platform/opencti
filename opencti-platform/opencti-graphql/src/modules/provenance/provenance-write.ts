@@ -349,9 +349,29 @@ const isVersionConflictError = (err: any) => {
 };
 
 /** Conflict values of the additions that the element does not hold yet. */
+const conflictValueKeys = (element: Partial<StoreProvenanceFields>) => {
+  return new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
+};
+
 export const newConflictAdditions = (element: Partial<StoreProvenanceFields>, conflictsAdd: ConflictAddition[]) => {
-  const knownValues = new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
+  const knownValues = conflictValueKeys(element);
   return conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
+};
+
+/**
+ * Additions that the write kept: a value dropped by the caps (conflicting fields per element, values per field)
+ * is not recorded, so it is never reported as a new conflict, however often a source proposes it again.
+ */
+export const keptConflictAdditions = (response: any, additions: ConflictAddition[]) => {
+  if (additions.length === 0 || isNoopUpdate(response)) {
+    return [];
+  }
+  const stored = readUpdatedSource(response);
+  if (!stored) {
+    return additions;
+  }
+  const storedValues = conflictValueKeys(stored);
+  return additions.filter((addition) => storedValues.has(`${addition.field}:${addition.value.value_hash}`));
 };
 
 export interface ProvenanceWriteResult {
@@ -384,6 +404,8 @@ export const writeProvenanceUpdate = async (
     return result(await applyProvenanceUpdate(context, target, update, updateOpts), []);
   }
   const id = target._id ?? target.internal_id;
+  // The stored conflicts come back with the write, to tell the additions it kept from the ones the caps dropped
+  const conflictUpdateOpts = { refresh: opts.refresh, returnFields: [...new Set([...(updateOpts.returnFields ?? []), ATTRIBUTE_CONFLICTS])] };
   let newConflicts = conflictsAdd;
   for (let attempt = 0; attempt < CONDITIONAL_WRITE_ATTEMPTS; attempt += 1) {
     const snapshot = await elRawGet({ id, index: target._index, _source_includes: [ATTRIBUTE_CONFLICTS] } as { id: string; index: string });
@@ -391,11 +413,11 @@ export const writeProvenanceUpdate = async (
     try {
       const response = await elUpdate(context, target._index, id, { script: buildProvenanceScript(update) }, undefined, {
         refresh: opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE,
-        sourceIncludes: updateOpts.returnFields,
+        sourceIncludes: conflictUpdateOpts.returnFields,
         ifSeqNo: snapshot._seq_no,
         ifPrimaryTerm: snapshot._primary_term,
       });
-      return result(response, newConflicts);
+      return result(response, keptConflictAdditions(response, newConflicts));
     } catch (err) {
       if (!isVersionConflictError(err)) {
         throw err;
@@ -404,7 +426,8 @@ export const writeProvenanceUpdate = async (
   }
   // Still contended after every attempt: the update is applied anyway, judged against the last read
   logApp.warn('[PROVENANCE] Element under contention, conflicts judged against the last read', { id: target.internal_id });
-  return result(await applyProvenanceUpdate(context, target, update, updateOpts), newConflicts);
+  const response = await applyProvenanceUpdate(context, target, update, conflictUpdateOpts);
+  return result(response, keptConflictAdditions(response, newConflicts));
 };
 
 /**

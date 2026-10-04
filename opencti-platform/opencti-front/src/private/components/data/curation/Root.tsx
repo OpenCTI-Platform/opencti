@@ -6,6 +6,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { isGrantedTo } from '../../../../utils/hooks/useGranted';
 import { HubEntryContext } from '../../common/hub/HubEntryContext';
 import HubNoAccess from '../../common/hub/HubNoAccess';
@@ -60,7 +61,8 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
 
 const Root = ({ tabs: registered = CURATION_TABS }: CurationRootProps) => {
   const { me } = useAuth();
-  const tabs = grantedCurationTabs(registered, (needs) => isGrantedTo(me, needs));
+  const modules = useHelper();
+  const tabs = grantedCurationTabs(registered, (needs) => isGrantedTo(me, needs), modules);
   if (tabs.length === 0) {
     return <HubNoAccess hub="Curation" parents={['Data']} back={{ link: '/dashboard/data', label: 'Back to Data' }} />;
   }

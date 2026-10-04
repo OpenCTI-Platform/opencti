@@ -7,6 +7,7 @@ import {
 } from '../../private/components/settings/sub_types/entity_setting/__generated__/EntitySettingsFragment_entitySetting.graphql';
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
+import useHelper from './useHelper';
 import { useFormatter } from '../../components/i18n';
 
 export type EntitySetting = EntitySettingsFragment_entitySetting$data;
@@ -49,7 +50,11 @@ export const useIsEnforceReference = (id: string): boolean => {
  * (relationships, sightings, observables): the platform resolves which inheriting types are tracked.
  */
 export const useIsProvenanceTracked = (entityType: string, inheritedType?: string): boolean => {
+  const { isProvenanceEnabled } = useHelper();
   const settings = useEntitySettings(inheritedType ? [entityType, inheritedType] : entityType);
+  if (!isProvenanceEnabled()) {
+    return false;
+  }
   const own = settings.find((node) => node.target_type === entityType);
   if (own) {
     return own.provenance_tracking;

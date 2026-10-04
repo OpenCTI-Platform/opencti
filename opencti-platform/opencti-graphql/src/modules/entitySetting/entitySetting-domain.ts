@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_SETTING_PROVENANCE_TRACKING, isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
+import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
@@ -150,17 +151,17 @@ export const mergeMissingWidgets = (stored: OverviewLayoutCustomization[], defau
 
 /**
  * Overview layout of a type: the customized one completed with the widgets registered since, the Sources widget
- * only being part of it while the provenance of the type is tracked. A layout customized before the Sources widget
- * existed receives it at its default position and width.
+ * only being part of it while provenance is enabled on the platform and tracked on the type. A layout customized
+ * before the Sources widget existed receives it at its default position and width.
  */
-export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
+export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting, provenanceEnabled = PROVENANCE_ENABLED) => {
   const stored = entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : undefined;
   const registered = schemaOverviewLayoutCustomization.get(entitySetting.target_type) as OverviewLayoutCustomization[] | undefined;
   if (!registered) {
     return stored;
   }
   const layout = stored ? mergeMissingWidgets(stored, registered) : registered;
-  if (!isProvenanceTrackingEnabled(entitySetting)) {
+  if (!provenanceEnabled || !isProvenanceTrackingEnabled(entitySetting)) {
     return layout.filter((widget) => widget.key !== PROVENANCE_SOURCES_WIDGET.key);
   }
   return layout.some((widget) => widget.key === PROVENANCE_SOURCES_WIDGET.key) ? layout : insertSourcesWidget(layout);

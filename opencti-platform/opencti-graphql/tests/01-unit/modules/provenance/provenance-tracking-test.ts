@@ -95,6 +95,8 @@ describe('Overview layout with the Sources widget', () => {
     ]);
     expect(layout?.find((widget) => widget.key === 'sources')?.width).toEqual(6);
     expect(keys(getOverviewLayoutCustomization(setting('Attack-Pattern')))).not.toContain('sources');
+    // provenance:enabled=false switches the whole module off, the Sources widget included
+    expect(keys(getOverviewLayoutCustomization(setting('Intrusion-Set'), false))).not.toContain('sources');
   });
 
   it('should pair the Sources widget with the timeline that follows the basic information', () => {

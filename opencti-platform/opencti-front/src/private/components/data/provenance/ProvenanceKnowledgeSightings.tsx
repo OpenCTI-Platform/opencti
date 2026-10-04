@@ -167,14 +167,14 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     fromType: { percentWidth: 8 },
-    fromName: { percentWidth: withConflicts ? 12 : 16 },
+    fromName: { percentWidth: withConflicts ? 11 : 16 },
     toType: { percentWidth: 8 },
-    toName: { percentWidth: withConflicts ? 12 : 16 },
+    toName: { percentWidth: withConflicts ? 11 : 15 },
     ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
     attribute_count: { percentWidth: 6 },
     corroboration_count: { percentWidth: 11 },
-    freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: withConflicts ? 9 : 11 },
+    freshness_days: { percentWidth: 9 },
+    last_asserted_at: { percentWidth: withConflicts ? 10 : 11 },
     objectMarking: { percentWidth: withConflicts ? 8 : 9, isSortable: false },
   };
 

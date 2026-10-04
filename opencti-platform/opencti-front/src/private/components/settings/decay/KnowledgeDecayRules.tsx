@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import KnowledgeDecayRuleCreation from './KnowledgeDecayRuleCreation';
@@ -103,13 +104,13 @@ const KnowledgeDecayRules = () => {
   } as UsePreloadedPaginationFragment<KnowledgeDecayRulesLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: { id: 'name', label: t_i18n('Name'), isSortable: false, percentWidth: 24 },
+    name: { id: 'name', label: t_i18n('Name'), isSortable: false, percentWidth: 21 },
     effect: {
       id: 'effect',
       label: t_i18n('Effect'),
       isSortable: false,
-      percentWidth: 48,
-      render: (node: KnowledgeDecayRulesLine_node$data) => knowledgeDecayRuleEffect(t_i18n, node),
+      percentWidth: 51,
+      render: (node: KnowledgeDecayRulesLine_node$data) => defaultRender(knowledgeDecayRuleEffect(t_i18n, node)),
     },
     staleElementsCount: {
       id: 'staleElementsCount',

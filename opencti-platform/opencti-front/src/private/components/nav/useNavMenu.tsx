@@ -138,7 +138,8 @@ const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const { draftContext } = me;
-  const { isFeatureEnable, isTrashEnable } = useHelper();
+  const modules = useHelper();
+  const { isFeatureEnable, isTrashEnable } = modules;
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const hiddenEntities = useHiddenEntities();
 
@@ -205,7 +206,7 @@ const useNavMenu = (): NavGroup[] => {
   const inDraft = !!draftContext;
   const isGrantedToNeeds = (needs: string[]) => isGrantedTo(me, needs);
   const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, hiddenEntities.filter((e): e is string => !!e), isGrantedToNeeds);
-  const curationTabs = grantedCurationTabs(CURATION_TABS, isGrantedToNeeds);
+  const curationTabs = grantedCurationTabs(CURATION_TABS, isGrantedToNeeds, modules);
   const curationCounts = curationTabs.flatMap((tab) => (tab.useBadgeCount ? [{ id: tab.path, useCount: tab.useBadgeCount }] : []));
 
   const groups: (RawNavGroup | false)[] = [
