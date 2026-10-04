@@ -495,10 +495,11 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
   validateMarkings(user, selected);
   const snapshot = await loadExportedTimelineEvents(context, user, args);
   const content = renderTimelineExport(snapshot, args);
-  const required = snapshot.items.flatMap((event) => {
+  // The file always names the container: its markings are required even when no event is exported
+  const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => {
     const element = event.element_id ? snapshot.elements[event.element_id] : undefined;
     return element ? [...markingsOf(event), ...markingsOf(element)] : markingsOf(event);
-  });
+  })];
   const fileMarkings = await cleanMarkings(context, Array.from(new Set([...selected, ...required])));
   addTimelineExportCount();
   return { content, file_markings: fileMarkings };
