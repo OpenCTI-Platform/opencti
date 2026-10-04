@@ -6,6 +6,7 @@ import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage, defenseGapId } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { trackPendingValidationRequests } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
+import { defenseCoverageStreamHandler, defenseCoverageStreamStartFrom } from '../../../../src/manager/defenseCoverageManager';
 import { consumeFullComputationRequest, listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { type BasicStoreEntityDefenseGap, ENTITY_TYPE_DEFENSE_GAP } from '../../../../src/modules/defenseCoverage/defenseGap/defenseGap-types';
 import { redisSetDefensePendingValidationTracking } from '../../../../src/database/redis';
@@ -533,6 +534,16 @@ describe('Threat-informed defense matrix', () => {
     expect(await consumeFullComputationRequest()).toBe(false);
     const consumed = await queryAsAdminWithSuccess({ query: STATUS });
     expect(consumed.data?.defenseCoverageStatus.full_computation_requested).toBe(false);
+  });
+
+  it('should resume the defense coverage stream after the last handled event when the manager restarts', async () => {
+    await defenseCoverageStreamHandler([], '1791000000000-0');
+    expect(await defenseCoverageStreamStartFrom()).toEqual('1791000000000-0');
+    await defenseCoverageStreamHandler([], '1791000000001-0');
+    expect(await defenseCoverageStreamStartFrom()).toEqual('1791000000001-0');
+    // A batch without an event id keeps the position of the last handled one
+    await defenseCoverageStreamHandler([]);
+    expect(await defenseCoverageStreamStartFrom()).toEqual('1791000000001-0');
   });
 
   const triggerFilters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] });

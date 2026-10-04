@@ -8,6 +8,7 @@ import { RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES } from '../s
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import { trackPendingValidationRequests } from '../modules/defenseCoverage/defenseCoverage-domain';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import {
   bumpDefenseCoverageVersion,
   bumpDefenseOverlayVersion,
@@ -81,7 +82,7 @@ export const defenseCoverageCronHandler = async () => {
 /**
  * Incremental computation of the techniques impacted by a batch of stream events.
  */
-export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
+const handleDefenseStreamEvents = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   if (streamEvents.length === 0) return;
   const context = executionContext(DEFENSE_COVERAGE_MANAGER_CONTEXT);
   const impact = collectDefenseImpact(streamEvents);
@@ -120,6 +121,24 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
   }
 };
 
+export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId?: string) => {
+  try {
+    await handleDefenseStreamEvents(streamEvents);
+  } catch (e) {
+    // The next full computation catches up with the changes of this batch
+    await requestFullDefenseCoverageComputation();
+    logApp.error('[OPENCTI-MODULE] Defense coverage stream batch error', { cause: e, events: streamEvents.length });
+  }
+  // Saved once the batch is handled, so a restart replays the events received while the manager was stopped
+  if (lastEventId) {
+    await redisSetManagerEventState(DEFENSE_COVERAGE_MANAGER_CONTEXT, lastEventId);
+  }
+};
+
+export const defenseCoverageStreamStartFrom = async () => {
+  return (await redisGetManagerEventState(DEFENSE_COVERAGE_MANAGER_CONTEXT)) ?? 'live';
+};
+
 const DEFENSE_COVERAGE_MANAGER_DEFINITION: ManagerDefinition = {
   id: DEFENSE_COVERAGE_MANAGER_ID,
   label: DEFENSE_COVERAGE_MANAGER_LABEL,
@@ -135,7 +154,7 @@ const DEFENSE_COVERAGE_MANAGER_DEFINITION: ManagerDefinition = {
     interval: STREAM_SCHEDULE_TIME,
     lockKey: DEFENSE_COVERAGE_MANAGER_STREAM_KEY,
     streamOpts: { bufferTime: STREAM_BUFFER_TIME },
-    streamProcessorStartFrom: () => 'live',
+    streamProcessorStartFrom: defenseCoverageStreamStartFrom,
   },
   enabledByConfig: DEFENSE_COVERAGE_MANAGER_ENABLED,
   enabledToStart(): boolean {
