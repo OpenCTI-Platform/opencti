@@ -26,8 +26,13 @@ import { notify } from '../../database/redis';
 import { isInferredIndex, isNotEmptyField } from '../../database/utils';
 import { schemaAttributesDefinition, isMultipleAttribute } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { isStixRefRelationship } from '../../schema/stixRefRelationship';
-import { ABSTRACT_STIX_CORE_OBJECT, INPUT_MARKINGS } from '../../schema/general';
+import { isStixRefRelationship, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
+import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { computeSubjectRestrictions } from './curation-proposals';
 import { copyFile, deleteFile, loadFile, storeFileConverter } from '../../database/file-storage';
 import { addCurationMergeRecordCount, addCurationUnmergeCount } from '../../manager/telemetryManager';
 import { now } from '../../utils/format';
@@ -380,25 +385,61 @@ export const findMergeRecordById = async (context: AuthContext, user: AuthUser, 
   return readable;
 };
 
-const MAX_PAGE_REFILLS = 5;
-
-/** How many of the records matching the query the user may read, so the count never includes the hidden ones. */
-const countReadableRecords = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
-  let count = 0;
-  await fullEntitiesList<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], {
-    ...R.omit(['first', 'after', 'orderBy', 'orderMode'], opts),
-    baseData: true,
-    baseFields: ['merge_target_id', 'merge_source_ids'],
-    callback: async (records: BasicStoreEntityMergeRecord[]) => {
-      count += (await withReadableParticipants(context, user, records)).length;
-    },
-  } as EntityOptions<BasicStoreEntityMergeRecord>);
-  return count;
-};
+const sameIdSet = (left: string[], right: string[]) => left.length === right.length && left.every((id) => right.includes(id));
 
 /**
- * A page of records the user may read: pages emptied by the participant check are refilled from the next ones, the
- * cursor is the one of the last record returned and the count only includes readable records.
+ * Keep the restrictions of the merge records of these participants in line with them: the markings of the merge
+ * (kept in the snapshot, or the record's own once the snapshot is dropped) plus the current markings of the
+ * participants that exist, and the organizations every existing participant is shared with. Run when a participant
+ * is reclassified and after an unmerge, so the platform filters and counts merge records like any other element.
+ */
+export const refreshMergeRecordRestrictions = async (context: AuthContext, participantIds: string[]) => {
+  if (participantIds.length === 0) return 0;
+  const records = await fullEntitiesList<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
+    filters: {
+      mode: FilterMode.Or,
+      filters: [
+        { key: ['merge_target_id'], values: participantIds, operator: FilterOperator.Eq },
+        { key: ['merge_source_ids'], values: participantIds, operator: FilterOperator.Eq },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  if (records.length === 0) return 0;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  let refreshed = 0;
+  for (let index = 0; index < records.length; index += 1) {
+    const record = records[index];
+    const existing = await internalFindByIds(context, SYSTEM_USER, participantIdsOf(record), { baseData: true }) as BasicStoreBase[];
+    // Without any participant left, the restrictions of the merge are all that protect the record.
+    if (existing.length === 0) continue;
+    const current = computeSubjectRestrictions(existing, settings?.platform_organization);
+    const snapshot = record.merge_snapshot;
+    const mergeMarkings = snapshot
+      ? [snapshot.target, ...snapshot.sources].flatMap((participant) => (participant.refs?.[INPUT_MARKINGS] as string[] | undefined) ?? [])
+      : ((record as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []) as string[];
+    const markingIds = R.uniq([...mergeMarkings, ...current.markingIds]);
+    const organizationIds = current.organizationIds;
+    const unchanged = sameIdSet(markingIds, ((record as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []) as string[])
+      && sameIdSet(organizationIds, ((record as Record<string, any>)[RELATION_GRANTED_TO] ?? []) as string[]);
+    if (unchanged) continue;
+    await updateAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, [
+      { key: INPUT_MARKINGS, value: markingIds, operation: EditOperation.Replace },
+      { key: INPUT_GRANTED_REFS, value: organizationIds, operation: EditOperation.Replace },
+    ]);
+    refreshed += 1;
+  }
+  return refreshed;
+};
+
+const MAX_PAGE_REFILLS = 5;
+
+/**
+ * A page of records the user may read. The records follow the restrictions of their participants
+ * (refreshMergeRecordRestrictions), so the platform filters and counts them; the participant check guards the
+ * moments before a refresh, and a page it empties is refilled from the next ones, with the cursor of the last
+ * record returned.
  */
 export const findMergeRecordsPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
   if (isBypassUser(user)) {
@@ -406,7 +447,6 @@ export const findMergeRecordsPaginated = async (context: AuthContext, user: Auth
   }
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
   const edges: BasicConnection<BasicStoreEntityMergeRecord>['edges'] = [];
-  const globalCount = await countReadableRecords(context, user, opts);
   let connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], { ...opts, first });
   for (let refill = 0; ; refill += 1) {
     const readable = new Set(await withReadableParticipants(context, user, connection.edges.map((edge) => edge.node)));
@@ -419,7 +459,7 @@ export const findMergeRecordsPaginated = async (context: AuthContext, user: Auth
     if (isFull || !connection.pageInfo.hasNextPage || refill >= MAX_PAGE_REFILLS) {
       const endCursor = isFull ? edges[edges.length - 1].cursor : (pageEdges[pageEdges.length - 1]?.cursor ?? connection.pageInfo.endCursor);
       const hasNextPage = isFull ? (moreInPage || connection.pageInfo.hasNextPage) : connection.pageInfo.hasNextPage;
-      return { edges, pageInfo: { ...connection.pageInfo, endCursor, hasNextPage, globalCount } };
+      return { edges, pageInfo: { ...connection.pageInfo, endCursor, hasNextPage } };
     }
     connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], {
       ...opts,
@@ -672,9 +712,12 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
       unmerge_pending_source_ids: [],
     }, { locks: lockIds });
     const updatedRecord = updatedElement as unknown as BasicStoreEntityMergeRecord;
-    if (record.proposal_id) {
+    // The proposal stays applied while sources remain merged: reverting it later undoes the rest of the merge.
+    if (record.proposal_id && status === MERGE_STATUS_REVERTED) {
       await patchAttribute(context, SYSTEM_USER, record.proposal_id, ENTITY_TYPE_CURATION_PROPOSAL, { proposal_status: PROPOSAL_STATUS_REVERTED });
     }
+    // The restored sources are participants again: the record takes their restrictions.
+    await refreshMergeRecordRestrictions(context, [target.internal_id]);
     await publishUserAction({
       user,
       event_type: 'mutation',

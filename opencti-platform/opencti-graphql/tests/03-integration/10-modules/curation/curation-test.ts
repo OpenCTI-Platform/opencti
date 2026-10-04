@@ -18,6 +18,8 @@ import { getCurationSettings } from '../../../../src/modules/curation/curation-s
 import { addOrganization } from '../../../../src/modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { runContradictionScan, runIncrementalDuplicateDetection } from '../../../../src/modules/curation/curation-scan';
+import { refreshMergeRecordRestrictions } from '../../../../src/modules/curation/curation-merge-record';
+import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import {
   AUTHORITY_SOURCE_AUTHOR,
   ENTITY_TYPE_CURATION_POLICY,
@@ -410,7 +412,15 @@ describe('Knowledge curation', () => {
     expect((await readByParticipant()).id).toBe(mergeRecordId);
     await reclassify(entityA.id, EditOperation.Add);
     expect(await readByParticipant()).toBeNull();
+    // The record then takes the restrictions of its participants, so the platform filters and counts it natively.
+    const recordMarkings = async () => {
+      await refreshMergeRecordRestrictions(testContext, [entityA.id]);
+      const loaded = await storeLoadById(testContext, ADMIN_USER, mergeRecordId, ENTITY_TYPE_MERGE_RECORD) as unknown as Record<string, string[]>;
+      return loaded[RELATION_OBJECT_MARKING] ?? [];
+    };
+    expect(await recordMarkings()).toHaveLength(1);
     await reclassify(entityA.id, EditOperation.Remove);
+    expect(await recordMarkings()).toHaveLength(0);
 
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: UNMERGE_MUTATION, variables: { mergeRecordId } });
     const unmerged = await queryAsAdminWithSuccess({ query: UNMERGE_MUTATION, variables: { mergeRecordId } });

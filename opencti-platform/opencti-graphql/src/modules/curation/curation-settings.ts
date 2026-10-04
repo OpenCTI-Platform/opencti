@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
 import { patchAttribute } from '../../database/middleware';
+import { lockResources } from '../../lock/master-lock';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -140,9 +141,22 @@ const loadCurationConfiguration = async (context: AuthContext) => {
   return configuration;
 };
 
+const withSettingsWriteLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+  let lock;
+  try {
+    lock = await lockResources(['curation-settings-write']);
+    return await fn();
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 /**
  * Persist curation settings. Internal bookkeeping (dates, force_scan) can be written by the manager with
- * auditLog=false, user changes are always audited.
+ * auditLog=false, user changes are always audited. The settings are one document: writes are serialized and each one
+ * reads the document under the lock, so the manager's bookkeeping never writes back a stale copy over a user change.
  */
 export const saveCurationSettings = async (
   context: AuthContext,
@@ -150,11 +164,14 @@ export const saveCurationSettings = async (
   patch: Partial<CurationSettings>,
   opts: { auditLog?: boolean } = {},
 ): Promise<CurationSettings> => {
-  const configuration = await loadCurationConfiguration(context);
-  const current = normalizeCurationSettings(configuration.manager_setting as Partial<CurationSettings>);
-  const next = normalizeCurationSettings({ ...current, ...patch });
-  const { element: updated } = await patchAttribute(context, user, configuration.id, ENTITY_TYPE_MANAGER_CONFIGURATION, { manager_setting: next });
-  await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updated, user);
+  const { configuration, next } = await withSettingsWriteLock(async () => {
+    const loaded = await loadCurationConfiguration(context);
+    const current = normalizeCurationSettings(loaded.manager_setting as Partial<CurationSettings>);
+    const merged = normalizeCurationSettings({ ...current, ...patch });
+    const { element: updated } = await patchAttribute(context, user, loaded.id, ENTITY_TYPE_MANAGER_CONFIGURATION, { manager_setting: merged });
+    await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updated, user);
+    return { configuration: loaded, next: merged };
+  });
   if (opts.auditLog !== false) {
     await publishUserAction({
       user,

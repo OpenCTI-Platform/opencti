@@ -28,7 +28,7 @@ import { runContradictionScan, runDuplicateScan, runIncrementalDuplicateDetectio
 import { createHealthSnapshot, findLatestHealthSnapshot, sendKnowledgeHealthDigest, SOURCE_CONFLICTS_COUNTER } from '../modules/curation/curation-health';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from '../modules/curation/curation-adjudication';
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
-import { completePendingMergeRecords, expireMergeRecords } from '../modules/curation/curation-merge-record';
+import { completePendingMergeRecords, expireMergeRecords, refreshMergeRecordRestrictions } from '../modules/curation/curation-merge-record';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isProcedureConflict } from '../modules/curation/curation-detectors';
 import { decideFieldAuthority } from '../modules/curation/curation-field-authority';
@@ -272,6 +272,9 @@ const procedureConflictDraft = async (context: AuthContext, event: UpdateEvent, 
 
 const DATED_STIX_FIELDS: Array<[string, string]> = [['first_seen', 'last_seen'], ['valid_from', 'valid_until'], ['start_time', 'stop_time']];
 
+const touchesRestrictions = (event: UpdateEvent) => (event.context?.patch ?? []).some((operation: any) => typeof operation.path === 'string'
+  && (operation.path.startsWith('/object_marking_refs') || operation.path.includes('/granted_refs')));
+
 const dateInversionDraft = (stix: Record<string, any>, entityId: string, entityType: string): ProposalDraft | null => {
   for (let index = 0; index < DATED_STIX_FIELDS.length; index += 1) {
     const [start, stop] = DATED_STIX_FIELDS[index];
@@ -304,6 +307,11 @@ const processStreamEvent = async (context: AuthContext, settings: CurationSettin
   const entityId: string | undefined = ext.id;
   const entityType: string | undefined = ext.type;
   if (!entityId || !entityType || ![EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, 'merge'].includes(event.type)) return;
+  // Merge records follow the restrictions of their participants, whether curation is enabled or not.
+  if (event.type === EVENT_TYPE_UPDATE && touchesRestrictions(event as UpdateEvent)) {
+    await refreshMergeRecordRestrictions(context, [entityId]);
+  }
+  if (!settings.curation_enabled) return;
   const detectors = settings.enabled_detectors as string[];
   const drafts: ProposalDraft[] = [];
   if (settings.curated_entity_types.includes(entityType)) {
@@ -376,28 +384,26 @@ export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<
   const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
   const batchKey = streamEvents[0]?.id ?? 'empty';
   const settings = await getCurationSettings(context);
-  if (settings.curation_enabled) {
-    try {
-      const changedEntityIds = new Set<string>();
-      for (let index = 0; index < streamEvents.length; index += 1) {
-        await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
-      }
-      await runIncrementalDetection(context, settings, changedEntityIds);
-    } catch (error) {
-      failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
-      failedBatchKey = batchKey;
-      if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
-        logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
-        throw error;
-      }
-      logApp.warn('[CURATION] Stream batch failed repeatedly, processing its events one by one', {
-        cause: error,
-        attempts: failedBatchAttempts,
-        first_event_id: batchKey,
-        last_event_id: lastEventId,
-      });
-      await processBatchIsolated(context, settings, streamEvents);
+  try {
+    const changedEntityIds = new Set<string>();
+    for (let index = 0; index < streamEvents.length; index += 1) {
+      await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
     }
+    await runIncrementalDetection(context, settings, changedEntityIds);
+  } catch (error) {
+    failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
+    failedBatchKey = batchKey;
+    if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
+      logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
+      throw error;
+    }
+    logApp.warn('[CURATION] Stream batch failed repeatedly, processing its events one by one', {
+      cause: error,
+      attempts: failedBatchAttempts,
+      first_event_id: batchKey,
+      last_event_id: lastEventId,
+    });
+    await processBatchIsolated(context, settings, streamEvents);
   }
   failedBatchKey = undefined;
   failedBatchAttempts = 0;
@@ -410,7 +416,6 @@ export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<
  * CURATION_DEAD_LETTER_MAX_REPLAYS more times is dropped, with an error naming it.
  */
 const replayDeadLetters = async (context: AuthContext, settings: CurationSettings) => {
-  if (!settings.curation_enabled) return;
   const deadLetters = await redisCurationTakeDeadLetters<CurationDeadLetter>(CURATION_DEAD_LETTERS_PER_TICK);
   if (deadLetters.length === 0) return;
   const changedEntityIds = new Set<string>();
