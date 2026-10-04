@@ -111,11 +111,11 @@ export const corroborationColor = (theme: Theme, count: number | null | undefine
 
 // Freshness buckets, in days since the last assertion of any source
 export const FRESHNESS_BUCKET_LABELS: Record<string, string> = {
-  '0-30': 'Less than a month',
-  '31-90': '1 to 3 months',
-  '91-180': '3 to 6 months',
-  '181-365': '6 months to a year',
-  '366+': 'More than a year',
+  '0-30': '0-30 days',
+  '31-90': '31-90 days',
+  '91-180': '91-180 days',
+  '181-365': '181-365 days',
+  '366+': 'Over 365 days',
   unknown: 'Never asserted',
 };
 

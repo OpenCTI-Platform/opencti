@@ -73,11 +73,17 @@ interface KnowledgeDecayRuleEffectInput {
 }
 
 export const knowledgeDecayRuleEffect = (t_i18n: (message: string, opts?: { values: Record<string, unknown> }) => string, rule: KnowledgeDecayRuleEffectInput) => {
-  const types = (rule.target_types ?? []).map((type) => t_i18n(rule.target_scope === 'relationship' ? `relationship_${type}` : `entity_${type}`));
-  const allTargets = rule.target_scope === 'relationship' ? t_i18n('All relationships') : t_i18n('Entities');
-  return t_i18n(KNOWLEDGE_DECAY_RULE_EFFECT, {
-    values: { targets: types.length > 0 ? types.join(', ') : allTargets, days: rule.stale_after_days ?? 0, policy: rule.freshness_policy ?? 'flag' },
+  const isRelationship = rule.target_scope === 'relationship';
+  const types = (rule.target_types ?? []).map((type) => t_i18n(isRelationship ? `relationship_${type}` : `entity_${type}`));
+  let targets = isRelationship ? t_i18n('All relationships') : t_i18n('Entities');
+  if (types.length > 0) {
+    // Relationship types are verbs ("uses"): the sentence names them as relationships
+    targets = isRelationship ? t_i18n('{types} relationships', { values: { types: types.join(', ') } }) : types.join(', ');
+  }
+  const sentence = t_i18n(KNOWLEDGE_DECAY_RULE_EFFECT, {
+    values: { targets, days: rule.stale_after_days ?? 0, policy: rule.freshness_policy ?? 'flag' },
   });
+  return sentence.charAt(0).toLocaleUpperCase() + sentence.slice(1);
 };
 
 // Indicators keep their own score decay

@@ -37,6 +37,7 @@ const ProvenanceBadge = ({ corroborationCount, freshnessDays, stale, hasConflict
     <span data-testid="provenance-badge" data-corroboration={count}>
       <Tag
         label={label}
+        labelTextTransform="none"
         color={corroborationColor(theme, count)}
         icon={<SourceBranch fontSize="small" />}
         tooltipTitle={details}

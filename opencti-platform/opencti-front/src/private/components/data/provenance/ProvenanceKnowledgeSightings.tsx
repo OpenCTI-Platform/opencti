@@ -166,16 +166,16 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    fromType: { percentWidth: 9 },
-    fromName: { percentWidth: withConflicts ? 15 : 19 },
-    toType: { percentWidth: 9 },
-    toName: { percentWidth: withConflicts ? 15 : 19 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
-    attribute_count: { percentWidth: 7 },
-    corroboration_count: { percentWidth: 9 },
+    fromType: { percentWidth: 8 },
+    fromName: { percentWidth: withConflicts ? 12 : 16 },
+    toType: { percentWidth: 8 },
+    toName: { percentWidth: withConflicts ? 12 : 16 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
+    attribute_count: { percentWidth: 6 },
+    corroboration_count: { percentWidth: 11 },
     freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: 11 },
-    objectMarking: { percentWidth: 9, isSortable: false },
+    last_asserted_at: { percentWidth: withConflicts ? 9 : 11 },
+    objectMarking: { percentWidth: withConflicts ? 8 : 9, isSortable: false },
   };
 
   const preloadedPaginationProps = {

@@ -10,6 +10,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { CheckCircleOutlined } from '@mui/icons-material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,16 +24,7 @@ import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import { MESSAGING$ } from '../../../../relay/environment';
-import {
-  freshnessColor,
-  groupConflictValues,
-  groupProceduresByText,
-  notifyPayloadErrors,
-  type ProvenanceData,
-  sortAssertionsByRecency,
-  sourceKindLabel,
-  warningColor,
-} from './provenanceUtils';
+import { groupConflictValues, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -125,7 +117,7 @@ interface ProvenanceSourcesContentProps {
 
 const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesContentProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt, nsdt } = useFormatter();
+  const { t_i18n, fldt, mhd, rd, smhd } = useFormatter();
   const data = usePreloadedQuery(provenanceSourcesPanelQuery, queryRef);
   const element = data.stixObjectOrStixRelationship as ProvenanceData | null;
   const [commitAdopt, adoptInFlight] = useApiMutation(provenanceAdoptMutation);
@@ -163,13 +155,19 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
             hasConflicts={element.has_conflicts}
           />
           {element.last_asserted_at && (
-            <Typography variant="body2" sx={{ color: freshnessColor(theme, element.freshness_days, element.freshness_stale) }}>
-              {t_i18n('Last asserted {date}', { values: { date: fldt(element.last_asserted_at) } })}
-            </Typography>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Typography variant="body2" color="textSecondary" tabIndex={0}>
+                  {t_i18n('Last asserted {date}', { values: { date: rd(element.last_asserted_at) } })}
+                </Typography>
+              </TooltipTrigger>
+              <TooltipContent>{smhd(element.last_asserted_at)}</TooltipContent>
+            </Tooltip>
           )}
           {element.freshness_stale && (
             <Tag
               label={t_i18n('Stale knowledge')}
+              labelTextTransform="none"
               color={theme.palette.error.main}
               tooltipTitle={element.freshness_stale_at ? t_i18n('Flagged as stale on {date}', { values: { date: fldt(element.freshness_stale_at) } }) : undefined}
             />
@@ -221,8 +219,8 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                     </Stack>
                   </TableCell>
                   <TableCell>{t_i18n(sourceKindLabel(assertion.source_kind))}</TableCell>
-                  <TableCell>{nsdt(assertion.first_asserted_at)}</TableCell>
-                  <TableCell>{nsdt(assertion.last_asserted_at)}</TableCell>
+                  <TableCell>{mhd(assertion.first_asserted_at)}</TableCell>
+                  <TableCell>{mhd(assertion.last_asserted_at)}</TableCell>
                   <TableCell align="right">{assertion.assert_count}</TableCell>
                   <TableCell align="right">
                     {assertion.confidence ?? <Typography variant="caption" color="textSecondary">{t_i18n('Not recorded')}</Typography>}
@@ -263,7 +261,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                         <Stack key={proposal.source_id} direction="row" alignItems="center" gap={1} data-testid="provenance-conflict-proposal">
                           <ProvenanceSourceKindIcon kind={proposal.source_kind} />
                           <Typography variant="caption">
-                            {t_i18n('Proposed by {source} on {date}', { values: { source: proposal.source_name ?? proposal.source_id, date: nsdt(proposal.last_asserted_at) } })}
+                            {t_i18n('Proposed by {source} on {date}', { values: { source: proposal.source_name ?? proposal.source_id, date: mhd(proposal.last_asserted_at) } })}
                             {proposal.confidence !== null && proposal.confidence !== undefined
                               ? ` - ${t_i18n('Confidence {confidence}', { values: { confidence: proposal.confidence } })}`
                               : ''}
@@ -308,10 +306,10 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                         {t_i18n('Asserted by {sources}', { values: { sources: procedure.sourceNames.join(', ') } })}
                       </Typography>
                     )}
-                    {procedure.lastAssertedAt && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: nsdt(procedure.lastAssertedAt) } })}</Typography>}
+                    {procedure.lastAssertedAt && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: mhd(procedure.lastAssertedAt) } })}</Typography>}
                   </Stack>
                   {isCurrent ? (
-                    <Tag label={t_i18n('Current description')} />
+                    <Tag label={t_i18n('Current description')} labelTextTransform="none" />
                   ) : (
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Button size="small" variant="secondary" disabled={inFlight} onClick={() => onAdoptProcedure(procedure.text)}>

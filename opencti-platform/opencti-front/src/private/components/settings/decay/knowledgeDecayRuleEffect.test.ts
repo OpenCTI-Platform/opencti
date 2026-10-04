@@ -13,7 +13,9 @@ describe('knowledgeDecayRuleEffect', () => {
     expect(knowledgeDecayRuleEffect(t, { target_scope: 'entity', target_types: ['Malware'], stale_after_days: 90, freshness_policy: 'flag' }))
       .toEqual('Malware not re-asserted within 90 days are flagged as stale.');
     expect(knowledgeDecayRuleEffect(t, { target_scope: 'relationship', target_types: ['uses'], stale_after_days: 1, freshness_policy: 'revoke' }))
-      .toEqual('uses not re-asserted within 1 day are flagged as stale and revoked.');
+      .toEqual('Uses relationships not re-asserted within 1 day are flagged as stale and revoked.');
+    expect(knowledgeDecayRuleEffect(t, { target_scope: 'relationship', target_types: ['uses', 'targets'], stale_after_days: 7, freshness_policy: 'flag' }))
+      .toEqual('Uses, relationship_targets relationships not re-asserted within 7 days are flagged as stale.');
     expect(knowledgeDecayRuleEffect(t, { target_scope: 'relationship', target_types: [], stale_after_days: 30, freshness_policy: 'lower_confidence' }))
       .toEqual('All relationships not re-asserted within 30 days are flagged as stale and their confidence is lowered.');
   });

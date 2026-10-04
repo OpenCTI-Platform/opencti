@@ -131,7 +131,8 @@ interface AlertsLineActionsProps {
 }
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
-// create -> low, update -> info, delete -> critical, several at once -> medium.
+// create -> low, update -> info, delete -> critical, several at once -> medium; provenance: corroboration -> low,
+// source conflict -> medium.
 const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
   switch (operation) {
     case 'update':
@@ -139,6 +140,7 @@ const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'crit
     case 'delete':
       return 'critical';
     case 'multiple':
+    case 'conflict':
       return 'medium';
     default:
       return 'low';
@@ -288,6 +290,8 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           create: t_i18n('Creation'),
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
+          corroboration: t_i18n('Corroboration'),
+          conflict: t_i18n('Source conflict'),
           none: t_i18n('Unknown'),
         };
         return (
