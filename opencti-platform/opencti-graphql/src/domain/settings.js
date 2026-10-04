@@ -29,7 +29,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
-import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
+import { completeXTMHubDataForRegistration, resolveAIEndpointType } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
@@ -53,16 +53,6 @@ export const getApplicationDependencies = async (context) => {
     { name: 'Redis', version: getRedisVersion() },
     { name: 'XTM-One', version: getXtmOneRegistrationVersion() }, // Do not change this, client relies on the name to activate feature
   ];
-};
-
-const getAIEndpointType = () => {
-  if (isEmptyField(nconf.get('ai:endpoint'))) {
-    return '';
-  }
-  if (nconf.get('ai:endpoint').includes('filigran.io')) {
-    return 'Filigran';
-  }
-  return 'Custom';
 };
 
 const getProtectedMarkingsIdsByNames = async (context, user, names) => {
@@ -147,7 +137,7 @@ export const getSettings = async (context) => {
     platform_openaev_url: nconf.get('xtm:openaev_url'),
     platform_opengrc_url: nconf.get('xtm:opengrc_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
-    platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
+    platform_ai_type: `${resolveAIEndpointType(nconf.get('ai:endpoint'))} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
