@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link, useNavigate, useParams } from 'react-router';
-import { Chip, Text } from '@filigran/design-system';
+import { Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Box } from '@mui/material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
@@ -9,7 +9,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -18,7 +17,10 @@ import useGranted, { INVESTIGATION_INUPDATE, KNOWLEDGE_KNUPDATE } from '../../..
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { resolveLink } from '../../../../utils/Entity';
 import GraphSimilarityEvidence from '../../common/graph_analytics/GraphSimilarityEvidence';
+import GraphRelativeTime from '../../common/graph_analytics/GraphRelativeTime';
+import GraphClustersGrowthChart from '../../common/graph_analytics/GraphClustersGrowthChart';
 import {
+  formatGraphClusterLabel,
   GRAPH_CLUSTER_KIND_LABELS,
   GRAPH_CLUSTER_SOURCE_LABELS,
   GRAPH_CLUSTERS_PATH,
@@ -85,7 +87,7 @@ const addToInvestigationMutation = graphql`
 type PromotionTarget = 'Grouping' | 'Campaign';
 
 const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGraphClusterQuery> }) => {
-  const { t_i18n, fldt, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const navigate = useNavigate();
   const { setTitle } = useConnectedDocumentModifier();
   const canPromote = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -94,7 +96,8 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
   const [commitInvestigation, investigating] = useApiMutation<RootGraphClusterInvestigationMutation>(addToInvestigationMutation);
   const { graphCluster: cluster } = usePreloadedQuery(graphClusterQuery, queryRef);
   if (!cluster) return <ErrorNotFound />;
-  setTitle(`${cluster.name} | ${t_i18n('Clusters')}`);
+  const label = formatGraphClusterLabel(t_i18n, cluster);
+  setTitle(`${label} | ${t_i18n('Clusters')}`);
   const tooLargeToPromote = cluster.members_count > cluster.promotion_max_members;
 
   const addToInvestigation = () => {
@@ -112,11 +115,16 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
       <Breadcrumbs elements={[
         { label: t_i18n('Analyses') },
         { label: t_i18n('Clusters'), link: GRAPH_CLUSTERS_PATH },
-        { label: cluster.name, current: true },
+        { label, current: true },
       ]}
       />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-        <Text variant="title-xl" as="h1">{cluster.name}</Text>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Text variant="title-xl" as="h1">{label}</Text>
+          </TooltipTrigger>
+          <TooltipContent>{cluster.name}</TooltipContent>
+        </Tooltip>
         <Chip label={t_i18n(GRAPH_CLUSTER_KIND_LABELS[cluster.cluster_kind] ?? cluster.cluster_kind)} severity="info" />
         <Chip label={t_i18n(GRAPH_CLUSTER_SOURCE_LABELS[cluster.cluster_source] ?? cluster.cluster_source)} />
         <Box sx={{ flex: 1 }} />
@@ -139,19 +147,18 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 3, mb: 3 }}>
         <Card title={t_i18n('Details')}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Text variant="content-compact">{`${t_i18n('Members you can access')}: ${n(cluster.members_count)}`}</Text>
-            {canPromote && tooLargeToPromote && (
+            <Text variant="content-compact">
+              {t_i18n('{count, plural, one {# member you can access} other {# members you can access}}', { values: { count: cluster.members_count } })}
+            </Text>
+            {(canPromote || canInvestigate) && tooLargeToPromote && (
               <Text variant="content-compact">
-                {`${t_i18n('Too many members to create a Grouping or a Campaign, maximum')}: ${n(cluster.promotion_max_members)}`}
+                {t_i18n('Too many members to create a grouping, a campaign or an investigation from this cluster: the maximum is {max}.', { values: { max: n(cluster.promotion_max_members) } })}
               </Text>
             )}
-            {canInvestigate && tooLargeToPromote && (
-              <Text variant="content-compact">
-                {`${t_i18n('Too many members to add them to an investigation, maximum')}: ${n(cluster.promotion_max_members)}`}
-              </Text>
+            {cluster.last_computed_at && (
+              <Text variant="content-compact"><GraphRelativeTime date={cluster.last_computed_at} template="Computed {time}" /></Text>
             )}
-            <Text variant="content-compact">{`${t_i18n('Last computation')}: ${fldt(cluster.last_computed_at)}`}</Text>
-            <Text variant="content-compact">{`${t_i18n('First detected')}: ${fldt(cluster.created_at)}`}</Text>
+            <Text variant="content-compact"><GraphRelativeTime date={cluster.created_at} template="First detected {time}" /></Text>
             <Text variant="content-compact">{t_i18n('Clusters are computed from the knowledge graph and never create relationships. Creating a Grouping or a Campaign is an explicit action.')}</Text>
             {cluster.promotedTo.length > 0 && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -168,12 +175,13 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
         <Card title={t_i18n('Members over time')}>
           <Box sx={{ height: 220 }}>
             {cluster.timeline.length > 0 ? (
-              <WidgetMultiAreas
+              <GraphClustersGrowthChart
                 series={[{
                   name: t_i18n('Members'),
                   data: trimLeadingEmptyPeriods([cluster.timeline])[0].map((entry) => ({ x: new Date(entry.date), y: entry.value })),
                 }]}
                 interval="month"
+                hasLegend={false}
               />
             ) : <WidgetNoData />}
           </Box>
@@ -196,7 +204,8 @@ const GraphClusterComponent = ({ queryRef }: { queryRef: PreloadedQuery<RootGrap
       {promotion && (
         <GraphClusterPromoteDialog
           clusterId={cluster.id}
-          clusterName={cluster.name}
+          clusterName={label}
+          membersCount={cluster.members_count}
           target={promotion}
           onClose={() => setPromotion(null)}
         />

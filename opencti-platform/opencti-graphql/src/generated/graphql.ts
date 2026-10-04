@@ -10308,6 +10308,8 @@ export type GraphAnalyticsStatus = {
   last_full_pass_started_at?: Maybe<Scalars['DateTime']['output']>;
   last_incremental_run?: Maybe<Scalars['DateTime']['output']>;
   manager_enabled: Scalars['Boolean']['output'];
+  /** When the next full pass starts, null while one is running */
+  next_full_pass_at?: Maybe<Scalars['DateTime']['output']>;
   pending_entities: Scalars['Int']['output'];
   similarity_documents: Scalars['Int']['output'];
 };
@@ -25238,6 +25240,8 @@ export type Query = {
   forms?: Maybe<FormConnection>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
   graphAnalyticsEdges?: Maybe<GraphAnalyticsEdgeConnection>;
+  /** Next entities waiting for a recompute, in processing order, among the ones the user can access */
+  graphAnalyticsPendingEntities: Array<StixCoreObject>;
   graphAnalyticsStatus?: Maybe<GraphAnalyticsStatus>;
   graphCluster?: Maybe<GraphCluster>;
   graphClusters?: Maybe<GraphClusterConnection>;
@@ -26469,6 +26473,11 @@ export type QueryGraphAnalyticsEdgesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   includeInferred?: InputMaybe<Scalars['Boolean']['input']>;
   relationshipTypes: Array<Scalars['String']['input']>;
+};
+
+
+export type QueryGraphAnalyticsPendingEntitiesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -46947,6 +46956,7 @@ export type GraphAnalyticsStatusResolvers<ContextType = any, ParentType extends 
   last_full_pass_started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_incremental_run?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  next_full_pass_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   pending_entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   similarity_documents?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
@@ -51568,6 +51578,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   graphAnalyticsEdges?: Resolver<Maybe<ResolversTypes['GraphAnalyticsEdgeConnection']>, ParentType, ContextType, RequireFields<QueryGraphAnalyticsEdgesArgs, 'relationshipTypes'>>;
+  graphAnalyticsPendingEntities?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType, Partial<QueryGraphAnalyticsPendingEntitiesArgs>>;
   graphAnalyticsStatus?: Resolver<Maybe<ResolversTypes['GraphAnalyticsStatus']>, ParentType, ContextType>;
   graphCluster?: Resolver<Maybe<ResolversTypes['GraphCluster']>, ParentType, ContextType, RequireFields<QueryGraphClusterArgs, 'id'>>;
   graphClusters?: Resolver<Maybe<ResolversTypes['GraphClusterConnection']>, ParentType, ContextType, Partial<QueryGraphClustersArgs>>;

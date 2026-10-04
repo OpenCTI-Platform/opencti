@@ -30,6 +30,7 @@ import {
   redisGraphAnalyticsGetState,
   redisGraphAnalyticsMarkPriority,
   redisGraphAnalyticsPendingCount,
+  redisGraphAnalyticsPendingIds,
   redisGraphAnalyticsReleaseRunLease,
   redisGraphAnalyticsSetState,
 } from '../../database/redis';
@@ -40,7 +41,14 @@ import { RELATION_COVERED } from '../securityCoverage/securityCoverage-types';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditField } from '../workspace/workspace-domain';
 import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
-import { getGraphAnalyticsComputeConfig, GRAPH_RUN_LEASE_MS, isFullPassInProgress, loadFeatureProfilesBatched, writeRunMetrics } from './graphAnalytics-compute';
+import {
+  computeNextFullPassAt,
+  getGraphAnalyticsComputeConfig,
+  GRAPH_RUN_LEASE_MS,
+  isFullPassInProgress,
+  loadFeatureProfilesBatched,
+  writeRunMetrics,
+} from './graphAnalytics-compute';
 import { isSameComparisonGroup, keepAccessibleEndpoints } from './graphAnalytics-features';
 import { notifyClusterMemberships } from './graphAnalytics-notification';
 import { computeSimilarityScore, type GraphSimilarityScore } from './graphAnalytics-scoring';
@@ -831,6 +839,7 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
     full_pass_in_progress: isFullPassInProgress(state),
     last_full_pass_started_at: parseStateDate(state[GRAPH_STATE_FULL_PASS_STARTED_AT]),
     last_full_pass_completed_at: parseStateDate(state[GRAPH_STATE_FULL_PASS_COMPLETED_AT]),
+    next_full_pass_at: computeNextFullPassAt(state, getGraphAnalyticsComputeConfig()),
     similarity_documents: similarityDocuments,
     clusters_count: clustersCount,
     analytics_process_active: isAnalyticsProcessActive(state),
@@ -838,6 +847,21 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
     analytics_process_last_run_id: state[GRAPH_STATE_ANALYTICS_LAST_RUN_ID] ?? null,
     analytics_process_version: state[GRAPH_STATE_ANALYTICS_VERSION] ?? null,
   };
+};
+
+const PENDING_ENTITIES_MAX = 100;
+
+/** Next entities waiting for a recompute, in processing order, restricted to the ones the caller can access. */
+export const findGraphAnalyticsPendingEntities = async (context: AuthContext, user: AuthUser, first?: number | null) => {
+  const ids = await redisGraphAnalyticsPendingIds(clamp(first, 25, 1, PENDING_ENTITIES_MAX));
+  const accessible = await accessibleMap<StoreEntity>(context, user, ids);
+  const seen = new Set<string>();
+  return ids.flatMap((id) => {
+    const entity = accessible[id];
+    if (!entity || seen.has(entity.internal_id)) return [];
+    seen.add(entity.internal_id);
+    return [entity];
+  });
 };
 
 /** Queue entities for a recompute at the next manager tick, ahead of the backlog (only the ones the caller can access). */

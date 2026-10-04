@@ -1,7 +1,8 @@
-import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import {
+  Alert,
   Checkbox,
   Chip,
   Combobox,
@@ -21,7 +22,7 @@ import {
   Switch,
   Text,
 } from '@filigran/design-system';
-import { Alert, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -193,6 +194,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
   const [result, setResult] = useState<StixPathsResult | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [neighborhood, setNeighborhood] = useState<NeighborhoodSummary | null>(null);
+  const relationshipFieldRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchQuery<StixPathFinderNeighborhoodQuery>(neighborhoodQuery, { id: fromId }).toPromise()
@@ -207,17 +209,21 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
     .sort((a, b) => a.label.localeCompare(b.label)), [schema]);
 
   const targetId = toId ?? target?.value;
-  const findPaths = () => {
+  // The next actions of an empty or limited result change a parameter and search again at once
+  const findPaths = (overrides: { depth?: string; relationships?: TypeOption[]; entities?: TypeOption[] } = {}) => {
     if (!targetId) return;
+    const depth = overrides.depth ?? maxDepth;
+    const relationships = overrides.relationships ?? relationshipTypes;
+    const entities = overrides.entities ?? entityTypes;
     setLoading(true);
     setResult(null);
     fetchQuery<StixPathFinderQuery>(stixPathFinderQuery, {
       fromId,
       toId: targetId,
-      maxDepth: Number(maxDepth),
+      maxDepth: Number(depth),
       maxPaths: Number(maxPaths),
-      relationshipTypes: relationshipTypes.length > 0 ? relationshipTypes.map((r) => r.value) : null,
-      entityTypes: entityTypes.length > 0 ? entityTypes.map((e) => e.value) : null,
+      relationshipTypes: relationships.length > 0 ? relationships.map((r) => r.value) : null,
+      entityTypes: entities.length > 0 ? entities.map((e) => e.value) : null,
       includeInferred,
       includeContainers,
     }).toPromise()
@@ -245,17 +251,41 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
     setSelected(next);
   };
 
+  const allowLongerPaths = () => {
+    const next = DEPTHS[DEPTHS.indexOf(maxDepth) + 1];
+    if (!next) return;
+    setMaxDepth(next);
+    findPaths({ depth: next });
+  };
+  const removeTypeFilters = () => {
+    setRelationshipTypes([]);
+    setEntityTypes([]);
+    findPaths({ relationships: [], entities: [] });
+  };
+  const narrowByRelationshipType = () => {
+    const field = relationshipFieldRef.current;
+    field?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    field?.querySelector('input')?.focus();
+  };
+  const canAllowLongerPaths = DEPTHS.indexOf(maxDepth) < DEPTHS.length - 1;
+  const hasTypeFilters = relationshipTypes.length > 0 || entityTypes.length > 0;
+
   const selectedPaths = (result?.paths ?? []).filter((_, index) => selected.has(index));
+  const resultActions = result && result.paths.length > 0 ? renderActions(result, selectedPaths) : null;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-path-finder">
       <Text variant="content-compact">
         {toId
-          ? `${t_i18n('Paths between')} ${fromLabel} ${t_i18n('and')} ${toLabel ?? ''}`
-          : `${t_i18n('Paths from')} ${fromLabel}`}
+          ? t_i18n('Paths between {from} and {to}', { values: { from: fromLabel, to: toLabel ?? '' } })
+          : t_i18n('Paths from {name}', { values: { name: fromLabel } })}
       </Text>
       {neighborhood && neighborhood.total > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="graph-neighborhood-summary">
-          <Text variant="content-caption">{`${t_i18n('Neighborhood')}: ${n(neighborhood.total)}${neighborhood.truncated ? '+' : ''} ${t_i18n('relationships')}`}</Text>
+          <Text variant="content-caption">
+            {neighborhood.truncated
+              ? t_i18n('Neighborhood: more than {count, plural, one {# relationship} other {# relationships}}', { values: { count: neighborhood.total } })
+              : t_i18n('Neighborhood: {count, plural, one {# relationship} other {# relationships}}', { values: { count: neighborhood.total } })}
+          </Text>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {neighborhood.by_relationship_type.map(({ label, value }) => (
               <Chip
@@ -306,12 +336,14 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
           </Select>
         </Box>
       </Box>
-      <TypesCombobox
-        label={t_i18n('Relationship types (all by default)')}
-        options={relationshipOptions}
-        value={relationshipTypes}
-        onChange={setRelationshipTypes}
-      />
+      <Box ref={relationshipFieldRef}>
+        <TypesCombobox
+          label={t_i18n('Relationship types (all by default)')}
+          options={relationshipOptions}
+          value={relationshipTypes}
+          onChange={setRelationshipTypes}
+        />
+      </Box>
       <TypesCombobox
         label={t_i18n('Intermediate entity types (all by default)')}
         options={entityTypeOptions}
@@ -322,41 +354,86 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
         <Switch checked={includeInferred} onCheckedChange={setIncludeInferred} label={t_i18n('Include inferred relationships')} />
         <Switch checked={includeContainers} onCheckedChange={setIncludeContainers} label={t_i18n('Go through containers')} />
       </Box>
-      <Box>
-        <Button onClick={findPaths} disabled={!targetId || loading} data-testid="graph-path-find">
-          {t_i18n('Find paths')}
-        </Button>
-      </Box>
       {loading && <Loader variant={LoaderVariant.inElement} />}
       {result && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }} data-testid="graph-path-results">
           <Text variant="content-caption">
-            {`${n(result.explored_nodes)} ${t_i18n('entities explored')} - ${n(result.explored_relationships)} ${t_i18n('relationships explored')} - ${result.duration_ms} ms`}
+            {t_i18n('{entities, plural, one {# entity} other {# entities}} and {relationships, plural, one {# relationship} other {# relationships}} explored in {duration} ms', {
+              values: { entities: result.explored_nodes, relationships: result.explored_relationships, duration: n(result.duration_ms) },
+            })}
           </Text>
           {(result.truncated || result.timed_out) && (
-            <Alert severity="warning" variant="outlined">
-              {result.timed_out
+            <Alert
+              severity="warning"
+              elevation={1}
+              data-testid="graph-path-limit"
+              title={result.timed_out
                 ? t_i18n('The search reached its time limit, longer paths may exist.')
                 : t_i18n('The search reached its exploration limit, narrow it with relationship or entity types.')}
-            </Alert>
+              action={(
+                <Button variant="secondary" size="small" onClick={narrowByRelationshipType}>
+                  {t_i18n('Narrow by relationship type')}
+                </Button>
+              )}
+            />
           )}
           {result.paths.length === 0 ? (
-            <Alert severity="info" variant="outlined">
-              {t_i18n('No path found within these limits between entities you can access.')}
-            </Alert>
+            <Alert
+              severity="info"
+              elevation={1}
+              data-testid="graph-path-empty"
+              title={t_i18n('No path found within these limits between entities you can access.')}
+              action={(canAllowLongerPaths || hasTypeFilters) && (
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {canAllowLongerPaths && (
+                    <Button variant="secondary" size="small" onClick={allowLongerPaths} disabled={loading}>
+                      {t_i18n('Allow longer paths')}
+                    </Button>
+                  )}
+                  {hasTypeFilters && (
+                    <Button variant="secondary" size="small" onClick={removeTypeFilters} disabled={loading}>
+                      {t_i18n('Remove the type filters')}
+                    </Button>
+                  )}
+                </Box>
+              )}
+            />
           ) : result.paths.map((path, index) => (
             <Box key={path.relationship_ids.join('|')} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Checkbox
                 checked={selected.has(index)}
                 onCheckedChange={() => togglePath(index)}
-                aria-label={`${t_i18n('Select path')} ${index + 1}`}
+                aria-label={t_i18n('Select path {number}', { values: { number: index + 1 } })}
               />
               <StixPathChain path={path} />
             </Box>
           ))}
-          {result.paths.length > 0 && renderActions(result, selectedPaths)}
         </Box>
       )}
+      <Box
+        sx={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 1,
+          backgroundColor: 'var(--bg-elevation-default)',
+          py: 1.5,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+        data-testid="graph-path-footer"
+      >
+        <Button
+          variant={resultActions ? 'secondary' : 'primary'}
+          onClick={() => findPaths()}
+          disabled={!targetId || loading}
+          data-testid="graph-path-find"
+        >
+          {t_i18n('Find paths')}
+        </Button>
+        {resultActions}
+      </Box>
     </Box>
   );
 };

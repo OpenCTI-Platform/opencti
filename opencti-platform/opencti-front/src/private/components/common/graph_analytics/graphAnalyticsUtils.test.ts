@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildGraphTopHubsChart,
   collectPathElementIds,
+  formatGraphClusterLabel,
   formatSimilarityScore,
   GRAPH_FEATURE_FAMILY_LABELS,
   isGraphSimilarEntityType,
   reportPayloadErrors,
+  resolveGraphAnalyticsState,
   similarityScoreSeverity,
   trimLeadingEmptyPeriods,
 } from './graphAnalyticsUtils';
@@ -18,6 +20,27 @@ vi.mock('../../../../relay/environment', () => ({
 }));
 
 describe('graphAnalyticsUtils', () => {
+  const translate = (message: string, options?: { values?: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+    .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message);
+
+  it('names a cluster after its first accessible representative, never after its identifier', () => {
+    const representatives = [{ representative: { main: 'update-cdn-sync.com' } }, { representative: { main: 'cdn-sync-update.net' } }];
+    expect(formatGraphClusterLabel(translate, { cluster_kind: 'infrastructure', representatives })).toBe('Infrastructure cluster around update-cdn-sync.com');
+    expect(formatGraphClusterLabel(translate, { cluster_kind: 'campaign', representatives })).toBe('Campaign cluster around update-cdn-sync.com');
+    expect(formatGraphClusterLabel(translate, { cluster_kind: 'infrastructure', representatives: [] })).toBe('Infrastructure cluster');
+    expect(formatGraphClusterLabel(translate, { cluster_kind: 'unknown', representatives: null })).toBe('Cluster');
+  });
+
+  it('gives the analytics status one state', () => {
+    const idle = { manager_enabled: true, pending_entities: 0, full_pass_in_progress: false, last_full_pass_completed_at: '2026-10-04T00:10:00Z' };
+    expect(resolveGraphAnalyticsState(idle)).toBe('up_to_date');
+    expect(resolveGraphAnalyticsState({ ...idle, manager_enabled: false, pending_entities: 4 })).toBe('disabled');
+    expect(resolveGraphAnalyticsState({ ...idle, pending_entities: 4 })).toBe('analysing');
+    expect(resolveGraphAnalyticsState({ ...idle, full_pass_in_progress: true })).toBe('analysing');
+    expect(resolveGraphAnalyticsState({ ...idle, last_full_pass_completed_at: null })).toBe('not_analysed');
+    expect(resolveGraphAnalyticsState({ ...idle, last_full_pass_completed_at: null, analytics_process_last_run_at: '2026-10-04T00:10:00Z' })).toBe('up_to_date');
+  });
+
   it('formats scores as bounded percentages', () => {
     expect(formatSimilarityScore(0.4567)).toBe('46%');
     expect(formatSimilarityScore(1)).toBe('100%');

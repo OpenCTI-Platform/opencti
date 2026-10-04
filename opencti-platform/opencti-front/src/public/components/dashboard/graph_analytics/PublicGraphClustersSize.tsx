@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
+import GraphClustersGrowthChart from '../../../../private/components/common/graph_analytics/GraphClustersGrowthChart';
+import { formatGraphClusterLabel } from '../../../../private/components/common/graph_analytics/graphAnalyticsUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
@@ -17,7 +18,12 @@ const publicGraphClustersSizeQuery = graphql`
     publicGraphClustersSizeTimeSeries(startDate: $startDate, endDate: $endDate, uriKey: $uriKey, widgetId: $widgetId) {
       cluster {
         id
-        name
+        cluster_kind
+        representatives {
+          representative {
+            main
+          }
+        }
       }
       data {
         date
@@ -33,14 +39,15 @@ interface PublicGraphClustersSizeComponentProps {
 }
 
 const PublicGraphClustersSizeComponent = ({ parameters, queryRef }: PublicGraphClustersSizeComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { publicGraphClustersSizeTimeSeries } = usePreloadedQuery(publicGraphClustersSizeQuery, queryRef);
   if (!publicGraphClustersSizeTimeSeries || publicGraphClustersSizeTimeSeries.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n('No cluster yet - clusters appear when an analytics pass finds entities sharing infrastructure')} />;
   }
   return (
-    <WidgetMultiAreas
+    <GraphClustersGrowthChart
       series={publicGraphClustersSizeTimeSeries.map((serie) => ({
-        name: serie.cluster.name,
+        name: formatGraphClusterLabel(t_i18n, serie.cluster),
         data: serie.data.map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval={getWidgetInterval(parameters ?? undefined)}
@@ -59,7 +66,7 @@ const PublicGraphClustersSize = ({ uriKey, widget, startDate, endDate, title }: 
     ...dates,
   });
   return (
-    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Cluster size over time')}>
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Largest clusters - members over time')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicGraphClustersSizeComponent queryRef={queryRef} parameters={parameters} />

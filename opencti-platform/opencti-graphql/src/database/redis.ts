@@ -877,6 +877,13 @@ export const redisGraphAnalyticsPendingCount = async (): Promise<number> => {
   ]);
   return dirty + priority;
 };
+// Next ids to recompute, in processing order (explicit requests first), without removing them
+export const redisGraphAnalyticsPendingIds = async (limit: number): Promise<string[]> => {
+  if (limit <= 0) return [];
+  const priority = await getClientBase().zrange(GRAPH_ANALYTICS_PRIORITY_KEY, 0, limit - 1);
+  const debounced = priority.length < limit ? await getClientBase().zrange(GRAPH_ANALYTICS_DIRTY_KEY, 0, limit - priority.length - 1) : [];
+  return Array.from(new Set([...priority, ...debounced]));
+};
 export const redisGraphAnalyticsGetState = async (): Promise<Record<string, string>> => {
   return getClientBase().hgetall(GRAPH_ANALYTICS_STATE_KEY);
 };

@@ -198,6 +198,8 @@ type GraphAnalyticsStatus {
     full_pass_in_progress: Boolean!
     last_full_pass_started_at: DateTime
     last_full_pass_completed_at: DateTime
+    "When the next full pass starts, null while one is running"
+    next_full_pass_at: DateTime
     similarity_documents: Int!
     clusters_count: Int!
     analytics_process_active: Boolean!
@@ -284,6 +286,8 @@ type Query {
         filters: FilterGroup
     ): [GraphClusterTimeSeries!]! @auth(for: [KNOWLEDGE, EXPLORE])
     graphAnalyticsStatus: GraphAnalyticsStatus @auth(for: [KNOWLEDGE])
+    "Next entities waiting for a recompute, in processing order, among the ones the user can access"
+    graphAnalyticsPendingEntities(first: Int): [StixCoreObject!]! @auth(for: [KNOWLEDGE])
     graphAnalyticsEdges(
         relationshipTypes: [String!]!
         includeInferred: Boolean

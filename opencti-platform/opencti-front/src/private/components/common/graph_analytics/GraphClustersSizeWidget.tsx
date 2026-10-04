@@ -3,7 +3,8 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
+import GraphClustersGrowthChart from './GraphClustersGrowthChart';
+import { formatGraphClusterLabel } from './graphAnalyticsUtils';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
@@ -18,8 +19,13 @@ const graphClustersSizeWidgetQuery = graphql`
     graphClustersSizeTimeSeries(startDate: $startDate, endDate: $endDate, interval: $interval, limit: $limit, filters: $filters) {
       cluster {
         id
-        name
+        cluster_kind
         members_count
+        representatives {
+          representative {
+            main
+          }
+        }
       }
       data {
         date
@@ -57,14 +63,15 @@ interface GraphClustersSizeComponentProps {
 }
 
 const GraphClustersSizeComponent = ({ queryRef, parameters }: GraphClustersSizeComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { graphClustersSizeTimeSeries } = usePreloadedQuery(graphClustersSizeWidgetQuery, queryRef);
   if (graphClustersSizeTimeSeries.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n('No cluster yet - clusters appear when an analytics pass finds entities sharing infrastructure')} />;
   }
   return (
-    <WidgetMultiAreas
+    <GraphClustersGrowthChart
       series={graphClustersSizeTimeSeries.map((serie) => ({
-        name: serie.cluster.name,
+        name: formatGraphClusterLabel(t_i18n, serie.cluster),
         data: serie.data.map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval={getWidgetInterval(parameters)}
@@ -110,7 +117,7 @@ const GraphClustersSizeWidget = ({
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title ?? t_i18n('Cluster size over time')}
+      title={parameters.title ?? t_i18n('Largest clusters - members over time')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}

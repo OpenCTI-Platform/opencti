@@ -423,11 +423,9 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
             toId={to.id}
             toLabel={nodeLabel(to)}
             renderActions={(_, selectedPaths) => (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button disabled={selectedPaths.length === 0 || adding} onClick={() => addPaths(selectedPaths)}>
-                  {t_i18n('Add the selected paths to the graph')}
-                </Button>
-              </Box>
+              <Button disabled={selectedPaths.length === 0 || adding} onClick={() => addPaths(selectedPaths)}>
+                {t_i18n('Add the selected paths to the graph')}
+              </Button>
             )}
           />
         </Dialog>
@@ -462,7 +460,7 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
             {!similarFailed && similarGroups === null && <Loader variant={LoaderVariant.inElement} />}
             {(similarGroups ?? []).map((group) => (
               <Box key={group.sourceId} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Text variant="title-sm">{`${t_i18n('Similar to')} ${group.sourceLabel}`}</Text>
+                <Text variant="title-sm">{t_i18n('Similar to {name}', { values: { name: group.sourceLabel } })}</Text>
                 {group.nodes.length === 0 && <Text variant="content-compact">{t_i18n('No similar entity found yet.')}</Text>}
                 {group.nodes.map((node) => {
                   const inGraph = existingIds.has(node.entity.id);
@@ -478,7 +476,10 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <ItemIcon type={node.entity.entity_type} size="small" />
                           <Text variant="content-base">{node.entity.representative.main}</Text>
-                          <Chip label={formatSimilarityScore(node.score)} severity={similarityScoreSeverity(node.score)} />
+                          <Chip
+                            label={t_i18n('{score} similar', { values: { score: formatSimilarityScore(node.score) } })}
+                            severity={similarityScoreSeverity(node.score)}
+                          />
                           {inGraph && <Chip label={t_i18n('Already in the graph')} />}
                         </Box>
                         <GraphSimilarityEvidence evidence={node.evidence} maxPerFamily={4} dense />

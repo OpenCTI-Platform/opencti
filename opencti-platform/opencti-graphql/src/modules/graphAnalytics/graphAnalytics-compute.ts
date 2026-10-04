@@ -267,13 +267,28 @@ export const isFullPassInProgress = (state: Record<string, string>) => {
   return !!started && (!completed || completed.getTime() < started.getTime());
 };
 
+// Two passes are at least this far apart, so a pass ending after the configured hour does not start again the same night
+const FULL_PASS_MIN_INTERVAL_MS = 20 * 3600 * 1000;
+
 /** A full pass starts immediately on a platform never analyzed (backfill), then once a day at the configured hour. */
 export const shouldStartFullPass = (state: Record<string, string>, config: GraphAnalyticsComputeConfig, now = new Date()) => {
   if (isFullPassInProgress(state)) return false;
   const completed = parseStateDate(state[GRAPH_STATE_FULL_PASS_COMPLETED_AT]);
   if (!completed) return true;
   const elapsed = now.getTime() - completed.getTime();
-  return elapsed >= 20 * 3600 * 1000 && now.getUTCHours() === config.fullPassHour;
+  return elapsed >= FULL_PASS_MIN_INTERVAL_MS && now.getUTCHours() === config.fullPassHour;
+};
+
+/** When `shouldStartFullPass` will next be true (null while a pass runs), at the precision of the manager ticks. */
+export const computeNextFullPassAt = (state: Record<string, string>, config: GraphAnalyticsComputeConfig, now = new Date()): Date | null => {
+  if (isFullPassInProgress(state)) return null;
+  const completed = parseStateDate(state[GRAPH_STATE_FULL_PASS_COMPLETED_AT]);
+  if (!completed) return now;
+  const from = new Date(Math.max(now.getTime(), completed.getTime() + FULL_PASS_MIN_INTERVAL_MS));
+  if (from.getUTCHours() === config.fullPassHour) return from;
+  const next = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate(), config.fullPassHour));
+  if (next.getTime() < from.getTime()) next.setUTCDate(next.getUTCDate() + 1);
+  return next;
 };
 
 /** A pass starts where the previous capped pass stopped (the cursor is only cleared when a pass reaches the end). */

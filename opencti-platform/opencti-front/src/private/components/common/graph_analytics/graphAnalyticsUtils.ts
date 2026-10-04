@@ -45,12 +45,62 @@ export const GRAPH_CLUSTER_KIND_LABELS: Record<string, string> = {
   tooling: 'Tooling cluster',
 };
 
+const GRAPH_CLUSTER_AROUND_LABELS: Record<string, string> = {
+  infrastructure: 'Infrastructure cluster around {name}',
+  campaign: 'Campaign cluster around {name}',
+  tooling: 'Tooling cluster around {name}',
+};
+
+type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
+
+export interface GraphClusterLabelSource {
+  readonly cluster_kind: string;
+  readonly representatives?: ReadonlyArray<{ readonly representative: { readonly main: string } }> | null;
+}
+
+/**
+ * A cluster is shown under what it holds: its first representative the reader can access. The stored name is built
+ * from the cluster identifier only, because it is visible to readers who may not access every member.
+ */
+export const formatGraphClusterLabel = (t_i18n: Translate, cluster: GraphClusterLabelSource): string => {
+  const name = cluster.representatives?.[0]?.representative.main;
+  if (name) {
+    return t_i18n(GRAPH_CLUSTER_AROUND_LABELS[cluster.cluster_kind] ?? 'Cluster around {name}', { values: { name } });
+  }
+  return t_i18n(GRAPH_CLUSTER_KIND_LABELS[cluster.cluster_kind] ?? 'Cluster');
+};
+
 export const GRAPH_CLUSTER_SOURCE_LABELS: Record<string, string> = {
   platform: 'Platform',
   analytics: 'Analytics process',
 };
 
 export const GRAPH_CLUSTERS_PATH = '/dashboard/analyses/clusters';
+
+export type GraphAnalyticsState = 'disabled' | 'analysing' | 'not_analysed' | 'up_to_date';
+
+export const GRAPH_ANALYTICS_STATE_CHIPS: Record<GraphAnalyticsState, { label: string; severity: 'neutral' | 'info' | 'low' }> = {
+  disabled: { label: 'Disabled', severity: 'neutral' },
+  analysing: { label: 'Analysing', severity: 'info' },
+  not_analysed: { label: 'Not analysed yet', severity: 'neutral' },
+  up_to_date: { label: 'Up to date', severity: 'low' },
+};
+
+interface GraphAnalyticsStateSource {
+  readonly manager_enabled: boolean;
+  readonly pending_entities: number;
+  readonly full_pass_in_progress: boolean;
+  readonly last_full_pass_completed_at?: unknown;
+  readonly analytics_process_last_run_at?: unknown;
+}
+
+/** One state for the analytics status header: disabled, running (pass or queue), never run, or idle and fresh. */
+export const resolveGraphAnalyticsState = (status: GraphAnalyticsStateSource): GraphAnalyticsState => {
+  if (!status.manager_enabled) return 'disabled';
+  if (status.full_pass_in_progress || status.pending_entities > 0) return 'analysing';
+  if (!status.last_full_pass_completed_at && !status.analytics_process_last_run_at) return 'not_analysed';
+  return 'up_to_date';
+};
 
 /** A similarity score in [0, 1] as a rounded percentage. */
 export const formatSimilarityScore = (score: number | null | undefined): string => {
