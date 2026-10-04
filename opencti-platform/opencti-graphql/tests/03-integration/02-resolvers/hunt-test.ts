@@ -489,6 +489,25 @@ describe('Hunt resolvers', () => {
       variables: { search: blockedLabel },
     });
     expect(labels.data?.labels.edges.map((edge: { node: { value: string } }) => edge.node.value)).not.toContain(blockedLabel);
+    // A pack whose last hunt is refused fails as a whole: the hunts before it and their labels are not written
+    const atomicLabel = 'hunt-test-atomic-pack-label';
+    const atomicHuntId = 'hunt--9c3d5e7f-1a2b-5c4d-8e6f-7a8b9c0d1e2f';
+    const atomic = {
+      ...bundle,
+      objects: [
+        ...bundle.objects.filter((object: { type: string }) => object.type !== 'hunt'),
+        { ...exported, id: atomicHuntId, name: 'Hunt test atomic pack hunt', labels: [atomicLabel] },
+        { ...exported, id: 'hunt--1b2c3d4e-5f6a-5b7c-9d8e-0f1a2b3c4d5e', name: 'Hunt test refused pack hunt', sigma_rule: 'title: [x' },
+      ],
+    };
+    await expect(importHuntPack(testContext, ADMIN_USER, toUpload(atomic))).rejects.toThrow('Invalid Sigma rule');
+    const notWritten = await queryAsAdmin({ query: HUNT_READ, variables: { id: atomicHuntId } });
+    expect(notWritten.data?.hunt).toBeNull();
+    const atomicLabels = await queryAsAdminWithSuccess({
+      query: gql`query HuntPackLabels($search: String) { labels(search: $search) { edges { node { value } } } }`,
+      variables: { search: atomicLabel },
+    });
+    expect(atomicLabels.data?.labels.edges.map((edge: { node: { value: string } }) => edge.node.value)).not.toContain(atomicLabel);
   });
 
   it('should validate hunts from an OpenAEV emulation, idempotently per inject', async () => {

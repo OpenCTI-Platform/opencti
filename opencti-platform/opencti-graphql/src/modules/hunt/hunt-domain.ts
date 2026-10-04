@@ -404,9 +404,10 @@ const HUNT_PACK_LOCAL_FIELDS = ['hunt_status', 'hunt_source_kind', 'hunt_schedul
 
 export const importHuntPack = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const { hunts, objects } = await parseHuntPack(file);
-  const imported: BasicStoreEntityHunt[] = [];
   const unresolved = new Set<string>();
-  let updatedCount = 0;
+  // Every hunt of the pack is planned and checked before the first write: a refused hunt fails the import with
+  // nothing written, neither the hunts before it nor their labels
+  const prepared: { input: Record<string, unknown>; labels: string[]; existing: boolean }[] = [];
   for (let index = 0; index < hunts.length; index += 1) {
     const plan = await planHuntPackImport(context, user, hunts[index], objects);
     plan.unresolved.forEach((ref) => unresolved.add(ref));
@@ -421,13 +422,18 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
           input[field] = existing[field];
         });
       }
-      // Every check runs before the first write: a refused hunt never leaves labels behind
       await validateHuntState(context, input as HuntValidationState);
-      input.objectLabel = await resolveHuntPackLabels(context, user, plan.labels);
-      imported.push(await addHunt(context, user, input as unknown as HuntAddInput));
-      if (existing) {
-        updatedCount += 1;
-      }
+      prepared.push({ input, labels: plan.labels, existing: !!existing });
+    }
+  }
+  const imported: BasicStoreEntityHunt[] = [];
+  let updatedCount = 0;
+  for (let index = 0; index < prepared.length; index += 1) {
+    const { input, labels, existing } = prepared[index];
+    input.objectLabel = await resolveHuntPackLabels(context, user, labels);
+    imported.push(await addHunt(context, user, input as unknown as HuntAddInput));
+    if (existing) {
+      updatedCount += 1;
     }
   }
   await publishUserAction({

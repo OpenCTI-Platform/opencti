@@ -241,7 +241,9 @@ export const parseHuntPack = async (file: Promise<FileHandle>) => {
     throw FunctionalError('A hunt pack must be a STIX 2.1 bundle');
   }
   const objects = new Map<string, Record<string, any>>(bundle.objects.filter((object) => typeof object?.id === 'string').map((object) => [object.id, object]));
-  const hunts = bundle.objects.filter((object) => HUNT_STIX_TYPES.includes(object?.type)) as StixHunt[];
+  // A hunt listed twice is imported once, as its last occurrence (like every other object of the bundle)
+  const hunts = Array.from(new Map((bundle.objects.filter((object) => HUNT_STIX_TYPES.includes(object?.type)) as StixHunt[])
+    .map((hunt) => [hunt.id, hunt])).values());
   if (hunts.length === 0) {
     throw FunctionalError('The bundle does not contain any hunt');
   }
