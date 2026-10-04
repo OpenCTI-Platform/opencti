@@ -28,7 +28,8 @@ const bucketRank = (bucket: string | null | undefined) => (bucket ? PLATFORM_BUC
 
 const prevalenceRank = (prevalence: PulsePrevalenceValue | null | undefined) => (prevalence ? PULSE_PREVALENCE_VALUES.indexOf(prevalence) : -1);
 
-// Share of the community that does not hold the object, 100 when fewer platforms than the anonymity threshold do.
+// Share of the community that does not hold the object. 100 is reserved for objects fewer platforms than the anonymity
+// threshold hold - published objects go from 0 to 75 - so the indexed field and the STIX extension tell them apart.
 const UNIQUENESS_BY_PREVALENCE: Record<PulsePrevalenceValue, number> = {
   [PulsePrevalence.Rare]: 75,
   [PulsePrevalence.Uncommon]: 50,
@@ -39,7 +40,8 @@ const UNPUBLISHED_UNIQUENESS = 100;
 
 export interface PulseCombinedInformation {
   published: boolean;
-  prevalence: PulsePrevalenceValue;
+  // Null below the anonymity threshold: "rare" is a published bucket, never the absence of a published signal.
+  prevalence: PulsePrevalenceValue | null;
   platformsBucket: string | null;
   firstSeenNetwork: string | null;
   lastSeenNetwork: string | null;
@@ -59,7 +61,7 @@ export const combinePulseLookups = (results: PulseHubLookupResult[]): PulseCombi
   if (published.length === 0) {
     return {
       published: false,
-      prevalence: PulsePrevalence.Rare,
+      prevalence: null,
       platformsBucket: null,
       firstSeenNetwork: null,
       lastSeenNetwork: null,
@@ -92,7 +94,7 @@ export const combinePulseLookups = (results: PulseHubLookupResult[]): PulseCombi
 const toDayDate = (day: string | null) => (day ? `${day}T00:00:00.000Z` : null);
 
 // 0 below the anonymity threshold, then 1 (rare) to 4 (widespread): one sort key for preview and full documents.
-export const pulsePrevalenceRank = (published: boolean, prevalence: PulsePrevalenceValue) => (published ? prevalenceRank(prevalence) + 1 : 0);
+export const pulsePrevalenceRank = (published: boolean, prevalence: PulsePrevalenceValue | null) => (published && prevalence ? prevalenceRank(prevalence) + 1 : 0);
 
 export const buildPulseDocument = (keys: string[], information: PulseCombinedInformation, updatedAt: Date): Record<string, unknown> => {
   const stored: PulseStoredInformation = {

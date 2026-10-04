@@ -48,9 +48,11 @@ const published = (hash: string, overrides: Partial<PulseHubLookupResult>): Puls
 });
 
 describe('Threat Pulse network information', () => {
-  it('should mark objects below the anonymity threshold as rare and unique', () => {
+  it('should give objects below the anonymity threshold no prevalence and the uniqueness published objects never reach', () => {
     const information = combinePulseLookups([unpublished('a'), unpublished('b')]);
-    expect(information).toMatchObject({ published: false, prevalence: PulsePrevalence.Rare, communityUniqueness: 100, trend: null, firstSeenNetwork: null });
+    expect(information).toMatchObject({ published: false, prevalence: null, communityUniqueness: 100, trend: null, firstSeenNetwork: null });
+    const document = buildPulseDocument(['a'], information, new Date('2026-10-03T00:00:00.000Z'));
+    expect(document).toMatchObject({ pulse_prevalence: null, pulse_prevalence_rank: 0, pulse_trend: null, pulse_community_uniqueness: 100 });
   });
 
   it('should take the most prevalent key of an object with aliases', () => {

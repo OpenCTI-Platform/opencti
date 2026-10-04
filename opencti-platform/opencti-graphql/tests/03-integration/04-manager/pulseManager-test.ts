@@ -466,7 +466,7 @@ describe('Threat Pulse manager and API', () => {
   it('should hide the network signal below the anonymity threshold', async () => {
     const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
     expect(result.data?.pulseEntity).toMatchObject({ readable: true, unavailable_reason: null });
-    expect(result.data?.pulseEntity.information).toMatchObject({ published: false, prevalence: 'rare', community_uniqueness: 100, platforms_bucket: null });
+    expect(result.data?.pulseEntity.information).toMatchObject({ published: false, prevalence: null, community_uniqueness: 100, platforms_bucket: null });
   });
 
   it('should never look up an excluded object', async () => {

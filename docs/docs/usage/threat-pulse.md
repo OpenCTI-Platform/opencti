@@ -101,7 +101,7 @@ The overview of indicators, attack patterns, vulnerabilities, intrusion sets, ma
 
 The widget shows:
 
-- **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates (the first and last days of the weeks in which enough platforms reported the object, never the day a single platform reported it), the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count; a value XTM Hub did not publish is left out rather than shown empty.
+- **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates (the first and last days of the weeks in which enough platforms reported the object, never the day a single platform reported it), the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count or prevalence, and with a community uniqueness of 100, a value published objects never reach (they go from 0 to 75); a value XTM Hub did not publish is left out rather than shown empty.
 - **Preview**: the prevalence and trend when the object is in the digest, otherwise a short note, then the locked rows "Contributing platforms", "Network first seen", "Community trend over 12 weeks" and "Sector trend", and the unlock step.
 - **Not connected**: what Threat Pulse would add and the "Connect to XTM Hub" button.
 

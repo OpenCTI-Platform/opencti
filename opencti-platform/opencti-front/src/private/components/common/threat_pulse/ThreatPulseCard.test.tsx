@@ -106,7 +106,7 @@ describe('ThreatPulseCard', () => {
   it('should explain an object below the anonymity threshold', async () => {
     renderCard(
       FULL,
-      { ...PUBLISHED, published: false, prevalence: 'rare', platforms_bucket: null, trend: null, trend_series: [], sector_trend: null, community_uniqueness: 100 },
+      { ...PUBLISHED, published: false, prevalence: null, platforms_bucket: null, trend: null, trend_series: [], sector_trend: null, community_uniqueness: 100 },
     );
     expect(await screen.findByText(/Fewer platforms than the anonymity threshold/)).toBeDefined();
     // Never a prevalence XTM Hub did not publish
