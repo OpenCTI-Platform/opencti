@@ -273,13 +273,21 @@ export const scoreCoverageMatch = (facets: ResolvedFacets, matched: { objectType
   return round(weight * (families.reduce((acc, value) => acc + value, 0) / families.length));
 };
 
-export const matchLocalCatalog = (facets: ResolvedFacets, contracts: BasicStoreEntityCatalogContract[]): CollectionGapRecommendedConnector[] => {
-  // Latest version compatible with this platform, with the catalog's own version ordering (semver, rolling)
+/**
+ * The contract a recommendation deploys for each catalog slug: the latest version compatible with this platform, with
+ * the catalog's own version ordering (semver, rolling).
+ */
+export const latestCompatibleContractsBySlug = (contracts: BasicStoreEntityCatalogContract[]) => {
   const latestBySlug = new Map<string, BasicStoreEntityCatalogContract>();
   contracts.filter((contract) => isSupportVersionCompatible(contract)).forEach((contract) => {
     const current = latestBySlug.get(contract.slug);
     if (!current || compareContractVersions(contract.contract_version ?? '', current.contract_version ?? '') > 0) latestBySlug.set(contract.slug, contract);
   });
+  return latestBySlug;
+};
+
+export const matchLocalCatalog = (facets: ResolvedFacets, contracts: BasicStoreEntityCatalogContract[]): CollectionGapRecommendedConnector[] => {
+  const latestBySlug = latestCompatibleContractsBySlug(contracts);
   const results: CollectionGapRecommendedConnector[] = [];
   latestBySlug.forEach((contract) => {
     const text = [contract.title, contract.short_description, contract.description, ...(contract.use_cases ?? []), ...(contract.solution_categories ?? [])]
@@ -324,7 +332,8 @@ export const mergeRecommendedConnectors = (
   deployedImages: Set<string>,
   max: number,
 ): CollectionGapRecommendedConnector[] => {
-  const contractBySlug = new Map(contracts.map((contract) => [contract.slug, contract]));
+  // A Hub recommendation deploys the same contract as a local one; without a compatible contract it is not deployable here
+  const contractBySlug = latestCompatibleContractsBySlug(contracts);
   const merged = new Map<string, CollectionGapRecommendedConnector>();
   hubMatches.forEach((match) => {
     const contract = contractBySlug.get(match.slug);

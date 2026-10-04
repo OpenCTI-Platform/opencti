@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { countRelationshipsByValue, hubCatalogStatusOf, mergeRecommendedConnectors } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
+import {
+  countRelationshipsByValue,
+  hubCatalogStatusOf,
+  latestCompatibleContractsBySlug,
+  mergeRecommendedConnectors,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
 import type { CollectionGapRecommendedConnector } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import type { HubIntegrationCoverageMatch } from '../../../../src/modules/xtm/hub/xtm-hub-client';
@@ -60,6 +65,25 @@ describe('Source intelligence collection gaps', () => {
       ['alpha', 'hub', false],
       ['beta', 'hub', true],
     ]);
+  });
+
+  it('should deploy the latest compatible contract version for an XTM Hub recommendation', () => {
+    const version = (contractVersion: string, image: string, extra: Record<string, unknown> = {}) => ({
+      ...contract('alpha'), contract_version: contractVersion, image, ...extra,
+    }) as unknown as BasicStoreEntityCatalogContract;
+    const contracts = [
+      version('6.8.0', 'opencti/connector-alpha:6.8.0'),
+      // Newer, but requires a platform that does not exist yet
+      version('99.0.0', 'opencti/connector-alpha:99.0.0', { min_version: '99.0.0' }),
+      version('6.9.0', 'opencti/connector-alpha:6.9.0'),
+      version('6.7.0', 'opencti/connector-alpha:6.7.0'),
+    ];
+    const [alpha] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], contracts, new Set(), 3);
+    expect(alpha.contract_image).toEqual('opencti/connector-alpha:6.9.0');
+    expect(latestCompatibleContractsBySlug(contracts).get('alpha')?.contract_version).toEqual('6.9.0');
+    // Without any compatible contract the recommendation cannot be deployed from this platform
+    const [onlyIncompatible] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], [contracts[1]], new Set(), 3);
+    expect(onlyIncompatible.contract_image).toBeNull();
   });
 
   it('should keep at most the requested number of recommendations', () => {
