@@ -114,7 +114,7 @@ Live triggers and digests can listen to three investigation events, delivered on
 
 ## Feedback and report template
 
-Every accept or reject decision is stored on the investigation and sent to XTM One, which calibrates its later investigations of the platform. The built-in fintel template **Autonomous investigation summary** (Settings > Customization > Fintel design) generates a document from the investigation: executive summary, timeline, hypotheses, recommendations and indicators.
+Every accept or reject decision is stored on the investigation and sent to XTM One, which calibrates its later investigations of the platform. The built-in fintel template **Autonomous investigation summary** (Settings > Customization > Fintel design) generates a document from the investigation: executive summary, timeline, hypotheses, recommendations and indicators. The investigation carries the markings of everything it cites; when one of them is above your maximum shareable markings or the content marking limit chosen for the export, every section of the investigation is withheld from the document and replaced by a short notice.
 
 ## How Case Autopilot works with XTM One
 

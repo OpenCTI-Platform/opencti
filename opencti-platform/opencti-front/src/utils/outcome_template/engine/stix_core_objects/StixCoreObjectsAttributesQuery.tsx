@@ -266,6 +266,9 @@ const stixCoreObjectsAttributesQuery = graphql`
                 name
                 description
                 latestInvestigationRun {
+                    objectMarking {
+                        id
+                    }
                     run_status
                     completed_at
                     report_sections {

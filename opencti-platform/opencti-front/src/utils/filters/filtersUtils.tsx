@@ -458,6 +458,17 @@ export const useBuildFiltersForTemplateWidgets = () => {
   const allowedMarkings = me.allowed_marking ?? [];
   const maxShareableMarkings = me.max_shareable_marking ?? [];
 
+  // Markings above the sharing ceiling of the user or the content limit chosen for the export
+  const buildNotAllowedMarkingIds = (maxContentMarkingsIds: string[]) => {
+    const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
+    return allowedMarkings
+      .filter((def) => {
+        const maxMarkingsOfType = [...maxShareableMarkings, ...maxContentMarkings].filter((marking) => marking.definition_type === def.definition_type);
+        return isEmptyField(maxMarkingsOfType) || maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order < def.x_opencti_order);
+      })
+      .map((m) => m.id);
+  };
+
   const buildFiltersForTemplateWidgets = (
     inputFilters: string | undefined | null,
     containerId: string,
@@ -466,20 +477,14 @@ export const useBuildFiltersForTemplateWidgets = () => {
     // replace SELF_ID
     let filters = inputFilters ? JSON.parse(inputFilters.replace(SELF_ID, containerId)) : undefined;
     // restrict markings
-    const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
-    const notAllowedMarkingIds = allowedMarkings
-      .filter((def) => {
-        const maxMarkingsOfType = [...maxShareableMarkings, ...maxContentMarkings].filter((marking) => marking.definition_type === def.definition_type);
-        return isEmptyField(maxMarkingsOfType) || maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order < def.x_opencti_order);
-      })
-      .map((m) => m.id);
+    const notAllowedMarkingIds = buildNotAllowedMarkingIds(maxContentMarkingsIds);
     if (notAllowedMarkingIds.length > 0) {
       filters = addFilter(filters, 'objectMarking', notAllowedMarkingIds, 'not_eq', 'and');
     }
     return filters;
   };
 
-  return { buildFiltersForTemplateWidgets };
+  return { buildFiltersForTemplateWidgets, buildNotAllowedMarkingIds };
 };
 
 // return the i18n label corresponding to a filter value
