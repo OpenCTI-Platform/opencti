@@ -10,6 +10,7 @@ from pycti.utils.opencti_stix2_identifier import (
 )
 from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
+    STIX_EXT_OCTI_TIMELINE,
     SUPPORTED_INTERNAL_OBJECTS,
     SUPPORTED_STIX_ENTITY_OBJECTS,
 )
@@ -76,6 +77,38 @@ class OpenCTIStix2Splitter:
         ):
             ids.append(item["extensions"][OPENCTI_EXTENSION]["id"])
         return ids
+
+    @staticmethod
+    def get_timeline_extension_refs(item):
+        """Get the refs nested in the timeline extension of an incident or a case.
+
+        The elements, authors and markings of the analyst contributions are
+        dependencies of the container that carries them.
+
+        :param item: the STIX object to extract the refs from
+        :type item: dict
+        :return: list of the distinct refs, in their order of appearance
+        :rtype: list
+        """
+        extension = (item.get("extensions") or {}).get(STIX_EXT_OCTI_TIMELINE)
+        if not isinstance(extension, dict):
+            return []
+        refs = []
+        for event in extension.get("events") or []:
+            if not isinstance(event, dict):
+                continue
+            for key in ("element_ref", "created_by_ref"):
+                if isinstance(event.get(key), str):
+                    refs.append(event[key])
+            for marking_ref in event.get("object_marking_refs") or []:
+                if isinstance(marking_ref, str):
+                    refs.append(marking_ref)
+        for annotation in extension.get("annotations") or []:
+            if isinstance(annotation, dict) and isinstance(
+                annotation.get("element_ref"), str
+            ):
+                refs.append(annotation["element_ref"])
+        return list(dict.fromkeys(refs))
 
     def enlist_element(
         self, item_id, raw_data, cleanup_inconsistent_bundle, parent_acc
@@ -212,6 +245,26 @@ class OpenCTIStix2Splitter:
                         #     kill_chain_ids.append(kill_chain_id)
                         # nb_deps += self.enlist_element(kill_chain_id, raw_data)
                 item[key] = deduplicated_kill_chain
+
+        # The refs nested in a timeline extension are imported before the container,
+        # so that its analyst contributions resolve their elements, authors and markings.
+        # The extension itself is kept as is: a ref missing from the bundle is skipped on import.
+        for nested_ref in self.get_timeline_extension_refs(item):
+            if (
+                raw_data.get(nested_ref) is not None
+                and is_id_supported(nested_ref)
+                and nested_ref != item_id
+                and nested_ref not in parent_acc
+                and nested_ref not in self.cache_refs[item_id]
+                and item_id not in (self.cache_refs.get(nested_ref) or [])
+            ):
+                self.cache_refs[item_id].append(nested_ref)
+                nb_deps += self.enlist_element(
+                    nested_ref,
+                    raw_data,
+                    cleanup_inconsistent_bundle,
+                    parent_acc + [nested_ref],
+                )
 
         # Get the final dep counting and add in cache
         item["nb_deps"] = nb_deps

@@ -12,6 +12,11 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 ALIASES_FIELD = "aliases"
 X_OPENCTI_ALIASES_FIELD = "x_opencti_aliases"
 
+#: STIX Extension ID for the analyst contributions to incident and case timelines
+STIX_EXT_OCTI_TIMELINE: str = (
+    "extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb"
+)
+
 # Sentinel used to distinguish "value not provided by the caller" from an
 # explicit ``None``/``null``. Any dict value equal (by identity) to this
 # sentinel is stripped from GraphQL mutation variables before the request

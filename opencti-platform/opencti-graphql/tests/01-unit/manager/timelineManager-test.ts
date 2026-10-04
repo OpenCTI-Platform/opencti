@@ -25,6 +25,28 @@ describe('Timeline manager impact collection', () => {
     expect(Array.from(collector.references)).toEqual(['case-incident--1']);
   });
 
+  it('should also impact the cases an update removed from the object refs', () => {
+    const collector = newCollector();
+    const note = { type: 'note', object_refs: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'note-1', type: 'Note' } } };
+    const event = streamEvent(note);
+    // The reverse patch rebuilds the note as it was before the update, when it also referenced the second case
+    (event.data as any).context = {
+      patch: [{ op: 'remove', path: '/object_refs/1' }],
+      reverse_patch: [{ op: 'add', path: '/object_refs/1', value: 'case-incident--2' }],
+    };
+    collectTimelineImpacts(event, collector);
+    expect(Array.from(collector.references).sort()).toEqual(['case-incident--1', 'case-incident--2']);
+    expect(note.object_refs).toEqual(['case-incident--1']);
+  });
+
+  it('should keep the current refs when the reverse patch of an update does not apply', () => {
+    const collector = newCollector();
+    const event = streamEvent({ type: 'note', object_refs: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'note-1', type: 'Note' } } });
+    (event.data as any).context = { patch: [], reverse_patch: [{ op: 'replace', path: '/missing/0', value: 'x' }] };
+    collectTimelineImpacts(event, collector);
+    expect(Array.from(collector.references)).toEqual(['case-incident--1']);
+  });
+
   it('should impact incidents linked by a relationship and containers of its elements', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({

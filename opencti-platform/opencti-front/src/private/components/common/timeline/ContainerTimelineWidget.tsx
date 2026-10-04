@@ -11,10 +11,15 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { resolveLink } from '../../../../utils/Entity';
 import ContainerTimelineLanes, { type TimelineChartAnchors } from './ContainerTimelineLanes';
 import type { ContainerTimelineWidgetQuery } from './__generated__/ContainerTimelineWidgetQuery.graphql';
-import type { ContainerTimelineWidgetEventsQuery, TimelineLane as GqlTimelineLane } from './__generated__/ContainerTimelineWidgetEventsQuery.graphql';
+import type {
+  ContainerTimelineWidgetEventsQuery,
+  TimelineEventKind as GqlTimelineEventKind,
+  TimelineLane as GqlTimelineLane,
+} from './__generated__/ContainerTimelineWidgetEventsQuery.graphql';
 import {
   computeTimelineExtent,
   computeVisibleDomain,
+  effectiveKinds,
   effectiveLanes,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
@@ -53,16 +58,17 @@ export const containerTimelineWidgetQuery = graphql`
       settings {
         id
         enabled_lanes
+        hidden_kinds
         default_grouping
       }
     }
   }
 `;
 
-// The lanes disabled in the timeline settings are left out before the limit, so they never displace the others
+// The lanes disabled and the kinds hidden in the timeline settings are left out before the limit, so they never displace the others
 const containerTimelineWidgetEventsQuery = graphql`
-  query ContainerTimelineWidgetEventsQuery($id: String!, $lanes: [TimelineLane!], $count: Int!) {
-    containerTimeline(id: $id, lanes: $lanes, first: $count, orderMode: desc) {
+  query ContainerTimelineWidgetEventsQuery($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!], $count: Int!) {
+    containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
       pageInfo {
         globalCount
       }
@@ -94,19 +100,35 @@ interface ContainerTimelineWidgetEventsProps {
   timelinePath: string;
   lanes: readonly TimelineLane[];
   enabledLanes: readonly string[];
+  hiddenKinds: readonly string[];
   zoomWindow: TimelineZoomWindow;
   grouping: TimelineGrouping;
   anchors: TimelineChartAnchors;
 }
 
-const ContainerTimelineWidgetEvents = ({ containerId, containerName, timelinePath, lanes, enabledLanes, zoomWindow, grouping, anchors }: ContainerTimelineWidgetEventsProps) => {
+const ContainerTimelineWidgetEvents = ({
+  containerId,
+  containerName,
+  timelinePath,
+  lanes,
+  enabledLanes,
+  hiddenKinds,
+  zoomWindow,
+  grouping,
+  anchors,
+}: ContainerTimelineWidgetEventsProps) => {
   const { t_i18n, n } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
   const apiLanes = effectiveLanes([...lanes], enabledLanes);
   const { containerTimeline } = useLazyLoadQuery<ContainerTimelineWidgetEventsQuery>(
     containerTimelineWidgetEventsQuery,
-    { id: containerId, lanes: apiLanes as GqlTimelineLane[] | null, count: WIDGET_EVENTS },
+    {
+      id: containerId,
+      lanes: apiLanes as GqlTimelineLane[] | null,
+      kinds: effectiveKinds([], hiddenKinds) as GqlTimelineEventKind[] | null,
+      count: WIDGET_EVENTS,
+    },
   );
   // The latest events of the timeline (the window of the widget ends at the last one), in chronological order
   const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
@@ -178,6 +200,7 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
           timelinePath={timelinePath}
           lanes={widgetLanes}
           enabledLanes={summary.settings.enabled_lanes}
+          hiddenKinds={summary.settings.hidden_kinds}
           zoomWindow={zoomWindow}
           grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
           anchors={summary.anchors}

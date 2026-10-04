@@ -92,14 +92,20 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
   useEffect(() => {
     if (!parameters.container_id) {
       setSelected(null);
-      return;
+      return undefined;
     }
+    // A lookup still running when the container changes or is cleared must not show its case
+    let current = true;
     fetchQuery<ContainerTimelineWidgetParametersSelectedQuery>(containerSelectedQuery, { id: parameters.container_id })
       .toPromise()
       .then((data) => {
+        if (!current) return;
         const node = data?.stixDomainObject;
         setSelected(node ? { value: node.id, label: node.representative.main, type: node.entity_type } : null);
       });
+    return () => {
+      current = false;
+    };
   }, [parameters.container_id]);
 
   const toggleLane = (lane: string) => {

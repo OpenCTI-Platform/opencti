@@ -13,10 +13,15 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ContainerTimelineAnchors from './ContainerTimelineAnchors';
 import ContainerTimelineLanes, { type TimelineChartAnchors } from './ContainerTimelineLanes';
 import type { ContainerTimelineStripQuery } from './__generated__/ContainerTimelineStripQuery.graphql';
-import type { ContainerTimelineStripEventsQuery, TimelineLane as GqlTimelineLane } from './__generated__/ContainerTimelineStripEventsQuery.graphql';
+import type {
+  ContainerTimelineStripEventsQuery,
+  TimelineEventKind as GqlTimelineEventKind,
+  TimelineLane as GqlTimelineLane,
+} from './__generated__/ContainerTimelineStripEventsQuery.graphql';
 import {
   computeTimelineExtent,
   computeVisibleDomain,
+  effectiveKinds,
   effectiveLanes,
   TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
@@ -47,16 +52,21 @@ export const containerTimelineStripQuery = graphql`
       settings {
         id
         enabled_lanes
+        hidden_kinds
         default_grouping
       }
     }
   }
 `;
 
-// The lanes disabled in the timeline settings are left out before the limit, so they never displace the others
+// The lanes disabled and the kinds hidden in the timeline settings are left out before the limit, so they never displace
+// the others; the count and the span of the card follow the same filters (the earliest event comes with the latest ones)
 const containerTimelineStripEventsQuery = graphql`
-  query ContainerTimelineStripEventsQuery($id: String!, $lanes: [TimelineLane!], $count: Int!) {
-    containerTimeline(id: $id, lanes: $lanes, first: $count, orderMode: desc) {
+  query ContainerTimelineStripEventsQuery($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!], $count: Int!) {
+    containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
+      pageInfo {
+        globalCount
+      }
       edges {
         node {
           id
@@ -73,44 +83,16 @@ const containerTimelineStripEventsQuery = graphql`
         }
       }
     }
+    earliest: containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: 1, orderMode: asc) {
+      edges {
+        node {
+          id
+          event_time
+        }
+      }
+    }
   }
 `;
-
-interface ContainerTimelineStripLanesProps {
-  containerId: string;
-  enabledLanes: readonly string[];
-  total: number;
-  boundaries: (string | null | undefined)[];
-  anchors: TimelineChartAnchors;
-  grouping: TimelineGrouping;
-  timelinePath: string;
-}
-
-const ContainerTimelineStripLanes = ({ containerId, enabledLanes, total, boundaries, anchors, grouping, timelinePath }: ContainerTimelineStripLanesProps) => {
-  const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
-  const apiLanes = effectiveLanes([], enabledLanes);
-  const { containerTimeline } = useLazyLoadQuery<ContainerTimelineStripEventsQuery>(
-    containerTimelineStripEventsQuery,
-    { id: containerId, lanes: apiLanes as GqlTimelineLane[] | null, count: STRIP_EVENTS },
-  );
-  // The latest events in chronological order, drawn over the whole span of the timeline
-  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
-  const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
-  const extent = computeTimelineExtent(events, boundaries);
-  return (
-    <ContainerTimelineLanes
-      events={events}
-      lanes={lanes}
-      domain={computeVisibleDomain(extent, 'fit')}
-      grouping={grouping}
-      anchors={anchors}
-      compact={true}
-      onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
-      ariaLabel={t_i18n('Overview of the timeline, {count} events', { values: { count: total || events.length } })}
-    />
-  );
-};
 
 /** Count and span of the timeline on one line: "6 events - Feb 1 to Feb 6, 2026". */
 const useStripSummary = () => {
@@ -134,6 +116,67 @@ const useStripSummary = () => {
   };
 };
 
+interface ContainerTimelineStripEventsProps {
+  containerId: string;
+  enabledLanes: readonly string[];
+  hiddenKinds: readonly string[];
+  anchors: TimelineChartAnchors;
+  grouping: TimelineGrouping;
+  timelinePath: string;
+}
+
+/** Summary line and miniature of the lanes, both from the events the timeline settings show. */
+const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, anchors, grouping, timelinePath }: ContainerTimelineStripEventsProps) => {
+  const { t_i18n } = useFormatter();
+  const colors = useTimelineColors();
+  const navigate = useNavigate();
+  const summarize = useStripSummary();
+  const apiLanes = effectiveLanes([], enabledLanes);
+  const { containerTimeline, earliest } = useLazyLoadQuery<ContainerTimelineStripEventsQuery>(
+    containerTimelineStripEventsQuery,
+    {
+      id: containerId,
+      lanes: apiLanes as GqlTimelineLane[] | null,
+      kinds: effectiveKinds([], hiddenKinds) as GqlTimelineEventKind[] | null,
+      count: STRIP_EVENTS,
+    },
+  );
+  // The latest events in chronological order, drawn over the whole span of the timeline
+  const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
+  const total = containerTimeline?.pageInfo.globalCount ?? events.length;
+  const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
+  const latest = computeTimelineExtent(events)?.[1] ?? null;
+  const first = earliest?.edges?.[0]?.node.event_time ?? events[0]?.event_time ?? null;
+  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), first]);
+  return (
+    <>
+      <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-strip-summary">
+        {summarize(total, first, latest !== null ? new Date(latest).toISOString() : null)}
+      </Text>
+      {events.length > 0 && (
+        <ContainerTimelineLanes
+          events={events}
+          lanes={lanes}
+          domain={computeVisibleDomain(extent, 'fit')}
+          grouping={grouping}
+          anchors={anchors}
+          compact={true}
+          onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
+          ariaLabel={t_i18n('Overview of the timeline, {count} events', { values: { count: total } })}
+        />
+      )}
+    </>
+  );
+};
+
+/** Placeholder of the summary line and of the miniature of the lanes while the events load. */
+const ContainerTimelineStripEventsSkeleton = () => (
+  <>
+    <Skeleton variant="text" width="45%" />
+    <Skeleton variant="rounded" height={LANES_PLACEHOLDER_HEIGHT} />
+  </>
+);
+
 interface ContainerTimelineStripContentProps {
   queryRef: PreloadedQuery<ContainerTimelineStripQuery>;
   containerId: string;
@@ -143,25 +186,17 @@ interface ContainerTimelineStripContentProps {
 const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: ContainerTimelineStripContentProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const colors = useTimelineColors();
   const navigate = useNavigate();
-  const summarize = useStripSummary();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
-  const total = summary?.total ?? 0;
-  const boundaries = [...TIMELINE_ANCHOR_KEYS.map((key) => summary?.anchors?.[key]), summary?.first_event_time, summary?.last_event_time];
   return (
     <div data-testid="timeline-strip" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), height: '100%' }}>
-      {total > 0 ? (
+      {(summary?.total ?? 0) > 0 ? (
         <>
-          <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-strip-summary">
-            {summarize(total, summary?.first_event_time, summary?.last_event_time)}
-          </Text>
-          <Suspense fallback={<Skeleton variant="rounded" height={LANES_PLACEHOLDER_HEIGHT} />}>
-            <ContainerTimelineStripLanes
+          <Suspense fallback={<ContainerTimelineStripEventsSkeleton />}>
+            <ContainerTimelineStripEvents
               containerId={containerId}
               enabledLanes={summary?.settings.enabled_lanes ?? []}
-              total={total}
-              boundaries={boundaries}
+              hiddenKinds={summary?.settings.hidden_kinds ?? []}
               anchors={summary?.anchors}
               grouping={(summary?.settings.default_grouping ?? 'day') as TimelineGrouping}
               timelinePath={timelinePath}

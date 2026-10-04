@@ -1,9 +1,10 @@
 import { Promise as BluePromise } from 'bluebird';
+import * as jsonpatch from 'fast-json-patch';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { AuthContext } from '../types/user';
-import type { DataEvent, SseEvent } from '../types/event';
+import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
 import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../database/stream/stream-handler';
@@ -64,6 +65,20 @@ interface ImpactCollector {
   references: Set<string>;
 }
 
+/** The refs of an updated object before its update, rebuilt from the reverse patch of the event (none otherwise). */
+const previousObjectRefs = (event: SseEvent<DataEvent>): string[] => {
+  const reversePatch = (event.data as Partial<UpdateEvent>)?.context?.reverse_patch;
+  if (event.data?.type !== 'update' || !Array.isArray(reversePatch) || reversePatch.length === 0) return [];
+  try {
+    const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(event.data.data), reversePatch, false, false);
+    return ((previous as { object_refs?: string[] }).object_refs ?? []).filter((ref) => typeof ref === 'string');
+  } catch (error) {
+    // A patch that no longer applies cannot name the removed refs: the nightly consistency pass catches up
+    logApp.debug('[TIMELINE] Previous refs of an update not rebuilt', { cause: error });
+    return [];
+  }
+};
+
 /** Collect, from one stream event, what can impact a timeline (pure, no database access). */
 export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: ImpactCollector) => {
   const stix = event.data?.data as any;
@@ -79,6 +94,8 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   }
   if (CONTAINERS_REFERENCING_TYPES.includes(type)) {
     (stix.object_refs ?? []).forEach((ref: string) => collector.references.add(ref));
+    // A case removed from the refs by an update is impacted too: it is only in the version before the update
+    previousObjectRefs(event).forEach((ref) => collector.references.add(ref));
   }
   if (stix.type === STIX_TYPE_RELATION) {
     if (isTimelineContainerType(extension.source_type)) collector.containers.add(extension.source_ref);

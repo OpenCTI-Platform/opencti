@@ -278,6 +278,8 @@ interface ContainerTimelineEventsViewProps {
   onRegenerate: () => void;
   onClearFilters: () => void;
   onVisibleDomainChange: (domain: TimelineDomain | null) => void;
+  // Centering an event shows it in the lanes view, whatever the current view
+  onCenter: (domain: TimelineDomain) => void;
   regenerating: boolean;
   actions: TimelineActions;
 }
@@ -297,6 +299,7 @@ const ContainerTimelineEventsView = ({
   onRegenerate,
   onClearFilters,
   onVisibleDomainChange,
+  onCenter,
   regenerating,
   actions,
 }: ContainerTimelineEventsViewProps) => {
@@ -394,7 +397,7 @@ const ContainerTimelineEventsView = ({
         onDelete={actions.deleteEvent}
         onCenter={(event) => {
           const time = toTime(event.event_time);
-          if (time !== null) onDomainChange(centerDomain(visibleDomain, time));
+          if (time !== null) onCenter(centerDomain(visibleDomain, time));
         }}
       />
     </>
@@ -646,6 +649,11 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
                 onRegenerate={regenerate}
                 onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
                 onVisibleDomainChange={setVisibleDomain}
+                onCenter={(centered) => {
+                  clearTimeout(urlTimer.current);
+                  setDomain(centered);
+                  updateState({ view: 'lanes', domain: centered });
+                }}
                 regenerating={regenerating}
                 actions={actions}
               />

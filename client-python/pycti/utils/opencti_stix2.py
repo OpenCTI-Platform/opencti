@@ -38,6 +38,7 @@ from pycti.utils.opencti_stix2_utils import (
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
+    STIX_EXT_OCTI_TIMELINE,
     STIX_META_OBJECTS,
     OpenCTIStix2Utils,
 )
@@ -73,11 +74,6 @@ STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-
-#: STIX Extension ID for the analyst contributions to incident and case timelines
-STIX_EXT_OCTI_TIMELINE: str = (
-    "extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb"
-)
 
 #: STIX Types carrying a timeline (Incident, Case-Incident, Case-Rfi, Case-Rft)
 TIMELINE_CONTAINER_STIX_TYPES = ["incident", "case-incident", "case-rfi", "case-rft"]
