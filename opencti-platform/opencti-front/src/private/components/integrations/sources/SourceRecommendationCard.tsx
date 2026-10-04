@@ -420,7 +420,8 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
       </Stack>
       <Dialog open={revertOpen} onClose={() => setRevertOpen(false)} title={t_i18n('Revert this recommendation?')} size="small">
         <Typography variant="body2" sx={{ marginBottom: 1 }}>
-          {t_i18n('Reverting restores the state before the recommendation was applied and removes what it created. A quarantine draft is kept for review.')}
+          {t_i18n('Reverting restores the state before the recommendation was applied and removes what it created.')}
+          {recommendation.kind === 'quarantine' && ` ${t_i18n('The quarantine draft is kept for review.')}`}
         </Typography>
         {changes.map(({ label, before, after }) => (
           <Typography key={label} variant="body2" sx={{ color: theme.palette.text.secondary }}>
