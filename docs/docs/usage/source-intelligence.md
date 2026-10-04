@@ -97,7 +97,7 @@ Costs are never converted between currencies. A widget showing a cost metric (nu
 
 ### Overlap
 
-The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects, the share of each source and the Jaccard index. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement.
+The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects and the share of the row source's knowledge that the column source also asserted. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement.
 
 ![Overlap heatmap of the sources](assets/source-intelligence-overlap.png)
 
