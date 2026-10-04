@@ -151,6 +151,54 @@ describe('graph analytics path finder', () => {
     expect(result.paths).toEqual([]);
   });
 
+  it('should report a timeout when the deadline passes during the expansion of a level', async () => {
+    const graph = buildGraph([['r1', 'uses', 'a', 'b'], ['r2', 'uses', 'b', 'c'], ['r3', 'uses', 'c', 'z']]);
+    let clock = 0;
+    let accessChecks = 0;
+    const result = await searchPaths(options(async (nodeIds, limit) => {
+      const expansion = await graph.expand(nodeIds, limit);
+      if (graph.expansions() === 2) clock = 100;
+      return expansion;
+    }, {
+      deadline: 50,
+      now: () => clock,
+      acceptNodes: async (nodes) => {
+        accessChecks += 1;
+        return new Set(nodes.map((n) => n.id));
+      },
+    }));
+    expect(result.timed_out).toBe(true);
+    expect(result.paths).toEqual([]);
+    // the nodes discovered after the deadline are not checked nor traversed
+    expect(accessChecks).toBe(1);
+    expect(result.explored_nodes).toBe(3);
+  });
+
+  it('should keep the paths a late level closes without new nodes to check', async () => {
+    const graph = buildGraph([['r1', 'uses', 'a', 'b'], ['r2', 'uses', 'b', 'z']]);
+    let clock = 0;
+    const result = await searchPaths(options(async (nodeIds, limit) => {
+      const expansion = await graph.expand(nodeIds, limit);
+      if (graph.expansions() === 2) clock = 100;
+      return expansion;
+    }, { deadline: 50, now: () => clock }));
+    expect(result.paths.map((p) => p.node_ids)).toEqual([['a', 'b', 'z']]);
+    expect(result.timed_out).toBe(false);
+  });
+
+  it('should not report a timeout when the last level ends after the deadline', async () => {
+    const graph = buildGraph([['r1', 'uses', 'a', 'b'], ['r2', 'uses', 'b', 'c'], ['r3', 'uses', 'c', 'd']]);
+    let clock = 0;
+    const result = await searchPaths(options(async (nodeIds, limit) => {
+      const expansion = await graph.expand(nodeIds, limit);
+      if (graph.expansions() === 2) clock = 100;
+      return expansion;
+    }, { maxDepth: 2, deadline: 50, now: () => clock }));
+    expect(result.paths).toEqual([]);
+    expect(result.depth_reached).toBe(2);
+    expect(result.timed_out).toBe(false);
+  });
+
   it('should expand the smallest frontier first', async () => {
     const edges: Edge[] = [['r0', 'uses', 'a', 'b']];
     for (let i = 0; i < 20; i += 1) edges.push([`h${i}`, 'uses', 'z', `x${i}`]);

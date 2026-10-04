@@ -121,6 +121,8 @@ const buildPaths = (forward: SearchSide, backward: SearchSide, meetingNodes: str
  * Each node keeps up to `maxParentsPerNode` parents at its minimal depth, which bounds the enumeration: a longer
  * path is only found when each of its nodes is at its minimal depth from one side, so a detour rejoining a node
  * already reached by a shorter route is never returned (not a k shortest simple paths enumeration).
+ * The deadline is checked before each level and again before the access check of the nodes a level discovers;
+ * `timed_out` is reported whenever it leaves a level of the search unexplored.
  */
 export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSearchResult> => {
   const now = opts.now ?? (() => Date.now());
@@ -162,7 +164,9 @@ export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSea
     const toCheck = Array.from(candidates.entries())
       .filter(([id]) => !endpoints.has(id) && !other.levels.has(id))
       .map(([id, type]) => ({ id, type }));
-    const accepted = toCheck.length > 0 ? await opts.acceptNodes(toCheck) : new Set<string>();
+    // past the deadline the level still links the nodes already admitted, the new ones would need another access check
+    const deadlineReached = toCheck.length > 0 && now() > opts.deadline;
+    const accepted = toCheck.length > 0 && !deadlineReached ? await opts.acceptNodes(toCheck) : new Set<string>();
     // the node cap is a hard limit: a level only admits the new nodes that fit, in discovery order
     const budget = Math.max(0, opts.maxExpandedNodes - exploredNodes());
     let admitted = accepted;
@@ -197,6 +201,11 @@ export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSea
     if (meetingNodes.size > 0) {
       paths = buildPaths(forward, backward, Array.from(meetingNodes), opts.maxPaths);
       if (paths.length >= opts.maxPaths) break;
+    }
+    if (deadlineReached) {
+      // the nodes left out can only start longer paths, so the result is complete once the maximum depth is reached
+      timedOut = forward.depth + backward.depth < opts.maxDepth;
+      break;
     }
   }
   return {
