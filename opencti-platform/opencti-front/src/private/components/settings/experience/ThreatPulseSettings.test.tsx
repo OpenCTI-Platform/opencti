@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import ThreatPulseSettings from './ThreatPulseSettings';
@@ -106,8 +106,24 @@ describe('ThreatPulseSettings', () => {
     expect(within(dialog).getByTestId('threat-pulse-consent-never').textContent).toContain('TLP:RED, TLP:AMBER+STRICT or PAP:RED');
     expect(within(dialog).getByTestId('threat-pulse-consent-unlocks').textContent).toContain('What you unlock');
     expect(within(dialog).getByText(/only once 5 platforms or more reported the same object/)).toBeDefined();
-    expect(within(dialog).getAllByText('Shared as a coarse category, never your organization\'s name')).toHaveLength(1);
     expect(within(dialog).queryByText(/bucket/i)).toBeNull();
+  });
+
+  it('should explain each setting under its field, in the consent and in the settings of a contributing platform', async () => {
+    const helps = [
+      /^Shared with each contribution as a coarse category, never your organization's name\. Sets the sector/,
+      /^Shared with each contribution as a coarse category, never your organization's name\. The preview reads/,
+      /^Only objects of these types are hashed and counted in the contribution/,
+      /^Objects with one of these markings are never contributed or looked up/,
+    ];
+    renderSettings(IN_PREVIEW);
+    fireEvent.click(await screen.findByTestId('threat-pulse-enable-button'));
+    const dialog = await screen.findByTestId('threat-pulse-consent-dialog');
+    helps.forEach((help) => expect(within(dialog).getAllByText(help)).toHaveLength(1));
+    cleanup();
+    renderSettings({ mode: 'contribute_and_read', access: 'full', enabled: true });
+    const configuration = await screen.findByTestId('threat-pulse-configuration');
+    helps.forEach((help) => expect(within(configuration).getAllByText(help)).toHaveLength(1));
   });
 
   it('should state every value of a contributing platform in words, never a raw value or a dash', async () => {

@@ -13,11 +13,13 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
   Select,
   SelectContent,
+  SelectHelperText,
   SelectItem,
   SelectLabel,
   SelectTrigger,
@@ -172,6 +174,13 @@ const toMarkingOptions = (markings: MarkingOption[], settings: ThreatPulseSettin
   return [...options, ...missing];
 };
 
+// What each setting controls and what it means for what leaves the platform, under the field in the consent dialog and
+// in Settings > Filigran Experience.
+const PULSE_SECTOR_HELP = 'Shared with each contribution as a coarse category, never your organization\'s name. Sets the sector of the trending list, its alerts and the sector benchmark.';
+const PULSE_REGION_HELP = 'Shared with each contribution as a coarse category, never your organization\'s name. The preview reads the community digest of this region.';
+const PULSE_SCOPES_HELP = 'Only objects of these types are hashed and counted in the contribution and receive community data. Removing a type stops its contribution and removes the community data of its objects.';
+const PULSE_EXCLUDED_MARKINGS_HELP = 'Objects with one of these markings are never contributed or looked up, in addition to the markings always excluded. Adding one removes the community data of those objects.';
+
 interface PrivacyFieldsProps {
   availableScopes: readonly string[];
   scopes: string[];
@@ -218,6 +227,7 @@ const ThreatPulsePrivacyFields = ({
             <ComboboxControls><ComboboxTrigger /></ComboboxControls>
           </ComboboxField>
           <ComboboxContent listAriaLabel={t_i18n('Contributed entity types')} />
+          <ComboboxHelperText>{t_i18n(PULSE_SCOPES_HELP)}</ComboboxHelperText>
         </Combobox>
       </Box>
       <Box sx={{ paddingY: 1.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -247,6 +257,7 @@ const ThreatPulsePrivacyFields = ({
             <ComboboxControls><ComboboxTrigger /></ComboboxControls>
           </ComboboxField>
           <ComboboxContent listAriaLabel={t_i18n('Additional excluded markings')} />
+          <ComboboxHelperText>{t_i18n(PULSE_EXCLUDED_MARKINGS_HELP)}</ComboboxHelperText>
         </Combobox>
       </Box>
     </>
@@ -267,16 +278,6 @@ interface ConsentDialogProps {
   onClose: () => void;
   onAccept: (input: ConsentInput) => void;
 }
-
-const BucketHelper = () => {
-  const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  return (
-    <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
-      {t_i18n('Shared as a coarse category, never your organization\'s name')}
-    </Text>
-  );
-};
 
 const ConsentList = ({ title, items, testId }: { title: string; items: string[]; testId: string }) => (
   <Box data-testid={testId}>
@@ -343,6 +344,7 @@ const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onA
           <SelectContent aria-label={t_i18n('Sector')}>
             {SECTOR_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_SECTOR_LABELS[value])}</SelectItem>)}
           </SelectContent>
+          <SelectHelperText>{t_i18n(PULSE_SECTOR_HELP)}</SelectHelperText>
         </Select>
         <Select value={region} onValueChange={(value) => setRegion(value as PulseRegionBucket)}>
           <SelectLabel>{t_i18n('Region')}</SelectLabel>
@@ -352,8 +354,8 @@ const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onA
           <SelectContent aria-label={t_i18n('Region')}>
             {REGION_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_REGION_LABELS[value])}</SelectItem>)}
           </SelectContent>
+          <SelectHelperText>{t_i18n(PULSE_REGION_HELP)}</SelectHelperText>
         </Select>
-        <BucketHelper />
         <Box data-testid="threat-pulse-consent-privacy">
           <Text variant="content-compact">{t_i18n('Choose what this platform contributes: these choices apply before anything is sent.')}</Text>
           <ThreatPulsePrivacyFields
@@ -453,10 +455,10 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   } else if (settings.access === 'preview') {
     statusChip = <Chip label={t_i18n('Preview')} severity="info" />;
   }
-  const bucketLabel = (label: string) => (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+  const fieldLabel = (label: string, help: string) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
       <Text variant="content-compact" style={secondary}>{label}</Text>
-      <BucketHelper />
+      <Text variant="content-compact" style={secondary}>{t_i18n(help)}</Text>
     </Box>
   );
   const contributorsLabel = pulsePlatformsBucketLabel(t_i18n, settings.network.contributors_bucket);
@@ -580,7 +582,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           </Text>
         </ExperienceDetailRow>
       )}
-      <ExperienceDetailRow label={bucketLabel(t_i18n('Sector'))}>
+      <ExperienceDetailRow label={fieldLabel(t_i18n('Sector'), PULSE_SECTOR_HELP)}>
         <Select
           value={settings.sector_bucket ?? settings.suggested_sector_bucket}
           disabled={!isGranted || configuring}
@@ -594,7 +596,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           </SelectContent>
         </Select>
       </ExperienceDetailRow>
-      <ExperienceDetailRow label={bucketLabel(t_i18n('Region'))}>
+      <ExperienceDetailRow label={fieldLabel(t_i18n('Region'), PULSE_REGION_HELP)}>
         <Select
           value={settings.region_bucket ?? settings.suggested_region_bucket}
           disabled={!isGranted || configuring}
