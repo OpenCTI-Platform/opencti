@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import conf from '../../../src/config/conf';
+import conf, { REDIS_PREFIX } from '../../../src/config/conf';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getClientBase } from '../../../src/database/redis';
@@ -664,10 +664,11 @@ describe('Threat Pulse manager and API', () => {
   });
 
   it('should fall back to the preview when the trending notifications read a lapse', async () => {
-    // The answers of XTM Hub are cached: the notification run asks again
-    const cached = await getClientBase().keys('{pulse}:response:trending:*');
+    // The answers of XTM Hub are cached: the notification run asks again. The client key prefix applies neither to
+    // the KEYS pattern nor to the names it returns, while DEL adds it.
+    const cached = await getClientBase().keys(`${REDIS_PREFIX}{pulse}:response:trending:*`);
     if (cached.length > 0) {
-      await getClientBase().del(...cached);
+      await getClientBase().del(...cached.map((key) => key.slice(REDIS_PREFIX.length)));
     }
     hub.failNext('pulseTrending', 'PULSE_CONTRIBUTION_REQUIRED');
     expect(await runPulseTrendingNotifications(testContext)).toBe(0);
