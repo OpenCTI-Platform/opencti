@@ -15,6 +15,7 @@ import {
   feedbackDecisionFor,
   formatProbability,
   goalObjective,
+  isCaseCreationRefused,
   isEarlierEvidence,
   isEngineRunOver,
   isRunActive,
@@ -33,6 +34,14 @@ describe('Case Autopilot run helpers', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     window.sessionStorage.clear();
+  });
+
+  it('refuses a launch creating a case only when its policy does not allow it', () => {
+    expect(isCaseCreationRefused(true, 'new', ['enrichment'])).toBe(true);
+    expect(isCaseCreationRefused(true, 'new', ['create_case', 'enrichment'])).toBe(false);
+    expect(isCaseCreationRefused(true, 'existing', ['enrichment'])).toBe(false);
+    expect(isCaseCreationRefused(false, 'new', [])).toBe(false);
+    expect(isCaseCreationRefused(true, 'new', undefined)).toBe(false);
   });
 
   it('tells active runs from terminal ones', () => {

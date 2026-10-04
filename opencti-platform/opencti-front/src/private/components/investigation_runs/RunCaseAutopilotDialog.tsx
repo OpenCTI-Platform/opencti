@@ -48,7 +48,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
-import { caseAutopilotPath, rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
+import { caseAutopilotPath, isCaseCreationRefused, rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
 import { CASE_AUTOPILOT_DOCS_URL, XTM_ONE_SETTINGS_PATH } from './investigationRunOutcomes';
 import { RunCaseAutopilotDialogQuery } from './__generated__/RunCaseAutopilotDialogQuery.graphql';
 import { RunCaseAutopilotDialogAddMutation } from './__generated__/RunCaseAutopilotDialogAddMutation.graphql';
@@ -169,9 +169,11 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
   const canEnrich = useGranted([KNOWLEDGE_KNENRICHMENT]);
   const enrichmentRefused = !canEnrich && !!selectedPolicy?.allowed_actions.includes('enrichment');
+  const caseCreationRefused = isCaseCreationRefused(needsCase, caseMode, selectedPolicy?.allowed_actions);
   let startBlocker: string | null = null;
   if (engineMissing) startBlocker = t_i18n('XTM One is not connected');
   else if (enrichmentRefused) startBlocker = t_i18n('This policy runs enrichments, which your role does not allow: choose another policy');
+  else if (caseCreationRefused) startBlocker = t_i18n('This policy does not create cases: select an existing case or choose another policy');
   else if (caseMissing) startBlocker = t_i18n('Select the case of the investigation');
   const start = () => {
     commit({
@@ -237,6 +239,14 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
             <Radio value="new" label={t_i18n('Create a new incident response case in the investigation draft')} />
             <Radio value="existing" label={t_i18n('Investigate in an existing case')} disabled={caseOptions.length === 0} />
           </RadioGroup>
+          {caseCreationRefused && (
+            <Alert
+              severity="warning"
+              title={t_i18n('This policy does not create cases')}
+              description={t_i18n('Investigate in an existing case, or choose a policy that allows creating a case.')}
+              data-testid="run-case-autopilot-case-creation-refused"
+            />
+          )}
           {caseMode === 'existing' && (
             <Combobox<CaseOption>
               labelPosition="none"

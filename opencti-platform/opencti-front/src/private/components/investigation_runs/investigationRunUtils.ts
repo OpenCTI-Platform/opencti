@@ -450,6 +450,11 @@ export const caseTabPath = (caseItem: { id: string; entity_type: string }, tab: 
   return base ? `${base}/${caseItem.id}/${tab}` : elementPath(caseItem.id);
 };
 
+/** A launch that would create a case its policy does not allow to create: the server refuses it. */
+export const isCaseCreationRefused = (needsCase: boolean, caseMode: 'new' | 'existing', allowedActions?: readonly string[] | null) => {
+  return needsCase && caseMode === 'new' && !!allowedActions && !allowedActions.includes('create_case');
+};
+
 /** The Autopilot tab of a case, on the investigation it holds. */
 export const caseAutopilotPath = (caseItem: { id: string; entity_type: string }, runId?: string | null) => {
   if (!resolveLink(caseItem.entity_type)) return elementPath(caseItem.id);
