@@ -116,7 +116,7 @@ From left to right:
 | Layout | 3D mode, vertical and horizontal trees, layout by entity tier, radial layout, forces (see [Layouts](#layouts)). |
 | Selection | Rectangle and free-shape selection, the neighbours of the selection, the shortest path between two entities (see [Select](#select)). |
 | Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
-| Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. |
+| Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
 | Export and help | The high-resolution image export, the legend, the keyboard shortcuts. |
 
 The search field and the **More actions** menu close the toolbar. **More actions** holds the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) and, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way.

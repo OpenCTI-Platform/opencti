@@ -34,6 +34,16 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await page.screenshot({ path: test.info().outputPath(`page-${name}`), animations: 'disabled' });
   };
 
+  // The documentation shows a list of the toolbar opened as a menu anchored to its tool.
+  const captureFilterMenu = async (page: Page, graph: GraphPage, name: string) => {
+    if (!(await graph.isInToolbar('Filter by type'))) return;
+    await graph.getToolbarButton('Filter by type').click();
+    await expect(page.getByRole('menu', { name: 'Filter by type' })).toBeVisible();
+    await page.screenshot({ path: test.info().outputPath(name), animations: 'disabled' });
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+  };
+
   const arrangeByTier = async (graph: GraphPage, minNodes: number) => {
     await graph.runToolbarAction('Layout by entity tier');
     await graph.waitForGraph(minNodes);
@@ -45,6 +55,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await graph.waitForGraph(5);
     await arrangeByTier(graph, 5);
     await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-tiers.png');
+    await captureFilterMenu(page, graph, 'page-knowledge-graph-filter-menu.png');
     // The layout is saved per container: switched off so the next test starts from the default.
     await graph.runToolbarAction('Layout by entity tier');
   });
@@ -94,6 +105,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
       await graph.waitForGraph(5);
       await arrangeByTier(graph, 5);
       await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-tiers-light.png');
+      await captureFilterMenu(page, graph, 'page-knowledge-graph-filter-menu-light.png');
       await graph.runToolbarAction('Layout by entity tier');
     } finally {
       await withApiRequest(playwright, (request) => patchSettings(request, settingsId, 'platform_theme', initialThemeId));
