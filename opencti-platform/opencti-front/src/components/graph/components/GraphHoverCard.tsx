@@ -81,7 +81,7 @@ const GraphHoverCard = ({
   onMouseEnter,
   onMouseLeave,
 }: GraphHoverCardProps) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const palette = buildGraphPalette(theme);
   useGraphNodeActionRegistryVersion();
@@ -90,6 +90,15 @@ const GraphHoverCard = ({
   const top = Math.max(0, Math.min(anchor.y + OFFSET, bounds.height - 260));
   const fact: CSSProperties = { display: 'flex', gap: theme.spacing(1), fontSize: 12, lineHeight: '18px' };
   const factLabel: CSSProperties = { color: theme.palette.text.secondary, minWidth: 92 };
+  // How long ago, the exact date in the tooltip.
+  const dateFact = (date: Date | string) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0}>{rd(date)}</span>
+      </TooltipTrigger>
+      <TooltipContent>{fldt(date)}</TooltipContent>
+    </Tooltip>
+  );
   const markings = (element: GraphNode | GraphLink) => element.markedBy.filter((m) => m.id !== NO_MARKING_ID);
 
   const header = (type: string, title: string, subtitle: string, color: string) => (
@@ -148,7 +157,7 @@ const GraphHoverCard = ({
         )}
         <div style={fact}>
           <span style={factLabel}>{t_i18n('Date')}</span>
-          <span>{fldt(node.defaultDate)}</span>
+          {dateFact(node.defaultDate)}
         </div>
         {node.createdBy?.name && node.createdBy.id !== NO_AUTHOR_ID && (
           <div style={fact}>
@@ -292,7 +301,7 @@ const GraphHoverCard = ({
         {link.defaultDate && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Date')}</span>
-            <span>{fldt(link.defaultDate)}</span>
+            {dateFact(link.defaultDate)}
           </div>
         )}
         {typeof link.confidence === 'number' && (
