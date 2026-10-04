@@ -15,6 +15,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../../schema/stixRefRelationship';
 import { RELATION_SUBTECHNIQUE_OF, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
+import { bypassDraftContext } from '../../utils/draftContext';
 import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { DEFENSE_THREAT_TYPES, type DefenseCoverage, type DefenseThreatOverlay, type DefenseThreatUsage } from './defenseCoverage-types';
 import { type AccessPredicate, collectCoverageIds } from './defenseCoverage-utils';
@@ -57,6 +58,12 @@ export interface DefenseSnapshot {
   phases: DefenseKillChainPhase[];
   evidenceIds: string[];
 }
+
+// The caches of this file are shared by every reader, in a draft or not: they are filled from published knowledge only
+const publishedReader = (context: AuthContext, user: AuthUser) => ({
+  publishedContext: bypassDraftContext(context),
+  publishedUser: { ...user, draft_context: undefined } as AuthUser,
+});
 
 let snapshotCache: { version: string; promise: Promise<DefenseSnapshot> } | undefined;
 
@@ -111,7 +118,7 @@ const loadSnapshot = async (context: AuthContext, version: string): Promise<Defe
 export const getDefenseSnapshot = async (context: AuthContext): Promise<DefenseSnapshot> => {
   const version = await getDefenseCoverageVersion();
   if (!snapshotCache || snapshotCache.version !== version) {
-    const promise = loadSnapshot(context, version);
+    const promise = loadSnapshot(bypassDraftContext(context), version);
     snapshotCache = { version, promise };
     promise.catch(() => {
       if (snapshotCache?.promise === promise) snapshotCache = undefined;
@@ -182,7 +189,8 @@ export const getAccessPredicate = async (context: AuthContext, user: AuthUser, s
   const key = `${await computeReaderAccessFingerprint(context, user)}|${snapshot.version}`;
   let promise = accessCache.get(key);
   if (!promise) {
-    promise = findAccessibleIds(context, user, snapshot.evidenceIds);
+    const { publishedContext, publishedUser } = publishedReader(context, user);
+    promise = findAccessibleIds(publishedContext, publishedUser, snapshot.evidenceIds);
     accessCache.set(key, promise);
     promise.catch(() => accessCache.delete(key));
   }
@@ -282,7 +290,8 @@ export const getThreatOverlay = async (context: AuthContext, user: AuthUser, sco
   const key = `${version}|${await computeReaderAccessFingerprint(context, user)}|${JSON.stringify(normalized)}`;
   let promise = overlayCache.get(key);
   if (!promise) {
-    promise = computeOverlay(context, user, normalized);
+    const { publishedContext, publishedUser } = publishedReader(context, user);
+    promise = computeOverlay(publishedContext, publishedUser, normalized);
     overlayCache.set(key, promise);
     promise.catch(() => overlayCache.delete(key));
   }
