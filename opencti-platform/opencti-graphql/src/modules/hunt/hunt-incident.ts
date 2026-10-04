@@ -33,20 +33,29 @@ export const parseIncidentProposal = (proposal: string | null | undefined): Hunt
 };
 
 /**
- * Creates an Incident in a new draft workspace (draft-first: an analyst validates it into the knowledge graph).
- * The incident inherits the hunt markings, author and organizations, and is related to the hunt targets and techniques.
+ * The draft workspace an incident proposed by a hunt run is created in (draft-first: an analyst validates it into the
+ * knowledge graph).
  */
-export const createHuntIncidentDraft = async (
-  context: AuthContext,
-  hunt: BasicStoreEntityHunt,
-  run: BasicStoreEntityHuntRun,
-  proposal: HuntIncidentProposal | null,
-): Promise<{ draftId: string; incidentId: string }> => {
+export const createHuntIncidentWorkspace = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun): Promise<string> => {
   const draft = await addDraftWorkspace(context, HUNT_MANAGER_USER, {
     name: truncate(`Hunt incident - ${hunt.name}`, 250),
     description: `Incident proposed by the hunt "${hunt.name}" (run ${run.internal_id}, ${run.hits_count ?? 0} hits). Validate the draft to create the incident.`,
   });
-  const draftContext: AuthContext = { ...context, draft_context: draft.id };
+  return draft.id;
+};
+
+/**
+ * Creates the Incident of a hunt run in its draft workspace. The incident inherits the hunt markings, author and
+ * organizations, and is related to the hunt targets and techniques.
+ */
+export const createHuntIncidentInWorkspace = async (
+  context: AuthContext,
+  hunt: BasicStoreEntityHunt,
+  run: BasicStoreEntityHuntRun,
+  proposal: HuntIncidentProposal | null,
+  draftId: string,
+): Promise<string> => {
+  const draftContext: AuthContext = { ...context, draft_context: draftId };
   const severity = proposal?.severity && INCIDENT_SEVERITIES.includes(proposal.severity) ? proposal.severity : 'medium';
   const name = proposal?.name?.trim() || `${hunt.name} - ${run.hits_count ?? 0} hits`;
   const summary = proposal?.description?.trim()
@@ -84,5 +93,5 @@ export const createHuntIncidentDraft = async (
       logApp.warn('[OPENCTI-MODULE] Hunt incident draft relation could not be created', { cause: error, huntId: hunt.internal_id, toId: relatedIds[index] });
     }
   }
-  return { draftId: draft.id, incidentId: incident.internal_id };
+  return incident.internal_id;
 };

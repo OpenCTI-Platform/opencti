@@ -16,6 +16,8 @@ import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { importHuntPack } from '../../../src/modules/hunt/hunt-domain';
 import { HUNT_INCIDENT_RECOMMENDATION } from '../../../src/modules/hunt/hunt-incident';
 import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
+import { HUNT_MANAGER_USER } from '../../../src/utils/access';
+import { finalizeInterruptedHuntRuns } from '../../../src/modules/hunt/hunt-automation';
 
 const CONNECTOR_ID = '0b7e4b54-1f4f-4bde-9e93-8d0f1d6a3c01';
 const RESTRICTED_CONNECTOR_ID = '4c3f2a1d-8e7b-4d6c-9a5f-1b2c3d4e5f60';
@@ -111,6 +113,9 @@ const HUNT_RUN_READ = gql`
 `;
 const HUNT_RUN_REPORT = gql`
   mutation HuntRunReport($id: ID!, $input: HuntRunReportInput!) { huntRunReport(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_STATE = gql`
+  query HuntRunState($id: String!) { huntRun(id: $id) { ${RUN_FIELDS} } }
 `;
 const HUNT_RUN_VERDICT = gql`
   mutation HuntRunSetVerdict($id: ID!, $input: HuntRunVerdictInput!) { huntRunSetVerdict(id: $id, input: $input) { ${RUN_FIELDS} } }
@@ -302,6 +307,21 @@ describe('Hunt resolvers', () => {
     const hunt = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
     expect(hunt.data?.hunt.last_run_status).toEqual('completed');
     expect(hunt.data?.hunt.last_hits_count).toEqual(0);
+  });
+
+  it('should complete a finalization interrupted after the terminal report', async () => {
+    const interrupt = (extra: Record<string, unknown> = {}) => patchAttribute(testContext, HUNT_MANAGER_USER, firstRunId, ENTITY_TYPE_HUNT_RUN, { verdict: 'pending', verdict_source: null, ...extra });
+    const readRun = async () => (await queryAsAdminWithSuccess({ query: HUNT_RUN_STATE, variables: { id: firstRunId } })).data?.huntRun;
+    // The hunt manager completes it once the finalization is overdue
+    await interrupt({ completed_at: new Date(Date.now() - 10 * 60000).toISOString() });
+    expect(await finalizeInterruptedHuntRuns(testContext)).toBeGreaterThanOrEqual(1);
+    expect(await readRun()).toMatchObject({ hunt_run_status: 'completed', verdict: 'benign', verdict_source: 'auto' });
+    // A report of the connector on the interrupted run completes it instead of being refused, then the run is closed
+    await interrupt();
+    const recovered = await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'failed', error: 'late' } } });
+    expect(recovered.data?.huntRunReport).toMatchObject({ hunt_run_status: 'completed', verdict: 'benign', verdict_source: 'auto' });
+    const again = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed' } } });
+    expect(again.errors?.[0].message).toContain('already terminated');
   });
 
   it('should open an Incident draft above the escalation threshold and store hashed evidence only', async () => {

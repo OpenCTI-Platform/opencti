@@ -46,7 +46,7 @@ import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, huntRunRestr
 import { huntLogicError } from '../hunt-validators';
 import { updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
-import { createHuntIncidentDraft, parseIncidentProposal } from '../hunt-incident';
+import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace, parseIncidentProposal } from '../hunt-incident';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -169,6 +169,8 @@ export interface HuntRunRequest {
   // The user starting a manual run, a preview or a manual retry: only the security platforms this user can read are targeted
   requester?: AuthUser | null;
   dispatch?: boolean;
+  // Runs beyond this number stay queued and are dispatched by the hunt manager at a later tick (its per-tick budget)
+  dispatchLimit?: number;
   attempt?: number;
   playbook?: {
     playbookId: string;
@@ -223,6 +225,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     throw FunctionalError('The hunt time window start must be before its end', { windowStart, windowEnd });
   }
   const runs: BasicStoreEntityHuntRun[] = [];
+  let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
   for (let index = 0; index < targets.length; index += 1) {
     const { connector, securityPlatform, restrictions } = targets[index];
     const runInput = {
@@ -254,7 +257,8 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     const run = await createEntity(context, HUNT_MANAGER_USER, runInput, ENTITY_TYPE_HUNT_RUN) as BasicStoreEntityHuntRun;
     runs.push(run);
     addHuntRunCount(request.trigger);
-    if (request.dispatch !== false) {
+    if (request.dispatch !== false && dispatchBudget > 0) {
+      dispatchBudget -= 1;
       try {
         await dispatchHuntRun(context, run, hunt);
       } catch (error) {
@@ -392,27 +396,43 @@ export const triageHuntRunWithAgent = async (context: AuthContext, run: BasicSto
   return element as unknown as BasicStoreEntityHuntRun;
 };
 
+const patchHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, patch: Record<string, unknown>) => {
+  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+  return element as unknown as BasicStoreEntityHuntRun;
+};
+
+/**
+ * A terminated executed run is finalized once its automatic verdict is recorded (verdict_source set, by finalization or
+ * by an analyst). A terminated run without it stopped before the end of its finalization and is finalized again.
+ */
+export const isHuntRunFinalized = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_mode' | 'hunt_run_status' | 'verdict_source'>) => {
+  return run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || !HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status) || !!run.verdict_source;
+};
+
 /**
  * Post-completion of a run: automatic verdict, Incident draft above the escalation threshold, hunt statistics,
  * Security Coverage write-back for emulation runs and agent triage (Enterprise Edition, never applied as verdict).
+ * Each step records its result before the next one, and the verdict is recorded last but the statistics, so that a
+ * finalization stopped halfway is completed by a later attempt without creating a second draft or incident.
  */
 const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
   if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
     return run;
   }
-  const verdict = computeAutomaticVerdict(run);
-  const patch: Record<string, unknown> = { verdict, verdict_source: HUNT_VERDICT_SOURCE_AUTO };
-  if (run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (run.hits_count ?? 0) >= hunt.escalation_threshold && !run.incident_id) {
+  let current = run;
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
     try {
-      const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, run, null);
-      patch.incident_id = incidentId;
-      patch.draft_id = draftId;
+      if (!current.draft_id) {
+        const draftId = await createHuntIncidentWorkspace(context, hunt, current);
+        current = await patchHuntRun(context, current, { draft_id: draftId });
+      }
+      const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, null, current.draft_id as string);
+      current = await patchHuntRun(context, current, { incident_id: incidentId });
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: run.internal_id });
+      logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: current.internal_id });
     }
   }
-  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
-  const current = element as unknown as BasicStoreEntityHuntRun;
+  current = await patchHuntRun(context, current, { verdict: computeAutomaticVerdict(current), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
   await updateHuntRunInformation(context, hunt.internal_id, {
     last_run_at: current.completed_at ?? now(),
     last_run_status: current.hunt_run_status,
@@ -546,7 +566,11 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
 
 const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHuntRun, status: string, input: HuntRunReportInput) => {
   if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
-    throw FunctionalError('The hunt run is already terminated', { runId: run.internal_id, status: run.hunt_run_status });
+    if (isHuntRunFinalized(run)) {
+      throw FunctionalError('The hunt run is already terminated', { runId: run.internal_id, status: run.hunt_run_status });
+    }
+    // The first report terminated the run but its finalization stopped halfway: complete it, the run stays as first reported
+    return completeHuntRunFinalization(context, run);
   }
   const reportedAt = now();
   const patch: Record<string, unknown> = { hunt_run_status: status };
@@ -590,6 +614,29 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
     }
   }
   return updated;
+};
+
+const completeHuntRunFinalization = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+  const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
+  if (!hunt) {
+    return patchHuntRun(context, run, { verdict: computeAutomaticVerdict(run), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
+  }
+  logApp.info('[OPENCTI-MODULE] Hunt run finalization completed after an interruption', { runId: run.internal_id });
+  return finalizeHuntRun(context, run, hunt);
+};
+
+/**
+ * Finalizes again a terminated run whose finalization stopped halfway (hunt manager reconciliation), under the run
+ * transition lock so that it never races a connector report.
+ */
+export const reconcileHuntRunFinalization = async (context: AuthContext, unfinalizedRun: BasicStoreEntityHuntRun) => {
+  return withHuntRunTransition(context, unfinalizedRun.internal_id, async (run) => {
+    if (isHuntRunFinalized(run)) {
+      return run;
+    }
+    const finalized = await completeHuntRunFinalization(context, run);
+    return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, finalized, HUNT_MANAGER_USER);
+  });
 };
 
 /**
@@ -725,9 +772,10 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
       analyst_feedback: input.analyst_feedback ? truncate(input.analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.analyst_feedback ?? null,
     };
     if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id) {
-      const { draftId, incidentId } = await createHuntIncidentDraft(context, hunt, current, parseIncidentProposal(current.incident_proposal));
-      patch.incident_id = incidentId;
+      // A draft recorded by an interrupted finalization is reused rather than doubled
+      const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, hunt, current);
       patch.draft_id = draftId;
+      patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
     }
     const { element: patched } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
     return patched;

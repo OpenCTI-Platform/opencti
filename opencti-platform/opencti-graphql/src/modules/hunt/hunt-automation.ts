@@ -38,12 +38,13 @@ import {
   HUNT_RUN_STATUS_FAILED,
   HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_STATUS_TIMEOUT,
+  HUNT_RUN_TERMINAL_STATUSES,
   HUNT_RUN_TRIGGER_RETRY,
   HUNT_RUN_TRIGGER_SCHEDULE,
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
 } from './huntRun/huntRun-types';
-import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun } from './huntRun/huntRun-domain';
+import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun, reconcileHuntRunFinalization } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
@@ -104,13 +105,17 @@ const forEachHuntPage = async (context: AuthContext, filters: FilterGroup['filte
   });
 };
 
-const startAutomaticRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, trigger: string) => {
+/**
+ * Starts the runs of a hunt within what is left of the tick budget: the runs of the targets beyond it are created queued
+ * and dispatched by dispatchQueuedHuntRuns at the next ticks. Returns the number of runs started in this tick.
+ */
+const startAutomaticRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, trigger: string, remainingBudget: number) => {
   try {
-    const runs = await createHuntRuns(context, hunt, { trigger });
+    const runs = await createHuntRuns(context, hunt, { trigger, dispatchLimit: remainingBudget });
     if (runs.length === 0) {
       logApp.info('[OPENCTI-MODULE] Hunt not run, no live hunt connector serves its scope', { huntId: hunt.internal_id, trigger });
     }
-    return runs.length;
+    return Math.min(runs.length, remainingBudget);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Hunt automatic run failed to start', { cause: error, huntId: hunt.internal_id, trigger });
     return 0;
@@ -215,6 +220,32 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
     }
   }
   return retried;
+};
+
+// A finalization runs right after the report that terminates a run: older than this, an unfinalized run was interrupted
+const FINALIZATION_GRACE_MINUTES = 2;
+
+/**
+ * Terminated executed runs whose finalization (incident draft, automatic verdict, statistics) was interrupted, for
+ * instance by an engine error after the terminal report was stored: their finalization is completed.
+ */
+export const finalizeInterruptedHuntRuns = async (context: AuthContext): Promise<number> => {
+  const runs = await listRuns(context, [
+    { key: ['hunt_run_status'], values: HUNT_RUN_TERMINAL_STATUSES },
+    { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+    { key: ['verdict_source'], values: [], operator: FilterOperator.Nil },
+    { key: ['completed_at'], values: [minutesAgo(FINALIZATION_GRACE_MINUTES)], operator: FilterOperator.Lte },
+  ], 'completed_at');
+  let finalized = 0;
+  for (let index = 0; index < runs.length; index += 1) {
+    try {
+      await reconcileHuntRunFinalization(context, runs[index]);
+      finalized += 1;
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Hunt run finalization could not be completed', { cause: error, runId: runs[index].internal_id });
+    }
+  }
+  return finalized;
 };
 
 /**
@@ -357,7 +388,7 @@ export const runScheduledHunts = async (context: AuthContext): Promise<number> =
   for (let index = 0; index < hunts.length && started < HUNT_CONFIG.maxRunsPerTick; index += 1) {
     const hunt = hunts[index];
     if (hunt.next_run_at && !isWaitingForPir(hunt)) {
-      started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE);
+      started += await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, HUNT_CONFIG.maxRunsPerTick - started);
     }
     const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
     await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
@@ -386,7 +417,7 @@ export const reconcilePirActivatedHunts = async (context: AuthContext): Promise<
         logApp.info('[OPENCTI-MODULE] Hunt disarmed by its PIR targets', { huntId: hunt.internal_id });
       } else if (armed && hunt.hunt_pir_armed !== true && started < HUNT_CONFIG.maxRunsPerTick) {
         // Armed once its arming run started: a run the tick budget or a missing connector refused is tried at the next tick
-        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING);
+        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_STANDING, HUNT_CONFIG.maxRunsPerTick - started);
         if (runs > 0) {
           started += runs;
           await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now() });
@@ -554,7 +585,7 @@ export const processStandingHunts = async (context: AuthContext): Promise<number
     // A standing run within the debounce window serves the trigger
     let served = true;
     if (!(await isRecentStandingRun(context, candidate))) {
-      const runs = await startAutomaticRuns(context, candidate.hunt, HUNT_RUN_TRIGGER_STANDING);
+      const runs = await startAutomaticRuns(context, candidate.hunt, HUNT_RUN_TRIGGER_STANDING, HUNT_CONFIG.maxRunsPerTick - started);
       started += runs;
       served = runs > 0;
     }
@@ -568,6 +599,7 @@ export const processStandingHunts = async (context: AuthContext): Promise<number
 
 export interface HuntAutomationReport {
   expired: number;
+  finalized: number;
   retried: number;
   dispatched: number;
   resumed: number;
@@ -582,8 +614,9 @@ export interface HuntAutomationReport {
  * (schedules, PIR activation, standing hunts) only with an Enterprise Edition license.
  */
 export const runHuntAutomation = async (context: AuthContext, isEnterprise: boolean): Promise<HuntAutomationReport> => {
-  const report: HuntAutomationReport = { expired: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0 };
+  const report: HuntAutomationReport = { expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0 };
   report.expired = await expireStaleHuntRuns(context);
+  report.finalized = await finalizeInterruptedHuntRuns(context);
   report.retried = await retryFailedHuntRuns(context);
   if (isEnterprise) {
     report.armed = await reconcilePirActivatedHunts(context);
