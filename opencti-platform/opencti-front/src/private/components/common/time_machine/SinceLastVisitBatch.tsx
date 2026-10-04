@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
+import { useIntl } from 'react-intl';
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -95,7 +96,8 @@ export const SinceLastVisitBatchProvider = ({ enabled, children }: { enabled: bo
  */
 export const SinceLastVisitRowBadge = ({ id, entityType }: { id: string; entityType?: string | null }) => {
   const context = useContext(SinceLastVisitBatchContext);
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, rd } = useFormatter();
+  const intl = useIntl();
   // Read without useAuth: lists can be rendered outside of an authenticated user context
   const { schema } = useContext(UserContext);
   const isKnowledge = useMemo(() => {
@@ -114,7 +116,7 @@ export const SinceLastVisitRowBadge = ({ id, entityType }: { id: string; entityT
     result.updates > 0 ? countLabel('updates', result.updates, t_i18n) : null,
     result.new_container_objects > 0 ? countLabel('new_container_objects', result.new_container_objects, t_i18n) : null,
   ].filter((part): part is string => !!part);
-  const description = `${t_i18n('New since your last visit')}: ${parts.join(', ')}`;
+  const description = t_i18n('New since your last visit: {changes}', { values: { changes: intl.formatList(parts, { type: 'conjunction' }) } });
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -126,8 +128,10 @@ export const SinceLastVisitRowBadge = ({ id, entityType }: { id: string; entityT
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        {description}
-        {result.last_seen_at ? ` (${t_i18n('Last visit')}: ${fldt(result.last_seen_at)})` : ''}
+        <span style={{ display: 'flex', flexDirection: 'column' }}>
+          <span>{description}</span>
+          {result.last_seen_at && <span>{t_i18n('Last visit {date}', { values: { date: rd(result.last_seen_at) } })}</span>}
+        </span>
       </TooltipContent>
     </Tooltip>
   );

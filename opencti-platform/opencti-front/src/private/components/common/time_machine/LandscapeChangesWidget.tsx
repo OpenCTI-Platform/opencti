@@ -98,7 +98,7 @@ const LandscapeChangesWidgetComponent = ({
               <ListItem key={entity.entity_id} divider secondaryAction={<Text variant="content-compact">{n(entity.change_score)}</Text>}>
                 <ListItemText
                   primary={base ? <Link to={entityChangesPath(base, entity.entity_id, entity.entity_type, period)}>{entity.name}</Link> : entity.name}
-                  secondary={`${t_i18n(`entity_${entity.entity_type}`)} - ${countLabel('new_relationships', entity.relationships_added, t_i18n)}, ${countLabel('attributes_changed', entity.attributes_changed, t_i18n)}`}
+                  secondary={t_i18n('{type} - {relationships}, {attributes}', { values: { type: t_i18n(`entity_${entity.entity_type}`), relationships: countLabel('new_relationships', entity.relationships_added, t_i18n), attributes: countLabel('attributes_changed', entity.attributes_changed, t_i18n) } })}
                 />
               </ListItem>
             );

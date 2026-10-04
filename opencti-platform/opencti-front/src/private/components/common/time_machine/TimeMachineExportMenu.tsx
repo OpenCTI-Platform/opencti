@@ -115,7 +115,7 @@ const TimeMachineExportMenu = ({ fileName, buildJson, buildCsv, buildHtml, entit
             <MenuSeparator />
             {formats.map(({ format }) => (
               <MenuItem key={`store-${format}`} onSelect={() => handleExport(format, true)}>
-                {t_i18n('Save in the entity files as')} {format.toUpperCase()}
+                {t_i18n('Save in the entity files as {format}', { values: { format: format.toUpperCase() } })}
               </MenuItem>
             ))}
           </>

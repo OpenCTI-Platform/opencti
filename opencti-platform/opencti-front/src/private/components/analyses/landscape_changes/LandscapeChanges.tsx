@@ -219,7 +219,7 @@ const ScopeSelector = ({ mode, savedFilterId, customViewId, onSavedFilterChange,
         </SelectTrigger>
         <SelectContent aria-label={t_i18n('Custom view')}>
           {customViews.map((customView) => (
-            <SelectItem key={customView.id} value={customView.id}>{`${customView.name} (${t_i18n(`entity_${customView.targetEntityType}`)})`}</SelectItem>
+            <SelectItem key={customView.id} value={customView.id}>{t_i18n('{name} ({type})', { values: { name: customView.name, type: t_i18n(`entity_${customView.targetEntityType}`) } })}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -324,7 +324,8 @@ const LandscapeChanges = () => {
       filters: serializedFilters,
       saved_filter_id: mode === 'saved_filter' ? savedFilterId : null,
       custom_view_id: mode === 'custom_view' ? customViewId : null,
-      entity_types: entityType === AUTO_ENTITY_TYPE ? null : [entityType],
+      // A custom view compares the entity type it targets, the server derives it from the view
+      entity_types: mode === 'custom_view' || entityType === AUTO_ENTITY_TYPE ? null : [entityType],
     });
   };
 
@@ -395,17 +396,19 @@ const LandscapeChanges = () => {
               </Box>
             )}
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Select value={entityType} onValueChange={setEntityType}>
-                <SelectTrigger aria-label={t_i18n('Entity types')}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent aria-label={t_i18n('Entity types')}>
-                  <SelectItem value={AUTO_ENTITY_TYPE}>{t_i18n('Entity types of the scope')}</SelectItem>
-                  {LANDSCAPE_ENTITY_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {mode !== 'custom_view' && (
+                <Select value={entityType} onValueChange={setEntityType}>
+                  <SelectTrigger aria-label={t_i18n('Entity types')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Entity types')}>
+                    <SelectItem value={AUTO_ENTITY_TYPE}>{t_i18n('Entity types of the scope')}</SelectItem>
+                    {LANDSCAPE_ENTITY_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Select value={groupBy} onValueChange={setGroupBy}>
                 <SelectTrigger aria-label={t_i18n('Group by')}>
                   <SelectValue />
