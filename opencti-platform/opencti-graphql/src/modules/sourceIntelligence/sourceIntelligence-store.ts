@@ -241,45 +241,67 @@ export interface LiveIncrement {
   source_last_asserted_at?: number;
 }
 
+// Stream event ids are "<milliseconds>-<sequence>", both unbounded decimal numbers: compared by length, then digits.
+// A scorecard that already applied the batch event id is left untouched, so a replayed batch is never counted twice.
 const LIVE_INCREMENT_SCRIPT = `
-  for (entry in params.increments.entrySet()) {
-    def current = ctx._source.containsKey(entry.getKey()) && ctx._source[entry.getKey()] != null ? ctx._source[entry.getKey()] : 0;
-    ctx._source[entry.getKey()] = Math.max(0, current + entry.getValue());
-  }
-  if (params.last_asserted_at != null) {
-    if (ctx._source.source_last_asserted_at == null || ctx._source.source_last_asserted_at.compareTo(params.last_asserted_at) < 0) {
-      ctx._source.source_last_asserted_at = params.last_asserted_at;
-      ctx._source.freshness_hours = 0;
+  int compareNumbers(String a, String b) {
+    if (a.length() != b.length()) {
+      return a.length() < b.length() ? -1 : 1;
     }
+    return a.compareTo(b);
   }
-  ctx._source.computed_at = params.now;
-  ctx._source.updated_at = params.now;
+  int compareStreamIds(String a, String b) {
+    int ia = a.indexOf('-');
+    int ib = b.indexOf('-');
+    int ms = compareNumbers(a.substring(0, ia), b.substring(0, ib));
+    return ms != 0 ? ms : compareNumbers(a.substring(ia + 1), b.substring(ib + 1));
+  }
+  if (params.event_id != null && ctx._source.live_stream_event_id != null && compareStreamIds(ctx._source.live_stream_event_id, params.event_id) >= 0) {
+    ctx.op = 'noop';
+  } else {
+    for (entry in params.increments.entrySet()) {
+      def current = ctx._source.containsKey(entry.getKey()) && ctx._source[entry.getKey()] != null ? ctx._source[entry.getKey()] : 0;
+      ctx._source[entry.getKey()] = Math.max(0, current + entry.getValue());
+    }
+    if (params.last_asserted_at != null) {
+      if (ctx._source.source_last_asserted_at == null || ctx._source.source_last_asserted_at.compareTo(params.last_asserted_at) < 0) {
+        ctx._source.source_last_asserted_at = params.last_asserted_at;
+        ctx._source.freshness_hours = 0;
+      }
+    }
+    if (params.event_id != null) {
+      ctx._source.live_stream_event_id = params.event_id;
+    }
+    ctx._source.computed_at = params.now;
+    ctx._source.updated_at = params.now;
+  }
 `;
 
 /**
- * Apply streaming increments on the live scorecards of every period. Counters only: ratios and medians stay as
- * computed by the last full recomputation, which also corrects any drift of the counters.
+ * Apply the streaming increments of one stream batch on the live scorecards, one update per source and period,
+ * marked with the last event id of the batch. Counters only: ratios and medians stay as computed by the last full
+ * recomputation, which also corrects any drift of the counters.
  */
 export const applyLiveIncrements = async (
   context: AuthContext,
-  increments: Map<string, LiveIncrement>,
-  periods: readonly ScorecardPeriodValue[],
+  incrementsByPeriod: Map<ScorecardPeriodValue, Map<string, LiveIncrement>>,
+  eventId: string,
   now = Date.now(),
 ) => {
-  if (increments.size === 0) {
-    return;
-  }
   const nowIso = new Date(now).toISOString();
-  const body = Array.from(increments.entries()).flatMap(([sourceId, increment]) => {
+  const body = Array.from(incrementsByPeriod.entries()).flatMap(([period, increments]) => Array.from(increments.entries()).flatMap(([sourceId, increment]) => {
     const { source_last_asserted_at, ...counters } = increment;
     const filteredCounters = Object.fromEntries(Object.entries(counters).filter(([, v]) => typeof v === 'number' && v !== 0));
     const lastAssertedAt = source_last_asserted_at ? new Date(source_last_asserted_at).toISOString() : null;
-    return periods.flatMap((period) => [
+    return [
       { update: { _index: INDEX_SOURCE_SCORECARDS, _id: scorecardDocumentId(sourceId, period, '', true), retry_on_conflict: 5 } },
       // Without upsert, a source with no live document yet is skipped: the next full computation creates it
-      { script: { source: LIVE_INCREMENT_SCRIPT, lang: 'painless', params: { increments: filteredCounters, last_asserted_at: lastAssertedAt, now: nowIso } } },
-    ]);
-  });
+      { script: { source: LIVE_INCREMENT_SCRIPT, lang: 'painless', params: { increments: filteredCounters, last_asserted_at: lastAssertedAt, event_id: eventId, now: nowIso } } },
+    ];
+  }));
+  if (body.length === 0) {
+    return;
+  }
   const result = await elBulk(context, { refresh: false, body });
   const notFound = (result?.items ?? []).filter((item: any) => item.update?.status === 404).length;
   if (notFound > 0) {

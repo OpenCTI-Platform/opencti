@@ -3,8 +3,10 @@ import '../../../../src/modules/index';
 import {
   computeEventIncrements,
   deletionDecrements,
+  eventsUpTo,
   isFullComputationDue,
   laterStreamEventId,
+  mergeBatchIncrements,
   planBackfill,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
@@ -314,6 +316,22 @@ describe('Source intelligence stream cursor', () => {
     expect(laterStreamEventId(null, boundary)).toEqual(boundary);
     // A cursor already past it is kept, so later events are never skipped
     expect(laterStreamEventId('1759500000001-0', boundary)).toEqual('1759500000001-0');
+  });
+
+  it('should replay an interrupted batch with its own events only', () => {
+    const events = [{ id: '1759500000000-0' }, { id: '1759500000000-7' }, { id: '1759500000001-0' }, { id: '1759500000002-3' }];
+    expect(eventsUpTo(events, '1759500000001-0').map(({ id }) => id)).toEqual(['1759500000000-0', '1759500000000-7', '1759500000001-0']);
+    expect(eventsUpTo(events, '1759499999999-0')).toEqual([]);
+  });
+
+  it('should write each live scorecard once per batch, disabled sources excluded', () => {
+    const increments = new Map([['source-a', { volume_total: 2, source_last_asserted_at: 10 }], ['source-off', { volume_total: 1 }]]);
+    const periodIncrements = new Map([[SCORECARD_PERIODS[0], new Map([['source-a', { volume_total: -1, sightings_count: 1, source_last_asserted_at: 20 }]])]]);
+    const merged = mergeBatchIncrements(increments, periodIncrements, new Set(['source-off']));
+    expect([...merged.keys()]).toEqual([...SCORECARD_PERIODS]);
+    expect(merged.get(SCORECARD_PERIODS[0])?.get('source-a')).toEqual({ volume_total: 1, sightings_count: 1, source_last_asserted_at: 20 });
+    expect(merged.get(SCORECARD_PERIODS[1])?.get('source-a')).toEqual({ volume_total: 2, source_last_asserted_at: 10 });
+    expect(merged.get(SCORECARD_PERIODS[1])?.has('source-off')).toBe(false);
   });
 });
 
