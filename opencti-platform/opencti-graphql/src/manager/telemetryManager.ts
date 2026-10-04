@@ -309,8 +309,8 @@ export const addTimelineDerivedEventCount = (count: number) => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_DERIVED_EVENT, count)
     .catch((reason) => logApp.warn('Error adding timeline derived event count to telemetry', { reason }));
 };
-export const addTimelineManualEventCount = () => {
-  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT, 1)
+export const addTimelineManualEventCount = (count = 1) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT, count)
     .catch((reason) => logApp.warn('Error adding timeline manual event count to telemetry', { reason }));
 };
 export const addTimelineExportCount = () => {

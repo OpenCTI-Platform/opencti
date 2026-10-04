@@ -1,6 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsAuthUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  awaitUntilCondition,
+  queryAsAdmin,
+  queryAsAdminWithError,
+  queryAsAdminWithSuccess,
+  queryAsAuthUser,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess,
+} from '../../utils/testQueryHelper';
+import { redisGetTelemetry } from '../../../src/database/redis';
+import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
@@ -837,8 +847,12 @@ describe('Incident and case timeline', () => {
     it('should recreate the contributions on another container and stay idempotent', async () => {
       const source = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
       const extension = JSON.stringify(JSON.parse(source.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE]);
+      const manualEventCount = () => redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT);
+      const countBefore = await manualEventCount();
       const imported = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(imported.data.timelineImport.manual_count).toEqual(2);
+      // The milestones created by the import count like the ones added by an analyst (telemetry writes are fire-and-forget)
+      await awaitUntilCondition(async () => (await manualEventCount()) === countBefore + 2, 3000, { message: 'Imported milestones were not counted in time' });
       const again = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(again.data.timelineImport.manual_count).toEqual(2);
       const pinnedOnly = await listTimeline(secondCase.id, { pinnedOnly: true });
@@ -847,6 +861,8 @@ describe('Incident and case timeline', () => {
       // Coming back to the platform it was exported from, an event updates itself
       const back = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: caseIncident.id, extension } });
       expect(back.data.timelineImport.manual_count).toEqual(2);
+      // Updates of known events are not counted again
+      expect(await manualEventCount()).toEqual(countBefore + 2);
     });
 
     it('should reject an invalid extension', async () => {

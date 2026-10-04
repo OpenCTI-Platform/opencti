@@ -895,8 +895,9 @@ const writeImportedContributions = async (
   // New milestones stay within the cap of the case, updates of known events always apply
   const accepted = candidates.filter((candidate) => candidate.markings !== null);
   let capacity = Math.max(0, TIMELINE_MAX_MANUAL_EVENTS - storedManual.length);
+  const isKnown = (candidate: { existing: StoredTimelineEvent | null; internalId: string }) => !!candidate.existing || storedIds.has(candidate.internalId);
   const importable = accepted.filter((candidate) => {
-    if (candidate.existing || storedIds.has(candidate.internalId)) return true;
+    if (isKnown(candidate)) return true;
     if (capacity === 0) return false;
     capacity -= 1;
     return true;
@@ -957,6 +958,9 @@ const writeImportedContributions = async (
   });
   if (docs.length > 0) {
     await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, docs);
+    // Milestones created by the import count like the ones added by an analyst; updates of known events do not
+    const created = importable.filter((candidate) => !isKnown(candidate)).length;
+    if (created > 0) addTimelineManualEventCount(created);
   }
   const pending: TimelinePendingAnnotation[] = annotations
     .filter((a) => a.element_ref && resolved[a.element_ref] && a.rule_id && a.kind)
