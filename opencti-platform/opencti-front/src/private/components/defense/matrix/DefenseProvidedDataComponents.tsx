@@ -171,11 +171,41 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
 const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<DefenseProvidedDataComponentsQuery>; onDeleted: () => void }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreRelationships } = usePreloadedQuery(defenseProvidedDataComponentsQuery, queryRef);
-  const [commitDelete] = useApiMutation<DefenseProvidedDataComponentsDeleteMutation>(defenseProvidedDataComponentsDeleteMutation);
+  const [commitDelete, deleting] = useApiMutation<DefenseProvidedDataComponentsDeleteMutation>(defenseProvidedDataComponentsDeleteMutation);
+  const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
   const relations = (stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id);
   if (relations.length === 0) {
     return <Typography variant="body2" color="text.secondary">{t_i18n('No data component is declared as provided.')}</Typography>;
   }
+  const remove = () => toRemove && commitDelete({
+    variables: { id: toRemove.id },
+    onCompleted: (_, errors) => {
+      if (notifyPayloadErrors(errors)) return;
+      setToRemove(null);
+      onDeleted();
+    },
+  });
+  return (
+    <>
+      <Dialog open={!!toRemove} onClose={() => setToRemove(null)} title={t_i18n('Remove provided telemetry')} size="small">
+        <Typography>
+          {t_i18n('The platform will no longer provide {name}. Techniques detected only through this data component lose their telemetry level at the next computation.', { values: { name: toRemove?.name ?? '' } })}
+        </Typography>
+        <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>
+          <Button variant="secondary" onClick={() => setToRemove(null)} disabled={deleting}>{t_i18n('Cancel')}</Button>
+          <Button intent="destructive" onClick={remove} disabled={deleting} data-testid="defense-provided-remove-confirm">{t_i18n('Remove')}</Button>
+        </DialogActions>
+      </Dialog>
+      <ProvidedListItems relations={relations} onRemove={setToRemove} />
+    </>
+  );
+};
+
+const ProvidedListItems = ({ relations, onRemove }: {
+  relations: ReadonlyArray<{ id: string; description?: string | null; to?: { id?: string; name?: string } | null }>;
+  onRemove: (relation: { id: string; name: string }) => void;
+}) => {
+  const { t_i18n } = useFormatter();
   return (
     <List dense disablePadding data-testid="defense-provided-list">
       {relations.map((relation) => (
@@ -190,12 +220,7 @@ const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<Defens
                 priority="tertiary"
                 aria-label={t_i18n('Remove {name}', { values: { name: relation.to?.name ?? '' } })}
                 icon={<DeleteOutlined fontSize="small" />}
-                onClick={() => commitDelete({
-                  variables: { id: relation.id },
-                  onCompleted: (_, errors) => {
-                    if (!notifyPayloadErrors(errors)) onDeleted();
-                  },
-                })}
+                onClick={() => onRemove({ id: relation.id, name: relation.to?.name ?? '' })}
               />
             </Security>
           )}

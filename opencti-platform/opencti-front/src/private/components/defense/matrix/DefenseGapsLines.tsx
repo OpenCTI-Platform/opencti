@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } fro
 import { Link } from 'react-router';
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Checkbox, Chip } from '@filigran/design-system';
+import { Checkbox, Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';
@@ -119,7 +119,7 @@ interface DefenseGapsLinesProps {
 }
 
 const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
   const { data, hasNext, loadNext, isLoadingNext, refetch } = usePaginationFragment<DefenseGapsLinesRefetchQuery, DefenseGapsLines_data$key>(
@@ -153,7 +153,12 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
 
   return (
     <Card
-      title={t_i18n('{count, plural, one {# defense gap} other {# defense gaps}}', { values: { count: total } })}
+      title={(
+        // Sentence case: the card title capitalizes every word otherwise
+        <span style={{ textTransform: 'none' }}>
+          {t_i18n('{count, plural, one {# defense gap} other {# defense gaps}}', { values: { count: total } })}
+        </span>
+      )}
       action={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Button
@@ -231,7 +236,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
                       </Stack>
                     </TableCell>
                     <TableCell>{t_i18n(DEFENSE_VALIDATION_LABELS[gap.validated as DefenseValidation])}</TableCell>
-                    <TableCell align="right">{gap.threats_count > 0 ? `${gap.threats_count} (${gap.threat_weight})` : '-'}</TableCell>
+                    <TableCell align="right">{gap.threats_count > 0 ? `${gap.threats_count} (${gap.threat_weight})` : '0'}</TableCell>
                     <TableCell align="right">{gap.priority}</TableCell>
                     <TableCell>
                       <Stack spacing={0.25}>
@@ -244,7 +249,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
                       </Stack>
                     </TableCell>
                     <TableCell>
-                      {gap.ruleCandidates.length === 0 ? '-' : (
+                      {gap.ruleCandidates.length === 0 ? <Typography variant="body2" color="text.secondary">{t_i18n('None')}</Typography> : (
                         <Stack spacing={0.25}>
                           {gap.ruleCandidates.map((rule) => (
                             <Link key={rule.id} to={`/dashboard/observations/indicators/${rule.id}`}>
@@ -254,7 +259,16 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
                         </Stack>
                       )}
                     </TableCell>
-                    <TableCell>{gap.last_validation_requested_at ? fldt(gap.last_validation_requested_at) : '-'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      {gap.last_validation_requested_at ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span tabIndex={0} style={{ cursor: 'help' }}>{rd(gap.last_validation_requested_at)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>{fldt(gap.last_validation_requested_at)}</TooltipContent>
+                        </Tooltip>
+                      ) : <Typography variant="body2" color="text.secondary">{t_i18n('Never')}</Typography>}
+                    </TableCell>
                   </TableRow>
                 );
               })}
