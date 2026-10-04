@@ -167,6 +167,29 @@ export const processReadyEntities = async (context: AuthContext, user: AuthUser,
   }
 };
 
+/**
+ * Nightly sweep (degree metrics refresh and similarity backfill), then clustering.
+ * Clustering selects entities by their degree metrics, so it only runs once the sweep reached the end of the entities:
+ * a pass stopped at its entity cap would cluster a partial view of the platform.
+ */
+export const runFullPassTick = async (context: AuthContext, user: AuthUser, config: GraphAnalyticsComputeConfig) => {
+  const state = await redisGraphAnalyticsGetState();
+  if (shouldStartFullPass(state, config)) {
+    await startFullPass();
+    logApp.info('[OPENCTI-MODULE] Graph analytics full pass started');
+  }
+  if (!isFullPassInProgress(await redisGraphAnalyticsGetState())) {
+    return null;
+  }
+  const { outcome, processed } = await runFullPassStep(context, user, config, FULL_PASS_STEP_BUDGET_MS);
+  if (outcome === 'completed') {
+    logApp.info('[OPENCTI-MODULE] Graph analytics full pass completed', { processed });
+    const clustering = await runInfrastructureClustering(context, user, config);
+    logApp.info('[OPENCTI-MODULE] Graph analytics infrastructure clustering', clustering);
+  }
+  return outcome;
+};
+
 export const graphAnalyticsManagerHandler = async () => {
   const context: AuthContext = executionContext(GRAPH_ANALYTICS_MANAGER_CONTEXT, GRAPH_ANALYTICS_MANAGER_USER);
   const user = GRAPH_ANALYTICS_MANAGER_USER;
@@ -178,20 +201,8 @@ export const graphAnalyticsManagerHandler = async () => {
   if (processed > 0 || removed > 0) {
     logApp.debug('[OPENCTI-MODULE] Graph analytics incremental recompute', { processed, removed });
   }
-  // 3. Nightly sweep (degree metrics refresh and similarity backfill), then clustering
-  const state = await redisGraphAnalyticsGetState();
-  if (shouldStartFullPass(state, config)) {
-    await startFullPass();
-    logApp.info('[OPENCTI-MODULE] Graph analytics full pass started');
-  }
-  if (isFullPassInProgress(await redisGraphAnalyticsGetState())) {
-    const { completed, processed } = await runFullPassStep(context, user, config, FULL_PASS_STEP_BUDGET_MS);
-    if (completed) {
-      logApp.info('[OPENCTI-MODULE] Graph analytics full pass completed', { processed });
-      const clustering = await runInfrastructureClustering(context, user, config);
-      logApp.info('[OPENCTI-MODULE] Graph analytics infrastructure clustering', clustering);
-    }
-  }
+  // 3. Nightly sweep, then clustering
+  await runFullPassTick(context, user, config);
 };
 
 const GRAPH_ANALYTICS_MANAGER_DEFINITION: ManagerDefinition = {

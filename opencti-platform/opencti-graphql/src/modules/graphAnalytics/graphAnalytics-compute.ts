@@ -282,6 +282,13 @@ export const startFullPass = async () => {
 };
 
 /**
+ * `in_progress`: the step ran out of time, the pass goes on at the next tick.
+ * `capped`: the pass stopped at its entity cap, before the end of the entities; the next pass resumes from its cursor.
+ * `completed`: the sweep reached the end of the entities, every entity carries fresh degree metrics.
+ */
+export type FullPassStepOutcome = 'in_progress' | 'capped' | 'completed';
+
+/**
  * One time-boxed step of the nightly sweep over every Stix Core Object: refresh degree metrics where they changed,
  * and queue the profiled entities whose similarity may be outdated. The cursor is persisted, so a sweep survives
  * restarts and never holds the manager lock for long.
@@ -291,13 +298,13 @@ export const runFullPassStep = async (
   user: AuthUser,
   config: GraphAnalyticsComputeConfig,
   budgetMs: number,
-): Promise<{ processed: number; completed: boolean }> => {
+): Promise<{ processed: number; outcome: FullPassStepOutcome }> => {
   const startTime = Date.now();
   const state = await redisGraphAnalyticsGetState();
   let cursor: string | undefined = state[GRAPH_STATE_FULL_PASS_CURSOR] || undefined;
   let processedTotal = Number(state[GRAPH_STATE_FULL_PASS_PROCESSED] ?? '0') || 0;
   let processed = 0;
-  let completed = false;
+  let outcome: FullPassStepOutcome = 'in_progress';
   const staleBefore = Date.now() - STALE_SIMILARITY_DAYS * 24 * 3600 * 1000;
   while (Date.now() - startTime < budgetMs) {
     const page = await elPaginate<BasicStoreBase>(context, user, GRAPH_METRICS_ENTITY_INDICES, {
@@ -329,19 +336,19 @@ export const runFullPassStep = async (
     }
     if (!page.endCursor || carriers.length < config.fullPassBatchSize) {
       cursor = undefined;
-      completed = true;
+      outcome = 'completed';
       break;
     }
     cursor = page.endCursor;
     if (processedTotal >= config.fullPassMaxEntities) {
       // the next pass resumes from here, so entities beyond the cap are rotated in instead of never being swept
       logApp.info('[OPENCTI-MODULE] Graph analytics full pass capped, the next pass resumes from its cursor', { max: config.fullPassMaxEntities });
-      completed = true;
+      outcome = 'capped';
       break;
     }
     await doYield();
   }
-  if (completed) {
+  if (outcome !== 'in_progress') {
     if (cursor) {
       await redisGraphAnalyticsSetState({ [GRAPH_STATE_FULL_PASS_CURSOR]: cursor });
     } else {
@@ -357,7 +364,7 @@ export const runFullPassStep = async (
       [GRAPH_STATE_FULL_PASS_PROCESSED]: String(processedTotal),
     });
   }
-  return { processed, completed };
+  return { processed, outcome };
 };
 // endregion
 
