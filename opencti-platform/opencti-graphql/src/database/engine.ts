@@ -3935,7 +3935,7 @@ export const elUpdate = async (
   documentId: string,
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
-  opts: { refresh?: boolean } = {},
+  opts: { refresh?: boolean; sourceIncludes?: string[] } = {},
 ) => {
   const updateOperation = async () => {
     const entityType = documentBody.entity_type ? documentBody.entity_type : '';
@@ -3946,6 +3946,7 @@ export const elUpdate = async (
       timeout: BULK_TIMEOUT,
       refresh: opts.refresh ?? true,
       body: documentBody,
+      ...(opts.sourceIncludes ? { _source: opts.sourceIncludes } : {}),
     };
     try {
       return await elExecuteWithAbortSignal(

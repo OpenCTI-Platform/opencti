@@ -135,7 +135,7 @@ const StixDomainObjectOverview = ({
   const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
 
   return (
-    <ProvenanceOverviewColumn id={stixDomainObject.id}>
+    <ProvenanceOverviewColumn id={stixDomainObject.id} entityType={stixDomainObject.entity_type}>
       <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (

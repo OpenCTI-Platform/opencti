@@ -44,6 +44,16 @@ export const useIsEnforceReference = (id: string): boolean => {
   );
 };
 
+/**
+ * Provenance tracking of an element type, inherited from the setting of its abstract type when it has none
+ * (relationships, sightings, observables).
+ */
+export const useIsProvenanceTracked = (entityType: string, inheritedType?: string): boolean => {
+  const settings = useEntitySettings(inheritedType ? [entityType, inheritedType] : entityType);
+  const setting = settings.find((node) => node.target_type === entityType) ?? settings.find((node) => node.target_type === inheritedType);
+  return setting?.provenance_tracking ?? false;
+};
+
 export const useIsMandatoryAttribute = (id: string) => {
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {

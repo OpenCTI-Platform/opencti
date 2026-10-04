@@ -10,6 +10,7 @@ import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
@@ -126,6 +127,12 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={dataSource.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={dataSource.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

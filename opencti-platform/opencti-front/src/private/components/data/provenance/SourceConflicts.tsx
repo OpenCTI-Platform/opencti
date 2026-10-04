@@ -29,7 +29,7 @@ const SourceConflicts = () => {
         {t_i18n('Fields on which sources proposed different values. Open the sources of an element to adopt or dismiss an alternative value.')}
       </Typography>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
+        <TabsList className="mb-6">
           <TabsTrigger value="entities">{t_i18n('Entities')}</TabsTrigger>
           <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
           <TabsTrigger value="sightings">{t_i18n('Sightings')}</TabsTrigger>

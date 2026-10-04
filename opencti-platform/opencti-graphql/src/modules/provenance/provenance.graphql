@@ -37,6 +37,8 @@ type SourceConflictValue {
 
 type SourceConflict {
   field: String!
+  # Label of the field in the schema of the element type (the field name when unknown)
+  field_label: String!
   values: [SourceConflictValue!]!
 }
 

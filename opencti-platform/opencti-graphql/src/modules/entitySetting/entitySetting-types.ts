@@ -42,6 +42,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  provenance_tracking?: boolean | null;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {
@@ -52,6 +53,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   attributes_configuration?: string;
   workflow_configuration: boolean;
   sync_workflow_status_by_name?: boolean;
+  provenance_tracking?: boolean | null;
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;

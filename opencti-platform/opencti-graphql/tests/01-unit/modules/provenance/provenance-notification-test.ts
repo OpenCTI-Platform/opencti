@@ -57,6 +57,8 @@ describe('Provenance triggers', () => {
     expect(computeListeningTriggers(triggers, { conflictFields: ['description'] }).get('conflict')).toEqual(['conflict']);
     expect(computeListeningTriggers(triggers, { conflictFields: ['description'], corroboration: { from: 1, to: 2 } }).get('conflict')).toEqual(['corroboration', 'conflict']);
     expect(describeProvenanceChange('conflict', { conflictFields: ['name', 'description'] })).toEqual('has conflicting values from sources on name, description');
+    expect(describeProvenanceChange('conflict', { conflictFields: ['primary_motivation', 'unknown_field'] }, 'Intrusion-Set'))
+      .toEqual('has conflicting values from sources on Primary motivation, unknown_field');
     expect(describeProvenanceChange('corroboration', { corroboration: { from: 1, to: 2 } })).toEqual('is now corroborated by 2 sources');
   });
 

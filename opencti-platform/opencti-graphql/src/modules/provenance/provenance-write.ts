@@ -8,6 +8,9 @@ import { now } from '../../utils/format';
 import { isNotEmptyField } from '../../database/utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { addProvenanceConflictDetectedCount } from '../../manager/telemetryManager';
+import { PROVENANCE_ENABLED, PROVENANCE_REASSERTION_WINDOW_MS } from './provenance-config';
+import { procedureMatchKey } from './provenance-procedures';
+import { isProvenanceTrackedForType } from './provenance-tracking';
 import { resolveAssertionSource } from './provenance-source';
 import type { ConflictAddition, ConflictRemoval } from './provenance-conflicts';
 import { hasProvenanceTriggers, notifyProvenanceChange, type ProvenanceChange as ProvenanceTriggerChange } from './provenance-notification';
@@ -19,6 +22,7 @@ import {
   ATTRIBUTE_CONFLICT_FIELDS,
   ATTRIBUTE_CONFLICTS,
   ATTRIBUTE_CORROBORATION_COUNT,
+  ATTRIBUTE_FRESHNESS_STALE,
   ATTRIBUTE_HAS_CONFLICTS,
   ATTRIBUTE_LAST_ASSERTED_AT,
   ATTRIBUTE_PROCEDURES,
@@ -33,7 +37,6 @@ import {
   type StoreProvenanceFields,
 } from './provenance-types';
 
-export const PROVENANCE_ENABLED = booleanConf('provenance:enabled', true);
 const PROVENANCE_REFRESH_ON_WRITE = booleanConf('provenance:refresh_on_write', false);
 export const MAX_CONFLICT_VALUES_PER_FIELD: number = conf.get('provenance:max_conflict_values_per_field') || DEFAULT_MAX_CONFLICT_VALUES_PER_FIELD;
 
@@ -263,8 +266,11 @@ export const removeProvenanceInputs = <T extends Record<string, unknown>>(input:
   return input;
 };
 
-export const isProvenanceRecordable = (context: AuthContext, user: AuthUser, type: string) => {
-  return PROVENANCE_ENABLED && isProvenanceTrackedType(type) && !getDraftContext(context, user);
+export const isProvenanceRecordable = async (context: AuthContext, user: AuthUser, type: string) => {
+  if (!PROVENANCE_ENABLED || !isProvenanceTrackedType(type) || getDraftContext(context, user)) {
+    return false;
+  }
+  return isProvenanceTrackedForType(context, type);
 };
 
 export const buildStoreAssertion = (source: AssertionSource, confidence: number | null | undefined, at: string, assertCount = 1): StoreAssertion => ({
@@ -318,14 +324,18 @@ export const applyProvenanceUpdate = async (
   context: AuthContext,
   target: ProvenanceTarget,
   update: ProvenanceUpdate,
-  opts: { refresh?: boolean } = {},
+  opts: { refresh?: boolean; returnFields?: string[] } = {},
 ) => {
   const body = { script: buildProvenanceScript(update) };
   const refresh = opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE;
-  return elUpdate(context, target._index, target._id ?? target.internal_id, body, undefined, { refresh });
+  return elUpdate(context, target._index, target._id ?? target.internal_id, body, undefined, { refresh, sourceIncludes: opts.returnFields });
 };
 
 export const isNoopUpdate = (response: any) => (response?.result ?? response?.body?.result) === 'noop';
+
+export const readUpdatedSource = (response: any): Partial<StoreProvenanceFields> | null => {
+  return (response?.get ?? response?.body?.get)?._source ?? null;
+};
 
 /**
  * Provenance fields indexed together with a newly created element.
@@ -338,7 +348,7 @@ export const computeCreationProvenance = async (
   input: Record<string, any>,
   opts: { fromRule?: string; restore?: boolean; procedures?: (source: AssertionSource, at: string) => StoreProcedure[] } = {},
 ): Promise<StoreProvenanceFields | null> => {
-  if (!isProvenanceRecordable(context, user, type)) {
+  if (!(await isProvenanceRecordable(context, user, type))) {
     return null;
   }
   if (opts.restore && isNotEmptyField(input[ATTRIBUTE_ASSERTIONS])) {
@@ -416,20 +426,85 @@ export const loadProvenanceSnapshot = async (element: ProvenanceTarget): Promise
 };
 
 /**
- * State used to compute the provenance change of a write: exact when provenance triggers are listening.
- * When they are, the write must be refreshed so that the notification reads the updated provenance.
+ * State used to compute the provenance change of a merge: exact when provenance triggers are listening.
  */
 export const resolveProvenanceBeforeWrite = async (context: AuthContext, element: ProvenanceTarget & Partial<StoreProvenanceFields>) => {
   if (!(await hasProvenanceTriggers(context))) {
-    return { before: element as Partial<StoreProvenanceFields>, writeOpts: {} };
+    return element as Partial<StoreProvenanceFields>;
   }
-  const writeOpts = { refresh: true };
   try {
-    return { before: await loadProvenanceSnapshot(element), writeOpts };
+    return await loadProvenanceSnapshot(element);
   } catch (err) {
     logApp.warn('[PROVENANCE] Unable to load the provenance snapshot, using the loaded element', { cause: err, id: element.internal_id });
-    return { before: element as Partial<StoreProvenanceFields>, writeOpts };
+    return element as Partial<StoreProvenanceFields>;
   }
+};
+
+const isWithinReassertionWindow = (lastAssertedAt: string | null | undefined, at: string, windowMs: number) => {
+  if (!lastAssertedAt || windowMs <= 0) {
+    return false;
+  }
+  return new Date(at).getTime() - new Date(lastAssertedAt).getTime() < windowMs;
+};
+
+export interface CoalescedReassertion {
+  redundant: boolean;
+  conflictsAdd: ConflictAddition[];
+  proceduresAdd: StoreProcedure[];
+}
+
+/**
+ * What a write still has to record once the element, as loaded, already holds it. A source repeating its
+ * assertion within the re-assertion window, with no new conflict nor procedure, is redundant: no write at all.
+ */
+export const coalesceReassertion = (
+  element: Partial<StoreProvenanceFields>,
+  sourceId: string,
+  at: string,
+  record: Pick<UpsertProvenanceRecord, 'conflictsAdd' | 'conflictsRemove' | 'proceduresAdd'>,
+  windowMs = PROVENANCE_REASSERTION_WINDOW_MS,
+): CoalescedReassertion => {
+  const isFresh = (stored: { source_id?: string; last_asserted_at?: string } | undefined, expectedSourceId: string) => {
+    return stored !== undefined && stored.source_id === expectedSourceId && isWithinReassertionWindow(stored.last_asserted_at, at, windowMs);
+  };
+  const conflicts = element[ATTRIBUTE_CONFLICTS] ?? [];
+  const findConflictValue = (field: string, valueHash: string) => {
+    return conflicts.find((conflict) => conflict.field === field)?.values?.find((value) => value.value_hash === valueHash);
+  };
+  const conflictsAdd = (record.conflictsAdd ?? []).filter(({ field, value }) => !isFresh(findConflictValue(field, value.value_hash), value.source_id));
+  const removesStoredConflict = (record.conflictsRemove ?? []).some(({ field, value_hash }) => findConflictValue(field, value_hash) !== undefined);
+  const procedures = element[ATTRIBUTE_PROCEDURES] ?? [];
+  const proceduresAdd = (record.proceduresAdd ?? []).filter((procedure) => {
+    const key = procedureMatchKey(procedure.text);
+    return !isFresh(procedures.find((stored) => stored.text && procedureMatchKey(stored.text) === key), procedure.source_id);
+  });
+  const assertion = (element[ATTRIBUTE_ASSERTIONS] ?? []).find((stored) => stored.source_id === sourceId);
+  const redundant = isFresh(assertion, sourceId)
+    && element[ATTRIBUTE_FRESHNESS_STALE] !== true
+    && conflictsAdd.length === 0
+    && !removesStoredConflict
+    && proceduresAdd.length === 0;
+  return { redundant, conflictsAdd, proceduresAdd };
+};
+
+const ASSERTED_SNAPSHOT_FIELDS = [`${ATTRIBUTE_ASSERTIONS}.source_id`, `${ATTRIBUTE_ASSERTIONS}.first_asserted_at`, ATTRIBUTE_ASSERTION_SOURCE_IDS];
+
+/**
+ * Corroboration change read from the element returned by the update itself, exact without any refresh:
+ * the writing source is new when this write created its assertion and the loaded element did not count it.
+ */
+export const computeAssertedCorroboration = (
+  updated: Partial<StoreProvenanceFields>,
+  before: Partial<StoreProvenanceFields>,
+  sourceId: string,
+  at: string,
+) => {
+  const assertions = updated[ATTRIBUTE_ASSERTIONS] ?? [];
+  const to = new Set([...(updated[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? []), ...assertions.map((assertion) => assertion.source_id)]).size;
+  const wasCounted = (before[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? []).includes(sourceId)
+    || (before[ATTRIBUTE_ASSERTIONS] ?? []).some((assertion) => assertion.source_id === sourceId);
+  const isCreatedByWrite = assertions.some((assertion) => assertion.source_id === sourceId && assertion.first_asserted_at === at);
+  return isCreatedByWrite && !wasCounted ? { from: to - 1, to } : undefined;
 };
 
 /**
@@ -441,24 +516,36 @@ export const recordUpsertProvenance = async (
   user: AuthUser,
   element: ProvenanceTarget & Partial<StoreProvenanceFields>,
   record: UpsertProvenanceRecord,
-  opts: { refresh?: boolean } = {},
+  opts: { refresh?: boolean; force?: boolean } = {},
 ) => {
-  if (!isProvenanceRecordable(context, user, element.entity_type)) {
+  if (!(await isProvenanceRecordable(context, user, element.entity_type))) {
     return null;
   }
   try {
     const source = record.source ?? await resolveAssertionSource(context, user, record.input, { fromRule: record.fromRule });
-    const assertion = buildStoreAssertion(source, record.confidence, record.at ?? now());
-    const { before, writeOpts } = await resolveProvenanceBeforeWrite(context, element);
-    await applyProvenanceUpdate(context, element, {
+    const at = record.at ?? now();
+    const assertion = buildStoreAssertion(source, record.confidence, at);
+    const coalesced = opts.force
+      ? { redundant: false, conflictsAdd: record.conflictsAdd ?? [], proceduresAdd: record.proceduresAdd ?? [] }
+      : coalesceReassertion(element, source.source_id, at, record);
+    if (coalesced.redundant) {
+      return { source, assertion };
+    }
+    const isTriggerListening = await hasProvenanceTriggers(context);
+    const response = await applyProvenanceUpdate(context, element, {
       assertions: [assertion],
       countMode: 'sum',
-      conflictsAdd: record.conflictsAdd,
+      conflictsAdd: coalesced.conflictsAdd,
       conflictsRemove: record.conflictsRemove,
-      proceduresAdd: record.proceduresAdd,
+      proceduresAdd: coalesced.proceduresAdd,
       resetFreshness: true,
-    }, { ...opts, ...writeOpts });
-    await publishProvenanceChange(context, element, computeProvenanceChange(before, [source.source_id], record.conflictsAdd));
+    }, { refresh: opts.refresh, returnFields: isTriggerListening ? ASSERTED_SNAPSHOT_FIELDS : undefined });
+    const change = computeProvenanceChange(element, [source.source_id], coalesced.conflictsAdd);
+    const updated = isTriggerListening ? readUpdatedSource(response) : null;
+    if (updated) {
+      change.corroboration = computeAssertedCorroboration(updated, element, source.source_id, at);
+    }
+    await publishProvenanceChange(context, element, change);
     return { source, assertion };
   } catch (err) {
     logApp.error('[PROVENANCE] Unable to record the assertion', { cause: err, id: element.internal_id, type: element.entity_type });

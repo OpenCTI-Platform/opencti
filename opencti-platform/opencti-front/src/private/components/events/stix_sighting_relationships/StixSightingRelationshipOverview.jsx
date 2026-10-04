@@ -420,7 +420,7 @@ class StixSightingRelationshipContainer extends Component {
             </Card>
           </Grid>
           <Grid item xs={6}>
-            <ProvenanceOverviewColumn id={stixSightingRelationship.id}>
+            <ProvenanceOverviewColumn id={stixSightingRelationship.id} entityType="stix-sighting-relationship">
               <Card title={t('Details')}>
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>

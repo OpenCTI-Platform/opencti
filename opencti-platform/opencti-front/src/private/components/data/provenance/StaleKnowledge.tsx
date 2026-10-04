@@ -22,23 +22,23 @@ const StaleKnowledge = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Stale knowledge | Curation | Data'));
-  const [tab, setTab] = useState('relationships');
+  const [tab, setTab] = useState('entities');
   return (
     <div data-testid="provenance-stale-page">
       <Typography variant="body2" sx={{ marginBottom: 2 }}>
         {t_i18n('Knowledge that no source re-asserted within the delay of its knowledge decay rule. Confirm it, update it or let the rule policy apply.')}
       </Typography>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
+        <TabsList className="mb-6">
           <TabsTrigger value="entities">{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>
           <TabsTrigger value="sightings">{t_i18n('Sightings')}</TabsTrigger>
         </TabsList>
-        <TabsContent value="relationships">
-          {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-stale-relationships" fixedFilters={STALE_FILTERS} />}
-        </TabsContent>
         <TabsContent value="entities">
           {tab === 'entities' && <ProvenanceKnowledgeEntities storageKey="provenance-stale-entities" fixedFilters={STALE_FILTERS} />}
+        </TabsContent>
+        <TabsContent value="relationships">
+          {tab === 'relationships' && <ProvenanceKnowledgeRelationships storageKey="provenance-stale-relationships" fixedFilters={STALE_FILTERS} />}
         </TabsContent>
         <TabsContent value="sightings">
           {tab === 'sightings' && <ProvenanceKnowledgeSightings storageKey="provenance-stale-sightings" fixedFilters={STALE_FILTERS} />}

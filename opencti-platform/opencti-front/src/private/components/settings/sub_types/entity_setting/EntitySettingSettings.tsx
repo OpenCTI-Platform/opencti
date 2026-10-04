@@ -5,6 +5,7 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsFragment_entitySetting$key } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
 import EntitySettingReferences from './EntitySettingReferences';
+import EntitySettingProvenance from './EntitySettingProvenance';
 import { entitySettingsFragment } from './EntitySettingsFragment';
 import EntitySettingVisibility from './EntitySettingVisibility';
 import { useFormatter } from '../../../../../components/i18n';
@@ -60,6 +61,16 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           />
         </Card>
       </Grid>
+      {entitySetting.availableSettings.includes('provenance_tracking') && (
+        <Grid item xs={6}>
+          <Card title={t_i18n('Provenance')}>
+            <EntitySettingProvenance
+              entitySetting={entitySetting}
+              handleSubmitField={handleSubmitField}
+            />
+          </Card>
+        </Grid>
+      )}
     </Grid>
   );
 };

@@ -9212,6 +9212,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  provenance_tracking: Scalars['Boolean']['output'];
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
@@ -32476,6 +32477,7 @@ export type SoftwareEdge = {
 export type SourceConflict = {
   __typename?: 'SourceConflict';
   field: Scalars['String']['output'];
+  field_label: Scalars['String']['output'];
   values: Array<SourceConflictValue>;
 };
 
@@ -47179,6 +47181,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  provenance_tracking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
@@ -53960,6 +53963,7 @@ export type SoftwareEdgeResolvers<ContextType = any, ParentType extends Resolver
 
 export type SourceConflictResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceConflict'] = ResolversParentTypes['SourceConflict']> = ResolversObject<{
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  field_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   values?: Resolver<Array<ResolversTypes['SourceConflictValue']>, ParentType, ContextType>;
 }>;
 

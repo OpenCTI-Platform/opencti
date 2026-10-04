@@ -168,6 +168,8 @@
   },
   "provenance": {
     "enabled": true,
+    "reassertion_window_hours": 24,
+    "default_tracked_types": ["Indicator", "Intrusion-Set", "Threat-Actor-Group", "Threat-Actor-Individual", "Malware"],
     "refresh_on_write": false,
     "max_conflict_values_per_field": 10
   },

@@ -23,7 +23,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreObject, StoreObject } from '../../types/store';
 import { addProvenanceConflictAdoptionCount } from '../../manager/telemetryManager';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
-import { buildConflictValue, isConflictTrackedAttribute, normalizeConflictValue } from './provenance-conflicts';
+import { buildConflictValue, conflictFieldLabel, isConflictTrackedAttribute, normalizeConflictValue } from './provenance-conflicts';
 import { isProcedureRelationship, procedureMatchKey } from './provenance-procedures';
 import { resolveCurrentValueOwner } from './provenance-upsert';
 import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
@@ -98,7 +98,12 @@ export const resolveAssertionsForUser = async (context: AuthContext, user: AuthU
   return resolveSourceNames(context, user, sorted);
 };
 
-export const resolveConflictsForUser = async (context: AuthContext, user: AuthUser, conflicts: StoreConflict[] | null | undefined) => {
+export const resolveConflictsForUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  conflicts: StoreConflict[] | null | undefined,
+  entityType?: string,
+) => {
   if (!conflicts || conflicts.length === 0) {
     return [];
   }
@@ -107,6 +112,7 @@ export const resolveConflictsForUser = async (context: AuthContext, user: AuthUs
   const namedByHash = new Map(named.map((value) => [`${value.source_id}:${value.value_hash}`, value]));
   return conflicts.map((conflict) => ({
     ...conflict,
+    field_label: conflictFieldLabel(entityType, conflict.field),
     values: (conflict.values ?? [])
       .map((value) => namedByHash.get(`${value.source_id}:${value.value_hash}`) ?? value)
       .sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at)),
@@ -314,7 +320,7 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
 export const assertElement = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await loadEditableTrackedElement(context, user, id);
   const source = { source_id: user.id, source_kind: SOURCE_KIND_USER, source_name: user.name, work_id: null } as const;
-  const recorded = await recordUpsertProvenance(context, user, element, { source, input: {}, confidence: element.confidence ?? null }, { refresh: true });
+  const recorded = await recordUpsertProvenance(context, user, element, { source, input: {}, confidence: element.confidence ?? null }, { refresh: true, force: true });
   if (!recorded) {
     throw FunctionalError('Provenance cannot be recorded on this element', { id });
   }

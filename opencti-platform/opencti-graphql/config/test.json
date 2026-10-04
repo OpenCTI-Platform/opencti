@@ -111,6 +111,8 @@
     "interval": 6000000
   },
   "provenance": {
+    "reassertion_window_hours": 0,
+    "default_tracked_types": ["*"],
     "refresh_on_write": true
   },
   "knowledge_freshness_manager": {
