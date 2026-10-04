@@ -54,6 +54,8 @@ Live triggers can also respond to two [provenance](provenance.md) event types:
 - **Corroboration reached**: the number of distinct sources asserting a matching element reaches the corroboration threshold of the trigger (2 by default, up to 200). The notification is sent once, when the threshold is crossed.
 - **Source conflict detected**: a source proposes a value conflicting with the current value of a matching element.
 
+Live triggers on incidents and cases can also respond to two timeline event types: **Timeline anchor changed** (for example when the containment of a case is recorded) and **Timeline milestone added**. See [Incident and case timeline](case-timeline.md#notifications).
+
 ![Trigger configuration](assets/trigger-configuration.png)
 
 ### Instance triggers

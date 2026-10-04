@@ -80,6 +80,7 @@ from pycti.entities.opencti_task import Task
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_threat_actor_group import ThreatActorGroup
 from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
+from pycti.entities.opencti_timeline_event import TimelineEvent
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_user import User
 from pycti.entities.opencti_vocabulary import Vocabulary
@@ -312,6 +313,7 @@ class OpenCTIApiClient:
         self.case_rfi = CaseRfi(self)
         self.case_rft = CaseRft(self)
         self.task = Task(self)
+        self.timeline_event = TimelineEvent(self)
         self.incident = Incident(self)
         self.malware = Malware(self)
         self.malware_analysis = MalwareAnalysis(self)

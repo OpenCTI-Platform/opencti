@@ -13,7 +13,15 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions, provenanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  filterEventTypesOptions,
+  instanceEventTypesOptions,
+  provenanceEventTypesOptions,
+  timelineEventTypesOptions,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -318,7 +326,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     name: trigger.name,
     instance_trigger: trigger.instance_trigger ?? false,
     description: trigger.description,
-    event_types: convertEventTypes(trigger),
+    event_types: (convertEventTypes(trigger) ?? []).map((option: { value: string; label: string }) => ({ ...option, label: t_i18n(option.label) })),
     notifiers: convertNotifiers(trigger),
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
@@ -363,10 +371,11 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               style={fieldSpacingContainerStyle}
               multiple={true}
               label={t_i18n('Triggering on')}
-              options={
-                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...provenanceEventTypesOptions]
-                  .map((option) => ({ ...option, label: t_i18n(option.label) }))
-              }
+              options={[
+                ...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions),
+                ...provenanceEventTypesOptions,
+                ...timelineEventTypesOptions,
+              ].map((option) => ({ ...option, label: t_i18n(option.label) }))}
               onChange={asMultiValue<{ value: string; label: string }>((
                 name,
                 value,

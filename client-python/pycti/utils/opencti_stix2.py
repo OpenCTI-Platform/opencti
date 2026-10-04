@@ -74,6 +74,14 @@ STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
 
+#: STIX Extension ID for the analyst contributions to incident and case timelines
+STIX_EXT_OCTI_TIMELINE: str = (
+    "extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb"
+)
+
+#: STIX Types carrying a timeline (Incident, Case-Incident, Case-Rfi, Case-Rft)
+TIMELINE_CONTAINER_STIX_TYPES = ["incident", "case-incident", "case-rfi", "case-rft"]
+
 #: STIX Extension ID for MITRE ATT&CK framework objects
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 
@@ -1501,7 +1509,46 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
+            # Recreate the analyst contributions to the timeline of incidents and cases
+            self.import_timeline_extension(stix_object, stix_object_result)
         return stix_object_results
+
+    def import_timeline_extension(
+        self, stix_object: Dict, stix_object_result: Dict
+    ) -> None:
+        """Import the timeline extension carried by an incident or a case.
+
+        Manual events and the annotations of derived events travel in the
+        ``STIX_EXT_OCTI_TIMELINE`` extension; derived events are recomputed by
+        the receiving platform.
+
+        :param stix_object: the imported STIX2 object
+        :type stix_object: Dict
+        :param stix_object_result: the OpenCTI object created from it
+        :type stix_object_result: Dict
+        """
+        if stix_object.get("type") not in TIMELINE_CONTAINER_STIX_TYPES:
+            return
+        extension = (stix_object.get("extensions") or {}).get(STIX_EXT_OCTI_TIMELINE)
+        if not extension:
+            return
+        if len(extension.get("events") or []) == 0 and (
+            len(extension.get("annotations") or []) == 0
+        ):
+            return
+        try:
+            self.opencti.timeline_event.import_extension(
+                container_id=stix_object_result["id"], extension=extension
+            )
+        except ValueError as error:
+            # A platform without timelines does not know the mutation: nothing to recreate there
+            if "timelineImport" in str(error) and "Cannot query field" in str(error):
+                self.opencti.app_logger.warning(
+                    "Timeline contributions skipped, the platform does not support timelines",
+                    {"id": stix_object["id"]},
+                )
+                return
+            raise
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None

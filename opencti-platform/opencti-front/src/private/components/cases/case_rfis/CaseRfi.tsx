@@ -21,6 +21,8 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import { CaseRfi_caseRfi$key } from './__generated__/CaseRfi_caseRfi.graphql';
 import Card from '../../../../components/common/card/Card';
+import ContainerTimelineStrip from '../../common/timeline/ContainerTimelineStrip';
+import { resolveLink } from '../../../../utils/Entity';
 
 const caseRfiFragment = graphql`
   fragment CaseRfi_caseRfi on CaseRfi {
@@ -146,6 +148,9 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
 
   return (
     <div data-testid="rfi-page">
+      <div style={{ marginBottom: 24 }}>
+        <ContainerTimelineStrip containerId={caseRfi.id} basePath={`${resolveLink(caseRfi.entity_type)}/${caseRfi.id}`} />
+      </div>
       <Grid
         container={true}
         spacing={3}

@@ -42,6 +42,7 @@ import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/f
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
+import type { BasicStoreEntityTimelineEvent } from '../modules/timeline/timeline-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -3000,6 +3001,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+  x_opencti_timeline_anchors?: Maybe<TimelineAnchors>;
 };
 
 
@@ -3255,6 +3257,13 @@ export enum CaseIncidentsOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
+  TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
+  TimelineContainment = 'timeline_containment',
+  TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
+  TimelineFirstDetection = 'timeline_first_detection',
+  TimelineFirstResponse = 'timeline_first_response',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3341,6 +3350,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_request_access?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+  x_opencti_timeline_anchors?: Maybe<TimelineAnchors>;
   x_opencti_workflow_id?: Maybe<Scalars['String']['output']>;
 };
 
@@ -3596,6 +3606,13 @@ export enum CaseRfisOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
+  TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
+  TimelineContainment = 'timeline_containment',
+  TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
+  TimelineFirstDetection = 'timeline_first_detection',
+  TimelineFirstResponse = 'timeline_first_response',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3680,6 +3697,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+  x_opencti_timeline_anchors?: Maybe<TimelineAnchors>;
 };
 
 
@@ -3934,6 +3952,13 @@ export enum CaseRftsOrdering {
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
+  TimelineChangedAt = 'timeline_changed_at',
+  TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
+  TimelineContainment = 'timeline_containment',
+  TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
+  TimelineFirstDetection = 'timeline_first_detection',
+  TimelineFirstResponse = 'timeline_first_response',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -12998,6 +13023,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+  x_opencti_timeline_anchors?: Maybe<TimelineAnchors>;
 };
 
 
@@ -13262,6 +13288,13 @@ export enum IncidentsOrdering {
   ObjectMarking = 'objectMarking',
   Severity = 'severity',
   Source = 'source',
+  TimelineChangedAt = 'timeline_changed_at',
+  TimelineClosure = 'timeline_closure',
+  TimelineComputedAt = 'timeline_computed_at',
+  TimelineContainment = 'timeline_containment',
+  TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
+  TimelineFirstDetection = 'timeline_first_detection',
+  TimelineFirstResponse = 'timeline_first_response',
   UpdatedAt = 'updated_at',
   XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -18227,6 +18260,17 @@ export type Mutation = {
   threatActorIndividualFieldPatch?: Maybe<ThreatActorIndividual>;
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
+  timelineEventAdd?: Maybe<TimelineEvent>;
+  timelineEventDelete?: Maybe<Scalars['ID']['output']>;
+  timelineEventEdit?: Maybe<TimelineEvent>;
+  timelineEventHide?: Maybe<TimelineEvent>;
+  timelineEventPin?: Maybe<TimelineEvent>;
+  /** Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker) */
+  timelineImport?: Maybe<TimelineRegenerationResult>;
+  timelineRegenerate?: Maybe<TimelineRegenerationResult>;
+  timelineSettingsUpdate?: Maybe<TimelineSettings>;
+  /** Record that the Timeline tab of a container was opened (usage telemetry, no data change) */
+  timelineViewed?: Maybe<Scalars['Boolean']['output']>;
   token?: Maybe<Scalars['String']['output']>;
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
@@ -20832,6 +20876,56 @@ export type MutationThreatActorIndividualRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationTimelineEventAddArgs = {
+  input: TimelineEventAddInput;
+};
+
+
+export type MutationTimelineEventDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationTimelineEventEditArgs = {
+  id: Scalars['ID']['input'];
+  input: TimelineEventEditInput;
+};
+
+
+export type MutationTimelineEventHideArgs = {
+  hidden: Scalars['Boolean']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationTimelineEventPinArgs = {
+  id: Scalars['ID']['input'];
+  pinned: Scalars['Boolean']['input'];
+};
+
+
+export type MutationTimelineImportArgs = {
+  containerId: Scalars['ID']['input'];
+  extension: Scalars['String']['input'];
+};
+
+
+export type MutationTimelineRegenerateArgs = {
+  containerId: Scalars['ID']['input'];
+};
+
+
+export type MutationTimelineSettingsUpdateArgs = {
+  containerId: Scalars['ID']['input'];
+  input: TimelineSettingsInput;
+};
+
+
+export type MutationTimelineViewedArgs = {
+  containerId: Scalars['ID']['input'];
 };
 
 
@@ -25550,6 +25644,11 @@ export type Query = {
   connectorsForNotification?: Maybe<Array<Maybe<Connector>>>;
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
+  containerTimeline?: Maybe<TimelineEventConnection>;
+  containerTimelineExport?: Maybe<Scalars['String']['output']>;
+  /** Timeline export stored as a file: the content and the file markings covering it, computed from the same events */
+  containerTimelineExportFile?: Maybe<TimelineExportFile>;
+  containerTimelineSummary?: Maybe<TimelineSummary>;
   containers?: Maybe<ContainerConnection>;
   containersAskAiSummary?: Maybe<AiSummary>;
   containersDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -25900,6 +25999,9 @@ export type Query = {
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
+  timelineAnchors?: Maybe<TimelineAnchors>;
+  timelineEvent?: Maybe<TimelineEvent>;
+  timelineRules: Array<TimelineRuleDefinition>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
@@ -26278,6 +26380,63 @@ export type QueryConnectorMigrationAssessmentArgs = {
 
 export type QueryContainerArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryContainerTimelineArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  id: Scalars['String']['input'];
+  includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  orderMode?: InputMaybe<OrderingMode>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryContainerTimelineExportArgs = {
+  contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  format: TimelineExportFormat;
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  id: Scalars['String']['input'];
+  includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
+  labels?: InputMaybe<Array<TimelineExportLabelInput>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryContainerTimelineExportFileArgs = {
+  contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  format: TimelineExportFormat;
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  id: Scalars['String']['input'];
+  includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
+  labels?: InputMaybe<Array<TimelineExportLabelInput>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryContainerTimelineSummaryArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -29022,6 +29181,16 @@ export type QueryThreatActorsIndividualsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryTimelineAnchorsArgs = {
+  containerId: Scalars['String']['input'];
+};
+
+
+export type QueryTimelineEventArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -35041,6 +35210,7 @@ export enum SubTypesOrdering {
 export type Subscription = {
   __typename?: 'Subscription';
   aiBus?: Maybe<AiBus>;
+  containerTimelineUpdated?: Maybe<TimelineUpdate>;
   entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
@@ -35073,6 +35243,11 @@ export type Subscription = {
 
 
 export type SubscriptionAiBusArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionContainerTimelineUpdatedArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -37329,6 +37504,300 @@ export type TimeSeries = {
   value: Scalars['Int']['output'];
 };
 
+export type TimelineAnchors = {
+  __typename?: 'TimelineAnchors';
+  changed_at?: Maybe<Scalars['DateTime']['output']>;
+  closure?: Maybe<Scalars['DateTime']['output']>;
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  containment?: Maybe<Scalars['DateTime']['output']>;
+  first_adversary_activity?: Maybe<Scalars['DateTime']['output']>;
+  first_detection?: Maybe<Scalars['DateTime']['output']>;
+  first_response?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type TimelineEvent = BasicObject & InternalObject & {
+  __typename?: 'TimelineEvent';
+  analyst_fields: Array<Scalars['String']['output']>;
+  /** Whether the current user can pin, hide and annotate the event: a container the user can update, outside drafts, and an event within the confidence level of the user */
+  annotatable: Scalars['Boolean']['output'];
+  annotation?: Maybe<Scalars['String']['output']>;
+  confidence?: Maybe<Scalars['Int']['output']>;
+  container_id: Scalars['String']['output'];
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime']['output'];
+  creators?: Maybe<Array<Creator>>;
+  description?: Maybe<Scalars['String']['output']>;
+  /** Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts, within the confidence level of the user (derived events can only be pinned, hidden and annotated) */
+  editable: Scalars['Boolean']['output'];
+  element?: Maybe<StixObjectOrStixRelationship>;
+  element_id?: Maybe<Scalars['String']['output']>;
+  element_type?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  event_end_time?: Maybe<Scalars['DateTime']['output']>;
+  event_time: Scalars['DateTime']['output'];
+  external_id?: Maybe<Scalars['String']['output']>;
+  hidden: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  kind: TimelineEventKind;
+  lane: TimelineLane;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
+  ordering_hint?: Maybe<Scalars['Int']['output']>;
+  parent_types: Array<Scalars['String']['output']>;
+  pinned: Scalars['Boolean']['output'];
+  precision: TimelinePrecision;
+  representative: Representative;
+  rule_id?: Maybe<Scalars['String']['output']>;
+  source: TimelineEventSource;
+  source_state?: Maybe<TimelineSourceState>;
+  standard_id: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type TimelineEventAddInput = {
+  annotation?: InputMaybe<Scalars['String']['input']>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  container_id: Scalars['String']['input'];
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  element_id?: InputMaybe<Scalars['String']['input']>;
+  event_end_time?: InputMaybe<Scalars['DateTime']['input']>;
+  event_time: Scalars['DateTime']['input'];
+  /** Idempotency key: adding twice an event with the same external id on the same container updates it */
+  external_id?: InputMaybe<Scalars['String']['input']>;
+  kind?: InputMaybe<TimelineEventKind>;
+  lane?: InputMaybe<TimelineLane>;
+  objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
+  ordering_hint?: InputMaybe<Scalars['Int']['input']>;
+  pinned?: InputMaybe<Scalars['Boolean']['input']>;
+  precision?: InputMaybe<TimelinePrecision>;
+  title: Scalars['String']['input'];
+};
+
+export type TimelineEventConnection = {
+  __typename?: 'TimelineEventConnection';
+  edges: Array<TimelineEventEdge>;
+  pageInfo: PageInfo;
+};
+
+export type TimelineEventEdge = {
+  __typename?: 'TimelineEventEdge';
+  cursor: Scalars['String']['output'];
+  node: TimelineEvent;
+};
+
+export type TimelineEventEditInput = {
+  annotation?: InputMaybe<Scalars['String']['input']>;
+  clear_event_end_time?: InputMaybe<Scalars['Boolean']['input']>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  element_id?: InputMaybe<Scalars['String']['input']>;
+  event_end_time?: InputMaybe<Scalars['DateTime']['input']>;
+  event_time?: InputMaybe<Scalars['DateTime']['input']>;
+  kind?: InputMaybe<TimelineEventKind>;
+  lane?: InputMaybe<TimelineLane>;
+  objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
+  ordering_hint?: InputMaybe<Scalars['Int']['input']>;
+  precision?: InputMaybe<TimelinePrecision>;
+  title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export enum TimelineEventKind {
+  Assigned = 'assigned',
+  CaseOpened = 'case_opened',
+  Containment = 'containment',
+  CoverageResult = 'coverage_result',
+  Deployment = 'deployment',
+  Eradication = 'eradication',
+  FileUploaded = 'file_uploaded',
+  HuntRun = 'hunt_run',
+  IncidentSeen = 'incident_seen',
+  IndicatorValid = 'indicator_valid',
+  InfrastructureSeen = 'infrastructure_seen',
+  InvestigationStep = 'investigation_step',
+  MalwareSeen = 'malware_seen',
+  Merged = 'merged',
+  Milestone = 'milestone',
+  NoteAdded = 'note_added',
+  Notification = 'notification',
+  ObjectAdded = 'object_added',
+  ObservedWindow = 'observed_window',
+  OpinionAdded = 'opinion_added',
+  Recovery = 'recovery',
+  ReferencePublished = 'reference_published',
+  RelationCreated = 'relation_created',
+  ReportPublished = 'report_published',
+  Sighting = 'sighting',
+  StatusChanged = 'status_changed',
+  TaskCompleted = 'task_completed',
+  TaskCreated = 'task_created',
+  TaskDue = 'task_due',
+  TechniqueUsed = 'technique_used',
+  ThreatSeen = 'threat_seen'
+}
+
+export enum TimelineEventSource {
+  Derived = 'derived',
+  Manual = 'manual'
+}
+
+export type TimelineExportFile = {
+  __typename?: 'TimelineExportFile';
+  content: Scalars['String']['output'];
+  /** Never weaker than the markings of the exported events and of the elements they reference (highest marking per definition type) */
+  file_markings: Array<MarkingDefinition>;
+};
+
+export enum TimelineExportFormat {
+  Csv = 'csv',
+  Html = 'html',
+  Svg = 'svg'
+}
+
+/** Translated label of an export (title, lane.<lane>, kind.<kind>, anchor.<anchor>, column.<column>, ...) */
+export type TimelineExportLabelInput = {
+  key: Scalars['String']['input'];
+  label: Scalars['String']['input'];
+};
+
+export enum TimelineGrouping {
+  Day = 'day',
+  Hour = 'hour',
+  Week = 'week'
+}
+
+export type TimelineKindDistribution = {
+  __typename?: 'TimelineKindDistribution';
+  count: Scalars['Int']['output'];
+  kind: TimelineEventKind;
+};
+
+export enum TimelineLane {
+  Adversary = 'adversary',
+  Custom = 'custom',
+  Detection = 'detection',
+  Evidence = 'evidence',
+  Knowledge = 'knowledge',
+  Response = 'response'
+}
+
+export type TimelineLaneDistribution = {
+  __typename?: 'TimelineLaneDistribution';
+  count: Scalars['Int']['output'];
+  lane: TimelineLane;
+};
+
+export enum TimelinePrecision {
+  Approximate = 'approximate',
+  Day = 'day',
+  Exact = 'exact',
+  Hour = 'hour'
+}
+
+export type TimelineRegenerationResult = {
+  __typename?: 'TimelineRegenerationResult';
+  anchors?: Maybe<TimelineAnchors>;
+  container_id: Scalars['String']['output'];
+  created_count: Scalars['Int']['output'];
+  deleted_count: Scalars['Int']['output'];
+  derived_count: Scalars['Int']['output'];
+  duration_ms: Scalars['Int']['output'];
+  manual_count: Scalars['Int']['output'];
+  truncated: Scalars['Boolean']['output'];
+  updated_count: Scalars['Int']['output'];
+};
+
+export type TimelineRuleDefinition = {
+  __typename?: 'TimelineRuleDefinition';
+  /** False for soft-check rules whose source type is not registered on this platform */
+  available: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  kinds: Array<TimelineEventKind>;
+  label: Scalars['String']['output'];
+};
+
+export type TimelineSettings = BasicObject & InternalObject & {
+  __typename?: 'TimelineSettings';
+  container_id: Scalars['String']['output'];
+  default_grouping: TimelineGrouping;
+  default_zoom_window: TimelineZoomWindow;
+  enabled_lanes: Array<TimelineLane>;
+  entity_type: Scalars['String']['output'];
+  hidden_kinds: Array<TimelineEventKind>;
+  id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+};
+
+export type TimelineSettingsInput = {
+  default_grouping?: InputMaybe<TimelineGrouping>;
+  default_zoom_window?: InputMaybe<TimelineZoomWindow>;
+  enabled_lanes?: InputMaybe<Array<TimelineLane>>;
+  hidden_kinds?: InputMaybe<Array<TimelineEventKind>>;
+};
+
+/** State of the run, step or deployment a derived event comes from, as its owner stores it (labelled with the owner's vocabulary) */
+export type TimelineSourceState = {
+  __typename?: 'TimelineSourceState';
+  family: Scalars['String']['output'];
+  run_id?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
+  step?: Maybe<Scalars['String']['output']>;
+  validation?: Maybe<Scalars['String']['output']>;
+  verdict?: Maybe<Scalars['String']['output']>;
+};
+
+export type TimelineSummary = {
+  __typename?: 'TimelineSummary';
+  anchors?: Maybe<TimelineAnchors>;
+  /** Whether the current user can add milestones, annotate events and change the settings */
+  can_edit: Scalars['Boolean']['output'];
+  container_id: Scalars['String']['output'];
+  first_event_time?: Maybe<Scalars['DateTime']['output']>;
+  generated_at?: Maybe<Scalars['DateTime']['output']>;
+  hidden_count: Scalars['Int']['output'];
+  kinds: Array<TimelineKindDistribution>;
+  lanes: Array<TimelineLaneDistribution>;
+  last_event_time?: Maybe<Scalars['DateTime']['output']>;
+  manual_count: Scalars['Int']['output'];
+  pinned_count: Scalars['Int']['output'];
+  settings: TimelineSettings;
+  /** Number of events the current user can see */
+  total: Scalars['Int']['output'];
+  /** True when the derivation of this container reached one of its bounds (objects, history, events) */
+  truncated: Scalars['Boolean']['output'];
+};
+
+export type TimelineUpdate = {
+  __typename?: 'TimelineUpdate';
+  anchors?: Maybe<TimelineAnchors>;
+  changed_event_ids: Array<Scalars['String']['output']>;
+  container_id: Scalars['String']['output'];
+  update_type: TimelineUpdateType;
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export enum TimelineUpdateType {
+  Anchors = 'anchors',
+  Annotation = 'annotation',
+  Derived = 'derived',
+  Manual = 'manual',
+  Settings = 'settings'
+}
+
+export enum TimelineZoomWindow {
+  Day = 'day',
+  Fit = 'fit',
+  Month = 'month',
+  Quarter = 'quarter',
+  Week = 'week',
+  Year = 'year'
+}
+
 export enum TokenDuration {
   Days_30 = 'DAYS_30',
   Days_60 = 'DAYS_60',
@@ -37987,6 +38456,8 @@ export enum TriggerEventType {
   Corroboration = 'corroboration',
   Create = 'create',
   Delete = 'delete',
+  TimelineAnchorChanged = 'timeline_anchor_changed',
+  TimelineMilestoneAdded = 'timeline_milestone_added',
   Update = 'update'
 }
 
@@ -41282,6 +41753,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityTheme )
     | ( Omit<ThreatActorGroup, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'locations' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, countries?: Maybe<_RefType['CountryConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, locations?: Maybe<_RefType['LocationConnection']>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityThreatActorIndividual )
+    | ( BasicStoreEntityTimelineEvent )
+    | ( TimelineSettings )
     | ( Omit<Tool, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, killChainPhases?: Maybe<Array<_RefType['KillChainPhase']>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<TrackingNumber, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityTrigger )
@@ -41376,6 +41849,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntitySupportPackage )
     | ( TaskTemplate )
     | ( BasicStoreEntityTheme )
+    | ( BasicStoreEntityTimelineEvent )
+    | ( TimelineSettings )
     | ( BasicStoreEntityTrigger )
     | ( BasicStoreEntityUser )
     | ( BasicStoreEntityWorkspace )
@@ -42747,6 +43222,31 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
+  TimelineAnchors: ResolverTypeWrapper<TimelineAnchors>;
+  TimelineEvent: ResolverTypeWrapper<BasicStoreEntityTimelineEvent>;
+  TimelineEventAddInput: TimelineEventAddInput;
+  TimelineEventConnection: ResolverTypeWrapper<Omit<TimelineEventConnection, 'edges'> & { edges: Array<ResolversTypes['TimelineEventEdge']> }>;
+  TimelineEventEdge: ResolverTypeWrapper<Omit<TimelineEventEdge, 'node'> & { node: ResolversTypes['TimelineEvent'] }>;
+  TimelineEventEditInput: TimelineEventEditInput;
+  TimelineEventKind: TimelineEventKind;
+  TimelineEventSource: TimelineEventSource;
+  TimelineExportFile: ResolverTypeWrapper<Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversTypes['MarkingDefinition']> }>;
+  TimelineExportFormat: TimelineExportFormat;
+  TimelineExportLabelInput: TimelineExportLabelInput;
+  TimelineGrouping: TimelineGrouping;
+  TimelineKindDistribution: ResolverTypeWrapper<TimelineKindDistribution>;
+  TimelineLane: TimelineLane;
+  TimelineLaneDistribution: ResolverTypeWrapper<TimelineLaneDistribution>;
+  TimelinePrecision: TimelinePrecision;
+  TimelineRegenerationResult: ResolverTypeWrapper<TimelineRegenerationResult>;
+  TimelineRuleDefinition: ResolverTypeWrapper<TimelineRuleDefinition>;
+  TimelineSettings: ResolverTypeWrapper<TimelineSettings>;
+  TimelineSettingsInput: TimelineSettingsInput;
+  TimelineSourceState: ResolverTypeWrapper<TimelineSourceState>;
+  TimelineSummary: ResolverTypeWrapper<TimelineSummary>;
+  TimelineUpdate: ResolverTypeWrapper<TimelineUpdate>;
+  TimelineUpdateType: TimelineUpdateType;
+  TimelineZoomWindow: TimelineZoomWindow;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
   Tone: Tone;
@@ -43796,6 +44296,23 @@ export type ResolversParentTypes = ResolversObject<{
   ThreatActorIndividualConnection: Omit<ThreatActorIndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorIndividualEdge']>>> };
   ThreatActorIndividualEdge: Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversParentTypes['ThreatActorIndividual'] };
   TimeSeries: TimeSeries;
+  TimelineAnchors: TimelineAnchors;
+  TimelineEvent: BasicStoreEntityTimelineEvent;
+  TimelineEventAddInput: TimelineEventAddInput;
+  TimelineEventConnection: Omit<TimelineEventConnection, 'edges'> & { edges: Array<ResolversParentTypes['TimelineEventEdge']> };
+  TimelineEventEdge: Omit<TimelineEventEdge, 'node'> & { node: ResolversParentTypes['TimelineEvent'] };
+  TimelineEventEditInput: TimelineEventEditInput;
+  TimelineExportFile: Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversParentTypes['MarkingDefinition']> };
+  TimelineExportLabelInput: TimelineExportLabelInput;
+  TimelineKindDistribution: TimelineKindDistribution;
+  TimelineLaneDistribution: TimelineLaneDistribution;
+  TimelineRegenerationResult: TimelineRegenerationResult;
+  TimelineRuleDefinition: TimelineRuleDefinition;
+  TimelineSettings: TimelineSettings;
+  TimelineSettingsInput: TimelineSettingsInput;
+  TimelineSourceState: TimelineSourceState;
+  TimelineSummary: TimelineSummary;
+  TimelineUpdate: TimelineUpdate;
   TokenGenerated: TokenGenerated;
   Tool: Omit<Tool, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversParentTypes['KillChainPhase']>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, workflowInstance?: Maybe<ResolversParentTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ToolAddInput: ToolAddInput;
@@ -44695,7 +45212,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'TimelineEvent' | 'TimelineSettings' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -45024,6 +45541,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  x_opencti_timeline_anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45118,6 +45636,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_request_access?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  x_opencti_timeline_anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
   x_opencti_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -45211,6 +45730,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  x_opencti_timeline_anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -48453,6 +48973,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  x_opencti_timeline_anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -49088,7 +49609,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'TimelineEvent' | 'TimelineSettings' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -50727,6 +51248,15 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualFieldPatch?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualFieldPatchArgs, 'id' | 'input'>>;
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  timelineEventAdd?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventAddArgs, 'input'>>;
+  timelineEventDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTimelineEventDeleteArgs, 'id'>>;
+  timelineEventEdit?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventEditArgs, 'id' | 'input'>>;
+  timelineEventHide?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventHideArgs, 'hidden' | 'id'>>;
+  timelineEventPin?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventPinArgs, 'id' | 'pinned'>>;
+  timelineImport?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineImportArgs, 'containerId' | 'extension'>>;
+  timelineRegenerate?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineRegenerateArgs, 'containerId'>>;
+  timelineSettingsUpdate?: Resolver<Maybe<ResolversTypes['TimelineSettings']>, ParentType, ContextType, RequireFields<MutationTimelineSettingsUpdateArgs, 'containerId' | 'input'>>;
+  timelineViewed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTimelineViewedArgs, 'containerId'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
@@ -52401,6 +52931,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForNotification?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
+  containerTimeline?: Resolver<Maybe<ResolversTypes['TimelineEventConnection']>, ParentType, ContextType, RequireFields<QueryContainerTimelineArgs, 'id'>>;
+  containerTimelineExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportArgs, 'format' | 'id'>>;
+  containerTimelineExportFile?: Resolver<Maybe<ResolversTypes['TimelineExportFile']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportFileArgs, 'format' | 'id'>>;
+  containerTimelineSummary?: Resolver<Maybe<ResolversTypes['TimelineSummary']>, ParentType, ContextType, RequireFields<QueryContainerTimelineSummaryArgs, 'id'>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
   containersAskAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAskAiSummaryArgs>>;
   containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
@@ -52750,6 +53284,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
+  timelineAnchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType, RequireFields<QueryTimelineAnchorsArgs, 'containerId'>>;
+  timelineEvent?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<QueryTimelineEventArgs, 'id'>>;
+  timelineRules?: Resolver<Array<ResolversTypes['TimelineRuleDefinition']>, ParentType, ContextType>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;
@@ -54824,6 +55361,7 @@ export type SubTypeEditMutationsResolvers<ContextType = any, ParentType extends 
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   aiBus?: SubscriptionResolver<Maybe<ResolversTypes['AIBus']>, "aiBus", ParentType, ContextType, RequireFields<SubscriptionAiBusArgs, 'id'>>;
+  containerTimelineUpdated?: SubscriptionResolver<Maybe<ResolversTypes['TimelineUpdate']>, "containerTimelineUpdated", ParentType, ContextType, RequireFields<SubscriptionContainerTimelineUpdatedArgs, 'id'>>;
   entitySetting?: SubscriptionResolver<Maybe<ResolversTypes['EntitySetting']>, "entitySetting", ParentType, ContextType, RequireFields<SubscriptionEntitySettingArgs, 'id'>>;
   externalReference?: SubscriptionResolver<Maybe<ResolversTypes['ExternalReference']>, "externalReference", ParentType, ContextType, RequireFields<SubscriptionExternalReferenceArgs, 'id'>>;
   group?: SubscriptionResolver<Maybe<ResolversTypes['Group']>, "group", ParentType, ContextType, RequireFields<SubscriptionGroupArgs, 'id'>>;
@@ -55595,6 +56133,147 @@ export type ThreatActorIndividualEdgeResolvers<ContextType = any, ParentType ext
 export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeries'] = ResolversParentTypes['TimeSeries']> = ResolversObject<{
   date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type TimelineAnchorsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineAnchors'] = ResolversParentTypes['TimelineAnchors']> = ResolversObject<{
+  changed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  closure?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  containment?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  first_adversary_activity?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  first_detection?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  first_response?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type TimelineEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineEvent'] = ResolversParentTypes['TimelineEvent']> = ResolversObject<{
+  analyst_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  annotatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  annotation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  editable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  element?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  element_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  element_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  event_end_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  event_time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  external_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hidden?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['TimelineEventKind'], ParentType, ContextType>;
+  lane?: Resolver<ResolversTypes['TimelineLane'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  ordering_hint?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  pinned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  precision?: Resolver<ResolversTypes['TimelinePrecision'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  rule_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source?: Resolver<ResolversTypes['TimelineEventSource'], ParentType, ContextType>;
+  source_state?: Resolver<Maybe<ResolversTypes['TimelineSourceState']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TimelineEventConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineEventConnection'] = ResolversParentTypes['TimelineEventConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['TimelineEventEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type TimelineEventEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineEventEdge'] = ResolversParentTypes['TimelineEventEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['TimelineEvent'], ParentType, ContextType>;
+}>;
+
+export type TimelineExportFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineExportFile'] = ResolversParentTypes['TimelineExportFile']> = ResolversObject<{
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  file_markings?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
+}>;
+
+export type TimelineKindDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineKindDistribution'] = ResolversParentTypes['TimelineKindDistribution']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['TimelineEventKind'], ParentType, ContextType>;
+}>;
+
+export type TimelineLaneDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineLaneDistribution'] = ResolversParentTypes['TimelineLaneDistribution']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  lane?: Resolver<ResolversTypes['TimelineLane'], ParentType, ContextType>;
+}>;
+
+export type TimelineRegenerationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineRegenerationResult'] = ResolversParentTypes['TimelineRegenerationResult']> = ResolversObject<{
+  anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  created_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  deleted_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  derived_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  duration_ms?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  manual_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updated_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type TimelineRuleDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineRuleDefinition'] = ResolversParentTypes['TimelineRuleDefinition']> = ResolversObject<{
+  available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kinds?: Resolver<Array<ResolversTypes['TimelineEventKind']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type TimelineSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSettings'] = ResolversParentTypes['TimelineSettings']> = ResolversObject<{
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  default_grouping?: Resolver<ResolversTypes['TimelineGrouping'], ParentType, ContextType>;
+  default_zoom_window?: Resolver<ResolversTypes['TimelineZoomWindow'], ParentType, ContextType>;
+  enabled_lanes?: Resolver<Array<ResolversTypes['TimelineLane']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hidden_kinds?: Resolver<Array<ResolversTypes['TimelineEventKind']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TimelineSourceStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSourceState'] = ResolversParentTypes['TimelineSourceState']> = ResolversObject<{
+  family?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  step?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  validation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  verdict?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type TimelineSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSummary'] = ResolversParentTypes['TimelineSummary']> = ResolversObject<{
+  anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
+  can_edit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  first_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  generated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hidden_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  kinds?: Resolver<Array<ResolversTypes['TimelineKindDistribution']>, ParentType, ContextType>;
+  lanes?: Resolver<Array<ResolversTypes['TimelineLaneDistribution']>, ParentType, ContextType>;
+  last_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  manual_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  pinned_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  settings?: Resolver<ResolversTypes['TimelineSettings'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type TimelineUpdateResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineUpdate'] = ResolversParentTypes['TimelineUpdate']> = ResolversObject<{
+  anchors?: Resolver<Maybe<ResolversTypes['TimelineAnchors']>, ParentType, ContextType>;
+  changed_event_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  update_type?: Resolver<ResolversTypes['TimelineUpdateType'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type TokenGeneratedResolvers<ContextType = any, ParentType extends ResolversParentTypes['TokenGenerated'] = ResolversParentTypes['TokenGenerated']> = ResolversObject<{
@@ -57561,6 +58240,19 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ThreatActorIndividualConnection?: ThreatActorIndividualConnectionResolvers<ContextType>;
   ThreatActorIndividualEdge?: ThreatActorIndividualEdgeResolvers<ContextType>;
   TimeSeries?: TimeSeriesResolvers<ContextType>;
+  TimelineAnchors?: TimelineAnchorsResolvers<ContextType>;
+  TimelineEvent?: TimelineEventResolvers<ContextType>;
+  TimelineEventConnection?: TimelineEventConnectionResolvers<ContextType>;
+  TimelineEventEdge?: TimelineEventEdgeResolvers<ContextType>;
+  TimelineExportFile?: TimelineExportFileResolvers<ContextType>;
+  TimelineKindDistribution?: TimelineKindDistributionResolvers<ContextType>;
+  TimelineLaneDistribution?: TimelineLaneDistributionResolvers<ContextType>;
+  TimelineRegenerationResult?: TimelineRegenerationResultResolvers<ContextType>;
+  TimelineRuleDefinition?: TimelineRuleDefinitionResolvers<ContextType>;
+  TimelineSettings?: TimelineSettingsResolvers<ContextType>;
+  TimelineSourceState?: TimelineSourceStateResolvers<ContextType>;
+  TimelineSummary?: TimelineSummaryResolvers<ContextType>;
+  TimelineUpdate?: TimelineUpdateResolvers<ContextType>;
   TokenGenerated?: TokenGeneratedResolvers<ContextType>;
   Tool?: ToolResolvers<ContextType>;
   ToolConnection?: ToolConnectionResolvers<ContextType>;

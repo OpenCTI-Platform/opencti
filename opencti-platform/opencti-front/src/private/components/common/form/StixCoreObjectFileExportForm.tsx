@@ -4,8 +4,8 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@components/common/files/FileManager';
 import FiligranIcon from '@components/common/FiligranIcon';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
-import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
+import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF, BUILT_IN_TIMELINE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import { AbcOutlined, DataObjectOutlined, HtmlOutlined, ImageOutlined, NumbersOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -107,6 +107,9 @@ export const renderIcon = (key: string) => {
       return <AbcOutlined fontSize="large" color="primary" />;
     case 'text/csv':
       return <NumbersOutlined fontSize="large" color="primary" />;
+    case 'image/png':
+    case 'image/svg+xml':
+      return <ImageOutlined fontSize="large" color="primary" />;
 
     default:
       return <FileExportOutline fontSize="large" color="primary" />;
@@ -134,7 +137,7 @@ const StixCoreObjectFileExportForm = ({
   const wasFintelPdf = useRef(false);
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
-  const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
+  const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value, BUILT_IN_TIMELINE.value].includes(connector ?? '');
 
   useEffect(() => {
     if (!isOpen) {
@@ -304,7 +307,8 @@ const StixCoreObjectFileExportForm = ({
         }, [values.connector, isFintelPdf]);
 
         useEffect(() => {
-          if (!isFintelPdf && (values.template || (values.fileToExport && values.fileToExport.value !== 'generatedFile'))) {
+          const isTimeline = values.connector?.value === BUILT_IN_TIMELINE.value;
+          if (!isFintelPdf && (isTimeline || values.template || (values.fileToExport && values.fileToExport.value !== 'generatedFile'))) {
             const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
               ? (values.fileToExport?.value === 'mappableContent'
                   ? scoName
@@ -316,7 +320,7 @@ const StixCoreObjectFileExportForm = ({
               utcIsoDate: nowUTC(),
             }));
           }
-        }, [isFintelPdf, values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
+        }, [isFintelPdf, values.connector?.value, values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
 
         useEffect(() => {
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
@@ -553,6 +557,7 @@ const StixCoreObjectFileExportForm = ({
                           className="mt-5"
                         />
                       )}
+                      {/* The timeline export applies the content ceiling to its events, like every export */}
                       {(values.connector.value !== BUILT_IN_HTML_TO_PDF.value || isFintelPdf) && (
                         <ObjectMarkingField
                           name="contentMaxMarkings"

@@ -96,7 +96,7 @@ export const WidgetConfigProvider = ({
     setConfig(buildConfig(host, initialWidget, initialVariableName));
     let initialStep = 0;
     if (initialWidget) {
-      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute' || initialWidget?.type === 'custom-attributes') {
+      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute' || initialWidget?.type === 'custom-attributes' || initialWidget?.type === 'case-timeline') {
         initialStep = 3;
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;

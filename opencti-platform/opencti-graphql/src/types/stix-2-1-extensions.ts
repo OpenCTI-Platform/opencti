@@ -18,6 +18,11 @@ export const STIX_EXT_OCTI_SCO = 'extension-definition--f93e2c80-4231-4f9a-af8b-
 // conflicting_fields - freshness_stale - sources_by_kind
 export const STIX_EXT_OCTI_PROVENANCE = 'extension-definition--283daa2f-7739-5345-a110-19d73676f670';
 
+// Incident and case timeline (named "opencti-timeline")
+// Attributes extensions
+// Analyst contributions to the timeline: manual events and annotations of derived events
+export const STIX_EXT_OCTI_TIMELINE = 'extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb';
+
 // Extensions from MITRE
 // Attributes extensions
 // mitre_id
