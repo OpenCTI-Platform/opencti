@@ -391,6 +391,29 @@ export const matchLocalCatalog = (facets: ResolvedFacets, contracts: BasicStoreE
   return results;
 };
 
+/**
+ * Time the XTM Hub requests of one computation may take together. The computation runs under the manager lock: once
+ * the budget is spent, the remaining gaps use the local catalog, so a slow Hub holds the lock at most this long plus
+ * the timeout of one request.
+ */
+export const HUB_QUERIES_BUDGET_MS = 60 * 1000;
+
+export const hubQueriesBudget = (budgetMs = HUB_QUERIES_BUDGET_MS, now: () => number = Date.now) => {
+  let spentMs = 0;
+  return {
+    track: async <T>(request: () => Promise<T>): Promise<T> => {
+      const startedAt = now();
+      try {
+        return await request();
+      } finally {
+        spentMs += now() - startedAt;
+      }
+    },
+    exhausted: () => spentMs >= budgetMs,
+    spentMs: () => spentMs,
+  };
+};
+
 /** XTM Hub catalog status of a gap: a truncated ranking is reported as partial, never as complete. */
 export const hubCatalogStatusOf = (result: HubIntegrationCoverageResult): HubCatalogStatus => {
   return result.status === 'ok' && result.truncated ? 'partial' : result.status;
@@ -491,8 +514,9 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
   const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
   const deployedImages = new Set(connectors.map((connector) => connector.manager_contract_image).filter((image): image is string => !!image));
   const hubPlatform = await hubPlatformOf(context);
-  // Once XTM Hub fails during a run, the remaining criteria use the local catalog instead of waiting for each request
+  // Once XTM Hub fails or uses up the time budget of the run, the remaining criteria use the local catalog
   let hubFailure: HubCatalogStatus | null = null;
+  const hubBudget = hubQueriesBudget();
   const keptKeys = new Set<string>();
   const proposals: RecommendationProposal[] = [];
   const nowIso = new Date().toISOString();
@@ -527,18 +551,24 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
       if (isGap) {
         let hubMatches: HubIntegrationCoverageMatch[] = [];
         if (hubPlatform && !hubFailure) {
-          const hubResult = await xtmHubClient.integrationsByCoverage(hubPlatform, {
+          const hubResult = await hubBudget.track(() => xtmHubClient.integrationsByCoverage(hubPlatform, {
             objectTypes: resolved.objectTypes,
             sectors: resolved.sectors,
             regions: resolved.regions,
             integrationTypes: HUB_INTEGRATION_TYPES,
             first: settings.gaps.max_recommendations * 3,
-          });
+          }));
           hubStatus = hubCatalogStatusOf(hubResult);
           hubMatches = hubResult.matches;
           if (hubResult.status === 'unreachable' || hubResult.status === 'error') {
             hubFailure = hubResult.status;
             logApp.warn('[OPENCTI-MODULE] Source intelligence stops querying XTM Hub for the rest of the run', { status: hubResult.status });
+          } else if (hubBudget.exhausted()) {
+            hubFailure = 'unreachable';
+            logApp.warn('[OPENCTI-MODULE] Source intelligence stops querying XTM Hub for the rest of the run, its requests used up the time budget', {
+              budget_ms: HUB_QUERIES_BUDGET_MS,
+              spent_ms: hubBudget.spentMs(),
+            });
           }
         }
         recommended = mergeRecommendedConnectors(hubMatches, matchLocalCatalog(resolved, contracts), contracts, deployedImages, settings.gaps.max_recommendations);

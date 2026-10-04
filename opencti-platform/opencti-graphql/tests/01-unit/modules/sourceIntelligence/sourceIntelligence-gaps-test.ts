@@ -5,6 +5,7 @@ import {
   countRelationshipsByValue,
   countRelationshipsWithValueListed,
   hubCatalogStatusOf,
+  hubQueriesBudget,
   latestCompatibleContractsBySlug,
   mergeRecommendedConnectors,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
@@ -53,6 +54,23 @@ const localMatch = (slug: string, score: number): CollectionGapRecommendedConnec
 const contract = (slug: string) => ({ slug, catalog_id: 'catalog-1', image: `opencti/connector-${slug}`, manager_supported: true }) as unknown as BasicStoreEntityCatalogContract;
 
 describe('Source intelligence collection gaps', () => {
+  it('should spend the XTM Hub time budget of a run across its requests, failed ones included', async () => {
+    let clock = 0;
+    const budget = hubQueriesBudget(1000, () => clock);
+    const slowRequest = (durationMs: number, fail = false) => async () => {
+      clock += durationMs;
+      if (fail) throw new Error('XTM Hub timeout');
+      return 'done';
+    };
+    await expect(budget.track(slowRequest(400))).resolves.toBe('done');
+    expect(budget.exhausted()).toBe(false);
+    await expect(budget.track(slowRequest(500, true))).rejects.toThrow('XTM Hub timeout');
+    expect(budget.spentMs()).toBe(900);
+    expect(budget.exhausted()).toBe(false);
+    await budget.track(slowRequest(100));
+    expect(budget.exhausted()).toBe(true);
+  });
+
   it('should report a truncated XTM Hub ranking as partial, never as complete', () => {
     expect(hubCatalogStatusOf({ status: 'ok', matches: [], truncated: false })).toBe('ok');
     expect(hubCatalogStatusOf({ status: 'ok', matches: [], truncated: true })).toBe('partial');
