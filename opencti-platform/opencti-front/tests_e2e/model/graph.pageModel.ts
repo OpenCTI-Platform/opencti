@@ -271,10 +271,11 @@ export default class GraphPage {
       for (let fx = 0.05; fx < 0.95; fx += 0.1) candidates.push([box.width * fx, box.height * fy]);
     }
     const farFromNodes = candidates.filter(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > 60));
+    const onPage = farFromNodes.map(([cx, cy]): [number, number] => [box.x + cx, box.y + cy]);
     return this.page.evaluate((points) => points.find(([x, y]) => {
       const element = document.elementFromPoint(x, y);
       return element?.tagName === 'CANVAS';
-    }) ?? null, farFromNodes.map(([cx, cy]) => [box.x + cx, box.y + cy]));
+    }) ?? null, onPage);
   }
 
   /**
