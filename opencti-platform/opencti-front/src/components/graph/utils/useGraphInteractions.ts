@@ -58,7 +58,6 @@ const useGraphInteractions = () => {
     disabledEntityTypes,
     disabledMarkings,
     disabledCreators,
-    selectedLinks,
     selectedNodes,
     layoutMode,
     hiddenNodeIds = [],
@@ -348,22 +347,14 @@ const useGraphInteractions = () => {
     setGraphStateProp('zoom', z);
   };
 
-  const addSelectedLink = (link: GraphLink) => {
-    const existing = selectedLinks.find((l) => l.id === link.id);
-    if (!existing) setSelectedLinks([...selectedLinks, link]);
-  };
-
-  const removeSelectedLink = (link: GraphLink) => {
-    setSelectedLinks(selectedLinks.filter((l) => l.id !== link.id));
-  };
-
-  const addSelectedNode = (node: GraphNode) => {
-    const existing = selectedNodes.find((n) => n.id === node.id);
-    if (!existing) setSelectedNodes([...selectedNodes, node]);
-  };
-
-  const removeSelectedNode = (node: GraphNode) => {
-    setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
+  // The additive selection reads the selection of the latest state: the click handlers the
+  // rendering library holds can date from the render before a previous click.
+  const toggleInSelection = (key: 'selectedNodes' | 'selectedLinks', element: GraphNode | GraphLink) => {
+    setGraphState((oldState) => {
+      const current = (oldState[key] ?? []) as (GraphNode | GraphLink)[];
+      const next = current.some((e) => e.id === element.id) ? current.filter((e) => e.id !== element.id) : [...current, element];
+      return { ...oldState, [key]: next };
+    });
   };
 
   /**
@@ -373,10 +364,8 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleNode: LibGraphProps['onNodeClick'] = (node, e) => {
-    const clickedNode = selectedNodes.find((n) => n.id === node.id);
     if (e.ctrlKey || e.shiftKey || e.altKey) {
-      if (clickedNode) removeSelectedNode(node);
-      else addSelectedNode(node);
+      toggleInSelection('selectedNodes', node);
     } else {
       setSelectedLinks([]);
       setSelectedNodes([node]);
@@ -390,10 +379,8 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleLink: LibGraphProps['onLinkClick'] = (link, e) => {
-    const clickedLink = selectedLinks.find((l) => l.id === link.id);
     if (e.ctrlKey || e.shiftKey || e.altKey) {
-      if (clickedLink) removeSelectedLink(link);
-      else addSelectedLink(link);
+      toggleInSelection('selectedLinks', link);
     } else {
       setSelectedNodes([]);
       setSelectedLinks([link]);
