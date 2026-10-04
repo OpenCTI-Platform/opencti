@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreCommon, BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import {
   FilterMode,
   InvestigationApprovalKind,
@@ -36,7 +36,7 @@ import {
 } from '../../generated/graphql';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { elFindByIds } from '../../database/engine';
-import { internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
 import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../../database/middleware';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -398,9 +398,11 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   if (TERMINAL_RUN_STATUSES.includes(run.run_status)) {
     return run;
   }
-  // Read under the run lock: an engine run recorded just before the cancellation is stopped too.
+  // Under the actions lock, then the run lock: an approval being applied (a task,
+  // a draft validation) finishes before its gate can be rejected, and an engine
+  // run recorded just before the cancellation is stopped too.
   const cancellation: { done: boolean; engineId: string | null } = { done: false, engineId: null };
-  const updated = await updateInvestigationRun(context, id, (current) => {
+  const updated = await withRunActions(context, id, () => updateInvestigationRun(context, id, (current) => {
     if (!ACTIVE_RUN_STATUSES.includes(current.run_status)) return null;
     cancellation.done = true;
     cancellation.engineId = current.run_phase === InvestigationRunPhase.Investigating ? current.xtm_investigation_id ?? null : null;
@@ -412,7 +414,7 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
         ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Run cancelled' }
         : approval)),
     };
-  });
+  }));
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -841,6 +843,30 @@ export const listPolicyEnrichmentConnectors = async (context: AuthContext, user:
  * paid-connector approvals apply; a job already asked for by this run is
  * reused rather than run twice.
  */
+/**
+ * What an investigation may enrich: its subject, the objects of its case, the
+ * OpenCTI objects it cites and what its earlier waves brought into its draft.
+ * The engine never extends an enrichment to the rest of the graph.
+ */
+const enrichmentScopeOf = async (context: AuthContext, run: BasicStoreEntityInvestigationRun): Promise<Set<string>> => {
+  const scope = new Set<string>([run.subject_id]);
+  (run.evidence ?? []).forEach((item) => {
+    if (item.opencti_id) scope.add(item.opencti_id);
+    if (item.standard_id) scope.add(item.standard_id);
+  });
+  (run.enrichment_waves ?? []).forEach((wave) => (wave.delta ?? []).forEach((item) => {
+    scope.add(item.id);
+    if (item.standard_id) scope.add(item.standard_id);
+  }));
+  const caseIds = Array.from(new Set([run.subject_id, ...(run.case_id ? [run.case_id] : [])]));
+  const refs = await topRelationsList<BasicStoreRelation>(runContextFor(context, run), INVESTIGATION_MANAGER_USER, RELATION_OBJECT, {
+    fromId: caseIds,
+    first: INVESTIGATION_LIMITS.contextEntities,
+  }) as unknown as BasicStoreRelation[];
+  refs.forEach((ref) => scope.add(ref.toId));
+  return scope;
+};
+
 export const requestInvestigationEnrichment = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunEnrichmentRequestInput) => {
   const run = await loadRunForEngine(context, user, id);
   const policy = run.policy_id ? await loadInvestigationPolicy(outOfDraft(context), run.policy_id) : null;
@@ -852,13 +878,17 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
   const allowedConnectorIds = new Set(connectors.map((connector) => connector.internal_id));
   const entityIds = Array.from(new Set(input.entity_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
   const connectorIds = Array.from(new Set(input.connector_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
-  // Entities the identity of the run can see in its draft, by internal or standard id.
+  // Entities of the investigation's scope the identity of the run can see in
+  // its draft, by internal or standard id.
+  const scope = await enrichmentScopeOf(context, run);
   const visible = await elFindByIds<BasicStoreEntity>(runContextFor(context, run), user, entityIds, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
   const resolvedIds = new Map<string, string>();
-  visible.forEach((element) => {
-    resolvedIds.set(element.internal_id, element.internal_id);
-    if (element.standard_id) resolvedIds.set(element.standard_id, element.internal_id);
-  });
+  visible
+    .filter((element) => scope.has(element.internal_id) || (!!element.standard_id && scope.has(element.standard_id)))
+    .forEach((element) => {
+      resolvedIds.set(element.internal_id, element.internal_id);
+      if (element.standard_id) resolvedIds.set(element.standard_id, element.internal_id);
+    });
   const accepted: Array<{ entity_id: string; connector_id: string; status: InvestigationEnrichmentRequestStatus }> = [];
   const rejected: Array<{ entity_id: string; connector_id: string; reason: string }> = [];
   const waveId = uuidv4();
@@ -950,9 +980,10 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
   const run = await findAccessibleRun(context, user, id);
   const wave = (run.enrichment_waves ?? []).find((item) => item.id === waveId);
   if (!wave) return null;
-  const jobs = run.enrichment_requests.filter((request) => wave.request_ids.includes(request.id));
-  // The delta was collected as the run identity: each reader gets only the
-  // objects of the run draft it may read (markings, organizations, members).
+  // The jobs and the delta were recorded as the run identity: each reader gets
+  // only the ones naming objects it may read (markings, organizations, members).
+  const waveJobs = run.enrichment_requests.filter((request) => wave.request_ids.includes(request.id));
+  const jobs = await filterReadableRunRecords(context, user, run, waveJobs);
   const collected = wave.delta ?? [];
   const readable = collected.length === 0 ? [] : await elFindByIds<BasicStoreEntity>(
     runContextFor(context, run),
@@ -963,7 +994,7 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
   const readableIds = new Set(readable.map((element) => element.internal_id));
   return {
     id: wave.id,
-    status: wave.delta_computed ? wave.status : computeWaveStatus(jobs),
+    status: wave.delta_computed ? wave.status : computeWaveStatus(waveJobs),
     requested_at: wave.requested_at,
     completed_at: wave.completed_at ?? null,
     jobs: jobs.map((job) => ({
@@ -983,6 +1014,34 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
  * reader sees them: in the run draft when the reader may open it, else live.
  * An entity the reader cannot see is left out, never named.
  */
+// The entities of a run a reader may read, in its draft while the reader can
+// open it, else in the live graph: by internal and standard id.
+const readableRunEntityIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun, ids: string[]) => {
+  const unique = Array.from(new Set(ids));
+  if (unique.length === 0) return new Set<string>();
+  const draft = run.draft_id ? await findDraftById(outOfDraft(context), user, run.draft_id) : null;
+  const readContext = draft ? runContextFor(context, run) : outOfDraft(context);
+  const elements = await elFindByIds<BasicStoreEntity>(readContext, user, unique, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, baseData: true }) as BasicStoreEntity[];
+  return new Set(elements.flatMap((element) => [element.internal_id, element.standard_id]));
+};
+
+/**
+ * Records of a run that name an entity (approvals, enrichment requests, wave
+ * jobs) were written as the run identity, which may read more than a reader:
+ * a reader gets only those whose entity it may read, or that name none.
+ */
+export const filterReadableRunRecords = async <T extends { entity_id?: string | null }>(
+  context: AuthContext,
+  user: AuthUser,
+  run: BasicStoreEntityInvestigationRun,
+  records: T[],
+): Promise<T[]> => {
+  const named = records.flatMap((record) => (record.entity_id ? [record.entity_id] : []));
+  if (named.length === 0) return records;
+  const readable = await readableRunEntityIds(context, user, run, named);
+  return records.filter((record) => !record.entity_id || readable.has(record.entity_id));
+};
+
 export const findInvestigationRunEnrichmentEntities = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
   const ids = Array.from(new Set([
     ...(run.enrichment_requests ?? []).map((request) => request.entity_id),

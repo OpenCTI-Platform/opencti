@@ -38,6 +38,7 @@ import {
   findInvestigationRunEnrichmentEntities,
   findInvestigationRunEnrichmentWave,
   findInvestigationRunsPaginated,
+  filterReadableRunRecords,
   requestInvestigationEnrichment,
 } from './investigationRun-domain';
 import {
@@ -92,8 +93,8 @@ const investigationRunResolvers: Resolvers = {
     timeline: (run) => run.timeline ?? [],
     recommendations: (run) => run.recommendations ?? [],
     analyst_feedback: (run) => run.analyst_feedback ?? [],
-    approvals: (run) => run.approvals ?? [],
-    enrichment_requests: (run) => run.enrichment_requests ?? [],
+    approvals: (run, _, context) => filterReadableRunRecords(context, context.user, run, run.approvals ?? []),
+    enrichment_requests: (run, _, context) => filterReadableRunRecords(context, context.user, run, run.enrichment_requests ?? []),
     enrichment_entities: (run, _, context) => findInvestigationRunEnrichmentEntities(context, context.user, run),
     report_sources: (run) => run.report_sources ?? [],
     report_id: (run) => run.outputs?.report_id ?? null,
