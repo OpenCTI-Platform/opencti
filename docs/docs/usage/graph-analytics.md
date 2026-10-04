@@ -29,7 +29,13 @@ Graph analytics are part of the Community Edition and do not use any AI.
 
 ![Investigation opened with the selected paths](assets/graph-analytics-investigation.png)
 
-The search is bounded in time and in explored entities. When a limit is reached, a warning tells you that longer paths may exist: narrow the search with relationship or entity types.
+When no path is found, the result offers the next step: **Allow longer paths** raises the maximum path length by one and searches again, and **Remove the type filters** searches again without relationship and entity type restrictions.
+
+![Connect to... dialog with no path found and the actions to allow longer paths or remove the type filters](assets/graph-analytics-path-empty.png)
+
+The search is bounded in time and in explored entities. When a limit is reached, a warning tells you that longer paths may exist, and **Narrow by relationship type** takes you to the relationship type filter: a narrower search explores fewer entities. The neighborhood chips at the top of the dialog add or remove a relationship type in one click.
+
+![Connect to... dialog whose search reached its exploration limit](assets/graph-analytics-path-limit.png)
 
 ### In an investigation
 
@@ -41,14 +47,19 @@ Select two entities in the investigation graph and click **Find path** in the to
 
 Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, domain names, hostnames, IP addresses, URLs and certificates have a **Similar** tab, right after **Analyses**, listing their look-alikes. Similar reports are found in investigations (**Expand by similarity**) and in the similarity matrix widget. For each similar entity, the tab shows:
 
-- the **similarity score**, combining a weighted Jaccard index of the shared elements and a structural similarity of the relationship types,
+- how **similar** it is, as a percentage with a bar; hover the percentage to see the two measures it combines, a weighted Jaccard index of the shared elements and a structural similarity of the relationship types,
+- the number of **shared elements** and when the similarity was computed,
 - the **shared evidence**, grouped by family, each element being a link to the entity,
 - a flag when an existing **OpenAEV scenario** covers the similar threat (through its Security Coverage), with a filter to only list those,
 - actions to **compare side by side** or open the entity in a new tab.
 
-![Similar tab of an intrusion set with the score and the shared evidence of each look-alike](assets/graph-analytics-similar-tab.png)
+![Similar tab of an intrusion set with the similarity and the shared evidence of each look-alike](assets/graph-analytics-similar-tab.png)
 
-The **Investigate these similar entities** button starts an investigation with the entity, its look-alikes and the shared evidence.
+![Tooltip of a similarity percentage naming the two measures it combines](assets/graph-analytics-similar-score.png)
+
+The **Investigate these similar entities** button, on the same toolbar as the filters and **Refresh similarity**, starts an investigation with the entity, its look-alikes and the shared evidence.
+
+**Compare side by side** lines up the description, author, creation date, graph degree, graph cluster, markings and labels of both entities, then lists the shared evidence.
 
 ![Side by side comparison of two similar intrusion sets](assets/graph-analytics-compare.png)
 
@@ -85,17 +96,31 @@ The **Analyses > Clusters** page lists clusters of entities that belong together
 
 The platform computes infrastructure clusters from shared features. On large platforms, the optional analytics process detects communities in the whole graph and computes the three kinds.
 
-The page shows who computes the clusters (the platform, or the optional analytics process on large platforms), when the knowledge was last analyzed, and the growth of the largest clusters since they appeared.
+The top of the page states whether the analytics are up to date or analysing, with the time of the last full pass, then three counters: clusters, similarity links, and entities waiting for analysis. When entities are waiting, **Show the entities** lists the next ones you can access, in processing order, and users who can edit knowledge can click **Analyse them now** to have them recomputed at the next run. **Details** tells who computes the clusters: the platform, or the optional analytics process on large platforms.
 
-![Clusters page with the analytics status, the growth of the largest clusters and the cluster list](assets/graph-analytics-clusters.png)
+![Clusters page with the analytics status, the counters and the cluster list](assets/graph-analytics-clusters.png)
+
+![Clusters page while four entities wait for analysis](assets/graph-analytics-clusters-pending.png)
+
+![Entities waiting for analysis, with the action to analyse them now](assets/graph-analytics-pending.png)
+
+A cluster is named after the first of its representative entities you can access, for instance "Infrastructure cluster around update-cdn-sync.com"; its identifier is shown when you hover the name. The list shows the number of members, the first representatives and the number of other members, whether the cluster was promoted, and when it was computed. **Show the chart** displays the growth of the largest clusters since they appeared; it is shown by default from three clusters.
+
+![Growth of the largest clusters since they appeared](assets/graph-analytics-clusters-growth.png)
+
+Until the first full pass has found clusters, the page explains what clusters are and when the next full pass starts.
+
+![Clusters page before the first clusters are found](assets/graph-analytics-clusters-first-use.png)
 
 The detail of a cluster shows its members (most connected first), its shared features, its representative entities and the growth of its membership. From there:
 
-- **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features.
+- **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features. The dialog lists the members it will contain before you confirm.
 - **Create Campaign** creates a Campaign related to the members you can access.
 - **Add to investigation** opens the members and shared features in a new investigation.
 
-![Detail of an infrastructure cluster sharing a certificate and a hosting address](assets/graph-analytics-cluster-detail.png)
+![Detail of an infrastructure cluster sharing a certificate](assets/graph-analytics-cluster-detail.png)
+
+![Creation of a grouping from a cluster, with the members it will contain](assets/graph-analytics-cluster-promote.png)
 
 A Grouping, a Campaign or an investigation always holds every member you can access: a cluster with more than 2,000 accessible members cannot be promoted or added to an investigation, and the cluster page says so.
 
@@ -135,7 +160,7 @@ Three widgets are dedicated to graph analytics (see [widget creation](widgets.md
 
 All three are available in public dashboards. Like any ranking on graph metrics, the top hubs are only shown to users who can read every relationship of the platform; in a public dashboard, this depends on the access of its author and on the markings the dashboard shares.
 
-To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the cluster size over time, the similarity of the most connected threats, two lists ranked by graph degree (the threat and malware hubs and the infrastructure hubs) and the top hubs of the whole knowledge graph. Like any dashboard, it can then be edited, shared or made public.
+To start from a ready-made dashboard, open **Dashboards**, click **Create from template** next to **Import dashboard** and choose **Graph analytics**. The created dashboard holds the largest clusters with their members over time, the similarity of the most connected threats, two lists ranked by graph degree (the threat and malware hubs and the infrastructure hubs) and the top hubs of the whole knowledge graph. Like any dashboard, it can then be edited, shared or made public. A cluster widget without data says so: clusters appear when an analytics pass finds entities sharing infrastructure.
 
 ![Dashboard created from the Graph analytics template](assets/graph-analytics-dashboard.png)
 
