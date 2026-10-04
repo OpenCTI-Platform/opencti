@@ -123,7 +123,7 @@ When nothing changed in the scope during the period, the page says so and **Wide
 
 ![Landscape changes without a saved filter to start from](assets/landscape-changes-first-use.png)
 
-If a computation cannot complete, the page explains why (for example the platform restarted during the computation, or your access to part of the knowledge changed since it was computed) and **Compute again** runs it once more with its own scope and period.
+If a computation cannot complete, the page explains why (for example the platform restarted during the computation, or your access to part of the knowledge changed since it was computed) and **Compute again** runs it once more with its own scope and period. If its result cannot be read for a moment (for example a network interruption), the page says that the landscape changes could not be read, keeps trying on its own, and **Retry** reads it again right away.
 
 The result contains:
 
