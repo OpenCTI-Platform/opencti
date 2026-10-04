@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import React, { type ComponentType, lazy } from 'react';
 import { Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import HubFirstUse from '../common/hub/HubFirstUse';
 import Root from './Root';
 import type { DefenseArea } from './defenseAreas';
@@ -27,12 +27,14 @@ const loading = lazy(() => new Promise<{ default: ComponentType }>(() => {}));
 
 const AREAS = [area('hunts', 'Hunt'), area('matrix'), area('assurance')];
 
-const renderDefense = (areas: DefenseArea[], route: string) => testRender(
+const KNOWLEDGE_READER = [{ name: 'KNOWLEDGE' }];
+
+const renderDefense = (areas: DefenseArea[], route: string, capabilities = KNOWLEDGE_READER) => testRender(
   <Routes>
     <Route path="/dashboard/defense/*" element={<Root areas={areas} />} />
     <Route path="/dashboard" element={<div>home page</div>} />
   </Routes>,
-  { route },
+  { route, userContext: createMockUserContext({ me: { capabilities } }) },
 );
 
 describe('Defense root', () => {
@@ -121,5 +123,11 @@ describe('Defense root', () => {
     expect(await screen.findByText('Nothing in Defense is available to you')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the dashboard' })).toHaveAttribute('href', '/dashboard');
     expect(screen.queryByText('home page')).not.toBeInTheDocument();
+  });
+
+  it('applies the knowledge access of the menu to a direct link, before the needs of each area', async () => {
+    renderDefense(AREAS, '/dashboard/defense/matrix', []);
+    expect(await screen.findByText('Nothing in Defense is available to you')).toBeInTheDocument();
+    expect(screen.queryByText('matrix area')).not.toBeInTheDocument();
   });
 });

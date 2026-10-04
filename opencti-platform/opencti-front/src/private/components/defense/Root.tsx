@@ -7,7 +7,7 @@ import PageContainer from '../../../components/PageContainer';
 import { useFormatter } from '../../../components/i18n';
 import { useHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
-import { isGrantedTo } from '../../../utils/hooks/useGranted';
+import { isGrantedTo, KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { HubEntryContext } from '../common/hub/HubEntryContext';
 import HubNoAccess from '../common/hub/HubNoAccess';
 import HubTabBar from '../common/hub/HubTabBar';
@@ -68,7 +68,10 @@ const DefenseAreaPage = ({ area }: { area: DefenseArea }) => {
 const Root = ({ areas = DEFENSE_AREAS }: DefenseRootProps) => {
   const hiddenEntities = useHiddenEntities().filter((type): type is string => !!type);
   const { me } = useAuth();
-  const visibleAreas = visibleDefenseAreas(areas, hiddenEntities, (needs) => isGrantedTo(me, needs));
+  // The menu lists the hub among the knowledge sections: a direct link applies the same rule before each area's own
+  const visibleAreas = isGrantedTo(me, [KNOWLEDGE])
+    ? visibleDefenseAreas(areas, hiddenEntities, (needs) => isGrantedTo(me, needs))
+    : [];
   if (visibleAreas.length === 0) {
     return <HubNoAccess hub="Defense" back={{ link: '/dashboard', label: 'Back to the dashboard' }} />;
   }

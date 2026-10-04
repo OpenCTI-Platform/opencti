@@ -2291,3 +2291,20 @@ The library already does this for its `-transparency-N` variants.
 **Removal test.** Delete `custom-theme-tokens.css` and its import, set a purple
 paper on a custom theme: a drawer, the fields inside it and its header are all
 purple, and a field still stands out from the drawer.
+
+## 62. No `Alert` and no `Hero` in the release in service (1.1.0)
+
+**Reported** on #18714: the hub pages (Defense, Data curation) were written against
+an `Alert` (no-access notice) and a `Hero` / `HeroHeader` / `HeroBody` (first-use
+state) that 1.1.0 does not export, and the production build failed on the missing exports.
+
+**Today.** The no-access notice uses the MUI `Alert` with `AlertTitle` (not gated by
+`check-mui-regression.mjs`); the first-use state is composed from `Card`, `CardHeader`,
+`CardTitle`, `CardContent` and `CardFooter`, with a `Thumbnail` for the entry icon.
+
+**Ask.** Ship an inline notice (`Alert`: severity, title, description, action slot) and
+a page-level empty / first-use surface (`Hero`) in a release the product can pin.
+
+**Removal test.** Bump the pin to a release that exports both, swap
+`common/hub/HubNoAccess.tsx` and `common/hub/HubFirstUse.tsx` back to them, and the
+Defense `Root.test.tsx` still passes unchanged.

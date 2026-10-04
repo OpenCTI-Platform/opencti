@@ -1,14 +1,13 @@
 # Curation
 
-**Data > Curation** is the data-quality home of your knowledge base. Instead of separate menu entries, the work that keeps the knowledge clean lives in one place, as tabs:
+**Data > Curation** is the data-quality home of your knowledge base. Instead of separate menu entries, the work that keeps the knowledge clean lives in one place, as tabs. The tabs available today come from [provenance](provenance.md):
 
 | Tab | What you do there |
 | --- | --- |
-| Inbox | Review what the curation engine proposes: possible duplicates, conflicting values, objects to merge. |
 | Conflicts | See the attributes your sources disagree on, and which value each source asserts ([details](provenance.md#curation-tabs)). |
 | Stale knowledge | Find knowledge whose sources stopped confirming it, according to the knowledge decay rules ([details](provenance.md#curation-tabs)). |
-| Merges | Follow the merges that were applied, and undo one when it was wrong. |
-| Knowledge health | Measure the quality of the knowledge base over time. |
+
+Other data-quality pages join the hub as new tabs when they become available, without a new menu entry.
 
 ![The Data menu expanded on Curation, with the Conflicts tab open under the breadcrumb Data, Curation, Conflicts](assets/curation-hub-conflicts-open.png)
 

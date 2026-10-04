@@ -1,18 +1,18 @@
 # Defense
 
-The **Defense** entry of the left menu, right after **Observations**, is where intelligence turns into detection and proof. It groups the areas that answer three questions about your threat knowledge:
+The **Defense** entry of the left menu, right after **Observations**, is where intelligence turns into detection and proof. It is built to group the areas that answer three questions about your threat knowledge. These areas are planned and none of them ships with this version yet, so the Defense entry is not shown (see [When the entry is shown](#when-the-entry-is-shown)):
 
-| Area | Question it answers | Path |
-| --- | --- | --- |
-| Hunts | Is this threat already in my environment? | `Defense > Hunts` |
-| Defense matrix | Which techniques do my security platforms detect, and which ones were validated? | `Defense > Defense matrix` |
-| Dissemination assurance | Did the indicators I shared actually reach my security platforms, and do they still work there? | `Defense > Dissemination assurance` |
+| Area | Question it answers | Path | Status |
+| --- | --- | --- | --- |
+| Hunts | Is this threat already in my environment? | `Defense > Hunts` | Planned |
+| Defense matrix | Which techniques do my security platforms detect, and which ones were validated? | `Defense > Defense matrix` | Planned |
+| Dissemination assurance | Did the indicators I shared actually reach my security platforms, and do they still work there? | `Defense > Dissemination assurance` | Planned |
 
 ## When the entry is shown
 
 - The entry appears as soon as at least one of its areas is available on your platform. A platform where none of them is available shows no Defense entry at all, so the menu never offers an empty page.
 - An area whose entity type is hidden in **Settings > Customization > Entity types** (for example the Hunt entity type) disappears from the menu, and the Defense entry disappears with it when it was the last one.
-- Each area has its own permission check: an area you are not allowed to use is not listed.
+- Like the other knowledge sections, the entry requires access to the knowledge, and so does a direct link to one of its areas. Each area then has its own permission check: an area you are not allowed to use is not listed.
 
 ## Navigating
 
