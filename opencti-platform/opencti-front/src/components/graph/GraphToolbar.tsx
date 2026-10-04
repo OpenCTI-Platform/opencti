@@ -133,9 +133,9 @@ const GraphToolbar = ({
   };
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
-  // In full screen the graph covers the navigation, so the toolbar starts at the edge.
-  let paddingLeft = navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH;
-  if (isFullscreen) paddingLeft = 0;
+  // The toolbar starts where the navigation ends; in full screen the graph covers the navigation.
+  let navOffset = navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH;
+  if (isFullscreen) navOffset = 0;
   const editable = context !== 'analyses';
   const hasCounters = !!view && view.counters.length > 0;
 
@@ -150,13 +150,12 @@ const GraphToolbar = ({
       style={{
         ...layerInputVars,
         position: 'fixed',
-        left: 0,
+        left: navOffset,
         right: 'var(--chatbot-sidebar-width, 0px)',
         bottom: posBottom,
         zIndex: 1,
         display: 'flex',
         flexDirection: 'column',
-        paddingLeft,
         transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
         height: showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE : GRAPH_TOOLBAR_HEIGHT,
         overflow: 'hidden',

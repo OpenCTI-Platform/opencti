@@ -347,8 +347,9 @@
         "imported-from-library",
         "no-hardcoded-padding"
       ],
-      "reason": "graph experience: the panels floating over the graph canvas (legend and its minimized pill, hover card, empty state), padding owned by the padding prop",
+      "reason": "graph experience: the panels floating over the graph canvas (legend and its minimized pill, hover card, empty state) and the toolbar docked under it on the same surface, padding owned by the padding prop",
       "files": [
+        "opencti-platform/opencti-front/src/components/graph/GraphToolbar.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
