@@ -860,7 +860,7 @@ export const landscapeResultReferencedIds = (aggregates: LandscapeDiffAggregates
  * a reclassification after the computation (new marking, restricted sharing) is never leaked, not even as a count.
  * A result whose contributors are unknown is never served.
  */
-const isLandscapeResultAccessible = async (
+export const isLandscapeResultAccessible = async (
   context: AuthContext,
   user: AuthUser,
   contributors: string[] | null,

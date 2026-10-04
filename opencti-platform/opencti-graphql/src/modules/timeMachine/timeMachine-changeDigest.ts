@@ -7,13 +7,15 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixObject } from '../../types/stix-2-1-common';
 import type { FilterGroup } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { computeLandscapeDiff } from './landscapeDiff-domain';
+import { computeLandscapeDiff, isLandscapeResultAccessible } from './landscapeDiff-domain';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from './timeMachine-types';
 
 export const TRIGGER_TYPE_CHANGE_DIGEST = 'change_digest';
 const CHANGE_DIGEST_MAX_ENTITIES: number = conf.get('time_machine:change_digest_max_entities') || 500;
 // Maximum number of changed entities listed in a change digest notification
 const CHANGE_DIGEST_MAX_LINES = 50;
+// A digest whose content changes access during its computation is computed once more, then skipped for the period
+const CHANGE_DIGEST_MAX_ATTEMPTS = 2;
 
 export interface ChangeDigestTrigger {
   internal_id: string;
@@ -89,6 +91,9 @@ export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates, opts
  * Build the content of a change digest for one recipient: the landscape diff of the trigger
  * filter set over the digest period, computed with the rights of the recipient.
  * Each changed entity becomes one notification line, the first emitted line carries the overall summary.
+ * Right before emission, every element that shaped the digest (counted or named) must still be accessible:
+ * when access changed during the computation the digest is computed again, and skipped for this period
+ * if access keeps changing, so a reclassified element is never leaked, not even as a count.
  * The digest is counted as sent by the notification manager, once it is stored.
  */
 export const buildChangeDigestData = async (
@@ -100,32 +105,34 @@ export const buildChangeDigestData = async (
 ): Promise<ChangeDigestData[]> => {
   const entityTypes = trigger.scope_entity_types && trigger.scope_entity_types.length > 0 ? trigger.scope_entity_types : [ABSTRACT_STIX_DOMAIN_OBJECT];
   const scope = { filters: parseTriggerFilters(trigger.filters), entityTypes };
-  const computation = await computeLandscapeDiff(context, user, scope, from, to, 'entity_type', { maxEntities: CHANGE_DIGEST_MAX_ENTITIES });
-  const changed = computation.entities.slice(0, CHANGE_DIGEST_MAX_LINES);
-  if (changed.length === 0) {
-    return [];
-  }
-  const instances = await stixLoadByIds(context, user, changed.map((summary) => summary.entity_id)) as StixObject[];
-  const instancesById = new Map<string, StixObject>();
-  instances.forEach((instance) => {
-    const internalId = instance.extensions?.[STIX_EXT_OCTI]?.id;
-    if (internalId) instancesById.set(internalId, instance);
-  });
-  const data: ChangeDigestData[] = [];
-  changed.forEach((summary) => {
-    const instance = instancesById.get(summary.entity_id);
-    if (!instance) return;
-    data.push({
-      notification_id: trigger.internal_id,
-      instance,
-      type: summary.created_in_period ? 'create' : 'update',
-      message: buildChangeMessage(summary),
+  for (let attempt = 1; attempt <= CHANGE_DIGEST_MAX_ATTEMPTS; attempt += 1) {
+    const computation = await computeLandscapeDiff(context, user, scope, from, to, 'entity_type', { maxEntities: CHANGE_DIGEST_MAX_ENTITIES });
+    const changed = computation.entities.slice(0, CHANGE_DIGEST_MAX_LINES);
+    if (changed.length === 0) {
+      return [];
+    }
+    const instances = await stixLoadByIds(context, user, changed.map((summary) => summary.entity_id)) as StixObject[];
+    const instancesById = new Map<string, StixObject>();
+    instances.forEach((instance) => {
+      const internalId = instance.extensions?.[STIX_EXT_OCTI]?.id;
+      if (internalId) instancesById.set(internalId, instance);
     });
-  });
-  if (data.length > 0) {
-    const overall = buildAggregatesMessage(computation.aggregates, { partial: computation.truncated, listed: data.length });
-    data[0] = { ...data[0], message: `${data[0].message} | ${overall}` };
+    const isAccessible = changed.every((summary) => instancesById.has(summary.entity_id))
+      && await isLandscapeResultAccessible(context, user, computation.contributors, computation.aggregates, computation.entities);
+    if (isAccessible) {
+      const data: ChangeDigestData[] = changed.map((summary) => ({
+        notification_id: trigger.internal_id,
+        instance: instancesById.get(summary.entity_id) as StixObject,
+        type: summary.created_in_period ? 'create' : 'update',
+        message: buildChangeMessage(summary),
+      }));
+      const overall = buildAggregatesMessage(computation.aggregates, { partial: computation.truncated, listed: data.length });
+      data[0] = { ...data[0], message: `${data[0].message} | ${overall}` };
+      logApp.debug('[TIME MACHINE] Change digest built', { trigger: trigger.internal_id, user: user.id, lines: data.length });
+      return data;
+    }
+    logApp.info('[TIME MACHINE] Access to the content of a change digest changed during its computation', { trigger: trigger.internal_id, user: user.id, attempt });
   }
-  logApp.debug('[TIME MACHINE] Change digest built', { trigger: trigger.internal_id, user: user.id, lines: data.length });
-  return data;
+  logApp.warn('[TIME MACHINE] Change digest skipped for this period: access to its content kept changing', { trigger: trigger.internal_id, user: user.id, from, to });
+  return [];
 };
