@@ -534,21 +534,37 @@ describe('Incident and case timeline', () => {
       expect((await timelineUpdateForUser(testContext, editor, update))?.changed_event_ids.sort()).toEqual([openId, restrictedId].sort());
       // An update about restricted events only, changed or removed, never reaches the subscriber
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [restrictedId] })).toBeNull();
-      const removedAboutIndicator = { id: 'removed-event', element_id: indicatorId, marking_ids: [] };
+      const openAccess = { restricted_members: [], granted: [] };
+      const removedAboutIndicator = { id: 'removed-event', element_id: indicatorId, element_type: 'Indicator', marking_ids: [], element_access: openAccess };
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutIndicator] })).toBeNull();
       const amber = await internalLoadById(testContext, SYSTEM_USER, MARKING_TLP_AMBER);
-      const removedAmber = { id: 'removed-event', element_id: null, marking_ids: [amber.internal_id] };
+      const removedAmber = { id: 'removed-event', element_id: null, element_type: null, marking_ids: [amber.internal_id], element_access: null };
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAmber] })).toBeNull();
-      const removedOpen = { id: 'removed-event', element_id: null, marking_ids: [] };
+      const removedOpen = { id: 'removed-event', element_id: null, element_type: null, marking_ids: [], element_access: null };
       const removedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedOpen] });
       expect(removedUpdate?.changed_event_ids).toEqual(['removed-event']);
       expect(removedUpdate).not.toHaveProperty('removed_events');
-      // The element of a removed event may be deleted: the markings of the event, which carry those of the element, decide
-      const removedAboutDeleted = { id: 'removed-event', element_id: '5a3c1e9e-1f4b-4b0e-8f1a-7d0c2b9e4a61', marking_ids: [] };
+      // The element of a removed event may be deleted: it is read as it was, from the access recorded on the event
+      const deletedElementId = '5a3c1e9e-1f4b-4b0e-8f1a-7d0c2b9e4a61';
+      const removedAboutDeleted = { id: 'removed-event', element_id: deletedElementId, element_type: 'Malware', marking_ids: [], element_access: openAccess };
       const deletedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutDeleted] });
       expect(deletedUpdate?.changed_event_ids).toEqual(['removed-event']);
       const removedAmberAboutDeleted = { ...removedAboutDeleted, marking_ids: [amber.internal_id] };
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAmberAboutDeleted] })).toBeNull();
+      const removedAboutRestrictedDeleted = {
+        ...removedAboutDeleted,
+        element_access: { restricted_members: [{ id: editor.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }], granted: [] },
+      };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutRestrictedDeleted] })).toBeNull();
+      expect((await timelineUpdateForUser(testContext, editor, { ...update, changed_event_ids: [], removed_events: [removedAboutRestrictedDeleted] }))?.changed_event_ids)
+        .toEqual(['removed-event']);
+      // Without a recorded access (a manual event), nobody reads an event whose element was deleted
+      const removedWithoutAccess = { ...removedAboutDeleted, element_access: null };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithoutAccess] })).toBeNull();
+      // An update naming only part of its events reaches the subscriber, without the events it cannot read
+      const truncatedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [restrictedId], truncated: true });
+      expect(truncatedUpdate?.changed_event_ids).toEqual([]);
+      expect(truncatedUpdate).not.toHaveProperty('truncated');
       // Updates about the container itself name no event and always go through
       expect(await timelineUpdateForUser(testContext, participate, { ...update, update_type: 'settings', changed_event_ids: [] })).toMatchObject({ update_type: 'settings', changed_event_ids: [] });
     });

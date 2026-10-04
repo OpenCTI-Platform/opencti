@@ -33,6 +33,7 @@ import {
   type TimelineAnchorBounds,
   type TimelineAnchorKey,
   type TimelineAnchors,
+  type TimelineElementAccess,
   type TimelinePendingAnnotation,
   type TimelineSettingsState,
   type TimelineSourceState,
@@ -156,7 +157,7 @@ export const loadTimelineSettings = async (context: AuthContext, containerId: st
 const CONTENT_FIELDS = [
   'name', 'description', 'event_time', 'event_end_time', 'time_precision', 'lane', 'kind', 'event_source', 'rule_id', 'element_id', 'element_type',
   'pinned', 'hidden', 'annotation', 'confidence', 'ordering_hint', 'analyst_fields', 'external_id', 'restricted_members', 'creator_id',
-  'source_state', buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_CREATED_BY),
+  'source_state', 'element_access', buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_CREATED_BY),
 ];
 
 const normalizeForSignature = (value: unknown): unknown => {
@@ -200,6 +201,7 @@ export interface TimelineEventDocInput {
   creator_ids: string[];
   restricted_members: AuthorizedMember[];
   source_state?: TimelineSourceState | null;
+  element_access?: TimelineElementAccess | null;
 }
 
 export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: StoredTimelineEvent | null) => {
@@ -234,6 +236,7 @@ export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: S
     analyst_fields: input.analyst_fields,
     external_id: input.external_id ?? null,
     source_state: input.source_state ?? null,
+    element_access: input.element_access ?? null,
     restricted_members: input.restricted_members,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: uniq(input.markings),
     [buildRefRelationKey(RELATION_CREATED_BY)]: input.created_by_id ? [input.created_by_id] : [],
@@ -320,8 +323,13 @@ export const containerAccessFields = (container: AnyStoreElement) => ({
 export interface TimelineRemovedEvent {
   id: string;
   element_id: string | null;
+  element_type: string | null;
   marking_ids: string[];
+  element_access: TimelineElementAccess | null;
 }
+
+// Bound of the event ids an update names; an update about more events says so with `truncated`
+export const TIMELINE_UPDATE_MAX_EVENTS = 500;
 
 export interface TimelineUpdatePayload {
   id: string;
@@ -330,6 +338,7 @@ export interface TimelineUpdatePayload {
   changed_event_ids: string[];
   // Resolved per subscriber into changed_event_ids, never sent as is
   removed_events?: TimelineRemovedEvent[];
+  truncated?: boolean;
   updated_at: string;
   anchors?: TimelineAnchors | null;
 }
@@ -337,7 +346,9 @@ export interface TimelineUpdatePayload {
 export const toRemovedTimelineEvents = (events: StoredTimelineEvent[]): TimelineRemovedEvent[] => events.map((event) => ({
   id: event.internal_id,
   element_id: event.element_id ?? null,
+  element_type: event.element_type ?? null,
   marking_ids: markingsOf(event),
+  element_access: event.element_access ?? null,
 }));
 
 // The author of the change does not receive its own update (the subscription filters on the publishing user)
@@ -389,15 +400,19 @@ const resolveContainerVisibilityScope = async (
   context: AuthContext,
   container: AnyStoreElement,
   events: StoredTimelineEvent[],
+  // Elements already read the same way (system user, base data): only the others are read here
+  preloaded: Record<string, AnyStoreElement> = {},
 ): Promise<ContainerVisibilityScope> => {
   const containerId = container.internal_id;
   const containerGranted = grantedOf(container);
   const elementIds = uniq(events.map((e) => e.element_id).filter((id): id is string => !!id && id !== containerId));
   const authorIds = uniq(events.filter((e) => e.event_source === 'manual').map(authorOf).filter((id): id is string => !!id));
+  const toRead = [...elementIds, ...authorIds].filter((id) => !preloaded[id]);
   // Base data carries the authorized members; markings and organization sharing come with every read as security doc values
-  const resolved = elementIds.length + authorIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+  const read = toRead.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, toRead, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
+  const resolved = { ...preloaded, ...read };
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const isMarkingCoveredByContainer = buildContainerMarkingCoverage(markingsOf(container), markingsMap);
   const isElementAsVisibleAsContainer = (element: AnyStoreElement) => {
@@ -506,7 +521,14 @@ export const refreshTimelineContributions = async (
   // beyond the cap of the case passes every derived event, so that the cap never moves an anchor).
   // anchorBounds: the anchor values of the derived events beyond the cap, read from the settings when not given; a
   // change between two regenerations (milestone, pin, hide) computes the anchors from the stored events and these bounds
-  opts: { events?: StoredTimelineEvent[]; anchorEvents?: StoredTimelineEvent[]; anchorBounds?: TimelineAnchorBounds | null; notifyAnchors?: boolean } = {},
+  opts: {
+    events?: StoredTimelineEvent[];
+    anchorEvents?: StoredTimelineEvent[];
+    anchorBounds?: TimelineAnchorBounds | null;
+    // Elements of the events already read as the system user, base data
+    elements?: Record<string, AnyStoreElement>;
+    notifyAnchors?: boolean;
+  } = {},
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
   const anchorEvents = opts.anchorEvents ?? events;
@@ -515,7 +537,7 @@ export const refreshTimelineContributions = async (
     : (await loadTimelineSettings(context, container.internal_id))?.capped_anchor_bounds ?? null;
   const isClosed = await isContainerClosed(context, container);
   const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
-  const scope = await resolveContainerVisibilityScope(context, container, anchorEvents);
+  const scope = await resolveContainerVisibilityScope(context, container, anchorEvents, opts.elements);
   const anchorInput = anchorEvents.filter(scope.isEventAsVisibleAsContainer);
   const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
   const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt: now(), previous: previousAnchors, bounds: anchorBounds });
@@ -617,6 +639,16 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const settings = await loadTimelineSettings(context, containerId);
   const pending = pendingAnnotationsMap(settings);
   const access = containerAccessFields(container);
+  // The access of each element beyond its markings is kept on its events: once the element is deleted, it still decides
+  // who may learn of their removal. The same read serves the visibility scope of the anchors.
+  const derivedElementIds = uniq(allDerived.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId));
+  const elements = derivedElementIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, derivedElementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  const elementAccessOf = (elementId: string | null | undefined): TimelineElementAccess | null => {
+    const element = elementId ? elements[elementId] : undefined;
+    return element ? { restricted_members: (element.restricted_members ?? []) as AuthorizedMember[], granted: grantedOf(element) } : null;
+  };
   // Build the derived documents, deduplicated on their deterministic id
   const derivedDocsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
   allDerived.forEach((event) => {
@@ -649,6 +681,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       creator_ids: event.creator_ids ?? [],
       restricted_members: access.restricted_members,
       source_state: event.source_state ?? null,
+      element_access: elementAccessOf(event.element_id),
       ...analyst,
     }, existing));
   });
@@ -715,7 +748,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const anchorEvents = capped
     ? [...derivedDocsById.values(), ...docs.filter((doc) => doc.event_source === 'manual')] as unknown as StoredTimelineEvent[]
     : undefined;
-  const { anchors, cappedAnchorBounds } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents, anchorBounds: null });
+  const { anchors, cappedAnchorBounds } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents, anchorBounds: null, elements });
   if (capped) {
     // The changes made until the next regeneration recompute the anchors from the stored events and these bounds
     await upsertTimelineSettings(context, container, { capped_anchor_bounds: cappedAnchorBounds }, generatedSettings);
@@ -724,8 +757,9 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     await publishTimelineUpdate({
       container_id: containerId,
       update_type: 'derived',
-      changed_event_ids: changedDocs.map((d) => d.internal_id).slice(0, 500),
-      removed_events: toRemovedTimelineEvents(staleEvents.slice(0, 500)),
+      changed_event_ids: changedDocs.map((d) => d.internal_id).slice(0, TIMELINE_UPDATE_MAX_EVENTS),
+      removed_events: toRemovedTimelineEvents(staleEvents.slice(0, TIMELINE_UPDATE_MAX_EVENTS)),
+      truncated: changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
       anchors,
     });
   }

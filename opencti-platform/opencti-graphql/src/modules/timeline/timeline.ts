@@ -71,6 +71,7 @@ const TIMELINE_EVENT_DEFINITION: ModuleDefinition<StoreEntityTimelineEvent, Stix
     { name: 'external_id', label: 'External id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
     // State of the run, step or deployment an event comes from, only read with the event: not indexed
     { name: 'source_state', label: 'Timeline source state', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
+    { name: 'element_access', label: 'Timeline element access', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
     authorizedMembers,
   ],
   relations: [],

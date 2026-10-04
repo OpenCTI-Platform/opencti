@@ -120,6 +120,16 @@ export interface BasicStoreEntityTimelineEvent extends BasicStoreEntity {
   analyst_fields?: TimelineAnalystField[];
   restricted_members?: Array<AuthorizedMember>;
   source_state?: TimelineSourceState | null;
+  element_access?: TimelineElementAccess | null;
+}
+
+/**
+ * Who reads the element of a derived event besides its markings (which the event carries), recorded by the regeneration:
+ * once the element is deleted, it still decides who may learn of the removal of the event.
+ */
+export interface TimelineElementAccess {
+  restricted_members: AuthorizedMember[];
+  granted: string[];
 }
 
 /**

@@ -1,7 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
+import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
+import {
+  AccessOperation,
+  executionContext,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_KNUPDATE,
+  SYSTEM_USER,
+  userFilterStoreElements,
+  validateUserAccessOperation,
+} from '../../utils/access';
 import { controlCreateInputWithUserConfidence, controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../database/engine';
@@ -24,7 +33,7 @@ import type {
   TimelineSummary,
 } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getExportFilter } from '../../utils/getExportFilter';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
@@ -545,10 +554,11 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
 /**
  * A live update as one subscriber may see it: it names only the changed or removed events this user can read, and an
  * update about events the user cannot read at all is not sent to it (null). Updates about the container itself
- * (settings, anchors) name no event and always go through.
+ * (settings, anchors) name no event and always go through, and so does an update naming only part of its events
+ * (truncated), whose other events this user may read.
  */
 export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser, update: TimelineUpdatePayload): Promise<TimelineUpdatePayload | null> => {
-  const { removed_events: removed = [], ...signal } = update;
+  const { removed_events: removed = [], truncated = false, ...signal } = update;
   if (update.changed_event_ids.length === 0 && removed.length === 0) {
     return signal;
   }
@@ -563,19 +573,35 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
   ];
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
   const named = new Set(items.map((event) => event.internal_id));
-  // A removed event whose element was deleted resolves for nobody: it is read as its markings say, which carry the
-  // markings of its element. A removed event whose element still exists stays named only to the readers of the element.
+  // A removed event whose element was deleted resolves for nobody: it is read as its element was, from the access the
+  // regeneration recorded on the event (its markings carry those of the element). Without that record, as for a manual
+  // event, nobody reads the event since its element was deleted. A removed event whose element still exists stays named
+  // only to the readers of the element.
   const unresolvedRemoved = readableRemoved.filter((event) => !!event.element_id && !named.has(event.id));
   const unresolvedElementIds = Array.from(new Set(unresolvedRemoved.map((event) => event.element_id as string)));
   const existingElements = unresolvedElementIds.length > 0
     ? await internalFindByIds(context, SYSTEM_USER, unresolvedElementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
-  const removedWithDeletedElement = unresolvedRemoved.filter((event) => !existingElements[event.element_id as string]).map((event) => event.id);
-  const changedEventIds = [...items.map((event) => event.internal_id), ...removedWithDeletedElement];
-  if (changedEventIds.length === 0) {
-    return null;
+  const removedWithDeletedElement = unresolvedRemoved
+    .filter((event) => !existingElements[event.element_id as string] && !!event.element_type && !!event.element_access);
+  const deletedElements = removedWithDeletedElement.map((event) => ({
+    internal_id: event.element_id,
+    entity_type: event.element_type,
+    [RELATION_OBJECT_MARKING]: event.marking_ids,
+    restricted_members: event.element_access?.restricted_members ?? [],
+    [RELATION_GRANTED_TO]: event.element_access?.granted ?? [],
+  }) as unknown as BasicStoreCommon);
+  const readableDeletedIds = deletedElements.length > 0
+    ? new Set((await userFilterStoreElements(context, user, deletedElements)).map((element) => element.internal_id))
+    : new Set<string>();
+  const changedEventIds = [
+    ...items.map((event) => event.internal_id),
+    ...removedWithDeletedElement.filter((event) => readableDeletedIds.has(event.element_id as string)).map((event) => event.id),
+  ];
+  if (changedEventIds.length > 0) {
+    return { ...signal, changed_event_ids: changedEventIds };
   }
-  return { ...signal, changed_event_ids: changedEventIds };
+  return truncated ? { ...signal, changed_event_ids: [] } : null;
 };
 
 /**
