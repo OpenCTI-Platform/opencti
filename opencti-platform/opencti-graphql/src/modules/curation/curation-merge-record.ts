@@ -55,6 +55,7 @@ const MERGE_RECORDS_ENABLED = booleanConf('curation:merge_records_enabled', true
 const MAX_RECREATABLE_RELATIONSHIPS = Number(conf.get('curation:merge_record_max_recreatable_relationships') ?? 10000);
 const MAX_REDIRECTED_RELATIONSHIPS = Number(conf.get('curation:merge_record_max_redirected_relationships') ?? 100000);
 const SNAPSHOT_LOAD_BATCH = 500;
+const EXPIRY_PAGE_SIZE = 500;
 
 // region snapshots
 export const snapshotAttributes = (instance: Record<string, any>): Record<string, unknown> => {
@@ -646,21 +647,34 @@ export const expireMergeRecords = async (context: AuthContext) => {
     ],
     filterGroups: [],
   };
-  const candidates = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], { filters: filters as any, first: 500 });
-  // A record with an interrupted unmerge keeps its snapshot until the unmerge is completed.
-  const expired = candidates.edges.map((edge) => edge.node).filter((record) => !hasInterruptedUnmerge(record));
-  for (let index = 0; index < expired.length; index += 1) {
-    const record = expired[index];
-    const lightSnapshot: MergeSnapshot = {
-      target: { ...record.merge_snapshot.target, attributes: {}, post_attributes: {}, refs: {}, post_refs: {} },
-      sources: record.merge_snapshot.sources.map((source) => ({ ...source, attributes: {}, refs: {}, redirected: [], recreatable: [] })),
-    };
-    await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
-      merge_status: MERGE_STATUS_IRREVERSIBLE,
-      irreversible_reason: 'The retention window of this merge is over',
-      merge_snapshot: lightSnapshot,
-    });
-  }
-  return expired.length;
+  // Pages are read in a stable order until the last one, so records skipped below never hold back the ones after them.
+  let expiredCount = 0;
+  let after: string | undefined;
+  do {
+    const page = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
+      filters: filters as any,
+      first: EXPIRY_PAGE_SIZE,
+      after,
+      orderBy: 'reversible_until',
+      orderMode: 'asc',
+    } as any);
+    // A record with an interrupted unmerge keeps its snapshot until the unmerge is completed.
+    const expired = page.edges.map((edge) => edge.node).filter((record) => !hasInterruptedUnmerge(record));
+    for (let index = 0; index < expired.length; index += 1) {
+      const record = expired[index];
+      const lightSnapshot: MergeSnapshot = {
+        target: { ...record.merge_snapshot.target, attributes: {}, post_attributes: {}, refs: {}, post_refs: {} },
+        sources: record.merge_snapshot.sources.map((source) => ({ ...source, attributes: {}, refs: {}, redirected: [], recreatable: [] })),
+      };
+      await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
+        merge_status: MERGE_STATUS_IRREVERSIBLE,
+        irreversible_reason: 'The retention window of this merge is over',
+        merge_snapshot: lightSnapshot,
+      });
+    }
+    expiredCount += expired.length;
+    after = page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? undefined) : undefined;
+  } while (after);
+  return expiredCount;
 };
 // endregion

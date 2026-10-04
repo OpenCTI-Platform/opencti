@@ -12,7 +12,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Label from '@common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import CurationSkeleton from '../../data/curation/CurationSkeleton';
 import CurationConfidence from '../../data/curation/CurationConfidence';
 import useCurationLabels, { CURATION_PROPOSALS_PATH } from '../../data/curation/curationUtils';
 import { CurationPolicyDryRunQuery } from './__generated__/CurationPolicyDryRunQuery.graphql';
@@ -111,7 +111,7 @@ const CurationPolicyDryRun = ({ policyId, policyName, onClose }: CurationPolicyD
   return (
     <Dialog open={!!policyId} onClose={onClose} size="large" title={policyName ? t_i18n('Dry run of {name}', { values: { name: policyName } }) : t_i18n('Dry run')}>
       {policyId && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Suspense fallback={<CurationSkeleton blocks={[64, 240]} />}>
           <DryRunContent policyId={policyId} />
         </Suspense>
       )}

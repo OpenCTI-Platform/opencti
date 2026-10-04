@@ -38,6 +38,20 @@ export const notifyPayloadErrors = (errors: PayloadError[] | null | undefined): 
   return true;
 };
 
+/** Tone of a design-system progress bar: success when conclusive, error when weak, neutral in between. */
+export const confidenceTone = (confidence: number): 'success' | 'default' | 'error' => {
+  if (confidence >= 0.85) return 'success';
+  if (confidence >= 0.6) return 'default';
+  return 'error';
+};
+
+/** Tone of a 0-100 score bar, with the thresholds of the score colors. */
+export const scoreTone = (score: number): 'success' | 'default' | 'error' => {
+  if (score >= 80) return 'success';
+  if (score >= 60) return 'default';
+  return 'error';
+};
+
 export const formatPercent = (value: number | null | undefined, digits = 0) => {
   if (value === null || value === undefined || Number.isNaN(value)) return '-';
   return `${(value * 100).toFixed(digits)}%`;

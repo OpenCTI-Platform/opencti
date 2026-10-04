@@ -1,8 +1,8 @@
 import { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
+import { ProgressBar } from '@filigran/design-system';
 import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -18,7 +18,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import CurationFirstUse from './CurationFirstUse';
 import CurationSkeleton from './CurationSkeleton';
 import KnowledgeHealthScore from './KnowledgeHealthScore';
-import useCurationLabels, { CURATION_PROPOSALS_PATH, formatPercent, notifyPayloadErrors } from './curationUtils';
+import useCurationLabels, { CURATION_PROPOSALS_PATH, formatPercent, notifyPayloadErrors, scoreTone } from './curationUtils';
 import { KnowledgeHealthQuery } from './__generated__/KnowledgeHealthQuery.graphql';
 import { KnowledgeHealthRefreshMutation } from './__generated__/KnowledgeHealthRefreshMutation.graphql';
 
@@ -173,18 +173,20 @@ const KnowledgeHealthComponent = () => {
                         {labels.healthComponent(item.component)}
                         <span style={{ color: theme.palette.text.light }}>
                           {' - '}
-                          {RATE_COMPONENTS.includes(item.component) ? formatPercent(item.value, 1) : item.value}
-                          {' - '}
-                          {t_i18n('weight')} {formatPercent(item.weight)}
+                          {t_i18n('{value}, weight {weight}', {
+                            values: {
+                              value: RATE_COMPONENTS.includes(item.component) ? formatPercent(item.value, 1) : item.value,
+                              weight: formatPercent(item.weight),
+                            },
+                          })}
                         </span>
                       </Typography>
                       <Typography variant="body2">{t_i18n('{score} / 100', { values: { score: Math.round(item.score) } })}</Typography>
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
+                    <ProgressBar
                       value={Math.max(0, Math.min(100, item.score))}
+                      tone={scoreTone(item.score)}
                       aria-label={labels.healthComponent(item.component)}
-                      sx={{ height: 6, borderRadius: 1, '& .MuiLinearProgress-bar': { backgroundColor: labels.healthColor(item.score) } }}
                     />
                   </div>
                 ))}

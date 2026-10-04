@@ -3676,6 +3676,14 @@ const upsertElement = async (
   } else {
     // -- No modification applied
     upsertResult = { element: resolvedElement, event: null, isCreation: false };
+    // A more authoritative source asserting the current value becomes its recorded source: a bundle replayed after a
+    // failed bookkeeping write repairs it.
+    if (fieldAuthorityResolver && authorityDecisions && authorityDecisions.size > 0) {
+      const allowedKeys = Array.from(authorityDecisions.entries()).filter(([, decision]) => decision === 'allow').map(([key]) => key);
+      if (allowedKeys.length > 0) {
+        await fieldAuthorityResolver.recordApplied(context, user, resolvedElement, type, updatePatch, allowedKeys);
+      }
+    }
   }
   // -- Whatever the resolution, the writing source asserted this element
   if (preparedProvenance.record) {

@@ -3,6 +3,7 @@ import type { BasicStoreEntity, StoreObject } from '../../types/store';
 import type { FieldAuthorityDecision, FieldAuthorityResolver } from '../../database/merge-hooks';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { elUpdate } from '../../database/engine';
+import { wait } from '../../database/utils';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
 import { logApp } from '../../config/conf';
@@ -101,6 +102,9 @@ const rulesFor = async (context: AuthContext, type: string) => {
   return settings.field_authority_rules.filter((rule) => rule.entity_type === type);
 };
 
+const BOOKKEEPING_ATTEMPTS = 3;
+const BOOKKEEPING_RETRY_MS = 200;
+
 const EL_FIELD_AUTHORITY_SCRIPT = `
   if (ctx._source[params.field] == null) { ctx._source[params.field] = []; }
   for (entry in params.entries) {
@@ -125,25 +129,32 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
     return decisions;
   },
   recordApplied: async (context, user, element, type, patch, appliedKeys) => {
-    try {
-      const rules = await rulesFor(context, type);
-      const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
-      const incoming = incomingSources(user, patch, connectors);
-      const entries: FieldAuthorityEntry[] = [];
-      rules.filter((rule) => appliedKeys.includes(rule.attribute)).forEach((rule) => {
-        const rank = rankSource(rule, incoming);
-        if (rank === UNRANKED) return;
-        const source = rule.sources[rank];
-        entries.push({ attribute: rule.attribute, source_type: source.source_type, source_id: source.source_id, updated_at: now() });
-      });
-      if (entries.length > 0) {
+    const rules = await rulesFor(context, type);
+    const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+    const incoming = incomingSources(user, patch, connectors);
+    const entries: FieldAuthorityEntry[] = [];
+    rules.filter((rule) => appliedKeys.includes(rule.attribute)).forEach((rule) => {
+      const rank = rankSource(rule, incoming);
+      if (rank === UNRANKED) return;
+      const source = rule.sources[rank];
+      entries.push({ attribute: rule.attribute, source_type: source.source_type, source_id: source.source_id, updated_at: now() });
+    });
+    if (entries.length === 0) return;
+    // A stale record would let a less authoritative source overwrite the value: the write is retried, then the upsert
+    // fails, so the bundle is processed again and the replay records the source (see the upsert without change).
+    for (let attempt = 1; ; attempt += 1) {
+      try {
         await elUpdate(context, element._index, element.internal_id, {
           script: { source: EL_FIELD_AUTHORITY_SCRIPT, lang: 'painless', params: { field: FIELD_AUTHORITY_ATTRIBUTE, entries } },
         });
+        return;
+      } catch (error) {
+        if (attempt >= BOOKKEEPING_ATTEMPTS) {
+          logApp.error('[CURATION] Cannot record field authority bookkeeping', { cause: error, id: element.internal_id, attempts: attempt });
+          throw error;
+        }
+        await wait(BOOKKEEPING_RETRY_MS * attempt);
       }
-    } catch (error) {
-      // Bookkeeping must never fail an ingestion: the next write of a ranked source records it again.
-      logApp.warn('[CURATION] Cannot record field authority bookkeeping', { cause: error, id: element.internal_id });
     }
   },
 };

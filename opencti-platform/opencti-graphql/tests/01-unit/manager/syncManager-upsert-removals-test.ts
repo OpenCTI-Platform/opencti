@@ -65,6 +65,14 @@ describe('synchronized updates removing identity values', () => {
     expect(operationsOf(result)).toEqual([existing, { key: 'x_opencti_stix_ids', value: [RESTORED], operation: 'remove' }]);
   });
 
+  it('merges a removal the event already carries for the same attribute', () => {
+    const current = entity();
+    const carried = { key: 'aliases', value: ['already removed alias'], operation: 'remove' };
+    current.extensions = { [STIX_EXT_OCTI]: { ...current.extensions?.[STIX_EXT_OCTI], opencti_upsert_operations: [carried] } };
+    const result = withUpsertRemovals(current, { reverse_patch: [{ op: 'add', path: '/aliases', value: ['velvet lynx group'] }] });
+    expect(operationsOf(result)).toEqual([{ key: 'aliases', value: ['already removed alias', 'velvet lynx group'], operation: 'remove' }]);
+  });
+
   it('leaves events without removed values unchanged', () => {
     const current = entity([OTHER], ['kept alias']);
     expect(withUpsertRemovals(current, undefined)).toBe(current);

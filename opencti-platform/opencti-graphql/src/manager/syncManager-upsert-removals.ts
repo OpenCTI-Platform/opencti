@@ -51,17 +51,25 @@ export const withUpsertRemovals = <T extends SyncStixData>(data: T, context: Syn
     }
   }
   if (removals.length === 0) return data;
-  const removedKeys = new Set(removals.map((removal) => removal.key));
   const extension = data.extensions?.[STIX_EXT_OCTI] ?? {};
-  const operations = ((extension.opencti_upsert_operations ?? []) as UpsertOperation[])
-    .filter((operation) => !(operation.operation === 'remove' && removedKeys.has(operation.key)));
+  // A removal the event already carries for the same attribute is kept: both lists of values are removed.
+  const operations = [...((extension.opencti_upsert_operations ?? []) as UpsertOperation[])];
+  removals.forEach((removal) => {
+    const index = operations.findIndex((operation) => operation.operation === 'remove' && operation.key === removal.key);
+    if (index === -1) {
+      operations.push(removal);
+    } else {
+      const carried = Array.isArray(operations[index].value) ? operations[index].value as unknown[] : [];
+      operations[index] = { ...operations[index], value: [...new Set([...carried, ...(removal.value as unknown[])])] };
+    }
+  });
   return {
     ...data,
     extensions: {
       ...data.extensions,
       [STIX_EXT_OCTI]: {
         ...extension,
-        opencti_upsert_operations: [...operations, ...removals],
+        opencti_upsert_operations: operations,
       },
     },
   };
