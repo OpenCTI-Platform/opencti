@@ -11,6 +11,7 @@ import {
   setUserTheme,
   type TimelineCase,
 } from '../dataForTesting/timeline.data';
+import { captureOverview } from './timelineCaptures';
 
 const LIGHT_THEME = 'Filigran Light';
 
@@ -59,6 +60,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await page.goto(`/dashboard/cases/incidents/${timelineCase.caseId}`);
     const strip = page.getByTestId('timeline-strip');
     await expect(strip).toBeVisible();
+    await expect(page.getByTestId('timeline-strip-summary')).toBeVisible();
     await strip.screenshot({ path: testInfo.outputPath('case-timeline-overview-strip.png') });
     const tabNames = (await page.getByRole('tab').allTextContents()).map((name) => name.trim());
     expect(tabNames.indexOf('Timeline')).toBe(tabNames.indexOf('Content') + 1);
@@ -195,7 +197,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
  * Content of the test
  * -------------------
  * Open the timeline of an incident without dated knowledge: first-use state with its primary action.
- * Show the overview of that incident, with its timeline widget.
+ * Show the overview of that incident, with the first-use card of its timeline widget.
  * Show the timeline of a case in a custom dashboard widget titled with the case, in the dark and light themes.
  */
 test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'] }, async ({ page, request }, testInfo) => {
@@ -216,8 +218,9 @@ test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'
     await expect(page.getByTestId('timeline-empty-add-event')).toBeVisible();
     await capture('first-use-empty');
     await page.goto(`/dashboard/events/incidents/${incident.id}`);
-    await expect(page.getByTestId('timeline-strip')).toBeVisible();
-    await capture('incident-overview');
+    await expect(page.getByTestId('timeline-strip-empty')).toBeVisible();
+    await expect(page.getByTestId('timeline-strip-add-milestone')).toBeVisible();
+    await captureOverview(page, testInfo, 'incident-overview');
     // endregion
 
     // region Widget

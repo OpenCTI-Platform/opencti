@@ -85,6 +85,37 @@ export const addTimelineCase = async (request: APIRequestContext, name: string, 
   return { caseId: caseIncident.id, malwareId: malware.id, taskId: task.id, indicatorId: indicator.id, platformId: platform.id };
 };
 
+/** A request for information holding some of the knowledge of a timeline case, with its timeline derived once. */
+export const addTimelineRfi = async (request: APIRequestContext, name: string, objectIds: string[]) => {
+  const rfi = await mutate<{ id: string }>(request, `
+    mutation {
+      caseRfiAdd(input: {
+        name: ${JSON.stringify(name)},
+        created: "2026-02-03T10:00:00.000Z",
+        objects: [${objectIds.map((id) => JSON.stringify(id)).join(', ')}]
+      }) { id }
+    }
+  `, 'caseRfiAdd');
+  await regenerateTimeline(request, rfi.id);
+  return rfi;
+};
+
+/** A report and a grouping holding some of the knowledge of a timeline case: containers without a timeline. */
+export const addAnalysesWithoutTimeline = async (request: APIRequestContext, name: string, objectIds: string[]) => {
+  const objects = objectIds.map((id) => JSON.stringify(id)).join(', ');
+  const report = await mutate<{ id: string }>(request, `
+    mutation {
+      reportAdd(input: { name: ${JSON.stringify(name)}, published: "2026-02-05T10:00:00.000Z", objects: [${objects}] }) { id }
+    }
+  `, 'reportAdd');
+  const grouping = await mutate<{ id: string }>(request, `
+    mutation {
+      groupingAdd(input: { name: ${JSON.stringify(name)}, context: "suspicious-activity", objects: [${objects}] }) { id }
+    }
+  `, 'groupingAdd');
+  return { reportId: report.id, groupingId: grouping.id };
+};
+
 /** An incident without any dated knowledge yet: its timeline is in the first-use state. */
 export const addEmptyIncident = async (request: APIRequestContext, name: string) => {
   return mutate<{ id: string }>(request, `mutation { incidentAdd(input: { name: ${JSON.stringify(name)} }) { id } }`, 'incidentAdd');
