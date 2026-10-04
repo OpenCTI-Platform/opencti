@@ -317,6 +317,7 @@ const Graph = ({
     shapeSignature,
     layout,
     enabled: !mode3D && !isLoadingData && shownNodes.length > 0,
+    released: mode3D,
     savedPositions: rawPositions,
     frameView: (padding, duration) => frameNodes(padding, duration),
   });

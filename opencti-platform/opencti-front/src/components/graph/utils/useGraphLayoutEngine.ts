@@ -25,6 +25,11 @@ interface UseGraphLayoutEngineArgs {
   shapeSignature: string;
   layout: GraphLayoutRequest | null;
   enabled: boolean;
+  /**
+   * The 2D graph is left (3D mode), not just paused while data loads: the nodes are given back
+   * their saved positions so the 3D forces arrange them, and the layout applies afresh on return.
+   */
+  released?: boolean;
   /** Positions saved by the reader, given back to the nodes when the layout is switched off. */
   savedPositions: OctiGraphPositions;
   /** Frames the arranged graph clear of the floating panels; false when it could not. */
@@ -37,7 +42,7 @@ interface UseGraphLayoutEngineArgs {
  * nodes back their saved positions and lets the forces arrange the rest. While nodes glide the
  * canvas must repaint every frame, which `animating` tells the caller.
  */
-const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled, savedPositions, frameView }: UseGraphLayoutEngineArgs) => {
+const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled, released = false, savedPositions, frameView }: UseGraphLayoutEngineArgs) => {
   const [animating, setAnimating] = useState(false);
   const [targets, setTargets] = useState<LayoutPositions | null>(null);
   const frame = useRef(0);
@@ -45,26 +50,31 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
   const latestNodes = useRef(nodes);
   latestNodes.current = nodes;
 
+  /** Leaves the applied layout: the nodes take their saved pins back. Whether one was applied. */
+  const leaveLayout = () => {
+    setTargets(null);
+    if (appliedKey.current === null) return false;
+    appliedKey.current = null;
+    latestNodes.current.forEach((node) => {
+      const saved = savedPositions[node.id];
+      node.fx = saved?.x;
+      node.fy = saved?.y;
+    });
+    return true;
+  };
+
   // Applied again when the node objects change too: the graph data can replace them under the
   // same ids (an edited entity), and the replacements must take the positions and pins.
   useEffect(() => {
     // Turned off or without a layout during a transition: the frame is cancelled, so is the repaint.
     if (!enabled) {
       setAnimating(false);
+      if (released) leaveLayout();
       return undefined;
     }
     if (!layout) {
       setAnimating(false);
-      setTargets(null);
-      if (appliedKey.current !== null) {
-        appliedKey.current = null;
-        latestNodes.current.forEach((node) => {
-          const saved = savedPositions[node.id];
-          node.fx = saved?.x;
-          node.fy = saved?.y;
-        });
-        graphRef.current?.d3ReheatSimulation();
-      }
+      if (leaveLayout()) graphRef.current?.d3ReheatSimulation();
       return undefined;
     }
     const computed = layout.compute();
@@ -102,7 +112,7 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
     };
     frame.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame.current);
-  }, [enabled, layout?.key, shapeSignature, nodes]);
+  }, [enabled, released, layout?.key, shapeSignature, nodes]);
 
   /** `targets`: where the applied layout puts the nodes, `null` without one. */
   return { animating, targets };
