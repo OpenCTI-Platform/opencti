@@ -358,9 +358,15 @@ class TimelineEvent:
 
         :param id: the id of the timeline event (required)
         :type id: str
-        :param kwargs: the fields to change (see TIMELINE_EDITABLE_FIELDS); a field
-            passed as None is cleared (``event_end_time=None`` is sent as
-            ``clear_event_end_time``), an omitted field is left unchanged
+        :param kwargs: the fields to change (see TIMELINE_EDITABLE_FIELDS); an
+            omitted field is left unchanged. Passing None clears ``description``,
+            ``annotation``, ``confidence``, ``ordering_hint``, ``element_id``
+            and ``createdBy``; ``event_end_time=None`` is sent as
+            ``clear_event_end_time`` and clears the end time. None is ignored
+            (the value is kept) for the required or enumerated fields
+            ``event_time``, ``title``, ``precision``, ``lane`` and ``kind``, and
+            for ``objectMarking``: pass ``objectMarking=[]`` to reset the
+            markings to those of the element and of the container
         :return: the updated timeline event or None
         :rtype: dict or None
         """
