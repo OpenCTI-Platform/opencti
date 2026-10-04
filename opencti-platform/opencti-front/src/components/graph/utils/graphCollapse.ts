@@ -122,6 +122,33 @@ export const relationshipTotal = (nodes: readonly GraphNode[], links: readonly G
   .reduce((sum, link) => sum + (link.represents ?? 1), 0)
   + nodes.filter((node) => !!node.relationship_type && !node.groupOf).length;
 
+/**
+ * The entity and relationship types the drawn elements show, as the legend lists them, in the order
+ * of the inventories of the graph: a group node shows the type of its members, and a nested
+ * relationship drawn as a node is listed with the relationships.
+ */
+export const drawnTypes = (
+  nodes: readonly GraphNode[],
+  links: readonly GraphLink[],
+  entityInventory: readonly string[],
+  relationshipInventory: readonly string[],
+) => {
+  const entities = new Set<string>();
+  const relationships = new Set<string>();
+  nodes.forEach((node) => {
+    if (node.groupOf) entities.add(node.groupOf.entityType);
+    else if (node.relationship_type) relationships.add(node.relationship_type);
+    else entities.add(node.entity_type);
+  });
+  links.forEach((link) => {
+    if (link.label) relationships.add(link.relationship_type || link.entity_type);
+  });
+  return {
+    entityTypes: entityInventory.filter((type) => entities.has(type) && !relationshipInventory.includes(type)),
+    relationshipTypes: relationshipInventory.filter((type) => relationships.has(type)),
+  };
+};
+
 /** Whether a member of a collapsed type, hidden behind its group node. */
 export const isCollapsedMember = (node: Pick<GraphNode, 'entity_type' | 'relationship_type' | 'groupOf'>, collapsedTypes: readonly string[]) => !node.groupOf
   && !node.relationship_type

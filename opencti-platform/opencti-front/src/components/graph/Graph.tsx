@@ -23,7 +23,7 @@ import GraphAccessibleList, { graphElementKey } from './components/GraphAccessib
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
-import { createCollapseCache, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
+import { createCollapseCache, drawnTypes, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
 import { entityTier, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
@@ -607,21 +607,26 @@ const Graph = ({
     showShortcuts: () => setShortcutsOpen(true),
   });
 
-  // --- What the toolbar rendered inside the graph takes from it. The type filters count the types
-  // drawn, the same number as the legend pill and the "Filter by type" list of the toolbar.
-  const typeFilterCount = disabledEntityTypes.filter((type) => stixCoreObjectTypes.includes(type)).length
-    + disabledRelationshipTypes.filter((type) => relationshipTypes.includes(type)).length;
+  // --- What the toolbar rendered inside the graph takes from it. The type filter offers and counts
+  // the types drawn, as the legend lists them: a type whose only entities are hidden leaves both.
+  const typeInventory = useMemo(
+    () => drawnTypes(shownNodes, shownLinks, stixCoreObjectTypes, relationshipTypes),
+    [shownNodes, shownLinks, stixCoreObjectTypes, relationshipTypes],
+  );
+  const typeFilterCount = disabledEntityTypes.filter((type) => typeInventory.entityTypes.includes(type)).length
+    + disabledRelationshipTypes.filter((type) => typeInventory.relationshipTypes.includes(type)).length;
   const latestViewActions = useRef({ exportImage, toggleFullscreen });
   latestViewActions.current = { exportImage, toggleFullscreen };
   const viewActions = useMemo<GraphViewActions>(() => ({
     counters,
+    drawnTypes: typeInventory,
     typeFilterCount,
     exportImage: () => {
       latestViewActions.current.exportImage();
     },
     toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
     showShortcuts: () => setShortcutsOpen(true),
-  }), [counters, typeFilterCount]);
+  }), [counters, typeInventory, typeFilterCount]);
 
   const cardTarget: GraphHoverCardTarget | null = useMemo(() => {
     if (!card) return null;

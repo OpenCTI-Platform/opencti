@@ -13,6 +13,7 @@ vi.mock('../SearchInput', () => ({ default: () => <input aria-label="Search" /> 
 
 const viewActions = (): GraphViewActions => ({
   counters: [{ key: 'entities', label: '2 entities', action: 'Select the entities', onSelect: vi.fn() }],
+  drawnTypes: { entityTypes: [], relationshipTypes: [] },
   typeFilterCount: 0,
   exportImage: vi.fn(),
   toggleFullscreen: vi.fn(),

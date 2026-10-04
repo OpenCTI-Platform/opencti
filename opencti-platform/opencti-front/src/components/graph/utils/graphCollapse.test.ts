@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCollapseCache, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, relationshipTotal, withCollapsedGroups } from './graphCollapse';
+import { createCollapseCache, drawnTypes, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, relationshipTotal, withCollapsedGroups } from './graphCollapse';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', x: 0, y: 0 });
@@ -49,6 +49,18 @@ describe('withCollapsedGroups', () => {
     const connector = graphLink(actor, nested, { id: 'nested', label: '' });
     // Two `uses` drawn as one link towards the group, one nested relationship, its connector not counted.
     expect(relationshipTotal([...drawnNodes, nested], [...drawnLinks, connector])).toBe(3);
+  });
+
+  it('lists the types drawn as the legend does, leaving out a type whose entities are all hidden', () => {
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
+    const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
+    const drawnNodes = [...result.nodes.filter((node) => !isCollapsedMember(node, ['Malware'])), nested];
+    const drawnLinks = result.links.filter(isGroupLink);
+    // The inventories of the graph also hold an organization, hidden, and its `targets` relationship.
+    expect(drawnTypes(drawnNodes, drawnLinks, ['Intrusion-Set', 'Malware', 'Organization', 'uses'], ['targets', 'uses'])).toEqual({
+      entityTypes: ['Intrusion-Set', 'Malware'],
+      relationshipTypes: ['uses'],
+    });
   });
 
   it('tells the links drawn towards a group from the relationships of the platform', () => {

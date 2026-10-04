@@ -7,6 +7,8 @@ import type { GraphCounter } from './components/GraphCounters';
  */
 export interface GraphViewActions {
   counters: readonly GraphCounter[];
+  /** The entity and relationship types drawn, as the legend lists them: what the type filter offers. */
+  drawnTypes: { entityTypes: readonly string[]; relationshipTypes: readonly string[] };
   /** Entity and relationship types filtered out, as counted by the legend and the type filter. */
   typeFilterCount: number;
   exportImage: () => void;

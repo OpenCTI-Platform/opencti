@@ -186,21 +186,27 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   let shortestPathReason = in3D;
   if (!shortestPathReason && !highlightedPath && selectedNodes.length !== 2) shortestPathReason = t_i18n('Select exactly two entities first');
 
-  // A nested relationship drawn as a node is filtered with the relationships, as in the legend.
+  // The types drawn, as the legend lists them (the whole inventory for a toolbar outside a graph
+  // view). A nested relationship drawn as a node is filtered with the relationships, as in the legend.
+  const filterEntityTypes = view?.drawnTypes.entityTypes ?? stixCoreObjectTypes.filter((type) => !relationshipTypes.includes(type));
+  const filterRelationshipTypes = view?.drawnTypes.relationshipTypes ?? relationshipTypes;
   const typeOptions = [
-    ...stixCoreObjectTypes.filter((type) => !relationshipTypes.includes(type)).map((type) => ({
+    ...filterEntityTypes.map((type) => ({
       key: `entity:${type}`,
       label: t_i18n(`entity_${type}`),
       section: t_i18n('Entities'),
       selected: !disabledEntityTypes.includes(type),
     })),
-    ...relationshipTypes.map((type) => ({
+    ...filterRelationshipTypes.map((type) => ({
       key: `relationship:${type}`,
       label: t_i18n(`relationship_${type}`),
       section: t_i18n('Relationships'),
       selected: !disabledRelationshipTypes.includes(type),
     })),
   ];
+  let typeFilterDisabledReason: string | undefined;
+  if (stixCoreObjectTypes.length === 0) typeFilterDisabledReason = t_i18n('The graph has no entity yet');
+  else if (typeOptions.length === 0) typeFilterDisabledReason = t_i18n('Every entity is hidden');
 
   const actions: GraphToolbarAction[] = [
     // --- View
@@ -384,7 +390,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       label: t_i18n('Filter by type'),
       icon: <FilterListOutlined {...ICON} />,
       badge: typeFilterCount,
-      disabledReason: typeOptions.length === 0 ? t_i18n('The graph has no entity yet') : undefined,
+      disabledReason: typeFilterDisabledReason,
       options: {
         multiple: true,
         items: typeOptions,
