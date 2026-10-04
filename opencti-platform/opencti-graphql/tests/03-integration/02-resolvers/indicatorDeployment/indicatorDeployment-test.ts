@@ -6,6 +6,7 @@ import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
   flagExpiredDeployments,
+  hitsSightingStixId,
   reconcileAllIndicatorDeploymentCounters,
   reconcileDeployedIndicatorCounters,
   reconcileIndicatorDeploymentCounters,
@@ -76,6 +77,11 @@ const RELATION_ADD = gql`
 const DEPLOYMENT_MARKING_DELETE = gql`
   mutation DeploymentMarkingDelete($id: ID!, $toId: StixRef!) {
     stixCoreRelationshipEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object-marking") { id } }
+  }
+`;
+const SIGHTING_MARKING_DELETE = gql`
+  mutation SightingMarkingDelete($id: ID!, $toId: StixRef!) {
+    stixSightingRelationshipEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object-marking") { id } }
   }
 `;
 const DEPLOYMENT_FIELD_PATCH = gql`
@@ -214,6 +220,20 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   it('should share a deployment with the organizations of both its ends only', async () => {
     // Never with the organizations of the reporting account, nor with an organization of one end only
     expect(await loadOrganizations(deploymentId)).toEqual([testOrganizationId]);
+  });
+
+  it('should keep the sharing of a deployment when an upsert names other organizations', async () => {
+    // Not streamed: the raw stream counts of the suite are unchanged
+    const streamed = vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never);
+    try {
+      await queryAsAdminWithSuccess({
+        query: RELATION_ADD,
+        variables: { input: { fromId: indicatorId, toId: platformId, relationship_type: 'deployed-on', objectOrganization: [platformOrganizationId], update: true } },
+      });
+      expect(await loadOrganizations(deploymentId)).toEqual([testOrganizationId]);
+    } finally {
+      streamed.mockRestore();
+    }
   });
 
   it('should share a deployment created through the generic relationship creation with the organizations of both its ends only', async () => {
@@ -389,6 +409,27 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(retried.data?.indicatorReportHits.id).toEqual(sightingId);
     expect(retried.data?.indicatorReportHits.attribute_count).toEqual(5);
     expect(new Date(retried.data?.indicatorReportHits.last_seen).toISOString()).toEqual('2026-10-02T10:00:00.000Z');
+  });
+
+  it('should refuse an edit removing from the hits sighting a marking of its indicator', async () => {
+    const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+    const sightingStixId = hitsSightingStixId(indicatorId, platformId);
+    const sighting = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
+    // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
+    await setMarkings(indicatorId, [amber.internal_id]);
+    await setMarkings(sighting.internal_id, [amber.internal_id]);
+    await setOrganizations(platformId, [testOrganizationId]);
+    await setOrganizations(sighting.internal_id, [testOrganizationId]);
+    try {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } });
+      const stored = await internalLoadById(testContext, ADMIN_USER, sighting.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as Record<string, string[] | undefined>;
+      expect(stored[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
+    } finally {
+      await setOrganizations(sighting.internal_id, [platformOrganizationId]);
+      await setOrganizations(platformId, [platformOrganizationId]);
+      await setMarkings(sighting.internal_id, []);
+      await setMarkings(indicatorId, []);
+    }
   });
 
   it('should leave the write-back mutations to connector accounts', async () => {

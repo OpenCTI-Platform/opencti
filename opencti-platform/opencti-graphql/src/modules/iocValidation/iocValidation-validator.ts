@@ -2,19 +2,25 @@ import { ForbiddenAccess, ValidationError } from '../../config/errors';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
-import { INPUT_MARKINGS } from '../../schema/general';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
-import type { BasicStoreIdentifier } from '../../types/store';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import type { BasicStoreEntity, BasicStoreIdentifier } from '../../types/store';
 import type { EditInput } from '../../generated/graphql';
+import { fullEntitiesList, internalFindByIds } from '../../database/middleware-loader';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-import { pairMarkings } from '../indicatorDeployment/indicatorDeployment-utils';
+import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
-import { findDeployedOn } from '../indicatorDeployment/indicatorDeployment-domain';
+import { findDeployedOn, hitsSightingStixId } from '../indicatorDeployment/indicatorDeployment-domain';
 import { DEPLOYMENT_STATUS_EXPIRED, DEPLOYMENT_STATUS_PENDING, RELATION_DEPLOYED_ON, VALIDATION_STATUS_NOT_REQUESTED } from '../indicatorDeployment/indicatorDeployment-types';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findIocValidationConnectors } from './iocValidation-domain';
+import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from './iocValidation-types';
 import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
 const VALIDATION_FIELDS = ['validation_status', 'last_validation_at', 'validation_run_id'];
@@ -91,6 +97,7 @@ const markingIdsOf = (values: unknown): string[] => (Array.isArray(values) ? val
   .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
 type MarkedEnd = { [RELATION_OBJECT_MARKING]?: string[] | null };
+type SharedEnd = { [RELATION_GRANTED_TO]?: string[] | null };
 
 // Marking ids given in any form (internal, standard or STIX id) as internal ids.
 const toMarkingInternalIds = async (context: AuthContext, ids: string[]) => {
@@ -157,6 +164,85 @@ export const keepsPairMarkings = async (context: AuthContext, initial: Record<st
   return result === undefined || coversEndMarkings(context, result, from, to);
 };
 
+// Organization ids given in any form as internal ids (a standard or STIX id is resolved, an internal id kept).
+const toOrganizationInternalIds = async (context: AuthContext, ids: string[]) => {
+  const external = ids.filter((id) => id.includes('--'));
+  if (external.length === 0) {
+    return ids;
+  }
+  const organizations = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, external, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }) as BasicStoreEntity[];
+  const byId = new Map<string, string>();
+  organizations.filter((organization) => organization).forEach((organization) => {
+    [organization.internal_id, organization.standard_id, ...(organization.x_opencti_stix_ids ?? [])].forEach((id) => byId.set(id, organization.internal_id));
+  });
+  return ids.map((id) => byId.get(id) ?? id);
+};
+
+/**
+ * Whether edits keep a pair relationship shared with the organizations of both its ends only: its sharing can be
+ * narrowed, never widened to an organization one of its ends is not shared with.
+ */
+export const keepsPairSharing = async (context: AuthContext, initial: Record<string, unknown> | undefined, editInputs: EditInput[]) => {
+  const from = initial?.from as SharedEnd | undefined;
+  const to = initial?.to as SharedEnd | undefined;
+  const sharingEdits = editInputs.filter((input) => input.key === INPUT_GRANTED_REFS && input.operation !== UPDATE_OPERATION_REMOVE);
+  if (!from || !to || sharingEdits.length === 0) {
+    return true;
+  }
+  const allowed = new Set(pairOrganizations(from, to));
+  const added = await toOrganizationInternalIds(context, sharingEdits.flatMap((input) => markingIdsOf(input.value)));
+  return added.every((id) => allowed.has(id));
+};
+
+const refuseSharing = (user: AuthUser) => {
+  throw ForbiddenAccess('A deployment and its sightings are shared with the organizations of both its indicator and its security platform only', { user_id: user.id });
+};
+
+/**
+ * Whether a sighting is one the platform generates for an (indicator, security platform) pair: the hits sighting of the
+ * pair, or the result sighting of a validation request that included it (both identified by their deterministic id).
+ */
+export const isGeneratedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
+  const from = initial?.from as { entity_type?: string; internal_id?: string } | undefined;
+  const to = initial?.to as { entity_type?: string; internal_id?: string } | undefined;
+  if (from?.entity_type !== ENTITY_TYPE_INDICATOR || to?.entity_type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || !from.internal_id || !to.internal_id) {
+    return false;
+  }
+  const indicatorId = from.internal_id;
+  const platformId = to.internal_id;
+  const ids = new Set([initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string'));
+  if (ids.has(hitsSightingStixId(indicatorId, platformId))) {
+    return true;
+  }
+  let generated = false;
+  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+    filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
+    noFiltersChecking: true,
+    baseData: true,
+    first: 500,
+    callback: async (requests: BasicStoreEntity[]) => {
+      generated = requests.some((request) => ids.has(validationResultSightingStixId(request.internal_id, indicatorId, platformId)));
+      return !generated;
+    },
+  } as never);
+  return generated;
+};
+
+// Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do.
+const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
+  const touchesAccess = editInputs.some((input) => input.key === INPUT_MARKINGS || input.key === INPUT_GRANTED_REFS);
+  if (!touchesAccess || isBypassUser(user) || !await isGeneratedPairSighting(context, initial)) {
+    return true;
+  }
+  if (!await keepsPairMarkings(context, initial, editInputs)) {
+    return refuseMarkings(user);
+  }
+  if (!await keepsPairSharing(context, initial, editInputs)) {
+    return refuseSharing(user);
+  }
+  return true;
+};
+
 /**
  * Whether an input gives a deployment a validity window. A deployment has none (its dates are deployed_at,
  * last_sync_at and removed_at): without start and stop times its identity is the pair alone, so every creation or
@@ -184,7 +270,9 @@ const refuseReservedStatus = () => {
 };
 
 const refuseMarkings = (user: AuthUser) => {
-  throw ForbiddenAccess('A deployment carries the markings of its indicator and of its security platform', { user_id: user.id });
+  throw ForbiddenAccess('A deployment, like its hits and validation result sightings, carries the markings of its indicator and of its security platform', {
+    user_id: user.id,
+  });
 };
 
 // Creation, including the upsert of an existing deployment (stixCoreRelationshipAdd with update, bundle ingestion),
@@ -241,6 +329,9 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   if (!await keepsPairMarkings(context, initial, editInputs)) {
     return refuseMarkings(user);
   }
+  if (!await keepsPairSharing(context, initial, editInputs)) {
+    return refuseSharing(user);
+  }
   if (setsReservedStatus(instance)) {
     return refuseReservedStatus();
   }
@@ -254,3 +345,4 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
 };
 
 registerEntityValidator(RELATION_DEPLOYED_ON, { validatorCreation, validatorUpdate });
+registerEntityValidator(STIX_SIGHTING_RELATIONSHIP, { validatorUpdate: validatorSightingUpdate });

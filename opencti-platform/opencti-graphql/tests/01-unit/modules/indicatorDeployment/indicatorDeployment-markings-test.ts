@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import '../../../../src/modules/index';
-import { expectedPairMarkings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { keepsPairMarkings, markingsAfterEdits } from '../../../../src/modules/iocValidation/iocValidation-validator';
+import { expectedPairMarkings, hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import { isGeneratedPairSighting, keepsPairMarkings, keepsPairSharing, markingsAfterEdits } from '../../../../src/modules/iocValidation/iocValidation-validator';
 import { getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import { EditOperation } from '../../../../src/generated/graphql';
 import type { AuthUser } from '../../../../src/types/user';
@@ -73,6 +74,33 @@ describe('marking edits of a deployment', () => {
     const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
     const removal = edit(EditOperation.Remove, ['pap-red']);
     await expect(validatorUpdate(testContext, editor, { objectMarking: ['pap-red'] }, initial, removal)).rejects.toThrow('markings of its indicator');
+  });
+
+  it('should refuse widening the sharing of a deployment beyond the organizations of both its ends', async () => {
+    const shared = { ...initial, from: { ...from, granted: ['org-a', 'org-b'] }, to: { ...to, granted: ['org-a'] } };
+    const share = (operation: EditOperation, value: string[]) => [{ key: 'objectOrganization', value, operation }];
+    expect(await keepsPairSharing(testContext, shared, share(EditOperation.Add, ['org-a']))).toEqual(true);
+    expect(await keepsPairSharing(testContext, shared, share(EditOperation.Add, ['org-b']))).toEqual(false);
+    expect(await keepsPairSharing(testContext, shared, share(EditOperation.Replace, ['org-a', 'org-c']))).toEqual(false);
+    expect(await keepsPairSharing(testContext, shared, share(EditOperation.Remove, ['org-a']))).toEqual(true);
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const widening = share(EditOperation.Add, ['org-b']);
+    await expect(validatorUpdate(testContext, editor, { objectOrganization: ['org-b'] }, shared, widening)).rejects.toThrow('organizations of both');
+  });
+
+  it('should keep the markings of the pair on the hits sighting, and leave other sightings alone', async () => {
+    const indicator = { ...from, entity_type: 'Indicator', internal_id: 'indicator-1' };
+    const platform = { ...to, entity_type: 'SecurityPlatform', internal_id: 'platform-1' };
+    const hitsSighting = { from: indicator, to: platform, standard_id: hitsSightingStixId('indicator-1', 'platform-1'), 'object-marking': ['tlp-amber', 'pap-red'] };
+    expect(await isGeneratedPairSighting(testContext, hitsSighting)).toEqual(true);
+    const validatorSighting = getEntityValidatorUpdate(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
+    const removal = edit(EditOperation.Remove, ['pap-red']);
+    await expect(validatorSighting(testContext, editor, { objectMarking: ['pap-red'] }, hitsSighting, removal)).rejects.toThrow('markings of its indicator');
+    await expect(validatorSighting(testContext, editor, { description: 'x' }, hitsSighting, [{ key: 'description', value: ['x'] }])).resolves.toEqual(true);
+    // A sighting of another kind of entity is never one of the pair sightings
+    const malwareSighting = { ...hitsSighting, from: { ...indicator, entity_type: 'Malware' } };
+    expect(await isGeneratedPairSighting(testContext, malwareSighting)).toEqual(false);
+    await expect(validatorSighting(testContext, editor, { objectMarking: ['pap-red'] }, malwareSighting, removal)).resolves.toEqual(true);
   });
 
   it('should accept raising a marking, adding one, or removing a marking of the deployment itself', async () => {

@@ -3548,8 +3548,10 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
+      // The sharing of a deployment is the platform's (the organizations of both its ends): an upsert never adds to it
+      const upsertInput = relationshipType === RELATION_DEPLOYED_ON ? R.dissoc(INPUT_GRANTED_REFS, resolvedInput) : resolvedInput;
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
+      return upsertElement(context, user, existingRelationship, relationshipType, upsertInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
