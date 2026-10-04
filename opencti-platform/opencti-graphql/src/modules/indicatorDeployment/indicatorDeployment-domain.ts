@@ -22,8 +22,9 @@ import {
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
   UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REPLACE,
 } from '../../database/utils';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
@@ -34,12 +35,14 @@ import { lockResources } from '../../lock/master-lock';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_GRANTED_REFS, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../iocValidation/iocValidation-types';
-import { SYSTEM_USER } from '../../utils/access';
+import { isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
+import { storeUpdateEvent } from '../../database/stream/stream-handler';
 import { addIndicatorDeploymentReportCount, addIndicatorHitsReportCount } from '../../manager/telemetryManager';
 import type { IndicatorDeploymentBatchResult, IndicatorDeploymentMetadataInput, IndicatorDeploymentReportInput, IndicatorDeploymentStatus } from '../../generated/graphql';
 import {
@@ -64,7 +67,14 @@ import {
   RELATION_DEPLOYED_ON,
   type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
-import { isDeploymentStatus, isReadableWithIndicator, pairMarkings, validationResultSightingStixId } from './indicatorDeployment-utils';
+import {
+  isDeploymentStatus,
+  isPairReadableByReporter,
+  isReadableWithIndicator,
+  pairMarkings,
+  pairOrganizations,
+  validationResultSightingStixId,
+} from './indicatorDeployment-utils';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
 
 export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
@@ -305,6 +315,52 @@ const ensurePairMarkings = async (
   }
 };
 
+/**
+ * Organizations a new pair relationship is shared with (see pairOrganizations). The reporting account maintains the
+ * relationship and must find it again on its next report, so a pair it would not read is refused: its indicator and
+ * its security platform need a common organization of the account.
+ */
+const pairSharingForReporter = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicator: BasicStoreEntityIndicator,
+  platform: BasicStoreEntitySecurityPlatform,
+) => {
+  const organizations = pairOrganizations(indicator, platform);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const reporter = {
+    insidePlatformOrganization: isUserInPlatformOrganization(user, settings),
+    organizationIds: (user.organizations ?? []).map((organization) => organization.internal_id),
+  };
+  if (!isPairReadableByReporter(organizations, reporter)) {
+    throw FunctionalError('The indicator and the security platform are not shared with a common organization of the reporting account', {
+      indicatorId: indicator.internal_id,
+      platformId: platform.internal_id,
+    });
+  }
+  return organizations;
+};
+
+/**
+ * A pair relationship shared with other organizations than those both its ends are shared with (an end was shared or
+ * unshared since) gets their common organizations instead.
+ */
+const ensurePairOrganizations = async (
+  context: AuthContext,
+  user: AuthUser,
+  relation: { internal_id: string; entity_type: string; [RELATION_GRANTED_TO]?: string[] | null },
+  indicator: BasicStoreEntityIndicator,
+  platform: BasicStoreEntitySecurityPlatform,
+) => {
+  const current = relation[RELATION_GRANTED_TO] ?? [];
+  const expected = pairOrganizations(indicator, platform);
+  if (current.length !== expected.length || expected.some((organization) => !current.includes(organization))) {
+    await patchAttribute(context, user, relation.internal_id, relation.entity_type, { [INPUT_GRANTED_REFS]: expected }, {
+      operations: { [INPUT_GRANTED_REFS]: UPDATE_OPERATION_REPLACE },
+    });
+  }
+};
+
 // Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
@@ -324,8 +380,9 @@ const pairValidationRequestIds = async (context: AuthContext, indicatorId: strin
 /**
  * After a marking or sharing change of indicators or security platforms, the deployments of their pairs, the hits
  * sightings and the validation result sightings of every request that included the pair get the markings they now
- * lack, and the counters of the indicators are recomputed. Bounded by the deployments of the changed endpoints and by
- * PAIR_REQUESTS_MAX requests per pair.
+ * lack and the organizations both ends are now shared with, and the counters of the indicators are recomputed.
+ * Sharing is only repaired with the Enterprise Edition, without which it never changes nor restricts reads. Bounded by
+ * the deployments of the changed endpoints and by PAIR_REQUESTS_MAX requests per pair.
  */
 export const repairPairMarkings = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
   const [fromIndicators, toPlatforms] = await Promise.all([
@@ -340,13 +397,25 @@ export const repairPairMarkings = async (context: AuthContext, user: AuthUser, c
   const endpointIds = [...new Set([...deployments.values()].flatMap((deployment) => [deployment.fromId, deployment.toId]))];
   const endpoints = await storeLoadByIds<BasicStoreEntityIndicator | BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, endpointIds, ABSTRACT_STIX_DOMAIN_OBJECT);
   const endpointsById = new Map(endpoints.filter((endpoint) => endpoint).map((endpoint) => [endpoint.internal_id, endpoint]));
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const repairSharing = isEnterpriseEditionFromSettings(settings);
+  const ensurePairAccess = async (
+    relation: BasicStoreRelation,
+    indicator: BasicStoreEntityIndicator,
+    platform: BasicStoreEntitySecurityPlatform,
+  ) => {
+    await ensurePairMarkings(context, user, relation, indicator, platform);
+    if (repairSharing) {
+      await ensurePairOrganizations(context, user, relation, indicator, platform);
+    }
+  };
   await BluePromise.map([...deployments.values()], async (deployment) => {
     const indicator = endpointsById.get(deployment.fromId) as BasicStoreEntityIndicator | undefined;
     const platform = endpointsById.get(deployment.toId) as BasicStoreEntitySecurityPlatform | undefined;
     if (!indicator || !platform) {
       return;
     }
-    await ensurePairMarkings(context, user, deployment, indicator, platform);
+    await ensurePairAccess(deployment, indicator, platform);
     const requestIds = await pairValidationRequestIds(context, indicator.internal_id, platform.internal_id);
     const sightingIds = [
       hitsSightingStixId(indicator.internal_id, platform.internal_id),
@@ -355,7 +424,7 @@ export const repairPairMarkings = async (context: AuthContext, user: AuthUser, c
     await BluePromise.map(sightingIds, async (sightingId) => {
       const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
       if (sighting) {
-        await ensurePairMarkings(context, user, sighting, indicator, platform);
+        await ensurePairAccess(sighting, indicator, platform);
       }
     });
   }, { concurrency: BATCH_CONCURRENCY });
@@ -384,8 +453,9 @@ const applyDeploymentReport = async (
         toId: platform.internal_id,
         relationship_type: RELATION_DEPLOYED_ON,
         [INPUT_MARKINGS]: pairMarkings(indicator, platform),
+        [INPUT_GRANTED_REFS]: await pairSharingForReporter(context, user, indicator, platform),
         ...change.attributes,
-      }) as unknown as BasicStoreRelationDeployedOn;
+      }, { grantedRefsFromInput: true }) as unknown as BasicStoreRelationDeployedOn;
       return { element, outcome: 'created' };
     }
     if (!change.meaningful) {
@@ -504,18 +574,19 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     if (existingSighting) {
       await ensurePairMarkings(context, user, existingSighting, indicator, platform);
     }
-    const createHitsSighting = (count: number, firstSeen: Date, lastSeen: Date) => createRelation(context, user, {
+    const createHitsSighting = async (count: number, firstSeen: Date, lastSeen: Date) => createRelation(context, user, {
       fromId: indicator.internal_id,
       toId: platform.internal_id,
       relationship_type: STIX_SIGHTING_RELATIONSHIP,
       stix_id: sightingStixId,
       [INPUT_MARKINGS]: pairMarkings(indicator, platform),
+      [INPUT_GRANTED_REFS]: await pairSharingForReporter(context, user, indicator, platform),
       attribute_count: count,
       first_seen: firstSeen,
       last_seen: lastSeen,
       x_opencti_negative: false,
       description: `Hits reported by the ${platform.name} integration`,
-    });
+    }, { grantedRefsFromInput: true });
     const lastKnownHit = existing?.last_hit_at ? new Date(existing.last_hit_at).getTime() : undefined;
     // Replay of an already counted report: the hits are never counted twice.
     const replay = existing !== undefined && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit;
@@ -527,13 +598,14 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
         toId: platform.internal_id,
         relationship_type: RELATION_DEPLOYED_ON,
         [INPUT_MARKINGS]: pairMarkings(indicator, platform),
+        [INPUT_GRANTED_REFS]: await pairSharingForReporter(context, user, indicator, platform),
         deployment_status: DEPLOYMENT_STATUS_ACTIVE,
         deployed_at: firstHit,
         last_sync_at: now,
         hit_count: args.count,
         first_hit_at: firstHit,
         last_hit_at: lastHit,
-      }) as unknown as HitsDeploymentState;
+      }, { grantedRefsFromInput: true }) as unknown as HitsDeploymentState;
     } else if (!replay) {
       const patch: Record<string, unknown> = { hit_count: (existing.hit_count ?? 0) + args.count, last_hit_at: lastHit, last_sync_at: now };
       if (isEmptyField(existing.first_hit_at) || firstHit.getTime() < new Date(existing.first_hit_at as Date | string).getTime()) {
@@ -1021,12 +1093,31 @@ export const reconcileAllIndicatorDeploymentCounters = async (context: AuthConte
 };
 
 /**
+ * Streams an indicator update when a revoked indicator is live on a platform while the stream last showed it live
+ * nowhere: its revocation was streamed before the counters caught up with its first deployment, or a deployment was
+ * reported after the revocation. Counters are written without stream event, so a trigger on revoked indicators still
+ * deployed only sees them through such an event; stream consumers see the revoked indicator again, as on revocation.
+ */
+const streamRevokedIndicatorStillDeployed = async (context: AuthContext, indicatorId: string, counters: IndicatorDeploymentCounters) => {
+  const instance = await storeLoadByIdWithRefs(context, SYSTEM_USER, indicatorId, { type: ENTITY_TYPE_INDICATOR });
+  if (!instance) {
+    return;
+  }
+  const previous = { ...instance, [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT]: 0 };
+  const current = { ...instance, ...counters };
+  const changes = [{ field: 'Deployment platforms count', previous: ['0'], new: [String(counters[INDICATOR_DEPLOYMENT_PLATFORMS_COUNT])] }];
+  await storeUpdateEvent(context, SYSTEM_USER, previous, current, changes, { noHistory: true });
+};
+
+/**
  * Recompute the derived deployment counters of the given indicators from their deployed-on relationships.
  * Runs as system user: only numbers are stored on the indicator, and only the deployments every reader of the indicator
  * can read are counted, so a deployment on a more restricted security platform is never revealed by a counter.
- * Side-channel update: no stream event, no history, updated_at kept.
+ * Side-channel update: no stream event, no history, updated_at kept, except for a revoked indicator found live while
+ * the stream showed it live nowhere (see streamRevokedIndicatorStillDeployed). What the stream last showed is the
+ * stored counter, or, for the stream handler, what the last indicator event it read showed (streamedLive).
  */
-export const refreshIndicatorDeploymentCounters = async (context: AuthContext, indicatorIds: string[]) => {
+export const refreshIndicatorDeploymentCounters = async (context: AuthContext, indicatorIds: string[], streamedLive: Map<string, boolean> = new Map()) => {
   const uniqueIds = [...new Set(indicatorIds.filter((id) => isNotEmptyField(id)))];
   if (uniqueIds.length === 0) {
     return 0;
@@ -1079,6 +1170,10 @@ export const refreshIndicatorDeploymentCounters = async (context: AuthContext, i
       // Live update of the open indicator screens only: still no stream event
       await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, { ...indicator, ...counters }, SYSTEM_USER);
       updated += 1;
+    }
+    const shownLive = streamedLive.get(indicator.internal_id) ?? (indicator[INDICATOR_DEPLOYMENT_PLATFORMS_COUNT] ?? 0) > 0;
+    if (indicator.revoked && counters[INDICATOR_DEPLOYMENT_PLATFORMS_COUNT] > 0 && !shownLive) {
+      await streamRevokedIndicatorStillDeployed(context, indicator.internal_id, counters);
     }
   }, { concurrency: BATCH_CONCURRENCY });
   return updated;

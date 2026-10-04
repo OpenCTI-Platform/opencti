@@ -10,7 +10,7 @@ import { createRelation, patchAttribute, stixLoadByIds } from '../../database/mi
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
@@ -35,7 +35,7 @@ import {
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
 import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
-import { pairMarkings, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
+import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import type {
   IocValidationRequestStatusInput,
   MutationIndicatorsRequestValidationArgs,
@@ -673,12 +673,13 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
           relationship_type: STIX_SIGHTING_RELATIONSHIP,
           stix_id: sightingStixId,
           [INPUT_MARKINGS]: pairMarkings(indicator, platform),
+          [INPUT_GRANTED_REFS]: pairOrganizations(indicator, platform),
           attribute_count: result.hitCount ?? 1,
           first_seen: observedAt,
           last_seen: observedAt,
           x_opencti_negative: result.status === VALIDATION_STATUS_MISSED,
           description: result.evidence || `IOC validation ${result.status} reported by ${platform.name}`,
-        });
+        }, { grantedRefsFromInput: true });
       }
       if (waiting) {
         updatedIndicatorIds.push(indicator.internal_id);

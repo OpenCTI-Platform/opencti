@@ -287,7 +287,11 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
+    if (opts.grantedRefsFromInput) {
+      // Sharing computed by the platform for a relationship it generates, never a user input: exactly the organizations
+      // of the input, whatever the organizations and capabilities of the user.
+      pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS] ?? [], RELATION_GRANTED_TO));
+    } else if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
       && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {

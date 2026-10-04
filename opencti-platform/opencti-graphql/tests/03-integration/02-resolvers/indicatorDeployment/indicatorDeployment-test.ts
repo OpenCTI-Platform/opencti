@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
@@ -10,11 +10,14 @@ import {
   reconcileDeployedIndicatorCounters,
   reconcileIndicatorDeploymentCounters,
   refreshIndicatorDeploymentCounters,
+  repairPairMarkings,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { deleteElementById, stixLoadById } from '../../../../src/database/middleware';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { elUpdate } from '../../../../src/database/engine';
+import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
+import { RELATION_GRANTED_TO } from '../../../../src/schema/stixRefRelationship';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -131,6 +134,19 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   let secondIndicatorId: string;
   let platformId: string;
   let deploymentId: string;
+  let testOrganizationId: string;
+  let platformOrganizationId: string;
+
+  // Side-channel sharing (no stream event, so the raw stream counts of the suite are unchanged).
+  const setOrganizations = async (id: string, organizationIds: string[]) => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { _index: string };
+    const script = { source: "ctx._source['rel_granted.internal_id'] = params.ids", lang: 'painless', params: { ids: organizationIds } };
+    await elUpdate(testContext, stored._index, id, { script });
+  };
+  const loadOrganizations = async (id: string, type?: string) => {
+    const element = await internalLoadById(testContext, ADMIN_USER, id, type ? { type } : undefined) as unknown as Record<string, string[] | undefined>;
+    return [...(element[RELATION_GRANTED_TO] ?? [])].sort();
+  };
 
   beforeAll(async () => {
     const indicator = await queryAsAdminWithSuccess({
@@ -149,6 +165,12 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       variables: { input: { name: 'Deployment test SIEM', security_platform_type: 'SIEM' } },
     });
     platformId = platform.data?.securityPlatformAdd.id;
+    const loadInternalId = async (standardId: string) => (await internalLoadById(testContext, ADMIN_USER, standardId) as unknown as { internal_id: string }).internal_id;
+    testOrganizationId = await loadInternalId(TEST_ORGANIZATION.id);
+    platformOrganizationId = await loadInternalId(PLATFORM_ORGANIZATION.id);
+    // The indicator is shared with two organizations, its security platform with one of them only
+    await setOrganizations(indicatorId, [testOrganizationId, platformOrganizationId]);
+    await setOrganizations(platformId, [testOrganizationId]);
   });
 
   afterAll(async () => {
@@ -171,6 +193,17 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(deployment.last_sync_at).toBeDefined();
     expect(deployment.hit_count).toEqual(0);
     expect(deployment.validation_status).toEqual('not_requested');
+  });
+
+  it('should share a deployment with the organizations of both its ends only', async () => {
+    // Never with the organizations of the reporting account, nor with an organization of one end only
+    expect(await loadOrganizations(deploymentId)).toEqual([testOrganizationId]);
+  });
+
+  it('should share a deployment again with the organizations of both its ends after a sharing change of one end', async () => {
+    await setOrganizations(platformId, [platformOrganizationId]);
+    await repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
+    expect(await loadOrganizations(deploymentId)).toEqual([platformOrganizationId]);
   });
 
   it('should be idempotent and never downgrade an active deployment', async () => {
@@ -338,6 +371,32 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(indicator.data?.indicator.deployment_failed_count).toEqual(0);
     expect(indicator.data?.indicator.hit_platforms_count).toEqual(1);
     expect(indicator.data?.indicator.validated_platforms_count).toEqual(0);
+  });
+
+  it('should stream a revoked indicator found live, as when revoked right after its first deployment', async () => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, indicatorId) as unknown as { _index: string };
+    const setSource = (source: string) => elUpdate(testContext, stored._index, indicatorId, { script: { source, lang: 'painless' } });
+    // The revocation was stored and streamed while the counter still read zero
+    await setSource('ctx._source.revoked = true; ctx._source.deployment_platforms_count = 0');
+    const streamed = vi.spyOn(streamHandler, 'storeUpdateEvent');
+    try {
+      await refreshIndicatorDeploymentCounters(testContext, [indicatorId]);
+      expect(streamed).toHaveBeenCalledTimes(1);
+      type StreamedCall = [unknown, unknown, Record<string, unknown>, Record<string, unknown>, unknown, { noHistory?: boolean }];
+      const [, , previous, current, , opts] = streamed.mock.calls[0] as unknown as StreamedCall;
+      expect(current.internal_id).toEqual(indicatorId);
+      expect(current.revoked).toEqual(true);
+      expect(previous.deployment_platforms_count).toEqual(0);
+      expect(current.deployment_platforms_count).toEqual(1);
+      expect(opts.noHistory).toEqual(true);
+      // Streamed live once: the next refreshes, and an indicator event already showing it live, stream nothing more
+      await refreshIndicatorDeploymentCounters(testContext, [indicatorId]);
+      await refreshIndicatorDeploymentCounters(testContext, [indicatorId], new Map([[indicatorId, true]]));
+      expect(streamed).toHaveBeenCalledTimes(1);
+    } finally {
+      streamed.mockRestore();
+      await setSource('ctx._source.revoked = false');
+    }
   });
 
   it('should export the lifecycle in the STIX extension', async () => {

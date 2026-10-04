@@ -81,9 +81,11 @@ removal dates), so creating or importing it again updates the existing one. The 
 reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
 shared with every organization the indicator is shared with and have no authorized members, so they never reveal a
 deployment a reader of the indicator cannot read.
-On a platform with organization segregation, these relationships are shared like every relationship a connector
-creates: with the organizations of the connector account. Give the account of an integration only the organizations
-allowed to see the security platforms it reports on.
+On a platform with organization segregation, these relationships are shared with the organizations that both the
+indicator and the security platform are shared with, never with the other organizations of the connector account,
+and they follow every later sharing change of either end. A connector account outside the platform organization
+reports only on the pairs it can read back: the indicator and the security platform must both be shared with one of
+its organizations.
 
 ## Viewing deployments
 
@@ -176,6 +178,9 @@ Create live triggers in **Notifications** to be told when a deployment needs att
 The **Removal never confirmed** trigger fires when the platform manager flags a deployment as expired, once the
 removal grace period has passed without confirmation from the connector.
 
+The **Expired but still deployed** trigger fires when an indicator live on a platform is revoked, including right after
+its first deployment, and when a deployment is reported for an indicator that is already revoked.
+
 ## Configuration
 
 The platform manager that flags expired deployments and keeps the counters up to date can be configured with the
@@ -183,7 +188,7 @@ following parameters:
 
 | Parameter                                           | Environment variable                                 | Default value | Description                                                     |
 |:----------------------------------------------------|:-----------------------------------------------------|:--------------|:----------------------------------------------------------------|
-| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings of deployments after a change of markings, sharing, authorized members or author of their indicator or security platform. Keep it enabled. |
+| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings and sharing of deployments after a change of markings, sharing, authorized members or author of their indicator or security platform. Keep it enabled. |
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
 | indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |

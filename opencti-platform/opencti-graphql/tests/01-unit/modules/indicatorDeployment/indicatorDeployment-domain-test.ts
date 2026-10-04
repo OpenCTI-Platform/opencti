@@ -10,7 +10,14 @@ import {
   isHitsSightingUpToDate,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { extractDeploymentIndicatorIds, extractAccessChangedEndpoints, hasSecurityPlatformRemoval } from '../../../../src/manager/indicatorDeploymentManager';
+import {
+  extractAccessChangedEndpoints,
+  extractDeploymentIndicatorIds,
+  extractRevokedIndicatorIds,
+  extractStreamedDeploymentLive,
+  hasSecurityPlatformRemoval,
+} from '../../../../src/manager/indicatorDeploymentManager';
+import { isPairReadableByReporter, pairOrganizations } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import type { DataEvent, SseEvent } from '../../../../src/types/event';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z');
@@ -208,6 +215,51 @@ describe('deployment manager stream extraction', () => {
     ]);
     expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5', 'indicator-6'], platformIds: ['platform-1', 'platform-2', 'platform-3'] });
     expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
+  });
+  it('should read whether the last event of each indicator showed it live on a platform', () => {
+    const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
+    const typed = (type: string, data: Record<string, unknown>) => ({ id: '1', event: type, data: { type, data } }) as unknown as SseEvent<DataEvent>;
+    const indicator = (id: string, count?: number) => ({ type: 'indicator', extensions: { [ext]: { id, type: 'Indicator', deployment_platforms_count: count } } });
+    const shown = extractStreamedDeploymentLive([
+      typed('update', indicator('indicator-1', 2)),
+      typed('update', indicator('indicator-1')), // the later event wins
+      typed('create', indicator('indicator-2', 1)),
+      typed('delete', indicator('indicator-3', 1)),
+      typed('update', { type: 'relationship', relationship_type: 'deployed-on', extensions: { [ext]: { id: 'deployment-1', source_ref: 'indicator-4' } } }),
+    ]);
+    expect([...shown.entries()]).toEqual([['indicator-1', false], ['indicator-2', true]]);
+  });
+  it('should collect the indicators revoked by an update', () => {
+    const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
+    const update = (id: string, revoked: boolean, path: string, type = 'Indicator') => ({
+      id: '1',
+      event: 'update',
+      data: { type: 'update', data: { type: 'indicator', revoked, extensions: { [ext]: { id, type } } }, context: { patch: [{ op: 'replace', path }] } },
+    }) as unknown as SseEvent<DataEvent>;
+    expect(extractRevokedIndicatorIds([
+      update('indicator-1', true, '/revoked'),
+      update('indicator-1', true, '/revoked'),
+      update('indicator-2', false, '/revoked'), // reinstated
+      update('indicator-3', true, '/x_opencti_score'), // already revoked, other change
+      update('malware-1', true, '/revoked', 'Malware'),
+    ])).toEqual(['indicator-1']);
+    expect(extractRevokedIndicatorIds([])).toEqual([]);
+  });
+});
+
+describe('sharing of the pair relationships', () => {
+  it('should share with the organizations both ends are shared with only', () => {
+    expect(pairOrganizations({ granted: ['org-a', 'org-b'] }, { granted: ['org-b', 'org-c'] })).toEqual(['org-b']);
+    expect(pairOrganizations({ granted: ['org-a'] }, { granted: ['org-b'] })).toEqual([]);
+    expect(pairOrganizations({ granted: ['org-a'] }, {})).toEqual([]);
+    expect(pairOrganizations({}, { granted: ['org-a'] })).toEqual([]);
+    expect(pairOrganizations({ granted: ['org-a', 'org-a'] }, { granted: ['org-a'] })).toEqual(['org-a']);
+  });
+  it('should let a reporting account report only on the pairs it reads back', () => {
+    expect(isPairReadableByReporter([], { insidePlatformOrganization: true, organizationIds: [] })).toEqual(true);
+    expect(isPairReadableByReporter(['org-b'], { insidePlatformOrganization: false, organizationIds: ['org-a', 'org-b'] })).toEqual(true);
+    expect(isPairReadableByReporter([], { insidePlatformOrganization: false, organizationIds: ['org-a', 'org-b'] })).toEqual(false);
+    expect(isPairReadableByReporter(['org-c'], { insidePlatformOrganization: false, organizationIds: ['org-a'] })).toEqual(false);
   });
 });
 

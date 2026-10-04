@@ -51,7 +51,36 @@ export const indicatorDeploymentCronHandler = async () => {
 type DeploymentEventData = {
   type?: string;
   relationship_type?: string;
-  extensions?: Record<string, { id?: string; source_ref?: string; type?: string }>;
+  revoked?: boolean;
+  extensions?: Record<string, { id?: string; source_ref?: string; type?: string; deployment_platforms_count?: number }>;
+};
+
+// Whether the last event of each indicator in this batch showed it live on a platform.
+export const extractStreamedDeploymentLive = (events: Array<SseEvent<DataEvent>>) => {
+  const shown = new Map<string, boolean>();
+  events.forEach((event) => {
+    if (event.data?.type !== 'create' && event.data?.type !== 'update') return;
+    const extension = (event.data.data as DeploymentEventData | undefined)?.extensions?.[STIX_EXT_OCTI];
+    if (extension?.type === ENTITY_TYPE_INDICATOR && extension.id) {
+      shown.set(extension.id, (extension.deployment_platforms_count ?? 0) > 0);
+    }
+  });
+  return shown;
+};
+
+// Indicators revoked by an update of this batch: the revocation may have been streamed before the counters caught up.
+export const extractRevokedIndicatorIds = (events: Array<SseEvent<DataEvent>>) => {
+  const ids = new Set<string>();
+  events.forEach((event) => {
+    if (event.data?.type !== 'update') return;
+    const data = event.data.data as DeploymentEventData | undefined;
+    const extension = data?.extensions?.[STIX_EXT_OCTI];
+    const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
+    if (extension?.type === ENTITY_TYPE_INDICATOR && extension.id && data?.revoked === true && patch.some((operation) => operation.path === '/revoked')) {
+      ids.add(extension.id);
+    }
+  });
+  return [...ids];
 };
 
 // Indicators whose deployed-on relationships changed in this batch of events. A merge redirects the
@@ -105,10 +134,10 @@ export const extractAccessChangedEndpoints = (events: Array<SseEvent<DataEvent>>
 };
 
 export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>, lastEventId: string) => {
-  const indicatorIds = extractDeploymentIndicatorIds(events);
+  const indicatorIds = [...new Set([...extractDeploymentIndicatorIds(events), ...extractRevokedIndicatorIds(events)])];
   if (indicatorIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
-    await refreshIndicatorDeploymentCounters(context, indicatorIds);
+    await refreshIndicatorDeploymentCounters(context, indicatorIds, extractStreamedDeploymentLive(events));
   }
   const markingChanges = extractAccessChangedEndpoints(events);
   if (markingChanges.indicatorIds.length > 0 || markingChanges.platformIds.length > 0) {

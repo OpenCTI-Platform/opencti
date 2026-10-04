@@ -31,6 +31,28 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
   return [...new Set([...(indicator[RELATION_OBJECT_MARKING] ?? []), ...(platform[RELATION_OBJECT_MARKING] ?? [])])];
 };
 
+type SharedElement = { [RELATION_GRANTED_TO]?: string[] | null };
+
+/**
+ * Organizations a relationship generated for an (indicator, security platform) pair is shared with: those both ends are
+ * shared with, never the organizations of the reporting account. A user outside the platform organization reads an
+ * element only through an organization it is shared with, so a reader of one end never reads the deployment, hits or
+ * results of a pair whose other end is not shared with its organization.
+ */
+export const pairOrganizations = (indicator: SharedElement, platform: SharedElement): string[] => {
+  const platformOrganizations = platform[RELATION_GRANTED_TO] ?? [];
+  return [...new Set((indicator[RELATION_GRANTED_TO] ?? []).filter((organization) => platformOrganizations.includes(organization)))];
+};
+
+/**
+ * Whether the account reporting for a pair reads a pair relationship shared with these organizations: it maintains the
+ * relationship, so it must find it again on its next report. Organizations only restrict reads when a platform
+ * organization is set, and never for the accounts inside it (service accounts included).
+ */
+export const isPairReadableByReporter = (organizations: string[], reporter: { insidePlatformOrganization: boolean; organizationIds: string[] }) => {
+  return reporter.insidePlatformOrganization || organizations.some((organization) => reporter.organizationIds.includes(organization));
+};
+
 /**
  * Whether every reader of the indicator can read the deployment. The counters stored on the indicator only count such
  * deployments, so they never reveal the deployments, hits or results a reader of the indicator cannot read:
@@ -39,8 +61,8 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
  *   with no organization is only read by the platform organization, which reads every deployment);
  * - authorized members: neither has any, since authorized members of the indicator read it whatever their
  *   organization and nothing proves they can read the deployment (such deployments are left out of the counters).
- * The same holds for the security platform of the deployment, whose own restrictions are checked as well: a
- * deployment created by a connector is shared with the connector organizations, not with those of the platform.
+ * The same holds for the security platform of the deployment, whose own restrictions are checked as well: a deployment
+ * is shared with the organizations both ends are shared with, which can be fewer than those of the indicator.
  * Organizations only restrict reads when a platform organization is set; then the users of an individual read what
  * this individual created, so an indicator created by an individual only counts what the same individual created.
  */

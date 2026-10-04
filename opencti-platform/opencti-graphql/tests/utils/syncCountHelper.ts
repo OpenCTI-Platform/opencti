@@ -70,7 +70,7 @@ testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 21;
+testUpdatedCounter.relationship = 22;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
@@ -87,7 +87,7 @@ testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 30;
+testUpdatedCounter.indicator = 31;
 testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;

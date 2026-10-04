@@ -3434,6 +3434,8 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   references?: string[];
   commitMessage?: string;
   restore?: boolean;
+  // The organizations of the input are the exact sharing of the relationship (platform-generated relationships only)
+  grantedRefsFromInput?: boolean;
 };
 export const createRelationRaw = async (
   context: AuthContext,
