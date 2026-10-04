@@ -885,11 +885,13 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
   const entityIds = Array.from(new Set(input.entity_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
   const connectorIds = Array.from(new Set(input.connector_ids)).slice(0, INVESTIGATION_LIMITS.enrichmentRequestsPerCall);
   // Entities of the investigation's scope the identity of the run can see in
-  // its draft, by internal or standard id.
+  // its draft, by internal or standard id. An entity restricted to authorized
+  // members is never investigated, so never enriched either.
   const scope = await enrichmentScopeOf(context, run);
   const visible = await elFindByIds<BasicStoreEntity>(runContextFor(context, run), user, entityIds, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
   const resolvedIds = new Map<string, string>();
   visible
+    .filter((element) => !isMemberRestricted(element))
     .filter((element) => scope.has(element.internal_id) || (!!element.standard_id && scope.has(element.standard_id)))
     .forEach((element) => {
       resolvedIds.set(element.internal_id, element.internal_id);

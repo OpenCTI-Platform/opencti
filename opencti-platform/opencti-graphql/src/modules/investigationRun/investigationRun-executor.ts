@@ -73,7 +73,6 @@ import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
 import { loadWorkById } from '../../domain/work';
 import { addNote } from '../../domain/note';
 import { addReport } from '../../domain/report';
-import { addExternalReference } from '../../domain/externalReference';
 import { addStixCyberObservable } from '../../domain/stixCyberObservable';
 import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
@@ -626,7 +625,8 @@ const deltaOf = async (exec: RunExecution, wave: InvestigationEnrichmentWave, re
     topRelationsList<BasicStoreRelation>(exec.draftContext, exec.runUser, STIX_RELATIONSHIP_TYPES, query) as unknown as Promise<BasicStoreRelation[]>,
   ]);
   const connectorNames = R.uniq(requests.map((request) => request.connector_name ?? request.connector_id));
-  return [...entities, ...relationships]
+  // Sent to the engine: what is restricted to authorized members stays out, as in the context.
+  return withoutMemberRestricted([...entities, ...relationships])
     .filter((element) => (element as unknown as { draft_change?: { draft_operation?: string } }).draft_change?.draft_operation)
     .slice(0, INVESTIGATION_LIMITS.waveDelta)
     .map((element) => ({
@@ -737,7 +737,9 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
 
 // The OpenCTI objects an evidence list cites, read in the run Draft for their markings and sharing.
 // Everything an engine revision names: its cited objects, the candidates of its
-// hypotheses and the courses of action of its recommendations.
+// hypotheses and the courses of action of its recommendations, as the run
+// identity reads them. The engine only knows what that identity can read: an
+// identifier it cannot read is invented or stale and restricts nothing.
 const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
   const ids = R.uniq([
     ...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string),
@@ -745,8 +747,7 @@ const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence
     ...conclusionCourseOfActionIds(conclusion),
   ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
   if (ids.length === 0) return [];
-  const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
-  return findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
+  return withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
 };
 
 // The OpenCTI objects of a revision the run may cite: those its identity sees,
@@ -1024,7 +1025,9 @@ const writeOutputs = async (
       outputs.note_id = note.internal_id;
       outputs.note_standard_id = note.standard_id;
     });
-    // The engine's cited report, as a Report with its sources as external references.
+    // The engine's cited report, as a Report. Its numbered sources stay in the
+    // report text: an external reference carries no marking or sharing of its
+    // own and would let anyone read what a restricted investigation cites.
     if (run.report) {
       await attempt('report', async () => {
         const description = buildInvestigationReportSections(run).report.slice(0, INVESTIGATION_LIMITS.reportLength);
@@ -1032,23 +1035,11 @@ const writeOutputs = async (
           await stixDomainObjectEditField(draftContext, runUser, outputs.report_id, [{ key: 'description', value: [description] }]);
           return;
         }
-        const externalReferenceIds: string[] = [];
-        const sources = (run.report_sources ?? []).filter((source) => source.href).slice(0, INVESTIGATION_LIMITS.externalReferences);
-        for (let index = 0; index < sources.length; index += 1) {
-          const source = sources[index];
-          const reference = await addExternalReference(draftContext, runUser, {
-            source_name: source.label.slice(0, 250),
-            url: source.href,
-            description: `[${source.n}] ${source.label}`.slice(0, INVESTIGATION_LIMITS.textLength),
-          });
-          externalReferenceIds.push(reference.id);
-        }
         const report = await addReport(draftContext, runUser, {
           name: `Investigation report - ${subjectName}`.slice(0, 250),
           description,
           published: now.toISOString(),
           objects: R.uniq([...containers, ...objectIds]).slice(0, MAX_CASE_OBJECTS),
-          externalReferences: externalReferenceIds,
           objectMarking: markings,
           objectOrganization: organizations,
           confidence: leading?.confidence ?? undefined,
@@ -1100,9 +1091,9 @@ const listDraftTypes = async (exec: RunExecution) => {
 
 // Markings and organization sharing of everything the run read or wrote about,
 // so its text never outlives their restrictions: the cited objects, the case
-// and every candidate threat its hypotheses or its conclusion name.
+// and every candidate threat its hypotheses or its conclusion name, as the run
+// identity reads them (an identifier it cannot read restricts nothing).
 const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEntity, caseId: string | null, candidateIds: string[]): Promise<OutputRestrictions> => {
-  const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
   const ids = R.uniq([
     ...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
     ...exec.run.hypotheses.map((hypothesis) => hypothesis.candidate_id),
@@ -1110,7 +1101,7 @@ const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEnt
     ...candidateIds,
     ...(caseId ? [caseId] : []),
   ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction + 1);
-  const elements = await findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
+  const elements = await findElements(exec.draftContext, exec.runUser, ids);
   return {
     markings: R.uniq([...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
     organizations: intersectOrganizationIds(organizationIdsOf(subject), elements),

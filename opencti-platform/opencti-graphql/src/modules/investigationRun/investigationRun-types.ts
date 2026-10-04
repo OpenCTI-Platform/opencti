@@ -98,7 +98,6 @@ export const INVESTIGATION_LIMITS = {
   enrichmentEntities: 300,
   feedback: 500,
   reportSources: 100,
-  externalReferences: 50,
   knowledgeObservables: 120,
   knowledgeRelationships: 200,
   knowledgeNotes: 50,

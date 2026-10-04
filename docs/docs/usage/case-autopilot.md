@@ -47,7 +47,7 @@ The tab shows, from top to bottom:
 4. **Hypotheses**: an Analysis of Competing Hypotheses (ACH) matrix (see [Hypotheses](#hypotheses)).
 5. **Recommendations**: the courses of action and tasks the investigation proposes, with their priority. Create a task or apply a course of action in one click; recommendations that change the severity, share, notify or close the case wait for an approval. Accept or reject each recommendation to give feedback.
 6. **Evidence**: what the investigation cited - web pages, documents, tool results and OpenCTI objects - numbered like the citations of the report. OpenCTI objects that are still in the draft are marked as such. After a continuation, what earlier engine runs found is listed apart, without numbers.
-7. **Report**: the cited report of the investigation and its numbered sources. The report is also written to the draft as a Report, its sources as external references.
+7. **Report**: the cited report of the investigation and its numbered sources. The report is also written to the draft as a Report, with its numbered sources listed in the report text, so they carry the same markings and sharing as the report.
 
 ![A completed investigation: goal plan, conclusion and details](assets/case-autopilot-completed.png)
 
