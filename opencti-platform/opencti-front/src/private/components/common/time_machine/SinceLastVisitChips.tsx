@@ -39,6 +39,9 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
   const navigate = useNavigate();
   const [commit] = useMutation<SinceLastVisitChipsRecordMutation>(sinceLastVisitChipsRecordMutation);
   const [data, setData] = useState<SinceLastVisitData | null>(null);
+  // The chip owns a tooltip for clipped labels, and the opening of any tooltip closes the others: this one follows
+  // the pointer and the focus of the chip itself
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   useEffect(() => {
     // The server debounces the writes, the overview records the visit once per opening
@@ -65,9 +68,17 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
   const openChanges = changesPath && hasChanges ? () => navigate(`${changesPath}?${sinceLastVisitSearch(referenceDate)}`) : undefined;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }} data-testid="since-last-visit" role="status">
-      <Tooltip>
+      <Tooltip open={breakdownOpen}>
         <TooltipTrigger asChild>
-          <span>
+          <span
+            onPointerEnter={() => setBreakdownOpen(true)}
+            onPointerLeave={() => setBreakdownOpen(false)}
+            onFocus={() => setBreakdownOpen(true)}
+            onBlur={() => setBreakdownOpen(false)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') setBreakdownOpen(false);
+            }}
+          >
             <Chip
               label={label}
               severity={hasChanges ? 'info' : 'neutral'}
@@ -76,7 +87,7 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
             />
           </span>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent onEscapeKeyDown={() => setBreakdownOpen(false)}>
           <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }} data-testid="since-last-visit-breakdown">
             {breakdown.map((line) => <span key={line}>{line}</span>)}
             <span>{lastVisit}</span>

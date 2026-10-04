@@ -2339,3 +2339,21 @@ title, description, primary and secondary action) in the library.
 **Removal test.** Convert `EntityDiffTab`, `EntityAsOfView`, `EntityAsOfSection`,
 `LandscapeChanges` and `LandscapeChangesResults`: an empty period still offers
 "Compare the last 90 days" and a scope without saved filter still offers "Choose a scope".
+
+## 63. A `Chip` closes any tooltip around it, because its own clipped-label tooltip opens on hover
+
+**Raised** while capturing the "New since your last visit" chip of the knowledge time machine, whose
+tooltip lists what changed since the last visit: the tooltip opened, then closed within a second while
+the pointer stayed on the chip.
+
+**Today.** `Chip` wraps itself in a `Tooltip` that shows its label when it is clipped. Hovering the
+chip requests that tooltip to open, and the request alone closes every other open tooltip (the
+tooltips close each other on opening), even when the label is not clipped and nothing is shown.
+`SinceLastVisitChips` keeps its tooltip open by controlling it from the pointer and the focus of the
+chip.
+
+**Ask.** Only request the clipped-label tooltip when the label is clipped, or let a caller turn it off
+(for example `showLabelTooltip={false}`) when the chip is the trigger of another tooltip.
+
+**Removal test.** Make the tooltip of `SinceLastVisitChips` uncontrolled again, hover the chip for
+two seconds: the breakdown stays visible.
