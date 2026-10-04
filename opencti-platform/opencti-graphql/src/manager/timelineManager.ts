@@ -11,7 +11,7 @@ import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../database/
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -182,16 +182,21 @@ const queueContainersContaining = async (context: AuthContext, elementIds: strin
 };
 
 /**
- * A manual event may point to an element its case does not contain: a change of that element (its access above all, which
- * decides whether the event travels in the STIX exchange of the case) reaches the case through the event itself.
+ * A manual event may point to an element, and name an author, its case does not contain: a change of either (its access
+ * above all, which decides whether the event and its author travel in the STIX exchange of the case) reaches the case
+ * through the event itself.
  */
 const queueContainersOfManualEventsAbout = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
   if (elementIds.length === 0) return;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: {
       mode: FilterMode.And,
-      filters: [{ key: ['event_source'], values: ['manual'] }, { key: ['element_id'], values: elementIds }],
-      filterGroups: [],
+      filters: [{ key: ['event_source'], values: ['manual'] }],
+      filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [{ key: ['element_id'], values: elementIds }, { key: [buildRefRelationKey(RELATION_CREATED_BY)], values: elementIds }],
+        filterGroups: [],
+      }],
     },
     noFiltersChecking: true,
     baseData: true,

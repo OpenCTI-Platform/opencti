@@ -1243,6 +1243,20 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
     });
 
+    it('should queue the case of a manual event whose author changed', async () => {
+      // The milestone "Regulator notified" of the case is authored by this organization, which the case does not contain
+      const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
+      const pending = await claimDueTimelineRegenerations(1000);
+      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id)));
+      const stixAuthor = { id: author.standard_id, type: 'identity', extensions: { [STIX_EXT_OCTI]: { id: author.internal_id, type: 'Organization' } } };
+      await timelineStreamEventsHandler(testContext, [streamEvent(stixAuthor)]);
+      const claimed = await claimDueTimelineRegenerations(1000);
+      expect(claimed).toContain(caseIncident.id);
+      // Every container is handed back to the queue for the tests that follow
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await enqueueTimelineRegeneration([...pending, ...claimed], 0);
+    });
+
     it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {
       const containerId = `timeline-queue-${Date.now()}`;
       // The other due containers are handed back to the queue for the tests that follow
