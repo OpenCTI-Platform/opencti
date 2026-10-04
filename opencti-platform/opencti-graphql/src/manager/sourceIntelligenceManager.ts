@@ -227,14 +227,15 @@ const toStoredDocument = (object: StoredObject): StoredDocument => ({
   hunt_run_id: object[HUNT_RUN_SIGHTING_ATTRIBUTE] ?? null,
 });
 
-const loadStoredDocuments = async (context: AuthContext, ids: string[], indices?: string[]) => {
+export const loadStoredDocuments = async (context: AuthContext, ids: string[], indices?: string[]) => {
   const result = new Map<string, StoredDocument>();
-  const uniqueIds = [...new Set(ids)].slice(0, MAX_OBJECTS_LOOKUP);
-  if (uniqueIds.length === 0) {
-    return result;
+  const uniqueIds = [...new Set(ids)];
+  // Every object, in bounded lookups: a hunt verdict alone expands into every sighting of its run
+  for (let start = 0; start < uniqueIds.length; start += MAX_OBJECTS_LOOKUP) {
+    const chunk = uniqueIds.slice(start, start + MAX_OBJECTS_LOOKUP);
+    const objects = await internalFindByIds(context, SYSTEM_USER, chunk, indices ? { indices } : {}) as unknown as StoredObject[];
+    objects.forEach((object) => result.set(object.internal_id, toStoredDocument(object)));
   }
-  const objects = await internalFindByIds(context, SYSTEM_USER, uniqueIds, indices ? { indices } : {}) as unknown as StoredObject[];
-  objects.forEach((object) => result.set(object.internal_id, toStoredDocument(object)));
   return result;
 };
 
