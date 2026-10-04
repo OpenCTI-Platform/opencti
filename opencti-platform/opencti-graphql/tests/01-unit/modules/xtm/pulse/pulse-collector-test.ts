@@ -109,7 +109,9 @@ describe('Threat Pulse collector privacy guardrails', () => {
     RAW_VALUES.forEach((value) => expect(serialized.toLowerCase()).not.toContain(value.toLowerCase()));
     aggregation.records.forEach((record) => expect(serialized).not.toContain(record.key));
     batches.forEach((batch) => {
-      expect(Object.keys(batch).sort()).toEqual(['day', 'records', 'region_bucket', 'sector_bucket']);
+      expect(Object.keys(batch).sort()).toEqual(['batch_id', 'day', 'records', 'region_bucket', 'sector_bucket']);
+      // A random identifier of the batch, never derived from its content
+      expect(batch.batch_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
       batch.records.forEach((record) => {
         expect(Object.keys(record).sort()).toEqual(['count', 'event_kind', 'hash', 'object_type']);
         expect(record.hash).toMatch(/^[0-9a-f]{32}$/);
@@ -135,11 +137,14 @@ describe('Threat Pulse collector privacy guardrails', () => {
     }));
     const batches = buildPulseBatches(records, SALT, '2026-10-03', BUCKETS);
     expect(batches.map((batch) => batch.records.length)).toEqual([5000, 5000, 2001]);
+    // One identifier per batch: XTM Hub counts each of them once
+    expect(new Set(batches.map((batch) => batch.batch_id)).size).toBe(3);
   });
 });
 
 describe('Threat Pulse outbound payload schema', () => {
   const validBatch = (): PulseBatch => ({
+    batch_id: '3f0c6a2e-8d4b-4c1e-9a77-2b5d1e8f6c40',
     day: '2026-10-03',
     sector_bucket: PulseSectorBucket.Finance,
     region_bucket: PulseRegionBucket.Europe,
@@ -189,6 +194,12 @@ describe('Threat Pulse outbound payload schema', () => {
     }],
     ['a malformed day', (batch: any) => {
       batch.day = '03/10/2026';
+    }],
+    ['a batch identifier that is not a UUID', (batch: any) => {
+      batch.batch_id = 'acme-bank-batch-1';
+    }],
+    ['a batch without an identifier', (batch: any) => {
+      delete batch.batch_id;
     }],
   ])('should refuse %s', (_, mutate) => {
     const batch = validBatch();

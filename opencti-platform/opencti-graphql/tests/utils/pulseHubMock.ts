@@ -17,7 +17,8 @@ const DAY_MS = 24 * 3600 * 1000;
 const WINDOW_DAYS = 7;
 const GRACE_DAYS = 14;
 const RECORD_FIELDS = ['count', 'event_kind', 'hash', 'object_type'];
-const BATCH_FIELDS = ['day', 'records', 'region_bucket', 'sector_bucket'];
+const BATCH_FIELDS = ['batch_id', 'day', 'records', 'region_bucket', 'sector_bucket'];
+const BATCH_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface PulseLedgerRow {
   platformId: string;
@@ -91,6 +92,15 @@ export class PulseHubMock {
 
   private refusedPurges = 0;
 
+  private batchReceipts = new Map<string, number>();
+
+  // The next push is recorded but its answer is lost: the platform sees a failure.
+  private lostAnswers: string[] = [];
+
+  loseNextAnswer(operation: string) {
+    this.lostAnswers.push(operation);
+  }
+
   private server: http.Server | undefined;
 
   private now: () => Date = () => new Date();
@@ -144,6 +154,8 @@ export class PulseHubMock {
     this.platformBuckets.clear();
     this.forcedErrors = [];
     this.refusedPurges = 0;
+    this.batchReceipts.clear();
+    this.lostAnswers = [];
     this.now = () => new Date();
   }
 
@@ -208,8 +220,15 @@ export class PulseHubMock {
         return { pulseStatus: this.status(platformId) };
       case 'pulseDigest':
         return { pulseDigest: this.digest(variables.input) };
-      case 'pushPulse':
-        return { pushPulse: this.push(platformId, variables.input) };
+      case 'pushPulse': {
+        const pushed = this.push(platformId, variables.input);
+        const lost = this.lostAnswers.indexOf(operation);
+        if (lost >= 0) {
+          this.lostAnswers.splice(lost, 1);
+          throw new GraphqlError('INTERNAL_SERVER_ERROR', 'The answer was lost');
+        }
+        return { pushPulse: pushed };
+      }
       case 'pulseLookup':
         this.assertReadAccess(platformId);
         return { pulseLookup: this.lookup(platformId, variables.input) };
@@ -341,6 +360,15 @@ export class PulseHubMock {
       }
       seen.add(identity);
     });
+    if (!BATCH_ID_REGEX.test(input.batch_id)) {
+      throw new GraphqlError('BAD_USER_INPUT', 'batch_id must be a UUID');
+    }
+    // Like XTM Hub: a batch already recorded is answered with its first result and counted once.
+    const receipt = `${platformId}|${input.batch_id.toLowerCase()}`;
+    const recorded = this.batchReceipts.get(receipt);
+    if (recorded !== undefined) {
+      return { accepted: recorded, day: input.day };
+    }
     const salt = this.saltOf(input.day);
     input.records.forEach((record: any) => this.addLedger({
       platformId,
@@ -352,6 +380,7 @@ export class PulseHubMock {
       region: input.region_bucket,
       count: record.count,
     }));
+    this.batchReceipts.set(receipt, input.records.length);
     return { accepted: input.records.length, day: input.day };
   }
 
@@ -563,6 +592,7 @@ export class PulseHubMock {
     const before = this.ledger.length;
     this.ledger = this.ledger.filter((row) => row.platformId !== platformId);
     this.platformBuckets.delete(platformId);
+    Array.from(this.batchReceipts.keys()).filter((receipt) => receipt.startsWith(`${platformId}|`)).forEach((receipt) => this.batchReceipts.delete(receipt));
     return { success: true, deleted_records: before - this.ledger.length };
   }
 }

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreRelation } from '../../../types/store';
 import { FilterMode, FilterOperator, type FilterGroup } from '../../../generated/graphql';
@@ -185,7 +186,8 @@ export const aggregatePulseActivity = (
 };
 
 const RECORD_KEYS = ['count', 'event_kind', 'hash', 'object_type'];
-const BATCH_KEYS = ['day', 'records', 'region_bucket', 'sector_bucket'];
+const BATCH_KEYS = ['batch_id', 'day', 'records', 'region_bucket', 'sector_bucket'];
+const BATCH_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DAY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 // The outbound payload schema: any field other than the batch header and the hash/count tuple is refused before it
@@ -195,7 +197,8 @@ export const assertPulseBatch = (batch: PulseBatch) => {
   if (batchKeys.join(',') !== BATCH_KEYS.join(',')) {
     throw new Error(`Threat Pulse batch refused: unexpected fields ${batchKeys.join(', ')}`);
   }
-  if (!DAY_REGEX.test(batch.day)
+  if (!BATCH_ID_REGEX.test(batch.batch_id)
+    || !DAY_REGEX.test(batch.day)
     || !PULSE_SECTOR_BUCKETS.includes(batch.sector_bucket)
     || !PULSE_REGION_BUCKETS.includes(batch.region_bucket)) {
     throw new Error('Threat Pulse batch refused: invalid header');
@@ -239,6 +242,7 @@ export const buildPulseBatches = (
   const batches: PulseBatch[] = [];
   for (let index = 0; index < outbound.length; index += PULSE_MAX_RECORDS_PER_BATCH) {
     const batch: PulseBatch = {
+      batch_id: randomUUID(),
       day,
       sector_bucket: buckets.sector_bucket,
       region_bucket: buckets.region_bucket,

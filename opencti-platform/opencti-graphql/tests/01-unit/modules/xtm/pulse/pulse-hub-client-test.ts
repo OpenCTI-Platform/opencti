@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import conf from '../../../../../src/config/conf';
 import { PulseHubError, xtmHubPulseClient } from '../../../../../src/modules/xtm/hub/xtm-hub-pulse-client';
@@ -27,10 +28,11 @@ describe('XTM Hub Threat Pulse client', () => {
     hub.registerPlatform(PLATFORM.platformId, PLATFORM.platformToken);
   });
 
-  const pushKey = async () => {
+  const pushKey = async (batchId: string = randomUUID()) => {
     const day = hub.today();
     const { salt } = await xtmHubPulseClient.salt(PLATFORM, day);
     return xtmHubPulseClient.push(PLATFORM, {
+      batch_id: batchId,
       day,
       sector_bucket: PulseSectorBucket.Finance,
       region_bucket: PulseRegionBucket.Europe,
@@ -46,6 +48,15 @@ describe('XTM Hub Threat Pulse client', () => {
     expect(push?.rawBody).not.toContain(KEY);
     expect(hub.ledger).toHaveLength(1);
     expect(hub.ledger[0]).toMatchObject({ key: KEY, objectType: 'indicator', sector: 'finance', region: 'europe' });
+  });
+
+  it('should count a retried batch once', async () => {
+    const batchId = randomUUID();
+    await pushKey(batchId);
+    const retry = await pushKey(batchId);
+    expect(retry.accepted).toBe(1);
+    expect(hub.ledger).toHaveLength(1);
+    expect(hub.ledger[0].count).toBe(1);
   });
 
   it('should require a contribution before reading', async () => {

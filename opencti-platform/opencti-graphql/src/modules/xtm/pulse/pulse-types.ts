@@ -120,6 +120,8 @@ export interface PulseRecord {
 }
 
 export interface PulseBatch {
+  // Random UUID drawn once per batch and sent again on every retry: XTM Hub counts a batch once.
+  batch_id: string;
   day: string;
   sector_bucket: PulseSectorBucketValue;
   region_bucket: PulseRegionBucketValue;

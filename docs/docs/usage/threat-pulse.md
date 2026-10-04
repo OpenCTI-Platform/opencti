@@ -52,8 +52,9 @@ Every hour, a contributing platform sends to XTM Hub one record per object, acti
 | `event_kind` | `created`, `sighted`, `detected`, `hunted` or `referenced` |
 | `count` | How many such events the platform recorded that day |
 | `sector_bucket`, `region_bucket` | The coarse buckets chosen by the administrator, or `undisclosed` |
+| `batch_id` | A random identifier drawn for each batch of records and sent again when the batch is retried, so that XTM Hub counts it once |
 
-The batch schema accepts no other field, on the platform and on XTM Hub.
+The batch schema accepts no other field, on the platform and on XTM Hub. A batch that XTM Hub did not answer stays on the platform and is sent again with the next hourly run, with the same identifier.
 
 The hash is derived in two steps:
 

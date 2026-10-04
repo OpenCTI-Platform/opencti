@@ -74,6 +74,7 @@ const PULSE_STATUS = gql`
 const PREVIEW_IP = '198.51.100.211';
 const OUTBOX_IP = '198.51.100.213';
 const GREEN_IP = '198.51.100.214';
+const LOST_ANSWER_IP = '198.51.100.215';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -356,6 +357,24 @@ describe('Threat Pulse manager and API', () => {
     await runPulseContribution(testContext);
     expect(contributed()).toBe(keys.length);
     await deleteElementById(testContext, ADMIN_USER, outboxIndicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should count a batch once when XTM Hub recorded it but its answer was lost', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: LOST_ANSWER_IP, pattern: `[ipv4-addr:value = '${LOST_ANSWER_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const indicatorId = created.data?.indicatorAdd.id;
+    const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
+    const keys = computeStableKeys(entity);
+    const contributed = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && keys.includes(row.key))
+      .reduce((total, row) => total + row.count, 0);
+    hub.loseNextAnswer('pushPulse');
+    await runPulseContribution(testContext);
+    // Recorded by XTM Hub, unknown to the platform: the batch waits for a retry with its identifier
+    expect(contributed()).toBe(keys.length);
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(keys.length);
+    expect(await redisClaimPulseOutbox()).toEqual([]);
+    await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 
   it('should hide the network signal below the anonymity threshold', async () => {
