@@ -85,6 +85,30 @@ describe('Provenance source resolution', () => {
     expect(source).toEqual({ source_id: FEED_ID, source_kind: 'feed', source_name: 'Partner collection', work_id: workOf(FEED_CONNECTOR_ID) });
   });
 
+  it('should attribute a feed created since the last index load to the feed right away', async () => {
+    const newFeedId = 'b7f1b2b4-9a7e-4e0e-a4a7-2d3f2c8e1a11';
+    const newFeedConnectorId = uuidv5(newFeedId, OPENCTI_NAMESPACE);
+    await resolveAssertionSource(contextFor(workOf(FEED_CONNECTOR_ID)), sharedUser, {});
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue([
+      ...connectors,
+      { internal_id: newFeedConnectorId, name: '[FEED - RSS] Vendor blog', connector_user_id: sharedUser.id, built_in: true },
+    ] as never);
+    vi.mocked(loader.fullEntitiesList).mockResolvedValue([{ internal_id: FEED_ID, name: 'Partner collection' }, { internal_id: newFeedId, name: 'Vendor blog' }] as never);
+    // Under its connector id the same feed would be counted as a second source once the index catches up
+    const source = await resolveAssertionSource(contextFor(workOf(newFeedConnectorId)), sharedUser, {});
+    expect(source).toEqual({ source_id: newFeedId, source_kind: 'feed', source_name: 'Vendor blog', work_id: workOf(newFeedConnectorId) });
+  });
+
+  it('should not reload the index for a built-in connector that a fresh load did not find', async () => {
+    const importConnectorId = 'a1f3c3b0-0d2c-4bf3-8d3c-1fd1c1d6c009';
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue([...connectors, { internal_id: importConnectorId, name: 'ImportCsv', built_in: true }] as never);
+    await resolveAssertionSource(contextFor(workOf(importConnectorId)), sharedUser, {});
+    vi.mocked(loader.fullEntitiesList).mockClear();
+    const source = await resolveAssertionSource(contextFor(workOf(importConnectorId)), sharedUser, {});
+    expect(source.source_id).toEqual(importConnectorId);
+    expect(loader.fullEntitiesList).not.toHaveBeenCalled();
+  });
+
   it('should attribute a human write with an author to the author', async () => {
     const source = await resolveAssertionSource(contextFor(), humanUser, { createdBy: { internal_id: 'identity-1', name: 'ACME CERT' } });
     expect(source).toEqual({ source_id: 'identity-1', source_kind: 'author', source_name: 'ACME CERT', work_id: null });

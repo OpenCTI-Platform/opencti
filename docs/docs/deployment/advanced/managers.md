@@ -83,7 +83,7 @@ More information can be found:
 
 ## Knowledge freshness manager
 
-The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators. Each run handles a bounded number of elements per rule and the next run continues where it stopped, so every element a rule targets is eventually reached, however large the knowledge base. It does not run when provenance is disabled (`provenance:enabled`).
+The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators. Each run handles a bounded number of elements per rule and the next run continues where it stopped, so every element a rule targets is eventually reached, however large the knowledge base. Every active rule gets an equal share of each run before the rest goes to the rules that still have elements to handle, so a rule with a large backlog never holds back the others. It does not run when provenance is disabled (`provenance:enabled`).
 
 More information can be found:
 - [Knowledge decay rules](../../administration/decay-rules.md#knowledge-decay-rules).

@@ -13,7 +13,14 @@ import {
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_CORE_RELATIONSHIPS } from '../../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff, isFreshAfterMerge, resumeAfterScan } from '../../../../src/modules/provenance/provenance-freshness';
+import {
+  buildStaleCandidatesFilters,
+  computeRuleShadowing,
+  computeStaleCutoff,
+  isFreshAfterMerge,
+  resumeAfterScan,
+  runWithFairShares,
+} from '../../../../src/modules/provenance/provenance-freshness';
 
 const relationshipRule = (overrides: Partial<KnowledgeDecayRuleDefinition> = {}): KnowledgeDecayRuleDefinition => ({
   name: 'Stale C2',
@@ -178,5 +185,23 @@ describe('Knowledge freshness manager', () => {
     // The last candidate was reached
     expect(resumeAfterScan({ applied: 3, scanned: 40, lastExamined }, 10, 100)).toBeUndefined();
     expect(resumeAfterScan({ applied: 0, scanned: 0 }, 10, 100)).toBeUndefined();
+  });
+
+  it('should give every knowledge decay rule its share of a run before the backlog of a higher priority rule', async () => {
+    // Rule 0 has a large backlog, rule 1 has 10 stale elements, rule 2 has 2
+    const backlogs = [1000, 10, 2];
+    const calls: Array<[number, number]> = [];
+    const apply = async (index: number, budget: number) => {
+      calls.push([index, budget]);
+      const applied = Math.min(budget, backlogs[index]);
+      backlogs[index] -= applied;
+      return applied;
+    };
+    const left = await runWithFairShares(3, 90, apply, (index) => backlogs[index] > 0);
+    // 30 each first, then what rules 1 and 2 left goes to rule 0, the only one with candidates left
+    expect(calls).toEqual([[0, 30], [1, 30], [2, 30], [0, 48]]);
+    expect(backlogs).toEqual([922, 0, 0]);
+    expect(left).toEqual(0);
+    expect(await runWithFairShares(0, 90, apply, () => true)).toEqual(90);
   });
 });

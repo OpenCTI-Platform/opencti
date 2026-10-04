@@ -351,16 +351,45 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
 };
 
 /**
- * Apply the active knowledge decay rules, highest priority first, to at most batchSize elements.
- * Re-assertion by any source resets the freshness of an element (see recordUpsertProvenance).
+ * Every rule first gets an equal share of the run, highest priority first; the rest of the budget then goes, in the
+ * same order, to the rules whose scan stopped before their last candidate. A rule with a large backlog therefore never
+ * starves the lower priority ones.
+ */
+export const runWithFairShares = async (
+  ruleCount: number,
+  batchSize: number,
+  apply: (index: number, budget: number) => Promise<number>,
+  hasMoreCandidates: (index: number) => boolean,
+) => {
+  let budget = batchSize;
+  if (ruleCount === 0 || budget <= 0) {
+    return budget;
+  }
+  const share = Math.max(1, Math.floor(batchSize / ruleCount));
+  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
+    budget -= await apply(index, Math.min(share, budget));
+  }
+  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
+    if (hasMoreCandidates(index)) {
+      budget -= await apply(index, budget);
+    }
+  }
+  return budget;
+};
+
+/**
+ * Apply the active knowledge decay rules to at most batchSize elements, each rule acting on the elements that no
+ * higher priority rule targets. Re-assertion by any source resets the freshness of an element (see recordUpsertProvenance).
  */
 export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthUser, opts: { batchSize: number }): Promise<KnowledgeFreshnessRunResult> => {
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
   const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
   [...scanCursors.keys()].filter((ruleId) => !rules.some(({ rule }) => rule.id === ruleId)).forEach((ruleId) => scanCursors.delete(ruleId));
-  let budget = opts.batchSize;
-  for (let index = 0; index < rules.length && budget > 0; index += 1) {
-    budget -= await applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result);
-  }
+  await runWithFairShares(
+    rules.length,
+    opts.batchSize,
+    (index, budget) => applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result),
+    (index) => scanCursors.has(rules[index].rule.id),
+  );
   return result;
 };
