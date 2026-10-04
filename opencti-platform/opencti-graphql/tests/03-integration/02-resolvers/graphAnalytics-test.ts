@@ -200,6 +200,14 @@ describe('Graph analytics resolvers', () => {
     expect(metrics.computed_at).toBeDefined();
   });
 
+  it('should not count a readable relationship whose other end a restricted caller cannot access', async () => {
+    // isB uses the TLP:AMBER malware through an unmarked relationship
+    const { data } = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: METRICS_QUERY, variables: { id: ids.isB } });
+    const metrics = data.stixCoreObject.x_opencti_graph_metrics;
+    expect(metrics.degree).toBe(2);
+    expect(metrics.degree_by_type).toEqual([{ relationship_type: 'uses', count: 2 }]);
+  });
+
   it('should reserve graph metrics filtering and sorting to callers reading every relationship', async () => {
     const sorted = gql`
       query restrictedHubs {

@@ -23,7 +23,7 @@ import {
   Text,
 } from '@filigran/design-system';
 import { Box } from '@mui/material';
-import { ArrowRightAltOutlined } from '@mui/icons-material';
+import { EastOutlined, WestOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -73,6 +73,24 @@ export const stixPathFinderQuery = graphql`
           entity_type
           representative {
             main
+          }
+        }
+        relationships {
+          ... on StixCoreRelationship {
+            id
+            fromId
+          }
+          ... on StixSightingRelationship {
+            id
+            fromId
+          }
+          ... on StixRefRelationship {
+            id
+            from {
+              ... on StixCoreObject {
+                id
+              }
+            }
           }
         }
       }
@@ -145,24 +163,36 @@ interface StixPathChainProps {
   path: StixPathResult;
 }
 
-/** One path as a chain of entities linked by the relationship types they go through. */
+/**
+ * One path as a chain of entities linked by the relationship types they go through. Paths are searched in both
+ * directions, so each arrow follows its relationship: "uses" from the left entity, or from the right one.
+ */
 export const StixPathChain = ({ path }: StixPathChainProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }} data-testid="graph-path-chain">
-      {path.nodes.map((node, index) => (
-        <React.Fragment key={`${node.id}-${index}`}>
-          <Link to={`${resolveLink(node.entity_type)}/${node.id}`} target="_blank" rel="noopener noreferrer">
-            <Chip label={node.representative.main} startIcon={<ItemIcon type={node.entity_type} size="small" />} />
-          </Link>
-          {index < path.relationship_types.length && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-              <Text variant="content-caption">{t_i18n(`relationship_${path.relationship_types[index]}`)}</Text>
-              <ArrowRightAltOutlined fontSize="small" />
-            </Box>
-          )}
-        </React.Fragment>
-      ))}
+      {path.nodes.map((node, index) => {
+        const relationshipType = path.relationship_types[index];
+        const relationship = path.relationships[index];
+        let sourceId: string | undefined;
+        if (relationship && 'fromId' in relationship) sourceId = relationship.fromId;
+        else if (relationship && 'from' in relationship && relationship.from && 'id' in relationship.from) sourceId = relationship.from.id;
+        const fromLeft = sourceId !== path.nodes[index + 1]?.id;
+        return (
+          <React.Fragment key={`${node.id}-${index}`}>
+            <Link to={`${resolveLink(node.entity_type)}/${node.id}`} target="_blank" rel="noopener noreferrer">
+              <Chip label={node.representative.main} startIcon={<ItemIcon type={node.entity_type} size="small" />} />
+            </Link>
+            {index < path.relationship_types.length && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }} data-testid={fromLeft ? 'graph-path-link-forward' : 'graph-path-link-backward'}>
+                {!fromLeft && <WestOutlined fontSize="small" aria-hidden />}
+                <Text variant="content-caption">{t_i18n(`relationship_${relationshipType}`)}</Text>
+                {fromLeft && <EastOutlined fontSize="small" aria-hidden />}
+              </Box>
+            )}
+          </React.Fragment>
+        );
+      })}
     </Box>
   );
 };
@@ -208,7 +238,8 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
     .map(({ id }) => ({ label: t_i18n(`entity_${id}`), value: id }))
     .sort((a, b) => a.label.localeCompare(b.label)), [schema]);
 
-  const targetId = toId ?? target?.value;
+  // a path needs two different entities: the source itself is never a valid target
+  const targetId = (toId ?? target?.value) === fromId ? undefined : (toId ?? target?.value);
   // The next actions of an empty or limited result change a parameter and search again at once
   const findPaths = (overrides: { depth?: string; relationships?: TypeOption[]; entities?: TypeOption[] } = {}) => {
     if (!targetId) return;
@@ -310,6 +341,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
           multiple={false}
           value={target}
           onChange={(value) => setTarget(value as EntityOption | null)}
+          excludedIds={[fromId]}
         />
       )}
       <Box sx={{ display: 'flex', gap: 2 }}>

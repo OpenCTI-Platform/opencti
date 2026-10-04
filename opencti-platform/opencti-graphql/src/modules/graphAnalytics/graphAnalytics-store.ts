@@ -1,6 +1,7 @@
 import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, BasicStoreRelation } from '../../types/store';
+import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { computeQueryIndices, elAggregationSearch, elBulk, elCount, elFindByIds, elList, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from '../../database/engine';
 import { buildRelationsFilter } from '../../database/middleware-loader';
 import {
@@ -135,6 +136,50 @@ export const computeDegreeMetrics = async (context: AuthContext, user: AuthUser,
       .map((typeBucket: any) => ({ relationship_type: String(typeBucket.key), count: typeBucket.doc_count as number }))
       .sort((a: GraphMetricsDegreeByType, b: GraphMetricsDegreeByType) => (b.count - a.count) || a.relationship_type.localeCompare(b.relationship_type));
     result.set(id, { degree: bucket.relationships?.doc_count ?? 0, degree_by_type: degreeByType });
+  });
+  return result;
+};
+
+// Bounds the relationships listed for one batch of a restricted reader; beyond it, the degree counts what was listed
+const VISIBLE_DEGREE_MAX_RELATIONSHIPS = 20000;
+
+/**
+ * Degree as a restricted reader may know it: a relationship only counts when the reader can read it and can also
+ * access the entity at its other end, like the neighborhood summary. The measured entities are the reader's own.
+ */
+export const computeVisibleDegreeMetrics = async (context: AuthContext, user: AuthUser, ids: string[]): Promise<Map<string, DegreeMetrics>> => {
+  const result = new Map<string, DegreeMetrics>();
+  ids.forEach((id) => result.set(id, { degree: 0, degree_by_type: [] }));
+  if (ids.length === 0) return result;
+  const measured = new Set(ids);
+  const indices = computeQueryIndices(undefined, DEGREE_RELATIONSHIP_TYPES, false) as string[];
+  const relations = await elList<BasicStoreRelation>(context, user, indices, {
+    ...buildRelationsFilter(DEGREE_RELATIONSHIP_TYPES, { fromOrToId: ids }),
+    baseData: true,
+    first: 5000,
+    maxSize: VISIBLE_DEGREE_MAX_RELATIONSHIPS,
+  });
+  const otherEnds = Array.from(new Set(relations.flatMap((relation) => [relation.fromId, relation.toId]).filter((id) => !measured.has(id))));
+  const accessible = otherEnds.length > 0
+    ? await elFindByIds<BasicStoreBase>(context, user, otherEnds, { indices: READ_ENTITIES_INDICES, baseData: true }) as BasicStoreBase[]
+    : [];
+  const visible = new Set([...ids, ...accessible.map((element) => element.internal_id)]);
+  const counts = new Map<string, Map<string, number>>();
+  const count = (id: string, relationshipType: string) => {
+    const byType = counts.get(id) ?? new Map<string, number>();
+    byType.set(relationshipType, (byType.get(relationshipType) ?? 0) + 1);
+    counts.set(id, byType);
+  };
+  relations.forEach((relation) => {
+    if (!visible.has(relation.fromId) || !visible.has(relation.toId)) return;
+    if (measured.has(relation.fromId)) count(relation.fromId, relation.relationship_type);
+    if (measured.has(relation.toId) && relation.toId !== relation.fromId) count(relation.toId, relation.relationship_type);
+  });
+  counts.forEach((byType, id) => {
+    const degreeByType = Array.from(byType.entries())
+      .map(([relationship_type, value]) => ({ relationship_type, count: value }))
+      .sort((a, b) => (b.count - a.count) || a.relationship_type.localeCompare(b.relationship_type));
+    result.set(id, { degree: degreeByType.reduce((sum, entry) => sum + entry.count, 0), degree_by_type: degreeByType });
   });
   return result;
 };
