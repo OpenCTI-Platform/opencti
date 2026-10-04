@@ -47,7 +47,9 @@ The view shows:
 - for containers, the number of contained objects at that date,
 - a **Reconstruction** panel explaining how the view was rebuilt: from the current knowledge or from a knowledge snapshot, how many changes were replayed, and since when the history of the entity is available.
 
-When the entity did not exist yet at the selected date, the view says so. When the entity has been deleted since, only a tombstone with the deletion date is displayed.
+When the entity did not exist yet at the selected date, the view says so and **Go to the first recorded change** moves the date to the oldest change still in its history (usually its creation). When the entity has been deleted since, only a tombstone with the deletion date is displayed.
+
+![View as of a date before the creation of the entity](assets/time-machine-view-as-of-not-existing.png)
 
 !!! note "Reconstruction warnings"
 
@@ -65,12 +67,16 @@ The **Compare dates** section of the **Changes** tab shows everything that chang
 1. Open the **Changes** tab of the entity: **Compare dates** is the section displayed by default.
 2. Choose the period: last 7 days, last 30 days, last 90 days, last year, quarter to date, previous quarter, or a custom period with the **From** and **To** dates.
 3. Review the changes:
-    - **Summary**: number of changed attributes, relationships added, removed and revoked, confidence and score evolution, confidence changes on relationships and, for containers, objects added and removed.
-    - **Attributes**: the value before and after the period for every changed attribute, with the date and the author of the last change and the number of changes in the period.
-    - **Relationships**: every relationship added, removed, revoked, unrevoked or whose confidence changed, with the related entity, the date and the author.
+    - **Summary**: a card for each measure that changed during the period, among the changed attributes, the relationships added, removed and revoked, the confidence and score evolution, the confidence changes on relationships and, for containers, the objects added and removed. The measures that did not change are listed on one line below the cards. A confidence or score that was never set reads **Not set**.
+    - **Attributes**: every changed attribute with its operation (**Added**, **Changed** or **Removed**), its value before and after the period, and the date and author of its last change with the number of changes in the period. Removed values are struck through and shown in red, added values in green, each with an icon. Dates are relative ("3 hours ago"): hover them to see the exact date.
+    - **Relationships**: every relationship added, removed, revoked, unrevoked or whose confidence changed, with its direction, the related entity, the date and the author. A relationship created during the period is listed as added, and its later revocation or confidence change during the period is listed too.
     - **Contained objects**: for containers (reports, groupings, cases...), the objects added to and removed from the container.
 
+When nothing changed during the period, the section says so and offers **Compare the last 90 days** (then **Compare the last year**).
+
 ![Compare dates: summary and attribute changes of an intrusion set over a custom period](assets/time-machine-compare-dates.png)
+
+![Compare dates on a period without change](assets/time-machine-compare-dates-empty.png)
 
 !!! note "Long periods"
 
@@ -78,7 +84,7 @@ The **Compare dates** section of the **Changes** tab shows everything that chang
 
 ### Export a diff
 
-Click **Export** in the **Compare dates** section to download the diff:
+Click **Export**, on the right of the period selector of the **Compare dates** section, to download the diff:
 
 | Format | Content |
 |--------|---------|
@@ -97,13 +103,21 @@ The **Landscape changes** page compares a whole set of entities between two date
     - **Filters**: build filters on the fly (for example intrusion sets targeting the Finance sector),
     - **Saved filter**: reuse a filter set saved in a list; the entity type of the list is used,
     - **Custom view**: use every entity of the type targeted by a custom view.
+
+    When no saved filter or no custom view exists yet, the page explains what Landscape changes compares and **Choose a scope** switches to filters.
 3. Optionally restrict the **Entity types** and choose how to **Group by** the results: entity type, relationship type or tactic.
 4. Choose the period.
 5. Click **Compute the landscape changes**.
 
-![Landscape changes of the intrusion sets over the last 90 days](assets/landscape-changes.png)
+![Landscape changes of the intrusion sets over the last 90 days](assets/landscape-changes-results.png)
 
-The computation runs in the background and a progress bar shows the entities already processed. The result stays available for one hour: its identifier is kept in the URL of the page, so you can come back to it while it is valid. Once it has expired, **Compute again** runs it with the scope and period shown on the page.
+The computation runs in the background: a progress bar shows how many entities were already compared and for how long the computation has been running. Once it is finished, the result says how many entities it compared and how long it took. The result stays available for one hour: its identifier is kept in the URL of the page, so you can come back to it while it is valid. Once it has expired, **Compute again** runs it with the scope and period shown on the page.
+
+![Landscape changes being computed](assets/landscape-changes-running.png)
+
+When nothing changed in the scope during the period, the page says so and **Widen the period** compares the same scope over the last year.
+
+![Landscape changes without a saved filter to start from](assets/landscape-changes-first-use.png)
 
 If a computation cannot complete, the page explains why (for example the platform restarted during the computation, or your access to part of the knowledge changed since it was computed) and **Compute again** runs it once more with its own scope and period.
 
@@ -148,14 +162,14 @@ To start from a ready-made dashboard, go to **Dashboards > Custom dashboards**, 
 
 When you open the overview of an entity, the platform records your visit. These markers are private: only you can see them.
 
-- On the overview, chips show what changed since your previous visit: new relationships, updates and, for containers, new contained objects. Hover the chips to see the date of your last visit.
+- On the overview, one chip says whether the entity changed since your previous visit. Hover it to see what changed (new relationships, updates by other users and, for containers, new contained objects) and when you last visited the entity. Click it to open **Compare dates** on the period since that visit, with the **Since your last visit** period selected.
 - In lists, a small dot appears on the rows of the entities that changed since your last visit. Hover it to see the details.
 
-![Chips on the overview of an entity changed by another analyst since the last visit](assets/time-machine-last-visit-chips.png)
+![The New since your last visit chip of an entity changed by another analyst, with its breakdown](assets/time-machine-last-visit-chip.png)
 
 ![Dots on the rows of the entities changed since the last visit](assets/time-machine-last-visit-list.png)
 
-A visit session lasts 30 minutes: reopening an entity within that time does not reset the reference date, so the chips stay meaningful while you work on the entity.
+A visit session lasts 30 minutes: reopening an entity within that time does not reset the reference date, so the chip stays meaningful while you work on the entity.
 
 You can purge your markers at any time from your profile (**Last visit markers** > **Purge my last visit markers**). Administrators with the capability to manage access can purge the markers of a user from **Settings > Security > Users**, in the menu of the user (**Purge the last visit markers**); this action is recorded in the audit log. Markers expire after one year and are removed when the user is deleted.
 
