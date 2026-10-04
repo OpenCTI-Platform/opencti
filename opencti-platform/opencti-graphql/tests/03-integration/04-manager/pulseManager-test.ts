@@ -94,6 +94,7 @@ const STALE_POLICY_IP = '198.51.100.218';
 const PENDING_ACCEPTED_IP = '198.51.100.219';
 const FAILED_WINDOW_IP = '198.51.100.220';
 const FORMER_CONSENT_IP = '198.51.100.221';
+const EXCLUDED_TRENDING_IP = '198.51.100.222';
 const FORMER_CONSENT_VERSION = '2025-01-1';
 const PULSE_CONSENT_STATE = gql`
   query PulseConsentState {
@@ -707,6 +708,34 @@ describe('Threat Pulse manager and API', () => {
     expect(marked.pulse_prevalence ?? null).toBeNull();
     expect(marked.pulse_information ?? null).toBeNull();
     await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should leave an object excluded since its last refresh out of the trending list, whatever keys it kept', async () => {
+    const configure = async (input: Record<string, unknown>) => {
+      await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', ...input } } });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: EXCLUDED_TRENDING_IP, pattern: `[ipv4-addr:value = '${EXCLUDED_TRENDING_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr', objectMarking: [MARKING_TLP_GREEN] } } });
+    const indicatorId = created.data?.indicatorAdd.id;
+    // Five peers: the object trends in the sector
+    const key = await seedPeers(indicatorId, ENTITY_TYPE_INDICATOR);
+    hub.seed([{ platformId: 'pulse-peer-5', key, objectType: 'indicator', eventKind: 'sighted', day: utcDay(), sector: 'finance', region: 'europe' }]);
+    await runPulseRefresh(testContext, true);
+    expect((await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR)).pulse_keys).toContain(key);
+    // A period no earlier test read: the answer of XTM Hub is not cached yet
+    const trendingIds = async () => {
+      const { data } = await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_90_days' } });
+      return data?.pulseTrending.entries.map((entry: { entity: { id: string } }) => entry.entity.id);
+    };
+    expect(await trendingIds()).toContain(indicatorId);
+    // Excluded since: XTM Hub still lists its hash, the platform no longer shows it
+    await configure({ excluded_markings: [MARKING_TLP_GREEN] });
+    try {
+      expect(await trendingIds()).not.toContain(indicatorId);
+    } finally {
+      await configure({ excluded_markings: [] });
+      await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
+    }
   });
 
   it('should keep the benchmark for Enterprise Edition platforms', async () => {

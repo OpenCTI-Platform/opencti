@@ -19,7 +19,7 @@ import {
 import { ENTITY_TYPE_TRIGGER } from '../../notification/notification-types';
 import { PulseAccess, PulsePeriod, PulseSectorBucket, PulseTrend, TriggerEventType } from '../../../generated/graphql';
 import { getHubTrending, handlePulseReadError, resolveTrendingEntries } from './pulse-domain';
-import { buildPulseMarkingPolicy, getPulseAccess, getPulseHubPlatform, hasPulseReadAccess, isPulseContributable, readPulseSettings } from './pulse-settings';
+import { getPulseAccess, getPulseHubPlatform, hasPulseReadAccess, readPulseSettings } from './pulse-settings';
 import { redisFilterNewlyTrending, redisGetPulseState, redisMarkTrendingNotified } from './pulse-cache';
 import { PULSE_OBJECT_TYPE_BY_ENTITY_TYPE } from './pulse-types';
 
@@ -66,9 +66,9 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
   if (!result) {
     return 0;
   }
-  const policy = await buildPulseMarkingPolicy(context, values);
-  const rising = (await resolveTrendingEntries(context, PULSE_MANAGER_USER, platform, result, values.scopes))
-    .filter((entry) => entry.trend === PulseTrend.Rising && isPulseContributable(entry.entity, policy, values.scopes));
+  // Only the objects the platform contributes: resolveTrendingEntries applies the current policy.
+  const rising = (await resolveTrendingEntries(context, PULSE_MANAGER_USER, platform, result, values, values.scopes))
+    .filter((entry) => entry.trend === PulseTrend.Rising);
   // Remembered per trigger and object, and only once a notification was stored: a trigger created later, or one
   // whose users did not match yet, still receives the event.
   const pairOf = (triggerId: string, entityId: string) => `${triggerId}|${entityId}`;

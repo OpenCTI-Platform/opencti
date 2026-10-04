@@ -1308,10 +1308,28 @@ export const getHubTrending = async (
   return result;
 };
 
-export const resolveTrendingEntries = async (context: AuthContext, user: AuthUser, platform: PulseHubPlatform, result: PulseHubTrendingResult, entityTypes: string[]) => {
+// The community data of a contributing platform covers the objects it contributes only: an object excluded since its
+// last refresh (scope, excluded marking, restriction) is left out, as its own Threat Pulse fields are, although the
+// preview pass may have kept its keys.
+const contributedEntities = async (context: AuthContext, values: PulseSettingsValues, entities: BasicStorePulseEntity[]) => {
+  if (entities.length === 0) {
+    return entities;
+  }
+  const policy = await buildPulseMarkingPolicy(context, values);
+  return entities.filter((entity) => isPulseContributable(entity, policy, values.scopes));
+};
+
+export const resolveTrendingEntries = async (
+  context: AuthContext,
+  user: AuthUser,
+  platform: PulseHubPlatform,
+  result: PulseHubTrendingResult,
+  values: PulseSettingsValues,
+  entityTypes: string[],
+) => {
   const salt = await getPulseSalt(platform, result.day);
   const keyedItems = decodeHubItems<PulseHubTrendingItem>(salt, result.items);
-  const entities = await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key));
+  const entities = await contributedEntities(context, values, await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key)));
   return matchHubItemsToEntities(keyedItems, entities, (item) => item.growth)
     .sort((a, b) => b.item.growth - a.item.growth)
     .map(({ entity, item }) => ({
@@ -1371,7 +1389,7 @@ export const getPulseTrending = async (context: AuthContext, user: AuthUser, arg
       object_types: entityTypes.map((type) => PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[type]),
       first,
     });
-    const entries = await resolveTrendingEntries(context, user, platform, result, entityTypes);
+    const entries = await resolveTrendingEntries(context, user, platform, result, values, entityTypes);
     return {
       readable: true,
       preview: false,
@@ -1483,7 +1501,7 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
     const salt = await getPulseSalt(platform, day);
     const keyedItems = decodeHubItems(salt, result.top_items);
     const entityTypes = values.scopes;
-    const entities = await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key));
+    const entities = await contributedEntities(context, values, await resolveLocalEntitiesByKeys(context, user, entityTypes, keyedItems.map(({ key }) => key)));
     const entries = matchHubItemsToEntities(keyedItems, entities, (item) => item.ratio)
       .sort((a, b) => b.item.ratio - a.item.ratio)
       .map(({ entity, item }) => ({
