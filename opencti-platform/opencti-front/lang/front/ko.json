@@ -2067,6 +2067,7 @@
   "Every 24 hours": "매 24시간",
   "Every data fetched from this OpenCTI stream will be written as the only source of truth": "이 OpenCTI 스트림에서 가져온 모든 데이터는 유일한 소스로 기록됩니다",
   "Every entity is hidden": "모든 엔터티가 숨겨져 있습니다",
+  "Every entity is hidden or collapsed into a group": "모든 엔터티가 숨겨져 있거나 그룹으로 접혀 있습니다",
   "Every month": "매월",
   "Every week": "매주",
   "Everyone on the platform": "플랫폼의 모든 사용자",

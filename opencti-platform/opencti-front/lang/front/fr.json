@@ -2067,6 +2067,7 @@
   "Every 24 hours": "Toutes les 24 heures",
   "Every data fetched from this OpenCTI stream will be written as the only source of truth": "Toutes les données extraites de ce flux OpenCTI seront écrites comme étant la seule source de vérité",
   "Every entity is hidden": "Toutes les entités sont masquées",
+  "Every entity is hidden or collapsed into a group": "Toutes les entités sont masquées ou réduites en un groupe",
   "Every month": "Tous les mois",
   "Every week": "Toutes les semaines",
   "Everyone on the platform": "Tout le monde sur la plateforme",

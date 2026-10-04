@@ -153,3 +153,12 @@ export const drawnTypes = (
 export const isCollapsedMember = (node: Pick<GraphNode, 'entity_type' | 'relationship_type' | 'groupOf'>, collapsedTypes: readonly string[]) => !node.groupOf
   && !node.relationship_type
   && collapsedTypes.includes(node.entity_type);
+
+/**
+ * The types of the inventory that still have a node to pick, in its order: a type whose nodes are
+ * all hidden or collapsed into a group leaves nothing for a selection by type.
+ */
+export const selectableTypes = (inventory: readonly string[], nodes: readonly GraphNode[], isShown: (node: GraphNode) => boolean) => {
+  const shown = new Set(nodes.filter(isShown).map((node) => node.entity_type));
+  return inventory.filter((type) => shown.has(type));
+};

@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { createCollapseCache, drawnTypes, GROUP_NODE_PREFIX, isCollapsedMember, isGroupLink, isGroupNode, relationshipTotal, withCollapsedGroups } from './graphCollapse';
+import {
+  createCollapseCache,
+  drawnTypes,
+  GROUP_NODE_PREFIX,
+  isCollapsedMember,
+  isGroupLink,
+  isGroupNode,
+  relationshipTotal,
+  selectableTypes,
+  withCollapsedGroups,
+} from './graphCollapse';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set', x: 0, y: 0 });
@@ -118,5 +128,12 @@ describe('withCollapsedGroups', () => {
     expect(isCollapsedMember(m1, ['Malware'])).toBe(true);
     expect(isCollapsedMember(actor, ['Malware'])).toBe(false);
     expect(isCollapsedMember(graphNode({ entity_type: 'Malware', relationship_type: 'uses' }), ['Malware'])).toBe(false);
+  });
+
+  it('offers to select by type only the types that still have a node to pick', () => {
+    const inventory = ['Intrusion-Set', 'Malware'];
+    expect(selectableTypes(inventory, [actor, m1, m2], () => true)).toEqual(inventory);
+    expect(selectableTypes(inventory, [actor, m1, m2], (node) => !isCollapsedMember(node, ['Malware']))).toEqual(['Intrusion-Set']);
+    expect(selectableTypes(inventory, [actor, m1, m2], (node) => node.id === 'm2')).toEqual(['Malware']);
   });
 });

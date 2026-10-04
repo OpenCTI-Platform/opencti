@@ -33,6 +33,7 @@ import { useGraphContext } from '../GraphContext';
 import { useGraphView } from '../GraphViewContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import type { ToolbarOverflowCandidate } from '../utils/graphToolbarOverflow';
+import { selectableTypes } from '../utils/graphCollapse';
 import { minutesBetweenDates } from '../../../utils/Time';
 import { MESSAGING$ } from '../../../relay/environment';
 
@@ -95,6 +96,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   const {
     context,
     isFullscreen,
+    graphData,
     stixCoreObjectTypes,
     relationshipTypes,
     markingDefinitions,
@@ -139,6 +141,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
     clearHighlightedPath,
     selectAllNodes,
     selectByEntityType,
+    isNodeShown,
     switchSelectRelationshipMode,
     toggleTimeRange,
     toggleEntityType,
@@ -207,6 +210,11 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   let typeFilterDisabledReason: string | undefined;
   if (stixCoreObjectTypes.length === 0) typeFilterDisabledReason = t_i18n('The graph has no entity yet');
   else if (typeOptions.length === 0) typeFilterDisabledReason = t_i18n('Every entity is hidden');
+
+  const typesToSelect = selectableTypes(stixCoreObjectTypes, graphData?.nodes ?? [], isNodeShown);
+  let selectByTypeDisabledReason: string | undefined;
+  if (stixCoreObjectTypes.length === 0) selectByTypeDisabledReason = t_i18n('The graph has no entity yet');
+  else if (typesToSelect.length === 0) selectByTypeDisabledReason = t_i18n('Every entity is hidden or collapsed into a group');
 
   const actions: GraphToolbarAction[] = [
     // --- View
@@ -347,9 +355,9 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       priority: 0,
       label: t_i18n('Select by entity type'),
       icon: <SelectGroup {...ICON} />,
-      disabledReason: stixCoreObjectTypes.length === 0 ? t_i18n('The graph has no entity yet') : undefined,
+      disabledReason: selectByTypeDisabledReason,
       options: {
-        items: stixCoreObjectTypes.map((type) => ({ key: type, label: t_i18n(`entity_${type}`) })),
+        items: typesToSelect.map((type) => ({ key: type, label: t_i18n(`entity_${type}`) })),
         onSelect: selectByEntityType,
       },
     },

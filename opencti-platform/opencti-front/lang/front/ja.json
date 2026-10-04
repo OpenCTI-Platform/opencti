@@ -2067,6 +2067,7 @@
   "Every 24 hours": "24時間毎",
   "Every data fetched from this OpenCTI stream will be written as the only source of truth": "この OpenCTI ストリームから取得されたすべてのデータは、唯一の真実のソースとして書き込まれます。",
   "Every entity is hidden": "すべてのエンティティが非表示です",
+  "Every entity is hidden or collapsed into a group": "すべてのエンティティが非表示か、グループに折りたたまれています",
   "Every month": "毎月",
   "Every week": "毎週",
   "Everyone on the platform": "プラットフォーム上の全員",

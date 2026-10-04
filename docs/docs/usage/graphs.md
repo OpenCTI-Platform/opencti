@@ -149,7 +149,7 @@ After a short moment on an element, a **hover card** opens with its key facts: t
 The legend on the bottom left counts the entities of each type and the relationships of each type drawn in the graph.
 
 - Click a counter to fade or restore every entity or relationship of that type; these are the filters of **Filter by type** in the toolbar.
-- Use the button next to an entity type to **collapse** all its entities into a single group node, and again to expand it. A click on a group node expands it too. Relationships towards the members of a group are drawn once towards the group.
+- Use the button next to an entity type to **collapse** all its entities into a single group node, and again to expand it. A click on a group node expands it too. Relationships towards the members of a group are drawn once towards the group, and their counts in the legend, the hover cards and the toolbar include every relationship the group stands for. **Select by entity type** offers a collapsed type again once it is expanded.
 - When entities are hidden, **Show the hidden entities** brings them back.
 - The **Badges** section lists only the badges present in the graph, with the number of entities carrying each; click one to select those entities.
 
