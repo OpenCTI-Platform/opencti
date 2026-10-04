@@ -63,7 +63,7 @@ const PublicGraphTopHubs = ({ uriKey, widget, startDate, endDate, title }: Publi
     ...dates,
   });
   return (
-    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Top hubs')}>
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Top hubs - by degree')}>
       {queryRef ? (
         <ErrorBoundary display={PublicGraphTopHubsRestricted}>
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

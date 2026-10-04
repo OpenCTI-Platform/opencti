@@ -26,7 +26,7 @@ interface GraphSimilarityEvidenceProps {
 }
 
 /** Shared elements behind a similarity score or a cluster, grouped by family, each one a link to the entity. */
-const GraphSimilarityEvidence = ({ evidence, maxPerFamily = 6, dense = false }: GraphSimilarityEvidenceProps) => {
+const GraphSimilarityEvidence = ({ evidence, maxPerFamily = 8, dense = false }: GraphSimilarityEvidenceProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   if (evidence.length === 0) {
@@ -50,7 +50,7 @@ const GraphSimilarityEvidence = ({ evidence, maxPerFamily = 6, dense = false }: 
                 onClick={() => navigate(`${resolveLink(entity.entity_type)}/${entity.id}`)}
               />
             ))}
-            {hidden > 0 && <Chip label={`+${hidden}`} />}
+            {hidden > 0 && <Text variant="content-caption" as="span">{t_i18n('and {count} more', { values: { count: hidden } })}</Text>}
           </Box>
         );
       })}

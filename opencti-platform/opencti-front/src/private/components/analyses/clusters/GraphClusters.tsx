@@ -1,22 +1,29 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Chip } from '@filigran/design-system';
-import { Box } from '@mui/material';
+import { Chip, Hero, HeroBody, HeroHeader, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Box, Skeleton } from '@mui/material';
+import Button from '@common/button/Button';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import type { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
-import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { monthsAgo, now } from '../../../../utils/Time';
-import GraphAnalyticsStatus from './GraphAnalyticsStatus';
-import { GRAPH_CLUSTER_KIND_LABELS, GRAPH_CLUSTER_SOURCE_LABELS, GRAPH_CLUSTERS_PATH, trimLeadingEmptyPeriods } from '../../common/graph_analytics/graphAnalyticsUtils';
+import GraphAnalyticsStatus, { GraphAnalyticsStatusSkeleton, graphAnalyticsStatusQuery } from './GraphAnalyticsStatus';
+import GraphClustersGrowthChart from '../../common/graph_analytics/GraphClustersGrowthChart';
+import GraphRelativeTime from '../../common/graph_analytics/GraphRelativeTime';
+import {
+  formatGraphClusterLabel,
+  GRAPH_CLUSTER_KIND_LABELS,
+  GRAPH_CLUSTER_SOURCE_LABELS,
+  GRAPH_CLUSTERS_PATH,
+  trimLeadingEmptyPeriods,
+} from '../../common/graph_analytics/graphAnalyticsUtils';
+import type { GraphAnalyticsStatusQuery } from './__generated__/GraphAnalyticsStatusQuery.graphql';
 import type { GraphClustersListQuery, GraphClustersListQuery$variables } from './__generated__/GraphClustersListQuery.graphql';
 import type { GraphClusters_clusters$data } from './__generated__/GraphClusters_clusters.graphql';
 import type { GraphClusters_cluster$data } from './__generated__/GraphClusters_cluster.graphql';
@@ -104,7 +111,12 @@ const clustersSizeQuery = graphql`
     graphClustersSizeTimeSeries(startDate: $startDate, endDate: $endDate, interval: "month", limit: 5) {
       cluster {
         id
-        name
+        cluster_kind
+        representatives {
+          representative {
+            main
+          }
+        }
       }
       data {
         date
@@ -114,19 +126,97 @@ const clustersSizeQuery = graphql`
   }
 `;
 
+// Below this number of clusters, the growth chart is folded: one or two curves say less than the counters above it
+const GROWTH_CHART_OPEN_FROM = 3;
+const REPRESENTATIVES_SHOWN = 3;
+
 const ClustersSizeChart = ({ queryRef }: { queryRef: PreloadedQuery<GraphClustersSizeQuery> }) => {
+  const { t_i18n } = useFormatter();
   const { graphClustersSizeTimeSeries } = usePreloadedQuery(clustersSizeQuery, queryRef);
-  if (graphClustersSizeTimeSeries.length === 0) return <WidgetNoData />;
+  if (graphClustersSizeTimeSeries.length === 0) {
+    return <Text variant="content-compact">{t_i18n('No cluster yet - clusters appear when an analytics pass finds entities sharing infrastructure')}</Text>;
+  }
   const points = trimLeadingEmptyPeriods(graphClustersSizeTimeSeries.map((serie) => serie.data));
   return (
-    <WidgetMultiAreas
+    <GraphClustersGrowthChart
       series={graphClustersSizeTimeSeries.map((serie, index) => ({
-        name: serie.cluster.name,
+        name: formatGraphClusterLabel(t_i18n, serie.cluster),
         data: points[index].map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval="month"
-      hasLegend
     />
+  );
+};
+
+interface ClustersOverviewProps {
+  statusQueryRef: PreloadedQuery<GraphAnalyticsStatusQuery>;
+  sizeQueryRef: PreloadedQuery<GraphClustersSizeQuery> | null | undefined;
+}
+
+const ClustersOverview = ({ statusQueryRef, sizeQueryRef }: ClustersOverviewProps) => {
+  const { t_i18n } = useFormatter();
+  const { graphAnalyticsStatus: status } = usePreloadedQuery(graphAnalyticsStatusQuery, statusQueryRef);
+  const clustersCount = status?.clusters_count ?? 0;
+  const [growthOpen, setGrowthOpen] = useState<boolean | null>(null);
+  const showGrowth = growthOpen ?? clustersCount >= GROWTH_CHART_OPEN_FROM;
+  return (
+    <>
+      <GraphAnalyticsStatus queryRef={statusQueryRef} />
+      {clustersCount === 0 ? (
+        <Hero data-testid="graph-clusters-first-use">
+          <HeroHeader icon={<ItemIcon type="Infrastructure" />}>
+            <Text variant="title-sm" as="h2">{t_i18n('No cluster yet')}</Text>
+          </HeroHeader>
+          <HeroBody>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Text variant="content-base">
+                {t_i18n('Clusters group the infrastructure sharing certificates, autonomous systems, registrars, name servers or hosting. They appear after the first full analytics pass of the knowledge graph.')}
+              </Text>
+              {status?.next_full_pass_at && (
+                <Text variant="content-compact">
+                  <GraphRelativeTime date={status.next_full_pass_at} template="Next full pass {time}" />
+                </Text>
+              )}
+              <Box>
+                <Button
+                  variant="secondary"
+                  href="https://docs.opencti.io/latest/usage/graph-analytics/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t_i18n('Read the documentation')}
+                </Button>
+              </Box>
+            </Box>
+          </HeroBody>
+        </Hero>
+      ) : (
+        <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} aria-labelledby="graph-clusters-growth-title">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Text variant="title-sm" as="h2" id="graph-clusters-growth-title">{t_i18n('Largest clusters over time')}</Text>
+            <Button
+              variant="tertiary"
+              size="small"
+              aria-expanded={showGrowth}
+              aria-controls="graph-clusters-growth"
+              onClick={() => setGrowthOpen(!showGrowth)}
+              data-testid="graph-clusters-growth-toggle"
+            >
+              {showGrowth ? t_i18n('Hide the chart') : t_i18n('Show the chart')}
+            </Button>
+          </Box>
+          {showGrowth && (
+            <Box id="graph-clusters-growth" sx={{ height: 200 }} data-testid="graph-clusters-growth">
+              {sizeQueryRef ? (
+                <Suspense fallback={<Skeleton variant="rounded" height={200} />}>
+                  <ClustersSizeChart queryRef={sizeQueryRef} />
+                </Suspense>
+              ) : <Skeleton variant="rounded" height={200} />}
+            </Box>
+          )}
+        </Box>
+      )}
+    </>
   );
 };
 
@@ -134,7 +224,7 @@ const LOCAL_STORAGE_KEY = 'GraphClusters';
 
 /** Clusters of infrastructure, campaigns and tooling computed from the knowledge graph. */
 const GraphClusters = () => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Clusters'));
 
@@ -152,20 +242,28 @@ const GraphClusters = () => {
   const contextFilters = useBuildEntityTypeBasedFilterContext('Graph-Cluster', viewStorage.filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as GraphClustersListQuery$variables;
   const queryRef = useQueryLoading<GraphClustersListQuery>(clustersListQuery, queryPaginationOptions);
+  const statusQueryRef = useQueryLoading<GraphAnalyticsStatusQuery>(graphAnalyticsStatusQuery, {});
   const sizeQueryRef = useQueryLoading<GraphClustersSizeQuery>(clustersSizeQuery, { startDate: monthsAgo(12), endDate: now() });
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
       label: 'Name',
-      percentWidth: 25,
+      percentWidth: 26,
       isSortable: true,
-      render: ({ name }: GraphClusters_cluster$data) => name,
+      render: (cluster: GraphClusters_cluster$data) => (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{formatGraphClusterLabel(t_i18n, cluster)}</span>
+          </TooltipTrigger>
+          <TooltipContent>{cluster.name}</TooltipContent>
+        </Tooltip>
+      ),
     },
     cluster_kind: {
       id: 'cluster_kind',
       label: 'Kind',
-      percentWidth: 14,
+      percentWidth: 13,
       isSortable: true,
       render: ({ cluster_kind }: GraphClusters_cluster$data) => <Chip label={t_i18n(GRAPH_CLUSTER_KIND_LABELS[cluster_kind] ?? cluster_kind)} />,
     },
@@ -174,35 +272,52 @@ const GraphClusters = () => {
       label: 'Members',
       percentWidth: 9,
       isSortable: true,
-      render: ({ members_count }: GraphClusters_cluster$data) => members_count,
+      render: ({ members_count }: GraphClusters_cluster$data) => t_i18n('{count, plural, one {# member} other {# members}}', { values: { count: members_count } }),
     },
     representatives: {
       id: 'representatives',
       label: 'Representative entities',
-      percentWidth: 26,
+      percentWidth: 28,
       isSortable: false,
-      render: ({ representatives }: GraphClusters_cluster$data) => representatives.slice(0, 3).map((r) => r.representative.main).join(', '),
+      render: ({ representatives, members_count }: GraphClusters_cluster$data) => {
+        const shown = representatives.slice(0, REPRESENTATIVES_SHOWN);
+        const more = Math.max(0, members_count - shown.length);
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
+            {shown.map((entity) => (
+              <Chip key={entity.id} size="sm" label={entity.representative.main} startIcon={<ItemIcon type={entity.entity_type} size="small" />} />
+            ))}
+            {more > 0 && (
+              <Text variant="content-caption" as="span" style={{ whiteSpace: 'nowrap' }}>
+                {t_i18n('and {count} more', { values: { count: more } })}
+              </Text>
+            )}
+          </Box>
+        );
+      },
     },
     cluster_source: {
       id: 'cluster_source',
       label: 'Computed by',
-      percentWidth: 10,
+      percentWidth: 9,
       isSortable: false,
       render: ({ cluster_source }: GraphClusters_cluster$data) => t_i18n(GRAPH_CLUSTER_SOURCE_LABELS[cluster_source] ?? cluster_source),
     },
     promoted: {
       id: 'promoted',
       label: 'Promoted',
-      percentWidth: 6,
+      percentWidth: 7,
       isSortable: false,
-      render: ({ promotedTo }: GraphClusters_cluster$data) => (promotedTo.length > 0 ? promotedTo.length : '-'),
+      render: ({ promotedTo }: GraphClusters_cluster$data) => (promotedTo.length > 0
+        ? t_i18n('{count, plural, one {# time} other {# times}}', { values: { count: promotedTo.length } })
+        : t_i18n('Not promoted')),
     },
     last_computed_at: {
       id: 'last_computed_at',
-      label: 'Last computation',
-      percentWidth: 10,
+      label: 'Computed',
+      percentWidth: 8,
       isSortable: true,
-      render: ({ last_computed_at }: GraphClusters_cluster$data) => fldt(last_computed_at),
+      render: ({ last_computed_at }: GraphClusters_cluster$data) => (last_computed_at ? <GraphRelativeTime date={last_computed_at} /> : ''),
     },
   };
 
@@ -210,14 +325,11 @@ const GraphClusters = () => {
     <div data-testid="graph-clusters-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Clusters'), current: true }]} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
-        <GraphAnalyticsStatus />
-        <WidgetContainer height={260} title={t_i18n('Largest clusters over time')} variant="inLine">
-          {sizeQueryRef ? (
-            <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <ClustersSizeChart queryRef={sizeQueryRef} />
-            </Suspense>
-          ) : <Loader variant={LoaderVariant.inElement} />}
-        </WidgetContainer>
+        {statusQueryRef ? (
+          <Suspense fallback={<GraphAnalyticsStatusSkeleton />}>
+            <ClustersOverview statusQueryRef={statusQueryRef} sizeQueryRef={sizeQueryRef} />
+          </Suspense>
+        ) : <GraphAnalyticsStatusSkeleton />}
       </Box>
       {queryRef && (
         <DataTable

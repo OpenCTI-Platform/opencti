@@ -87,7 +87,7 @@ const GraphTopHubsChart = ({ variant, height, dataSelection, parameters = {}, po
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title ?? t_i18n('Top hubs')}
+      title={parameters.title ?? t_i18n('Top hubs - by degree')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
@@ -119,7 +119,7 @@ const GraphTopHubsWidget = (props: GraphTopHubsWidgetProps) => {
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title ?? t_i18n('Top hubs')}
+      title={parameters.title ?? t_i18n('Top hubs - by degree')}
       variant={variant}
       action={popover}
     >

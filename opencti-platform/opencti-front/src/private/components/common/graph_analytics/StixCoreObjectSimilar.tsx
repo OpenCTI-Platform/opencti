@@ -1,4 +1,5 @@
 import React, { Suspense, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import {
@@ -31,8 +32,10 @@ import { resolveLink } from '../../../../utils/Entity';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import GraphSimilarityEvidence from './GraphSimilarityEvidence';
 import GraphSimilarCompareDialog from './GraphSimilarCompareDialog';
+import GraphSimilarityScore from './GraphSimilarityScore';
+import GraphRelativeTime from './GraphRelativeTime';
 import useGraphAnalyticsInvestigation from './useGraphAnalyticsInvestigation';
-import { formatSimilarityScore, recordGraphAnalyticsPivot, reportPayloadErrors, similarityScoreSeverity } from './graphAnalyticsUtils';
+import { formatSimilarityScore, recordGraphAnalyticsPivot, reportPayloadErrors } from './graphAnalyticsUtils';
 import { MESSAGING$ } from '../../../../relay/environment';
 import type { StixCoreObjectSimilarQuery, StixCoreObjectSimilarQuery$data } from './__generated__/StixCoreObjectSimilarQuery.graphql';
 import type { StixCoreObjectSimilarRecomputeMutation } from './__generated__/StixCoreObjectSimilarRecomputeMutation.graphql';
@@ -98,10 +101,12 @@ export type SimilarEntityNode = NonNullable<StixCoreObjectSimilarQuery$data['sim
 
 interface StixCoreObjectSimilarComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectSimilarQuery>;
+  // toolbar element receiving the actions that need the results, so every control sits on one row
+  actionsSlot: HTMLElement | null;
 }
 
-const StixCoreObjectSimilarComponent = ({ queryRef }: StixCoreObjectSimilarComponentProps) => {
-  const { t_i18n, fldt } = useFormatter();
+const StixCoreObjectSimilarComponent = ({ queryRef, actionsSlot }: StixCoreObjectSimilarComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const canInvestigate = useGranted([INVESTIGATION_INUPDATE]);
   const { startInvestigation, inFlight } = useGraphAnalyticsInvestigation();
@@ -124,17 +129,16 @@ const StixCoreObjectSimilarComponent = ({ queryRef }: StixCoreObjectSimilarCompo
       ...nodes.map((node) => node.entity.id),
       ...nodes.flatMap((node) => node.evidence.flatMap((family) => family.entities.map((entity) => entity.id))),
     ];
-    startInvestigation(`${t_i18n('Similar to')} ${stixCoreObject.representative.main}`, ids, 'similar_investigation');
+    startInvestigation(t_i18n('Similar to {name}', { values: { name: stixCoreObject.representative.main } }), ids, 'similar_investigation');
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-similar-list">
-      {canInvestigate && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="secondary" onClick={handleInvestigate} disabled={inFlight}>
-            {t_i18n('Investigate these similar entities')}
-          </Button>
-        </Box>
+      {canInvestigate && actionsSlot && createPortal(
+        <Button variant="secondary" onClick={handleInvestigate} disabled={inFlight}>
+          {t_i18n('Investigate these similar entities')}
+        </Button>,
+        actionsSlot,
       )}
       {nodes.map((node) => {
         const link = `${resolveLink(node.entity.entity_type)}/${node.entity.id}`;
@@ -149,10 +153,7 @@ const StixCoreObjectSimilarComponent = ({ queryRef }: StixCoreObjectSimilarCompo
                     <Text variant="content-base-bold" as="span">{node.entity.representative.main}</Text>
                   </Link>
                   <Chip label={translateEntityType(node.entity.entity_type)} />
-                  <Chip
-                    label={`${t_i18n('Similarity')} ${formatSimilarityScore(node.score)}`}
-                    severity={similarityScoreSeverity(node.score)}
-                  />
+                  <GraphSimilarityScore score={node.score} jaccard={node.jaccard} structural={node.structural} />
                   {node.securityCoverage && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -164,10 +165,15 @@ const StixCoreObjectSimilarComponent = ({ queryRef }: StixCoreObjectSimilarCompo
                     </Tooltip>
                   )}
                 </Box>
-                <ProgressBar value={percentage} aria-label={`${t_i18n('Similarity')} ${node.entity.representative.main}`} />
-                <Text variant="content-caption">
-                  {`${t_i18n('Shared elements')}: ${node.shared_count} - ${t_i18n('Weighted Jaccard')}: ${formatSimilarityScore(node.jaccard)} - ${t_i18n('Structural similarity')}: ${formatSimilarityScore(node.structural)}`}
-                  {node.computed_at ? ` - ${t_i18n('Computed')} ${fldt(node.computed_at)}` : ''}
+                <ProgressBar value={percentage} aria-label={t_i18n('Similarity with {name}', { values: { name: node.entity.representative.main } })} />
+                <Text variant="content-caption" data-testid="graph-similar-meta">
+                  {t_i18n('{count, plural, one {# shared element} other {# shared elements}}', { values: { count: node.shared_count } })}
+                  {node.computed_at && (
+                    <>
+                      {' - '}
+                      <GraphRelativeTime date={node.computed_at} template="computed {time}" />
+                    </>
+                  )}
                 </Text>
                 <GraphSimilarityEvidence evidence={node.evidence} />
               </Box>
@@ -223,6 +229,7 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
   const canRecompute = useGranted([KNOWLEDGE_KNUPDATE]);
   const [minScore, setMinScore] = useState('0');
   const [onlyWithSecurityCoverage, setOnlyWithSecurityCoverage] = useState(false);
+  const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
   const [commitRecompute, recomputing] = useApiMutation<StixCoreObjectSimilarRecomputeMutation>(recomputeMutation);
   const queryRef = useQueryLoading<StixCoreObjectSimilarQuery>(stixCoreObjectSimilarQuery, {
     id: stixCoreObjectId,
@@ -232,7 +239,7 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
   });
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-similar-tab">
-      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }} data-testid="graph-similar-toolbar">
         <Box sx={{ width: 200 }}>
           <Select value={minScore} onValueChange={setMinScore}>
             <SelectLabel>{t_i18n('Minimum similarity')}</SelectLabel>
@@ -269,10 +276,11 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
             {t_i18n('Refresh similarity')}
           </Button>
         )}
+        <Box ref={setActionsSlot} sx={{ display: 'flex' }} />
       </Box>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectSimilarComponent queryRef={queryRef} />
+          <StixCoreObjectSimilarComponent queryRef={queryRef} actionsSlot={actionsSlot} />
         </Suspense>
       )}
     </Box>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
@@ -33,18 +32,16 @@ const StixCoreObjectConnectToDialog = ({ open, onClose, stixCoreObjectId, stixCo
           fromId={stixCoreObjectId}
           fromLabel={stixCoreObjectName}
           renderActions={(_, selectedPaths) => canInvestigate && (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                disabled={selectedPaths.length === 0 || inFlight}
-                onClick={() => startInvestigation(
-                  `${t_i18n('Paths from')} ${stixCoreObjectName}`,
-                  collectPathElementIds(selectedPaths),
-                  'path_investigation',
-                )}
-              >
-                {t_i18n('Start an investigation with the selected paths')}
-              </Button>
-            </Box>
+            <Button
+              disabled={selectedPaths.length === 0 || inFlight}
+              onClick={() => startInvestigation(
+                t_i18n('Paths from {name}', { values: { name: stixCoreObjectName } }),
+                collectPathElementIds(selectedPaths),
+                'path_investigation',
+              )}
+            >
+              {t_i18n('Start an investigation with the selected paths')}
+            </Button>
           )}
         />
       )}

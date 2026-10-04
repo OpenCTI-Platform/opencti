@@ -10,7 +10,7 @@ import {
 } from '../../../../src/modules/graphAnalytics/graphAnalytics-features';
 import { isAcceptedPathEntityType, resolvePathRelationshipTypes } from '../../../../src/modules/graphAnalytics/graphAnalytics-paths';
 import { isAnalyticsProcessActive, GRAPH_STATE_ANALYTICS_LAST_RUN_AT } from '../../../../src/modules/graphAnalytics/graphAnalytics-state';
-import { isFullPassInProgress, shouldStartFullPass, getGraphAnalyticsComputeConfig } from '../../../../src/modules/graphAnalytics/graphAnalytics-compute';
+import { computeNextFullPassAt, isFullPassInProgress, shouldStartFullPass, getGraphAnalyticsComputeConfig } from '../../../../src/modules/graphAnalytics/graphAnalytics-compute';
 import { resolveConcreteEntityType } from '../../../../src/modules/graphAnalytics/graphAnalytics-store';
 
 describe('graph analytics feature extraction rules', () => {
@@ -99,6 +99,24 @@ describe('graph analytics scheduling', () => {
     const nextRun = new Date('2026-10-02T00:00:00.000Z');
     nextRun.setUTCHours(config.fullPassHour);
     expect(shouldStartFullPass(state, config, nextRun)).toBe(true);
+  });
+
+  it('should announce the next full pass at the moment it is allowed to start', () => {
+    const hourly = { ...config, fullPassHour: 2 };
+    const now = new Date('2026-10-01T10:00:00.000Z');
+    expect(computeNextFullPassAt({}, hourly, now)).toEqual(now);
+    expect(computeNextFullPassAt({ full_pass_started_at: '2026-10-01T02:00:00.000Z' }, hourly, now)).toBeNull();
+    const done = { full_pass_started_at: '2026-10-01T02:00:00.000Z', full_pass_completed_at: '2026-10-01T03:00:00.000Z' };
+    const next = computeNextFullPassAt(done, hourly, now) as Date;
+    expect(next.toISOString()).toBe('2026-10-02T02:00:00.000Z');
+    expect(shouldStartFullPass(done, hourly, next)).toBe(true);
+    expect(shouldStartFullPass(done, hourly, new Date(next.getTime() - 60000))).toBe(false);
+    // a pass ending after the hour waits for the minimum interval, then for the hour of the next day
+    const late = { full_pass_started_at: '2026-10-01T02:00:00.000Z', full_pass_completed_at: '2026-10-01T07:00:00.000Z' };
+    expect((computeNextFullPassAt(late, hourly, now) as Date).toISOString()).toBe('2026-10-03T02:00:00.000Z');
+    // the hour already started: the pass starts at the next tick
+    const ready = new Date('2026-10-02T02:30:00.000Z');
+    expect(computeNextFullPassAt(done, hourly, ready)).toEqual(ready);
   });
 
   it('should detect an unfinished full pass', () => {

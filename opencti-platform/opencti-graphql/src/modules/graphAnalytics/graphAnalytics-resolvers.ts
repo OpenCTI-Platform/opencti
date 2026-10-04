@@ -4,6 +4,7 @@ import type { AuthContext } from '../../types/user';
 import {
   addGraphClusterToInvestigation,
   findGraphClusterById,
+  findGraphAnalyticsPendingEntities,
   findGraphClusters,
   findSimilarEntities,
   getGraphAnalyticsStatus,
@@ -42,6 +43,7 @@ const graphAnalyticsResolvers: Resolvers = {
       kinds: args.kinds as GraphClusterKind[] | null | undefined,
     }),
     graphAnalyticsStatus: (_, __, context) => getGraphAnalyticsStatus(context, context.user!),
+    graphAnalyticsPendingEntities: (_, { first }, context) => findGraphAnalyticsPendingEntities(context, context.user!, first) as any,
     graphAnalyticsEdges: (_, args, context) => listGraphAnalyticsEdges(context, context.user!, args),
   },
   GraphCluster: {

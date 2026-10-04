@@ -126,6 +126,8 @@ test('Graph analytics: clusters list, detail and promotion to a grouping', { tag
     await graphPage.gotoClusters();
     await expect(graphPage.getClustersPage()).toBeVisible();
     await expect(graphPage.getAnalyticsStatus()).toBeVisible();
+    await expect(page.getByTestId('graph-analytics-kpi-clusters')).toBeVisible();
+    await expect(page.getByTestId('graph-analytics-kpi-pending')).toBeVisible();
 
     await graphPage.gotoCluster(clusterId);
     await expect(graphPage.getClusterPage()).toBeVisible();
@@ -134,8 +136,11 @@ test('Graph analytics: clusters list, detail and promotion to a grouping', { tag
     await expect(graphPage.getClusterMembers().getByText(nameB)).toBeVisible();
 
     const clusterName = (await graphPage.getClusterPage().getByRole('heading', { level: 1 }).textContent()) ?? '';
-    expect(clusterName.length).toBeGreaterThan(0);
+    // named after what it holds, never after its identifier
+    expect(clusterName).toContain('cluster around');
     await graphPage.getCreateGroupingButton().click();
+    await expect(page.getByRole('dialog').getByText('Create a grouping of 2 entities')).toBeVisible();
+    await expect(page.getByTestId('graph-cluster-promote-preview').getByText(nameA)).toBeVisible();
     await graphPage.getPromoteSubmitButton().click();
     await page.waitForURL(/\/dashboard\/analyses\/groupings\/.+/);
     const groupingId = page.url().split('/groupings/')[1].split('/')[0];
@@ -162,7 +167,7 @@ test('Graph analytics: dashboard template', { tag: ['@ce', '@graphAnalytics'] },
     await graphPage.getDashboardTemplate('graph-analytics').click();
     await page.waitForURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]{36}/);
     [dashboardId] = page.url().split('/dashboards/')[1].split(/[/?#]/);
-    const titles = ['Cluster size over time', 'Similarity of the most connected threats', 'Threat and malware hubs', 'Infrastructure hubs', 'Top hubs'];
+    const titles = ['Largest clusters - members over time', 'Similarity of the most connected threats', 'Threat and malware hubs - by degree', 'Infrastructure hubs - by degree', 'Top hubs - by degree'];
     for (let i = 0; i < titles.length; i += 1) {
       await expect(page.getByText(titles[i], { exact: true }).first()).toBeVisible();
     }

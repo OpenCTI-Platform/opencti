@@ -32,6 +32,6 @@ describe('GraphSimilarityEvidence', () => {
     testRender(<GraphSimilarityEvidence evidence={[{ family: 'techniques', entities: many }]} maxPerFamily={4} />);
     expect(screen.getByText('Technique 3')).toBeInTheDocument();
     expect(screen.queryByText('Technique 4')).not.toBeInTheDocument();
-    expect(screen.getByText('+5')).toBeInTheDocument();
+    expect(screen.getByText('and 5 more')).toBeInTheDocument();
   });
 });

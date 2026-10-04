@@ -606,6 +606,12 @@ describe('Graph analytics resolvers', () => {
     // explicit requests are served at the next tick, whatever the debounce of the backlog
     const ready = await redisGraphAnalyticsPopReady(0, 10);
     expect(ready).toContain(ids.isA);
+    const pendingQuery = gql`query pending { graphAnalyticsPendingEntities(first: 10) { id } }`;
+    await queryAsAdminWithSuccess({ query: mutation, variables: { ids: [ids.isA] } });
+    const { data: pendingData } = await queryAsAdminWithSuccess({ query: pendingQuery, variables: {} });
+    expect(pendingData.graphAnalyticsPendingEntities.map((entity: { id: string }) => entity.id)).toContain(ids.isA);
+    // listing the queue does not consume it
+    expect(await redisGraphAnalyticsPopReady(0, 10)).toContain(ids.isA);
     const pivot = gql`mutation pivot { graphAnalyticsRecordPivot(kind: similar_open) }`;
     const pivotResult = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pivot, variables: {} });
     expect(pivotResult.data.graphAnalyticsRecordPivot).toBe(true);
