@@ -6262,5 +6262,6 @@
   "Cooldown after a rejection (days)": "Attesa dopo un rifiuto (giorni)",
   "Applying": "Applicazione in corso",
   "The change is being applied": "La modifica è in fase di applicazione",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Se si protrae, il risultato non è stato registrato: verifica la destinazione della raccomandazione, poi rifiutala per chiuderla. Non viene mai applicata una seconda volta."
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Se si protrae, il risultato non è stato registrato: verifica la destinazione della raccomandazione, poi rifiutala per chiuderla. Non viene mai applicata una seconda volta.",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Se si protrae, il risultato non è stato registrato: verifica la destinazione della raccomandazione. Resta elencata come «Applicazione in corso» e non viene mai applicata una seconda volta."
 }

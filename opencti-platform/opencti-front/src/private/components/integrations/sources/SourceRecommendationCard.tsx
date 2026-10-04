@@ -290,7 +290,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
               <Alert
                 severity="info"
                 title={t_i18n('The change is being applied')}
-                description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.')}
+                description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.')}
               />
             </Box>
           )}
@@ -379,7 +379,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 {applyLabel}
               </Button>
             )}
-            {(recommendation.status === 'proposed' || recommendation.status === 'applying') && (
+            {recommendation.status === 'proposed' && (
               <Button variant="secondary" size="small" startIcon={<CloseOutlined />} onClick={() => setDismissOpen(true)} disabled={busy} data-testid="source-recommendation-dismiss">
                 {t_i18n('Reject')}
               </Button>
