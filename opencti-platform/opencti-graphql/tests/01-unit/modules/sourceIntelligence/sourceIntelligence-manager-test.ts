@@ -8,6 +8,7 @@ import {
   laterStreamEventId,
   mergeBatchIncrements,
   planBackfill,
+  planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
 import { backfillProgress, buildResolverFromSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
@@ -345,6 +346,24 @@ describe('Source intelligence stream cursor', () => {
     const events = [{ id: '1759500000000-0' }, { id: '1759500000000-7' }, { id: '1759500000001-0' }, { id: '1759500000002-3' }];
     expect(eventsUpTo(events, '1759500000001-0').map(({ id }) => id)).toEqual(['1759500000000-0', '1759500000000-7', '1759500000001-0']);
     expect(eventsUpTo(events, '1759499999999-0')).toEqual([]);
+  });
+
+  it('should cap the batches at a pending end without jumping past the events before it', () => {
+    const events = [{ id: '1759500000000-0' }, { id: '1759500000001-0' }, { id: '1759500000002-3' }];
+    // No pending end: the fetched batch as is
+    expect(planStreamBatch(events, '1759500000002-3', undefined)).toEqual({ events, end: '1759500000002-3', pendingEnd: undefined });
+    // A pending end within the fetch (an interrupted batch, a full computation boundary): capped at it, then cleared
+    const boundary = streamBoundaryOf(1759500000001);
+    expect(planStreamBatch(events, '1759500000002-3', boundary)).toEqual({
+      events: [{ id: '1759500000000-0' }, { id: '1759500000001-0' }],
+      end: boundary,
+      pendingEnd: undefined,
+    });
+    // A pending end beyond the fetch: the fetched batch is applied under its own end, the pending end is kept
+    const farBoundary = streamBoundaryOf(1759500009999);
+    expect(planStreamBatch(events, '1759500000002-3', farBoundary)).toEqual({ events, end: '1759500000002-3', pendingEnd: farBoundary });
+    // Nothing fetched yet up to the pending end: the cursor stays
+    expect(planStreamBatch([], '1759499999999-0', farBoundary)).toEqual({ events: [], end: '1759499999999-0', pendingEnd: farBoundary });
   });
 
   it('should write each live scorecard once per batch, disabled sources excluded', () => {

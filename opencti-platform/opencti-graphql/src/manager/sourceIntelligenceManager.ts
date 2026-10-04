@@ -438,8 +438,21 @@ export const eventsUpTo = <T extends { id: string }>(events: T[], end: string) =
   return events.filter((event) => laterStreamEventId(event.id, end) === end);
 };
 
-// End of the batch being applied, recorded before its first write and cleared once the cursor passed it
+// End of the batch being applied, recorded before its first write and cleared once the cursor passed it; also the
+// stream boundary of a full computation while its live scorecards are being written
 const SOURCE_INTELLIGENCE_PENDING_BATCH = `${SOURCE_INTELLIGENCE_MANAGER_CONTEXT}_pending_batch`;
+
+/**
+ * Events and end of the next stream batch. A pending end caps the batch once the fetch reaches it, so the events up to
+ * it are applied under that end alone (the scorecards that already applied it skip them); a pending end the fetch does
+ * not reach yet stays pending for the next batches.
+ */
+export const planStreamBatch = <T extends { id: string }>(events: T[], fetchedEnd: string, pendingEnd: string | undefined) => {
+  if (!pendingEnd || laterStreamEventId(fetchedEnd, pendingEnd) !== fetchedEnd) {
+    return { events, end: fetchedEnd, pendingEnd };
+  }
+  return { events: eventsUpTo(events, pendingEnd), end: pendingEnd, pendingEnd: undefined };
+};
 
 const processStreamIncrements = async (context: AuthContext) => {
   const storedEventId = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
@@ -471,20 +484,20 @@ const processStreamIncrements = async (context: AuthContext) => {
       },
       { streamBatchSize: STREAM_BATCH_SIZE, withInternal: true },
     );
-    const batchEnd = pendingEnd ?? nextEventId;
-    const batchEvents = pendingEnd ? eventsUpTo(events, pendingEnd) : events;
-    pendingEnd = undefined;
-    if (batchEnd === lastEventId) {
+    const plan = planStreamBatch(events, nextEventId, pendingEnd);
+    pendingEnd = plan.pendingEnd;
+    if (plan.end === lastEventId) {
       break;
     }
-    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, batchEnd);
-    if (batchEvents.length > 0) {
-      const { increments, periodIncrements } = await computeEventIncrements(context, batchEvents, resolver, { enterprise, huntRunType, scanTrace });
-      await applyLiveIncrements(context, mergeBatchIncrements(increments, periodIncrements, disabledSourceIds), batchEnd);
+    // The farther of the two ends is kept: a replay of this batch reaches the same end, a pending one stays pending
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, pendingEnd ?? plan.end);
+    if (plan.events.length > 0) {
+      const { increments, periodIncrements } = await computeEventIncrements(context, plan.events, resolver, { enterprise, huntRunType, scanTrace });
+      await applyLiveIncrements(context, mergeBatchIncrements(increments, periodIncrements, disabledSourceIds), plan.end);
     }
-    lastEventId = batchEnd;
+    lastEventId = plan.end;
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, lastEventId);
-    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, '');
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, pendingEnd ?? '');
   }
 };
 // endregion
@@ -507,12 +520,24 @@ const computeAndStore = async (
   const tracked = sources
     .map((source) => currentById.get(source.internal_id))
     .filter((source): source is BasicStoreEntitySource => !!source && source.enabled !== false);
-  const documents = buildScorecardDocuments(state, tracked, settings, {
+  const built = buildScorecardDocuments(state, tracked, settings, {
     enterprise: options.enterprise,
     availability: run.availability,
     live: options.live,
     snapshot: options.snapshot,
   });
+  if (!options.live) {
+    await writeScorecards(context, built);
+    return { tracked, state, documents: built };
+  }
+  // The live scorecards count every event up to the computation time: they carry its stream boundary, pending until
+  // the stream cursor passes it, so a replay after an interruption skips the events they already count
+  const boundary = streamBoundaryOf(asOf);
+  const documents = built.map((doc) => (doc.is_live ? { ...doc, live_stream_event_id: boundary } : doc));
+  const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
+  if (laterStreamEventId(cursor, boundary) === boundary) {
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, boundary);
+  }
   await writeScorecards(context, documents);
   return { tracked, state, documents };
 };
@@ -530,6 +555,7 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     // the scan already counted are never applied again and the later ones are kept
     const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, laterStreamEventId(cursor, streamBoundaryOf(now)));
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, '');
     const computedAt = new Date(now).toISOString();
     const references = new Map(documents
       .filter((doc) => doc.is_live && doc.scorecard_period === REFERENCE_SCORECARD_PERIOD)

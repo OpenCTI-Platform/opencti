@@ -208,6 +208,8 @@ export interface StoreSourceScorecard extends SourceScorecardMetrics {
   created_at: string;
   updated_at: string;
   is_live: boolean;
+  // Last stream event the live scorecard counts
+  live_stream_event_id?: string;
   provenance_mode: ProvenanceMode;
 }
 // endregion

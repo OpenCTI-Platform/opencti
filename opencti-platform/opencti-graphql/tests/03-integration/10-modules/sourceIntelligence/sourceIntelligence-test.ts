@@ -5,8 +5,13 @@ import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUs
 import { runFullComputation } from '../../../../src/manager/sourceIntelligenceManager';
 import { getSourceIntelligenceSettings, listAllSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
-import { deleteScorecardsOfSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
-import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import { deleteScorecardsOfSources, findLiveScorecards } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
+import {
+  type BasicStoreEntitySource,
+  ENTITY_TYPE_SOURCE,
+  ENTITY_TYPE_SOURCE_RECOMMENDATION,
+  REFERENCE_SCORECARD_PERIOD,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import { v4 as uuidv4 } from 'uuid';
 import { createEntity, deleteElementById, patchAttribute } from '../../../../src/database/middleware';
@@ -302,6 +307,13 @@ describe('Source intelligence', () => {
       await deleteElementById(testContext, ADMIN_USER, sources[i].internal_id, ENTITY_TYPE_SOURCE);
     }
     await deleteScorecardsOfSources(testContext, sources.map((source) => source.internal_id));
+  });
+
+  it('should mark the live scorecards with the stream boundary of the full computation', async () => {
+    const live = await findLiveScorecards(testContext, REFERENCE_SCORECARD_PERIOD);
+    expect(live.length).toBeGreaterThan(0);
+    // Every live scorecard counts the events up to the computation time: a replayed stream batch before it is a no-op
+    live.forEach((scorecard) => expect(scorecard.live_stream_event_id).toMatch(/^\d+-18446744073709551615$/));
   });
 
   it('should materialize and score sources from the platform knowledge', async () => {
