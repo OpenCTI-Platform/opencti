@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import type { Page } from '@playwright/test';
+import type { Locator, Page, TestInfo } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import IntrusionSetPage from '../model/intrusionSet.pageModel';
 import IntrusionSetFormPage from '../model/form/intrusionSetForm.pageModel';
@@ -200,4 +200,166 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
   const benchmark = page.getByTestId('threat-pulse-benchmark-locked');
   await expect(benchmark).toBeVisible();
   await expect(benchmark.getByTestId('threat-pulse-locked-row')).toHaveCount(3);
+});
+
+// The images of docs/docs/usage/threat-pulse.md: every surface in each of its states, on the answers below.
+const shoot = async (target: Locator, name: string, testInfo: TestInfo) => {
+  await expect(target).toBeVisible();
+  await target.scrollIntoViewIfNeeded();
+  await target.screenshot({ path: testInfo.outputPath(`${name}.png`), animations: 'disabled' });
+};
+
+const widgetOf = (content: Locator) => content.locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " react-grid-item ")][1]');
+
+const docsEntity = (id: string, name: string, entityType = 'Malware') => ({ __typename: entityType, id, entity_type: entityType, representative: { main: name } });
+
+const DOCS_SCOPES = ['Indicator', 'Attack-Pattern', 'Vulnerability', 'Intrusion-Set', 'Malware', 'Tool'];
+
+const docsSettings = (overrides: Record<string, unknown>) => ({
+  pulseSettings: {
+    id: 'threat-pulse-settings-docs',
+    mode: 'preview',
+    access: 'preview',
+    enabled: false,
+    readable: false,
+    hub_registered: true,
+    consent_version: '2026-10-1',
+    consent_accepted_version: null,
+    consent_date: null,
+    consent_user_name: null,
+    scopes: DOCS_SCOPES,
+    available_scopes: DOCS_SCOPES,
+    excluded_markings: [],
+    forced_excluded_markings: [
+      { id: 'docs-tlp-red', definition: 'TLP:RED', x_opencti_color: '#c62828' },
+      { id: 'docs-tlp-amber-strict', definition: 'TLP:AMBER+STRICT', x_opencti_color: '#d84315' },
+      { id: 'docs-pap-red', definition: 'PAP:RED', x_opencti_color: '#c62828' },
+    ],
+    sector_bucket: null,
+    region_bucket: null,
+    suggested_sector_bucket: 'finance',
+    suggested_region_bucket: 'europe',
+    contribution: { last_push_at: null, last_refresh_at: null, last_error: null, total_records: 0, days: [], by_type: [] },
+    preview: { last_refresh_at: '2026-10-03T06:00:00.000Z', digest_day: '2026-10-03', digest_items: 5000, matched_entities: 42 },
+    network: {
+      reachable: true,
+      k_threshold: 5,
+      retention_months: 13,
+      contributors_bucket: '250+',
+      read_access: false,
+      last_contribution_day: null,
+      contribution_status: 'none',
+      read_access_until: null,
+      contribution_grace_days: 14,
+    },
+    ...overrides,
+  },
+  markingDefinitions: { edges: [] },
+});
+
+const docsTrending = (preview: boolean) => ({
+  pulseTrending: {
+    readable: true,
+    preview,
+    unavailable_reason: null,
+    day: '2026-10-03',
+    period: 'last_7_days',
+    sector_bucket: 'finance',
+    region_bucket: preview ? 'europe' : null,
+    network_items_count: preview ? 3 : 6,
+    locked_count: preview ? 7 : 0,
+    entries: preview
+      ? [
+          { object_type: 'malware', rank: 1, platforms_bucket: null, prevalence: 'widespread', trend: 'rising', growth: null, first_seen_network: null, entity: docsEntity('threat-pulse-docs-1', 'LockBit 3.0') },
+          { object_type: 'malware', rank: 2, platforms_bucket: null, prevalence: 'common', trend: 'rising', growth: null, first_seen_network: null, entity: docsEntity('threat-pulse-docs-2', 'Akira') },
+        ]
+      : [
+          { object_type: 'malware', rank: null, platforms_bucket: '50-99', prevalence: 'widespread', trend: 'rising', growth: 3.2, first_seen_network: '2026-07-02T00:00:00.000Z', entity: docsEntity('threat-pulse-docs-1', 'LockBit 3.0') },
+          { object_type: 'malware', rank: null, platforms_bucket: '25-49', prevalence: 'common', trend: 'rising', growth: 2.4, first_seen_network: '2026-08-21T00:00:00.000Z', entity: docsEntity('threat-pulse-docs-2', 'Akira') },
+          { object_type: 'vulnerability', rank: null, platforms_bucket: '10-24', prevalence: 'uncommon', trend: 'rising', growth: 1.8, first_seen_network: '2026-09-14T00:00:00.000Z', entity: docsEntity('threat-pulse-docs-3', 'CVE-2026-1288', 'Vulnerability') },
+          { object_type: 'intrusion_set', rank: null, platforms_bucket: '5-9', prevalence: 'uncommon', trend: 'stable', growth: 1.1, first_seen_network: '2026-05-30T00:00:00.000Z', entity: docsEntity('threat-pulse-docs-4', 'Scattered Spider', 'Intrusion-Set') },
+        ],
+  },
+});
+
+const docsBenchmark = {
+  pulseBenchmark: { readable: false, unavailable_reason: 'contribution_required', period: 'last_30_days', sector_bucket: 'finance', region_bucket: 'europe', sector_platforms_bucket: null, metrics: [], entries: [] },
+};
+
+test('Capture the Threat Pulse surfaces of the documentation in each of their states', { tag: ['@ce'] }, async ({ page }, testInfo) => {
+  // Overview card: preview, then contribution
+  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('preview', PREVIEW_INFORMATION, 'contribution_required') });
+  await openNewIntrusionSet(page);
+  const overviewUrl = page.url();
+  await expect(page.getByTestId('threat-pulse-preview')).toBeVisible();
+  await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-preview', testInfo);
+  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null) });
+  await page.goto(overviewUrl);
+  await expect(page.getByTestId('threat-pulse-card')).toBeVisible();
+  await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-full', testInfo);
+
+  // Trending in your sector: preview with the folded locked ranks, then full
+  for (const mode of ['preview', 'full'] as const) {
+    await mockThreatPulse(page, {
+      ThreatPulseDashboardTemplateButtonQuery: { pulseStatus: { id: 'pulse-status', access: mode } },
+      ThreatPulseTrendingQuery: docsTrending(mode === 'preview'),
+      ThreatPulseBenchmarkQuery: docsBenchmark,
+    });
+    await page.goto('/dashboard/workspaces/dashboards');
+    await page.getByTestId('threat-pulse-dashboard-template').click();
+    if (mode === 'preview') {
+      await shoot(page.getByRole('dialog'), 'threat-pulse-template-card', testInfo);
+    }
+    await page.getByTestId('threat-pulse-template-create').click();
+    await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
+    const trending = page.getByTestId(mode === 'preview' ? 'threat-pulse-trending-preview' : 'threat-pulse-trending-list');
+    await expect(trending).toBeVisible();
+    const widget = widgetOf(trending);
+    await shoot((await widget.count()) > 0 ? widget : trending, `threat-pulse-trending-${mode}`, testInfo);
+  }
+
+  // The banner of the first day of the preview
+  await mockThreatPulse(page, {
+    ThreatPulsePreviewBannerQuery: { pulseStatus: { access: 'preview', preview_entities: 42, preview_since: new Date(Date.now() - 60 * 60 * 1000).toISOString() } },
+  });
+  await page.goto('/dashboard');
+  const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
+  await expect(banner).toBeVisible();
+  await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner-preview', testInfo);
+
+  // Settings > Filigran Experience in each mode, and the consent
+  const settingsStates: Array<[string, Record<string, unknown>]> = [
+    ['preview', {}],
+    ['contribute', {
+      mode: 'contribute_and_read',
+      access: 'full',
+      enabled: true,
+      readable: true,
+      consent_accepted_version: '2026-10-1',
+      consent_date: '2026-10-01T09:00:00.000Z',
+      consent_user_name: 'admin',
+      sector_bucket: 'finance',
+      region_bucket: 'europe',
+      contribution: {
+        last_push_at: '2026-10-03T08:00:00.000Z',
+        last_refresh_at: '2026-10-03T02:00:00.000Z',
+        last_error: null,
+        total_records: 12840,
+        days: [],
+        by_type: [{ entity_type: 'Indicator', records: 11200 }, { entity_type: 'Malware', records: 940 }, { entity_type: 'Vulnerability', records: 700 }],
+      },
+      network: { reachable: true, k_threshold: 5, retention_months: 13, contributors_bucket: '250+', read_access: true, last_contribution_day: '2026-10-03', contribution_status: 'active', read_access_until: '2026-10-17', contribution_grace_days: 14 },
+    }],
+    ['off', { mode: 'off', access: 'off' }],
+  ];
+  for (const [state, overrides] of settingsStates) {
+    await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings(overrides) });
+    await page.goto('/dashboard/settings/experience');
+    await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}`, testInfo);
+  }
+  await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}) });
+  await page.goto('/dashboard/settings/experience');
+  await page.getByTestId('threat-pulse-enable-button').click();
+  await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
+  await shoot(page.getByRole('dialog'), 'threat-pulse-consent-dialog', testInfo);
 });

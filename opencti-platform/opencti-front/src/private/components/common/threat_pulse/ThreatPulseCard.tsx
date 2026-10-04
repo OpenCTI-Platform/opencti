@@ -156,7 +156,7 @@ const ThreatPulseNotConnectedCard = () => {
   const { t_i18n } = useFormatter();
   useThreatPulseImpression('entity_card', true);
   return (
-    <Box sx={{ flex: '0 0 auto' }}>
+    <Box sx={{ flex: '0 0 auto' }} data-testid="threat-pulse-card-container">
       <Card title={<ThreatPulseCardTitle />} fullHeight={false}>
         <Box data-testid="threat-pulse-not-connected" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'flex-start' }}>
           <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
@@ -180,7 +180,7 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
   const secondary = { color: theme.palette.text.secondary };
   const information = pulseEntity.information?.preview ? pulseEntity.information : null;
   return (
-    <Box sx={{ flex: '0 0 auto' }}>
+    <Box sx={{ flex: '0 0 auto' }} data-testid="threat-pulse-card-container">
       <Card title={<ThreatPulseCardTitle preview />} fullHeight={false}>
         <Box data-testid="threat-pulse-preview" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {information ? (
@@ -240,7 +240,7 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   const platforms = pulsePlatformsBucketLabel(t_i18n, information.platforms_bucket);
   const sectorPlatforms = pulsePlatformsBucketLabel(t_i18n, information.sector_platforms_bucket);
   return (
-    <Box sx={{ flex: '0 0 auto' }}>
+    <Box sx={{ flex: '0 0 auto' }} data-testid="threat-pulse-card-container">
       <Card title={title} fullHeight={false}>
         <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {reason && (
