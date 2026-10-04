@@ -169,12 +169,13 @@ export const PROVENANCE_UPDATE_SCRIPT = `
     for (def procedure : params.procedures_add) {
       String key = procedure.text.trim().toLowerCase();
       def existing = null;
-      for (def item : procedures) { if (item.text != null && item.text.trim().toLowerCase() == key) { existing = item; break; } }
+      for (def item : procedures) {
+        if (item.text != null && item.text.trim().toLowerCase() == key && item.source_id == procedure.source_id) { existing = item; break; }
+      }
       if (existing == null) {
         procedures.add(new HashMap(procedure));
       } else if (existing.last_asserted_at == null || procedure.last_asserted_at.compareTo(existing.last_asserted_at) > 0) {
         existing.last_asserted_at = procedure.last_asserted_at;
-        existing.source_id = procedure.source_id;
       }
     }
     while (procedures.size() > params.max_procedures) {
@@ -549,9 +550,11 @@ export const coalesceReassertion = (
   const conflictsAdd = (record.conflictsAdd ?? []).filter(({ field, value }) => !isFresh(findConflictValue(field, value.value_hash), value.source_id));
   const removesStoredConflict = (record.conflictsRemove ?? []).some(({ field, value_hash }) => findConflictValue(field, value_hash) !== undefined);
   const procedures = element[ATTRIBUTE_PROCEDURES] ?? [];
+  // A procedure is kept per source: the same text asserted by another source is a new attribution
   const proceduresAdd = (record.proceduresAdd ?? []).filter((procedure) => {
     const key = procedureMatchKey(procedure.text);
-    return !isFresh(procedures.find((stored) => stored.text && procedureMatchKey(stored.text) === key), procedure.source_id);
+    const stored = procedures.find((candidate) => candidate.text && procedureMatchKey(candidate.text) === key && candidate.source_id === procedure.source_id);
+    return !isFresh(stored, procedure.source_id);
   });
   const assertion = (element[ATTRIBUTE_ASSERTIONS] ?? []).find((stored) => stored.source_id === sourceId);
   const redundant = isFresh(assertion, sourceId)

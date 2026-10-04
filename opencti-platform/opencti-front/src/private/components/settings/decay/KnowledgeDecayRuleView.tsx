@@ -21,6 +21,7 @@ import KnowledgeDecayRuleForm, {
   type KnowledgeDecayRuleFormValues,
   type KnowledgeDecayRuleInput,
   type KnowledgeFreshnessPolicy,
+  knowledgeDecayRuleEffect,
 } from './KnowledgeDecayRuleForm';
 import { KnowledgeDecayRuleView_decayRule$key } from './__generated__/KnowledgeDecayRuleView_decayRule.graphql';
 import { KnowledgeDecayRuleViewEditMutation } from './__generated__/KnowledgeDecayRuleViewEditMutation.graphql';
@@ -117,6 +118,10 @@ const KnowledgeDecayRuleView = ({ decayRule: decayRuleKey }: KnowledgeDecayRuleV
         <Grid item xs={6}>
           <Card title={t_i18n('Configuration')}>
             <Grid container spacing={2}>
+              <Grid item xs={12} data-testid="knowledge-decay-rule-effect">
+                <Label>{t_i18n('Effect')}</Label>
+                {knowledgeDecayRuleEffect(t_i18n, decayRule)}
+              </Grid>
               <Grid item xs={12}>
                 <Label>{t_i18n('Description')}</Label>
                 <ExpandableMarkdown source={decayRule.description} limit={300} />

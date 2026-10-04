@@ -1,5 +1,8 @@
+import * as R from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { elAggregationCount, elCount } from '../../database/engine';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import { READ_STIX_DATA_WITH_INFERRED } from '../../database/utils';
 import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -320,7 +323,14 @@ export const adoptConflictValue = async (context: AuthContext, user: AuthUser, i
 export const assertElement = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await loadEditableTrackedElement(context, user, id);
   const source = { source_id: user.id, source_kind: SOURCE_KIND_USER, source_name: user.name, work_id: null } as const;
-  const recorded = await recordUpsertProvenance(context, user, element, { source, input: {}, confidence: element.confidence ?? null }, { refresh: true, force: true });
+  // Same lock as the upserts, so that a freshness policy is never applied after this confirmation (see applyFreshnessPolicy)
+  const lock = await lockResources(R.uniq([element.internal_id, element.standard_id]), { draftId: getDraftContext(context, user) });
+  let recorded;
+  try {
+    recorded = await recordUpsertProvenance(context, user, element, { source, input: {}, confidence: element.confidence ?? null }, { refresh: true, force: true });
+  } finally {
+    await lock.unlock();
+  }
   if (!recorded) {
     throw FunctionalError('Provenance cannot be recorded on this element', { id });
   }

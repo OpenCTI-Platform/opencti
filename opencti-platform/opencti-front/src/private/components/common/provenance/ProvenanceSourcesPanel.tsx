@@ -16,13 +16,14 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Tag from '../../../../components/common/tag/Tag';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import ProvenanceBackfillState from './ProvenanceBackfillState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { freshnessColor, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
+import { freshnessColor, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -123,11 +124,15 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
   const [commitProcedure, procedureInFlight] = useApiMutation(provenanceProcedureAdoptMutation);
   const [commitAssert, assertInFlight] = useApiMutation(provenanceAssertMutation);
   if (!element || !element.id) {
-    return <Typography variant="body2">{t_i18n('No provenance is available for this element.')}</Typography>;
+    return (
+      <Typography variant="body2" data-testid="provenance-unavailable">
+        {t_i18n('Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.')}
+      </Typography>
+    );
   }
   const assertions = sortAssertionsByRecency(element.x_opencti_assertions);
   const conflicts = (element.x_opencti_conflicts ?? []).filter((conflict) => conflict.values.length > 0);
-  const procedures = element.procedures ?? [];
+  const procedures = groupProceduresByText(element.procedures ?? [], assertions);
   const inFlight = adoptInFlight || dismissInFlight || procedureInFlight || assertInFlight;
   const completeWith = (successMessage: string) => (_: unknown, errors: readonly PayloadError[] | null) => {
     if (notifyPayloadErrors(errors)) return;
@@ -177,7 +182,14 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
 
       <Card title={t_i18n('Sources')} padding="small">
         {assertions.length === 0 ? (
-          <Typography variant="body2">{t_i18n('No source asserted this element yet. Its provenance is rebuilt by the provenance backfill.')}</Typography>
+          <Stack gap={0.5} data-testid="provenance-sources-panel-empty">
+            <Typography variant="body2">{t_i18n('No source asserted this element yet. Its provenance is rebuilt by the provenance backfill.')}</Typography>
+            <Security needs={[SETTINGS_SETPARAMETERS]}>
+              <Suspense fallback={null}>
+                <ProvenanceBackfillState />
+              </Suspense>
+            </Security>
+          </Stack>
         ) : (
           <Table size="small" aria-label={t_i18n('Sources')}>
             <TableHead>
@@ -203,7 +215,9 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                   <TableCell>{nsdt(assertion.first_asserted_at)}</TableCell>
                   <TableCell>{nsdt(assertion.last_asserted_at)}</TableCell>
                   <TableCell align="right">{assertion.assert_count}</TableCell>
-                  <TableCell align="right">{assertion.confidence ?? '-'}</TableCell>
+                  <TableCell align="right">
+                    {assertion.confidence ?? <Typography variant="caption" color="textSecondary">{t_i18n('Not recorded')}</Typography>}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -273,10 +287,15 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
             {procedures.map((procedure) => {
               const isCurrent = (element.description ?? '').trim().toLowerCase() === procedure.text.trim().toLowerCase();
               return (
-                <Stack key={procedure.text} direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Stack key={procedure.text} direction="row" alignItems="center" justifyContent="space-between" gap={2} data-testid="provenance-procedure">
                   <Stack gap={0.5} sx={{ minWidth: 0 }}>
                     <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{procedure.text}</Typography>
-                    {procedure.last_asserted_at && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: nsdt(procedure.last_asserted_at) } })}</Typography>}
+                    {procedure.sourceNames.length > 0 && (
+                      <Typography variant="caption" color="textSecondary">
+                        {t_i18n('Asserted by {sources}', { values: { sources: procedure.sourceNames.join(', ') } })}
+                      </Typography>
+                    )}
+                    {procedure.lastAssertedAt && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: nsdt(procedure.lastAssertedAt) } })}</Typography>}
                   </Stack>
                   {isCurrent ? (
                     <Tag label={t_i18n('Current description')} />

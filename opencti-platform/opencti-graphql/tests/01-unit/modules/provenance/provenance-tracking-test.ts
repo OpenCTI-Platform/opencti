@@ -7,7 +7,7 @@ import {
   listProvenanceTrackedTypes,
   listProvenanceUntrackedTypesOfSetting,
 } from '../../../../src/modules/provenance/provenance-tracking';
-import { getOverviewLayoutCustomization, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
+import { getOverviewLayoutCustomization, insertSourcesWidget, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
 import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
 import type { BasicStoreEntityEntitySetting } from '../../../../src/modules/entitySetting/entitySetting-types';
 import type { AuthContext } from '../../../../src/types/user';
@@ -88,11 +88,26 @@ describe('Procedures preservation, a setting of relationships', () => {
 });
 
 describe('Overview layout with the Sources widget', () => {
-  it('should insert the Sources widget before the notes of a tracked type only', () => {
-    expect(keys(getOverviewLayoutCustomization(setting('Intrusion-Set')))).toEqual([
-      'details', 'basicInformation', 'latestCreatedRelationships', 'latestContainers', 'externalReferences', 'mostRecentHistory', 'sources', 'notes',
+  it('should insert the half-width Sources widget right after the basic information of a tracked type only', () => {
+    const layout = getOverviewLayoutCustomization(setting('Intrusion-Set'));
+    expect(keys(layout)).toEqual([
+      'details', 'basicInformation', 'sources', 'latestCreatedRelationships', 'latestContainers', 'externalReferences', 'mostRecentHistory', 'notes',
     ]);
+    expect(layout?.find((widget) => widget.key === 'sources')?.width).toEqual(6);
     expect(keys(getOverviewLayoutCustomization(setting('Attack-Pattern')))).not.toContain('sources');
+  });
+
+  it('should pair the Sources widget with the timeline that follows the basic information', () => {
+    const withTimeline = [
+      { key: 'details', width: 6, label: 'Entity details' },
+      { key: 'basicInformation', width: 6, label: 'Basic information' },
+      { key: 'timeline', width: 6, label: 'Timeline' },
+      { key: 'notes', width: 12, label: 'Notes about this entity' },
+    ];
+    expect(keys(insertSourcesWidget(withTimeline))).toEqual(['details', 'basicInformation', 'timeline', 'sources', 'notes']);
+    const timelineElsewhere = [withTimeline[2], withTimeline[0], withTimeline[1], withTimeline[3]];
+    expect(keys(insertSourcesWidget(timelineElsewhere))).toEqual(['timeline', 'details', 'basicInformation', 'sources', 'notes']);
+    expect(keys(insertSourcesWidget([withTimeline[0], withTimeline[3]]))).toEqual(['details', 'notes', 'sources']);
   });
 
   it('should complete a customized layout with the widgets registered since, and drop Sources when not tracked', () => {
@@ -106,9 +121,13 @@ describe('Overview layout with the Sources widget', () => {
       { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
     ];
     const tracked = { ...setting('Malware'), overview_layout_customization: stored };
-    expect(keys(getOverviewLayoutCustomization(tracked))).toEqual([
-      'sources', 'notes', 'details', 'basicInformation', 'latestCreatedRelationships', 'latestContainers', 'externalReferences', 'mostRecentHistory',
+    const completed = getOverviewLayoutCustomization(tracked);
+    expect(keys(completed)).toEqual([
+      'notes', 'details', 'basicInformation', 'sources', 'latestCreatedRelationships', 'latestContainers', 'externalReferences', 'mostRecentHistory',
     ]);
+    expect(completed?.find((widget) => widget.key === 'sources')?.width).toEqual(6);
+    const customizedSources = [...stored, { key: 'sources', width: 12, label: 'Sources' }];
+    expect(getOverviewLayoutCustomization({ ...tracked, overview_layout_customization: customizedSources })).toEqual(customizedSources);
     const untracked = { ...setting('Malware', false), overview_layout_customization: [...stored, { key: 'sources', width: 12, label: 'Sources' }] };
     expect(keys(getOverviewLayoutCustomization(untracked))).not.toContain('sources');
   });

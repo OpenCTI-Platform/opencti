@@ -5,6 +5,9 @@ import { computeWidgetFiltersForSelection } from '../../../../components/dashboa
 export const PROVENANCE_ENTITY_TYPES = ['Stix-Core-Object'];
 export const PROVENANCE_RELATIONSHIP_TYPES = ['stix-core-relationship', 'stix-sighting-relationship'];
 
+// Why a provenance widget is empty
+export const PROVENANCE_WIDGET_NO_DATA = 'No assertion recorded yet. Provenance appears as connectors and users create knowledge.';
+
 /**
  * Query variables of the provenance widgets: the knowledge of the widget perspective, narrowed by the
  * filters and the dashboard dates of its data selection.
