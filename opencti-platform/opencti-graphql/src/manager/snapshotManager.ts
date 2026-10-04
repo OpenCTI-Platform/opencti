@@ -313,7 +313,8 @@ export const snapshotHandler = async () => {
   const isWindowInProgress = !!state.window_end && (!!state.after_key || !!state.relationships_phase);
   const cursor = state.cursor ?? utcDate(currentDate).subtract(PERIOD_DAYS, 'days').toISOString();
   if (!isWindowInProgress && state.cursor && utcDate(currentDate).diff(utcDate(state.cursor), 'days', true) < PERIOD_DAYS) {
-    // Next snapshot window not reached yet
+    // Next snapshot window not reached yet: the retention still follows the hourly schedule
+    await applySnapshotRetention(context, currentDate);
     return;
   }
   const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
