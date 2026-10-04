@@ -6,7 +6,7 @@ import type { GraphState } from '../graph.types';
 
 const context = vi.hoisted(() => ({ current: {} as unknown }));
 vi.mock('../GraphContext', () => ({ useGraphContext: () => context.current }));
-vi.mock('./useGraphParser', () => ({ default: () => ({}) }));
+vi.mock('./useGraphParser', () => ({ default: () => ({ buildGraphData: () => ({ nodes: [], links: [] }) }) }));
 
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set' });
 const m1 = graphNode({ id: 'm1', entity_type: 'Malware' });
@@ -20,9 +20,18 @@ const renderInteractions = (initial: Partial<GraphState>) => {
   const setGraphState = (update: (old: GraphState) => GraphState) => {
     graphState = update(graphState);
   };
-  context.current = { graphData: { nodes: [actor, m1, victim], links: [uses, targets] }, graphState, setGraphState };
+  const graph = {
+    graphRef2D: { current: { d3ReheatSimulation: vi.fn() } },
+    graphRef3D: { current: undefined },
+    rawObjects: [],
+    rawPositions: { actor: { x: 10, y: 20 } },
+    setRawObjects: vi.fn(),
+    setRawPositions: vi.fn(),
+    setGraphData: vi.fn(),
+  };
+  context.current = { graphData: { nodes: [actor, m1, victim], links: [uses, targets] }, graphState, setGraphState, ...graph };
   const { result } = renderHook(() => useGraphInteractions());
-  return { interactions: result.current, state: () => graphState };
+  return { interactions: result.current, state: () => graphState, graph };
 };
 
 describe('useGraphInteractions', () => {
@@ -40,5 +49,15 @@ describe('useGraphInteractions', () => {
     expect(state().collapsedEntityTypes).toEqual(['Malware']);
     expect(state().selectedNodes.map((n) => n.id)).toEqual(['actor']);
     expect(state().selectedLinks.map((l) => l.id)).toEqual(['targets']);
+  });
+
+  it('leaves every arrangement and forgets the saved positions when the nodes are unfixed', () => {
+    const { interactions, state, graph } = renderInteractions({ layoutMode: 'tiers', modeTree: 'td' });
+    interactions.unfixNodes();
+    expect(state().layoutMode).toBeNull();
+    expect(state().modeTree).toBeNull();
+    expect(graph.setRawPositions).toHaveBeenCalledWith({});
+    expect(graph.setGraphData).toHaveBeenCalled();
+    expect(graph.graphRef2D.current.d3ReheatSimulation).toHaveBeenCalled();
   });
 });

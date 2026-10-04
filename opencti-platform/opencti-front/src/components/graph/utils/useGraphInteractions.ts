@@ -570,6 +570,11 @@ const useGraphInteractions = () => {
     // });
     // applyForces();
     // --- Hard way of unfixing nodes, chosen one for now.
+    // A tree, tier or radial layout would pin the nodes again, and the positions saved in memory
+    // would come back when it is switched off: both are left before the forces are reapplied.
+    setGraphStateProp('layoutMode', null);
+    setGraphStateProp('modeTree', null);
+    setRawPositions({});
     rebuildGraphData(rawObjects, true);
     applyForces();
   };
