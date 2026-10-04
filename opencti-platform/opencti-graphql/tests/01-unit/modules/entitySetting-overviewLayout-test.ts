@@ -10,7 +10,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/c
 import { TIMELINE_CONTAINER_TYPES } from '../../../src/modules/timeline/timeline-types';
 import { schemaOverviewLayoutCustomization } from '../../../src/schema/schema-overviewLayoutCustomization';
 
-const TIMELINE_WIDGET = { key: 'timeline', width: 12, label: 'Timeline' };
+const TIMELINE_WIDGET = { key: 'timeline', width: 6, label: 'Timeline' };
 
 const entitySetting = (targetType: string, layout?: OverviewLayoutCustomization[]) => {
   return { target_type: targetType, overview_layout_customization: layout } as BasicStoreEntityEntitySetting;
@@ -30,23 +30,25 @@ const LEGACY_CASE_INCIDENT_LAYOUT: OverviewLayoutCustomization[] = [
 ];
 
 describe('Overview layout of the timeline containers', () => {
-  it('declares the timeline as the first full width widget of every timeline container type', () => {
+  it('declares the timeline as a half-width widget right after the basic information of every timeline container type', () => {
     expect(TIMELINE_CONTAINER_TYPES).toHaveLength(4);
     TIMELINE_CONTAINER_TYPES.forEach((type) => {
       const defaultLayout = schemaOverviewLayoutCustomization.get(type) ?? [];
-      expect(defaultLayout[0]).toEqual(TIMELINE_WIDGET);
+      const basicInformation = defaultLayout.findIndex(({ key }) => key === 'basicInformation');
+      expect(basicInformation).toBeGreaterThan(0);
+      expect(defaultLayout[basicInformation + 1]).toEqual(TIMELINE_WIDGET);
       expect(defaultLayout.filter(({ key }) => key === TIMELINE_WIDGET.key)).toHaveLength(1);
     });
   });
 
-  it('returns the default layout, timeline first, when no layout is stored', () => {
+  it('returns the default layout, timeline after the basic information, when no layout is stored', () => {
     const defaultLayout = schemaOverviewLayoutCustomization.get(ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     expect(getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT))).toEqual(defaultLayout);
     expect(getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, []))).toEqual(defaultLayout);
     expect(getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT))?.map(({ key }) => key)).toEqual([
-      'timeline',
       'details',
       'basicInformation',
+      'timeline',
       'task',
       'originOfTheCase',
       'observables',
@@ -57,13 +59,13 @@ describe('Overview layout of the timeline containers', () => {
     ]);
   });
 
-  it('adds the timeline first to a layout stored before it existed, keeping the stored order and widths', () => {
+  it('adds the timeline after the basic information to a layout stored before it existed, keeping the stored order and widths', () => {
     const layout = getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, LEGACY_CASE_INCIDENT_LAYOUT));
-    expect(layout).toEqual([TIMELINE_WIDGET, ...LEGACY_CASE_INCIDENT_LAYOUT]);
+    expect(layout).toEqual([...LEGACY_CASE_INCIDENT_LAYOUT.slice(0, 3), TIMELINE_WIDGET, ...LEGACY_CASE_INCIDENT_LAYOUT.slice(3)]);
   });
 
   it('keeps the timeline where the administrator moved or resized it', () => {
-    const stored = [...LEGACY_CASE_INCIDENT_LAYOUT.slice(0, 3), { ...TIMELINE_WIDGET, width: 6 }, ...LEGACY_CASE_INCIDENT_LAYOUT.slice(3)];
+    const stored = [{ ...TIMELINE_WIDGET, width: 12 }, ...LEGACY_CASE_INCIDENT_LAYOUT];
     expect(getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, stored))).toEqual(stored);
   });
 

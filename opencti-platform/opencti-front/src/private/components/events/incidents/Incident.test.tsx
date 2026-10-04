@@ -32,10 +32,11 @@ vi.mock('../../common/timeline/ContainerTimelineStrip', () => ({
   ),
 }));
 
+const TIMELINE_WIDGET = { key: 'timeline', width: 6, label: 'Timeline' };
 const DEFAULT_LAYOUT = [
-  { key: 'timeline', width: 12, label: 'Timeline' },
   { key: 'details', width: 6, label: 'Entity details' },
   { key: 'basicInformation', width: 6, label: 'Basic information' },
+  TIMELINE_WIDGET,
   { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
   { key: 'latestContainers', width: 6, label: 'Latest containers' },
   { key: 'externalReferences', width: 6, label: 'External references' },
@@ -54,23 +55,25 @@ const renderOverview = (layout: typeof DEFAULT_LAYOUT) => testRender(<Incident i
 const renderedWidgets = (container: HTMLElement) => Array.from(container.querySelectorAll('[data-widget]')).map((element) => element.getAttribute('data-widget'));
 
 describe('Incident overview', () => {
-  it('renders the timeline as the first widget of the default layout', () => {
+  it('renders the timeline as a half-width widget after the basic information in the default layout', () => {
     const { container } = renderOverview(DEFAULT_LAYOUT);
     expect(renderedWidgets(container)).toEqual(DEFAULT_LAYOUT.map(({ key }) => key));
     const strip = container.querySelector('[data-widget="timeline"]');
     expect(strip).toHaveAttribute('data-container-id', 'incident-id');
     expect(strip).toHaveAttribute('data-base-path', '/dashboard/events/incidents/incident-id');
+    // Half of the row, like its neighbours
+    expect(strip?.parentElement?.className).toMatch(/grid-xs-6/);
   });
 
   it('renders the timeline where the overview layout places it', () => {
-    const moved = [...DEFAULT_LAYOUT.slice(1, 3), { ...DEFAULT_LAYOUT[0], width: 6 }, ...DEFAULT_LAYOUT.slice(3)];
+    const moved = [{ ...TIMELINE_WIDGET, width: 12 }, ...DEFAULT_LAYOUT.filter(({ key }) => key !== 'timeline')];
     const { container } = renderOverview(moved);
     expect(renderedWidgets(container)).toEqual(moved.map(({ key }) => key));
   });
 
   it('does not render the timeline when it is hidden in the overview layout', () => {
-    const hidden = [{ ...DEFAULT_LAYOUT[0], width: 0 }, ...DEFAULT_LAYOUT.slice(1)];
+    const hidden = DEFAULT_LAYOUT.map((widget) => (widget.key === 'timeline' ? { ...widget, width: 0 } : widget));
     const { container } = renderOverview(hidden);
-    expect(renderedWidgets(container)).toEqual(DEFAULT_LAYOUT.slice(1).map(({ key }) => key));
+    expect(renderedWidgets(container)).toEqual(DEFAULT_LAYOUT.filter(({ key }) => key !== 'timeline').map(({ key }) => key));
   });
 });

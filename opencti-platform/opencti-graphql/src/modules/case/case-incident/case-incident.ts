@@ -25,9 +25,9 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
     },
   },
   overviewLayoutCustomization: [
-    { key: 'timeline', width: 12, label: 'Timeline' },
     { key: 'details', width: 6, label: 'Entity details' },
     { key: 'basicInformation', width: 6, label: 'Basic information' },
+    { key: 'timeline', width: 6, label: 'Timeline' },
     { key: 'task', width: 6, label: 'Tasks' },
     { key: 'originOfTheCase', width: 6, label: 'Origin of the case' },
     { key: 'observables', width: 6, label: 'Observables' },

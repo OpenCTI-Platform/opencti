@@ -22,16 +22,19 @@ interface ContainerTimelineAnchorsProps {
 
 /** Per-case anchor timestamps (no aggregated metric): one tile per anchor, empty when not reached yet. */
 const ellipsis: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
+const DENSE_TILE_MIN_WIDTH = 136;
 
 const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
   const { t_i18n, fldt, nsdt } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
+  // The dense tiles of an overview card wrap onto a second row rather than truncate when the card is half of the row
+  const columns = dense ? `repeat(auto-fit, minmax(${DENSE_TILE_MIN_WIDTH}px, 1fr))` : `repeat(${TIMELINE_ANCHOR_KEYS.length}, minmax(0, 1fr))`;
   return (
     <div
       role="list"
       aria-label={t_i18n('Timeline anchors')}
-      style={{ display: 'grid', gridTemplateColumns: `repeat(${TIMELINE_ANCHOR_KEYS.length}, minmax(0, 1fr))`, gap: theme.spacing(dense ? 0.75 : 1.25) }}
+      style={{ display: 'grid', gridTemplateColumns: columns, gap: theme.spacing(dense ? 0.75 : 1.25) }}
       data-testid="timeline-anchors"
     >
       {TIMELINE_ANCHOR_KEYS.map((key) => {

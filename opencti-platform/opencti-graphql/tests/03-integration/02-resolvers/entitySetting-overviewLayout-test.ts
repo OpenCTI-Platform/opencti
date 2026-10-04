@@ -36,7 +36,7 @@ const UPDATE_QUERY = gql`
   }
 `;
 
-const TIMELINE_WIDGET = { key: 'timeline', width: 12, label: 'Timeline' };
+const TIMELINE_WIDGET = { key: 'timeline', width: 6, label: 'Timeline' };
 
 // The layout of an incident response saved by an administrator before the timeline was a widget
 const LEGACY_LAYOUT: OverviewLayoutCustomization[] = [
@@ -65,22 +65,24 @@ describe('EntitySetting resolver - overview layout of the incident response time
     return result.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization as OverviewLayoutCustomization[];
   };
 
-  it('should list the timeline first in the default layout', async () => {
+  it('should list the timeline right after the basic information in the default layout', async () => {
     const result = await queryAsAdmin({ query: READ_QUERY, variables: { targetType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT } });
     entitySettingId = result.data?.entitySettingByType.id;
     expect(entitySettingId).toBeTruthy();
     const layout = result.data?.entitySettingByType.overview_layout_customization;
     expect(layout).toEqual(schemaOverviewLayoutCustomization.get(ENTITY_TYPE_CONTAINER_CASE_INCIDENT));
-    expect(layout[0]).toEqual(TIMELINE_WIDGET);
+    const basicInformation = layout.findIndex(({ key }: OverviewLayoutCustomization) => key === 'basicInformation');
+    expect(layout[basicInformation + 1]).toEqual(TIMELINE_WIDGET);
   });
 
-  it('should add the timeline first to a layout stored before it existed', async () => {
-    expect(await storeLayout(LEGACY_LAYOUT)).toEqual([TIMELINE_WIDGET, ...LEGACY_LAYOUT]);
-    expect(await readLayout()).toEqual([TIMELINE_WIDGET, ...LEGACY_LAYOUT]);
+  it('should add the timeline after the basic information to a layout stored before it existed', async () => {
+    const merged = [...LEGACY_LAYOUT.slice(0, 2), TIMELINE_WIDGET, ...LEGACY_LAYOUT.slice(2)];
+    expect(await storeLayout(LEGACY_LAYOUT)).toEqual(merged);
+    expect(await readLayout()).toEqual(merged);
   });
 
   it('should keep the timeline where it was moved and resized', async () => {
-    const moved = [...LEGACY_LAYOUT.slice(0, 2), { ...TIMELINE_WIDGET, width: 6 }, ...LEGACY_LAYOUT.slice(2)];
+    const moved = [{ ...TIMELINE_WIDGET, width: 12 }, ...LEGACY_LAYOUT];
     expect(await storeLayout(moved)).toEqual(moved);
     expect(await readLayout()).toEqual(moved);
   });

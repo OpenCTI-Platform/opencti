@@ -9,7 +9,7 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit, false],
 }));
 
-const TIMELINE = { key: 'timeline', width: 12, label: 'Timeline' };
+const TIMELINE = { key: 'timeline', width: 6, label: 'Timeline' };
 const DETAILS = { key: 'details', width: 6, label: 'Entity details' };
 const NOTES = { key: 'notes', width: 12, label: 'Notes about this entity' };
 const DEFAULT_LAYOUT = [TIMELINE, DETAILS, NOTES].map(({ key, width }) => ({ key, width }));
@@ -33,8 +33,8 @@ describe('EntitySettingsOverviewLayoutCustomization', () => {
     expect(within(header).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['Order', 'Widget', 'Displayed', 'Full width']);
     expect(rows.map((row) => within(row).getAllByRole('cell')[0].textContent)).toEqual(['Timeline', 'Entity details', 'Notes about this entity']);
     expect(screen.getByRole('switch', { name: 'Display Timeline' })).toBeChecked();
-    expect(screen.getByRole('switch', { name: 'Show Timeline at full width' })).toBeChecked();
-    expect(screen.getByRole('switch', { name: 'Show Entity details at full width' })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Show Timeline at full width' })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Show Notes about this entity at full width' })).toBeChecked();
   });
 
   it('hides a widget by storing it with a width of 0 at the same place', async () => {
@@ -60,8 +60,8 @@ describe('EntitySettingsOverviewLayoutCustomization', () => {
 
   it('gives its default width back to a widget displayed again', async () => {
     const { user } = renderLayout([DETAILS, { ...TIMELINE, width: 0 }, { ...NOTES, width: 0 }]);
-    await user.click(screen.getByRole('switch', { name: 'Display Timeline' }));
-    expect(committedLayout().value).toEqual([DETAILS, TIMELINE, { ...NOTES, width: 0 }]);
+    await user.click(screen.getByRole('switch', { name: 'Display Notes about this entity' }));
+    expect(committedLayout().value).toEqual([DETAILS, { ...TIMELINE, width: 0 }, NOTES]);
   });
 
   it('displays again at half of the width a widget without default width', async () => {
@@ -74,6 +74,6 @@ describe('EntitySettingsOverviewLayoutCustomization', () => {
   it('resizes a widget without changing the others', async () => {
     const { user } = renderLayout([TIMELINE, DETAILS, NOTES]);
     await user.click(screen.getByRole('switch', { name: 'Show Timeline at full width' }));
-    expect(committedLayout().value).toEqual([{ ...TIMELINE, width: 6 }, DETAILS, NOTES]);
+    expect(committedLayout().value).toEqual([{ ...TIMELINE, width: 12 }, DETAILS, NOTES]);
   });
 });

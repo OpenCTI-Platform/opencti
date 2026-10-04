@@ -1098,6 +1098,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "Questa lista mostra tutte le entità con restrizioni di accesso abilitate, il che significa che sono accessibili solo a utenti specifici. Puoi rimuovere queste restrizioni di accesso in questa schermata.",
   "Threat actor types": "Tipi di attori di minaccia",
   "Threat hunting": "Ricerca delle minacce",
+  "Timeline": "Cronologia",
   "Timestamp": "Timestamp",
   "Title": "Titolo",
   "TLSH": "TLSH",

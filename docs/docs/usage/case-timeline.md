@@ -84,13 +84,15 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 
 ## Overview layout
 
-On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout. By default it comes first, at full width. Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
+On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**. Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
 
 - drag the **Timeline** row to move the strip among the other widgets;
-- switch off **Full width** to give it half of the row;
-- switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at full width.
+- switch on **Full width** to give it the whole row;
+- switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at its default width, half of the row.
 
-An overview layout customized before the timeline existed shows the strip first, at full width, until an administrator moves or hides it.
+An overview layout customized before the timeline existed shows the strip right after **Basic information**, on half of the row, until an administrator moves, resizes or hides it.
+
+The Timeline tab is the timeline of the case. The **Timeline** mode of the **Knowledge** tab is a different view: it places the relationships of the knowledge graph of the case on a time axis, and stays available unchanged next to the graph, correlation and matrix modes.
 
 See [Overview layout customization](../administration/entities.md#overview-layout-customization) for the other widgets of the overview.
 

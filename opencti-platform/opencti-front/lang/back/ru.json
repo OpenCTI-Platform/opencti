@@ -1098,6 +1098,7 @@
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все сущности, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "Threat actor types": "Типы субъектов угроз",
   "Threat hunting": "Охота за угрозами",
+  "Timeline": "Временная шкала",
   "Timestamp": "Временная метка",
   "Title": "Название",
   "TLSH": "TLSH",

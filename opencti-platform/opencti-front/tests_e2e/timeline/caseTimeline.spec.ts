@@ -1,3 +1,4 @@
+import type { Route } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import {
   addEmptyIncident,
@@ -28,11 +29,13 @@ const timelineCodename = () => {
  * Derive the timeline of a seeded incident response.
  * Check the overview strip and the position of the Timeline tab (after Content).
  * Check the lanes view, the anchors and the list view kept in the URL.
+ * Switch a lane off and open the kinds filter.
  * Open an event with the keyboard, pin it and filter on pinned events.
  * Add a milestone from the drawer form, hide it and show hidden events again.
  * Record a containment and check the containment anchor.
  * Export the timeline as CSV.
  * Open the timeline settings.
+ * Fail the loading of the events: the error panel offers to retry, and the retry loads them.
  * Capture the lanes view in the light theme.
  * Each surface is captured in the test results, the source of the screenshots of the user documentation.
  */
@@ -70,6 +73,18 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(page.getByTestId('timeline-anchor-first_adversary_activity')).toContainText(/\d/);
     await expect(page.getByTestId('timeline-anchor-containment')).not.toContainText(/\d/);
     await capture('lanes-populated');
+    // endregion
+
+    // region Filters: one lane switched off and the kinds menu open
+    const evidenceLane = page.getByTestId('timeline-lane-evidence');
+    await evidenceLane.click();
+    await expect(evidenceLane).toHaveAttribute('aria-checked', 'false');
+    await page.getByRole('button', { name: 'All kinds' }).click();
+    await expect(page.getByText('Event kinds', { exact: true })).toBeVisible();
+    await capture('filters');
+    await page.keyboard.press('Escape');
+    await evidenceLane.click();
+    await expect(evidenceLane).toHaveAttribute('aria-checked', 'true');
     // endregion
 
     // region List view, keyboard navigation, pin
@@ -140,6 +155,27 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await capture('settings-drawer');
     // endregion
 
+    // region Error state: the events cannot be loaded, then they load again on retry
+    const failEvents = async (route: Route) => {
+      if ((route.request().postData() ?? '').includes('ContainerTimelineEventsQuery')) {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ errors: [{ message: 'Service unavailable', extensions: { code: 'DATABASE_ERROR' } }] }),
+        });
+        return;
+      }
+      await route.fallback();
+    };
+    await page.route('**/graphql', failEvents);
+    await page.goto(timelineUrl);
+    await expect(page.getByTestId('timeline-error')).toBeVisible();
+    await capture('error-state');
+    await page.unroute('**/graphql', failEvents);
+    await page.getByTestId('timeline-error-retry').click();
+    await expect(page.getByTestId('timeline-lanes')).toBeVisible();
+    // endregion
+
     // region Lanes view in the light theme
     lightTheme = true;
     await setUserTheme(request, LIGHT_THEME);
@@ -159,6 +195,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
  * Content of the test
  * -------------------
  * Open the timeline of an incident without dated knowledge: first-use state with its primary action.
+ * Show the overview of that incident, with its timeline widget.
  * Show the timeline of a case in a custom dashboard widget titled with the case, in the dark and light themes.
  */
 test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'] }, async ({ page, request }, testInfo) => {
@@ -178,6 +215,9 @@ test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'
     await expect(empty).toBeVisible();
     await expect(page.getByTestId('timeline-empty-add-event')).toBeVisible();
     await capture('first-use-empty');
+    await page.goto(`/dashboard/events/incidents/${incident.id}`);
+    await expect(page.getByTestId('timeline-strip')).toBeVisible();
+    await capture('incident-overview');
     // endregion
 
     // region Widget
@@ -197,6 +237,9 @@ test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'
     await page.goto(`/dashboard/workspaces/dashboards/${dashboard.id}`);
     await expect(page.getByTestId('timeline-lanes').first()).toBeVisible();
     await capture('widget-populated-light');
+    await page.goto(`/dashboard/events/incidents/${incident.id}/timeline`);
+    await expect(page.getByTestId('timeline-empty')).toBeVisible();
+    await capture('first-use-empty-light');
     // endregion
   } finally {
     if (lightTheme) await setUserTheme(request, null);
