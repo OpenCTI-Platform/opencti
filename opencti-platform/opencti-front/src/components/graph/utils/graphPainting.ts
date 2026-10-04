@@ -1,5 +1,5 @@
 import type { GraphLink, GraphNode } from '../graph.types';
-import type { GraphPalette } from './graphPalette';
+import { dataColorOutline, type GraphPalette } from './graphPalette';
 import { drawnBadges, type GraphBadge } from '../badges/graphBadgeRegistry';
 import { entityGlyph, iconGlyph, paintGlyph } from './graphIcons';
 import { type Box, createBoxIndex, fitText, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
@@ -148,12 +148,13 @@ const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
   drawn.forEach((badge, index) => {
     const width = widths[index];
     const color = badge.color || palette.tones[badge.tone];
+    const outline = badge.color ? dataColorOutline(badge.color, palette) : null;
     ctx.beginPath();
     ctx.roundRect(left, centreY - size / 2, width, size, size / 2);
     ctx.fillStyle = palette.surface;
     ctx.fill();
     ctx.lineWidth = size * 0.12;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = outline ?? color;
     ctx.stroke();
     const glyphCentre = left + size / 2;
     const painted = badge.icon ? paintGlyph(ctx, iconGlyph(badge.icon), glyphCentre, centreY, size * 0.68, color) : false;
@@ -162,6 +163,11 @@ const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
       ctx.arc(glyphCentre, centreY, size * 0.26, 0, 2 * Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
+      if (outline) {
+        ctx.lineWidth = size * 0.08;
+        ctx.strokeStyle = outline;
+        ctx.stroke();
+      }
     }
     if (badge.value !== undefined && badge.value !== '') {
       ctx.fillStyle = palette.text;

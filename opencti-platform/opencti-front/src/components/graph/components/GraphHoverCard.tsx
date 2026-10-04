@@ -19,7 +19,7 @@ import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { type GraphBadge, graphNodeActionsFor, useGraphNodeActionRegistryVersion } from '../badges';
 import { graphNodeTitle, NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
-import { buildGraphPalette } from '../utils/graphPalette';
+import { buildGraphPalette, dataColorOutline } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 
 export type GraphHoverCardTarget
@@ -197,29 +197,42 @@ const GraphHoverCard = ({
         )}
         {badges.length > 0 && (
           <div role="list" aria-label={t_i18n('Badges')} style={{ ...fact, flexWrap: 'wrap', marginTop: theme.spacing(0.5) }}>
-            {badges.map((badge) => (
-              <Tooltip key={badge.key}>
-                <TooltipTrigger asChild>
-                  <span
-                    role="listitem"
-                    tabIndex={0}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      border: `1px solid ${badge.color || palette.tones[badge.tone]}`,
-                      borderRadius: 10,
-                      padding: theme.spacing(0, 1),
-                      fontSize: 11,
-                    }}
-                  >
-                    <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: badge.color || palette.tones[badge.tone] }} />
-                    {badge.label}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{badge.tooltip ?? badge.label}</TooltipContent>
-              </Tooltip>
-            ))}
+            {badges.map((badge) => {
+              const color = badge.color || palette.tones[badge.tone];
+              const outline = badge.color ? dataColorOutline(badge.color, palette) : null;
+              return (
+                <Tooltip key={badge.key}>
+                  <TooltipTrigger asChild>
+                    <span
+                      role="listitem"
+                      tabIndex={0}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        border: `1px solid ${outline ?? color}`,
+                        borderRadius: 10,
+                        padding: theme.spacing(0, 1),
+                        fontSize: 11,
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: color,
+                          boxShadow: outline ? `0 0 0 1px ${outline}` : undefined,
+                        }}
+                      />
+                      {badge.label}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{badge.tooltip ?? badge.label}</TooltipContent>
+                </Tooltip>
+              );
+            })}
           </div>
         )}
         <div role="group" aria-label={t_i18n('Quick actions')} style={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: theme.spacing(1) }}>

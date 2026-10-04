@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 import ThemeDark from '../../ThemeDark';
 import ThemeLight from '../../ThemeLight';
-import { buildGraphPalette } from './graphPalette';
+import { buildGraphPalette, dataColorOutline } from './graphPalette';
 import { collisionForce } from './collisionForce';
 import { isOverlayOpen, shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
@@ -142,6 +142,15 @@ describe('buildGraphPalette', () => {
     expect(lightPalette.tones.warning).toBe(light.palette.warning.main);
     // Read against the surface behind, so the tint is lighter on a light surface.
     expect(lightPalette.tintAlpha).toBeLessThan(darkPalette.tintAlpha);
+  });
+
+  it('outlines a colour of the data as light as the surface, such as the white of TLP:CLEAR', () => {
+    const surfaces = { surface: '#ffffff', textSecondary: '#5f6b7a' };
+    expect(dataColorOutline('#ffffff', surfaces)).toBe('#5f6b7a');
+    expect(dataColorOutline('#fafafa', surfaces)).toBe('#5f6b7a');
+    expect(dataColorOutline('#2e7d32', surfaces)).toBeNull();
+    expect(dataColorOutline('#ffffff', { surface: '#0f1724', textSecondary: '#9aa5b1' })).toBeNull();
+    expect(dataColorOutline('not a colour', surfaces)).toBeNull();
   });
 });
 
