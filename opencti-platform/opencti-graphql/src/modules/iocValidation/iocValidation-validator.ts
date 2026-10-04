@@ -8,7 +8,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { BasicStoreEntity, BasicStoreIdentifier } from '../../types/store';
 import type { EditInput } from '../../generated/graphql';
-import { fullEntitiesList, internalFindByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
@@ -78,14 +78,38 @@ const refuseLifecycle = (user: AuthUser) => {
   });
 };
 
-// Validation fields of an existing deployment: the same accounts as iocValidationReportResults,
-// i.e. an IOC validation connector or the connector account that recorded the deployment.
-const canChangeValidation = async (context: AuthContext, user: AuthUser, initial: { creator_id?: string | string[] | null } | undefined) => {
+// Whether the account is the one of the IOC validation connector a validation request was sent to.
+const isConnectorUserOfRequest = async (context: AuthContext, user: AuthUser, requestId: string) => {
+  const request = await internalLoadById<BasicStoreEntity & { connector_id?: string | null }>(
+    context,
+    SYSTEM_USER,
+    requestId,
+    { type: ENTITY_TYPE_IOC_VALIDATION_REQUEST },
+  );
+  if (!request?.connector_id) {
+    return false;
+  }
+  const connectors = await findIocValidationConnectors(context, SYSTEM_USER);
+  return connectors.some((connector: { internal_id?: string; connector_user_id?: string | null }) => connector.internal_id === request.connector_id
+    && connector.connector_user_id === user.id);
+};
+
+// Validation fields of an existing deployment: the same accounts as iocValidationReportResults, i.e. the connector
+// account that recorded the deployment, or an IOC validation connector: the one of the request the deployment is bound
+// to, when it is bound to one.
+const canChangeValidation = async (
+  context: AuthContext,
+  user: AuthUser,
+  initial: { creator_id?: string | string[] | null; validation_run_id?: string | null } | undefined,
+) => {
   if (!isLifecycleWriter(user)) {
     return false;
   }
   if (initial && isTrustedDeploymentReporter(initial, user)) {
     return true;
+  }
+  if (initial?.validation_run_id) {
+    return isConnectorUserOfRequest(context, user, initial.validation_run_id);
   }
   return isIocValidationConnectorUser(context, user);
 };
@@ -472,7 +496,8 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   if (touchesLifecycleFields(instance) && !isLifecycleWriter(user)) {
     return refuseLifecycle(user);
   }
-  if (touchesValidationFields(instance) && !await canChangeValidation(context, user, initial as { creator_id?: string | string[] | null } | undefined)) {
+  const deployment = initial as { creator_id?: string | string[] | null; validation_run_id?: string | null } | undefined;
+  if (touchesValidationFields(instance) && !await canChangeValidation(context, user, deployment)) {
     return refuseValidation(user);
   }
   return true;

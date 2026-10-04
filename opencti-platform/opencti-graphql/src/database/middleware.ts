@@ -3548,8 +3548,14 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
-      // The sharing of a deployment is the platform's (the organizations of both its ends): an upsert never adds to it
-      const upsertInput = relationshipType === RELATION_DEPLOYED_ON ? R.dissoc(INPUT_GRANTED_REFS, resolvedInput) : resolvedInput;
+      // The sharing of a deployment is the platform's (the organizations of both its ends): an upsert never changes it,
+      // neither through its sharing field nor through a sharing operation
+      const upsertInput = relationshipType === RELATION_DEPLOYED_ON ? {
+        ...R.dissoc(INPUT_GRANTED_REFS, resolvedInput),
+        ...(Array.isArray(resolvedInput.upsertOperations) ? {
+          upsertOperations: resolvedInput.upsertOperations.filter((operation: { key?: string }) => operation.key !== INPUT_GRANTED_REFS),
+        } : {}),
+      } : resolvedInput;
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, upsertInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }

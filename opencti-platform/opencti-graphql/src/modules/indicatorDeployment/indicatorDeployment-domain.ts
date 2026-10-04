@@ -1186,8 +1186,7 @@ const RECONCILIATION_CURSOR_STATE = 'indicator_deployment_counters_reconciliatio
  * The cursor is kept in Redis; the scan restarts from the beginning once the end is reached.
  * @returns the number of indicators checked and whether the scan reached the end.
  */
-export const reconcileIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number) => {
-  const after = (await redisGetManagerEventState(RECONCILIATION_CURSOR_STATE)) || undefined;
+const reconcileCountersPage = async (context: AuthContext, batchSize: number, after: string | undefined) => {
   const page = await pageEntitiesConnection<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
     first: batchSize,
     after,
@@ -1203,8 +1202,14 @@ export const reconcileIndicatorDeploymentCounters = async (context: AuthContext,
   const ids = page.edges.map((edge) => edge.node.internal_id);
   const updated = await refreshIndicatorDeploymentCounters(context, ids);
   const done = !page.pageInfo.hasNextPage || !page.pageInfo.endCursor;
-  await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
-  return { checked: ids.length, updated, done };
+  return { checked: ids.length, updated, done, endCursor: done ? undefined : String(page.pageInfo.endCursor) };
+};
+
+export const reconcileIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number) => {
+  const after = (await redisGetManagerEventState(RECONCILIATION_CURSOR_STATE)) || undefined;
+  const { checked, updated, done, endCursor } = await reconcileCountersPage(context, batchSize, after);
+  await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, endCursor ?? '');
+  return { checked, updated, done };
 };
 
 const DEPLOYED_RECONCILIATION_CURSOR_STATE = 'indicator_deployment_deployed_reconciliation';
@@ -1230,16 +1235,20 @@ export const reconcileDeployedIndicatorCounters = async (context: AuthContext, b
   return { checked: page.edges.length, updated, done };
 };
 
-/** Full reconciliation pass, from the beginning, bounded by maxPages (after a Security Platform deletion). */
+/**
+ * Full reconciliation pass, from the beginning, bounded by maxPages (after a Security Platform deletion). It keeps its
+ * own cursor: the periodic pass, run under another lock, never moves it past pages it has not checked, nor the reverse.
+ */
 export const reconcileAllIndicatorDeploymentCounters = async (context: AuthContext, batchSize: number, maxPages: number) => {
-  await redisSetManagerEventState(RECONCILIATION_CURSOR_STATE, '');
   let updated = 0;
+  let after: string | undefined;
   for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
-    const result = await reconcileIndicatorDeploymentCounters(context, batchSize);
+    const result = await reconcileCountersPage(context, batchSize, after);
     updated += result.updated;
     if (result.done) {
       break;
     }
+    after = result.endCursor;
   }
   return updated;
 };
