@@ -33,7 +33,7 @@ In preview, every Threat Pulse surface shows the real coarse signal, labelled "P
 
 The first day the preview matches objects of the platform, each user sees one banner, for example "Threat Pulse preview: 42 of your objects are seen across the community." The number is counted on the platform. The banner waits while another platform banner (license, trial, registration, email configuration) is shown. Dismissing it hides it for good for that user in that browser.
 
-![Threat Pulse preview banner saying that 42 objects of the platform are seen across the community](assets/threat-pulse-banner-preview.png)
+![Threat Pulse preview banner saying that 42 objects of the platform are seen across the community](assets/threat-pulse-banner.png)
 
 ### Contribute
 
@@ -88,7 +88,7 @@ Narrowing the scopes or excluding a new marking removes the community statistics
 
 | Preview | Contributing | Off |
 |:--------|:-------------|:----|
-| ![Threat Pulse settings in preview with 42 local objects found in the community digest](assets/threat-pulse-settings-preview.png) | ![Threat Pulse settings of a contributing platform with the records contributed per object type](assets/threat-pulse-settings-contribute.png) | ![Threat Pulse settings turned off with the way back to the preview](assets/threat-pulse-settings-off.png) |
+| ![Threat Pulse settings in preview with 42 local objects found in the community digest](assets/threat-pulse-settings-preview.png) | ![Threat Pulse settings of a contributing platform with the records contributed per object type](assets/threat-pulse-settings-contributing.png) | ![Threat Pulse settings turned off with the way back to the preview](assets/threat-pulse-settings-off.png) |
 
 ## Where Threat Pulse appears
 
@@ -104,7 +104,7 @@ The card is not displayed when Threat Pulse is off.
 
 | Preview | Full |
 |:--------|:-----|
-| ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-full.png) |
+| ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-contributing.png) |
 
 ### Filters, columns and exports
 

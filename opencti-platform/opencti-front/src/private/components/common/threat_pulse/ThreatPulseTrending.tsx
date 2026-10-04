@@ -11,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseTrendingQuery } from './__generated__/ThreatPulseTrendingQuery.graphql';
 import ThreatPulseBriefing from './ThreatPulseBriefing';
+import ThreatPulseEntityName from './ThreatPulseEntityName';
 import { ThreatPulseLockedRanksRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import {
   formatPulseGrowth,
@@ -56,8 +57,6 @@ export const threatPulseTrendingQuery = graphql`
     }
   }
 `;
-
-const ELLIPSIS = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
 
 interface ThreatPulseTrendingListProps {
   period: PulsePeriodValue;
@@ -109,7 +108,7 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
         <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {pulseTrending.entries.map((entry) => {
             const link = resolveLink(entry.entity.entity_type);
-            const name = <Text variant="content-compact" style={ELLIPSIS}>{entry.entity.representative.main}</Text>;
+            const name = <ThreatPulseEntityName name={entry.entity.representative.main} />;
             return (
               <Box component="li" key={entry.entity.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, paddingY: 0.75 }}>
                 {entry.rank && <Text variant="content-compact" style={secondary}>{`#${entry.rank}`}</Text>}
@@ -145,7 +144,7 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
       <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {pulseTrending.entries.map((entry) => {
           const link = resolveLink(entry.entity.entity_type);
-          const name = <Text variant="content-compact" style={ELLIPSIS}>{entry.entity.representative.main}</Text>;
+          const name = <ThreatPulseEntityName name={entry.entity.representative.main} />;
           const platforms = pulsePlatformsBucketLabel(t_i18n, entry.platforms_bucket);
           return (
             <Box

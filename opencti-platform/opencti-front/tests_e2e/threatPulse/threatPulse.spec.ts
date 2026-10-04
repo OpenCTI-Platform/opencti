@@ -352,7 +352,7 @@ test.describe('Threat Pulse documentation images', () => {
     await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null) });
     await page.goto(overviewUrl);
     await expect(page.getByTestId('threat-pulse-card')).toBeVisible();
-    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-full', testInfo);
+    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-contributing', testInfo);
 
     // The template card, then the trending and benchmark widgets of the dashboard it creates: preview, then full
     const dashboardAnswers = (mode: 'preview' | 'full') => ({
@@ -391,12 +391,12 @@ test.describe('Threat Pulse documentation images', () => {
     await page.goto('/dashboard');
     const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
     await expect(banner).toBeVisible();
-    await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner-preview', testInfo);
+    await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner', testInfo);
 
     // Settings > Filigran Experience in each mode, and the consent
     const settingsStates: Array<[string, Record<string, unknown>]> = [
       ['preview', {}],
-      ['contribute', {
+      ['contributing', {
         mode: 'contribute_and_read',
         access: 'full',
         enabled: true,

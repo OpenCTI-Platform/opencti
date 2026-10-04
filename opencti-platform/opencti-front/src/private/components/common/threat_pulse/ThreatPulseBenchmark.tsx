@@ -11,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseBenchmarkQuery } from './__generated__/ThreatPulseBenchmarkQuery.graphql';
+import ThreatPulseEntityName from './ThreatPulseEntityName';
 import { ThreatPulseLockedRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import {
   formatPulseRatio,
@@ -57,8 +58,6 @@ export const threatPulseBenchmarkQuery = graphql`
     }
   }
 `;
-
-const ELLIPSIS = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
 
 const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) => {
   const theme = useTheme<Theme>();
@@ -138,7 +137,7 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
           <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {pulseBenchmark.entries.map((entry) => {
               const link = resolveLink(entry.entity.entity_type);
-              const name = <Text variant="content-compact" style={ELLIPSIS}>{entry.entity.representative.main}</Text>;
+              const name = <ThreatPulseEntityName name={entry.entity.representative.main} />;
               return (
                 <Box component="li" key={entry.entity.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, paddingY: 0.5 }}>
                   <ItemIcon type={entry.entity.entity_type} />
