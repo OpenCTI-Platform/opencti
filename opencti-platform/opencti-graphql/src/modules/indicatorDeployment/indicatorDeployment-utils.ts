@@ -39,17 +39,22 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
  *   with no organization is only read by the platform organization, which reads every deployment);
  * - authorized members: neither has any, since authorized members of the indicator read it whatever their
  *   organization and nothing proves they can read the deployment (such deployments are left out of the counters).
+ * The same holds for the security platform of the deployment, whose own restrictions are checked as well: a
+ * deployment created by a connector is shared with the connector organizations, not with those of the platform.
  */
-export const isReadableWithIndicator = (deployment: RestrictedElement, indicator: RestrictedElement) => {
+export const isReadableWithIndicator = (deployment: RestrictedElement, indicator: RestrictedElement, platform?: RestrictedElement) => {
+  if ((indicator.restricted_members ?? []).length > 0) {
+    return false;
+  }
   const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
-  if (!(deployment[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))) {
-    return false;
-  }
-  if ((deployment.restricted_members ?? []).length > 0 || (indicator.restricted_members ?? []).length > 0) {
-    return false;
-  }
-  const deploymentOrganizations = deployment[RELATION_GRANTED_TO] ?? [];
-  return (indicator[RELATION_GRANTED_TO] ?? []).every((organization) => deploymentOrganizations.includes(organization));
+  const indicatorOrganizations = indicator[RELATION_GRANTED_TO] ?? [];
+  const readableByIndicatorReaders = (element: RestrictedElement) => {
+    const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
+    return (element[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))
+      && (element.restricted_members ?? []).length === 0
+      && indicatorOrganizations.every((organization) => elementOrganizations.includes(organization));
+  };
+  return readableByIndicatorReaders(deployment) && (!platform || readableByIndicatorReaders(platform));
 };
 
 const OPTIONAL_DEPLOYED_ON_KEYS = [

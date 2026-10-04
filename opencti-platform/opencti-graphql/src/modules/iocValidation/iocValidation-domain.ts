@@ -7,12 +7,12 @@ import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
 import { createRelation, patchAttribute, stixLoadByIds } from '../../database/middleware';
-import { notify } from '../../database/redis';
+import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
+import { fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { createWork } from '../../domain/work';
@@ -86,6 +86,8 @@ const IOC_VALIDATION_TIMEOUT_MS = toPositiveInteger(conf.get('ioc_validation:tim
 // Completed requests keep their summary refreshed for this window, absorbing late bundle ingestion.
 const SUMMARY_REFRESH_WINDOW_MS = 24 * 3600 * 1000;
 const CONCURRENCY = 5;
+const MAINTENANCE_PAGE_SIZE = 100;
+const MAINTENANCE_CURSOR_STATE = 'ioc_validation_requests_maintenance';
 const NAME_MAX_LENGTH = 250;
 const DESCRIPTION_MAX_LENGTH = 5000;
 
@@ -689,12 +691,17 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
     return false;
   }
   const deployments = await findRequestDeployments(context, request.internal_id);
+  const isOpen = OPEN_REQUEST_STATUSES.includes(request.status);
+  // A final request whose pairs moved to a newer request keeps its recorded summary: those pairs now carry the outcome
+  // of the newer run, and counting them as waiting would make a completed request look pending again.
+  if (!isOpen && deployments.length < (request.pairs?.length ?? 0)) {
+    return false;
+  }
   const summary = summarizeValidationResults(request.pairs?.length ?? 0, request.skipped?.length ?? 0, deployments.map((d) => d.validation_status));
   const attributes: Record<string, unknown> = {};
   if (JSON.stringify(summary) !== JSON.stringify(request.results_summary)) {
     attributes.results_summary = summary;
   }
-  const isOpen = OPEN_REQUEST_STATUSES.includes(request.status);
   const dispatchedAt = request.dispatched_at ? new Date(request.dispatched_at).getTime() : new Date(request.created_at as unknown as string).getTime();
   if (isOpen && isSummaryComplete(summary)) {
     attributes.status = summary.error > 0 ? REQUEST_STATUS_PARTIAL : REQUEST_STATUS_COMPLETED;
@@ -718,10 +725,17 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
  * - dispatch pending requests when a connector becomes available,
  * - refresh the results summary from the deployed-on relationships (results arrive through bundles),
  * - complete requests whose every pair got an answer, expire the ones without answer after the timeout.
+ * One bounded page per run, the cursor kept in Redis, so a backlog never makes a run unbounded and every request is
+ * reached in turn; the scan restarts from the beginning once the end is reached.
  */
-export const maintainIocValidationRequests = async (context: AuthContext) => {
+export const maintainIocValidationRequests = async (context: AuthContext, pageSize = MAINTENANCE_PAGE_SIZE) => {
   const now = Date.now();
-  const requests = await fullEntitiesList<BasicStoreEntityIocValidationRequest>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+  const after = (await redisGetManagerEventState(MAINTENANCE_CURSOR_STATE)) || undefined;
+  const page = await pageEntitiesConnection<BasicStoreEntityIocValidationRequest>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+    first: pageSize,
+    after,
+    orderBy: 'internal_id',
+    orderMode: 'asc',
     filters: {
       mode: 'or' as never,
       filters: [
@@ -731,7 +745,10 @@ export const maintainIocValidationRequests = async (context: AuthContext) => {
       filterGroups: [],
     },
     noFiltersChecking: true,
-  });
+  } as never);
+  const done = !page.pageInfo.hasNextPage || !page.pageInfo.endCursor;
+  await redisSetManagerEventState(MAINTENANCE_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
+  const requests = page.edges.map((edge) => edge.node);
   let processed = 0;
   await BluePromise.map(requests, async (listed) => {
     try {

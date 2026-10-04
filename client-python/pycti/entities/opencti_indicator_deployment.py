@@ -293,13 +293,24 @@ class IndicatorDeployment:
         valid_reports = [
             report for report in reports if report.get("status") in DEPLOYMENT_STATUSES
         ]
+        # A rejected entry is reported like a server-side error, so the caller knows which ones were not sent
+        rejected = [
+            {
+                "indicatorId": report.get("indicator_id"),
+                "message": "Unsupported deployment status: {}".format(
+                    report.get("status")
+                ),
+            }
+            for report in reports
+            if report.get("status") not in DEPLOYMENT_STATUSES
+        ]
         if len(valid_reports) == 0:
             return {
                 "processed": 0,
                 "created": 0,
                 "updated": 0,
                 "unchanged": 0,
-                "errors": [],
+                "errors": rejected,
             }
         if not self.is_supported("indicatorReportDeployments"):
             return None
@@ -308,7 +319,7 @@ class IndicatorDeployment:
             "created": 0,
             "updated": 0,
             "unchanged": 0,
-            "errors": [],
+            "errors": list(rejected),
         }
         for index in range(0, len(valid_reports), DEPLOYMENT_BATCH_MAX_SIZE):
             chunk = valid_reports[index : index + DEPLOYMENT_BATCH_MAX_SIZE]

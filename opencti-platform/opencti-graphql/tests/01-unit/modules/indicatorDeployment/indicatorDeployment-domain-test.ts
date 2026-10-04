@@ -9,7 +9,7 @@ import {
   isHitsSightingUpToDate,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { extractDeploymentIndicatorIds, extractMarkingChangedEndpoints, hasSecurityPlatformRemoval } from '../../../../src/manager/indicatorDeploymentManager';
+import { extractDeploymentIndicatorIds, extractAccessChangedEndpoints, hasSecurityPlatformRemoval } from '../../../../src/manager/indicatorDeploymentManager';
 import type { DataEvent, SseEvent } from '../../../../src/types/event';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z');
@@ -183,21 +183,23 @@ describe('deployment manager stream extraction', () => {
     expect(hasSecurityPlatformRemoval([typed('delete', { type: 'identity', extensions: { [ext]: { type: 'Organization' } } })])).toEqual(false);
     expect(hasSecurityPlatformRemoval([])).toEqual(false);
   });
-  it('should collect the indicators and security platforms whose markings changed', () => {
+  it('should collect the indicators and security platforms whose markings or sharing changed', () => {
     const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
     const update = (data: Record<string, unknown>, path: string) => ({
       id: '1',
       event: 'update',
       data: { type: 'update', data, context: { patch: [{ op: 'add', path }] } },
     }) as unknown as SseEvent<DataEvent>;
-    const changes = extractMarkingChangedEndpoints([
+    const changes = extractAccessChangedEndpoints([
       update({ type: 'identity', extensions: { [ext]: { id: 'platform-1', type: 'SecurityPlatform' } } }, '/object_marking_refs/0'),
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-1', type: 'Indicator' } } }, '/object_marking_refs'),
+      update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-3', type: 'Indicator', granted_refs: [] } } }, '/extensions/' + ext + '/granted_refs/0'),
+      ({ id: '2', event: 'merge', data: { type: 'merge', data: { type: 'identity', extensions: { [ext]: { id: 'platform-2', type: 'SecurityPlatform' } } }, context: { patch: [{ op: 'add', path: '/object_marking_refs/1' }] } } }) as unknown as SseEvent<DataEvent>,
       // Other changes and other types are ignored
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-2', type: 'Indicator' } } }, '/x_opencti_score'),
       update({ type: 'identity', extensions: { [ext]: { id: 'organization-1', type: 'Organization' } } }, '/object_marking_refs/0'),
     ]);
-    expect(changes).toEqual({ indicatorIds: ['indicator-1'], platformIds: ['platform-1'] });
-    expect(extractMarkingChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
+    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3'], platformIds: ['platform-1', 'platform-2'] });
+    expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
   });
 });

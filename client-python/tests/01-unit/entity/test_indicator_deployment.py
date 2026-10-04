@@ -144,7 +144,10 @@ def test_batch_is_chunked_and_aggregated(local_api_client):
         "created": 10,
         "updated": 5,
         "unchanged": 486,
-        "errors": [{"indicatorId": "x", "message": "not found"}],
+        "errors": [
+            {"indicatorId": "bad", "message": "Unsupported deployment status: unknown"},
+            {"indicatorId": "x", "message": "not found"},
+        ],
     }
     first_inputs = local_api_client.query.call_args_list[1].args[1]["reports"]
     assert len(first_inputs) == 500
@@ -321,3 +324,31 @@ def test_create_only_sends_present_deployment_fields(local_api_client):
     )
     sent = local_api_client.query.call_args.args[1]["input"]
     assert "validation_status" not in sent
+
+
+def test_batch_reports_every_rejected_entry(local_api_client):
+    deployment = deployment_with(local_api_client, [])
+    result = deployment.report_batch(
+        "platform-1",
+        [
+            {"indicator_id": "indicator-1", "status": "expired"},
+            {"indicator_id": "indicator-2"},
+        ],
+    )
+    assert result == {
+        "processed": 0,
+        "created": 0,
+        "updated": 0,
+        "unchanged": 0,
+        "errors": [
+            {
+                "indicatorId": "indicator-1",
+                "message": "Unsupported deployment status: expired",
+            },
+            {
+                "indicatorId": "indicator-2",
+                "message": "Unsupported deployment status: None",
+            },
+        ],
+    }
+    assert local_api_client.query.call_count == 0
