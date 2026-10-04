@@ -11,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseTrendingQuery } from './__generated__/ThreatPulseTrendingQuery.graphql';
 import ThreatPulseBriefing from './ThreatPulseBriefing';
+import ThreatPulseDate from './ThreatPulseDate';
 import ThreatPulseEntityName from './ThreatPulseEntityName';
 import { ThreatPulseLockedRanksRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
 import {
@@ -65,7 +66,7 @@ interface ThreatPulseTrendingListProps {
 
 const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { pulseTrending } = useLazyLoadQuery<ThreatPulseTrendingQuery>(
     threatPulseTrendingQuery,
     { period, first },
@@ -90,7 +91,7 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
   );
   const notHeldSentence = notHeld > 0 && (
     <Text variant="content-compact" style={secondary} data-testid="threat-pulse-trending-not-held">
-      {t_i18n('{count, plural, one {# of the first ranks trends} other {# of the first ranks trend}} in the community, but this platform does not hold them.', { values: { count: notHeld } })}
+      {t_i18n('{count, plural, one {# of the first ranks trends in the community, but this platform does not hold it.} other {# of the first ranks trend in the community, but this platform does not hold them.}}', { values: { count: notHeld } })}
     </Text>
   );
   if (pulseTrending.preview) {
@@ -158,9 +159,12 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Text variant="content-compact" style={secondary}>{t_i18n(PULSE_PREVALENCE_LABELS[entry.prevalence])}</Text>
                   {entry.first_seen_network && (
-                    <Text variant="content-compact" style={secondary}>
-                      {t_i18n('Network first seen on {date}', { values: { date: fsd(entry.first_seen_network) } })}
-                    </Text>
+                    <ThreatPulseDate
+                      date={entry.first_seen_network}
+                      precision="day"
+                      format={(date) => t_i18n('Network first seen {date}', { values: { date } })}
+                      style={secondary}
+                    />
                   )}
                 </Box>
               </Box>

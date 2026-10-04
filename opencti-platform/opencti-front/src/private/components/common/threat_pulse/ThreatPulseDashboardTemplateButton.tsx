@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { serializeDashboardManifestForBackend } from '../../../../components/dashboard/dashboard-utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { ThreatPulseDashboardTemplateButtonQuery } from './__generated__/ThreatPulseDashboardTemplateButtonQuery.graphql';
 import { ThreatPulseDashboardTemplateButtonMutation } from './__generated__/ThreatPulseDashboardTemplateButtonMutation.graphql';
@@ -60,11 +61,14 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
           manifest: serializeDashboardManifestForBackend(manifest),
         },
       },
-      onCompleted: (response) => {
-        if (response.workspaceDuplicate?.id) {
-          setOpen(false);
-          navigate(`${resolveLink('Dashboard')}/${response.workspaceDuplicate.id}`);
+      onCompleted: (response, errors) => {
+        const dashboardId = response?.workspaceDuplicate?.id;
+        if ((errors && errors.length > 0) || !dashboardId) {
+          MESSAGING$.notifyError(t_i18n('The dashboard could not be created from the template. Try again later.'));
+          return;
         }
+        setOpen(false);
+        navigate(`${resolveLink('Dashboard')}/${dashboardId}`);
       },
     });
   };

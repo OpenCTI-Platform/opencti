@@ -44,6 +44,7 @@ import {
   PULSE_SECTOR_LABELS,
   pulsePlatformsBucketLabel,
 } from '../../common/threat_pulse/threatPulseUtils';
+import ThreatPulseDate from '../../common/threat_pulse/ThreatPulseDate';
 import { ThreatPulseSettingsQuery } from './__generated__/ThreatPulseSettingsQuery.graphql';
 import { ThreatPulseSettings_settings$data, ThreatPulseSettings_settings$key } from './__generated__/ThreatPulseSettings_settings.graphql';
 import { ThreatPulseSettingsConfigureMutation } from './__generated__/ThreatPulseSettingsConfigureMutation.graphql';
@@ -407,7 +408,14 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const markingOptions = toMarkingOptions(markings, settings);
 
   const configure = (input: Partial<ConfigureInput>) => {
-    commitConfigure({ variables: { input: { mode: settings.mode, ...input } } });
+    commitConfigure({
+      variables: { input: { mode: settings.mode, ...input } },
+      onCompleted: (response, errors) => {
+        if ((errors && errors.length > 0) || !response?.pulseConfigure) {
+          MESSAGING$.notifyError(t_i18n('The Threat Pulse settings could not be saved. Try again later.'));
+        }
+      },
+    });
   };
   const purge = () => {
     commitPurge({
@@ -490,11 +498,12 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         <Text variant="content-compact" data-testid="threat-pulse-preview-matched">{n(settings.preview.matched_entities)}</Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Last preview refresh')} divider={false}>
-        <Text variant="content-compact">
-          {settings.preview.last_refresh_at
-            ? t_i18n('{date} - {count, plural, one {# object} other {# objects}} in the digest', { values: { date: fldt(settings.preview.last_refresh_at), count: settings.preview.digest_items } })
-            : t_i18n('Not refreshed yet')}
-        </Text>
+        {settings.preview.last_refresh_at ? (
+          <ThreatPulseDate
+            date={settings.preview.last_refresh_at}
+            format={(date) => t_i18n('{date} - {count, plural, one {# object} other {# objects}} in the digest', { values: { date, count: settings.preview.digest_items } })}
+          />
+        ) : <Text variant="content-compact">{t_i18n('Not refreshed yet')}</Text>}
       </ExperienceDetailRow>
     </div>
   );
@@ -617,10 +626,14 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         </ExperienceDetailRow>
       )}
       <ExperienceDetailRow label={t_i18n('Last contribution')}>
-        <Text variant="content-compact">{settings.contribution.last_push_at ? fldt(settings.contribution.last_push_at) : t_i18n('None yet')}</Text>
+        {settings.contribution.last_push_at
+          ? <ThreatPulseDate date={settings.contribution.last_push_at} />
+          : <Text variant="content-compact">{t_i18n('None yet')}</Text>}
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Last network refresh')}>
-        <Text variant="content-compact">{settings.contribution.last_refresh_at ? fldt(settings.contribution.last_refresh_at) : t_i18n('None yet')}</Text>
+        {settings.contribution.last_refresh_at
+          ? <ThreatPulseDate date={settings.contribution.last_refresh_at} />
+          : <Text variant="content-compact">{t_i18n('None yet')}</Text>}
       </ExperienceDetailRow>
       {(!settings.network.reachable || contributorsLabel) && (
         <ExperienceDetailRow label={t_i18n('Contributing platforms in the network')}>

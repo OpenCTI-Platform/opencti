@@ -224,8 +224,20 @@ const shoot = async (target: Locator, name: string, testInfo: TestInfo) => {
   await expect(async () => {
     await target.scrollIntoViewIfNeeded({ timeout: 2000 });
   }).toPass({ timeout: 15000 });
+  await target.page().evaluate(() => document.fonts.ready.then(() => undefined));
+  // The page may still lay out around the surface (the other cards of a page loading above it): it is measured until
+  // it stays in place.
+  let box = await target.boundingBox();
+  await expect(async () => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+    const next = await target.boundingBox();
+    const stable = !!box && !!next && box.x === next.x && box.y === next.y && box.width === next.width && box.height === next.height;
+    box = next;
+    expect(stable).toBe(true);
+  }).toPass({ timeout: 15000 });
   const path = testInfo.outputPath(`${name}.png`);
-  const box = await target.boundingBox();
   const viewport = target.page().viewportSize();
   if (!box || !viewport || box.height + 2 * SHOT_MARGIN > viewport.height) {
     await target.screenshot({ path, animations: 'disabled' });
@@ -393,9 +405,11 @@ test.describe('Threat Pulse documentation images', () => {
     await expect(banner).toBeVisible();
     await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner', testInfo);
 
-    // Settings > Filigran Experience in each mode, and the consent
-    const settingsStates: Array<[string, Record<string, unknown>]> = [
-      ['preview', {}],
+    // Settings > Filigran Experience in each mode, and the consent, in a window tall enough for the whole card and the
+    // whole dialog: each capture waits for what only that state shows
+    await page.setViewportSize({ width: 1440, height: 2400 });
+    const settingsStates: Array<[string, Record<string, unknown>, string]> = [
+      ['preview', {}, 'threat-pulse-preview-status'],
       ['contributing', {
         mode: 'contribute_and_read',
         access: 'full',
@@ -415,18 +429,20 @@ test.describe('Threat Pulse documentation images', () => {
           by_type: [{ entity_type: 'Indicator', records: 11200 }, { entity_type: 'Malware', records: 940 }, { entity_type: 'Vulnerability', records: 700 }],
         },
         network: { reachable: true, k_threshold: 5, retention_months: 13, contributors_bucket: '250+', read_access: true, last_contribution_day: '2026-10-03', contribution_status: 'active', read_access_until: '2026-10-17', contribution_grace_days: 14 },
-      }],
-      ['off', { mode: 'off', access: 'off' }],
+      }, 'threat-pulse-total-records'],
+      ['off', { mode: 'off', access: 'off' }, 'threat-pulse-preview-button'],
     ];
-    for (const [state, overrides] of settingsStates) {
+    for (const [state, overrides, loaded] of settingsStates) {
       await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings(overrides) });
       await page.goto('/dashboard/settings/experience');
+      await expect(page.getByTestId(loaded)).toBeVisible();
       await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}`, testInfo);
     }
     await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}) });
     await page.goto('/dashboard/settings/experience');
     await page.getByTestId('threat-pulse-enable-button').click();
     await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
+    await expect(page.getByTestId('threat-pulse-consent-accept')).toBeVisible();
     await shoot(page.getByRole('dialog'), 'threat-pulse-consent-dialog', testInfo);
   });
 });

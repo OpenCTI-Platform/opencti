@@ -47,7 +47,8 @@ describe('ThreatPulseTrending', () => {
     expect(screen.getByText('x3.2')).toBeDefined();
     expect(screen.getByText('Rising')).toBeDefined();
     expect(screen.getAllByText('10 to 24 platforms')).toHaveLength(2);
-    expect(screen.getAllByText('Network first seen on Sep 21, 2026')).toHaveLength(2);
+    // Relative to now, the absolute date in the tooltip
+    expect(screen.getAllByText(/^Network first seen .+ ago$/)).toHaveLength(2);
     expect(screen.getByText('3 of the first ranks trend in the community, but this platform does not hold them.')).toBeDefined();
   });
 
@@ -91,7 +92,7 @@ describe('ThreatPulseTrending', () => {
     expect(screen.getByText('Sector: Every sector - last 7 days')).toBeDefined();
     expect(screen.getByText('#1')).toBeDefined();
     expect(screen.getByText('#3')).toBeDefined();
-    expect(screen.getByText('1 of the first ranks trends in the community, but this platform does not hold them.')).toBeDefined();
+    expect(screen.getByText('1 of the first ranks trends in the community, but this platform does not hold it.')).toBeDefined();
     expect(screen.queryByTestId('threat-pulse-locked-row')).toBeNull();
     expect(screen.getByTestId('threat-pulse-locked-ranks').textContent).toBe('7 more trending objects - available when your platform contributes');
     expect(screen.getByTestId('threat-pulse-unlock-cta').textContent).toBe('Set up contribution');

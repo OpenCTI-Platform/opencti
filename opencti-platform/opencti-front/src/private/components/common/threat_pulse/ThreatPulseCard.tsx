@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { ThreatPulseConnectCta, ThreatPulseLockedRow, ThreatPulsePreviewChip, ThreatPulseUnlockCta, useThreatPulseImpression } from './ThreatPulseUnlock';
+import ThreatPulseDate from './ThreatPulseDate';
 import { ThreatPulseCardQuery } from './__generated__/ThreatPulseCardQuery.graphql';
 import {
   buildSparklinePoints,
@@ -175,7 +176,7 @@ type PulseEntity = ThreatPulseCardQuery['response']['pulseEntity'];
 // rows of the full experience locked, and the one step to unlock them.
 const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   useThreatPulseImpression('entity_card', true);
   const secondary = { color: theme.palette.text.secondary };
   const information = pulseEntity.information?.preview ? pulseEntity.information : null;
@@ -206,7 +207,7 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
           </Box>
           {information?.updated_at && (
             <Text variant="content-compact" style={secondary}>
-              {t_i18n('Updated {date}', { values: { date: fldt(information.updated_at) } })}
+              <ThreatPulseDate date={information.updated_at} format={(date) => t_i18n('Updated {date}', { values: { date } })} />
             </Text>
           )}
         </Box>
@@ -217,7 +218,7 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
 
 const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fsd, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { settings } = useAuth();
   const { pulseEntity } = useLazyLoadQuery<ThreatPulseCardQuery>(threatPulseCardQuery, { id: entityId }, { fetchPolicy: 'store-and-network' });
   if (pulseEntity.unavailable_reason === 'out_of_scope') {
@@ -263,12 +264,12 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
               )}
               {information.first_seen_network && (
                 <DetailRow label={t_i18n('Network first seen')}>
-                  <Text variant="content-compact">{fsd(information.first_seen_network)}</Text>
+                  <ThreatPulseDate date={information.first_seen_network} precision="day" />
                 </DetailRow>
               )}
               {information.last_seen_network && (
                 <DetailRow label={t_i18n('Network last seen')}>
-                  <Text variant="content-compact">{fsd(information.last_seen_network)}</Text>
+                  <ThreatPulseDate date={information.last_seen_network} precision="day" />
                 </DetailRow>
               )}
               <DetailRow label={t_i18n('Community trend')}>
@@ -296,7 +297,7 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
           )}
           {information.updated_at && (
             <Text variant="content-compact" style={secondary}>
-              {t_i18n('Updated {date}', { values: { date: fldt(information.updated_at) } })}
+              <ThreatPulseDate date={information.updated_at} format={(date) => t_i18n('Updated {date}', { values: { date } })} />
             </Text>
           )}
         </Box>

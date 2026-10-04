@@ -80,36 +80,42 @@ const sourceFlaggedFragment = graphql`
     }
     ... on IntrusionSet {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
     }
     ... on Malware {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
     }
     ... on Tool {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
     }
     ... on Vulnerability {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
     }
     ... on AttackPattern {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
     }
     ... on Indicator {
       pulse {
+        published
         prevalence
         community_uniqueness
       }
@@ -268,9 +274,10 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Community prevalence',
       percentWidth: 8,
       isSortable: true,
-      render: ({ pulse }: PirKnowledgeEntities_SourceFlaggedFragment$data) => (pulse?.prevalence
+      // A prevalence only when the community published one: below the anonymity threshold it is never a rare signal.
+      render: ({ pulse }: PirKnowledgeEntities_SourceFlaggedFragment$data) => (pulse?.published && pulse.prevalence
         ? <Chip label={t_i18n(PULSE_PREVALENCE_LABELS[pulse.prevalence] ?? pulse.prevalence)} severity={PULSE_PREVALENCE_SEVERITIES[pulse.prevalence] ?? 'neutral'} />
-        : defaultRender('-')),
+        : defaultRender(t_i18n(pulse ? 'Not published' : 'No community signal'))),
     },
     entity_type: { percentWidth: 10 },
     name: { percentWidth: 16 },
