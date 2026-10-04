@@ -28,6 +28,9 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/secu
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { FilterMode, OrderingMode, StatusScope } from '../../generated/graphql';
+import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
+import { getWorkflowDefinition } from '../workflow/domain/workflow-domain';
+import { computeStateOrder } from '../workflow/domain/workflow-ordering';
 import type {
   TimelineContainerData,
   TimelineDerivationInput,
@@ -245,9 +248,33 @@ interface TimelineStatusSource {
   order: number;
   type: string;
   scope?: string | null;
+  template_id?: string | null;
 }
 
-export const buildTimelineStatuses = (statuses: TimelineStatusSource[]): Map<string, TimelineStatusData> => {
+/**
+ * Terminal states of a workflow defined by transitions: the states that no forward transition leaves. The order of a
+ * state is its longest distance from the initial state, so a forward transition always leads to a higher order, and a
+ * transition back to an earlier state (a reopening) does not keep a state from being terminal. A branching workflow
+ * can end at a lower order than its longest branch.
+ */
+export const terminalWorkflowStates = (definition: { initialState: string; transitions: Array<{ from: string | string[] | null; to: string | null }> }): Set<string> => {
+  const order = computeStateOrder(definition.initialState, definition.transitions);
+  const leftForward = new Set<string>();
+  definition.transitions.forEach((transition) => {
+    const targetOrder = transition.to ? order.get(transition.to) : undefined;
+    if (targetOrder === undefined) return;
+    asArray(transition.from).forEach((from) => {
+      const fromOrder = order.get(from);
+      if (fromOrder !== undefined && targetOrder > fromOrder) leftForward.add(from);
+    });
+  });
+  return new Set(Array.from(order.keys()).filter((state) => !leftForward.has(state)));
+};
+
+export const buildTimelineStatuses = (
+  statuses: TimelineStatusSource[],
+  terminalStatesByType: Map<string, Set<string>> = new Map(),
+): Map<string, TimelineStatusData> => {
   // One type has one workflow per scope (the case workflow, the request access workflow of requests for information)
   const workflowOf = (status: TimelineStatusSource) => `${status.type}|${status.scope ?? StatusScope.Global}`;
   const maxOrderByWorkflow = new Map<string, number>();
@@ -257,13 +284,17 @@ export const buildTimelineStatuses = (statuses: TimelineStatusSource[]): Map<str
   });
   const map = new Map<string, TimelineStatusData>();
   statuses.forEach((status) => {
+    // The statuses of a type whose workflow is defined by transitions are its states (global scope): its terminal states
+    // are final. Otherwise the last status of the workflow (highest order) is its closed category.
+    const terminalStates = (status.scope ?? StatusScope.Global) === StatusScope.Global ? terminalStatesByType.get(status.type) : undefined;
     map.set(status.internal_id, {
       id: status.internal_id,
       name: status.name,
       order: status.order,
       type: status.type,
-      // The last status of a workflow (highest order) is its closed category
-      is_final: maxOrderByWorkflow.get(workflowOf(status)) === status.order,
+      is_final: terminalStates
+        ? !!status.template_id && terminalStates.has(status.template_id)
+        : maxOrderByWorkflow.get(workflowOf(status)) === status.order,
     });
   });
   return map;
@@ -271,7 +302,16 @@ export const buildTimelineStatuses = (statuses: TimelineStatusSource[]): Map<str
 
 const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineStatusData>> => {
   const statuses = await getEntitiesListFromCache<TimelineStatusSource & BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
-  return buildTimelineStatuses(statuses);
+  // Only the few types with a workflow defined by transitions need their published definition
+  const statusTypes = new Set(statuses.map((status) => status.type));
+  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+  const workflowTypes = entitySettings.filter((setting) => !!setting.workflow_id && statusTypes.has(setting.target_type)).map((setting) => setting.target_type);
+  const terminalStatesByType = new Map<string, Set<string>>();
+  for (let index = 0; index < workflowTypes.length; index += 1) {
+    const definition = await getWorkflowDefinition(context, SYSTEM_USER, workflowTypes[index]);
+    if (definition) terminalStatesByType.set(workflowTypes[index], terminalWorkflowStates(definition));
+  }
+  return buildTimelineStatuses(statuses, terminalStatesByType);
 };
 
 export const isContainerClosed = async (context: AuthContext, container: AnyStoreElement): Promise<boolean> => {

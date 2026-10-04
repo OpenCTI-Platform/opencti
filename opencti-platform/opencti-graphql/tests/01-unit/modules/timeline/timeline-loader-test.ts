@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimelineStatuses, capTimelineRead, keepNewestTimelineEntries, timelineRefIds, toTimelineElement } from '../../../../src/modules/timeline/timeline-loader';
+import {
+  buildTimelineStatuses,
+  capTimelineRead,
+  keepNewestTimelineEntries,
+  terminalWorkflowStates,
+  timelineRefIds,
+  toTimelineElement,
+} from '../../../../src/modules/timeline/timeline-loader';
 
 describe('Timeline element refs', () => {
   it('should read the refs of a document read with its relations', () => {
@@ -100,5 +107,46 @@ describe('Timeline workflow statuses', () => {
     ]);
     expect(statuses.get('incident-closed')?.is_final).toBe(true);
     expect(statuses.get('legacy-new')?.is_final).toBe(false);
+  });
+
+  // New -> Triage -> Investigating -> Resolved, Triage -> Rejected, New or Triage -> Cancelled, Resolved -> Investigating (reopening)
+  const branchingWorkflow = {
+    initialState: 'tpl-new',
+    transitions: [
+      { from: 'tpl-new', to: 'tpl-triage', event: 'triage' },
+      { from: 'tpl-triage', to: 'tpl-investigating', event: 'investigate' },
+      { from: 'tpl-investigating', to: 'tpl-resolved', event: 'resolve' },
+      { from: 'tpl-triage', to: 'tpl-rejected', event: 'reject' },
+      { from: ['tpl-new', 'tpl-triage'], to: 'tpl-cancelled', event: 'cancel' },
+      { from: 'tpl-resolved', to: 'tpl-investigating', event: 'reopen' },
+    ],
+  };
+
+  it('should read the terminal states of a workflow defined by transitions, whatever their order', () => {
+    const terminal = terminalWorkflowStates(branchingWorkflow);
+    // Rejected and Cancelled end shorter branches, Resolved can be reopened: all three are terminal
+    expect(Array.from(terminal).sort()).toEqual(['tpl-cancelled', 'tpl-rejected', 'tpl-resolved']);
+  });
+
+  it('should mark every terminal state of a workflow defined by transitions as final', () => {
+    const withTemplate = (internal_id: string, order: number, template_id: string) => ({ ...status(internal_id, 'Case-Incident', order, 'GLOBAL'), template_id });
+    const statuses = buildTimelineStatuses([
+      withTemplate('incident-new', 0, 'tpl-new'),
+      withTemplate('incident-triage', 1, 'tpl-triage'),
+      withTemplate('incident-rejected', 2, 'tpl-rejected'),
+      withTemplate('incident-cancelled', 2, 'tpl-cancelled'),
+      withTemplate('incident-investigating', 2, 'tpl-investigating'),
+      withTemplate('incident-resolved', 3, 'tpl-resolved'),
+      status('access-new', 'Case-Incident', 1, 'REQUEST_ACCESS'),
+      status('access-approved', 'Case-Incident', 2, 'REQUEST_ACCESS'),
+    ], new Map([['Case-Incident', terminalWorkflowStates(branchingWorkflow)]]));
+    expect(statuses.get('incident-rejected')?.is_final).toBe(true);
+    expect(statuses.get('incident-cancelled')?.is_final).toBe(true);
+    expect(statuses.get('incident-resolved')?.is_final).toBe(true);
+    expect(statuses.get('incident-investigating')?.is_final).toBe(false);
+    expect(statuses.get('incident-new')?.is_final).toBe(false);
+    // Another scope keeps its own ordered workflow
+    expect(statuses.get('access-approved')?.is_final).toBe(true);
+    expect(statuses.get('access-new')?.is_final).toBe(false);
   });
 });

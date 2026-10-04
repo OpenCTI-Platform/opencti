@@ -555,10 +555,16 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
 /**
  * A live update as one subscriber may see it: it names only the changed or removed events this user can read, and an
  * update about events the user cannot read at all is not sent to it (null). Updates about the container itself
- * (settings, anchors) name no event and always go through, and so does an update naming only part of its events
- * (truncated), whose other events this user may read.
+ * (settings, anchors) name no event and go through to every reader of the container, and so does an update naming only
+ * part of its events (truncated), whose other events this user may read.
  */
 export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser, update: TimelineUpdatePayload): Promise<TimelineUpdatePayload | null> => {
+  // The subscription checked the access to the container when it started: it is read again for every update, so a
+  // subscriber who lost it receives nothing more about the container, its anchors included
+  const container = await internalLoadById(context, user, update.container_id, { type: TIMELINE_CONTAINER_TYPES, baseData: true });
+  if (!container) {
+    return null;
+  }
   const { removed_events: removed = [], truncated = false, ...signal } = update;
   if (update.changed_event_ids.length === 0 && removed.length === 0) {
     return signal;

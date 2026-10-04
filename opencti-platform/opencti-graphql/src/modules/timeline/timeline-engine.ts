@@ -116,6 +116,14 @@ const uniq = (values: Array<string | null | undefined>): string[] => Array.from(
 
 export const markingsOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_OBJECT_MARKING);
 
+/**
+ * A derived event is never less marked than its element, whatever its rule reads, nor than its container: once the
+ * element is deleted, the markings of the event stand for those of the element when its removal is notified.
+ */
+export const derivedEventMarkings = (eventMarkings: string[], element: Record<string, any> | undefined, containerMarkings: string[]): string[] => {
+  return uniq([...eventMarkings, ...(element ? markingsOf(element) : []), ...containerMarkings]);
+};
+
 export const loadStoredTimelineEvents = async (context: AuthContext, containerId: string): Promise<StoredTimelineEvent[]> => {
   return fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: { mode: FilterMode.And, filters: [{ key: ['container_id'], values: [containerId] }], filterGroups: [] },
@@ -693,7 +701,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       element_type: event.element_type,
       confidence: event.confidence,
       external_id: null,
-      markings: [...event.markings, ...access.markings],
+      markings: derivedEventMarkings(event.markings, event.element_id ? elements[event.element_id] : undefined, access.markings),
       created_by_id: event.created_by_id,
       creator_ids: event.creator_ids ?? [],
       restricted_members: access.restricted_members,

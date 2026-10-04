@@ -596,8 +596,18 @@ describe('Incident and case timeline', () => {
       const truncatedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [restrictedId], truncated: true });
       expect(truncatedUpdate?.changed_event_ids).toEqual([]);
       expect(truncatedUpdate).not.toHaveProperty('truncated');
-      // Updates about the container itself name no event and always go through
+      // Updates about the container itself name no event and go through to every reader of the container
       expect(await timelineUpdateForUser(testContext, participate, { ...update, update_type: 'settings', changed_event_ids: [] })).toMatchObject({ update_type: 'settings', changed_event_ids: [] });
+      // The access to the container is read again for every update: a subscriber who cannot read it any more gets nothing
+      const restrictedCase = await createEntity(testContext, SYSTEM_USER, {
+        name: 'Timeline subscriber without access',
+        authorized_members: [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      const restrictedUpdate = { ...update, id: restrictedCase.id, container_id: restrictedCase.id, update_type: 'settings' as const, changed_event_ids: [] };
+      expect(await timelineUpdateForUser(testContext, participate, restrictedUpdate)).toBeNull();
+      expect(await timelineUpdateForUser(testContext, editor, restrictedUpdate)).toBeNull();
+      expect(await timelineUpdateForUser(testContext, ADMIN_USER, restrictedUpdate)).toMatchObject({ update_type: 'settings', container_id: restrictedCase.id });
+      await deleteElementById(testContext, SYSTEM_USER, restrictedCase.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
     });
 
     it('should tell who can contribute to the timeline', async () => {

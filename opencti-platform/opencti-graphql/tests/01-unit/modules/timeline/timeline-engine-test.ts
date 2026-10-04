@@ -4,6 +4,7 @@ import {
   buildTimelineEventDoc,
   computeDerivedEventId,
   computeManualEventId,
+  derivedEventMarkings,
   getTimelineRules,
   isPendingAnnotationApplicable,
   timelineEventMaxConfidence,
@@ -281,6 +282,16 @@ describe('Timeline container marking coverage', () => {
     const covered = buildContainerMarkingCoverage([], markings);
     expect(covered('tlp-clear')).toBe(false);
     expect(covered('tlp-green')).toBe(false);
+  });
+});
+
+describe('Timeline derived event markings', () => {
+  it('should never mark a derived event less than its element, even when its rule reads no marking', () => {
+    // As read without its relations, the element carries its markings as doc values
+    expect(derivedEventMarkings([], { 'object-marking': ['tlp-amber'] }, ['tlp-green']).sort()).toEqual(['tlp-amber', 'tlp-green']);
+    expect(derivedEventMarkings(['tlp-amber'], { 'rel_object-marking.internal_id': ['tlp-amber', 'pap-red'] }, []).sort()).toEqual(['pap-red', 'tlp-amber']);
+    // The container itself (or an element not read) adds nothing beyond the markings of the container
+    expect(derivedEventMarkings(['tlp-clear'], undefined, ['tlp-green']).sort()).toEqual(['tlp-clear', 'tlp-green']);
   });
 });
 
