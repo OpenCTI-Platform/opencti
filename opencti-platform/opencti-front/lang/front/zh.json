@@ -2571,7 +2571,7 @@
   "How do you want to download this file?": "您想如何下载此文件？",
   "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "创建时重新扫描的时间段。如果 PIR 引擎的历史记录少于此时间段，则只扫描历史记录时间段。",
   "How many platforms see each object, since when, and its 12-week and sector trends": "有多少平台看到每个对象、从何时开始，以及其 12 周和行业趋势",
-  "How many times each one was created, sighted, detected or hunted that day": "当天每个对象被创建、目击、检测或狩猎的次数",
+  "How many times each one was created, sighted, detected, hunted or referenced that day": "当天每个对象被创建、目击、检测、狩猎或引用的次数",
   "How often the enrichment connector should run": "浓缩连接器的运行频率",
   "However, your existing data will remain intact and will not be lost.": "但是，您的现有数据将保持不变，不会丢失。",
   "HTML": "HTML",

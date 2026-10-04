@@ -2571,7 +2571,7 @@
   "How do you want to download this file?": "Come vuoi scaricare questo file?",
   "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "Quanto indietro va la scansione alla creazione. Se il motore PIR ha una cronologia inferiore a questo periodo, verrà preso in considerazione solo il periodo di cronologia",
   "How many platforms see each object, since when, and its 12-week and sector trends": "Quante piattaforme vedono ogni oggetto, da quando, e le sue tendenze a 12 settimane e di settore",
-  "How many times each one was created, sighted, detected or hunted that day": "Quante volte ciascuno è stato creato, avvistato, rilevato o cercato quel giorno",
+  "How many times each one was created, sighted, detected, hunted or referenced that day": "Quante volte ciascuno è stato creato, avvistato, rilevato, cercato o referenziato quel giorno",
   "How often the enrichment connector should run": "Con quale frequenza deve essere eseguito il connettore di arricchimento",
   "However, your existing data will remain intact and will not be lost.": "Tuttavia, i tuoi dati esistenti rimarranno intatti e non saranno persi.",
   "HTML": "HTML",

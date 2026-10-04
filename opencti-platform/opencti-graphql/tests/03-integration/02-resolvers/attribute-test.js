@@ -70,7 +70,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_VULNERABILITY },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(101); // 94 + the 7 Threat Pulse attributes of the scoped types
+    expect(attributes.length).toEqual(102); // 94 + the 8 Threat Pulse attributes of the scoped types
     expect(attributes.map((node) => node.value).includes('x_opencti_stix_ids')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('corroboration_count')).toBeTruthy(); // Provenance attribute
     expect(attributes.map((node) => node.value).includes('pulse_prevalence')).toBeTruthy(); // Threat Pulse attribute

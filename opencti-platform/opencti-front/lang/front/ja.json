@@ -2571,7 +2571,7 @@
   "How do you want to download this file?": "このファイルのダウンロード方法は？",
   "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "作成時にどこまで遡って再スキャンするか。PIR エンジンの履歴がこの期間より少ない場合、履歴の期間だけが取得される。",
   "How many platforms see each object, since when, and its 12-week and sector trends": "各オブジェクトを観測しているプラットフォーム数、観測開始時期、12 週間とセクターの傾向",
-  "How many times each one was created, sighted, detected or hunted that day": "その日にそれぞれが作成、目撃、検知、ハンティングされた回数",
+  "How many times each one was created, sighted, detected, hunted or referenced that day": "その日にそれぞれが作成、目撃、検知、ハンティング、参照された回数",
   "How often the enrichment connector should run": "エンリッチメント・コネクターの 実行頻度",
   "However, your existing data will remain intact and will not be lost.": "ただし、既存のデータはそのまま残り、失われることはありません。",
   "HTML": "HTML",

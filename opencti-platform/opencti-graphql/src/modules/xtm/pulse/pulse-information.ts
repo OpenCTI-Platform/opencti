@@ -11,6 +11,7 @@ import {
   PULSE_ATTRIBUTE_KEYS,
   PULSE_ATTRIBUTE_PREVALENCE,
   PULSE_ATTRIBUTE_SECTOR_TREND,
+  PULSE_ATTRIBUTE_PREVALENCE_RANK,
   PULSE_ATTRIBUTE_TREND,
   PULSE_ATTRIBUTE_UNIQUENESS,
   PULSE_PREVALENCE_VALUES,
@@ -90,6 +91,9 @@ export const combinePulseLookups = (results: PulseHubLookupResult[]): PulseCombi
 
 const toDayDate = (day: string | null) => (day ? `${day}T00:00:00.000Z` : null);
 
+// 0 below the anonymity threshold, then 1 (rare) to 4 (widespread): one sort key for preview and full documents.
+export const pulsePrevalenceRank = (published: boolean, prevalence: PulsePrevalenceValue) => (published ? prevalenceRank(prevalence) + 1 : 0);
+
 export const buildPulseDocument = (keys: string[], information: PulseCombinedInformation, updatedAt: Date): Record<string, unknown> => {
   const stored: PulseStoredInformation = {
     published: information.published,
@@ -106,6 +110,7 @@ export const buildPulseDocument = (keys: string[], information: PulseCombinedInf
     [PULSE_ATTRIBUTE_SECTOR_TREND]: information.sectorTrend,
     [PULSE_ATTRIBUTE_FIRST_SEEN]: toDayDate(information.firstSeenNetwork),
     [PULSE_ATTRIBUTE_UNIQUENESS]: information.communityUniqueness,
+    [PULSE_ATTRIBUTE_PREVALENCE_RANK]: pulsePrevalenceRank(information.published, information.prevalence),
     [PULSE_ATTRIBUTE_INFORMATION]: stored,
   };
 };
@@ -130,17 +135,20 @@ export const buildPulsePreviewDocument = (keys: string[], signal: PulsePreviewSi
     [PULSE_ATTRIBUTE_SECTOR_TREND]: null,
     [PULSE_ATTRIBUTE_FIRST_SEEN]: null,
     [PULSE_ATTRIBUTE_UNIQUENESS]: null,
+    [PULSE_ATTRIBUTE_PREVALENCE_RANK]: pulsePrevalenceRank(true, signal.prevalence),
     [PULSE_ATTRIBUTE_INFORMATION]: stored,
   };
 };
 
-// An object that left the digest loses its preview signal; its local keys stay.
+// An object that left the digest loses its preview signal, and an object that became restricted or carries an excluded
+// marking loses its community statistics; its local keys stay.
 export const PULSE_PREVIEW_CLEARED_DOCUMENT: Record<string, unknown> = {
   [PULSE_ATTRIBUTE_PREVALENCE]: null,
   [PULSE_ATTRIBUTE_TREND]: null,
   [PULSE_ATTRIBUTE_SECTOR_TREND]: null,
   [PULSE_ATTRIBUTE_FIRST_SEEN]: null,
   [PULSE_ATTRIBUTE_UNIQUENESS]: null,
+  [PULSE_ATTRIBUTE_PREVALENCE_RANK]: null,
   [PULSE_ATTRIBUTE_INFORMATION]: null,
 };
 
@@ -168,6 +176,7 @@ const PULSE_NETWORK_ATTRIBUTES = [
   PULSE_ATTRIBUTE_SECTOR_TREND,
   PULSE_ATTRIBUTE_FIRST_SEEN,
   PULSE_ATTRIBUTE_UNIQUENESS,
+  PULSE_ATTRIBUTE_PREVALENCE_RANK,
   PULSE_ATTRIBUTE_INFORMATION,
 ];
 

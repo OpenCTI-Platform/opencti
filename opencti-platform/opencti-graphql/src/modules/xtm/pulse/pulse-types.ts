@@ -89,6 +89,9 @@ export const PULSE_ATTRIBUTE_TREND = 'pulse_trend';
 export const PULSE_ATTRIBUTE_SECTOR_TREND = 'pulse_sector_trend';
 export const PULSE_ATTRIBUTE_FIRST_SEEN = 'pulse_first_seen_network';
 export const PULSE_ATTRIBUTE_UNIQUENESS = 'pulse_community_uniqueness';
+// The sort key of the community prevalence, written in preview and full mode: 0 below the anonymity threshold, then
+// 1 (rare) to 4 (widespread).
+export const PULSE_ATTRIBUTE_PREVALENCE_RANK = 'pulse_prevalence_rank';
 export const PULSE_ATTRIBUTE_INFORMATION = 'pulse_information';
 export const PULSE_ENTITY_ATTRIBUTES = [
   PULSE_ATTRIBUTE_KEYS,
@@ -97,6 +100,7 @@ export const PULSE_ENTITY_ATTRIBUTES = [
   PULSE_ATTRIBUTE_SECTOR_TREND,
   PULSE_ATTRIBUTE_FIRST_SEEN,
   PULSE_ATTRIBUTE_UNIQUENESS,
+  PULSE_ATTRIBUTE_PREVALENCE_RANK,
   PULSE_ATTRIBUTE_INFORMATION,
 ];
 
@@ -264,5 +268,6 @@ export interface BasicStorePulseEntity extends BasicStoreEntity {
   pulse_sector_trend?: PulseTrendValue;
   pulse_first_seen_network?: string;
   pulse_community_uniqueness?: number;
+  pulse_prevalence_rank?: number;
   pulse_information?: PulseStoredInformation;
 }

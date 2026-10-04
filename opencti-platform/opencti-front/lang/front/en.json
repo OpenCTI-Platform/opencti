@@ -2571,7 +2571,7 @@
   "How do you want to download this file?": "How do you want to download this file?",
   "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken",
   "How many platforms see each object, since when, and its 12-week and sector trends": "How many platforms see each object, since when, and its 12-week and sector trends",
-  "How many times each one was created, sighted, detected or hunted that day": "How many times each one was created, sighted, detected or hunted that day",
+  "How many times each one was created, sighted, detected, hunted or referenced that day": "How many times each one was created, sighted, detected, hunted or referenced that day",
   "How often the enrichment connector should run": "How often the enrichment connector should run",
   "However, your existing data will remain intact and will not be lost.": "However, your existing data will remain intact and will not be lost.",
   "HTML": "HTML",

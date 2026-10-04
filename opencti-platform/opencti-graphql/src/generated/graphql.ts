@@ -34343,6 +34343,7 @@ export enum StixDomainObjectsOrdering {
   Published = 'published',
   PulseCommunityUniqueness = 'pulse_community_uniqueness',
   PulseFirstSeenNetwork = 'pulse_first_seen_network',
+  PulsePrevalenceRank = 'pulse_prevalence_rank',
   Rating = 'rating',
   RefreshedAt = 'refreshed_at',
   ReportTypes = 'report_types',

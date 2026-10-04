@@ -2571,7 +2571,7 @@
   "How do you want to download this file?": "이 파일을 어떻게 다운로드하시겠습니까?",
   "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "생성 시 재검색할 기간입니다. PIR 엔진의 기록이 이 기간보다 적은 경우 기록 기간만 가져옵니다",
   "How many platforms see each object, since when, and its 12-week and sector trends": "각 객체를 보는 플랫폼 수, 관측 시작 시점, 12주 및 섹터 추세",
-  "How many times each one was created, sighted, detected or hunted that day": "그날 각 항목이 생성, 목격, 탐지 또는 헌팅된 횟수",
+  "How many times each one was created, sighted, detected, hunted or referenced that day": "그날 각 항목이 생성, 목격, 탐지, 헌팅 또는 참조된 횟수",
   "How often the enrichment connector should run": "강화 커넥터를 실행해야 하는 빈도",
   "However, your existing data will remain intact and will not be lost.": "그러나 기존 데이터는 그대로 유지되며 손실되지 않습니다.",
   "HTML": "HTML",

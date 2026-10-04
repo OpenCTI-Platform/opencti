@@ -75,6 +75,7 @@ const PREVIEW_IP = '198.51.100.211';
 const OUTBOX_IP = '198.51.100.213';
 const GREEN_IP = '198.51.100.214';
 const LOST_ANSWER_IP = '198.51.100.215';
+const MARKED_LATER_IP = '198.51.100.216';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -107,6 +108,11 @@ const CREATE_MALWARE = gql`
 const CREATE_TRIGGER = gql`
   mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
     triggerKnowledgeLiveAdd(input: $input) { id }
+  }
+`;
+const ADD_MARKING = gql`
+  mutation PulseIndicatorRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
+    indicatorRelationAdd(id: $id, input: $input) { id }
   }
 `;
 const PULSE_SETTINGS = gql`
@@ -453,6 +459,21 @@ describe('Threat Pulse manager and API', () => {
     expect(await runPulseRefresh(testContext, true)).toBeGreaterThanOrEqual(2);
     expect((await load(sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBe('widespread');
     await deleteElementById(testContext, ADMIN_USER, greenIndicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should remove the statistics of an object that received an excluded marking since its last refresh', async () => {
+    const load = async (id: string) => storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, id, ENTITY_TYPE_INDICATOR);
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: MARKED_LATER_IP, pattern: `[ipv4-addr:value = '${MARKED_LATER_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const indicatorId = created.data?.indicatorAdd.id;
+    await seedPeers(indicatorId, ENTITY_TYPE_INDICATOR);
+    await runPulseRefresh(testContext, true);
+    expect((await load(indicatorId)).pulse_prevalence).toBeTruthy();
+    await queryAsAdminWithSuccess({ query: ADD_MARKING, variables: { id: indicatorId, input: { toId: MARKING_TLP_RED, relationship_type: 'object-marking' } } });
+    await runPulseRefresh(testContext, true);
+    const marked = await load(indicatorId);
+    expect(marked.pulse_prevalence ?? null).toBeNull();
+    expect(marked.pulse_information ?? null).toBeNull();
+    await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 
   it('should keep the benchmark for Enterprise Edition platforms', async () => {

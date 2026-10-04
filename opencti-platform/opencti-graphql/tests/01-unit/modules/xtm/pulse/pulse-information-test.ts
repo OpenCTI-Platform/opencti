@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPulseDocument,
   buildPulsePreviewDocument,
+  pulsePrevalenceRank,
   combinePulseLookups,
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
@@ -106,6 +107,16 @@ describe('Threat Pulse preview information', () => {
     expect(combinePulsePreviewSignals([])).toBeNull();
   });
 
+  it('should rank the prevalence from 0 below the anonymity threshold to 4 for widespread', () => {
+    expect([
+      pulsePrevalenceRank(false, PulsePrevalence.Rare),
+      pulsePrevalenceRank(true, PulsePrevalence.Rare),
+      pulsePrevalenceRank(true, PulsePrevalence.Uncommon),
+      pulsePrevalenceRank(true, PulsePrevalence.Common),
+      pulsePrevalenceRank(true, PulsePrevalence.Widespread),
+    ]).toEqual([0, 1, 2, 3, 4]);
+  });
+
   it('should write the coarse signal only, marked as preview', () => {
     const updatedAt = new Date('2026-10-03T10:00:00.000Z');
     const doc = buildPulsePreviewDocument(['k1'], { prevalence: PulsePrevalence.Common, trend: PulseTrend.Rising }, updatedAt);
@@ -116,6 +127,8 @@ describe('Threat Pulse preview information', () => {
       pulse_sector_trend: null,
       pulse_first_seen_network: null,
       pulse_community_uniqueness: null,
+      // The sort key of the prevalence is the same in preview and full mode
+      pulse_prevalence_rank: 3,
       pulse_information: { published: true, preview: true, updated_at: updatedAt.toISOString() },
     });
     const output = toPulseInformationOutput({ entity_type: 'Indicator', ...doc } as unknown as BasicStorePulseEntity);

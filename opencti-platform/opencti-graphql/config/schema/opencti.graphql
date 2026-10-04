@@ -2750,6 +2750,7 @@ enum StixDomainObjectsOrdering {
   last_asserted_at
   freshness_days
   pulse_community_uniqueness
+  pulse_prevalence_rank
   pulse_first_seen_network
 }
 type StixDomainObjectConnection {

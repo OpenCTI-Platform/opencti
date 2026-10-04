@@ -67,13 +67,23 @@ export const redisSetPulseCursor = async (isoDate: string) => {
   await getClientBase().set(CURSOR_KEY, isoDate);
 };
 
-export const redisPushPulseOutbox = async (batches: PulseBatch[]) => {
-  if (batches.length === 0) {
-    return;
+// The batches of a contribution window, the cursor after it and the acknowledgement of the activity taken from Redis,
+// in one transaction (every key shares the {pulse} slot): either all of them are written or none.
+export const redisCommitPulseWindow = async (batches: PulseBatch[], cursor: string, ackDays: string[]) => {
+  const transaction = getClientBase().multi();
+  if (batches.length > 0) {
+    transaction.rpush(OUTBOX_KEY, ...batches.map((batch) => JSON.stringify(batch)));
+    transaction.ltrim(OUTBOX_KEY, -OUTBOX_MAX_BATCHES, -1);
   }
-  const client = getClientBase();
-  await client.rpush(OUTBOX_KEY, ...batches.map((batch) => JSON.stringify(batch)));
-  await client.ltrim(OUTBOX_KEY, -OUTBOX_MAX_BATCHES, -1);
+  transaction.set(CURSOR_KEY, cursor);
+  if (ackDays.length > 0) {
+    transaction.del(...ackDays.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`));
+  }
+  const results = await transaction.exec();
+  const failure = (results ?? []).find(([error]) => error);
+  if (!results || failure) {
+    throw failure?.[0] ?? new Error('Threat Pulse contribution window could not be recorded');
+  }
 };
 
 // Atomically moves the pending batches into the in-flight list, after what a run that stopped before settling its
@@ -224,8 +234,9 @@ end
 return redis.call('HGETALL', taken)
 `;
 
-// The activity recorded on *day* and not acknowledged yet. It stays in Redis until redisAckPulseActivity: hunts and
-// detections cannot be rebuilt from the database, so a run that fails before pushing them hands them to the next run.
+// The activity recorded on *day* and not acknowledged yet. It stays in Redis until redisCommitPulseWindow writes the
+// batches built from it to the outbox: hunts and detections cannot be rebuilt from the database, so a run that stops
+// before hands them to the next run.
 export const redisTakePulseActivity = async (day: string): Promise<PulseExternalActivity[]> => {
   const key = `${ACTIVITY_PREFIX}${day}`;
   const flat = ((await getClientBase().eval(TAKE_ACTIVITY_SCRIPT, 2, key, `${key}${TAKEN_SUFFIX}`)) as string[] | null) ?? [];
@@ -235,13 +246,6 @@ export const redisTakePulseActivity = async (day: string): Promise<PulseExternal
     activity.push({ entityId, eventKind: eventKind as PulseEventKind, count: Number(flat[index + 1]) });
   }
   return activity;
-};
-
-// Once the records built from the taken activity are pushed or kept in the outbox.
-export const redisAckPulseActivity = async (days: string[]) => {
-  if (days.length > 0) {
-    await getClientBase().del(...days.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`));
-  }
 };
 
 // Opting out: nothing recorded before may leave afterwards.

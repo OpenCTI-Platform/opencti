@@ -78,6 +78,7 @@ export const INTERNAL_ATTRIBUTES = [
   'pulse_sector_trend',
   'pulse_first_seen_network',
   'pulse_community_uniqueness',
+  'pulse_prevalence_rank',
   'pulse_information',
   // X - Mitre
   'x_opencti_graph_data',

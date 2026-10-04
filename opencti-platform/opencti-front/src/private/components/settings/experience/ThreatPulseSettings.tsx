@@ -304,7 +304,7 @@ const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onA
           title={t_i18n('What is shared every hour')}
           items={[
             t_i18n('Keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools this platform observes, changed every day by a salt'),
-            t_i18n('How many times each one was created, sighted, detected or hunted that day'),
+            t_i18n('How many times each one was created, sighted, detected, hunted or referenced that day'),
             t_i18n('The sector and the region you choose below'),
           ]}
         />

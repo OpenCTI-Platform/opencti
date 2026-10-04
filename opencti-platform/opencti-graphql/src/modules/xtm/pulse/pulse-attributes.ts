@@ -10,6 +10,7 @@ import {
   PULSE_ATTRIBUTE_SECTOR_TREND,
   PULSE_ATTRIBUTE_TREND,
   PULSE_ATTRIBUTE_UNIQUENESS,
+  PULSE_ATTRIBUTE_PREVALENCE_RANK,
   PULSE_MODE_VALUES,
   PULSE_PREVALENCE_VALUES,
   PULSE_REGION_BUCKETS,
@@ -46,6 +47,8 @@ const pulseEntityAttributes: Array<AttributeDefinition> = [
   { name: PULSE_ATTRIBUTE_SECTOR_TREND, label: 'Sector trend', type: 'string', format: 'enum', values: PULSE_TREND_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   { name: PULSE_ATTRIBUTE_FIRST_SEEN, label: 'Network first seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
   { name: PULSE_ATTRIBUTE_UNIQUENESS, label: 'Community uniqueness', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+  // The sort key of the community prevalence, the same in preview and full mode.
+  { name: PULSE_ATTRIBUTE_PREVALENCE_RANK, label: 'Community prevalence rank', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
   // Read from the document source only, never searched: not indexed, so it costs one field of the index mapping.
   // Its shape is PulseStoredInformation (pulse-types.ts).
   { name: PULSE_ATTRIBUTE_INFORMATION, label: 'Threat Pulse information', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },

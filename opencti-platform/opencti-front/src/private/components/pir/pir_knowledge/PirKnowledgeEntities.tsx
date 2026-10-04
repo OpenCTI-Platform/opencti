@@ -262,9 +262,9 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       isSortable: true,
       render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),
     },
-    // Sorted by the numeric uniqueness: ascending lists the most widespread first.
+    // Sorted by the prevalence rank, written in preview and full mode: descending lists the most widespread first.
     pulseCommunityPrevalence: {
-      id: 'pulse_community_uniqueness',
+      id: 'pulse_prevalence_rank',
       label: 'Community prevalence',
       percentWidth: 8,
       isSortable: true,
