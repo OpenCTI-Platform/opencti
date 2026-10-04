@@ -66,6 +66,8 @@ import {
   withTimelineLock,
 } from './timeline-engine';
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
+import { computeTimelineAnchors } from './timeline-anchors';
+import { isContainerClosed } from './timeline-loader';
 import { notifyTimelineMilestoneAdded } from './timeline-notification';
 import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
@@ -389,6 +391,8 @@ interface TimelineExportSnapshot {
   container: AnyStoreElement;
   items: StoredTimelineEvent[];
   elements: Record<string, AnyStoreElement>;
+  // Computed from the exported events only: an event left out by the ceiling or the filters never moves an anchor of the file
+  anchors: TimelineAnchors;
 }
 
 /**
@@ -423,7 +427,8 @@ const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, 
     const element = event.element_id ? elements[event.element_id] : undefined;
     return !element || markingsOf(element).every((markingId) => !markingsAboveCeiling.has(markingId));
   });
-  return { container, items: withinCeiling, elements };
+  const anchors = computeTimelineAnchors(withinCeiling, { isClosed: await isContainerClosed(context, container), computedAt: now() });
+  return { container, items: withinCeiling, elements, anchors };
 };
 
 const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineExportArgs): string => {
@@ -452,7 +457,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
     containerName: extractEntityRepresentativeName(container),
     containerType: container.entity_type,
     events: exportEvents,
-    anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null,
+    anchors: snapshot.anchors,
     generatedAt: now(),
     labels,
   };
@@ -875,7 +880,18 @@ const writeImportedContributions = async (
   if (pending.length > 0) {
     const settings = await loadTimelineSettings(context, container.internal_id);
     const byId = new Map((settings?.pending_annotations ?? []).map((a) => [a.event_id, a]));
-    pending.forEach((annotation) => byId.set(annotation.event_id, annotation));
+    // Pending annotations stay within the cap of the case (they are read and rewritten on every regeneration), updates always apply
+    let skippedAnnotations = 0;
+    pending.forEach((annotation) => {
+      if (byId.has(annotation.event_id) || byId.size < TIMELINE_MAX_EVENTS) {
+        byId.set(annotation.event_id, annotation);
+      } else {
+        skippedAnnotations += 1;
+      }
+    });
+    if (skippedAnnotations > 0) {
+      logApp.warn('[TIMELINE] Imported annotations beyond the cap of the case were skipped', { containerId: container.internal_id, skipped: skippedAnnotations });
+    }
     await upsertTimelineSettings(context, container, { pending_annotations: Array.from(byId.values()) }, settings ?? null);
   }
 };

@@ -366,9 +366,9 @@ const resolveContainerVisibilityScope = async (
   const isEventAsVisibleAsContainer = (event: StoredTimelineEvent) => {
     if (!markingsOf(event).every((id) => containerMarkings.has(id))) return false;
     if (!event.element_id || event.element_id === containerId) return true;
-    // A deleted element has nothing left to disclose: the event's own markings decide
+    // The access scope of a deleted element is unknown while the event still speaks about it: never as visible as the container
     const element = resolved[event.element_id];
-    return !element || isElementAsVisibleAsContainer(element);
+    return !!element && isElementAsVisibleAsContainer(element);
   };
   return { resolved, isElementAsVisibleAsContainer, isEventAsVisibleAsContainer };
 };
