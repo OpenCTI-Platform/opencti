@@ -337,9 +337,19 @@ const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string => {
   return (run.hits_count ?? 0) === 0 ? HUNT_VERDICT_BENIGN : HUNT_VERDICT_PENDING;
 };
 
-export const triageHuntRunWithAgent = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt, jwtUserId?: string) => {
+/**
+ * Triage of a run by the hunt triage agent. `reader` reads what the payload carries: the user asking for a manual
+ * triage, so that nothing this user cannot see reaches the agent, or the hunt manager for the automatic triage.
+ */
+export const triageHuntRunWithAgent = async (
+  context: AuthContext,
+  reader: AuthUser,
+  run: BasicStoreEntityHuntRun,
+  hunt: BasicStoreEntityHunt,
+  jwtUserId?: string,
+) => {
   const jwtUser = await resolveAgentJwtUser(jwtUserId);
-  const history = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+  const history = await topEntitiesList<BasicStoreEntityHuntRun>(context, reader, [ENTITY_TYPE_HUNT_RUN], {
     first: TRIAGE_HISTORY_SIZE,
     orderBy: 'completed_at',
     orderMode: OrderingMode.Desc,
@@ -356,9 +366,9 @@ export const triageHuntRunWithAgent = async (context: AuthContext, run: BasicSto
     noFiltersChecking: true,
   });
   const [techniques, targets, securityPlatform] = await Promise.all([
-    hunt[RELATION_HUNT_TECHNIQUES]?.length ? findByIds<BasicStoreEntity & { x_mitre_id?: string }>(context, HUNT_MANAGER_USER, hunt[RELATION_HUNT_TECHNIQUES] ?? []) : [],
-    hunt[RELATION_HUNT_TARGETS]?.length ? findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, hunt[RELATION_HUNT_TARGETS] ?? []) : [],
-    run.security_platform_id ? internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null,
+    hunt[RELATION_HUNT_TECHNIQUES]?.length ? findByIds<BasicStoreEntity & { x_mitre_id?: string }>(context, reader, hunt[RELATION_HUNT_TECHNIQUES] ?? []) : [],
+    hunt[RELATION_HUNT_TARGETS]?.length ? findByIds<BasicStoreEntity>(context, reader, hunt[RELATION_HUNT_TARGETS] ?? []) : [],
+    run.security_platform_id ? internalLoadById<BasicStoreEntity>(context, reader, run.security_platform_id) : null,
   ]);
   const payload = {
     task: 'hunt_triage',
@@ -410,16 +420,18 @@ export const isHuntRunFinalized = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_
 };
 
 /**
- * Post-completion of a run: automatic verdict, Incident draft above the escalation threshold, hunt statistics,
- * Security Coverage write-back for emulation runs and agent triage (Enterprise Edition, never applied as verdict).
- * Each step records its result before the next one, and the verdict is recorded last but the statistics, so that a
- * finalization stopped halfway is completed by a later attempt without creating a second draft or incident.
+ * Post-completion of a run: Incident draft above the escalation threshold, hunt statistics, Security Coverage
+ * write-back for emulation runs, then the automatic verdict, which marks the run finalized. Every step is idempotent
+ * (the draft and incident ids are recorded as soon as they exist, older runs never overwrite the statistics of a newer
+ * one, the coverage write-back merges): when one fails, the run stays unfinalized and a later attempt completes it.
+ * `force` records the verdict whatever failed, for a run whose finalization keeps failing.
  */
-const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
+const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt, force = false) => {
   if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
     return run;
   }
   let current = run;
+  let complete = true;
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
     try {
       if (!current.draft_id) {
@@ -429,23 +441,35 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, null, current.draft_id as string);
       current = await patchHuntRun(context, current, { incident_id: incidentId });
     } catch (error) {
+      complete = false;
       logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: current.internal_id });
     }
   }
-  current = await patchHuntRun(context, current, { verdict: computeAutomaticVerdict(current), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
-  await updateHuntRunInformation(context, hunt.internal_id, {
-    last_run_at: current.completed_at ?? now(),
-    last_run_status: current.hunt_run_status,
-    last_hits_count: current.hits_count ?? 0,
-  });
+  const completedAt = current.completed_at ?? now();
+  if (!hunt.last_run_at || new Date(hunt.last_run_at).getTime() <= new Date(completedAt).getTime()) {
+    try {
+      await updateHuntRunInformation(context, hunt.internal_id, {
+        last_run_at: completedAt,
+        last_run_status: current.hunt_run_status,
+        last_hits_count: current.hits_count ?? 0,
+      });
+    } catch (error) {
+      complete = false;
+      logApp.error('[OPENCTI-MODULE] Hunt statistics update failed', { cause: error, runId: current.internal_id });
+    }
+  }
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
     try {
       await writeHuntCoverageResult(context, current);
     } catch (error) {
+      complete = false;
       logApp.error('[OPENCTI-MODULE] Hunt coverage write-back failed', { cause: error, runId: current.internal_id });
     }
   }
-  return current;
+  if (!complete && !force) {
+    return current;
+  }
+  return patchHuntRun(context, current, { verdict: computeAutomaticVerdict(current), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
 };
 
 const isTriageAvailable = async (context: AuthContext) => {
@@ -463,7 +487,7 @@ const scheduleAutomaticTriage = (context: AuthContext, run: BasicStoreEntityHunt
     return;
   }
   isTriageAvailable(context)
-    .then((available) => (available ? triageHuntRunWithAgent(context, run, hunt) : null))
+    .then((available) => (available ? triageHuntRunWithAgent(context, HUNT_MANAGER_USER, run, hunt) : null))
     .catch((error) => logApp.warn('[OPENCTI-MODULE] Automatic hunt triage skipped', { cause: error, runId: run.internal_id }));
 };
 
@@ -616,25 +640,30 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   return updated;
 };
 
-const completeHuntRunFinalization = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+const completeHuntRunFinalization = async (context: AuthContext, run: BasicStoreEntityHuntRun, force = false) => {
   const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
   if (!hunt) {
     return patchHuntRun(context, run, { verdict: computeAutomaticVerdict(run), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
   }
-  logApp.info('[OPENCTI-MODULE] Hunt run finalization completed after an interruption', { runId: run.internal_id });
-  return finalizeHuntRun(context, run, hunt);
+  const finalized = await finalizeHuntRun(context, run, hunt, force);
+  if (force && !isHuntRunFinalized(run)) {
+    logApp.warn('[OPENCTI-MODULE] Hunt run finalized after repeated failures of its finalization steps', { runId: run.internal_id });
+  } else if (isHuntRunFinalized(finalized)) {
+    logApp.info('[OPENCTI-MODULE] Hunt run finalization completed after an interruption', { runId: run.internal_id });
+  }
+  return finalized;
 };
 
 /**
  * Finalizes again a terminated run whose finalization stopped halfway (hunt manager reconciliation), under the run
- * transition lock so that it never races a connector report.
+ * transition lock so that it never races a connector report. `force` records the verdict even if a step fails again.
  */
-export const reconcileHuntRunFinalization = async (context: AuthContext, unfinalizedRun: BasicStoreEntityHuntRun) => {
+export const reconcileHuntRunFinalization = async (context: AuthContext, unfinalizedRun: BasicStoreEntityHuntRun, force = false) => {
   return withHuntRunTransition(context, unfinalizedRun.internal_id, async (run) => {
     if (isHuntRunFinalized(run)) {
       return run;
     }
-    const finalized = await completeHuntRunFinalization(context, run);
+    const finalized = await completeHuntRunFinalization(context, run, force);
     return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, finalized, HUNT_MANAGER_USER);
   });
 };
@@ -802,7 +831,7 @@ export const triageHuntRun = async (context: AuthContext, user: AuthUser, runId:
   if (run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
     throw FunctionalError('Only a completed hunt run can be triaged', { runId });
   }
-  const triaged = await triageHuntRunWithAgent(context, run, hunt, user.id);
+  const triaged = await triageHuntRunWithAgent(context, user, run, hunt, user.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, triaged, user);
 };
 // endregion

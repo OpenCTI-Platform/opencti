@@ -44,7 +44,7 @@ import {
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
 } from './huntRun/huntRun-types';
-import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun, reconcileHuntRunFinalization } from './huntRun/huntRun-domain';
+import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun, isHuntRunFinalized, reconcileHuntRunFinalization } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
@@ -224,6 +224,8 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
 
 // A finalization runs right after the report that terminates a run: older than this, an unfinalized run was interrupted
 const FINALIZATION_GRACE_MINUTES = 2;
+// A run whose finalization steps keep failing for this long gets its verdict anyway (the failures stay in the logs)
+const FINALIZATION_GIVE_UP_MINUTES = 60;
 
 /**
  * Terminated executed runs whose finalization (incident draft, automatic verdict, statistics) was interrupted, for
@@ -236,11 +238,15 @@ export const finalizeInterruptedHuntRuns = async (context: AuthContext): Promise
     { key: ['verdict_source'], values: [], operator: FilterOperator.Nil },
     { key: ['completed_at'], values: [minutesAgo(FINALIZATION_GRACE_MINUTES)], operator: FilterOperator.Lte },
   ], 'completed_at');
+  const giveUpBefore = new Date(minutesAgo(FINALIZATION_GIVE_UP_MINUTES)).getTime();
   let finalized = 0;
   for (let index = 0; index < runs.length; index += 1) {
     try {
-      await reconcileHuntRunFinalization(context, runs[index]);
-      finalized += 1;
+      const force = !!runs[index].completed_at && new Date(runs[index].completed_at as string).getTime() <= giveUpBefore;
+      const run = await reconcileHuntRunFinalization(context, runs[index], force);
+      if (isHuntRunFinalized(run)) {
+        finalized += 1;
+      }
     } catch (error) {
       logApp.error('[OPENCTI-MODULE] Hunt run finalization could not be completed', { cause: error, runId: runs[index].internal_id });
     }

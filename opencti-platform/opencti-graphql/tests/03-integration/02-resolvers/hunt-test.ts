@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
+import * as huntStats from '../../../src/modules/hunt/hunt-stats';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { BasicStoreEntity } from '../../../src/types/store';
@@ -578,6 +579,20 @@ describe('Hunt resolvers', () => {
       await deleteElementById(testContext, ADMIN_USER, restrictedPlatform.internal_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     }
+  });
+
+  it('should keep a run unfinalized while a finalization step fails, then complete it', async () => {
+    const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId, input: { security_platform_ids: [securityPlatformId] } } });
+    const runId = started.data?.huntRunStart[0].id;
+    const statistics = vi.spyOn(huntStats, 'updateHuntRunInformation').mockRejectedValueOnce(new Error('engine unavailable'));
+    const reported = await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: runId, input: { status: 'completed', hits_count: 0 } } });
+    statistics.mockRestore();
+    // No verdict recorded: the run is not finalized while its statistics are missing
+    expect(reported.data?.huntRunReport).toMatchObject({ hunt_run_status: 'completed', verdict: 'pending', verdict_source: null });
+    await patchAttribute(testContext, HUNT_MANAGER_USER, runId, ENTITY_TYPE_HUNT_RUN, { completed_at: new Date(Date.now() - 10 * 60000).toISOString() });
+    expect(await finalizeInterruptedHuntRuns(testContext)).toBeGreaterThanOrEqual(1);
+    const run = (await queryAsAdminWithSuccess({ query: HUNT_RUN_STATE, variables: { id: runId } })).data?.huntRun;
+    expect(run).toMatchObject({ verdict: 'benign', verdict_source: 'auto' });
   });
 
   it('should delete a hunt', async () => {
