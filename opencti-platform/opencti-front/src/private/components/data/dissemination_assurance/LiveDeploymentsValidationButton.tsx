@@ -109,7 +109,7 @@ const LiveDeploymentsDialog = ({ side, entityId, entityName, onClose }: LiveDepl
       onClose={onClose}
       indicators={indicators}
       platforms={platformOptions}
-      defaultName={t_i18n('{count, plural, one {Validation of # live indicator} other {Validation of # live indicators}}', { values: counts })}
+      defaultName={t_i18n('Validation of {count, plural, one {# live indicator} other {# live indicators}}', { values: counts })}
       summary={platformOptions.length > 0 ? summary : t_i18n('No live deployment to validate')}
     />
   );

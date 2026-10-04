@@ -293,7 +293,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
           {t_i18n('Cancel')}
         </Button>
         <Button onClick={submit} disabled={!canSubmit} data-testid="ioc-validation-request-submit">
-          {t_i18n('{count, plural, one {Validate # indicator} other {Validate # indicators}}', { values: { count: indicatorIds.length } })}
+          {t_i18n('Validate {count, plural, one {# indicator} other {# indicators}}', { values: { count: indicatorIds.length } })}
         </Button>
       </DialogActions>
     </Dialog>
