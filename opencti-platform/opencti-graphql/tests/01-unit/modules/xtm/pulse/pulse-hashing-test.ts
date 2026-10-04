@@ -49,6 +49,13 @@ describe('Threat Pulse hashing', () => {
     expect(computeIndicatorCanonicalValue("[url:value = 'HTTPS://Example.COM/Path?q=A']", 'stix')).toBe('observable:url:value:https://example.com/Path?q=A');
   });
 
+  it('should keep the user information of a URL in its canonical form', () => {
+    expect(computeIndicatorCanonicalValue("[url:value = 'HTTPS://Alice@Example.COM/a']", 'stix')).toBe('observable:url:value:https://Alice@example.com/a');
+    expect(computeIndicatorCanonicalValue("[url:value = 'https://bob:Secret@example.com/a']", 'stix')).toBe('observable:url:value:https://bob:Secret@example.com/a');
+    expect(computeIndicatorCanonicalValue("[url:value = 'https://alice@example.com/a']", 'stix'))
+      .not.toBe(computeIndicatorCanonicalValue("[url:value = 'https://bob@example.com/a']", 'stix'));
+  });
+
   it('should give the same key to the same observable written differently', () => {
     const first = computeStableKeys({ entity_type: 'Indicator', pattern: "[domain-name:value = 'evil.example.com']", pattern_type: 'stix' });
     const second = computeStableKeys({ entity_type: 'Indicator', pattern: "[domain-name:value='EVIL.example.com']", pattern_type: 'STIX' });

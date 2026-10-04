@@ -107,7 +107,9 @@ const normalizeObservableValue = (stixType: string, path: string, value: string)
   if (stixType === 'url') {
     try {
       const url = new URL(trimmed);
-      return `${url.protocol}//${url.host.toLowerCase()}${url.pathname}${url.search}${url.hash}`;
+      const credentials = url.password ? `${url.username}:${url.password}` : url.username;
+      const userinfo = credentials ? `${credentials}@` : '';
+      return `${url.protocol}//${userinfo}${url.host.toLowerCase()}${url.pathname}${url.search}${url.hash}`;
     } catch {
       return trimmed;
     }
