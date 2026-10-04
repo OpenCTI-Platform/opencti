@@ -123,6 +123,11 @@ export const provenanceEventTypesOptions = [
   { value: 'conflict', label: 'Source conflict detected' },
 ];
 
+// Events emitted by the graph analytics when a clustering run is published, for entity and instance triggers
+export const graphAnalyticsEventTypesOptions = [
+  { value: 'graph_cluster_joined', label: 'Joined a graph cluster' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return [...filterEventTypesOptions, ...provenanceEventTypesOptions].find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...provenanceEventTypesOptions, ...graphAnalyticsEventTypesOptions].find((o) => o.value === event_type);
 }).filter((option) => option !== undefined);

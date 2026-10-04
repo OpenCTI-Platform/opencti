@@ -1,0 +1,4 @@
+__pycache__
+config.yml
+.venv
+.pytest_cache

@@ -11,6 +11,8 @@ import { PublicStixCoreObjectsListQuery } from './__generated__/PublicStixCoreOb
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetColumn } from '../../../../utils/widget/widget';
+import { ErrorBoundary } from '../../../../private/components/Error';
+import { isGraphMetricsSortKey } from '../../../../private/components/common/graph_analytics/useGraphMetricsPlatformView';
 
 const publicStixCoreObjectsListQuery = graphql`
   query PublicStixCoreObjectsListQuery(
@@ -39,6 +41,11 @@ const publicStixCoreObjectsListQuery = graphql`
             min
             max
             total
+          }
+          x_opencti_graph_metrics {
+            degree
+            betweenness_approx
+            cluster_size
           }
           creators {
             id
@@ -452,6 +459,12 @@ const PublicStixCoreObjectsListComponent = ({
 
 PublicStixCoreObjectsListComponent.displayName = 'PublicStixCoreObjectsListComponent';
 
+// A list ranked by graph metrics is refused when the dashboard cannot read every relationship of the platform
+const PublicGraphMetricsRestricted = () => {
+  const { t_i18n } = useFormatter();
+  return <WidgetNoData message={t_i18n('This list is ranked by graph metrics, which require access to every relationship of the platform.')} />;
+};
+
 const PublicStixCoreObjectsList = ({
   uriKey,
   widget,
@@ -475,21 +488,26 @@ const PublicStixCoreObjectsList = ({
   const columns = selection.columns ?? getDefaultWidgetColumns('entities');
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const list = queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <PublicStixCoreObjectsListComponent
+        queryRef={queryRef}
+        columns={[...columns]}
+        rootRef={rootRef.current ?? undefined}
+        widgetId={id}
+      />
+    </React.Suspense>
+  ) : null;
 
   return (
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Entities number')}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <PublicStixCoreObjectsListComponent
-              queryRef={queryRef}
-              columns={[...columns]}
-              rootRef={rootRef.current ?? undefined}
-              widgetId={id}
-            />
-          </React.Suspense>
+        {list ? (
+          isGraphMetricsSortKey(selection.sort_by)
+            ? <ErrorBoundary display={PublicGraphMetricsRestricted}>{list}</ErrorBoundary>
+            : list
         ) : (
           <Loader variant={LoaderVariant.inElement} />
         )}

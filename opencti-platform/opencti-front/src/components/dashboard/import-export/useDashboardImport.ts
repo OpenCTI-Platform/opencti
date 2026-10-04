@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useRef } from 'react';
+import { BaseSyntheticEvent, useCallback, useRef } from 'react';
 import { MESSAGING$ } from '../../../relay/environment';
 
 const useDashboardImport = ({ onImport }: {
@@ -10,6 +10,8 @@ const useDashboardImport = ({ onImport }: {
     const importedFile = event.target.files[0];
     onImport(importedFile)
       .catch((error) => {
+        // a rejection without payload follows a request error the mutation already reported
+        if (!error?.res) return;
         MESSAGING$.notifyCustomRelayError(error, {
           name: 'An unknown error has occurred! Please try again later.',
         });
@@ -21,7 +23,7 @@ const useDashboardImport = ({ onImport }: {
       });
   };
 
-  const handleImport = () => inputRef.current?.click();
+  const handleImport = useCallback(() => inputRef.current?.click(), []);
   return { onChange, handleImport, inputRef };
 };
 

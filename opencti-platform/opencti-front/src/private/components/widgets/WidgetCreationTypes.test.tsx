@@ -23,6 +23,9 @@ const ALL_VISUALIZATION_TYPES = [
   'provenance-single-sourced',
   'bookmark',
   'wordcloud',
+  'graph-similarity-matrix',
+  'graph-clusters-size',
+  'graph-top-hubs',
 ];
 
 describe('getVisualizationTypes', () => {

@@ -1,20 +1,21 @@
 ---
-applyTo: "client-python/**, opencti-worker/**"
-description: "Python client, worker, and automation guidelines"
+applyTo: "client-python/**, opencti-worker/**, opencti-analytics/**"
+description: "Python client, worker, analytics process and automation guidelines"
 ---
 
-# Python (client-python & opencti-worker)
+# Python (client-python, opencti-worker & opencti-analytics)
 
 ## Scope
 This guide covers:
 - `client-python`: The official OpenCTI Python SDK (`pycti`).
 - `opencti-worker`: Background worker implementation (Python-based).
+- `opencti-analytics`: Optional graph analytics process (communities, clusters, approximate betweenness).
 - Automation scripts & tooling.
 
 ## Architecture
 
 ### Tech Stack
-- **Python**: 3.10 to 3.12 (Matrix tested)
+- **Python**: 3.10 to 3.12 (Matrix tested); `opencti-analytics` requires 3.12 or later
 - **Library**: `pycti`
 - **Linting**: flake8, black, isort
 - **Testing**: pytest
@@ -75,6 +76,15 @@ python3 src/worker.py
 - Keep worker tasks idempotent.
 - Handle connection retries (RabbitMQ/Redis) robustly.
 - Log meaningful context (Worker ID, Job ID).
+
+### 4. Analytics process
+- The process only reads ids and types (`graphAnalyticsEdges`) and only writes through
+  `graphAnalyticsUpsertMetrics`: it never creates or modifies STIX objects or relationships.
+- Results must be deterministic for the same graph (seeded algorithms, sorted inputs, cluster ids derived
+  from the cluster content) so clusters keep their identity and their promotions across runs.
+- Respect the platform write-back limits (5000 metrics, 1000 clusters per call) and complete each run with
+  `complete: true` so older assignments are detached.
+- Tests run without a platform (`python -m pytest` in `opencti-analytics`), the API client is faked.
 
 ## Common Issues
 - **Import Errors**: Ensure you installed in editable mode (`-e .`) or site-packages.

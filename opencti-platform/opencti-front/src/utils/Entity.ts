@@ -103,6 +103,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/cases/tasks';
     case 'Malware-Analysis':
       return '/dashboard/analyses/malware_analyses';
+    case 'Graph-Cluster':
+      return '/dashboard/analyses/clusters';
     case 'User':
     case 'Creator':
     case 'Assignee':

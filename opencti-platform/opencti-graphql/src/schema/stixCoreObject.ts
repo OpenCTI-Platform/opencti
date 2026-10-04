@@ -22,5 +22,8 @@ export const stixCoreObjectOptions = {
     opinions_metrics_max: 'opinions_metrics.max',
     opinions_metrics_min: 'opinions_metrics.min',
     opinions_metrics_total: 'opinions_metrics.total',
+    graph_degree: 'x_opencti_graph_metrics.degree',
+    graph_betweenness: 'x_opencti_graph_metrics.betweenness_approx',
+    graph_cluster_size: 'x_opencti_graph_metrics.cluster_size',
   },
 };

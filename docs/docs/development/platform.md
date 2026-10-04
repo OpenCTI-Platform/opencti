@@ -16,6 +16,7 @@ Contains the platform OpenCTI project code base:
 - Web frontend (nodejs / react) `~/opencti/opencti-platform/opencti-front`
 - Backend (nodejs) `~/opencti/opencti-platform/opencti-graphql`
 - Worker (nodejs / python) `~/opencti/opencti-worker`
+- Analytics process (python) `~/opencti/opencti-analytics`
 - Client python (python) `~/opencti/client-python`
 
 ### Connectors
@@ -243,6 +244,23 @@ deactivate
 cd ~/opencti/opencti-worker/src
 source .venv/bin/activate
 python worker.py
+```
+
+## Analytics process
+
+The optional graph analytics process (`~/opencti/opencti-analytics`) computes communities, clusters and
+approximate betweenness on large platforms and writes them back through the API. Small platforms rely on the
+graph analytics manager of the backend. See `opencti-analytics/README.md` for the full configuration.
+
+```bash
+cd ~/opencti/opencti-analytics
+python3 -m venv .venv --prompt "analytics"
+source .venv/bin/activate
+pip3 install -r requirements.txt -r test-requirements.txt
+cp config.yml.sample src/config.yml
+python -m pytest
+cd src
+python analytics.py --once --force
 ```
 
 ## Connectors

@@ -176,3 +176,12 @@ No source and no knowledge content is ever collected, only counts.
 ### Workflows
 
 - The number of workflow definitions published
+
+### Graph analytics
+
+- The number of path finder queries (Connect to, Find path)
+- The number of similar entities queries (Similar tab, Expand by similarity)
+- The number of pivots from graph analytics results (opening or comparing a similar entity, starting an investigation from paths, similar entities or a cluster)
+- The number of graph clusters promoted to a Grouping or a Campaign
+- The number of graph clusters
+- Whether the optional analytics process wrote results recently

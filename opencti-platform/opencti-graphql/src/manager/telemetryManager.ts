@@ -60,7 +60,9 @@ import {
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
-import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import { redisClearTelemetry, redisGetTelemetry, redisGraphAnalyticsGetState, redisSetTelemetryAdd } from '../database/redis';
+import { ENTITY_TYPE_GRAPH_CLUSTER } from '../modules/graphAnalytics/graphAnalytics-types';
+import { isAnalyticsProcessActive } from '../modules/graphAnalytics/graphAnalytics-state';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
@@ -161,6 +163,11 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+// Graph analytics counters
+export const TELEMETRY_GAUGE_GRAPH_PATH_QUERY = 'graphPathQueryCount';
+export const TELEMETRY_GAUGE_GRAPH_SIMILARITY_QUERY = 'graphSimilarityQueryCount';
+export const TELEMETRY_GAUGE_GRAPH_ANALYTICS_PIVOT = 'graphAnalyticsPivotCount';
+export const TELEMETRY_GAUGE_GRAPH_CLUSTER_PROMOTION = 'graphClusterPromotionCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -215,6 +222,15 @@ export const addNlqQueryCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1)
     .catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
 };
+// Fire-and-forget: a telemetry failure must never break graph analytics queries.
+const addGraphAnalyticsCount = (gauge: string) => {
+  redisSetTelemetryAdd(gauge, 1)
+    .catch((reason) => logApp.warn('Error adding graph analytics count to telemetry', { reason, gauge }));
+};
+export const addGraphPathQueryCount = () => addGraphAnalyticsCount(TELEMETRY_GAUGE_GRAPH_PATH_QUERY);
+export const addGraphSimilarityQueryCount = () => addGraphAnalyticsCount(TELEMETRY_GAUGE_GRAPH_SIMILARITY_QUERY);
+export const addGraphAnalyticsPivotCount = () => addGraphAnalyticsCount(TELEMETRY_GAUGE_GRAPH_ANALYTICS_PIVOT);
+export const addGraphClusterPromotionCount = () => addGraphAnalyticsCount(TELEMETRY_GAUGE_GRAPH_CLUSTER_PROMOTION);
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
 };
@@ -549,6 +565,13 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region Graph analytics
+    const graphClusterCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_GRAPH_CLUSTER] });
+    manager.setGraphClusterCount(graphClusterCount);
+    const graphAnalyticsState = await redisGraphAnalyticsGetState();
+    manager.setIsGraphAnalyticsProcessActive(isAnalyticsProcessActive(graphAnalyticsState) ? 1 : 0);
+    // endregion
+
     // region Provenance and knowledge freshness information
     const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DECAY_RULE);
     manager.setActiveKnowledgeDecayRulesCount(decayRules.filter((rule) => rule.active && (rule.target_scope ?? 'indicator') !== 'indicator').length);
@@ -829,6 +852,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    manager.setGraphPathQueryCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_PATH_QUERY));
+    manager.setGraphSimilarityQueryCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_SIMILARITY_QUERY));
+    manager.setGraphAnalyticsPivotCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_ANALYTICS_PIVOT));
+    manager.setGraphClusterPromotionCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_CLUSTER_PROMOTION));
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];

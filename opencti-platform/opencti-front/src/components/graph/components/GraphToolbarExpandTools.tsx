@@ -15,7 +15,7 @@ import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/
 import { ObjectToParse } from '../utils/useGraphParser';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
-const expandRelationshipsQuery = graphql`
+export const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
     stixRelationships(
       filters: $filters

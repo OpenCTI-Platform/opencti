@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { useContext } from 'react';
+import { useCallback, useContext } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
@@ -12,7 +12,8 @@ import IconButton from '../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
-import { handleError, handleErrorInForm } from '../../../relay/environment';
+import { handleError, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
+import type { RelayError } from '../../../relay/relayTypes';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -21,11 +22,12 @@ import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/u
 import useMarkdownCreationFilesInput from '../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
-import Drawer from '../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../common/drawer/Drawer';
 import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
+import DashboardTemplateMenu from '../../../components/dashboard/templates/DashboardTemplateMenu';
 import { Tooltip } from '@mui/material';
 
 const workspaceMutation = graphql`
@@ -58,21 +60,72 @@ interface WorkspaceCreationProps {
   type: string;
 }
 
-const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
+interface DashboardCreationDialProps extends DrawerControlledDialProps {
+  onImportFile: () => void;
+  onCreateFromTemplate: (file: File) => Promise<void>;
+}
+
+const DashboardCreationDial = ({ onImportFile, onCreateFromTemplate, ...dialProps }: DashboardCreationDialProps) => {
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_custom_dashboards?platform_id=${settings.id}`
     : '';
+  // a rejection without payload follows a request error the mutation already reported
+  const createFromTemplate = (file: File) => {
+    onCreateFromTemplate(file).catch((error?: RelayError) => {
+      if (error?.res?.errors?.length) MESSAGING$.notifyRelayError(error);
+      else if (error) MESSAGING$.notifyError(t_i18n('An unknown error has occurred! Please try again later.'));
+    });
+  };
+  return (
+    <Security needs={[EXPLORE_EXUPDATE]}>
+      <>
+        <Tooltip title={t_i18n('Import dashboard')}>
+          <IconButton
+            value="import"
+            size="default"
+            variant="secondary"
+            onClick={onImportFile}
+            data-testid="ImportDashboard"
+
+            aria-label={t_i18n('Import dashboard')}
+          >
+            <FileUploadOutlined fontSize="small" color="primary" />
+          </IconButton>
+        </Tooltip>
+        <DashboardTemplateMenu onCreate={createFromTemplate} />
+        {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+          <Button
+            gradient
+            href={importFromHubUrl}
+            target="_blank"
+            title={t_i18n('Import from Hub')}
+          >
+            {t_i18n('Import from Hub')}
+          </Button>
+        )}
+        <CreateEntityControlledDial entityType="Dashboard" {...dialProps} />
+      </>
+    </Security>
+  );
+};
+
+const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
+  const { t_i18n } = useFormatter();
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const navigate = useNavigate();
 
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
-  const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
+  const handleImport = useCallback((file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
+        if ((errors && errors.length > 0) || !data.workspaceConfigurationImport) {
+          reject({ res: { errors: errors ?? [] } });
+          return;
+        }
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
@@ -83,8 +136,9 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
         reject();
       },
     });
-  });
+  }), [commitImportMutation, navigate]);
   const importHelpers = useDashboardImport({ onImport: handleImport });
+  const openImportFile = importHelpers.handleImport;
 
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
@@ -124,36 +178,11 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     </Security>
   );
 
-  const createDashboardButton = (props: { onOpen: () => void }) => (
-    <Security needs={[EXPLORE_EXUPDATE]}>
-      <>
-        <Tooltip title={t_i18n('Import dashboard')}>
-          <IconButton
-            value="import"
-            size="default"
-            variant="secondary"
-            onClick={importHelpers.handleImport}
-            data-testid="ImportDashboard"
-
-            aria-label={t_i18n('Import dashboard')}
-          >
-            <FileUploadOutlined fontSize="small" color="primary" />
-          </IconButton>
-        </Tooltip>
-        {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-          <Button
-            gradient
-            href={importFromHubUrl}
-            target="_blank"
-            title={t_i18n('Import from Hub')}
-          >
-            {t_i18n('Import from Hub')}
-          </Button>
-        )}
-        <CreateEntityControlledDial entityType="Dashboard" {...props} />
-      </>
-    </Security>
-  );
+  // Drawer renders the dial as a component: a new function on every render would remount it and close the
+  // template menu whenever the list re-renders.
+  const createDashboardButton = useCallback((props: DrawerControlledDialProps) => (
+    <DashboardCreationDial {...props} onImportFile={openImportFile} onCreateFromTemplate={handleImport} />
+  ), [openImportFile, handleImport]);
 
   return (
     <>

@@ -43,6 +43,7 @@ import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
 import { displayEntityTypeForTranslation } from '../String';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
+import { useSearchEntitiesGraphClustersQuery$data } from './__generated__/useSearchEntitiesGraphClustersQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -257,6 +258,20 @@ const workspacesQuery = graphql`
 const groupsQuery = graphql`
   query useSearchEntitiesGroupsQuery($search: String, $first: Int) {
     groups(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
+const graphClustersQuery = graphql`
+  query useSearchEntitiesGraphClustersQuery($search: String, $first: Int) {
+    graphClusters(search: $search, first: $first) {
       edges {
         node {
           id
@@ -1048,6 +1063,21 @@ const useSearchEntities = ({
               buildOptionsFromStixCoreObjectTypes(filterKey, idEntityTypes);
             } else if (idEntityTypes.every((typeOfId) => schema.smos.map((n) => n.id).includes(typeOfId))) { // Stix Meta Objects
               buildOptionsFromStixMetaObjectTypes(filterKey, idEntityTypes);
+            } else if (idEntityTypes.includes('Graph-Cluster')) {
+              fetchQuery(graphClustersQuery, {
+                search: event.target.value !== 0 ? event.target.value : '',
+                first: 100,
+              })
+                .toPromise()
+                .then((data) => {
+                  const clusters = ((data as useSearchEntitiesGraphClustersQuery$data)?.graphClusters?.edges ?? [])
+                    .map((n) => ({
+                      label: n.node.name,
+                      value: n.node.id,
+                      type: n.node.entity_type,
+                    }));
+                  unionSetEntities(filterKey, clusters);
+                });
             } else if (idEntityTypes.includes('Group')) {
               buildOptionsFromGroupSearchQuery(filterKey);
             } else if (idEntityTypes.includes('Notifier')) {

@@ -15,6 +15,7 @@ import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -201,6 +202,8 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     entity={threatActorGroup}
                   />
                 ),
+                similar:
+                  <StixCoreObjectSimilar stixCoreObjectId={threatActorGroupId} />,
                 history:
                   <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId} />,
               }}

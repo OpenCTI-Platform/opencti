@@ -1,5 +1,101 @@
 export const PRIVATE_DASHBOARD_MANIFEST = {
   widgets: {
+    '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa101': {
+      id: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa101',
+      type: 'graph-similarity-matrix',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'malwares',
+          number: 5,
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+              { key: 'description', values: ['widget tests'], operator: 'search', mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: { title: 'Similarity of malwares' },
+      layout: { w: 4, h: 4, x: 0, y: 8, i: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa101', moved: false, static: false },
+    },
+    '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102': {
+      id: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102',
+      type: 'graph-clusters-size',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'malwares',
+          number: 5,
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+              { key: 'description', values: ['widget tests'], operator: 'search', mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: { title: 'Malware clusters', interval: 'month' },
+      layout: { w: 4, h: 4, x: 4, y: 8, i: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102', moved: false, static: false },
+    },
+    '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103': {
+      id: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103',
+      type: 'list',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'malwares by name',
+          number: 5,
+          date_attribute: 'created_at',
+          sort_by: 'name',
+          sort_mode: 'asc',
+          perspective: 'entities',
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+              { key: 'description', values: ['widget tests'], operator: 'search', mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: { title: 'Malwares by name' },
+      layout: { w: 4, h: 4, x: 8, y: 8, i: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103', moved: false, static: false },
+    },
+    '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104': {
+      id: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104',
+      type: 'graph-top-hubs',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'malware hubs',
+          number: 2,
+          date_attribute: 'created_at',
+          sort_by: 'name',
+          sort_mode: 'asc',
+          perspective: 'entities',
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+              { key: 'description', values: ['widget tests'], operator: 'search', mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: { title: 'Malware hubs' },
+      layout: { w: 4, h: 4, x: 0, y: 12, i: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104', moved: false, static: false },
+    },
     'ebb25410-7048-4de7-9288-704e962215f6': {
       id: 'ebb25410-7048-4de7-9288-704e962215f6',
       type: 'number',

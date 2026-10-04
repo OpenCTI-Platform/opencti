@@ -218,6 +218,28 @@ describe('widgetUtils', () => {
       expect(isDataSelectionNumberValid('list', createDataSelection(500))).toBe(true);
     });
 
+    it('should bound the graph analytics widgets to what the platform computes live', () => {
+      expect(isDataSelectionNumberValid('graph-similarity-matrix', createDataSelection(25))).toBe(true);
+      expect(isDataSelectionNumberValid('graph-similarity-matrix', createDataSelection(26))).toBe(false);
+      expect(isDataSelectionNumberValid('graph-clusters-size', createDataSelection(20))).toBe(true);
+      expect(isDataSelectionNumberValid('graph-clusters-size', createDataSelection(21))).toBe(false);
+      expect(isDataSelectionNumberValid('graph-top-hubs', createDataSelection(50))).toBe(true);
+      expect(isDataSelectionNumberValid('graph-top-hubs', createDataSelection(51))).toBe(false);
+    });
+
+    it('should expose the graph analytics widgets for entities only', () => {
+      expect(getCurrentCategory('graph-similarity-matrix')).toBe('distribution');
+      expect(getCurrentCategory('graph-clusters-size')).toBe('timeseries');
+      expect(getCurrentCategory('graph-top-hubs')).toBe('distribution');
+      expect(getCurrentIsRelationships('graph-similarity-matrix')).toBe(false);
+      expect(getCurrentIsRelationships('graph-clusters-size')).toBe(false);
+      expect(getCurrentIsRelationships('graph-top-hubs')).toBe(false);
+      expect(getCurrentAvailableParameters('graph-clusters-size')).toEqual(['legend']);
+      expect(getCurrentAvailableParameters('graph-top-hubs')).toEqual(['distributed']);
+      expect(getCurrentDataSelectionLimit('graph-similarity-matrix')).toBe(1);
+      expect(getCurrentDataSelectionLimit('graph-top-hubs')).toBe(1);
+    });
+
     it('should return false for restricted widgets with number > 100', () => {
       expect(isDataSelectionNumberValid('distribution-list', createDataSelection(150))).toBe(false);
       expect(isDataSelectionNumberValid('donut', createDataSelection(200))).toBe(false);

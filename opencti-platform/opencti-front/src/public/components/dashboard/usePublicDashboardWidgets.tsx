@@ -35,6 +35,9 @@ import type { Widget } from '../../../utils/widget/widget';
 import PublicStixCoreObjectsWordCloud from './stix_core_objects/PublicStixCoreObjectsWordCloud';
 import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRelationshipsWordCloud';
 import Card from '../../../components/common/card/Card';
+import PublicGraphSimilarityMatrix from './graph_analytics/PublicGraphSimilarityMatrix';
+import PublicGraphClustersSize from './graph_analytics/PublicGraphClustersSize';
+import PublicGraphTopHubs from './graph_analytics/PublicGraphTopHubs';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => {
   const { t_i18n } = useFormatter();
@@ -184,6 +187,33 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
       case 'wordcloud':
         return (
           <PublicStixCoreObjectsWordCloud
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'graph-similarity-matrix':
+        return (
+          <PublicGraphSimilarityMatrix
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'graph-clusters-size':
+        return (
+          <PublicGraphClustersSize
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'graph-top-hubs':
+        return (
+          <PublicGraphTopHubs
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}
