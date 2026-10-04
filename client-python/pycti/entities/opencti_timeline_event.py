@@ -359,7 +359,8 @@ class TimelineEvent:
         :param id: the id of the timeline event (required)
         :type id: str
         :param kwargs: the fields to change (see TIMELINE_EDITABLE_FIELDS); a field
-            passed as None is cleared, an omitted field is left unchanged
+            passed as None is cleared (``event_end_time=None`` is sent as
+            ``clear_event_end_time``), an omitted field is left unchanged
         :return: the updated timeline event or None
         :rtype: dict or None
         """
@@ -374,6 +375,10 @@ class TimelineEvent:
             for field in TIMELINE_EDITABLE_FIELDS
             if field in kwargs
         }
+        # The platform only clears the end time through its dedicated flag
+        if "event_end_time" in edit_input and edit_input["event_end_time"] is None:
+            del edit_input["event_end_time"]
+            edit_input["clear_event_end_time"] = True
         if len(edit_input) == 0:
             self.opencti.app_logger.error(
                 "[opencti_timeline_event] Nothing to update", {"id": id}
