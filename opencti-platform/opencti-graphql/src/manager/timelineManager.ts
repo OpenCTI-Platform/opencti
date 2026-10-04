@@ -272,7 +272,14 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
         logApp.debug('[TIMELINE] Container timeline regenerated', { ...result, anchors: undefined });
       }
     } catch (error) {
-      const retried = await retryTimelineRegeneration(containerId).catch(() => false);
+      let retried: boolean;
+      try {
+        retried = await retryTimelineRegeneration(containerId);
+      } catch (retryError) {
+        // The retry could not be scheduled: the claim is kept, and its lease hands the container out again
+        logApp.error('[TIMELINE] Container timeline regeneration failure, retry not scheduled', { cause: error, retryCause: retryError, containerId });
+        return;
+      }
       logApp.error('[TIMELINE] Container timeline regeneration failure', { cause: error, containerId, retried });
     }
     // Handled (regenerated, rescheduled or given up): the claim is released; until then its lease protects it
