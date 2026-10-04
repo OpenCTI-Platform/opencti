@@ -790,6 +790,7 @@ const Graph = ({
                   targetId: endpointId(link.target) ?? link.target_id,
                   relationship_type: link.relationship_type,
                   entity_type: link.entity_type,
+                  represents: link.represents,
                 })), cardTarget.node.id)
               : []}
             isPinned={cardTarget.kind === 'node' && cardTarget.node.fx !== undefined && cardTarget.node.fx !== null}

@@ -82,4 +82,13 @@ describe('relationshipCounts', () => {
     expect(relationshipCounts(links, 'a')).toEqual([{ type: 'targets', count: 1 }, { type: 'uses', count: 1 }]);
     expect(relationshipCounts(links, 'z')).toEqual([]);
   });
+
+  it('counts every relationship a link drawn towards a group stands for', () => {
+    const grouped = [
+      { id: 'group-link', sourceId: 'a', targetId: 'group:Malware', relationship_type: 'uses', represents: 3 },
+      { id: 'at', sourceId: 'a', targetId: 't', relationship_type: 'targets' },
+    ];
+    expect(relationshipCounts(grouped, 'a')).toEqual([{ type: 'uses', count: 3 }, { type: 'targets', count: 1 }]);
+    expect(relationshipCounts(grouped, 'group:Malware')).toEqual([{ type: 'uses', count: 3 }]);
+  });
 });

@@ -98,10 +98,11 @@ export const isPathDrawable = (
 };
 
 /**
- * Number of links of each relationship type touching a node, sorted by count then name: the
- * neighbourhood summary of the hover card.
+ * Number of relationships of each type touching a node, sorted by count then name: the
+ * neighbourhood summary of the hover card. A link drawn towards a group counts every relationship
+ * it stands for.
  */
-export const relationshipCounts = <L extends LinkEnds & { relationship_type?: string; entity_type?: string }>(
+export const relationshipCounts = <L extends LinkEnds & { relationship_type?: string; entity_type?: string; represents?: number }>(
   links: readonly L[],
   nodeId: string,
 ): { type: string; count: number }[] => {
@@ -109,7 +110,7 @@ export const relationshipCounts = <L extends LinkEnds & { relationship_type?: st
   links.forEach((link) => {
     if (link.sourceId !== nodeId && link.targetId !== nodeId) return;
     const type = link.relationship_type || link.entity_type || '';
-    counts.set(type, (counts.get(type) ?? 0) + 1);
+    counts.set(type, (counts.get(type) ?? 0) + (link.represents ?? 1));
   });
   return [...counts.entries()]
     .map(([type, count]) => ({ type, count }))

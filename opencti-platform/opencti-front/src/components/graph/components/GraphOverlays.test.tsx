@@ -311,6 +311,13 @@ describe('GraphAccessibleList', () => {
     expect(screen.getByRole('option', { name: /^Malware Emotet, 1 relationship$/ })).toBeInTheDocument();
   });
 
+  it('counts every relationship a link drawn towards a group stands for', () => {
+    const group = graphNode({ id: 'group:Malware', entity_type: 'Malware', groupOf: { entityType: 'Malware', memberIds: ['malware', 'other'] } });
+    const groupLink = graphLink(actor, group, { id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, represents: 2 });
+    testRender(<GraphAccessibleList nodes={[actor, group]} links={[groupLink]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    expect(screen.getByRole('option', { name: /APT-X, 2 relationships$/ })).toBeInTheDocument();
+  });
+
   it('names the entities of a relationship whose endpoints are still ids', () => {
     // Links arrive with the ids of their endpoints; the renderer replaces them by nodes later.
     const pending = { ...uses, source: 'actor', target: 'malware' } as unknown as typeof uses;

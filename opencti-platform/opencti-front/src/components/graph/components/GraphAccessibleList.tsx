@@ -47,9 +47,10 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
   const entries = useMemo<Entry[]>(() => {
     const degree = new Map<string, number>();
     links.forEach((link) => {
-      // A self-loop is one relationship of its entity.
+      // A self-loop is one relationship of its entity; a link drawn towards a group stands for
+      // every relationship it aggregates.
       new Set([endpoint(link.source)?.id ?? link.source_id, endpoint(link.target)?.id ?? link.target_id]).forEach((id) => {
-        degree.set(id, (degree.get(id) ?? 0) + 1);
+        degree.set(id, (degree.get(id) ?? 0) + (link.represents ?? 1));
       });
     });
     const nodeEntries: Entry[] = nodes.map((node) => {
