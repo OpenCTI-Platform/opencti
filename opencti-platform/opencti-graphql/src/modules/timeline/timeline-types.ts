@@ -10,6 +10,9 @@ export { ENTITY_TYPE_TIMELINE_EVENT, ENTITY_TYPE_TIMELINE_SETTINGS } from './tim
 
 // Incident is a domain object whose knowledge is held by its relationships,
 // the three case types are containers whose knowledge is held by their object refs.
+// Dashboard widget of one incident or case timeline (its `container_id` parameter binds it to the case)
+export const TIMELINE_WIDGET_TYPE = 'case-timeline';
+
 export const TIMELINE_CONTAINER_TYPES = [
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
