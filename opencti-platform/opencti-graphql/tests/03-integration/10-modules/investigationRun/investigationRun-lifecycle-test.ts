@@ -644,14 +644,16 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         report_id: null,
         hypotheses: [],
         recommendations: [],
-        draft_id: mirrored.draft_id,
+        // Kept on the stored run for the retry, never served from a withheld run.
+        draft_id: null,
         workspace_id: null,
       });
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
       await processInvestigationRun(testContext, runId);
       deletion.mockRestore();
-      expect((await readRun(runId)).draft_id).toBeNull();
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id ?? null).toBeNull();
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
       // The draft of the run is deleted with what it wrote there.
       const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: mirrored.draft_id } });
