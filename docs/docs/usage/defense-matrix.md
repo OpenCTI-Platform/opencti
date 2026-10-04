@@ -14,7 +14,7 @@ Each technique gets one level per security platform, and one aggregated level ov
 |:------|:-----|:---------|
 | 0 | None | Nothing is known about this technique. |
 | 1 | Telemetry | A security platform `provides` a data component that `detects` the technique. |
-| 2 | Detection available | A detection rule (an Indicator with a rule pattern type such as Sigma, YARA, Snort, Suricata, SPL, EQL, KQL or YARA-L) `indicates` the technique. Its deployment is unknown. |
+| 2 | Detection available | A detection rule (an Indicator with a rule pattern type such as Sigma, YARA, Snort, Suricata, SPL, EQL, ES\|QL, KQL, Kibana query, Lucene, YARA-L or CrowdStrike custom IOA) `indicates` the technique. Its deployment is unknown. |
 | 3 | Detection deployed | The rule is `deployed-on` the security platform, with a deployed or active status. |
 | 4 | Validated | OpenAEV proved the detection or the prevention of the technique on the platform. |
 
@@ -32,14 +32,20 @@ Revoked techniques leave the matrix: their stored levels and gaps are removed at
 
 A security platform, or a system, declares the MITRE data components it collects with the `provides` relationship.
 
-* On a **Security platform**, open the **Coverage** tab. The **Provided telemetry** card lists the data components and lets you add one with the relationship creation, or declare log sources: describe them with the Sigma taxonomy (category, product, service) and OpenCTI turns them into data components through the telemetry mappings.
+* On a **Security platform**, open the **Coverage** tab. The **Provided telemetry** card lists the data components and lets you add one with the relationship creation, or declare log sources: describe them with the Sigma taxonomy (category, product, service) and OpenCTI turns them into data components through the telemetry mappings. Declaring the same log sources again creates nothing: the result tells how many data components were newly declared and how many were already declared. Below, the tab shows the matrix restricted to this platform, with **View the gaps of this platform** and **Validate the gaps**.
 * On a **System**, create the `provides` relationship to a data component from the knowledge view, like any other relationship.
 
-Telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source.
+![Coverage tab of a security platform](assets/defense-matrix-platform-coverage.png)
+
+Telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source. An inferred telemetry counts for a reader only if this reader can access the rule, its deployment and the `indicates` relationship linking the rule to the technique.
 
 ### Telemetry mappings
 
-The mapping from Sigma log sources to MITRE data components is managed in **Settings > Customization > Telemetry mappings**. OpenCTI ships built-in mappings, which you can edit or deactivate, and you can create your own mappings. **Restore built-in mappings** gives the built-in entries back their shipped data components and reactivates them; custom mappings are kept.
+The mapping from log sources to MITRE data components is managed in **Settings > Customization > Telemetry mappings**. A mapping links a log source, described by its category (what the events describe, for example `process_creation`), its product (the system the events come from, for example `windows`) and its service (the tool or channel that collects them, for example `sysmon`), to the data components it feeds. It applies to every log source matching all the fields it defines.
+
+OpenCTI ships built-in mappings covering the Sigma taxonomy, which you can edit or deactivate. Until you add a mapping of your own, the page opens with an explanation and an **Add a mapping** action. **Restore built-in mappings** gives the built-in entries back their shipped data components and reactivates them; custom mappings are kept.
+
+![Telemetry mappings, first use](assets/defense-matrix-mappings-first-use.png)
 
 ## Detection rules
 
@@ -47,34 +53,66 @@ Detection rules are Indicators whose pattern type is a rule language. The rule m
 
 Connectors import public rule repositories (SigmaHQ, Valhalla, ...) and the rules deployed in your SIEM and EDR (Splunk saved searches, Elastic, Microsoft Sentinel, CrowdStrike custom IOA rules, Google SecOps YARA-L rules). Rules deployed on a platform are linked to it with the `deployed-on` relationship and its deployment status.
 
-## Matrix tab
+A rule whose detection logic is not its query alone is imported with the whole logic as pattern, so that a change of any part of it is a new rule: Elastic threshold, new terms and indicator match rules (`elastic-rule`), Microsoft Sentinel scheduled rules with a trigger other than "more than 0 results" (`sentinel-rule`) and Splunk saved searches with a trigger condition (`splunk-rule`) carry the canonical JSON of their query and conditions.
 
-The **Matrix** tab displays the ATT&CK matrix with the defense level of each technique.
+## Matrix
+
+The **Matrix** section displays the ATT&CK matrix with the defense level of each technique. The level is written in every colored technique, so it never depends on the color alone.
+
+As long as the platform holds no ATT&CK technique, the section explains what the matrix answers and offers **Import MITRE ATT&CK**, which opens the connector catalog.
+
+![Defense matrix on first use](assets/defense-matrix-matrix-first-use.png)
+
+A header sums the scope up: the selected security platforms and threats, and the number of techniques **validated**, **deployed** and left as **gaps** (levels 0 to 2). Click a number to show only these techniques in the matrix, click it again to show them all. When an OpenAEV platform is connected (an enrichment connector for security coverages is running), **Validate the gaps** opens the validation of the techniques used by the selected threats (every technique without threat overlay) that no validation proved yet, the most used first.
+
+![Defense matrix with its header](assets/defense-matrix-matrix-default.png)
 
 * **Security platforms**: select one or several platforms to restrict the levels, or keep all of them.
 * **Threats**: choose the threats to compare with: all threats, selected threats, threats matching a filter, or none. Techniques used by these threats are outlined, with the number of threats using them.
 * **Layers**: show or hide telemetry, detection, validation and mitigations.
 * The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats.
 
-The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps tabs. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh.
+![Security platform selection](assets/defense-matrix-filters.png)
 
-Click a technique to open its drawer. It explains the level per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
+![Matrix with the threat overlay](assets/defense-matrix-matrix-grid.png)
 
-The coverage is computed in the background by the defense coverage manager: a full computation every night and an incremental computation when the knowledge changes. Users allowed to customize the platform can request a full computation with **Recompute**.
+The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps sections. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh. A threat scope defined by filters counts every matching threat. A sub-technique is grouped under its parent only if you can access the parent and the relationship between them.
 
-## Gaps tab
+Click a technique to open its drawer. It starts with the level and one sentence explaining it from its evidences, for example "Detected by 2 rules deployed on Splunk, not validated yet", and the next action of the level:
 
-The **Gaps** tab lists every technique and platform pair below level 4, with:
+| Level | Next action |
+|:------|:------------|
+| No coverage | **Map telemetry**: the telemetry mappings, or the security platforms to declare their telemetry |
+| Telemetry only | **Find a detection rule**: the indicators of the technique |
+| Detection available | **Deploy the rule**: the rule and its deployments |
+| Detection deployed | **Validate in OpenAEV** |
+| Failed validation | **Open the validation**: the security coverage of the failed validation |
+
+Below, the drawer lists the evidences per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
+
+![Technique drawer of a deployed detection](assets/defense-matrix-drawer-deployed.png)
+
+![Technique drawer after a failed validation](assets/defense-matrix-drawer-failed.png)
+
+The coverage is computed in the background by the defense coverage manager: a full computation every night and an incremental computation when the knowledge changes. The header shows when it was computed (the exact date on hover). Users allowed to customize the platform can request a full computation with **Recompute**; the header shows the request until the computation is done.
+
+## Gaps
+
+The **Gaps** section lists every technique and platform pair below level 4, with:
 
 * its level and the **recommended action**: add telemetry, import a rule, deploy a rule, activate a rule, validate, or fix the detection after a failed validation;
 * its **priority**, based on the threats using the technique (weighted by the confidence of their relationships) and on its level;
 * the **rule candidates**: rules indicating the technique that are not deployed yet, ranked by the compatibility of their log source with the telemetry of the platform.
 
-The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV.
+The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV**: the export holds the filtered backlog, in its order.
+
+![Gaps backlog](assets/defense-matrix-gaps.png)
 
 ## Validate in OpenAEV
 
-Select gaps in the Gaps tab, or open a gap drawer, and click **Validate in OpenAEV**. OpenCTI creates a grouping holding the selected techniques (and the threat to emulate, if any) and a [security coverage](security-coverage.md) of this grouping, so that OpenAEV generates a scenario restricted to these techniques. The request is tracked on the gaps.
+Select gaps in the Gaps section, open a technique drawer, or click **Validate the gaps** in the matrix header. The validation dialog previews what will be validated: each technique with the security platforms it is validated on and the scenario (target type, platforms, threat to emulate). Confirm with **Validate N techniques**: OpenCTI creates a grouping holding the techniques (and the threat to emulate, if any) and a [security coverage](security-coverage.md) of this grouping, so that OpenAEV generates a scenario restricted to these techniques. The request is tracked on the gaps: the selected technique and platform pairs exactly (a gap of technique A on platform P1 and a gap of technique B on platform P2 never track B on P1), and the aggregated gap of each technique.
+
+![Validation dialog](assets/defense-matrix-validation-dialog.png)
 
 When OpenAEV sends the results back, they update the validation layer. OpenAEV attributes each result to the security platform that produced it, so a validation is applied to the right platform.
 
@@ -97,6 +135,6 @@ Each recipient is told about the level they see: both levels are computed from t
 
 Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** and **Techniques by defense level** (the number of techniques with a deployed detection, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
 
-Click **Create the defense coverage dashboard** in the defense matrix header to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
+Click **Create the defense coverage dashboard** next to **Recompute** in the defense matrix to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
 The defense widgets are not available in public dashboards and in the custom views of entities.
