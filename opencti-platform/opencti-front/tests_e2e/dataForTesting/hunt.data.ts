@@ -71,6 +71,44 @@ export const seedHuntWithCompletedRun = async (request: APIRequestContext, name:
   return { huntId, runId, connectorId, securityPlatformId };
 };
 
+/**
+ * Starts one more run of a seeded hunt and reports it the way its hunt connector would.
+ * `report` is the body of the HuntRunReportInput, for instance `status: failed, error: "..."`.
+ */
+export const startAndReportHuntRun = async (request: APIRequestContext, seeded: SeededHunt, report: string): Promise<string> => {
+  const runs = await graphqlRequest<{ huntRunStart: Array<{ id: string }> }>(request, `
+    mutation { huntRunStart(id: "${seeded.huntId}", input: { security_platform_ids: ["${seeded.securityPlatformId}"] }) { id } }
+  `, 'Start the hunt run');
+  const runId = runs.huntRunStart[0].id;
+  await graphqlRequest(request, `mutation { huntRunReport(id: "${runId}", input: { ${report} }) { id } }`, 'Report the hunt run');
+  return runId;
+};
+
+/**
+ * Answers the latest translation preview of a hunt the way its hunt connector would, once the preview exists.
+ */
+export const answerLatestHuntPreview = async (request: APIRequestContext, huntId: string, translatedQuery: string): Promise<boolean> => {
+  const runs = await graphqlRequest<{ huntRuns: { edges: Array<{ node: { id: string; hunt_run_status: string } }> } }>(request, `
+    query {
+      huntRuns(first: 1, orderBy: created_at, orderMode: desc, filters: {
+        mode: and, filterGroups: [],
+        filters: [
+          { key: ["hunt_id"], values: ["${huntId}"], operator: eq, mode: or },
+          { key: ["hunt_run_mode"], values: ["preview"], operator: eq, mode: or }
+        ]
+      }) { edges { node { id hunt_run_status } } }
+    }
+  `, 'Find the translation preview');
+  const preview = runs.huntRuns.edges[0]?.node;
+  if (!preview || preview.hunt_run_status !== 'queued') {
+    return false;
+  }
+  await graphqlRequest(request, `
+    mutation { huntRunReport(id: "${preview.id}", input: { status: completed, query_language: "spl", translated_query: ${JSON.stringify(translatedQuery)} }) { id } }
+  `, 'Report the translation preview');
+  return true;
+};
+
 export const deleteSeededHunt = async (request: APIRequestContext, seeded: SeededHunt) => {
   await graphqlRequest(request, `mutation { huntDelete(id: "${seeded.huntId}") }`, 'Delete the hunt');
   await graphqlRequest(request, `mutation { deleteConnector(id: "${seeded.connectorId}") }`, 'Delete the hunt connector');
