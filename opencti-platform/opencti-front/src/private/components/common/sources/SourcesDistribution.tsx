@@ -14,7 +14,7 @@ import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filter
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import { findSourceWidgetMetric, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
 import SourcesWidgetRenderContent from './SourcesWidgetRenderContent';
-import { periodFromDashboardConfig } from './sourcesWidgetUtils';
+import { metricAxisTitle, NO_SOURCE_SCORED_MESSAGE, periodDaysFromDashboardConfig, periodFromDashboardConfig } from './sourcesWidgetUtils';
 import { SourcesDistributionQuery } from './__generated__/SourcesDistributionQuery.graphql';
 
 const sourcesDistributionQuery = graphql`
@@ -47,6 +47,7 @@ const SourcesDistributionComponent = ({ queryRef, selection, widgetType, onMount
   widgetType: SourcesDistributionVariant;
   onMounted: (chart: ApexCharts) => void;
 }) => {
+  const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
   const { sourceScorecardsDistribution } = usePreloadedQuery(sourcesDistributionQuery, queryRef);
   const metric = findSourceWidgetMetric(selection.attribute);
@@ -61,13 +62,13 @@ const SourcesDistributionComponent = ({ queryRef, selection, widgetType, onMount
     .filter((item) => item.value !== null), [sourceScorecardsDistribution, metric]);
 
   if (data.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }
   if (widgetType === 'donut') {
     return <WidgetDonut data={data} groupBy="name" onMounted={onMounted} />;
   }
   if (widgetType === 'horizontal-bar') {
-    const { series, redirectionUtils } = buildWidgetProps(data, selection, metric.label);
+    const { series, redirectionUtils } = buildWidgetProps(data, selection, metricAxisTitle(t_i18n, metric));
     return (
       <WidgetHorizontalBars
         series={series}
@@ -121,7 +122,7 @@ const SourcesDistribution = ({ widgetType, variant, height, dataSelection, param
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title || t_i18n(metric.label)}
+      title={parameters.title || t_i18n('{measure} over the last {days} days', { values: { measure: t_i18n(metric.label), days: periodDaysFromDashboardConfig(config) } })}
       variant={variant}
       chart={chart}
       action={popover}

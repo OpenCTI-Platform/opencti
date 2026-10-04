@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildHubCoverageSearchUrl,
   buildOverlapHeatmapSeries,
   buildTrendSerie,
+  criterionPriority,
   escapeHtml,
   formatCost,
   formatCount,
@@ -12,8 +14,38 @@ import {
   parseJsonObject,
   periodStartDate,
   scoreLevel,
+  sourceEditCostLink,
   sourceScorecardRefLink,
 } from './sourceIntelligenceUtils';
+
+describe('Source intelligence links and priorities', () => {
+  it('should search the XTM Hub integrations covering a collection gap', () => {
+    const url = new URL(buildHubCoverageSearchUrl('https://hub.example.com/', 'platform-1', {
+      object_types: ['Malware', 'Indicator'],
+      sectors: ['Retail, consumer goods'],
+      regions: [],
+    }));
+    expect(url.origin + url.pathname).toEqual('https://hub.example.com/redirect/opencti_integrations');
+    expect(url.searchParams.get('platform_id')).toEqual('platform-1');
+    expect(url.searchParams.get('objectType')).toEqual('Indicator,Malware');
+    // Free-text values keep their commas
+    expect(JSON.parse(url.searchParams.get('sector') as string)).toEqual(['Retail, consumer goods']);
+    expect(url.searchParams.has('region')).toBe(false);
+  });
+
+  it('should rank a criterion against the other criteria of its PIR', () => {
+    expect(criterionPriority(3, [1, 2, 3])).toEqual('high');
+    expect(criterionPriority(2, [1, 2, 3])).toEqual('medium');
+    expect(criterionPriority(1, [1, 2, 3])).toEqual('low');
+    // Criteria of equal weight have no priority to show
+    expect(criterionPriority(1, [1, 1])).toBeNull();
+    expect(criterionPriority(1, [])).toBeNull();
+  });
+
+  it('should open the cost editor of a source', () => {
+    expect(sourceEditCostLink('source-1')).toEqual('/dashboard/integrations/sources/source/source-1?edit=cost');
+  });
+});
 
 describe('Source intelligence utils', () => {
   describe('formatters', () => {

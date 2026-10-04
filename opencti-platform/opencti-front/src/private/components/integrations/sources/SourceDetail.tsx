@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import Grid from '@mui/material/Grid2';
 import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -34,6 +34,8 @@ import {
   ScorecardMetricType,
   ScorecardPeriod,
   scoreLevel,
+  SOURCE_EDIT_COST,
+  SOURCE_EDIT_PARAM,
   SOURCE_KIND_LABELS,
 } from './sourceIntelligenceUtils';
 import SourceMetricValue, { RelativeTime, useSourceMetricFormat } from './SourceMetricValue';
@@ -169,6 +171,7 @@ const TREND_METRICS: Array<{ key: string; label: string; type: ScorecardMetricTy
   { key: 'cost_per_actionable_object', label: 'Cost per actionable object', type: 'cost' },
 ];
 const TREND_DAYS = 90;
+const RECOMMENDATIONS_ANCHOR = 'source-recommendations';
 
 const SCORED_WINDOW_SENTENCES: Record<ScorecardPeriod, string> = {
   LAST_7_DAYS: 'Scored over the last 7 days, refreshed {time}.',
@@ -259,6 +262,8 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
   const isEnterpriseEdition = useEnterpriseEdition();
   const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const { source, sourceScorecards } = usePreloadedQuery(sourceDetailQuery, queryRef);
+  const [searchParams] = useSearchParams();
+  const editCostRequested = searchParams.get(SOURCE_EDIT_PARAM) === SOURCE_EDIT_COST;
   const [trendMetric, setTrendMetric] = useState('value_score');
   const [commitEnable, enableInFlight] = useApiMutation(sourceDetailEnableMutation);
   const handleEnable = (checked: boolean) => {
@@ -313,6 +318,34 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
   } else if (!scorecard) {
     sourceState = { label: 'Not scored yet', severity: 'neutral' };
   }
+  // Answer first: the score, how it moved over the trend window, and what explains it
+  const scoreReference = sourceScorecards.find((point) => !point.is_live && typeof point.value_score === 'number');
+  let scoreTrend: { label: string; severity: ChipSeverity } | null = null;
+  if (scorecard && typeof scorecard.value_score === 'number' && scoreReference && typeof scoreReference.value_score === 'number') {
+    const delta = Math.round(scorecard.value_score - scoreReference.value_score);
+    const days = Math.max(1, Math.round((Date.now() - new Date(scoreReference.snapshot_date).getTime()) / (24 * 3600 * 1000)));
+    scoreTrend = delta === 0
+      ? { label: t_i18n('Stable over {days, plural, one {# day} other {# days}}', { values: { days } }), severity: 'neutral' }
+      : {
+          label: t_i18n('{delta} in {days, plural, one {# day} other {# days}}', { values: { delta: delta > 0 ? `+${delta}` : String(delta), days } }),
+          severity: delta > 0 ? 'low' : 'high',
+        };
+  }
+  let scoreSentence: string | null = null;
+  if (scorecard) {
+    const shares = (scorecard.shared_count ?? 0) > 0 && typeof scorecard.corroboration_rate === 'number';
+    if (shares && typeof scorecard.first_reporter_share === 'number') {
+      scoreSentence = t_i18n('Confirmed by other sources on {corroboration} of its objects, and first to report {first} of the objects it shares with them.', {
+        values: { corroboration: format.ratio(scorecard.corroboration_rate, 0), first: format.ratio(scorecard.first_reporter_share, 0) },
+      });
+    } else if (shares) {
+      scoreSentence = t_i18n('Confirmed by other sources on {corroboration} of its objects.', { values: { corroboration: format.ratio(scorecard.corroboration_rate, 0) } });
+    } else {
+      scoreSentence = t_i18n('No other source asserted its objects in this period: the score comes from its volume, accuracy, impact and noise.');
+    }
+  }
+  const pendingRecommendations = isEnterpriseEdition ? (source.recommendationsCount ?? 0) : 0;
+  const reviewRecommendations = () => document.getElementById(RECOMMENDATIONS_ANCHOR)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div data-testid="source-detail-page">
@@ -361,8 +394,18 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
             {source.description && (
               <Typography variant="body2" sx={{ marginTop: 1, color: theme.palette.text.secondary }}>{source.description}</Typography>
             )}
+            {scorecard && (
+              <Stack direction="row" gap={1.5} alignItems="center" flexWrap="wrap" sx={{ marginTop: 2 }} data-testid="source-detail-score-summary">
+                <Typography variant="h2" component="p" sx={{ margin: 0 }}>
+                  {t_i18n('Value score {score} out of 100', { values: { score: format.score(scorecard.value_score) ?? t_i18n('Not measured') } })}
+                </Typography>
+                {scoreTrend && <Chip severity={scoreTrend.severity} size="sm" label={scoreTrend.label} />}
+                {scoreSentence && <Typography variant="body2" sx={{ color: theme.palette.text.secondary, flexBasis: '100%' }}>{scoreSentence}</Typography>}
+              </Stack>
+            )}
           </Box>
-          <Stack direction="row" gap={2} alignItems="center" flexShrink={0}>
+          <Stack direction="row" gap={2} alignItems="center" flexShrink={0} flexWrap="wrap" justifyContent="flex-end">
+            <SourcePeriodSelect value={period} onChange={onPeriodChange} />
             {canManage && (
               <Switch
                 checked={source.enabled}
@@ -372,8 +415,12 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                 data-testid="source-enabled-switch"
               />
             )}
-            {canManage && <SourceCostEditor sourceId={source.id} cost={source.cost} />}
-            <SourcePeriodSelect value={period} onChange={onPeriodChange} />
+            {canManage && <SourceCostEditor sourceId={source.id} cost={source.cost} primary={pendingRecommendations === 0} initialOpen={editCostRequested} />}
+            {pendingRecommendations > 0 && (
+              <Button onClick={reviewRecommendations} data-testid="source-detail-review-recommendations">
+                {t_i18n('Review {count, plural, one {# recommendation} other {# recommendations}}', { values: { count: pendingRecommendations } })}
+              </Button>
+            )}
           </Stack>
         </Stack>
         {!scorecard ? (
@@ -578,10 +625,12 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
             </Card>
           </>
         )}
-        <Card title={t_i18n('Recommendations')}>
-          {!isEnterpriseEdition && <EnterpriseEdition feature={t_i18n('Source Intelligence recommendations')} />}
-          {isEnterpriseEdition && <SourceRecommendationsSection sourceId={source.id} />}
-        </Card>
+        <Box id={RECOMMENDATIONS_ANCHOR} sx={{ scrollMarginTop: 80 }}>
+          <Card title={t_i18n('Recommendations')}>
+            {!isEnterpriseEdition && <EnterpriseEdition feature={t_i18n('Source Intelligence recommendations')} />}
+            {isEnterpriseEdition && <SourceRecommendationsSection sourceId={source.id} />}
+          </Card>
+        </Box>
       </PageContainer>
     </div>
   );

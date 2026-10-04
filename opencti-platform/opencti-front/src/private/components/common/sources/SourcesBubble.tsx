@@ -14,7 +14,7 @@ import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filter
 import type { Theme } from '../../../../components/Theme';
 import { escapeHtml, findSourceWidgetMetric, formatMetric, SourceWidgetMetric, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
 import SourcesWidgetRenderContent from './SourcesWidgetRenderContent';
-import { periodFromDashboardConfig } from './sourcesWidgetUtils';
+import { metricAxisTitle, NO_SOURCE_SCORED_MESSAGE, periodDaysFromDashboardConfig, periodFromDashboardConfig } from './sourcesWidgetUtils';
 import { SourcesBubbleQuery } from './__generated__/SourcesBubbleQuery.graphql';
 
 const sourcesBubbleQuery = graphql`
@@ -92,11 +92,11 @@ const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
     xaxis: {
       type: 'numeric',
       tickAmount: 6,
-      title: { text: t_i18n(xMetric.label) },
+      title: { text: metricAxisTitle(t_i18n, xMetric) },
       labels: { formatter: (value: string) => axisLabel(xMetric, Number(value)) },
     },
     yaxis: {
-      title: { text: t_i18n(yMetric.label) },
+      title: { text: metricAxisTitle(t_i18n, yMetric) },
       labels: { formatter: (value: number) => axisLabel(yMetric, value) },
     },
     tooltip: {
@@ -105,7 +105,7 @@ const SourcesBubbleComponent = ({ queryRef, xMetric, yMetric, onMounted }: {
     },
   }), [theme, points, xMetric, yMetric, navigate]);
   if (points.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }
   return <Chart options={options} series={series} type="bubble" width="100%" height="100%" onMounted={onMounted} />;
 };
@@ -155,7 +155,9 @@ const SourcesBubble = ({ variant, height, dataSelection, parameters = {}, popove
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title || t_i18n('{x} against {y}', { values: { x: t_i18n(xMetric.label), y: t_i18n(yMetric.label) } })}
+      title={parameters.title || t_i18n('{y} against {x} over the last {days} days', {
+        values: { x: t_i18n(xMetric.label), y: t_i18n(yMetric.label), days: periodDaysFromDashboardConfig(config) },
+      })}
       variant={variant}
       chart={chart}
       action={popover}

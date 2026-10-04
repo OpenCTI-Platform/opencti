@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { periodFromRange, toAggregation } from './sourcesWidgetUtils';
+import { metricAxisTitle, periodFromRange, toAggregation } from './sourcesWidgetUtils';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z').getTime();
 const daysAgo = (days: number) => new Date(NOW - days * 24 * 3600 * 1000).toISOString();
 
 describe('Sources widget utils', () => {
+  it('should give every axis title its unit', () => {
+    const t = (message: string, options?: { values?: Record<string, string | number> }) => message.replace(/\{(\w+)\}/g, (_, key) => String(options?.values?.[key] ?? ''));
+    expect(metricAxisTitle(t, { label: 'Accuracy', type: 'ratio' })).toEqual('Accuracy (%)');
+    expect(metricAxisTitle(t, { label: 'Impact score', type: 'score' })).toEqual('Impact score (0 to 100)');
+    expect(metricAxisTitle(t, { label: 'Lead time (hours)', type: 'hours' })).toEqual('Lead time (hours)');
+    expect(metricAxisTitle(t, { label: 'Volume', type: 'count' })).toEqual('Volume');
+  });
+
   describe('periodFromRange', () => {
     it('should use the reference window without a time range', () => {
       expect(periodFromRange(null, null, NOW)).toBe('LAST_30_DAYS');
