@@ -31,6 +31,7 @@ import { isProcedureRelationship, procedureMatchKey } from './provenance-procedu
 import { resolveCurrentValueOwner } from './provenance-upsert';
 import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
 import { getProvenanceBackfillState, restartProvenanceBackfill } from './provenance-backfill';
+import { listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
 import {
   ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTION_SOURCE_KINDS,
@@ -132,10 +133,23 @@ const withFilter = (filters: FilterGroup | null | undefined, filter: FilterGroup
   filterGroups: filters ? [filters] : [],
 });
 
-const statisticsTypes = (types: string[] | null | undefined) => (types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES);
+/**
+ * Statistics only cover the types whose provenance is tracked: an untracked type has no source to count and would
+ * only inflate the totals and the "never asserted" share. An abstract type stands for its tracked concrete types.
+ */
+export const resolveStatisticsTypes = (types: string[] | null | undefined, trackedTypes: string[]) => {
+  return restrictToTrackedTypes(types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES, trackedTypes);
+};
+
+const statisticsTypes = async (context: AuthContext, types: string[] | null | undefined) => {
+  return resolveStatisticsTypes(types, await listProvenanceTrackedTypes(context));
+};
 
 export const provenanceStatistics = async (context: AuthContext, user: AuthUser, args: QueryProvenanceStatisticsArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return { total: 0, with_provenance: 0, single_sourced: 0, corroborated: 0, with_conflicts: 0, stale: 0 };
+  }
   const baseFilters = args.filters ?? null;
   const count = (filters: FilterGroup | null) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
   const [total, withProvenance, single, corroborated, withConflicts, stale] = await Promise.all([
@@ -175,7 +189,10 @@ const combineFilters = (base: FilterGroup | null | undefined, extra: FilterGroup
 });
 
 export const provenanceFreshnessDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceFreshnessDistributionArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return [...FRESHNESS_BUCKETS.map((bucket) => ({ label: bucket.bucket, value: 0 })), { label: UNKNOWN_FRESHNESS_BUCKET, value: 0 }];
+  }
   const count = (filters: FilterGroup) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
   const counts = await Promise.all(FRESHNESS_BUCKETS.map((bucket) => count(combineFilters(args.filters, freshnessBucketFilter(bucket)))));
   const unknown = await count(combineFilters(args.filters, {
@@ -187,7 +204,10 @@ export const provenanceFreshnessDistribution = async (context: AuthContext, user
 };
 
 export const provenanceSourceKindsDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSourceKindsDistributionArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return ASSERTION_SOURCE_KINDS.map((kind) => ({ source_kind: kind, count: 0 }));
+  }
   const counts = await Promise.all(ASSERTION_SOURCE_KINDS.map((kind) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
     types,
     filters: combineFilters(args.filters, { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_ASSERTION_SOURCE_KINDS], values: [kind] }], filterGroups: [] }),
@@ -199,7 +219,10 @@ export const provenanceSourceKindsDistribution = async (context: AuthContext, us
  * Share of single-sourced knowledge per entity type, among the knowledge with provenance.
  */
 export const provenanceSingleSourcedByType = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSingleSourcedByTypeArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return [];
+  }
   const aggregate = (filters: FilterGroup) => elAggregationCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
     types,
     field: 'entity_type',

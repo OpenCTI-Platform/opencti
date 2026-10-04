@@ -166,7 +166,7 @@ Two visualizations are available in the widget catalog of dashboards, for the en
 - **Knowledge freshness - days since the last assertion**: the knowledge per time elapsed since its last assertion by any source (0-30 days, 31-90 days, 91-180 days, 181-365 days, over 365 days, never asserted).
 - **Single-sourced share by entity type**: per entity or relationship type, the knowledge asserted by a single source versus the corroborated knowledge. The "Number of results" parameter limits the number of types displayed.
 
-When no assertion matches the widget yet, it says so: "No assertion recorded yet. Provenance appears as connectors and users create knowledge."
+Both only count the types on which provenance is tracked: the knowledge of an untracked type has no source to show and never weighs on the "never asserted" share. When no assertion matches the widget yet, it says so: "No assertion recorded yet. Provenance appears as connectors and users create knowledge."
 
 ![A dashboard with the two provenance widgets: the knowledge freshness by time since the last assertion, and the single-sourced share by entity type](assets/provenance-widgets.png)
 
