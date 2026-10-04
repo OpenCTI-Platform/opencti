@@ -218,7 +218,7 @@ const StepperItem = ({ index, action, evidence, jobs, entities, numbers, isLast,
       </Stack>
       <Stack spacing={0.75} sx={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 0 : 2.5 }}>
         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ minHeight: 24 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{`${index}. ${title}`}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'fontWeightBold', overflowWrap: 'anywhere' }}>{`${index}. ${title}`}</Typography>
           <Chip label={statusLabel} severity={stepStatusSeverity(status)} size="sm" />
           <Box sx={{ flex: 1 }} />
           <StepMeta steps={steps} evidenceCount={evidenceCount} />

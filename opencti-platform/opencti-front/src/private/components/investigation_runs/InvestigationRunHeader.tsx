@@ -120,19 +120,17 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   let primary: React.ReactNode = null;
   const secondary: React.ReactNode[] = [];
   const reviewButton = (priority: 'primary' | 'secondary') => (
-    <Button key="review" size="small" variant={priority === 'primary' ? undefined : 'secondary'} onClick={handlers.onReviewApprovals} data-testid="investigation-run-review">
+    <Button key="review" size="small" variant={priority} onClick={handlers.onReviewApprovals} data-testid="investigation-run-review">
       {draftChanges !== null && draftChanges > 0
         ? t_i18n('Review {count} changes', { values: { count: n(draftChanges) } })
         : t_i18n('Review {count} requests', { values: { count: n(pending.length) } })}
     </Button>
   );
   if (run.run_status === 'awaiting_approval' && pending.length > 0) {
-    if (continueAsPrimary) {
-      primary = continueButton('primary');
-      secondary.push(reviewButton('secondary'));
-    } else {
-      primary = reviewButton('primary');
-    }
+    // Reviewing what waits is the primary action; continuing a run that spent
+    // its iterations stays one click away, as a secondary action.
+    primary = reviewButton('primary');
+    if (continueAsPrimary) secondary.push(continueButton('secondary'));
     if (draftOpen && run.draft) {
       secondary.push(
         <Button key="draft" size="small" variant="secondary" component={Link} to={`/dashboard/data/import/draft/${run.draft.id}`} startIcon={<OpenInNewOutlined fontSize="small" />}>

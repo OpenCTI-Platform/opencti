@@ -83,7 +83,7 @@ const ConsistencyCell = ({ cell }: { cell: EvidenceCell }) => {
               paddingY: 0.25,
               borderRadius: 1,
               textAlign: 'center',
-              fontWeight: 600,
+              fontWeight: 'fontWeightBold',
               color,
               backgroundColor: alpha(color, Math.min(0.3, 0.08 + Math.abs(cell.consistency) * 0.08)),
             }}
@@ -214,7 +214,7 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
           <Stack spacing={1}>
             {hypotheses.map((hypothesis) => (
               <Box key={hypothesis.candidate_id}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'fontWeightBold' }}>
                   {`#${hypothesis.rank} ${hypothesis.candidate_name ?? t_i18n('Unknown actor')}`}
                 </Typography>
                 <Typography variant="body2">{hypothesis.explanation}</Typography>

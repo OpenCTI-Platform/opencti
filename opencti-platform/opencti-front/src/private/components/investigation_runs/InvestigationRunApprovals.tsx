@@ -189,7 +189,7 @@ const GateApproval = ({ run, approval, entityNames, onDecided }: { run: Run; app
     <Stack spacing={1} data-testid={`investigation-approval-${approval.kind}`}>
       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
         <Chip label={t_i18n(APPROVAL_KIND_LABELS[approval.kind] ?? 'Sensitive recommendation')} severity="medium" size="sm" />
-        <Typography variant="body1" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{text.title}</Typography>
+        <Typography variant="body1" sx={{ fontWeight: 'fontWeightBold', overflowWrap: 'anywhere' }}>{text.title}</Typography>
       </Stack>
       <Typography variant="body2" color="text.secondary">{text.change}</Typography>
       {approval.reason && <Typography variant="body2" color="text.secondary">{approval.reason}</Typography>}
