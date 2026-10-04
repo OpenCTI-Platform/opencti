@@ -29,14 +29,22 @@ describe('Sector benchmark dashboard template', () => {
     const previewWidgets = Object.values(buildSectorBenchmarkDashboard(translate, { preview: true }).widgets);
     expect(previewWidgets.map((widget) => widget.type)).toEqual(['pulse-trending', 'pulse-benchmark', 'number', 'donut', 'horizontal-bar']);
     expect(lockedSectorBenchmarkWidgets(translate)).toEqual([
-      '[Threats rising in your sector this week]',
-      '[Top 10 threats rising in your sector this week]',
+      '[Threats with a rising sector trend]',
+      '[Latest threats with a rising sector trend]',
       '[Indicators per week of network first seen]',
     ]);
     // Every widget read in preview has a value there: none reads the sector trend or the network first seen
     previewWidgets.forEach((widget) => {
       expect(JSON.stringify(widget.dataSelection)).not.toMatch(/pulse_sector_trend|pulse_first_seen_network/);
     });
+  });
+
+  it('should name no period in its titles and order the list it titles as the latest', () => {
+    // The dashboard dates bound the objects by their creation, not the period of a community statistic
+    widgets.forEach((widget) => expect(widget.parameters?.title).not.toMatch(/week]|days]|this week|last \d+ days|Top \d+/));
+    const list = widgets.find((widget) => widget.type === 'list');
+    expect(list?.parameters?.title).toBe('[Latest threats with a rising sector trend]');
+    expect(list?.dataSelection[0]).toMatchObject({ number: 10, sort_by: 'created_at', sort_mode: 'desc' });
   });
 
   it('should configure the Threat Pulse widgets with parameters only', () => {

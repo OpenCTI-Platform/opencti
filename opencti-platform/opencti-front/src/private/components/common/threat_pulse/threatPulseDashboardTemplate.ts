@@ -49,39 +49,41 @@ const toWidget = ({ type, title, layout, dataSelection = [], parameters = {} }: 
 
 // `fullOnly`: the widget reads an attribute the preview never writes (sector trend, network first seen), so it would
 // show an empty or zero value instead of naming what contributing unlocks.
+// The trend and prevalence are the latest community statistics stored on each object, not a period of the objects:
+// titles name the measure only, as the dashboard dates bound the objects by their creation.
 const sectorBenchmarkWidgets = (t_i18n: (key: string) => string): Array<TemplateWidget & { fullOnly?: boolean }> => [
   { type: 'pulse-trending', title: t_i18n('Objects trending in your sector'), layout: { x: 0, y: 0, w: 6, h: 8 } },
   { type: 'pulse-benchmark', title: t_i18n('Activity of this platform against the sector median'), layout: { x: 6, y: 0, w: 6, h: 8 } },
   {
     type: 'number',
-    title: t_i18n('Indicators rising in the community this week'),
+    title: t_i18n('Indicators with a rising community trend'),
     layout: { x: 0, y: 8, w: 3, h: 2 },
     dataSelection: [selection('', filterGroup(['Indicator'], 'pulse_trend', ['rising']))],
   },
   {
     type: 'number',
-    title: t_i18n('Threats rising in your sector this week'),
+    title: t_i18n('Threats with a rising sector trend'),
     layout: { x: 3, y: 8, w: 3, h: 2 },
     dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']))],
     fullOnly: true,
   },
   {
     type: 'donut',
-    title: t_i18n('Community prevalence of indicators - last 30 days'),
+    title: t_i18n('Community prevalence of indicators'),
     layout: { x: 6, y: 8, w: 3, h: 6 },
     dataSelection: [selection('', filterGroup(['Indicator']), { attribute: 'pulse_prevalence' })],
   },
   {
     type: 'horizontal-bar',
-    title: t_i18n('Community trend of threats this week'),
+    title: t_i18n('Community trend of threats'),
     layout: { x: 9, y: 8, w: 3, h: 6 },
     dataSelection: [selection('', filterGroup(THREAT_TYPES), { attribute: 'pulse_trend' })],
   },
   {
     type: 'list',
-    title: t_i18n('Top 10 threats rising in your sector this week'),
+    title: t_i18n('Latest threats with a rising sector trend'),
     layout: { x: 0, y: 10, w: 6, h: 8 },
-    dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']), { number: 10 })],
+    dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']), { number: 10, sort_by: 'created_at', sort_mode: 'desc' })],
     fullOnly: true,
   },
   {
