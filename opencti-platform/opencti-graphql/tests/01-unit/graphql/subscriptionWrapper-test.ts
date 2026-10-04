@@ -1,25 +1,32 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as userDomain from '../../../src/modules/user/user-domain';
 import * as access from '../../../src/utils/access';
+import * as cache from '../../../src/database/cache';
 import { canSubscriberStillAccess } from '../../../src/graphql/subscriptionWrapper';
 import type { AuthUser } from '../../../src/types/user';
 
 const instance = { id: 'run-1', internal_id: 'run-1', entity_type: 'Investigation-Run' };
 // The snapshot a socket keeps from the moment it opened.
 const snapshot = { id: 'user-1', allowed_marking: [{ internal_id: 'marking-red' }] } as unknown as AuthUser;
-const context = { user: snapshot } as never;
+const context = { user: snapshot, user_inside_platform_organization: true } as never;
 
 describe('canSubscriberStillAccess', () => {
+  beforeEach(() => {
+    vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue({ platform_organization: 'org-platform' } as never);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('checks the access of the current user, not of the snapshot of the subscription', async () => {
+  it('checks the access of the current user and platform organization membership, not of the snapshot of the subscription', async () => {
     const current = { id: 'user-1', allowed_marking: [] } as unknown as AuthUser;
     vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue(current);
+    const membership = vi.spyOn(access, 'isUserInPlatformOrganization').mockReturnValue(false);
     const check = vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(false);
     expect(await canSubscriberStillAccess(context, instance)).toBe(false);
-    expect(check).toHaveBeenCalledWith(context, current, instance);
+    expect(membership).toHaveBeenCalledWith(current, { platform_organization: 'org-platform' });
+    expect(check).toHaveBeenCalledWith(expect.objectContaining({ user: current, user_inside_platform_organization: false }), current, instance);
     check.mockResolvedValue(true);
     expect(await canSubscriberStillAccess(context, instance)).toBe(true);
   });
