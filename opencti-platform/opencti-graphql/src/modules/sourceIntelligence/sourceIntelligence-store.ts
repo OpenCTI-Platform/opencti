@@ -276,6 +276,39 @@ const LIVE_INCREMENT_SCRIPT = `
   }
 `;
 
+// Cost fields of a live scorecard, from the actionable count the scorecard holds when it is updated (4 decimals)
+const LIVE_COST_SCRIPT = `
+  def count = ctx._source.actionable_count;
+  ctx._source.cost_currency = params.currency;
+  if (params.window_cost == null || count == null || count <= 0) {
+    ctx._source.cost_per_actionable_object = null;
+  } else {
+    double windowCost = params.window_cost;
+    ctx._source.cost_per_actionable_object = Math.round(windowCost / count * 10000.0) / 10000.0;
+  }
+`;
+
+/**
+ * Write a new cost on the live scorecards of a source as the only change of each scorecard, so that a stream batch or
+ * a full computation updating the same scorecards meanwhile keeps its values. `windowCosts` is the cost normalized to
+ * the window of each period; a source without a live scorecard yet gets it from the next full computation.
+ */
+export const applyLiveScorecardCost = async (
+  context: AuthContext,
+  sourceId: string,
+  currency: string | null,
+  windowCosts: Map<ScorecardPeriodValue, number | null>,
+) => {
+  const body = Array.from(windowCosts.entries()).flatMap(([period, windowCost]) => [
+    { update: { _index: INDEX_SOURCE_SCORECARDS, _id: scorecardDocumentId(sourceId, period, '', true), retry_on_conflict: 5 } },
+    { script: { source: LIVE_COST_SCRIPT, lang: 'painless', params: { currency, window_cost: windowCost } } },
+  ]);
+  if (body.length === 0) {
+    return;
+  }
+  await elBulk(context, { refresh: true, body });
+};
+
 /**
  * Apply the streaming increments of one stream batch on the live scorecards, one update per source and period,
  * marked with the last event id of the batch. Volume and signal counters only: the counts depending on the whole

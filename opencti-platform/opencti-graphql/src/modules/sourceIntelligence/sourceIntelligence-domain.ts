@@ -55,8 +55,8 @@ import {
   type SourceKindValue,
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
-import { deleteLiveScorecardsOfSources, deleteScorecardsOfSources, findLiveScorecards, searchScorecards, writeScorecards } from './sourceIntelligence-store';
-import { computeCostPerActionable, toSnapshotDate } from './sourceIntelligence-scoring';
+import { applyLiveScorecardCost, deleteLiveScorecardsOfSources, deleteScorecardsOfSources, findLiveScorecards, searchScorecards } from './sourceIntelligence-store';
+import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
 import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
 import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
 
@@ -421,18 +421,10 @@ export const validateSourceCost = (input: { amount: number; currency: string; pe
   return { amount: input.amount, currency, period: input.period as SourceCost['period'] };
 };
 
-// The live scorecards of a source with a new cost, not written yet
-const costedLiveScorecards = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
-  const scorecards = await Promise.all(SCORECARD_PERIODS.map((period) => findLiveScorecards(context, period, [source.internal_id])));
-  const updated = scorecards
-    .flat()
-    .map((scorecard) => ({
-      ...scorecard,
-      cost_currency: cost?.currency ?? null,
-      cost_per_actionable_object: computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[scorecard.scorecard_period], scorecard.actionable_count),
-    }));
-  const reference = updated.find((scorecard) => scorecard.scorecard_period === REFERENCE_SCORECARD_PERIOD);
-  return { updated, costPerActionable: reference?.cost_per_actionable_object ?? null };
+// Cost per actionable object of the reference scorecard of a source with a new cost, for the source KPIs
+const referenceCostPerActionable = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
+  const [reference] = await findLiveScorecards(context, REFERENCE_SCORECARD_PERIOD, [source.internal_id]);
+  return reference ? computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[REFERENCE_SCORECARD_PERIOD], reference.actionable_count) : null;
 };
 
 /**
@@ -450,9 +442,10 @@ export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: st
     if (!source) {
       throw FunctionalError('Source not found', { id });
     }
-    const { updated, costPerActionable } = await costedLiveScorecards(context, source, cost);
+    const costPerActionable = await referenceCostPerActionable(context, source, cost);
     ({ element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { source_cost: cost, latest_cost_per_actionable: costPerActionable }));
-    await writeScorecards(context, updated);
+    const windowCosts = new Map(SCORECARD_PERIODS.map((period) => [period, normalizeCostToDays(cost, SCORECARD_PERIOD_DAYS[period])]));
+    await applyLiveScorecardCost(context, source.internal_id, cost?.currency ?? null, windowCosts);
   } catch (err: any) {
     if (err?.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [id] });
