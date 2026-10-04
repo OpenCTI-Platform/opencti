@@ -5,31 +5,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
 import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
 import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
 import ProvenanceKpiStrip, { type ProvenanceKind } from './ProvenanceKpiStrip';
 import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
 import { STALE_FILTERS } from './provenanceCurationCounts';
-import { StaleKnowledgeRulesQuery, StaleKnowledgeRulesQuery$variables } from './__generated__/StaleKnowledgeRulesQuery.graphql';
-
-const KNOWLEDGE_RULES_FILTERS: FilterGroup = {
-  mode: 'and',
-  filters: [{ key: 'target_scope', values: ['relationship', 'entity'], operator: 'eq', mode: 'or' }],
-  filterGroups: [],
-};
+import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
+import { StaleKnowledgeRulesQuery } from './__generated__/StaleKnowledgeRulesQuery.graphql';
 
 const staleKnowledgeRulesQuery = graphql`
-  query StaleKnowledgeRulesQuery($filters: FilterGroup) {
-    decayRules(first: 100, filters: $filters) {
-      edges {
-        node {
-          id
-          staleElementsCount
-        }
-      }
-    }
+  query StaleKnowledgeRulesQuery {
+    knowledgeDecayRulesInvolvedCount
   }
 `;
 
@@ -38,13 +25,17 @@ const DECAY_RULES_LINK = '/dashboard/settings/customization/decay';
 // Number of knowledge decay rules that currently flag knowledge, next to the counters by kind
 const StaleKnowledgeRules = () => {
   const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<StaleKnowledgeRulesQuery>(staleKnowledgeRulesQuery, { filters: KNOWLEDGE_RULES_FILTERS } as unknown as StaleKnowledgeRulesQuery$variables, { fetchPolicy: 'store-and-network' });
-  const involved = (data.decayRules?.edges ?? []).filter((edge) => (edge?.node.staleElementsCount ?? 0) > 0).length;
+  const canOpenDecayRules = useGranted([SETTINGS_SETCUSTOMIZATION]);
+  const { knowledgeDecayRulesInvolvedCount: involved } = useLazyLoadQuery<StaleKnowledgeRulesQuery>(staleKnowledgeRulesQuery, {}, { fetchPolicy: 'store-and-network' });
   return (
     <Typography variant="body2" color="textSecondary" data-testid="provenance-stale-rules">
       {t_i18n('{count, plural, =0 {No knowledge decay rule flags knowledge} one {# knowledge decay rule involved} other {# knowledge decay rules involved}}', { values: { count: involved } })}
-      {' - '}
-      <Link to={DECAY_RULES_LINK}>{t_i18n('Open the decay rules')}</Link>
+      {canOpenDecayRules && (
+        <>
+          {' - '}
+          <Link to={DECAY_RULES_LINK}>{t_i18n('Open the decay rules')}</Link>
+        </>
+      )}
     </Typography>
   );
 };

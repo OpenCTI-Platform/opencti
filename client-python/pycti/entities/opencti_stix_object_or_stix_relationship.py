@@ -33,6 +33,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixCoreRelationship {
                 corroboration_count
@@ -40,6 +42,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixSightingRelationship {
                 corroboration_count
@@ -47,6 +51,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixDomainObject {
             creators {
@@ -783,6 +789,8 @@ class StixObjectOrStixRelationship:
                 single_sourced
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
                 freshness_stale_at
                 x_opencti_assertions {
                     source_id

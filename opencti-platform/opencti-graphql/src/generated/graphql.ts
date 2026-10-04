@@ -25687,6 +25687,8 @@ export type Query = {
   jsonMappers?: Maybe<JsonMapperConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
+  /** Number of knowledge decay rules that flag knowledge the user can access */
+  knowledgeDecayRulesInvolvedCount: Scalars['Int']['output'];
   label?: Maybe<Label>;
   labels?: Maybe<LabelConnection>;
   language?: Maybe<Language>;
@@ -52541,6 +52543,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   jsonMappers?: Resolver<Maybe<ResolversTypes['JsonMapperConnection']>, ParentType, ContextType, Partial<QueryJsonMappersArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType, Partial<QueryKillChainPhasesArgs>>;
+  knowledgeDecayRulesInvolvedCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<QueryLabelArgs, 'id'>>;
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;

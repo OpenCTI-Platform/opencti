@@ -115,7 +115,7 @@ const ProvenanceBackfillContent = ({ fetchKey, onRefresh }: { fetchKey: number; 
           variant="secondary"
           size="small"
           startIcon={<RestartAltOutlined />}
-          disabled={restartInFlight || backfill.status === 'running'}
+          disabled={restartInFlight}
           onClick={() => setConfirmOpen(true)}
         >
           {t_i18n('Restart the backfill')}

@@ -10039,6 +10039,11 @@ type Query {
   vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   decayRule(id: String!): DecayRule
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
+
+  """
+  Number of knowledge decay rules that flag knowledge the user can access
+  """
+  knowledgeDecayRulesInvolvedCount: Int!
   decayExclusionRule(id: String!): DecayExclusionRule
   decayExclusionRules(first: Int, after: ID, orderBy: DecayExclusionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayExclusionRuleConnection
   organization(id: String!): Organization
