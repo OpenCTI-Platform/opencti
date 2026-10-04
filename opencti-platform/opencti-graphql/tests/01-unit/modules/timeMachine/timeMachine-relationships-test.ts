@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRelationshipStates } from '../../../../src/modules/timeMachine/timeMachine-relationships';
+import { buildRelationshipStates, relationshipStateActions } from '../../../../src/modules/timeMachine/timeMachine-relationships';
 import type { TimeMachineHistoryEvent } from '../../../../src/modules/timeMachine/timeMachine-types';
 
 const relationshipEvent = (
@@ -71,5 +71,24 @@ describe('Time machine relationship states', () => {
     expect(states.get('rel')?.deleted_by).toBeUndefined();
     expect(states.get('rel-deleted')?.created_by).toEqual('creator');
     expect(states.get('rel-deleted')?.deleted_by).toEqual('deleter');
+  });
+
+  it('should keep the revocation and confidence changes of a relationship created in the period', () => {
+    const states = buildRelationshipStates([
+      relationshipEvent('rel-new', '2026-02-01T00:00:00.000Z', 'create'),
+      relationshipEvent('rel-new', '2026-02-02T00:00:00.000Z', 'update', [{ key: 'revoked', added: ['true'], removed: ['false'] }]),
+      relationshipEvent('rel-new', '2026-02-03T00:00:00.000Z', 'update', [{ key: 'confidence', added: ['80'], removed: ['50'] }]),
+      relationshipEvent('rel-transient', '2026-02-01T00:00:00.000Z', 'create'),
+      relationshipEvent('rel-transient', '2026-02-02T00:00:00.000Z', 'update', [{ key: 'revoked', added: ['true'], removed: ['false'] }]),
+      relationshipEvent('rel-transient', '2026-02-03T00:00:00.000Z', 'delete'),
+      relationshipEvent('rel-old', '2026-02-04T00:00:00.000Z', 'delete'),
+    ]);
+    // Listed as added, then revoked and re-rated after its creation
+    expect(relationshipStateActions(states.get('rel-new')!, true)).toEqual(['revoked', 'confidence_changed']);
+    // Created in the period but not visible anymore: never described
+    expect(relationshipStateActions(states.get('rel-new')!, false)).toEqual([]);
+    // Created, revoked and deleted in the period: no net change
+    expect(relationshipStateActions(states.get('rel-transient')!, false)).toEqual([]);
+    expect(relationshipStateActions(states.get('rel-old')!, false)).toEqual(['removed']);
   });
 });

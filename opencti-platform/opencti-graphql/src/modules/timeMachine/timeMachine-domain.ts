@@ -43,7 +43,7 @@ import {
 } from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
-import { buildRelationshipStates, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
+import { buildRelationshipStates, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
 import type {
   AttributeValues,
   BasicStoreEntityKnowledgeSnapshot,
@@ -742,10 +742,6 @@ export const computeRelationshipChanges = async (
     });
   });
   states.forEach((state, relationshipId) => {
-    if (createdIds.has(relationshipId) || (state.created && state.deleted)) {
-      // Created in the period (already listed) or created and deleted in the period (no net change)
-      return;
-    }
     const isSource = state.from_id === elementId;
     const userName = (userId?: string) => (userId ? (userNames.get(userId) ?? null) : null);
     const base = {
@@ -758,34 +754,22 @@ export const computeRelationshipChanges = async (
       target_deleted: false,
       target_restricted: false,
     };
-    if (state.deleted) {
-      changes.push({ ...base, action: 'removed', at: state.deleted, confidence_before: null, confidence_after: null, changed_by: userName(state.deleted_by) });
-      return;
-    }
-    if (state.created) {
-      // Created in the period but not visible anymore in the knowledge for the user
-      return;
-    }
-    if (state.revoked_after !== undefined && state.revoked_before !== state.revoked_after) {
-      changes.push({
-        ...base,
-        action: state.revoked_after === 'true' ? 'revoked' : 'unrevoked',
-        at: state.revoked_at ?? to,
-        confidence_before: null,
-        confidence_after: null,
-        changed_by: userName(state.revoked_by),
-      });
-    }
-    if (state.confidence_after !== undefined && state.confidence_before !== state.confidence_after) {
-      changes.push({
-        ...base,
-        action: 'confidence_changed',
-        at: state.confidence_at ?? to,
-        confidence_before: state.confidence_before ?? null,
-        confidence_after: state.confidence_after ?? null,
-        changed_by: userName(state.confidence_by),
-      });
-    }
+    relationshipStateActions(state, createdIds.has(relationshipId)).forEach((action) => {
+      if (action === 'removed') {
+        changes.push({ ...base, action, at: state.deleted ?? to, confidence_before: null, confidence_after: null, changed_by: userName(state.deleted_by) });
+      } else if (action === 'confidence_changed') {
+        changes.push({
+          ...base,
+          action,
+          at: state.confidence_at ?? to,
+          confidence_before: state.confidence_before ?? null,
+          confidence_after: state.confidence_after ?? null,
+          changed_by: userName(state.confidence_by),
+        });
+      } else {
+        changes.push({ ...base, action, at: state.revoked_at ?? to, confidence_before: null, confidence_after: null, changed_by: userName(state.revoked_by) });
+      }
+    });
   });
   // Resolve the targets with the current rights of the user, deleted targets are tombstones
   const resolved = await resolveIdsForUser(context, user, changes.map((c) => c.target_id ?? ''));

@@ -73,3 +73,25 @@ export const buildRelationshipStates = (events: TimeMachineHistoryEvent[]) => {
   }
   return states;
 };
+
+export type RelationshipStateAction = 'removed' | 'revoked' | 'unrevoked' | 'confidence_changed';
+
+/**
+ * Changes of a relationship during a period, from its folded state, besides its creation.
+ * `listedAsAdded`: the relationship was created in the period and is still visible, so it is listed as added; its
+ * later revocation and confidence changes follow, measured from its values at creation. A relationship created and
+ * deleted in the period made no net change, one created in the period but not visible anymore is never described.
+ */
+export const relationshipStateActions = (state: RelationshipEventState, listedAsAdded: boolean): RelationshipStateAction[] => {
+  if (state.created && state.deleted) return [];
+  if (state.deleted) return ['removed'];
+  if (state.created && !listedAsAdded) return [];
+  const actions: RelationshipStateAction[] = [];
+  if (state.revoked_after !== undefined && state.revoked_before !== state.revoked_after) {
+    actions.push(state.revoked_after === 'true' ? 'revoked' : 'unrevoked');
+  }
+  if (state.confidence_after !== undefined && state.confidence_before !== state.confidence_after) {
+    actions.push('confidence_changed');
+  }
+  return actions;
+};

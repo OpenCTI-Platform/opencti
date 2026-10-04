@@ -36,7 +36,7 @@ import { OrderingMode } from '../../generated/graphql';
 import { addLandscapeDiffCount } from '../../manager/telemetryManager';
 import { changeFieldKey, firstNumber } from './timeMachine-replay';
 import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from './timeMachine-history';
-import { buildRelationshipStates, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
+import { buildRelationshipStates, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
 import type {
   LandscapeDiffAggregates,
   LandscapeDiffBucket,
@@ -306,16 +306,18 @@ const processBatch = async (
   if (fetchedEvents.length > LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
   const relationshipEvents = fetchedEvents.slice(0, LANDSCAPE_MAX_EVENTS_PER_BATCH);
   buildRelationshipStates(relationshipEvents).forEach((state, relationshipId) => {
-    if (state.created) return; // Created in the period: counted with the new relationships (or no net change)
+    // A relationship created in the period is counted with the new relationships; when it is one of them,
+    // its revocation after its creation counts as well
+    const actions = relationshipStateActions(state, acc.countedRelationships.has(relationshipId));
     const sides = [state.from_id, state.to_id].filter((id): id is string => !!id && idSet.has(id));
     const countGlobally = !acc.countedRelationshipStates.has(relationshipId);
-    if (state.deleted) {
+    if (actions.includes('removed')) {
       acc.countedRelationshipStates.add(relationshipId);
       if (countGlobally) acc.removedRelationships += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_removed += 1;
       });
-    } else if (state.revoked_after === 'true' && state.revoked_before !== 'true') {
+    } else if (actions.includes('revoked')) {
       acc.countedRelationshipStates.add(relationshipId);
       acc.revokedRelationships.add(relationshipId);
       if (countGlobally) acc.revocations += 1;
