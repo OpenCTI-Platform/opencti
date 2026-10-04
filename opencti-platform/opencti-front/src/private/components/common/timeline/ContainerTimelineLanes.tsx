@@ -161,11 +161,18 @@ const ContainerTimelineLanes = ({
 
   const ticks = useMemo(() => scale.ticks(Math.max(2, Math.floor(plotWidth / 120))), [scale, plotWidth]);
   const span = domain[1] - domain[0];
+  // The label follows the tick step, so two ticks of the same day never read the same
+  const tickStep = ticks.length > 1 ? ticks[1].getTime() - ticks[0].getTime() : span;
   const formatTick = useCallback((tick: Date) => {
-    if (span <= 2 * 24 * 3600 * 1000) return intl.formatTime(tick, { hour: '2-digit', minute: '2-digit' });
-    if (span <= 120 * 24 * 3600 * 1000) return intl.formatDate(tick, { month: 'short', day: 'numeric' });
+    const day = 24 * 3600 * 1000;
+    if (tickStep < day) {
+      return span <= 2 * day
+        ? intl.formatTime(tick, { hour: '2-digit', minute: '2-digit' })
+        : intl.formatDate(tick, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    if (tickStep < 28 * day) return intl.formatDate(tick, { month: 'short', day: 'numeric' });
     return intl.formatDate(tick, { year: 'numeric', month: 'short' });
-  }, [intl, span]);
+  }, [intl, span, tickStep]);
 
   // region interactions
   const zoomAt = useCallback((factor: number, clientX?: number) => {
