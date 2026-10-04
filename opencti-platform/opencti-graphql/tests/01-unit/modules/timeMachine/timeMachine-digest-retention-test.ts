@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { computeSnapshotRetentionDate, splitRunBudget } from '../../../../src/manager/snapshotManager';
 import { buildAggregatesMessage, buildChangeMessage, parseTriggerFilters } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
+import { DEFAULT_CHANGE_DIGEST_LOCALE, formatChangeDigestMessage, resolveChangeDigestLocale } from '../../../../src/modules/timeMachine/timeMachine-changeDigest-messages';
 import { landscapeResultReferencedIds, savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import type { BasicStoreEntityRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-types';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from '../../../../src/modules/timeMachine/timeMachine-types';
@@ -80,9 +81,38 @@ describe('Change digest messages', () => {
   };
 
   it('should summarize the changes of an entity', () => {
-    expect(buildChangeMessage(summary)).toEqual('`3` new relationship(s), `1` removed relationship(s), `2` attribute(s) changed, confidence `50` -> `75`');
+    expect(buildChangeMessage(summary)).toEqual('`3` new relationships, `1` removed relationship, `2` attributes changed, and confidence `50` -> `75`');
     expect(buildChangeMessage({ ...summary, created_in_period: true, relationships_added: 0, relationships_removed: 0, attributes_changed: 0, confidence_before: null }))
       .toEqual('created');
+    expect(buildChangeMessage({ ...summary, attributes_changed: 1, confidence_before: null, score_before: 10, score_after: 40 }))
+      .toEqual('`3` new relationships, `1` removed relationship, `1` attribute changed, and score `10` -> `40`');
+  });
+
+  it('should write the changes of an entity in the language of the recipient', () => {
+    expect(buildChangeMessage({ ...summary, relationships_added: 1 }, resolveChangeDigestLocale('fr-fr')))
+      .toEqual('`1` nouvelle relation, `1` relation supprimée, `2` attributs modifiés et confiance `50` -> `75`');
+    expect(buildChangeMessage({ ...summary, relationships_removed: 0, attributes_changed: 0, confidence_before: null }, resolveChangeDigestLocale('de-de')))
+      .toEqual('`3` neue Beziehungen');
+  });
+
+  it('should take the plural rules of the language', () => {
+    const russian = resolveChangeDigestLocale('ru-ru');
+    expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 1 })).toEqual('`1` новая связь');
+    expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 3 })).toEqual('`3` новые связи');
+    expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 5 })).toEqual('`5` новых связей');
+    expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 21 })).toEqual('`21` новая связь');
+    expect(formatChangeDigestMessage(resolveChangeDigestLocale('ja-jp'), 'relationships_added', { count: 3 })).toEqual('`3` 件の新しいリレーションシップ');
+    expect(formatChangeDigestMessage(DEFAULT_CHANGE_DIGEST_LOCALE, 'relationships_added', { count: 1234 })).toEqual('`1,234` new relationships');
+    expect(formatChangeDigestMessage(DEFAULT_CHANGE_DIGEST_LOCALE, 'entities_changed', { changed: 1, total: 1 })).toEqual('`1` of `1` entity changed');
+  });
+
+  it('should write a digest in the profile language, else the platform language, else English', () => {
+    expect(resolveChangeDigestLocale('fr-fr', 'de-de')).toEqual({ language: 'fr', locale: 'fr-fr' });
+    expect(resolveChangeDigestLocale('auto', 'zh-cn')).toEqual({ language: 'zh', locale: 'zh-cn' });
+    expect(resolveChangeDigestLocale(undefined, 'ko-kr')).toEqual({ language: 'ko', locale: 'ko-kr' });
+    expect(resolveChangeDigestLocale('auto', 'auto')).toEqual(DEFAULT_CHANGE_DIGEST_LOCALE);
+    expect(resolveChangeDigestLocale('xx-yy', null)).toEqual(DEFAULT_CHANGE_DIGEST_LOCALE);
+    expect(resolveChangeDigestLocale(null, undefined)).toEqual(DEFAULT_CHANGE_DIGEST_LOCALE);
   });
 
   it('should summarize the landscape aggregates', () => {
@@ -101,14 +131,17 @@ describe('Change digest messages', () => {
       new_infrastructure_count: 3,
     } as unknown as LandscapeDiffAggregates;
     expect(buildAggregatesMessage(aggregates))
-      .toEqual('`4` of `10` entities changed, `12` new relationship(s), `2` removed, `1` revocation(s), `1` new technique(s), `3` new infrastructure');
+      .toEqual('`4` of `10` entities changed, `12` new relationships, `2` removed relationships, `1` revocation, `1` new technique, and `3` new infrastructure');
     // The named lists are capped, the message uses the totals
     const capped = { ...aggregates, new_malware: [{ id: 'm', entity_type: 'Malware', name: 'Malware', count: 1 }], new_malware_count: 120, new_tools_count: 75 };
-    expect(buildAggregatesMessage(capped)).toContain('`120` new malware, `75` new tool(s)');
+    expect(buildAggregatesMessage(capped)).toContain('`120` new malware, `75` new tools');
     expect(buildAggregatesMessage(aggregates, { listed: 4 })).not.toContain('not listed');
     expect(buildAggregatesMessage(aggregates, { listed: 1 })).toContain('`3` other changed entities not listed');
     expect(buildAggregatesMessage(aggregates, { partial: false })).not.toContain('partial result');
-    expect(buildAggregatesMessage(aggregates, { partial: true })).toContain('partial result: the filter set exceeds the limits of a change digest');
+    expect(buildAggregatesMessage(aggregates, { partial: true })).toContain(' | partial result: the filter set exceeds the limits of a change digest');
+    expect(buildAggregatesMessage(aggregates, { listed: 3, locale: resolveChangeDigestLocale('fr-fr') }))
+      .toEqual('`4` entités modifiées sur `10`, `12` nouvelles relations, `2` relations supprimées, `1` révocation, `1` nouvelle technique, '
+        + '`3` nouvelles infrastructures et `1` autre entité modifiée non listée');
   });
 
   it('should never broaden the scope of a digest with malformed filters', () => {

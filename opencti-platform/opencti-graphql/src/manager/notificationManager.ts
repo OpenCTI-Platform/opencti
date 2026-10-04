@@ -41,6 +41,7 @@ import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics
 import { InterruptibleTimer } from './interruptible-timer';
 import { memoize } from '../utils/memoize';
 import { buildChangeDigestData, type ChangeDigestTrigger, TRIGGER_TYPE_CHANGE_DIGEST } from '../modules/timeMachine/timeMachine-changeDigest';
+import { resolveChangeDigestLocale } from '../modules/timeMachine/timeMachine-changeDigest-messages';
 import { addChangeDigestSentCount } from './telemetryManager';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
@@ -756,7 +757,8 @@ export const handleChangeDigestNotifications = async (context: AuthContext) => {
       const user = users[userIndex];
       const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
       try {
-        const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, fromDate, baseDate.toISOString());
+        const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
+        const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, fromDate, baseDate.toISOString(), locale);
         if (data.length > 0) {
           const target = convertToNotificationUser(user, trigger.notifiers);
           const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };

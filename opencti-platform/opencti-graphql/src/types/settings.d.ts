@@ -62,6 +62,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   platform_organization: string;
   platform_theme_dark_background: string;
   platform_title?: string;
+  platform_language?: string;
   enterprise_license?: string;
   valid_enterprise_edition?: boolean;
   activity_listeners_ids?: string[];

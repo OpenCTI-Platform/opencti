@@ -9,6 +9,13 @@ import type { FilterGroup } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { computeLandscapeDiff, isLandscapeResultAccessible } from './landscapeDiff-domain';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from './timeMachine-types';
+import {
+  type ChangeDigestLocale,
+  type ChangeDigestMessageKey,
+  DEFAULT_CHANGE_DIGEST_LOCALE,
+  formatChangeDigestMessage,
+  joinChangeDigestParts,
+} from './timeMachine-changeDigest-messages';
 
 export const TRIGGER_TYPE_CHANGE_DIGEST = 'change_digest';
 const CHANGE_DIGEST_MAX_ENTITIES: number = conf.get('time_machine:change_digest_max_entities') || 500;
@@ -43,21 +50,23 @@ export const parseTriggerFilters = (filters: string | null | undefined): FilterG
   return isFilterGroupNotEmpty(parsed) ? parsed : null;
 };
 
-const delta = (before: number | null, after: number | null) => (before !== null && after !== null && before !== after ? `\`${before}\` -> \`${after}\`` : null);
-
-export const buildChangeMessage = (summary: LandscapeDiffEntitySummary): string => {
+export const buildChangeMessage = (summary: LandscapeDiffEntitySummary, locale: ChangeDigestLocale = DEFAULT_CHANGE_DIGEST_LOCALE): string => {
+  const message = (key: ChangeDigestMessageKey, values?: Record<string, number>) => formatChangeDigestMessage(locale, key, values);
   const parts: string[] = [];
-  if (summary.created_in_period) parts.push('created');
-  if (summary.revoked_in_period) parts.push('revoked');
-  if (summary.relationships_added > 0) parts.push(`\`${summary.relationships_added}\` new relationship(s)`);
-  if (summary.relationships_removed > 0) parts.push(`\`${summary.relationships_removed}\` removed relationship(s)`);
-  if (summary.relationships_revoked > 0) parts.push(`\`${summary.relationships_revoked}\` revoked relationship(s)`);
-  if (summary.attributes_changed > 0) parts.push(`\`${summary.attributes_changed}\` attribute(s) changed`);
-  const confidence = delta(summary.confidence_before, summary.confidence_after);
-  if (confidence) parts.push(`confidence ${confidence}`);
-  const score = delta(summary.score_before, summary.score_after);
-  if (score) parts.push(`score ${score}`);
-  return parts.join(', ');
+  if (summary.created_in_period) parts.push(message('created'));
+  if (summary.revoked_in_period) parts.push(message('revoked'));
+  if (summary.relationships_added > 0) parts.push(message('relationships_added', { count: summary.relationships_added }));
+  if (summary.relationships_removed > 0) parts.push(message('relationships_removed', { count: summary.relationships_removed }));
+  if (summary.relationships_revoked > 0) parts.push(message('relationships_revoked', { count: summary.relationships_revoked }));
+  if (summary.attributes_changed > 0) parts.push(message('attributes_changed', { count: summary.attributes_changed }));
+  const { confidence_before, confidence_after, score_before, score_after } = summary;
+  if (confidence_before !== null && confidence_after !== null && confidence_before !== confidence_after) {
+    parts.push(message('confidence', { before: confidence_before, after: confidence_after }));
+  }
+  if (score_before !== null && score_after !== null && score_before !== score_after) {
+    parts.push(message('score', { before: score_before, after: score_after }));
+  }
+  return joinChangeDigestParts(locale, parts);
 };
 
 export interface AggregatesMessageOptions {
@@ -65,32 +74,34 @@ export interface AggregatesMessageOptions {
   partial?: boolean;
   // Number of changed entities listed in the digest, the others are only counted
   listed?: number;
+  locale?: ChangeDigestLocale;
 }
 
 export const buildAggregatesMessage = (aggregates: LandscapeDiffAggregates, opts: AggregatesMessageOptions = {}): string => {
+  const locale = opts.locale ?? DEFAULT_CHANGE_DIGEST_LOCALE;
+  const message = (key: ChangeDigestMessageKey, values?: Record<string, number>) => formatChangeDigestMessage(locale, key, values);
   const parts = [
-    `\`${aggregates.entities_changed}\` of \`${aggregates.entities_in_scope}\` entities changed`,
-    `\`${aggregates.new_relationships}\` new relationship(s)`,
-    `\`${aggregates.removed_relationships}\` removed`,
-    `\`${aggregates.revocations}\` revocation(s)`,
+    message('entities_changed', { changed: aggregates.entities_changed, total: aggregates.entities_in_scope }),
+    message('relationships_added', { count: aggregates.new_relationships }),
+    message('relationships_removed', { count: aggregates.removed_relationships }),
+    message('revocations', { count: aggregates.revocations }),
   ];
-  if (aggregates.new_techniques_count > 0) parts.push(`\`${aggregates.new_techniques_count}\` new technique(s)`);
-  if (aggregates.new_malware_count > 0) parts.push(`\`${aggregates.new_malware_count}\` new malware`);
-  if (aggregates.new_tools_count > 0) parts.push(`\`${aggregates.new_tools_count}\` new tool(s)`);
-  if (aggregates.new_infrastructure_count > 0) parts.push(`\`${aggregates.new_infrastructure_count}\` new infrastructure`);
+  if (aggregates.new_techniques_count > 0) parts.push(message('new_techniques', { count: aggregates.new_techniques_count }));
+  if (aggregates.new_malware_count > 0) parts.push(message('new_malware', { count: aggregates.new_malware_count }));
+  if (aggregates.new_tools_count > 0) parts.push(message('new_tools', { count: aggregates.new_tools_count }));
+  if (aggregates.new_infrastructure_count > 0) parts.push(message('new_infrastructure', { count: aggregates.new_infrastructure_count }));
   if (opts.listed !== undefined && aggregates.entities_changed > opts.listed) {
-    parts.push(`\`${aggregates.entities_changed - opts.listed}\` other changed entities not listed`);
+    parts.push(message('not_listed', { count: aggregates.entities_changed - opts.listed }));
   }
-  if (opts.partial) {
-    parts.push('partial result: the filter set exceeds the limits of a change digest, only its most recent entities and relationships are compared');
-  }
-  return parts.join(', ');
+  const summary = joinChangeDigestParts(locale, parts);
+  return opts.partial ? `${summary} | ${message('partial')}` : summary;
 };
 
 /**
  * Build the content of a change digest for one recipient: the landscape diff of the trigger
  * filter set over the digest period, computed with the rights of the recipient.
- * Each changed entity becomes one notification line, the first emitted line carries the overall summary.
+ * Each changed entity becomes one notification line, the first emitted line carries the overall summary,
+ * all written in the language of the recipient.
  * Right before emission, every element that shaped the digest (counted or named) must still be accessible:
  * when access changed during the computation the digest is computed again, and skipped for this period
  * if access keeps changing, so a reclassified element is never leaked, not even as a count.
@@ -102,6 +113,7 @@ export const buildChangeDigestData = async (
   trigger: ChangeDigestTrigger,
   from: string,
   to: string,
+  locale: ChangeDigestLocale = DEFAULT_CHANGE_DIGEST_LOCALE,
 ): Promise<ChangeDigestData[]> => {
   const entityTypes = trigger.scope_entity_types && trigger.scope_entity_types.length > 0 ? trigger.scope_entity_types : [ABSTRACT_STIX_DOMAIN_OBJECT];
   const scope = { filters: parseTriggerFilters(trigger.filters), entityTypes };
@@ -124,9 +136,9 @@ export const buildChangeDigestData = async (
         notification_id: trigger.internal_id,
         instance: instancesById.get(summary.entity_id) as StixObject,
         type: summary.created_in_period ? 'create' : 'update',
-        message: buildChangeMessage(summary),
+        message: buildChangeMessage(summary, locale),
       }));
-      const overall = buildAggregatesMessage(computation.aggregates, { partial: computation.truncated, listed: data.length });
+      const overall = buildAggregatesMessage(computation.aggregates, { partial: computation.truncated, listed: data.length, locale });
       data[0] = { ...data[0], message: `${data[0].message} | ${overall}` };
       logApp.debug('[TIME MACHINE] Change digest built', { trigger: trigger.internal_id, user: user.id, lines: data.length });
       return data;

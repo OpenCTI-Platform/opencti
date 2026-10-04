@@ -132,6 +132,8 @@ A change digest sends, at each period, what changed on a set of entities during 
 
 The digest is computed for each recipient with their own rights, so nobody receives changes on knowledge they cannot access. A digest covers at most 500 entities of the set and lists the 50 most changed ones. When nothing changed during the period, no digest is sent.
 
+Each recipient receives the digest in the language of their profile. When the profile language follows the browser, the digest is written in the platform language, and in English when the platform language also follows the browser.
+
 !!! note "History retention"
 
     Change digests are computed from the history of the knowledge. A History [retention rule](../administration/retentions.md) shorter than the digest period removes the changes the digest relies on.
