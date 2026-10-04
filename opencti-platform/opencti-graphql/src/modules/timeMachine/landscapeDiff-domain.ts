@@ -25,7 +25,7 @@ import { ENTITY_TYPE_SAVED_FILTER, type BasicStoreEntitySavedFilter } from '../s
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from '../customView/customView-types';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { executionContext } from '../../utils/access';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
 import { now, utcDate } from '../../utils/format';
 import { doYield } from '../../utils/eventloop-utils';
@@ -36,7 +36,7 @@ import { OrderingMode } from '../../generated/graphql';
 import { addLandscapeDiffCount } from '../../manager/telemetryManager';
 import { changeFieldKey, firstNumber } from './timeMachine-replay';
 import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from './timeMachine-history';
-import { buildRelationshipStates, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
+import { buildRelationshipStates, type RelationshipStateAction, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
 import type {
   LandscapeDiffAggregates,
   LandscapeDiffBucket,
@@ -191,6 +191,7 @@ interface EntityAccumulator {
   relationships_added: number;
   relationships_removed: number;
   relationships_revoked: number;
+  relationships_confidence_changed: number;
   confidence_before?: number | null;
   confidence_after?: number | null;
   score_before?: number | null;
@@ -209,12 +210,14 @@ interface GlobalAccumulator {
   newRelationships: number;
   removedRelationships: number;
   revocations: number;
+  relationshipConfidenceChanges: number;
   targets: Map<string, TargetAccumulator>;
   // A relationship between entities of two batches is read by both: global counters count it once
   countedRelationships: Set<string>;
   countedRelationshipStates: Set<string>;
-  // Deleted relationships cannot be reclassified: only the revoked ones, which still exist, are revalidated
-  revokedRelationships: Set<string>;
+  // Accessible elements behind the counts of removed, revoked and updated relationships, revalidated with a stored
+  // result: the endpoints out of the scope of a removed relationship, the other relationships themselves
+  countedElements: Set<string>;
   resolvedTargets: Set<string>;
   relationshipsFetched: number;
   truncated: boolean;
@@ -242,6 +245,29 @@ const registerTarget = (acc: GlobalAccumulator, targetId: string, targetType: st
   target.relationshipTypes.add(relationshipType);
   target.entityIds.add(entityId);
   acc.targets.set(targetId, target);
+};
+
+// Changes of existing relationships that the landscape counts (a relationship unrevoked in the period is not)
+const COUNTED_RELATIONSHIP_ACTIONS: RelationshipStateAction[] = ['removed', 'revoked', 'confidence_changed'];
+
+/**
+ * Access of the elements behind a relationship count, with the rights of the user: the accessible ones are counted
+ * and revalidated with a stored result, the ones that no longer exist are counted (nothing is left to reclassify),
+ * the ones that exist but that the user cannot access are not counted.
+ */
+export const resolveCountedElements = async (context: AuthContext, user: AuthUser, ids: string[]) => {
+  const uniqueIds = [...new Set(ids)];
+  const accessible = new Set<string>();
+  const restricted = new Set<string>();
+  if (uniqueIds.length === 0) return { accessible, restricted };
+  const found = await internalFindByIdsMapped<BasicStoreObject>(context, user, uniqueIds, { baseData: true });
+  const missing = uniqueIds.filter((id) => !found[id]);
+  const existing = missing.length > 0 ? await internalFindByIdsMapped<BasicStoreObject>(context, SYSTEM_USER, missing, { baseData: true }) : {};
+  uniqueIds.forEach((id) => {
+    if (found[id]) accessible.add(id);
+    else if (existing[id]) restricted.add(id);
+  });
+  return { accessible, restricted };
 };
 
 const processBatch = async (
@@ -295,7 +321,7 @@ const processBatch = async (
     }
   });
   acc.relationshipsFetched += newRelationships;
-  // 2. Relationships removed or revoked in the period
+  // 2. Relationships removed, revoked or whose confidence changed in the period
   const fetchedEvents = await fetchRelationshipsHistoryEvents(context, user, ids, {
     from,
     to,
@@ -305,24 +331,40 @@ const processBatch = async (
   });
   if (fetchedEvents.length > LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
   const relationshipEvents = fetchedEvents.slice(0, LANDSCAPE_MAX_EVENTS_PER_BATCH);
-  buildRelationshipStates(relationshipEvents).forEach((state, relationshipId) => {
+  const changedRelationships = [...buildRelationshipStates(relationshipEvents).entries()].map(([relationshipId, state]) => {
     // A relationship created in the period is counted with the new relationships; when it is one of them,
-    // its revocation after its creation counts as well
+    // its revocation and confidence changes after its creation count as well
     const actions = relationshipStateActions(state, acc.countedRelationships.has(relationshipId));
+    // A removed relationship is only known through its endpoints, the other ones still exist
+    const shapingIds = actions.includes('removed')
+      ? [state.from_id, state.to_id].filter((id): id is string => !!id && !acc.entities.has(id))
+      : [relationshipId];
+    return { relationshipId, state, actions, shapingIds };
+  }).filter(({ actions }) => actions.some((action) => COUNTED_RELATIONSHIP_ACTIONS.includes(action)));
+  const access = await resolveCountedElements(context, user, changedRelationships.flatMap(({ shapingIds }) => shapingIds));
+  changedRelationships.forEach(({ relationshipId, state, actions, shapingIds }) => {
+    if (shapingIds.some((id) => access.restricted.has(id))) return;
+    shapingIds.filter((id) => access.accessible.has(id)).forEach((id) => acc.countedElements.add(id));
     const sides = [state.from_id, state.to_id].filter((id): id is string => !!id && idSet.has(id));
     const countGlobally = !acc.countedRelationshipStates.has(relationshipId);
+    acc.countedRelationshipStates.add(relationshipId);
     if (actions.includes('removed')) {
-      acc.countedRelationshipStates.add(relationshipId);
       if (countGlobally) acc.removedRelationships += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_removed += 1;
       });
-    } else if (actions.includes('revoked')) {
-      acc.countedRelationshipStates.add(relationshipId);
-      acc.revokedRelationships.add(relationshipId);
+      return;
+    }
+    if (actions.includes('revoked')) {
       if (countGlobally) acc.revocations += 1;
       sides.forEach((id) => {
         acc.entities.get(id)!.relationships_revoked += 1;
+      });
+    }
+    if (actions.includes('confidence_changed')) {
+      if (countGlobally) acc.relationshipConfidenceChanges += 1;
+      sides.forEach((id) => {
+        acc.entities.get(id)!.relationships_confidence_changed += 1;
       });
     }
   });
@@ -363,6 +405,7 @@ const changeScore = (entity: EntityAccumulator) => {
   const scoreDelta = Math.abs((entity.score_after ?? 0) - (entity.score_before ?? entity.score_after ?? 0));
   return entity.changed_keys.size
     + 2 * (entity.relationships_added + entity.relationships_removed + entity.relationships_revoked)
+    + entity.relationships_confidence_changed
     + (entity.created_in_period ? 5 : 0)
     + (entity.revoked_in_period ? 5 : 0)
     + Math.round((confidenceDelta + scoreDelta) / 10);
@@ -463,7 +506,7 @@ const buildAggregates = async (
     new_relationships_by_type: toBuckets(acc.newRelationshipsByType),
     removed_relationships: acc.removedRelationships,
     revocations: acc.revocations + entities.filter((e) => e.revoked_in_period).length,
-    confidence_changes: entities.filter((e) => hasChanged(e.confidence_before, e.confidence_after)).length,
+    confidence_changes: acc.relationshipConfidenceChanges + entities.filter((e) => hasChanged(e.confidence_before, e.confidence_after)).length,
     score_changes: entities.filter((e) => hasChanged(e.score_before, e.score_after)).length,
     new_techniques_by_tactic: toBuckets(techniquesByTactic),
     new_techniques: techniques.slice(0, LANDSCAPE_MAX_ITEMS),
@@ -495,6 +538,7 @@ const buildEntitySummaries = (acc: GlobalAccumulator): LandscapeDiffEntitySummar
       relationships_added: e.relationships_added,
       relationships_removed: e.relationships_removed,
       relationships_revoked: e.relationships_revoked,
+      relationships_confidence_changed: e.relationships_confidence_changed,
       confidence_before: e.confidence_before ?? null,
       confidence_after: e.confidence_after ?? null,
       score_before: e.score_before ?? null,
@@ -541,15 +585,17 @@ export const computeLandscapeDiff = async (
       relationships_added: 0,
       relationships_removed: 0,
       relationships_revoked: 0,
+      relationships_confidence_changed: 0,
     }])),
     newRelationshipsByType: new Map(),
     newRelationships: 0,
     removedRelationships: 0,
     revocations: 0,
+    relationshipConfidenceChanges: 0,
     targets: new Map(),
     countedRelationships: new Set(),
     countedRelationshipStates: new Set(),
-    revokedRelationships: new Set(),
+    countedElements: new Set(),
     resolvedTargets: new Set(),
     relationshipsFetched: 0,
     truncated: truncatedScope,
@@ -564,7 +610,7 @@ export const computeLandscapeDiff = async (
   }
   opts.signal?.throwIfAborted();
   const aggregates = await buildAggregates(context, user, acc, entities.length, groupBy);
-  const contributors = new Set([...acc.entities.keys(), ...acc.countedRelationships, ...acc.revokedRelationships, ...acc.resolvedTargets]);
+  const contributors = new Set([...acc.entities.keys(), ...acc.countedRelationships, ...acc.countedElements, ...acc.resolvedTargets]);
   return { aggregates, entities: buildEntitySummaries(acc), total: entities.length, truncated: acc.truncated, contributors: [...contributors] };
 };
 // endregion

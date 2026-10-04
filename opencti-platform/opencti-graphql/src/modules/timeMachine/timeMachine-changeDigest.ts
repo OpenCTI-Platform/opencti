@@ -58,6 +58,9 @@ export const buildChangeMessage = (summary: LandscapeDiffEntitySummary, locale: 
   if (summary.relationships_added > 0) parts.push(message('relationships_added', { count: summary.relationships_added }));
   if (summary.relationships_removed > 0) parts.push(message('relationships_removed', { count: summary.relationships_removed }));
   if (summary.relationships_revoked > 0) parts.push(message('relationships_revoked', { count: summary.relationships_revoked }));
+  if (summary.relationships_confidence_changed > 0) {
+    parts.push(message('relationships_confidence_changed', { count: summary.relationships_confidence_changed }));
+  }
   if (summary.attributes_changed > 0) parts.push(message('attributes_changed', { count: summary.attributes_changed }));
   const { confidence_before, confidence_after, score_before, score_after } = summary;
   if (confidence_before !== null && confidence_after !== null && confidence_before !== confidence_after) {

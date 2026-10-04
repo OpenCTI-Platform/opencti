@@ -10,7 +10,7 @@ interface PluralMessage extends Partial<Record<Intl.LDMLPluralRule, string>> {
 type DigestMessage = string | PluralMessage;
 
 export type ChangeDigestMessageKey = 'created' | 'revoked' | 'relationships_added' | 'relationships_removed' | 'relationships_revoked'
-  | 'attributes_changed' | 'confidence' | 'score' | 'entities_changed' | 'revocations' | 'new_techniques' | 'new_malware' | 'new_tools'
+  | 'relationships_confidence_changed' | 'attributes_changed' | 'confidence' | 'score' | 'entities_changed' | 'revocations' | 'new_techniques' | 'new_malware' | 'new_tools'
   | 'new_infrastructure' | 'not_listed' | 'partial';
 
 type DigestLanguage = 'en' | 'fr' | 'es' | 'de' | 'it' | 'ja' | 'ko' | 'zh' | 'ru';
@@ -22,6 +22,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} new relationship', other: '{count} new relationships' },
     relationships_removed: { one: '{count} removed relationship', other: '{count} removed relationships' },
     relationships_revoked: { one: '{count} revoked relationship', other: '{count} revoked relationships' },
+    relationships_confidence_changed: { one: '{count} confidence change on relationships', other: '{count} confidence changes on relationships' },
     attributes_changed: { one: '{count} attribute changed', other: '{count} attributes changed' },
     confidence: 'confidence {before} -> {after}',
     score: 'score {before} -> {after}',
@@ -40,6 +41,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} nouvelle relation', other: '{count} nouvelles relations' },
     relationships_removed: { one: '{count} relation supprimée', other: '{count} relations supprimées' },
     relationships_revoked: { one: '{count} relation révoquée', other: '{count} relations révoquées' },
+    relationships_confidence_changed: { one: '{count} changement de confiance des relations', other: '{count} changements de confiance des relations' },
     attributes_changed: { one: '{count} attribut modifié', other: '{count} attributs modifiés' },
     confidence: 'confiance {before} -> {after}',
     score: 'score {before} -> {after}',
@@ -58,6 +60,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} nueva relación', other: '{count} nuevas relaciones' },
     relationships_removed: { one: '{count} relación eliminada', other: '{count} relaciones eliminadas' },
     relationships_revoked: { one: '{count} relación revocada', other: '{count} relaciones revocadas' },
+    relationships_confidence_changed: { one: '{count} cambio de confianza en relaciones', other: '{count} cambios de confianza en relaciones' },
     attributes_changed: { one: '{count} atributo modificado', other: '{count} atributos modificados' },
     confidence: 'confianza {before} -> {after}',
     score: 'puntuación {before} -> {after}',
@@ -76,6 +79,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} neue Beziehung', other: '{count} neue Beziehungen' },
     relationships_removed: { one: '{count} entfernte Beziehung', other: '{count} entfernte Beziehungen' },
     relationships_revoked: { one: '{count} widerrufene Beziehung', other: '{count} widerrufene Beziehungen' },
+    relationships_confidence_changed: { one: '{count} Konfidenzänderung an Beziehungen', other: '{count} Konfidenzänderungen an Beziehungen' },
     attributes_changed: { one: '{count} Attribut geändert', other: '{count} Attribute geändert' },
     confidence: 'Konfidenz {before} -> {after}',
     score: 'Score {before} -> {after}',
@@ -94,6 +98,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} nuova relazione', other: '{count} nuove relazioni' },
     relationships_removed: { one: '{count} relazione rimossa', other: '{count} relazioni rimosse' },
     relationships_revoked: { one: '{count} relazione revocata', other: '{count} relazioni revocate' },
+    relationships_confidence_changed: { one: '{count} modifica di confidenza sulle relazioni', other: '{count} modifiche di confidenza sulle relazioni' },
     attributes_changed: { one: '{count} attributo modificato', other: '{count} attributi modificati' },
     confidence: 'confidenza {before} -> {after}',
     score: 'punteggio {before} -> {after}',
@@ -112,6 +117,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: '{count} 件の新しいリレーションシップ',
     relationships_removed: '{count} 件の削除されたリレーションシップ',
     relationships_revoked: '{count} 件の失効したリレーションシップ',
+    relationships_confidence_changed: '{count} 件のリレーションシップの信頼度の変更',
     attributes_changed: '{count} 件の属性を変更',
     confidence: '信頼度 {before} -> {after}',
     score: 'スコア {before} -> {after}',
@@ -130,6 +136,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: '새 관계 {count}개',
     relationships_removed: '제거된 관계 {count}개',
     relationships_revoked: '철회된 관계 {count}개',
+    relationships_confidence_changed: '관계의 신뢰도 변경 {count}건',
     attributes_changed: '속성 {count}개 변경됨',
     confidence: '신뢰도 {before} -> {after}',
     score: '점수 {before} -> {after}',
@@ -148,6 +155,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: '{count} 个新关系',
     relationships_removed: '{count} 个已移除的关系',
     relationships_revoked: '{count} 个已撤销的关系',
+    relationships_confidence_changed: '{count} 次关系的置信度变化',
     attributes_changed: '{count} 个属性已更改',
     confidence: '置信度 {before} -> {after}',
     score: '评分 {before} -> {after}',
@@ -166,6 +174,7 @@ const MESSAGES: Record<DigestLanguage, Record<ChangeDigestMessageKey, DigestMess
     relationships_added: { one: '{count} новая связь', few: '{count} новые связи', many: '{count} новых связей', other: '{count} новой связи' },
     relationships_removed: { one: '{count} удалённая связь', few: '{count} удалённые связи', many: '{count} удалённых связей', other: '{count} удалённой связи' },
     relationships_revoked: { one: '{count} отозванная связь', few: '{count} отозванные связи', many: '{count} отозванных связей', other: '{count} отозванной связи' },
+    relationships_confidence_changed: { one: '{count} изменение уровня доверия связей', few: '{count} изменения уровня доверия связей', many: '{count} изменений уровня доверия связей', other: '{count} изменения уровня доверия связей' },
     attributes_changed: { one: '{count} атрибут изменён', few: '{count} атрибута изменено', many: '{count} атрибутов изменено', other: '{count} атрибута изменено' },
     confidence: 'уверенность {before} -> {after}',
     score: 'оценка {before} -> {after}',

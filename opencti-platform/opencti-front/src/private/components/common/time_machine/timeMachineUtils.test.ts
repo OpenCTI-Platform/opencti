@@ -114,6 +114,7 @@ const landscapeDiff: LandscapeDiffData = {
       relationships_added: 8,
       relationships_removed: 1,
       relationships_revoked: 0,
+      relationships_confidence_changed: 3,
       confidence_before: 50,
       confidence_after: 80,
       score_before: null,
@@ -235,7 +236,8 @@ describe('landscape diff exports', () => {
     const lines = landscapeDiffToCsv(landscapeDiff, t).split('\n');
     expect(lines).toHaveLength(2);
     expect(lines[0].split(',')[2]).toBe('Standard STIX ID');
-    expect(lines[1]).toBe('"\'=HYPERLINK(""http://evil"")",Intrusion-Set,intrusion-set--4e7c3b44-8c39-5f3d-9b6e-1b2c3d4e5f60,false,false,2,8,1,0,50 -> 80,,21');
+    expect(lines[0].split(',')[9]).toBe('Confidence changes on relationships');
+    expect(lines[1]).toBe('"\'=HYPERLINK(""http://evil"")",Intrusion-Set,intrusion-set--4e7c3b44-8c39-5f3d-9b6e-1b2c3d4e5f60,false,false,2,8,1,0,3,50 -> 80,,21');
   });
 
   it('builds the HTML report with the non-empty aggregates only', () => {

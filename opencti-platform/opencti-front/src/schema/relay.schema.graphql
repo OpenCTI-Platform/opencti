@@ -17291,6 +17291,7 @@ type LandscapeDiffEntity {
   relationships_added: Int!
   relationships_removed: Int!
   relationships_revoked: Int!
+  relationships_confidence_changed: Int!
   confidence_before: Int
   confidence_after: Int
   score_before: Int

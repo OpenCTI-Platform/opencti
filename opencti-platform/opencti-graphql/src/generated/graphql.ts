@@ -15185,6 +15185,7 @@ export type LandscapeDiffEntity = {
   entity_type: Scalars['String']['output'];
   name: Scalars['String']['output'];
   relationships_added: Scalars['Int']['output'];
+  relationships_confidence_changed: Scalars['Int']['output'];
   relationships_removed: Scalars['Int']['output'];
   relationships_revoked: Scalars['Int']['output'];
   revoked_in_period: Scalars['Boolean']['output'];
@@ -48468,6 +48469,7 @@ export type LandscapeDiffEntityResolvers<ContextType = any, ParentType extends R
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   relationships_added?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_confidence_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   relationships_removed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   relationships_revoked?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   revoked_in_period?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

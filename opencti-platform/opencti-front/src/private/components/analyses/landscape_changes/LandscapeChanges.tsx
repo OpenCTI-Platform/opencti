@@ -100,6 +100,7 @@ const landscapeChangesPollQuery = graphql`
         relationships_added
         relationships_removed
         relationships_revoked
+        relationships_confidence_changed
         confidence_before
         confidence_after
         score_before

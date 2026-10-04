@@ -165,6 +165,7 @@ const LandscapeChangesResults = ({ diff, truncated = false, onWidenPeriod }: Lan
                 <TableCell align="right">{t_i18n('Relationships added')}</TableCell>
                 <TableCell align="right">{t_i18n('Relationships removed')}</TableCell>
                 <TableCell align="right">{t_i18n('Relationships revoked')}</TableCell>
+                <TableCell align="right">{t_i18n('Confidence changes on relationships')}</TableCell>
                 <TableCell align="right">{t_i18n('Attributes changed')}</TableCell>
                 <TableCell>{t_i18n('Confidence')}</TableCell>
                 <TableCell>{t_i18n('Score')}</TableCell>
@@ -187,6 +188,7 @@ const LandscapeChangesResults = ({ diff, truncated = false, onWidenPeriod }: Lan
                     <TableCell align="right">{n(entity.relationships_added)}</TableCell>
                     <TableCell align="right">{n(entity.relationships_removed)}</TableCell>
                     <TableCell align="right">{n(entity.relationships_revoked)}</TableCell>
+                    <TableCell align="right">{n(entity.relationships_confidence_changed)}</TableCell>
                     <TableCell align="right">{n(entity.attributes_changed)}</TableCell>
                     <TableCell>{transition(entity.confidence_before, entity.confidence_after)}</TableCell>
                     <TableCell>{transition(entity.score_before, entity.score_after)}</TableCell>

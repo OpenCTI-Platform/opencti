@@ -125,16 +125,18 @@ The result contains:
 
 | Section | Content |
 |---------|---------|
-| Key figures | Entities in scope, entities changed, new entities, new relationships, removed relationships, revocations, confidence changes, score changes, new infrastructure and new indicators. |
+| Key figures | Entities in scope, entities changed, new entities, new relationships, removed relationships, revocations, confidence changes (of the entities and of their relationships), score changes, new infrastructure and new indicators. |
 | Group by breakdown | Displayed first: the changed entities by entity type, the new relationships by type or the new techniques by tactic, depending on the **Group by** choice. The PDF export starts with the same breakdown, and the JSON export carries it with the `group_by` value. |
 | New techniques by tactic | Attack patterns newly linked with a `uses` relationship, grouped by tactic (kill chain phase). |
 | New techniques, new malware and new tools | Attack patterns, malware and tools newly linked with a `uses` relationship. The 50 most frequent are listed; when there are more, the card shows the total (for example "50 most frequent of 120"), and change digests always report the totals. |
 | New victims | Sectors, countries and regions newly linked with a `targets` relationship. |
 | New infrastructure | Infrastructures, IP addresses, domain names, URLs and hostnames newly related to the entities. |
 | New relationships by type | All relationships created in the period, by relationship type. |
-| Top changed entities | The changed entities, ranked by a change score that weighs new, removed and revoked relationships, changed attributes, creation and revocation in the period, and confidence and score shifts. |
+| Top changed entities | The changed entities, ranked by a change score that weighs new, removed and revoked relationships, confidence changes on relationships, changed attributes, creation and revocation in the period, and confidence and score shifts. |
 
 Click an entity in **Top changed entities** to open its **Changes** tab on the same period. Click **Export** to download the landscape changes in JSON, CSV or PDF.
+
+Every figure is computed with your rights: a relationship whose change you cannot see, or that was removed from an entity you cannot access, is not counted. A stored result is only shown again while you can still access everything it counts.
 
 !!! note "Limits"
 

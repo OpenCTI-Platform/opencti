@@ -73,6 +73,7 @@ describe('Change digest messages', () => {
     relationships_added: 3,
     relationships_removed: 1,
     relationships_revoked: 0,
+    relationships_confidence_changed: 0,
     confidence_before: 50,
     confidence_after: 75,
     score_before: null,
@@ -86,6 +87,9 @@ describe('Change digest messages', () => {
       .toEqual('created');
     expect(buildChangeMessage({ ...summary, attributes_changed: 1, confidence_before: null, score_before: 10, score_after: 40 }))
       .toEqual('`3` new relationships, `1` removed relationship, `1` attribute changed, and score `10` -> `40`');
+    // An entity whose only change is the confidence of its relationships still gets a line
+    const confidenceOnly = { ...summary, relationships_added: 0, relationships_removed: 0, attributes_changed: 0, confidence_before: null, relationships_confidence_changed: 2 };
+    expect(buildChangeMessage(confidenceOnly)).toEqual('`2` confidence changes on relationships');
   });
 
   it('should write the changes of an entity in the language of the recipient', () => {
@@ -101,6 +105,7 @@ describe('Change digest messages', () => {
     expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 3 })).toEqual('`3` новые связи');
     expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 5 })).toEqual('`5` новых связей');
     expect(formatChangeDigestMessage(russian, 'relationships_added', { count: 21 })).toEqual('`21` новая связь');
+    expect(formatChangeDigestMessage(russian, 'relationships_confidence_changed', { count: 3 })).toEqual('`3` изменения уровня доверия связей');
     expect(formatChangeDigestMessage(resolveChangeDigestLocale('ja-jp'), 'relationships_added', { count: 3 })).toEqual('`3` 件の新しいリレーションシップ');
     expect(formatChangeDigestMessage(DEFAULT_CHANGE_DIGEST_LOCALE, 'relationships_added', { count: 1234 })).toEqual('`1,234` new relationships');
     expect(formatChangeDigestMessage(DEFAULT_CHANGE_DIGEST_LOCALE, 'entities_changed', { changed: 1, total: 1 })).toEqual('`1` of `1` entity changed');

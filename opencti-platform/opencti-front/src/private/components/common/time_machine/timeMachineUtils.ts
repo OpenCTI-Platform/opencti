@@ -228,6 +228,7 @@ export interface LandscapeDiffData {
     readonly relationships_added: number;
     readonly relationships_removed: number;
     readonly relationships_revoked: number;
+    readonly relationships_confidence_changed: number;
     readonly confidence_before?: number | null;
     readonly confidence_after?: number | null;
     readonly score_before?: number | null;
@@ -354,7 +355,7 @@ export const landscapeDiffToJson = (diff: LandscapeDiffData): string => JSON.str
 export const landscapeDiffToCsv = (diff: LandscapeDiffData, t: Translate): string => {
   const rows: Array<Array<string | number | boolean | null | undefined>> = [
     [t('Entity'), t('Type'), t('Standard STIX ID'), t('Created in period'), t('Revoked in period'), t('Attributes changed'), t('Relationships added'),
-      t('Relationships removed'), t('Relationships revoked'), t('Confidence'), t('Score'), t('Change score')],
+      t('Relationships removed'), t('Relationships revoked'), t('Confidence changes on relationships'), t('Confidence'), t('Score'), t('Change score')],
   ];
   diff.entities.forEach((entity) => {
     rows.push([
@@ -367,6 +368,7 @@ export const landscapeDiffToCsv = (diff: LandscapeDiffData, t: Translate): strin
       entity.relationships_added,
       entity.relationships_removed,
       entity.relationships_revoked,
+      entity.relationships_confidence_changed,
       delta(entity.confidence_before, entity.confidence_after),
       delta(entity.score_before, entity.score_after),
       entity.change_score,

@@ -190,6 +190,7 @@ export interface LandscapeDiffEntitySummary {
   relationships_added: number;
   relationships_removed: number;
   relationships_revoked: number;
+  relationships_confidence_changed: number;
   confidence_before: number | null;
   confidence_after: number | null;
   score_before: number | null;

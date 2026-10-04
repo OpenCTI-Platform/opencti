@@ -28,6 +28,7 @@ const summary = (id: string, input: Partial<LandscapeDiffEntitySummary> = {}): L
   relationships_added: 1,
   relationships_removed: 0,
   relationships_revoked: 0,
+  relationships_confidence_changed: 0,
   confidence_before: null,
   confidence_after: null,
   score_before: null,
