@@ -112,8 +112,13 @@ export default class GraphPage {
     return menu.getByRole('menuitem', { name: label }).or(menu.getByRole('menuitemcheckbox', { name: label }));
   }
 
-  /** Whether an action sits in the toolbar itself; otherwise "More actions" lists it. */
+  /**
+   * Whether an action sits in the toolbar itself; otherwise "More actions" lists it. The toolbar is
+   * waited for first: it renders again when the graph switches between 2D and 3D.
+   */
   async isInToolbar(name: string) {
+    await expect(this.getToolbarButton('More actions')).toBeVisible();
+    await expect(this.getToolbarButton('Fit the whole graph')).toBeVisible();
     return (await this.getToolbarButton(name).count()) > 0;
   }
 
@@ -263,6 +268,13 @@ export default class GraphPage {
   }
 
   async clickNode(id: string, modifiers: ('Shift' | 'Control' | 'Alt')[] = []) {
+    // The hover card of the node clicked before may cover this one: it closes once the pointer leaves it.
+    const card = this.page.getByRole('group', { name: 'Details on hover' });
+    if (await card.isVisible()) {
+      const box = await this.getCanvas().boundingBox();
+      if (box) await this.page.mouse.move(box.x + box.width / 2, box.y + 5);
+      await expect(card).toBeHidden();
+    }
     const { x, y } = await this.pagePoint(id);
     for (const key of modifiers) await this.page.keyboard.down(key);
     await this.page.mouse.click(x, y);

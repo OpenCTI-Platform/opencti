@@ -194,13 +194,17 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
 
     // The toolbar is one tab stop: the arrow keys move between its controls.
     const toolbar = graph.getToolbarRegion();
+    const focused = () => page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
     await expect(toolbar.locator('[tabindex="0"]')).toHaveCount(1);
+    // The tab stop is the control used last (here the fit action), or else the first one.
     await toolbar.locator('[tabindex="0"]').focus();
-    const first = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    const stop = await focused();
     await page.keyboard.press('ArrowRight');
-    await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).not.toBe(first);
+    await expect.poll(focused).not.toBe(stop);
     await page.keyboard.press('Home');
-    await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe(first);
+    await expect.poll(focused).toBe(await toolbar.getByRole('button').first().getAttribute('aria-label'));
+    await page.keyboard.press('End');
+    await expect.poll(focused).toBe('More actions');
 
     await graph.runToolbarAction('Full screen');
     await graph.expectToolbarToggle('Full screen', true);
