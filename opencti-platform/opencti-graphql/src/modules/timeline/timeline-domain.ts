@@ -74,6 +74,7 @@ import {
   TIMELINE_MAX_EVENTS,
   TIMELINE_MAX_MANUAL_EVENTS,
   TIMELINE_MAX_STORED_EVENTS,
+  timelineEventMaxConfidence,
   type TimelineRegenerationResult,
   toRemovedTimelineEvents,
   type TimelineUpdatePayload,
@@ -653,6 +654,23 @@ const reloadEvent = async (context: AuthContext, user: AuthUser, id: string) => 
   return elLoadById<StoredTimelineEvent>(context, user, id, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent;
 };
 
+/** The manual event of a container added through the API with this external id, or imported with it as its external id. */
+const loadManualEventByExternalId = async (context: AuthContext, containerId: string, externalId: string): Promise<StoredTimelineEvent | null> => {
+  const added = await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, computeManualEventId(containerId, externalId), { type: ENTITY_TYPE_TIMELINE_EVENT });
+  if (added) return added as unknown as StoredTimelineEvent;
+  const [imported] = await fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['container_id'], values: [containerId] }, { key: ['event_source'], values: ['manual'] }, { key: ['external_id'], values: [externalId] }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+    first: 1,
+    maxSize: 1,
+  } as any);
+  return imported ?? null;
+};
+
 const countManualTimelineEvents = (context: AuthContext, containerId: string): Promise<number> => {
   return elCount(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_TIMELINE_EVENT],
@@ -723,9 +741,10 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   // Checked before waiting for the lock, read again under it for its markings
   await resolveElement(context, user, input.element_id);
   const author = await resolveAuthor(context, user, input.createdBy);
-  const internalId = input.external_id ? computeManualEventId(container.internal_id, input.external_id) : uuidv4();
+  const newEventId = input.external_id ? computeManualEventId(container.internal_id, input.external_id) : uuidv4();
   const kind = input.kind ?? 'milestone';
   const buildManualEventDoc = (
+    internalId: string,
     previous: StoredTimelineEvent | null,
     access: ReturnType<typeof containerAccessFields>,
     element: AnyStoreElement | null,
@@ -761,9 +780,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     // this write waited applies to it
     const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
     const element = await resolveElement(context, user, input.element_id);
-    const current = input.external_id
-      ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
-      : null;
+    const current = input.external_id ? await loadManualEventByExternalId(context, container.internal_id, input.external_id) : null;
+    const internalId = current?.internal_id ?? newEventId;
     // The idempotent upsert never lets a user overwrite (and unmark) an event he cannot read
     if (current && !(await findTimelineEvent(context, user, internalId))) {
       throw ForbiddenAccess('A timeline event you cannot access already uses this external id');
@@ -773,7 +791,7 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
-    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current, containerAccessFields(locked), element)]);
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(internalId, current, containerAccessFields(locked), element)]);
     await afterTimelineChange(context, user, locked, 'manual', [internalId]);
     return { stored: await reloadEvent(context, user, internalId), existing: current };
   });
@@ -931,15 +949,19 @@ const writeImportedContributions = async (
   const { events, annotations } = contributions;
   const access = containerAccessFields(container);
   const allowedMarkings = new Set(user.allowed_marking.map((m) => m.internal_id));
-  // A manual event travelling back to a platform that already knows it (same STIX id, or the id it
-  // was originally imported from) must update it, never duplicate it.
-  const storedManual = (await loadStoredTimelineEvents(context, container.internal_id)).filter((e) => e.event_source === 'manual');
+  // A manual event travelling back to a platform that already knows it must update it, never duplicate it. Its STIX id
+  // comes first (an event of this platform, or one imported earlier, whose id is computed from that STIX id); its
+  // external id (the id it was originally imported from, or the one given when it was added through the API) comes second.
+  const storedEvents = await loadStoredTimelineEvents(context, container.internal_id);
+  const storedManual = storedEvents.filter((e) => e.event_source === 'manual');
   const storedByStandardId = new Map(storedManual.map((e) => [e.standard_id as string, e]));
   const storedByExternalId = new Map(storedManual.filter((e) => !!e.external_id).map((e) => [e.external_id as string, e]));
+  const storedById = new Map(storedManual.map((e) => [e.internal_id, e]));
   const findKnownEvent = (event: StixTimelineExtensionEvent) => {
     const keys = [event.id, event.external_id].filter((key): key is string => !!key);
     for (let index = 0; index < keys.length; index += 1) {
-      const known = storedByStandardId.get(keys[index]) ?? storedByExternalId.get(keys[index]);
+      const key = keys[index];
+      const known = storedByStandardId.get(key) ?? storedById.get(computeManualEventId(container.internal_id, key)) ?? storedByExternalId.get(key);
       if (known) return known;
     }
     return null;
@@ -961,10 +983,9 @@ const writeImportedContributions = async (
   const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
   const readableIds = new Set(readable.map((e) => e.internal_id));
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
-  const storedById = new Map(storedManual.map((e) => [e.internal_id, e]));
   const candidates = events.map((event) => {
     const existing = findKnownEvent(event);
-    const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.external_id ?? event.id);
+    const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.id);
     const overwritesUnreadable = storedIds.has(internalId) && !readableIds.has(internalId);
     // Nor is a stored event above the confidence level of the user overwritten, like any edit of the event
     const stored = existing ?? storedById.get(internalId);
@@ -1048,7 +1069,12 @@ const writeImportedContributions = async (
     createdMilestoneIds = created.filter(({ event }) => (TIMELINE_MILESTONE_KINDS as readonly string[]).includes(event.kind))
       .map(({ internalId }) => internalId);
   }
-  const pending: TimelinePendingAnnotation[] = annotations
+  // An imported annotation pins, hides or annotates a derived event like an edit of the event: never one above the confidence
+  // level of the user. A derived event already stored is checked now; the confidence level is kept with the annotation for
+  // the event the derivation has not produced yet, and checked again when the regeneration applies it.
+  const maxConfidence = timelineEventMaxConfidence(user);
+  const storedDerivedById = new Map(storedEvents.filter((e) => e.event_source === 'derived').map((e) => [e.internal_id, e]));
+  const importedAnnotations: TimelinePendingAnnotation[] = annotations
     .filter((a) => a.element_ref && resolved[a.element_ref] && a.rule_id && a.kind)
     .map((a) => ({
       event_id: computeDerivedEventId(container.internal_id, a.rule_id, resolved[a.element_ref].internal_id, a.kind),
@@ -1056,7 +1082,18 @@ const writeImportedContributions = async (
       hidden: a.hidden,
       annotation: a.annotation,
       ordering_hint: a.ordering_hint,
+      max_confidence: maxConfidence,
     }));
+  const pending = importedAnnotations.filter((annotation) => {
+    const target = storedDerivedById.get(annotation.event_id);
+    return maxConfidence !== null && (!target || controlUserConfidenceAgainstElement(user, target as unknown as BasicStoreEntity, true));
+  });
+  if (pending.length < importedAnnotations.length) {
+    logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of the user were skipped', {
+      containerId: container.internal_id,
+      skipped: importedAnnotations.length - pending.length,
+    });
+  }
   if (pending.length > 0) {
     const settings = await loadTimelineSettings(context, container.internal_id);
     const byId = new Map((settings?.pending_annotations ?? []).map((a) => [a.event_id, a]));

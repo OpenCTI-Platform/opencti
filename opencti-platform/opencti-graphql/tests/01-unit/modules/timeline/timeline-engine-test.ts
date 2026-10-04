@@ -5,10 +5,13 @@ import {
   computeDerivedEventId,
   computeManualEventId,
   getTimelineRules,
+  isPendingAnnotationApplicable,
+  timelineEventMaxConfidence,
   timelineEventSignature,
   timelineEventStandardId,
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
+import type { AuthUser } from '../../../../src/types/user';
 import { buildTimelineFilters, latestTimelineTime } from '../../../../src/modules/timeline/timeline-domain';
 import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
@@ -278,5 +281,25 @@ describe('Timeline container marking coverage', () => {
     const covered = buildContainerMarkingCoverage([], markings);
     expect(covered('tlp-clear')).toBe(false);
     expect(covered('tlp-green')).toBe(false);
+  });
+});
+
+describe('Timeline imported annotations and confidence', () => {
+  const userWith = (effective: AuthUser['effective_confidence_level']) => ({ effective_confidence_level: effective } as unknown as AuthUser);
+
+  it('should read the confidence level of the user for timeline events, its override first', () => {
+    expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [] }))).toEqual(40);
+    expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: ENTITY_TYPE_TIMELINE_EVENT, max_confidence: 70 }] }))).toEqual(70);
+    expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: 'Malware', max_confidence: 90 }] }))).toEqual(40);
+    expect(timelineEventMaxConfidence(userWith(null as unknown as AuthUser['effective_confidence_level']))).toBeNull();
+  });
+
+  it('should apply an imported annotation only to an event within the confidence level of its importer', () => {
+    expect(isPendingAnnotationApplicable({ event_id: 'e', pinned: true, max_confidence: 50 }, 50)).toBe(true);
+    expect(isPendingAnnotationApplicable({ event_id: 'e', pinned: true, max_confidence: 50 }, null)).toBe(true);
+    expect(isPendingAnnotationApplicable({ event_id: 'e', pinned: true, max_confidence: 50 }, 80)).toBe(false);
+    // An annotation imported without a confidence level, or by a user without one, never applies
+    expect(isPendingAnnotationApplicable({ event_id: 'e', pinned: true }, 0)).toBe(false);
+    expect(isPendingAnnotationApplicable({ event_id: 'e', pinned: true, max_confidence: null }, 0)).toBe(false);
   });
 });

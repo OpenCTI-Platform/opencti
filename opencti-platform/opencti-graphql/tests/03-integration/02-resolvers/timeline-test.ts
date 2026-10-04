@@ -1064,6 +1064,76 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
     });
 
+    it('should match an imported event by its STIX id first, even when its external id changed', async () => {
+      const extensionWith = (externalId: string, title: string) => JSON.stringify({
+        events: [{ id: 'timeline-event--5c2e8f14-9a3b-4d7e-b1f0-6e4a2c8d9b17', external_id: externalId, title, event_time: '2026-02-05T20:00:00.000Z' }],
+        annotations: [],
+      });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: extensionWith('origin-alert-1', 'Firewall rule pushed') } });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: extensionWith('origin-alert-2', 'Firewall rule pushed everywhere') } });
+      const matching = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((event) => event.title.startsWith('Firewall rule pushed'));
+      expect(matching.map((event) => event.title)).toEqual(['Firewall rule pushed everywhere']);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: matching[0].id } });
+    });
+
+    it('should update an event imported with an external id when it is added again through the API with it', async () => {
+      const extension = JSON.stringify({
+        events: [{ id: 'timeline-event--8e1b3d57-2f6c-4a90-9d4e-7b5c1a3f2e68', external_id: 'splunk-alert-imported', title: 'Exfiltration alert', event_time: '2026-02-05T21:00:00.000Z' }],
+        annotations: [],
+      });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
+      const imported = (await listTimeline(secondCase.id, { sources: ['manual'] })).find((event) => event.title === 'Exfiltration alert');
+      expect(imported).toBeDefined();
+      const added = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: secondCase.id, event_time: '2026-02-05T21:00:00.000Z', title: 'Exfiltration alert closed', external_id: 'splunk-alert-imported' } },
+      });
+      expect(added.data.timelineEventAdd.id).toEqual(imported?.id);
+      const matching = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((event) => event.title.startsWith('Exfiltration alert'));
+      expect(matching.map((event) => event.title)).toEqual(['Exfiltration alert closed']);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
+    });
+
+    it('should never apply an imported annotation to a derived event above the confidence level of the user', async () => {
+      const confidentMalware = await queryAsAdminWithSuccess({
+        query: MALWARE_ADD,
+        variables: { input: { name: 'Timeline confident malware', confidence: 90, first_seen: '2026-02-01T09:00:00.000Z', last_seen: '2026-02-04T09:00:00.000Z' } },
+      });
+      const lowConfidenceCase = await queryAsAdminWithSuccess({
+        query: CASE_INCIDENT_ADD,
+        variables: { input: { name: 'Timeline low confidence case', confidence: 10, created: '2026-02-04T12:00:00.000Z', objects: [confidentMalware.data.malwareAdd.id] } },
+      });
+      const caseId = lowConfidenceCase.data.caseIncidentAdd.id;
+      const extension = JSON.stringify({
+        events: [],
+        annotations: [{ rule_id: 'entity-first-last-seen', kind: 'malware_seen', element_ref: confidentMalware.data.malwareAdd.standard_id, pinned: true, annotation: 'Seen by the night shift' }],
+      });
+      // Allowed to edit the case (confidence 10), not the derived event of the malware (confidence 90)
+      const completeAdmin = await resolveUserById(testContext, ADMIN_USER.id);
+      const lowConfidenceUser = {
+        ...completeAdmin,
+        origin: { referer: 'test', user_id: completeAdmin?.internal_id },
+        effective_confidence_level: { max_confidence: 50, overrides: [] },
+      } as AuthUser;
+      const importAsLowConfidenceUser = async () => {
+        const result = await queryAsAuthUser(lowConfidenceUser, { query: TIMELINE_IMPORT, variables: { containerId: caseId, extension } });
+        expect(result.errors, `This errors should not be there: ${JSON.stringify(result.errors)}`).toBeUndefined();
+      };
+      const malwareSeen = async () => (await listTimeline(caseId, { kinds: ['malware_seen'] }))[0];
+      // The derived event does not exist yet: the annotation waits for it, and the regeneration does not apply it
+      await importAsLowConfidenceUser();
+      expect(await malwareSeen()).toMatchObject({ confidence: 90, pinned: false, annotation: null });
+      // Now stored, the derived event is checked on import
+      await importAsLowConfidenceUser();
+      expect(await malwareSeen()).toMatchObject({ pinned: false, annotation: null });
+      // Within the confidence level of the user, the same annotation applies
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: caseId, extension } });
+      expect(await malwareSeen()).toMatchObject({ pinned: true, annotation: 'Seen by the night shift' });
+      await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
+      await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: confidentMalware.data.malwareAdd.id } });
+      await deleteContainerTimeline(caseId);
+    });
+
     it('should leave out a manual event about an element restricted to fewer members than the container', async () => {
       const restrictedCase = await createEntity(testContext, SYSTEM_USER, {
         name: 'Timeline restricted request',

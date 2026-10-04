@@ -55,6 +55,9 @@ const MAX_DIGEST_CONTENT_SIZE = conf.get('notification_manager:max_digest_conten
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
+// The triggers generated for every user follow the creation, update and deletion of knowledge only: the timeline events
+// (anchor changed, milestone added) reach the triggers whose owner selected them
+export const DEFAULT_TRIGGER_EVENT_TYPES = [TriggerEventType.Create, TriggerEventType.Update, TriggerEventType.Delete];
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
@@ -142,7 +145,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: DEFAULT_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
@@ -157,7 +160,7 @@ const generatePlatformNotificationTrigger = (user: AuthUser) => {
     name: 'Platform',
     trigger_type: 'live',
     trigger_scope: 'internal',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: DEFAULT_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     instance_trigger: false,
     restricted_members: [],

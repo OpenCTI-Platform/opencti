@@ -5,7 +5,8 @@ import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '.
 import { SYSTEM_USER } from '../../utils/access';
 import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { cropNumber } from '../../utils/math';
 import { BASE_TYPE_ENTITY, buildRefRelationKey, OPENCTI_NAMESPACE } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -570,6 +571,18 @@ const pendingAnnotationsMap = (settings: BasicStoreEntityTimelineSettings | unde
   return new Map<string, TimelinePendingAnnotation>((settings?.pending_annotations ?? []).map((a) => [a.event_id, a]));
 };
 
+/** Highest confidence of a timeline event the user may pin, hide or annotate, read like `controlUserConfidenceAgainstElement`; null when none. */
+export const timelineEventMaxConfidence = (user: AuthUser): number | null => {
+  const override = user.effective_confidence_level?.overrides?.find((o) => o.entity_type === ENTITY_TYPE_TIMELINE_EVENT);
+  const maxConfidence = override?.max_confidence ?? user.effective_confidence_level?.max_confidence;
+  return isNotEmptyField(maxConfidence) ? maxConfidence as number : null;
+};
+
+/** An imported annotation applies to a derived event only within the confidence level its importer had. */
+export const isPendingAnnotationApplicable = (annotation: TimelinePendingAnnotation, confidence: number | null | undefined): boolean => {
+  return isNotEmptyField(annotation.max_confidence) && cropNumber(confidence ?? 0, 0, 100) <= (annotation.max_confidence as number);
+};
+
 const applyAnalystFields = (
   base: { pinned: boolean; hidden: boolean; annotation: string | null; ordering_hint: number | null },
   existing: StoredTimelineEvent | undefined,
@@ -651,14 +664,18 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   };
   // Build the derived documents, deduplicated on their deterministic id
   const derivedDocsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
+  const refusedAnnotationIds: string[] = [];
   allDerived.forEach((event) => {
     const internalId = computeDerivedEventId(containerId, event.rule_id, derivedEventKey(event), event.kind);
     if (derivedDocsById.has(internalId)) return;
     const existing = storedById.get(internalId);
+    const pendingAnnotation = pending.get(internalId);
+    const applicable = pendingAnnotation && isPendingAnnotationApplicable(pendingAnnotation, event.confidence);
+    if (pendingAnnotation && !applicable) refusedAnnotationIds.push(internalId);
     const analyst = applyAnalystFields(
       { pinned: false, hidden: false, annotation: null, ordering_hint: event.ordering_hint ?? null },
       existing,
-      pending.get(internalId),
+      applicable ? pendingAnnotation : undefined,
     );
     derivedDocsById.set(internalId, buildTimelineEventDoc({
       internal_id: internalId,
@@ -734,6 +751,10 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   await deleteTimelineDocuments(staleIds);
   // Consume the imported annotations that found their event and record the generation
   const remaining = (settings?.pending_annotations ?? []).filter((a) => !docsById.has(a.event_id));
+  const refusedAnnotations = refusedAnnotationIds.filter((id) => docsById.has(id)).length;
+  if (refusedAnnotations > 0) {
+    logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of their importer were not applied', { containerId, refused: refusedAnnotations });
+  }
   const generatedSettings = await upsertTimelineSettings(context, container, {
     pending_annotations: remaining,
     derivation_truncated: truncated,

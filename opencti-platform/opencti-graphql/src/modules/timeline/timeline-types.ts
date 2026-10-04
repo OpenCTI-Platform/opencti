@@ -155,6 +155,8 @@ export interface TimelinePendingAnnotation {
   hidden?: boolean;
   annotation?: string | null;
   ordering_hint?: number | null;
+  /** Highest confidence of a timeline event the importer of the annotation could change when importing it. */
+  max_confidence?: number | null;
 }
 
 /** Settings and generation state of a container timeline, stored as the non-indexed `timeline_state` object. */
