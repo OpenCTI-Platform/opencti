@@ -328,8 +328,12 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
   const pairIndicatorIds = new Set(pairs.map((p) => p.indicator_id));
   const validatedIocs = iocs.filter((ioc) => pairIndicatorIds.has(ioc.indicator_id));
   const name = args.name?.trim() || `Validation of ${pairIndicatorIds.size} indicator(s) on ${resolvedPlatforms.length} security platform(s)`;
+  // Module internal objects are not dated by the data builder: the creation date is part of the request.
+  const createdAt = new Date();
   const request = await createInternalObject<StoreEntityIocValidationRequest>(contextOutOfDraft, user, {
     name,
+    created_at: createdAt,
+    updated_at: createdAt,
     description: args.description ?? undefined,
     platform_ids: resolvedPlatforms.map((p) => p.internal_id),
     indicator_ids: [...pairIndicatorIds],
