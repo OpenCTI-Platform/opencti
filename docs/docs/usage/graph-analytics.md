@@ -126,7 +126,7 @@ A Grouping, a Campaign or an investigation always holds every member you can acc
 
 A cluster keeps its identity from one computation to the next, as long as it holds most of its previous members, even when it grows, shrinks or splits: the Groupings and Campaigns it was promoted to remain listed on it, and the cluster size over time counts the members from the date they joined the cluster.
 
-To be told when an entity you follow joins a cluster, create a live trigger on **Joined a graph cluster** (see [notifications](notifications.md#graph-analytics-events)).
+To be told when an entity you follow joins a cluster, create a live trigger on **Joined a graph cluster** (see [notifications](notifications.md#graph-analytics-events)), or add this event to the subscription of the entity from its subscription button.
 
 ## Graph metrics on entities
 
