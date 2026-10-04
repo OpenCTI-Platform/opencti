@@ -666,14 +666,19 @@ describe('Source intelligence', () => {
     const renewedDraft = await storeLoadById<BasicStoreEntityDraftWorkspace>(testContext, ADMIN_USER, renewedDraftId, ENTITY_TYPE_DRAFT_WORKSPACE);
     expect(renewedDraft?.draft_status).toBe(DRAFT_STATUS_OPEN);
     // Work queued for the deleted draft goes to the new one
-    expect(await resolveDraftForward(firstDraftId)).toBe(renewedDraftId);
+    expect(await resolveDraftForward(firstDraftId)).toEqual({ draftId: renewedDraftId, closed: false });
 
     const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: recommendationId } });
     expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
     const lifted = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_SOURCE);
     expect(lifted?.quarantined).toBe(false);
     expect(lifted?.quarantine_draft_id ?? null).toBeNull();
+    // The draft kept for review still receives the work queued for the quarantine
+    expect(await resolveDraftForward(firstDraftId)).toEqual({ draftId: renewedDraftId, closed: false });
     await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
+    // Once it is deleted, no draft takes over: the work still queued for either draft is refused
+    expect(await resolveDraftForward(firstDraftId)).toEqual({ draftId: renewedDraftId, closed: true });
+    expect(await resolveDraftForward(renewedDraftId)).toEqual({ draftId: renewedDraftId, closed: true });
   });
 
   it('should route the bundles of a quarantined feed into its open quarantine draft', async () => {
@@ -700,7 +705,7 @@ describe('Source intelligence', () => {
     expect(renewedDraftId).toBeTruthy();
     expect(renewedDraftId).not.toBe(firstDraftId);
     // A bundle queued for the deleted draft before its deletion is processed into the new one
-    expect(await resolveDraftForward(firstDraftId)).toBe(renewedDraftId);
+    expect(await resolveDraftForward(firstDraftId)).toEqual({ draftId: renewedDraftId, closed: false });
 
     await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
     expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBeUndefined();

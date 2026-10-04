@@ -729,10 +729,13 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 
 // region - draft forwarding
 // Never expires: queued work has no maximum age, and a message processed after an expiry would target the closed draft.
-// One short entry per closed quarantine draft.
+// One short entry per draft of a forwarding chain (quarantine drafts only).
 const draftForwardKey = (draftId: string) => `draft_forward_${draftId}`;
 export const redisSetDraftForward = async (closedDraftId: string, nextDraftId: string) => {
   await getClientBase().set(draftForwardKey(closedDraftId), nextDraftId);
+};
+export const redisSetDraftForwardIfAbsent = async (draftId: string, value: string) => {
+  await getClientBase().set(draftForwardKey(draftId), value, 'NX');
 };
 export const redisGetDraftForward = async (draftId: string) => {
   return getClientBase().get(draftForwardKey(draftId));

@@ -85,7 +85,9 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
   if (executeContext.workId && isNotEmptyField(executeContext.draft_context)) {
     // A worker can process a message queued for a draft that was closed meanwhile
-    executeContext.draft_context = await resolveDraftForward(executeContext.draft_context);
+    const forward = await resolveDraftForward(executeContext.draft_context);
+    executeContext.draft_context = forward.draftId;
+    executeContext.draft_forward_closed = forward.closed;
   }
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id

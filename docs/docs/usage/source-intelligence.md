@@ -165,7 +165,7 @@ While its change runs, a recommendation shows **Applying**. A change refused bef
 
 A revert works the same way: while it runs, the recommendation shows **Reverting**. If the revert fails or its outcome cannot be recorded, the recommendation stays **Reverting**, with the cause behind **Show details** and **Retry**: every step of a revert can run again safely (a decay rule or an exclusion list already removed is not removed twice), and the recommendation is neither proposed again nor applied meanwhile.
 
-While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed. Feed data already waiting to be processed for the closed draft goes to the new quarantine draft as well.
+While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed. Feed data already waiting to be processed for the closed draft goes to the new quarantine draft as well. Once the quarantine is lifted, its last draft is kept for review and still receives that data; if you then validate or delete that draft, data still waiting for it is refused, with the reason recorded on the work of the connector or feed, and never reaches the live knowledge.
 
 Recommendations quote the names of the sources they are about. For an author you cannot access (because of its markings or organization restrictions), the name shows as **Restricted** in every text of the recommendation, including recommendations proposed before the author was renamed or stopped being tracked.
 
