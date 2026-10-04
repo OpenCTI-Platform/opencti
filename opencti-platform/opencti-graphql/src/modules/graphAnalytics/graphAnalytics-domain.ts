@@ -848,10 +848,27 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   };
 };
 
+const PENDING_ENTITIES_MAX = 100;
+// queued entities the caller cannot access are skipped: the scan reads this many queued ids at most
+const PENDING_SCAN_MAX = 2000;
+const PENDING_SCAN_CHUNK = 200;
+// the waiting count of a caller without the bypass covers this many queued ids at most
+const PENDING_COUNT_SCAN_MAX = 10000;
+
+/** Entities waiting for a recompute: the whole queue for an account that bypasses data restrictions, the ones the caller can access otherwise. */
+const countGraphAnalyticsPendingEntities = async (context: AuthContext, user: AuthUser): Promise<number> => {
+  if (isBypassUser(user)) return redisGraphAnalyticsPendingCount();
+  const ids = await redisGraphAnalyticsPendingIds(PENDING_COUNT_SCAN_MAX);
+  if (ids.length === 0) return 0;
+  const queued = new Set(ids);
+  const accessible = await elFindByIds<BasicStoreBase>(context, user, ids, { indices: READ_ENTITIES_INDICES, baseData: true }) as BasicStoreBase[];
+  return new Set(accessible.map((entity) => entity.internal_id).filter((id) => queued.has(id))).size;
+};
+
 export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUser) => {
   const state = await redisGraphAnalyticsGetState();
   const [pending, similarityDocuments, clusters] = await Promise.all([
-    redisGraphAnalyticsPendingCount(),
+    countGraphAnalyticsPendingEntities(context, user),
     countSimilarityRows(context, user),
     // the clusters the caller sees in the list: at least one member they can access
     findGraphClusters(context, user, { first: 1 }),
@@ -873,11 +890,6 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
     analytics_process_version: state[GRAPH_STATE_ANALYTICS_VERSION] ?? null,
   };
 };
-
-const PENDING_ENTITIES_MAX = 100;
-// queued entities the caller cannot access are skipped: the scan reads this many queued ids at most
-const PENDING_SCAN_MAX = 2000;
-const PENDING_SCAN_CHUNK = 200;
 
 /** Next entities waiting for a recompute, in processing order, restricted to the ones the caller can access. */
 export const findGraphAnalyticsPendingEntities = async (context: AuthContext, user: AuthUser, first?: number | null) => {

@@ -642,6 +642,15 @@ describe('Graph analytics resolvers', () => {
     await redisGraphAnalyticsMarkDirty([ids.isB], queuedAt + 1);
     const restrictedPending = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: gql`query pendingOne { graphAnalyticsPendingEntities(first: 1) { id } }`, variables: {} });
     expect(restrictedPending.data.graphAnalyticsPendingEntities.map((entity: { id: string }) => entity.id)).toEqual([ids.isB]);
+    // the waiting count leaves out the queued entities the caller cannot access, like the list it opens
+    const pendingCountQuery = gql`query pendingCount { graphAnalyticsStatus { pending_entities } }`;
+    const adminCount = (await queryAsAdminWithSuccess({ query: pendingCountQuery, variables: {} })).data.graphAnalyticsStatus.pending_entities;
+    const restrictedCount = (await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pendingCountQuery, variables: {} })).data.graphAnalyticsStatus.pending_entities;
+    expect(adminCount).toBeGreaterThanOrEqual(2);
+    expect(restrictedCount).toBeGreaterThanOrEqual(1);
+    expect(restrictedCount).toBeLessThan(adminCount);
+    const restrictedList = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: gql`query pendingAll { graphAnalyticsPendingEntities(first: 100) { id } }`, variables: {} });
+    expect(restrictedList.data.graphAnalyticsPendingEntities.length).toBe(Math.min(restrictedCount, 100));
     await redisGraphAnalyticsPopReady(Date.now() + 3600 * 1000, 100);
     const pivot = gql`mutation pivot { graphAnalyticsRecordPivot(kind: similar_open) }`;
     const pivotResult = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pivot, variables: {} });

@@ -96,7 +96,7 @@ The **Analyses > Clusters** page lists clusters of entities that belong together
 
 The platform computes infrastructure clusters from shared features. On large platforms, the optional analytics process detects communities in the whole graph and computes the three kinds.
 
-The top of the page states whether the analytics are up to date or analysing, with the time of the last full pass, then three counters: clusters you can see (those with at least one member you can access, as in the list), similarity links, and entities waiting for analysis. When entities are waiting, **Show the entities** lists the next ones you can access, in processing order, and users who can edit knowledge can click **Analyse them now** to have them recomputed at the next run. **Details** tells who computes the clusters: the platform, or the optional analytics process on large platforms.
+The top of the page states whether the analytics are up to date or analysing, with the time of the last full pass, then three counters: clusters you can see (those with at least one member you can access, as in the list), similarity links, and entities waiting for analysis that you can access (among the next 10,000 in the queue; an account that bypasses data restrictions sees the whole queue). When entities are waiting, **Show the entities** lists the next ones you can access, in processing order, and users who can edit knowledge can click **Analyse them now** to have them recomputed at the next run. **Details** tells who computes the clusters: the platform, or the optional analytics process on large platforms.
 
 ![Clusters page with the analytics status, the counters and the cluster list](assets/graph-analytics-clusters.png)
 
