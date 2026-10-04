@@ -1,5 +1,4 @@
 import { Locator, Page } from '@playwright/test';
-import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
 import HuntsPage from '../model/hunts.pageModel';
 import HuntDetailsPage from '../model/huntDetails.pageModel';
@@ -21,14 +20,28 @@ const EVIDENCE = [
  */
 test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@ee'] }, () => {
   test.describe.configure({ mode: 'serial' });
+  // Screenshot conventions of the user documentation: 1440 x 900 at a device scale factor of 2, cropped to the surface
+  test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
   let seeded: SeededHunt;
   let completedRunId: string;
   let failedRunId: string;
-  const huntName = `Encoded PowerShell launched from Office documents ${uuid().slice(0, 8)}`;
+  const huntName = 'Encoded PowerShell launched from Office documents';
+  const margin = 16;
 
-  const capture = async (page: Page, name: string, ready: Locator) => {
+  const capture = async (page: Page, name: string, surface: Locator, ready: Locator = surface) => {
     await expect(ready).toBeVisible();
-    await page.screenshot({ path: test.info().outputPath(name), animations: 'disabled' });
+    await surface.scrollIntoViewIfNeeded();
+    const box = await surface.boundingBox();
+    const viewport = page.viewportSize();
+    const path = test.info().outputPath(name);
+    if (box && viewport && box.height + 2 * margin <= viewport.height) {
+      const x = Math.max(0, box.x - margin);
+      const y = Math.max(0, box.y - margin);
+      const clip = { x, y, width: Math.min(viewport.width - x, box.width + 2 * margin), height: Math.min(viewport.height - y, box.height + 2 * margin) };
+      await page.screenshot({ path, animations: 'disabled', clip });
+    } else {
+      await surface.screenshot({ path, animations: 'disabled' });
+    }
   };
 
   interface CompletedData {
@@ -51,7 +64,7 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   };
 
   test.beforeAll(async ({ request }) => {
-    seeded = await seedHuntWithCompletedRun(request, huntName);
+    seeded = await seedHuntWithCompletedRun(request, huntName, { connector: 'Splunk hunt', securityPlatform: 'Splunk Enterprise - SOC' });
     completedRunId = await startAndReportHuntRun(request, seeded, `
       status: completed, query_language: "spl", translated_query: ${JSON.stringify(TRANSLATED_QUERY)},
       hits_count: 42, distinct_entities: 3, cost_ms: 2140,
@@ -69,14 +82,10 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     }
   });
 
-  test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1600, height: 1000 });
-  });
-
   test('Hunts list, populated and on first use', async ({ page }) => {
     const huntsPage = new HuntsPage(page);
     await huntsPage.goto();
-    await capture(page, 'hunt-list-populated.png', huntsPage.getItemFromList(huntName));
+    await capture(page, 'hunt-list-populated.png', huntsPage.getPage(), huntsPage.getItemFromList(huntName).first());
     await completeOperation(page, 'HuntsFirstUseQuery', (data) => {
       if (data.hunts) {
         data.hunts.pageInfo.globalCount = 0;
@@ -91,10 +100,11 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.goto(`/dashboard/defense/hunts/${seeded.huntId}`);
     await capture(page, 'hunt-overview.png', huntDetails.getOverview());
     await huntDetails.tabs.goToLogicTab();
-    await capture(page, 'hunt-logic-sigma-validation.png', huntDetails.getLogicSigmaValidation().getByText('Valid Sigma rule'));
+    await capture(page, 'hunt-logic-sigma-validation.png', huntDetails.getLogicPage(), huntDetails.getLogicSigmaValidation().getByText('Valid Sigma rule'));
     await page.getByTestId('hunt-translation-preview-start').click();
     await expect.poll(() => answerLatestHuntPreview(request, seeded.huntId, TRANSLATED_QUERY), { timeout: 30000 }).toBe(true);
-    await capture(page, 'hunt-logic-translation-preview.png', page.getByTestId('hunt-translation-preview').getByText('index=edr sourcetype=sysmon'));
+    const preview = page.getByTestId('hunt-translation-preview');
+    await capture(page, 'hunt-logic-translation-preview.png', preview, preview.getByText('index=edr sourcetype=sysmon'));
   });
 
   test('Completed run with its evidence and the AI triage proposal', async ({ page }) => {
@@ -107,12 +117,12 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
       });
     });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, completedRunId);
-    await capture(page, 'hunt-run-completed-triage.png', page.getByTestId('hunt-run-triage'));
+    await capture(page, 'hunt-run-completed-triage.png', page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-triage'));
   });
 
   test('Failed run', async ({ page }) => {
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, failedRunId);
-    await capture(page, 'hunt-run-failed.png', page.getByTestId('hunt-run-failure'));
+    await capture(page, 'hunt-run-failed.png', page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-failure'));
   });
 
   test('Schedule field', async ({ page }) => {
@@ -127,9 +137,6 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
 
   test('Hunted platform on the connector page', async ({ page }) => {
     await page.goto(`/dashboard/data/ingestion/connectors/${seeded.connectorId}`);
-    const details = page.getByTestId('connector-hunt-details');
-    await details.scrollIntoViewIfNeeded();
-    await expect(page.getByTestId('connector-hunt-runs')).toBeVisible();
-    await capture(page, 'hunt-connector-page.png', details);
+    await capture(page, 'hunt-connector-page.png', page.getByTestId('connector-hunt-card'), page.getByTestId('connector-hunt-runs'));
   });
 });

@@ -24,12 +24,16 @@ export interface SeededHunt {
  * the connector registers its security platform, the run is started on it, then
  * the connector reports the run completed with hits.
  */
-export const seedHuntWithCompletedRun = async (request: APIRequestContext, name: string): Promise<SeededHunt> => {
+export const seedHuntWithCompletedRun = async (
+  request: APIRequestContext,
+  name: string,
+  labels?: { connector: string; securityPlatform: string },
+): Promise<SeededHunt> => {
   const connectorId = uuid();
   await graphqlRequest(request, `
     mutation {
       registerConnector(input: {
-        id: "${connectorId}", name: ${JSON.stringify(`E2E hunt connector ${connectorId}`)},
+        id: "${connectorId}", name: ${JSON.stringify(labels?.connector ?? `E2E hunt connector ${connectorId}`)},
         type: INTERNAL_HUNT, scope: ["splunk"], auto: false, only_contextual: false
       }) { id }
     }
@@ -38,7 +42,7 @@ export const seedHuntWithCompletedRun = async (request: APIRequestContext, name:
     mutation {
       huntConnectorRegister(input: {
         connector_id: "${connectorId}", platform: "splunk", languages: ["spl"],
-        security_platform_name: ${JSON.stringify(`E2E Splunk ${connectorId}`)}
+        security_platform_name: ${JSON.stringify(labels?.securityPlatform ?? `E2E Splunk ${connectorId}`)}
       }) { securityPlatform { id } }
     }
   `, 'Register the hunt security platform');

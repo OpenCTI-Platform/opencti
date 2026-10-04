@@ -704,7 +704,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </Grid>
       </Grid>
       {connector.hunt && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 20 }} data-testid="connector-hunt-card">
           <ConnectorHuntDetails connectorId={connector.id} data={connector.hunt} />
         </div>
       )}
