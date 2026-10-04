@@ -9,7 +9,7 @@ The timeline answers questions that lists cannot: when did the adversary act, wh
 ## Where to find it
 
 - **Timeline tab**: on the Incident, Incident Response, Request for Information and Request for Takedown pages, after the Content tab.
-- **Overview strip**: a compact view on the overview of the same pages, with the case anchors and an **Open the timeline** link.
+- **Overview strip**: a compact view on the overview of the same pages, with the case anchors and an **Open the timeline** link. It is a widget of the overview layout, which administrators can move, resize or hide (see [Overview layout](#overview-layout)).
 - **Widget**: the **Incident and case timeline** visualization in custom dashboards and custom views (see [Dashboards and custom views](#dashboards-and-custom-views)).
 
 ![Timeline tab of an incident response: anchors, toolbar and the events of the case in their lanes](assets/case-timeline-lanes-populated.png)
@@ -81,6 +81,18 @@ The overview of incidents and cases shows the same anchors with a miniature of t
 Hidden events never move an anchor. Every reader of the case sees the same anchors, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves an anchor. Click an anchor to center the timeline on it.
 
 The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last computation) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
+
+## Overview layout
+
+On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout. By default it comes first, at full width. Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
+
+- drag the **Timeline** row to move the strip among the other widgets;
+- switch off **Full width** to give it half of the row;
+- switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at full width.
+
+An overview layout customized before the timeline existed shows the strip first, at full width, until an administrator moves or hides it.
+
+See [Overview layout customization](../administration/entities.md#overview-layout-customization) for the other widgets of the overview.
 
 ## Working with the timeline
 
