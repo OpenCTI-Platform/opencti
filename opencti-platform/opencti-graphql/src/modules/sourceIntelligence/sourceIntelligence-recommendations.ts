@@ -462,6 +462,12 @@ const executeApply = async (
   }
 };
 
+/**
+ * Whether undoing an apply leaves nothing of it behind. A connector the apply deployed is stopped, never removed (its
+ * service account and the data it ingested stay): applying the recommendation again would deploy a second connector.
+ */
+export const undoLeavesNothing = (kind: string) => kind !== RECOMMENDATION_ADD_CONNECTOR;
+
 const executeRevert = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation, source: BasicStoreEntitySource | null) => {
   const revert = parseJson<Record<string, any>>(recommendation.revert_payload, {});
   switch (recommendation.recommendation_kind) {
@@ -622,7 +628,7 @@ const applyLockedRecommendation = async (
     ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch));
   } catch (persistError) {
     // The action ran but could not be recorded: it is undone, and the recommendation goes back to its previous status
-    // only once undone; otherwise it stays applying, which no retry applies again
+    // only once nothing of it is left; otherwise it stays applying, which no retry applies again
     if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
       // Only what this apply wrote is undone: a connector deployed beforehand and only linked is left running
       const undone = !progress.writing || await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
@@ -631,9 +637,11 @@ const applyLockedRecommendation = async (
           logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply, the recommendation stays applying', { cause: revertError, id });
           return false;
         });
-      if (undone) {
+      if (undone && (!progress.writing || undoLeavesNothing(recommendation.recommendation_kind))) {
         await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status })
           .catch((restoreError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not restore an undone recommendation', { cause: restoreError, id }));
+      } else if (undone) {
+        logApp.warn('[OPENCTI-MODULE] Source intelligence stopped the connector of an unrecorded apply, the recommendation stays applying', { id });
       }
     }
     throw persistError;
