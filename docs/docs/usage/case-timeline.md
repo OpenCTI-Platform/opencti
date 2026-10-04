@@ -76,10 +76,14 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 
 ## Working with the timeline
 
+### First use
+
+When the case holds no dated knowledge yet, the Timeline tab explains what fills it (the knowledge of the case, Case Autopilot steps, hunt runs, deployments and the milestones you add) and offers **Add an event**, a link to this documentation and **Regenerate the timeline**. When filters hide every event, the tab says so and offers **Clear filters**.
+
 ### Views and navigation
 
-- **Lanes view** and **List view**: the switch is always visible. The list view is a vertical, accessible list of events.
-- **Zoom window**: Fit, Day, Week, Month, Quarter or Year. In the lanes view, use `+` and `-` to zoom, the left and right arrows to pan and `0` to fit.
+- **Lanes** and **List**: the view switch is always visible in the toolbar, next to the primary action **Add an event**. The list view is a vertical, accessible list of events.
+- **Zoom window**: Fit, Day, Week, Month, Quarter or Year; the period currently displayed is shown next to the zoom controls. In the lanes view, use `+` and `-` to zoom, the left and right arrows to pan and `0` to fit. On long incidents, nearby events are grouped into a count bubble that zooms in on click.
 - **Group by**: hour, day or week.
 - **Search** and filters: lanes, event kinds, event source (all events, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
 - The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
@@ -92,7 +96,9 @@ The timeline listens to the changes of the case. When events are added or update
 
 ### Event details
 
-Click an event to open its details: time, end time, precision, lane, kind, source, author and the element it comes from. From there you can open the element (pivot) or center the timeline on the event.
+Click an event to open its details. The header shows the title of the event and its kind, with **Edit** (milestones) and **Pin**; centering the timeline on the event, hiding it and deleting a milestone (with a confirmation) are under **More actions**. The details list the time and precision, the lane, the source, the author, the confidence, the element the event comes from (open it to pivot) and the markings. An event without annotation offers **Add an annotation**.
+
+Events that come from a run, a step or a deployment show its state in the vocabulary of the feature it comes from: the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached), the verdict of a hunt run, the state of an indicator deployment. An investigation event opens the run on its step in the **Autopilot** tab of the case when the platform has it.
 
 ### Pin, hide and annotate
 
@@ -104,20 +110,20 @@ Derived events follow the knowledge of the case: they can be pinned, hidden and 
 
 ### Milestones
 
-Use **Add milestone** to record what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, a kind (Milestone, Containment, Eradication, Recovery or Notification), a description and markings, and can be pinned at creation. A **Containment** milestone records the containment anchor.
+Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, a kind (Milestone, Containment, Eradication, Recovery or Notification), a description and markings, and can be pinned at creation. A **Containment** milestone records the containment anchor.
 
 Milestones can be edited and deleted by the users who can update the case.
 
 ### Timeline settings
 
-**Timeline settings** (in the toolbar of the tab) opens a drawer with the settings of the case timeline: enabled lanes, default grouping, default zoom window and kinds hidden by default. These settings apply to every user of the case timeline.
+**Timeline settings** (under **More actions** in the toolbar of the tab, next to **Regenerate the timeline**) opens a drawer with the settings of the case timeline: enabled lanes, default grouping, default zoom window and kinds hidden by default. These settings apply to every user of the case timeline.
 
 ## Exports
 
 - From the toolbar of the Timeline tab, **Export the timeline** downloads the current view as **CSV**, **PDF**, **SVG** or **PNG**.
 - From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the files of the entity, like the other exports (see [Manual export](export.md)).
 
-The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events.
+The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
 
 What an export contains and how it is marked:
 
