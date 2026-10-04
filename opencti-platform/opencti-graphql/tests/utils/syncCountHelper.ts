@@ -79,7 +79,8 @@ testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 20;
 testUpdatedCounter.file = 19;
-testUpdatedCounter['intrusion-set'] = 6;
+// + 2 updated by timeMachine-test
+testUpdatedCounter['intrusion-set'] = 7;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;

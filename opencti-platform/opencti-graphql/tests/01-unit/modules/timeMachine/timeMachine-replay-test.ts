@@ -12,6 +12,7 @@ import {
   replayBackward,
   replayForward,
   reverseOperationsForChange,
+  rewindAccessReferences,
 } from '../../../../src/modules/timeMachine/timeMachine-replay';
 import { extractEntityRepresentativeName } from '../../../../src/database/entity-representative';
 import type { AttributeValues, TimeMachineHistoryEvent } from '../../../../src/modules/timeMachine/timeMachine-types';
@@ -21,6 +22,7 @@ const MARKING_GREEN = '11111111-1111-4111-8111-111111111111';
 const MARKING_AMBER = '22222222-2222-4222-8222-222222222222';
 const LABEL_A = '33333333-3333-4333-8333-333333333333';
 const LABEL_B = '44444444-4444-4444-8444-444444444444';
+const ORGANIZATION_A = '55555555-5555-4555-8555-555555555555';
 
 const updateEvent = (timestamp: string, changes: Array<{ key: string; added?: string[]; removed?: string[] }>): TimeMachineHistoryEvent => ({
   id: `event-${timestamp}`,
@@ -232,5 +234,31 @@ describe('Element rebuilt at a date', () => {
     const currentFile = { entity_type: 'StixFile', hashes: { MD5: 'current' } };
     const file = rebuildElementAt(currentFile, { hashes: [JSON.stringify({ MD5: 'past' })] });
     expect(file.hashes).toEqual({ MD5: 'past' });
+  });
+
+  it('should rewind the access references with their own changes only', () => {
+    const keys = { marking: 'objectMarking', granted: 'objectOrganization' };
+    const current: AttributeValues = { ...CURRENT, objectOrganization: [ORGANIZATION_A] };
+    const events = [
+      ...EVENTS,
+      updateEvent('2026-05-01T00:00:00.000Z', [{ key: 'objectOrganization', added: [ORGANIZATION_A] }, { key: 'description', added: ['v2'], removed: ['v1'] }]),
+    ];
+    // Before the amber marking and the organization sharing of April and May
+    const march = rewindAccessReferences(current, ENTITY_TYPE, events, '2026-03-15T00:00:00.000Z', keys);
+    expect(march).toEqual({ objectMarking: [MARKING_GREEN] });
+    // Only the access references are rebuilt, whatever the other changes of the events
+    const april = rewindAccessReferences(current, ENTITY_TYPE, events, '2026-04-15T00:00:00.000Z', keys);
+    expect(april).toEqual({ objectMarking: [MARKING_GREEN, MARKING_AMBER] });
+  });
+
+  it('should keep no organization sharing before a merge it cannot reverse', () => {
+    const keys = { marking: 'objectMarking', granted: 'objectOrganization' };
+    const current: AttributeValues = { objectMarking: [MARKING_GREEN, MARKING_AMBER], objectOrganization: [ORGANIZATION_A] };
+    const events = [scopedEvent('2026-06-01T00:00:00.000Z', 'merge')];
+    const beforeMerge = rewindAccessReferences(current, ENTITY_TYPE, events, '2026-05-01T00:00:00.000Z', keys);
+    // The markings brought by the merge stay (restrictive), the organization sharing is dropped (restrictive)
+    expect(beforeMerge).toEqual({ objectMarking: [MARKING_GREEN, MARKING_AMBER] });
+    const afterMerge = rewindAccessReferences(current, ENTITY_TYPE, events, '2026-06-15T00:00:00.000Z', keys);
+    expect(afterMerge).toEqual(current);
   });
 });

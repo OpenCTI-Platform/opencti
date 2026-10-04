@@ -32,8 +32,15 @@ import {
   rebuildElementAt,
   replayBackward,
   replayForward,
+  rewindAccessReferences,
 } from './timeMachine-replay';
-import { fetchElementHistoryEvents, fetchElementsHistoryEvents, fetchOldestHistoryDate, fetchRelationshipsHistoryEvents } from './timeMachine-history';
+import {
+  fetchElementChangeFieldHistoryEvents,
+  fetchElementHistoryEvents,
+  fetchElementsHistoryEvents,
+  fetchOldestHistoryDate,
+  fetchRelationshipsHistoryEvents,
+} from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
 import { buildRelationshipStates, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
@@ -342,11 +349,42 @@ const definitionInfo = (entityType: string, key: string) => {
   };
 };
 
+const accessReferenceKeys = (entityType: string) => ({
+  marking: refNameForDatabaseName(entityType, RELATION_OBJECT_MARKING),
+  granted: refNameForDatabaseName(entityType, RELATION_GRANTED_TO),
+});
+
+// Change fields of the access references for every type, so a change recorded under another type is not missed
+const accessChangeFields = (keys: { marking: string | null; granted: string | null }) => {
+  const names = [keys.marking, keys.granted].filter((name): name is string => !!name);
+  return schemaRelationsRefDefinition.getRegisteredTypes().flatMap((type) => names
+    .filter((name) => !!schemaRelationsRefDefinition.getRelationRef(type, name))
+    .map((name) => `${type}--${name}`));
+};
+
+/**
+ * Access references of the element at `date` for the access check. A complete replay holds them exactly
+ * (`exactDocument`); a replay that stopped early (window exceeded, merge) only reached an intermediate state, so
+ * they are rewound from the current element with their own changes. Null when these changes exceed the replay
+ * window: the access at that date cannot be established and no historical data is returned.
+ */
+const accessDocumentAt = async (context: AuthContext, element: BasicStoreEntity, date: string, exactDocument: AttributeValues | null) => {
+  if (exactDocument) return exactDocument;
+  const keys = accessReferenceKeys(element.entity_type);
+  const [changes, merges] = await Promise.all([
+    fetchElementChangeFieldHistoryEvents(context, SYSTEM_USER, element.internal_id, accessChangeFields(keys), { from: date, scopes: ['update'], max: MAX_REPLAY_EVENTS + 1 }),
+    fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, { from: date, scopes: ['merge'], max: 1 }),
+  ]);
+  if (changes.length > MAX_REPLAY_EVENTS) return null;
+  return rewindAccessReferences(extractAttributeValues(element as any), element.entity_type, [...changes, ...merges], date, keys);
+};
+
 /**
  * The as-of view is only returned if the user could access the element with its markings
  * and organization sharing at that date (checked with the current rights of the user).
  */
-const isAsOfDocumentAccessible = async (context: AuthContext, user: AuthUser, element: BasicStoreEntity, document: AttributeValues) => {
+const isAsOfDocumentAccessible = async (context: AuthContext, user: AuthUser, element: BasicStoreEntity, document: AttributeValues | null) => {
+  if (!document) return false;
   const markingKey = refNameForDatabaseName(element.entity_type, RELATION_OBJECT_MARKING);
   const grantedKey = refNameForDatabaseName(element.entity_type, RELATION_GRANTED_TO);
   const asOfElement = {
@@ -588,7 +626,8 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       container_objects_count: null,
     };
   }
-  const accessible = await isAsOfDocumentAccessible(context, user, element, replay.document);
+  const accessDocument = await accessDocumentAt(context, element, date, replay.complete ? replay.document : null);
+  const accessible = await isAsOfDocumentAccessible(context, user, element, accessDocument);
   if (!accessible) {
     return {
       ...base,
@@ -820,9 +859,13 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
   const existedAtFrom = atFrom.exists && existedAt(from);
   const warnings = [...new Set([...atTo.replay.warnings, ...atFrom.warnings])];
   const complete = atTo.replay.complete && atFrom.complete;
+  const [accessDocumentTo, accessDocumentFrom] = await Promise.all([
+    accessDocumentAt(context, element, to, atTo.replay.complete ? atTo.replay.document : null),
+    existedAtFrom ? accessDocumentAt(context, element, from, atTo.replay.complete && atFrom.complete ? atFrom.document : null) : Promise.resolve(null),
+  ]);
   const [accessibleTo, accessibleFrom] = await Promise.all([
-    isAsOfDocumentAccessible(context, user, element, atTo.replay.document),
-    existedAtFrom ? isAsOfDocumentAccessible(context, user, element, atFrom.document) : Promise.resolve(true),
+    isAsOfDocumentAccessible(context, user, element, accessDocumentTo),
+    existedAtFrom ? isAsOfDocumentAccessible(context, user, element, accessDocumentFrom) : Promise.resolve(true),
   ]);
   if (!accessibleTo || !accessibleFrom) {
     return {

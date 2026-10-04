@@ -130,6 +130,31 @@ export const fetchElementHistoryEvents = async (
   return searchHistoryEvents(context, user, { term: { 'context_data.id.keyword': elementId } }, opts);
 };
 
+// Events of the element with a change of one of the given change fields (`<entity type>--<attribute>`)
+export const fetchElementChangeFieldHistoryEvents = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  changeFields: string[],
+  opts: HistoryQueryOptions,
+): Promise<TimeMachineHistoryEvent[]> => {
+  if (changeFields.length === 0) return [];
+  const clause = {
+    bool: {
+      must: [
+        { term: { 'context_data.id.keyword': elementId } },
+        {
+          nested: {
+            path: 'context_data.history_changes',
+            query: { terms: { 'context_data.history_changes.field.keyword': changeFields } },
+          },
+        },
+      ],
+    },
+  };
+  return searchHistoryEvents(context, user, clause, opts);
+};
+
 // Events of the elements themselves, for a batch of elements
 export const fetchElementsHistoryEvents = async (
   context: AuthContext,

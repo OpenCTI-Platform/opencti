@@ -388,6 +388,37 @@ export const flagReplayBeyondWindow = (replay: ReplayResult, anchorDate: string,
   return replay;
 };
 
+/**
+ * Rewind the access references of an element (markings, organization sharing) from their current values to `date`
+ * with the changes of these references only, so the access check never relies on an intermediate replay state.
+ * A merge after `date` cannot be reversed: the organization sharing before it is unknown and can only have been
+ * narrower, so none is kept; the markings rewound across it can only be a superset of the real ones (restrictive).
+ */
+export const rewindAccessReferences = (
+  current: AttributeValues,
+  entityType: string,
+  events: TimeMachineHistoryEvent[],
+  date: string,
+  keys: { marking: string | null; granted: string | null },
+): AttributeValues => {
+  const accessKeys = new Set([keys.marking, keys.granted].filter((key): key is string => !!key));
+  const start: AttributeValues = {};
+  accessKeys.forEach((key) => {
+    if (current[key]) start[key] = current[key];
+  });
+  const accessEvents = events
+    .filter((event) => event.event_scope === 'update')
+    .map((event) => ({ ...event, changes: (event.changes ?? []).filter((change) => accessKeys.has(changeFieldKey(change.field))) }))
+    .filter((event) => event.changes.length > 0);
+  const { document } = replayBackward(start, entityType, accessEvents, date, accessEvents.length);
+  const target = utcDate(date);
+  const mergedAfter = events.some((event) => event.event_scope === 'merge' && utcDate(event.timestamp).isAfter(target));
+  if (mergedAfter && keys.granted) {
+    delete document[keys.granted];
+  }
+  return document;
+};
+
 const sameValues = (a: string[], b: string[]) => {
   if (a.length !== b.length) return false;
   const sortedA = [...a].sort();

@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { awaitUntilCondition, queryAsAdmin, queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
-import { fetchElementHistoryEvents, fetchRelationshipsHistoryEvents } from '../../../../src/modules/timeMachine/timeMachine-history';
+import { fetchElementChangeFieldHistoryEvents, fetchElementHistoryEvents, fetchRelationshipsHistoryEvents } from '../../../../src/modules/timeMachine/timeMachine-history';
+import { extractAttributeValues, rewindAccessReferences } from '../../../../src/modules/timeMachine/timeMachine-replay';
 import { buildCompactDocuments, type ChangedElementsCursor, findChangedElementIds } from '../../../../src/manager/snapshotManager';
 import { indexSnapshots, findSnapshotAtOrAfter, loadUserVisits } from '../../../../src/modules/timeMachine/timeMachine-store';
 import { buildChangeDigestData } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
@@ -44,6 +45,11 @@ const DELETE_RELATION = gql`
 const ADD_RELATION_REF = gql`
   mutation TimeMachineRelationRefAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
     stixCoreRelationshipEdit(id: $id) { relationAdd(input: $input) { id } }
+  }
+`;
+const ADD_INTRUSION_SET_REF = gql`
+  mutation TimeMachineIntrusionSetRefAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
+    intrusionSetEdit(id: $id) { relationAdd(input: $input) { id } }
   }
 `;
 const DELETE_INTRUSION_SET = gql`
@@ -332,13 +338,28 @@ describe('Knowledge time machine', () => {
     const markedName = `${testName} amber`;
     const marked = await queryAsAdminWithSuccess({
       query: CREATE_INTRUSION_SET,
-      variables: { input: { name: markedName, objectMarking: [MARKING_TLP_AMBER] } },
+      variables: { input: { name: markedName } },
     });
     const markedId = marked.data.intrusionSetAdd.id;
+    const [markedCreatedAt] = await waitForHistory(markedId, 'create');
+    await queryAsAdminWithSuccess({
+      query: ADD_INTRUSION_SET_REF,
+      variables: { id: markedId, input: { toId: MARKING_TLP_AMBER, relationship_type: 'object-marking' } },
+    });
+    await waitForHistory(markedId, 'update');
     const result = await queryAsUser(USER_PARTICIPATE, { query: AS_OF, variables: { id: markedId, date: new Date().toISOString() } });
     expect(result.errors).toBeDefined();
+    // The access references are rewound with their own changes only, independently of the attribute replay
+    const accessEvents = await fetchElementChangeFieldHistoryEvents(testContext, SYSTEM_USER, markedId, ['Intrusion-Set--objectMarking'], { max: 10 });
+    expect(accessEvents.length).toEqual(1);
+    const element = await internalLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, markedId);
+    const current = extractAttributeValues(element as any);
+    expect(current.objectMarking?.length).toEqual(1);
+    const keys = { marking: 'objectMarking', granted: 'objectOrganization' };
+    expect(rewindAccessReferences(current, 'Intrusion-Set', accessEvents, markedCreatedAt, keys).objectMarking).toBeUndefined();
+    expect(rewindAccessReferences(current, 'Intrusion-Set', accessEvents, new Date().toISOString(), keys).objectMarking).toEqual(current.objectMarking);
     await queryAsAdminWithSuccess({ query: DELETE_INTRUSION_SET, variables: { id: markedId } });
-  });
+  }, 2 * HISTORY_BUDGET_MS);
 
   it('should record visits and count what is new since the last visit', async () => {
     const first = await queryAsAdminWithSuccess({ query: VISIT, variables: { id: intrusionSetId } });
