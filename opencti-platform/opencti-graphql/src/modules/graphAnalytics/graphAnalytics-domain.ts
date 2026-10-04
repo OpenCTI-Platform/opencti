@@ -59,6 +59,7 @@ import {
   countSimilarityRows,
   finalizeClusteringRun,
   GRAPH_METRICS_ENTITY_INDICES,
+  listRecentSimilarityEndpoints,
   listSimilarityRows,
   loadGraphClusters,
   upsertGraphClusters,
@@ -865,11 +866,25 @@ const countGraphAnalyticsPendingEntities = async (context: AuthContext, user: Au
   return new Set(accessible.map((entity) => entity.internal_id).filter((id) => queued.has(id))).size;
 };
 
+// the similarity count of a caller without the bypass covers this many links at most, the most recently computed
+const SIMILARITY_COUNT_SCAN_MAX = 10000;
+
+/** Similarity links: every stored link for an account that bypasses data restrictions, the links between two entities the caller can access otherwise. */
+const countGraphSimilarityLinks = async (context: AuthContext, user: AuthUser): Promise<number> => {
+  if (isBypassUser(user)) return countSimilarityRows(context, user);
+  const links = await listRecentSimilarityEndpoints(context, user, SIMILARITY_COUNT_SCAN_MAX);
+  if (links.length === 0) return 0;
+  const endpointIds = Array.from(new Set(links.flatMap((link) => [link.similarity_entity_id, link.similarity_target_id])));
+  const accessible = await elFindByIds<BasicStoreBase>(context, user, endpointIds, { indices: READ_ENTITIES_INDICES, baseData: true }) as BasicStoreBase[];
+  const accessibleIds = new Set(accessible.map((entity) => entity.internal_id));
+  return links.filter((link) => accessibleIds.has(link.similarity_entity_id) && accessibleIds.has(link.similarity_target_id)).length;
+};
+
 export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUser) => {
   const state = await redisGraphAnalyticsGetState();
   const [pending, similarityDocuments, clusters] = await Promise.all([
     countGraphAnalyticsPendingEntities(context, user),
-    countSimilarityRows(context, user),
+    countGraphSimilarityLinks(context, user),
     // the clusters the caller sees in the list: at least one member they can access
     findGraphClusters(context, user, { first: 1 }),
   ]);

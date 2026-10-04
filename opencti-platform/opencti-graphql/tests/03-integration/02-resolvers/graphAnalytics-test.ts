@@ -509,6 +509,21 @@ describe('Graph analytics resolvers', () => {
     const restrictedStatus = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: statusQuery, variables: {} });
     const restrictedList = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: listCountQuery, variables: {} });
     expect(restrictedStatus.data.graphAnalyticsStatus.clusters_count).toBe(restrictedList.data.graphClusters.pageInfo.globalCount);
+    // the similarity counter of a restricted caller leaves out the links to an entity they cannot access
+    const linksQuery = gql`query similarityLinks { graphAnalyticsStatus { similarity_documents } }`;
+    const adminLinks = async () => (await queryAsAdminWithSuccess({ query: linksQuery, variables: {} })).data.graphAnalyticsStatus.similarity_documents;
+    const restrictedLinks = async () => (await queryAsUserWithSuccess(USER_PARTICIPATE, { query: linksQuery, variables: {} })).data.graphAnalyticsStatus.similarity_documents;
+    const [adminBefore, restrictedBefore] = [await adminLinks(), await restrictedLinks()];
+    expect(restrictedBefore).toBeGreaterThanOrEqual(2);
+    await replaceSimilarityRows(context, ADMIN_USER, { id: ids.malware, entity_type: ENTITY_TYPE_MALWARE }, [
+      { target_id: ids.isA, target_type: ENTITY_TYPE_INTRUSION_SET, score: 0.9, jaccard: 0.9, structural: 0.9, shared: {}, shared_count: 1 },
+    ], 20);
+    try {
+      expect(await adminLinks()).toBe(adminBefore + 2);
+      expect(await restrictedLinks()).toBe(restrictedBefore);
+    } finally {
+      await deleteSimilarityRowsForEntities([ids.malware]);
+    }
   });
 
   it('should apply an analytics run only when it completes', async () => {
@@ -707,6 +722,36 @@ describe('Graph analytics resolvers', () => {
         `${kept.id}>${source.id}:0.9`,
         `${refreshed.id}>${source.id}:0.5`,
       ].sort());
+    } finally {
+      await deleteSimilarityRowsForEntities(allIds);
+    }
+  });
+
+  it('should keep at most the top-N similarity rows of an entity when writing the reverse rows', async () => {
+    const [hub, weak, strong, middle, faint] = [uuidv4(), uuidv4(), uuidv4(), uuidv4(), uuidv4()].map((id) => ({ id, entity_type: ENTITY_TYPE_INTRUSION_SET }));
+    const scoreOf = (target: { id: string; entity_type: string }, score: number) => ({
+      target_id: target.id, target_type: target.entity_type, score, jaccard: score, structural: score, shared: {}, shared_count: 1,
+    });
+    const allIds = [hub.id, weak.id, strong.id, middle.id, faint.id];
+    const hubRows = async () => (await listSimilarityRowsBetween(context, ADMIN_USER, allIds))
+      .filter((row) => row.similarity_entity_id === hub.id)
+      .map((row) => `${row.similarity_target_id}:${row.similarity_score}`)
+      .sort();
+    try {
+      // with a top-2, the hub keeps the two best of the entities listing it, the weakest is pushed out
+      await replaceSimilarityRows(context, ADMIN_USER, weak, [scoreOf(hub, 0.3)], 2);
+      await replaceSimilarityRows(context, ADMIN_USER, strong, [scoreOf(hub, 0.5)], 2);
+      await replaceSimilarityRows(context, ADMIN_USER, middle, [scoreOf(hub, 0.4)], 2);
+      expect(await hubRows()).toEqual([`${strong.id}:0.5`, `${middle.id}:0.4`].sort());
+      // a lower score does not enter the top-N of the hub
+      await replaceSimilarityRows(context, ADMIN_USER, faint, [scoreOf(hub, 0.1)], 2);
+      expect(await hubRows()).toEqual([`${strong.id}:0.5`, `${middle.id}:0.4`].sort());
+      // every entity still lists the hub in its own top-N
+      const incoming = (await listSimilarityRowsBetween(context, ADMIN_USER, allIds)).filter((row) => row.similarity_target_id === hub.id);
+      expect(incoming.map((row) => row.similarity_entity_id).sort()).toEqual([weak.id, strong.id, middle.id, faint.id].sort());
+      // a row already in the top-N of the hub is refreshed in place
+      await replaceSimilarityRows(context, ADMIN_USER, strong, [scoreOf(hub, 0.2)], 2);
+      expect(await hubRows()).toEqual([`${strong.id}:0.2`, `${middle.id}:0.4`].sort());
     } finally {
       await deleteSimilarityRowsForEntities(allIds);
     }

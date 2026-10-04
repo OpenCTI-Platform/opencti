@@ -481,9 +481,33 @@ const deleteReplacedSimilarityRows = async (sourceId: string, scoredIds: string[
   });
 };
 
+// the current rows of the kept targets are read by pages of at most this many rows
+const SIMILARITY_TARGET_ROWS_PAGE = 5000;
+
+/** Current rows of each entity, an entity holding at most `topN` rows. */
+const loadSimilarityRowsByEntity = async (context: AuthContext, user: AuthUser, ids: string[], topN: number) => {
+  const rowsByEntity = new Map<string, GraphSimilarityDocument[]>();
+  const chunks = chunk(ids, Math.max(1, Math.floor(SIMILARITY_TARGET_ROWS_PAGE / (topN + 1))));
+  for (let i = 0; i < chunks.length; i += 1) {
+    const rows = await searchSimilarityRows(context, user, {
+      bool: { must: [{ terms: { 'similarity_entity_id.keyword': chunks[i] } }] },
+    }, chunks[i].length * (topN + 1));
+    rows.forEach((row) => {
+      const entityRows = rowsByEntity.get(row.similarity_entity_id) ?? [];
+      entityRows.push(row);
+      rowsByEntity.set(row.similarity_entity_id, entityRows);
+    });
+  }
+  return rowsByEntity;
+};
+
+// same order as the stored rows of an entity are read
+const compareStoredSimilarity = (x: { id: string; score: number }, y: { id: string; score: number }) => (y.score - x.score) || x.id.localeCompare(y.id);
+
 /**
- * Replace every row touching `source`. Rows are directional (A -> B lists B among the top-N of A),
- * the score being symmetric, B -> A is refreshed at the same time so B does not wait for its own recompute.
+ * Replace every row touching `source`. Rows are directional (A -> B lists B among the top-N of A); the score being
+ * symmetric, B -> A is written at the same time when A ranks in the top-N of B, so B does not wait for its own
+ * recompute, and the row it pushes out of that top-N is removed: no entity ever holds more than top-N rows.
  * Rows Y -> A kept by Y for its own top-N are refreshed with the new score, or removed when A no longer qualifies.
  */
 export const replaceSimilarityRows = async (
@@ -497,6 +521,7 @@ export const replaceSimilarityRows = async (
   const keep = scored.slice(0, topN);
   const keepIds = new Set(keep.map((k) => k.target_id));
   const scoredById = new Map(scored.map((s) => [s.target_id, s]));
+  const keptTargetRows = await loadSimilarityRowsByEntity(context, user, Array.from(keepIds), topN);
   // only the incoming rows of scored candidates are refreshed, their number is bounded by the candidates limit
   const refreshableIds = scored.map((s) => s.target_id).filter((id) => !keepIds.has(id));
   const incoming = refreshableIds.length === 0 ? [] : await searchSimilarityRows(context, user, {
@@ -509,10 +534,23 @@ export const replaceSimilarityRows = async (
   }, refreshableIds.length);
   await deleteReplacedSimilarityRows(source.id, Array.from(scoredById.keys()));
   const rows: Array<Record<string, unknown>> = [];
+  const evictedRowIds: string[] = [];
   keep.forEach((target) => {
     const targetRef = { id: target.target_id, entity_type: target.target_type };
     rows.push(buildSimilarityRow(source, targetRef, target, computedAt));
-    rows.push(buildSimilarityRow(targetRef, source, target, computedAt));
+    const ranked = [
+      ...(keptTargetRows.get(target.target_id) ?? [])
+        .filter((row) => row.similarity_target_id !== source.id)
+        .map((row) => ({ id: row.similarity_target_id, score: row.similarity_score })),
+      { id: source.id, score: target.score },
+    ].sort(compareStoredSimilarity);
+    ranked.forEach((entry, index) => {
+      if (index >= topN) {
+        evictedRowIds.push(similarityRowId(target.target_id, entry.id));
+      } else if (entry.id === source.id) {
+        rows.push(buildSimilarityRow(targetRef, source, target, computedAt));
+      }
+    });
   });
   incoming.forEach((row) => {
     const fresh = scoredById.get(row.similarity_entity_id);
@@ -525,11 +563,39 @@ export const replaceSimilarityRows = async (
     const body = chunks[i].flatMap((row) => [{ index: { _index: INDEX_GRAPH_SIMILARITY, _id: row.internal_id } }, row]);
     await elBulk(context, { refresh: true, timeout: '5m', body });
   }
-  return { written: rows.length, kept: keep.length };
+  if (evictedRowIds.length > 0) {
+    await elRawDeleteByQuery({
+      index: READ_INDEX_GRAPH_SIMILARITY,
+      refresh: true,
+      conflicts: 'proceed',
+      body: { query: { ids: { values: evictedRowIds } } },
+    }).catch((err: unknown) => {
+      throw DatabaseError('Graph analytics similarity cleanup fail', { cause: err });
+    });
+  }
+  return { written: rows.length, kept: keep.length, evicted: evictedRowIds.length };
 };
 
 export const countSimilarityRows = async (context: AuthContext, user: AuthUser): Promise<number> => {
   return elCount(context, user, READ_INDEX_GRAPH_SIMILARITY, { types: [ENTITY_TYPE_GRAPH_SIMILARITY] });
+};
+
+/** Both ends of the most recently computed similarity rows. */
+export const listRecentSimilarityEndpoints = async (
+  context: AuthContext,
+  user: AuthUser,
+  size: number,
+): Promise<Array<Pick<GraphSimilarityDocument, 'similarity_entity_id' | 'similarity_target_id'>>> => {
+  const data = await elRawSearch(context, user, ENTITY_TYPE_GRAPH_SIMILARITY, {
+    index: READ_INDEX_GRAPH_SIMILARITY,
+    body: {
+      size,
+      _source: ['similarity_entity_id', 'similarity_target_id'],
+      query: { match_all: {} },
+      sort: [{ similarity_computed_at: 'desc' }, { 'similarity_entity_id.keyword': 'asc' }, { 'similarity_target_id.keyword': 'asc' }],
+    },
+  });
+  return (data.hits?.hits ?? []).map((hit: any) => hit._source);
 };
 // endregion
 
