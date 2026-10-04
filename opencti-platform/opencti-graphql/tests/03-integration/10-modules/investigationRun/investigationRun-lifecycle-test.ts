@@ -2,11 +2,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { v4 as uuid } from 'uuid';
-import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { updateProcessedTime } from '../../../../src/domain/work';
-import { ConnectorType } from '../../../../src/generated/graphql';
-import { decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { ConnectorType, InvestigationRunTrigger } from '../../../../src/generated/graphql';
+import { addInvestigationRun, decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
@@ -283,6 +283,12 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
 
   it('refuses to start a run for a user who cannot enrich knowledge', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: RUN_ADD, variables: { subjectId: fixture.caseId } });
+  });
+
+  it('refuses, on the internal launch path of playbooks, an identity that cannot run the enrichments of its policy', async () => {
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    await expect(addInvestigationRun(testContext, ADMIN_USER, fixture.caseId, null, { runAsUserId: editorId, trigger: InvestigationRunTrigger.Playbook }))
+      .rejects.toThrow('must be allowed to enrich knowledge');
   });
 
   it('refuses a new case the investigation policy does not allow', async () => {

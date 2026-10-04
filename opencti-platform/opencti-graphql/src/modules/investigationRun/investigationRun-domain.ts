@@ -300,6 +300,11 @@ export const addInvestigationRun = async (
   if (!policy) {
     throw FunctionalError('Investigation policy not found', { policyId });
   }
+  // Playbooks and requests for information launch here without the capability
+  // checks of the API: the identity of the run must run what its policy allows.
+  if (policy.allowed_actions.includes(InvestigationAutonomousAction.Enrichment) && !isUserHasCapability(runUser, KNOWLEDGE_KNENRICHMENT)) {
+    throw ForbiddenAccess('The identity of the investigation must be allowed to enrich knowledge, as its policy runs enrichments');
+  }
   const isCase = INVESTIGATION_CASE_SUBJECT_TYPES.includes(subject.entity_type);
   const subjectName = extractEntityRepresentativeName(subject) || subject.internal_id;
   // Indicators and observables are investigated inside a case, so the results
