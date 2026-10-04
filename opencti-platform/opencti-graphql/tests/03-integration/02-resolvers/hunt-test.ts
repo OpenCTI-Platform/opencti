@@ -626,6 +626,25 @@ describe('Hunt resolvers', () => {
     expect(run).toMatchObject({ verdict: 'benign', verdict_source: 'auto' });
   });
 
+  it('should complete a pending finalization before recording a verdict', async () => {
+    const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: huntId, input: { security_platform_ids: [securityPlatformId] } } });
+    const runId = started.data?.huntRunStart[0].id;
+    const statistics = vi.spyOn(huntStats, 'updateHuntRunInformation').mockRejectedValue(new Error('engine unavailable'));
+    try {
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: runId, input: { status: 'completed', hits_count: 0 } } });
+      // While a step keeps failing the verdict is refused: the run stays unfinalized for the hunt manager to retry
+      const refused = await queryAsAdmin({ query: HUNT_RUN_VERDICT, variables: { id: runId, input: { verdict: 'benign' } } });
+      expect(refused.errors?.[0].message).toContain('still being finalized');
+      const pending = (await queryAsAdminWithSuccess({ query: HUNT_RUN_STATE, variables: { id: runId } })).data?.huntRun;
+      expect(pending).toMatchObject({ verdict: 'pending', verdict_source: null });
+    } finally {
+      statistics.mockRestore();
+    }
+    // Once the step succeeds, the verdict completes the finalization first, then records the analyst verdict
+    const verdict = await queryAsAdminWithSuccess({ query: HUNT_RUN_VERDICT, variables: { id: runId, input: { verdict: 'benign', analyst_feedback: 'Checked' } } });
+    expect(verdict.data?.huntRunSetVerdict).toMatchObject({ verdict: 'benign', verdict_source: 'analyst' });
+  });
+
   it('should delete a hunt', async () => {
     const pack = huntIds.pop() as string;
     const deleted = await queryAsAdminWithSuccess({ query: HUNT_DELETE, variables: { id: pack } });

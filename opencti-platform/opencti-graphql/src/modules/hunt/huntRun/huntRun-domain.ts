@@ -836,7 +836,13 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
   }
   const verdict = input.verdict as string;
   // Read again under the transition lock: concurrent true positive verdicts open a single Incident draft
-  const element = await withHuntRunTransition(context, run.internal_id, async (current) => {
+  const element = await withHuntRunTransition(context, run.internal_id, async (read) => {
+    // A verdict closes the finalization of the run (verdict_source): one still pending is completed first, and a step
+    // that keeps failing refuses the verdict, so that the hunt manager keeps retrying it until it closes the run
+    const current = isHuntRunFinalized(read) ? read : await completeHuntRunFinalization(context, read);
+    if (!isHuntRunFinalized(current)) {
+      throw FunctionalError('The run is still being finalized (statistics, incident or coverage), set its verdict again in a few minutes', { runId });
+    }
     const patch: Record<string, unknown> = {
       verdict,
       verdict_source: source,
