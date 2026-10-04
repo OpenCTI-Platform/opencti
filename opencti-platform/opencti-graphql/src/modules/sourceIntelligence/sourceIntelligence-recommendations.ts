@@ -128,6 +128,21 @@ const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   }
 };
 
+const STALE_RECOMMENDATION = 'STALE_RECOMMENDATION';
+
+/**
+ * Applying a recommendation approves the change it previews: a target changed since the proposal (by an operator or
+ * another tool) refuses the change before anything is written, and the next computation refreshes the proposal.
+ */
+export const assertTargetUnchanged = (what: string, previewed: unknown, current: unknown) => {
+  if (previewed !== undefined && previewed !== current) {
+    throw FunctionalError(
+      `The ${what} changed since this recommendation was proposed (${String(previewed)}, now ${String(current)}): nothing was changed, the next computation updates the recommendation`,
+      { doc_code: STALE_RECOMMENDATION, previewed, current },
+    );
+  }
+};
+
 const requireCapability = (user: AuthUser, autonomous: boolean, ...capabilities: string[]) => {
   // The autonomy policy acts as the source intelligence manager, its allow-list has been granted by an administrator
   if (autonomous) return;
@@ -306,6 +321,9 @@ const executeApply = async (
       type ConfidenceUser = BasicStoreEntity & { user_confidence_level?: { max_confidence: number; overrides: unknown[] } | null };
       const target = await storeLoadById<ConfidenceUser>(context, SYSTEM_USER, payload.user_id, ENTITY_TYPE_USER);
       if (!target) throw FunctionalError('Source user not found', { user_id: payload.user_id });
+      // The proposal compared the effective max confidence of the user (its own level, or the one of its groups)
+      const effective = (await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(payload.user_id);
+      assertTargetUnchanged('max confidence of the source user', payload.current_max_confidence, effective?.effective_confidence_level?.max_confidence ?? 100);
       const previous = target.user_confidence_level ?? null;
       const next = { max_confidence: payload.proposed_max_confidence, overrides: previous?.overrides ?? [] };
       progress.writing = true;
@@ -411,27 +429,34 @@ const executeApply = async (
         return { apply_result: 'Managed connector stopped through XTM Composer', revert_payload: { target: 'connector', connector_id: connector.id, previous_status: previousStatus } };
       }
       // Externally deployed connectors cannot be stopped by the platform: stop tracking the source and say so
-      if (source) {
+      const previousEnabled = source ? source.enabled !== false : true;
+      if (source && previousEnabled) {
         progress.writing = true;
         const { element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { enabled: false });
         await clearDisabledSourcesLiveData(context, [element as unknown as BasicStoreEntitySource]);
       }
       return {
-        apply_result: 'The connector is not managed by XTM Composer: the source is disabled, stop the connector where it is deployed',
-        revert_payload: { target: 'source', source_id: source?.internal_id ?? null },
+        apply_result: previousEnabled
+          ? 'The connector is not managed by XTM Composer: the source is disabled, stop the connector where it is deployed'
+          : 'The connector is not managed by XTM Composer and the source was already disabled: stop the connector where it is deployed',
+        revert_payload: { target: 'source', source_id: source?.internal_id ?? null, previous_enabled: previousEnabled },
       };
     }
     case RECOMMENDATION_CHANGE_SCHEDULE: {
       if (payload.target === 'ingestion_feed') {
         requireCapability(user, autonomous, INGESTION_SETINGESTIONS);
+        const feed = await storeLoadById<BasicStoreEntity & { scheduling_period?: string | null }>(context, SYSTEM_USER, payload.feed_id, payload.feed_type);
+        if (!feed) throw FunctionalError('Ingestion feed not found', { feed_id: payload.feed_id });
+        assertTargetUnchanged('schedule of the feed', payload.current_value, feed.scheduling_period ?? null);
         progress.writing = true;
         await feedEditFunction(payload.feed_type)(context, user, payload.feed_id, [{ key: 'scheduling_period', value: [payload.proposed_value] }]);
-        return { apply_result: `Feed schedule set to ${payload.proposed_value}`, revert_payload: { ...payload, previous_value: payload.current_value } };
+        return { apply_result: `Feed schedule set to ${payload.proposed_value}`, revert_payload: { ...payload, previous_value: feed.scheduling_period ?? payload.current_value } };
       }
       requireCapability(user, autonomous, MODULES_MODMANAGE);
       const connector = await storeLoadById<BasicStoreEntityConnector & { title?: string }>(context, SYSTEM_USER, payload.connector_id, ENTITY_TYPE_CONNECTOR);
       if (!connector || !connector.manager_contract_image) throw FunctionalError('Managed connector not found', { connector_id: payload.connector_id });
       const current = connectorScheduleOf(connector);
+      assertTargetUnchanged('schedule of the connector', payload.current_value, current?.value ?? null);
       progress.writing = true;
       await managedConnectorEdit(context, user, {
         id: connector.id,
@@ -530,6 +555,10 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
       }
       // A source is disabled when its connector is not managed by XTM Composer: enabling it again needs the same capability
       requireCapability(user, false, MODULES_MODMANAGE);
+      // A source already disabled when the recommendation was applied stays disabled
+      if (revert.previous_enabled === false) {
+        return 'Source left disabled as before';
+      }
       if (revert.source_id) {
         await patchAttribute(context, user, revert.source_id, ENTITY_TYPE_SOURCE, { enabled: true });
         // Stream increments read the cached sources: the re-enabled source is scored again without waiting for a reset
@@ -633,6 +662,11 @@ const applyLockedRecommendation = async (
     // (a service account or a draft may exist): the recommendation stays applying and is never applied again.
     if (!progress.writing && err?.extensions?.code === FORBIDDEN_ACCESS) {
       await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status });
+      throw err;
+    }
+    // A target changed since the proposal: proposed again, so that the next computation refreshes its preview
+    if (!progress.writing && err?.extensions?.data?.doc_code === STALE_RECOMMENDATION) {
+      await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: RECOMMENDATION_STATUS_PROPOSED, error_message: null });
       throw err;
     }
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });

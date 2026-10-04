@@ -488,6 +488,31 @@ describe('Source intelligence', () => {
     expect(after.data.user.user_confidence_level?.max_confidence ?? null).toBe(previousMaxConfidence);
   });
 
+  it('should refuse a confidence recommendation proposed on a confidence the user no longer has', async () => {
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'raise_confidence',
+      source_id: sourceId,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-stale-confidence`,
+      name: 'Raise the confidence of the test connector',
+      rationale: 'Integration test',
+      // Proposed when the user had another max confidence than the current one
+      payload: { user_id: connectorUserId, current_max_confidence: 1, proposed_max_confidence: 16 },
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(1);
+    const recommendationId = created[0].internal_id;
+    const before = await queryAsAdminWithSuccess({ query: USER_CONFIDENCE_QUERY, variables: { id: connectorUserId } });
+
+    const refused = await queryAsAdminWithError({ query: APPLY_MUTATION, variables: { id: recommendationId } });
+    expect(refused.errors?.[0].message).toContain('changed since this recommendation was proposed');
+    const after = await queryAsAdminWithSuccess({ query: USER_CONFIDENCE_QUERY, variables: { id: connectorUserId } });
+    expect(after.data.user.user_confidence_level).toEqual(before.data.user.user_confidence_level);
+    // Proposed again, so that the next computation refreshes its preview
+    const recommendation = await storeLoadById<BasicStoreEntity & { recommendation_status: string }>(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    expect(recommendation?.recommendation_status).toBe('proposed');
+    await deleteElementById(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+  });
+
   it('should open a new quarantine draft when the current one is deleted', async () => {
     // A source without connector user: the quarantine is carried by the draft only, no real user changes context
     const { data } = await queryAsAdminWithSuccess({ query: SOURCES_QUERY, variables: { first: 100 } });
