@@ -405,6 +405,8 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect(applied.task_id).toBeTruthy();
     const again = await queryAsAdmin({ query: RUN_APPLY, variables: { id: runId, recommendationId: 'r1', mode: 'task' } });
     expect(again.errors?.[0]?.message).toContain('already handled');
+    // The task is live knowledge: removed again, as the stream counters of the suite expect.
+    await queryAsAdminWithSuccess({ query: gql`mutation TaskDelete($id: ID!) { taskDelete(id: $id) }`, variables: { id: applied.task_id } });
   });
 
   it('continues an investigation whose draft waits, and writes its outputs again', async () => {
@@ -427,13 +429,14 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     const pending = data.investigationRun.approvals.filter((approval: { status: string }) => approval.status === 'pending');
     const recommendation = pending.find((approval: { kind: string }) => approval.kind === 'recommendation');
     const draft = pending.find((approval: { kind: string }) => approval.kind === 'draft_validation');
-    const first = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: recommendation.id, decision: 'approve', rejection_reason: null }]);
+    // Both rejected: the live case and the stream of the suite stay unchanged.
+    const first = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: recommendation.id, decision: 'reject', rejection_reason: 'The severity is already right' }]);
     expect(first.decided).toBe(1);
     const second = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draft.id, decision: 'reject', rejection_reason: 'Not enough evidence yet' }]);
     expect(second.decided).toBe(1);
     const after = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
     const statuses = Object.fromEntries(after.data.investigationRun.approvals.map((approval: { id: string; status: string }) => [approval.id, approval.status]));
-    expect(statuses[recommendation.id]).toBe('approved');
+    expect(statuses[recommendation.id]).toBe('rejected');
     expect(statuses[draft.id]).toBe('rejected');
     const replay = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draft.id, decision: 'approve', rejection_reason: null }]);
     expect(replay.decided).toBe(0);
