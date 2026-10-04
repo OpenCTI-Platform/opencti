@@ -16,7 +16,7 @@ import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFie
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { handleErrorInForm } from '../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
@@ -186,9 +186,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
   const hunt = useFragment(huntEditionFragment, data);
   const initialTriggerFilters = hunt.trigger_filters ?? '';
   const triggerFiltersState = useFiltersState(deserializeFilterGroupForFrontend(initialTriggerFilters) ?? emptyFilterGroup);
-  const [commit] = useApiMutation<HuntEditionFieldPatchMutation>(huntEditionFieldPatchMutation, undefined, {
-    successMessage: t_i18n('The hunt has been updated'),
-  });
+  const [commit] = useApiMutation<HuntEditionFieldPatchMutation>(huntEditionFieldPatchMutation);
   const initialValues = toFormValues(hunt);
   const integerBetween = (min: number, max: number) => Yup.number()
     .typeError(t_i18n('The value must be a number'))
@@ -234,6 +232,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
         if (notifyPayloadErrors(errors)) {
           return;
         }
+        MESSAGING$.notifySuccess(t_i18n('The hunt has been updated'));
         onClose();
       },
       onError: (error) => {

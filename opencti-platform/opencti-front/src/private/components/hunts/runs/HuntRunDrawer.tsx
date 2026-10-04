@@ -592,7 +592,12 @@ const RunTriage = ({ run }: { run: Run }) => {
               variant={hasProposal ? 'tertiary' : 'secondary'}
               startIcon={<AutoAwesomeOutlined fontSize="small" />}
               disabled={!!unavailableReason || !canTriage || triaging}
-              onClick={() => commitTriage({ variables: { id: run.id } })}
+              onClick={() => commitTriage({
+                variables: { id: run.id },
+                onCompleted: (_, errors) => {
+                  notifyPayloadErrors(errors);
+                },
+              })}
               data-testid="hunt-run-triage-start"
             >
               {hasProposal ? t_i18n('Triage again') : t_i18n('Triage with AI')}

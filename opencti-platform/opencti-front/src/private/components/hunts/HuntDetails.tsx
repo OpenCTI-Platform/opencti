@@ -19,6 +19,7 @@ import { resolveLink } from '../../../utils/Entity';
 import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { useHuntScheduleText } from './HuntSchedulePreview';
 import { hasHuntLogic, huntStatusTransitions, huntTypeLabel, isAutonomousHunt, parseHuntScopePlatformIds, type HuntStatusValue } from './hunt-utils';
+import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { HuntDetails_hunt$key } from './__generated__/HuntDetails_hunt.graphql';
 import { HuntDetailsStatusMutation } from './__generated__/HuntDetailsStatusMutation.graphql';
 
@@ -137,7 +138,12 @@ const StatusTransitions = ({ hunt }: StatusTransitionsProps) => {
     return null;
   };
   const apply = (to: HuntStatusValue) => {
-    commit({ variables: { id: hunt.id, input: [{ key: 'hunt_status', value: [to] }] } });
+    commit({
+      variables: { id: hunt.id, input: [{ key: 'hunt_status', value: [to] }] },
+      onCompleted: (_, errors) => {
+        notifyPayloadErrors(errors);
+      },
+    });
   };
   return (
     <div style={{ display: 'flex', gap: theme.spacing(1), flexWrap: 'wrap', marginTop: theme.spacing(1) }} data-testid="hunt-status-transitions">

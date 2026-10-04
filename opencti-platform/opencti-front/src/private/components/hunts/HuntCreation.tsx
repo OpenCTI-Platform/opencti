@@ -19,7 +19,7 @@ import MarkdownField from '../../../components/fields/markdownField/MarkdownFiel
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { handleErrorInForm } from '../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
@@ -165,11 +165,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
   const { validator, mandatoryAttributes } = useHuntFormValidation();
   const triggerFiltersState = useFiltersState(emptyFilterGroup);
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const [commit] = useApiMutation<HuntCreationMutation>(
-    huntCreationMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Hunt')} ${t_i18n('successfully created')}` },
-  );
+  const [commit] = useApiMutation<HuntCreationMutation>(huntCreationMutation);
   const initialValues = useDefaultValues<HuntFormValues>(HUNT_ENTITY_TYPE, { ...emptyHuntFormValues(), ...prefill });
 
   const onSubmit: FormikConfig<HuntFormValues>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
@@ -193,6 +189,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
         if (notifyPayloadErrors(errors)) {
           return;
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Hunt')} ${t_i18n('successfully created')}`);
         resetForm();
         onCompleted?.((response as HuntCreationMutation$data).huntAdd);
       },
