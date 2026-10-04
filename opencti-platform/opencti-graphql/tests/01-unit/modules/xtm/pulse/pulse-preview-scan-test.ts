@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isPulsePreviewPassDue, pulsePreviewPassOffset } from '../../../../../src/modules/xtm/pulse/pulse-domain';
+import { isPulsePreviewPassDue, pulsePreviewNextScan, pulsePreviewPassRange } from '../../../../../src/modules/xtm/pulse/pulse-domain';
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
@@ -19,12 +19,41 @@ describe('Threat Pulse preview scan', () => {
   });
 
   it('should go on where the scan stopped with the digest day it started with', () => {
-    expect(pulsePreviewPassOffset({ preview_offset: '1000000', preview_digest_day: '2026-10-04' }, '2026-10-04')).toBe(1000000);
+    expect(pulsePreviewPassRange({ preview_offset: '1000000', preview_digest_day: '2026-10-04' }, '2026-10-04')).toEqual({ offset: 1000000, scanStart: 0, until: undefined });
   });
 
-  it('should start over when a new digest day overtakes the scan, and after a covered scan', () => {
-    expect(pulsePreviewPassOffset({ preview_offset: '1000000', preview_digest_day: '2026-10-03' }, '2026-10-04')).toBe(0);
-    expect(pulsePreviewPassOffset({ preview_digest_day: '2026-10-04' }, '2026-10-04')).toBe(0);
-    expect(pulsePreviewPassOffset({}, '2026-10-04')).toBe(0);
+  it('should start from the beginning after a covered scan', () => {
+    expect(pulsePreviewPassRange({ preview_digest_day: '2026-10-04' }, '2026-10-04')).toEqual({ offset: 0, scanStart: 0, until: undefined });
+    expect(pulsePreviewPassRange({}, '2026-10-04')).toEqual({ offset: 0, scanStart: 0, until: undefined });
+  });
+
+  it('should keep going when a new digest day overtakes the scan, then cover the start of the scope up to there', () => {
+    // The new day starts where the scan stopped.
+    const tail = pulsePreviewPassRange({ preview_offset: '1000000', preview_digest_day: '2026-10-03' }, '2026-10-04');
+    expect(tail).toEqual({ offset: 1000000, scanStart: 1000000, until: undefined });
+    // Not at the end yet: the next pass goes on, the day keeps its start.
+    expect(pulsePreviewNextScan(tail, 1000000, false)).toEqual({ preview_offset: '2000000', preview_scan_start: '1000000' });
+    // At the end: the scan goes on from the beginning.
+    const wrapped = pulsePreviewNextScan(tail, 500000, true);
+    expect(wrapped).toEqual({ preview_offset: '0', preview_scan_start: '1000000' });
+    const head = pulsePreviewPassRange({ ...wrapped, preview_digest_day: '2026-10-04' }, '2026-10-04');
+    expect(head).toEqual({ offset: 0, scanStart: 1000000, until: 1000000 });
+    // Up to where the day started: the scope is covered.
+    expect(pulsePreviewNextScan(head, 1000000, true)).toEqual({ preview_offset: undefined, preview_scan_start: undefined });
+  });
+
+  it('should never restart from the beginning when the digest day changes at every pass', () => {
+    let state: { preview_offset?: string; preview_scan_start?: string; preview_digest_day?: string } = { preview_offset: '0', preview_digest_day: '2026-10-01' };
+    const days = ['2026-10-02', '2026-10-03', '2026-10-04'];
+    days.forEach((day) => {
+      const range = pulsePreviewPassRange(state, day);
+      state = { ...pulsePreviewNextScan(range, 1000, false), preview_digest_day: day };
+    });
+    expect(state.preview_offset).toBe('3000');
+  });
+
+  it('should cover the whole scope from the start without a new digest day', () => {
+    const range = pulsePreviewPassRange({ preview_offset: '1000', preview_digest_day: '2026-10-04' }, '2026-10-04');
+    expect(pulsePreviewNextScan(range, 200, true)).toEqual({ preview_offset: undefined, preview_scan_start: undefined });
   });
 });

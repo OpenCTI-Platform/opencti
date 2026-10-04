@@ -14,7 +14,7 @@ import { notify } from '../../../database/redis';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
-import { PULSE_MANAGER_USER, SYSTEM_USER } from '../../../utils/access';
+import { executionContext, PULSE_MANAGER_USER, SYSTEM_USER } from '../../../utils/access';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { getSettings, getSettingsFromDatabase } from '../../../domain/settings';
@@ -107,6 +107,7 @@ import {
   type PulseOperationalState,
   type PulseWindowSighting,
 } from './pulse-cache';
+import { refreshPulseStixPolicy, registerPulseStixPolicyRefresher, setPulseStixPolicy } from './pulse-stix-policy';
 import {
   type BasicStorePulseEntity,
   PULSE_CONSENT_VERSION,
@@ -201,6 +202,15 @@ const loadPulseContext = async (context: AuthContext, { fresh = false } = {}) =>
   return { settings, values, platform, state, access };
 };
 
+registerPulseStixPolicyRefresher(async () => {
+  const { values, state, access } = await loadPulseContext(executionContext('pulse_stix_policy'));
+  return { access, scopes: values.scopes, cleanupPending: state.cleanup_pending !== undefined };
+});
+
+// The node that changes the configuration or cleans the data carries the new state in STIX at once; the other nodes
+// within the refresh interval of the snapshot.
+const refreshPulseStixPolicyNow = () => refreshPulseStixPolicy().catch(() => setPulseStixPolicy(null));
+
 // region cleanup
 // The community data of the platform goes whenever it stops being current: unregistration, purge, lapse, the opening
 // of the full experience, a configuration that changes the mode or takes objects out. The cleanup can fail
@@ -231,6 +241,7 @@ const runPulseCleanup = async (cleanup: PulseCleanup, scope: PulseClearScope) =>
       refresh_offset: undefined,
       preview_refresh_at: undefined,
       preview_offset: undefined,
+      preview_scan_start: undefined,
       preview_matched: undefined,
       preview_since: undefined,
     });
@@ -265,6 +276,8 @@ const cleanupPulseData = async (cleanup: PulseCleanup, scope: PulseClearScope = 
   } catch (error) {
     logApp.error('[THREAT PULSE] Community data not cleaned, the next manager cycle retries', { cause: error, cleanup: pending });
     return false;
+  } finally {
+    await refreshPulseStixPolicyNow();
   }
 };
 
@@ -279,7 +292,7 @@ export const runPulsePendingCleanup = async () => {
     const state = await redisGetPulseState();
     const pending = findPendingCleanup(state);
     if (pending) {
-      await runPulseCleanup(pending, readPendingScope(state));
+      await runPulseCleanup(pending, readPendingScope(state)).finally(refreshPulseStixPolicyNow);
     }
   });
 };
@@ -609,7 +622,13 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
         }
       }
       if (bucketsChanged) {
-        await redisSetPulseState({ last_refresh_at: undefined, refresh_offset: undefined, preview_refresh_at: undefined, preview_offset: undefined });
+        await redisSetPulseState({
+          last_refresh_at: undefined,
+          refresh_offset: undefined,
+          preview_refresh_at: undefined,
+          preview_offset: undefined,
+          preview_scan_start: undefined,
+        });
       }
     }
     if (modeChanged) {
@@ -620,6 +639,7 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
         refresh_offset: undefined,
         preview_refresh_at: undefined,
         preview_offset: undefined,
+        preview_scan_start: undefined,
         preview_matched: undefined,
       });
       addThreatPulseModeChangeCount(mode as PulseMode);
@@ -1068,7 +1088,7 @@ const sameKeys = (stored: string[] | undefined, keys: string[]) => {
   return current.length === keys.length && keys.every((key) => current.includes(key));
 };
 
-type PulsePreviewScanState = Pick<PulseOperationalState, 'preview_refresh_at' | 'preview_offset' | 'preview_digest_day'>;
+type PulsePreviewScanState = Pick<PulseOperationalState, 'preview_refresh_at' | 'preview_offset' | 'preview_scan_start' | 'preview_digest_day'>;
 
 // Whether a preview pass runs now: once per refresh interval, and at every manager cycle while a scan has not covered
 // the scope yet, so that a large platform is covered within the day of its digest.
@@ -1076,13 +1096,35 @@ export const isPulsePreviewPassDue = (state: PulsePreviewScanState, now: number,
   return force || state.preview_offset !== undefined || !state.preview_refresh_at || now - Date.parse(state.preview_refresh_at) >= intervalMs;
 };
 
-// Where a preview pass starts: where the scan stopped while the digest day is the one it started with, from the start
-// otherwise - an object never keeps the signal of an older digest once the scan covered the scope.
-export const pulsePreviewPassOffset = (state: PulsePreviewScanState, digestDay: string) => {
-  if (state.preview_offset === undefined || state.preview_digest_day !== digestDay) {
-    return 0;
+export interface PulsePreviewPassRange {
+  offset: number;
+  // Where the scan under this digest day started; a pass from before it stops there (until).
+  scanStart: number;
+  until: number | undefined;
+}
+
+// Where a preview pass starts: where the scan stopped, even when a new digest day began meanwhile, so that a scope
+// larger than a day of passes is still covered. The new day then starts there: once the end of the scope is reached,
+// the scan goes on from the start up to that point - an object never keeps the signal of an older digest once the
+// scan covered the scope.
+export const pulsePreviewPassRange = (state: PulsePreviewScanState, digestDay: string): PulsePreviewPassRange => {
+  if (state.preview_offset === undefined) {
+    return { offset: 0, scanStart: 0, until: undefined };
   }
-  return Math.max(0, Number(state.preview_offset) || 0);
+  const offset = Math.max(0, Number(state.preview_offset) || 0);
+  const scanStart = state.preview_digest_day === digestDay ? Math.max(0, Number(state.preview_scan_start ?? 0) || 0) : offset;
+  return { offset, scanStart, until: offset < scanStart ? scanStart : undefined };
+};
+
+// The scan state after a pass that handled objects from the range, and reached its end or not.
+export const pulsePreviewNextScan = (range: PulsePreviewPassRange, handled: number, reachedEnd: boolean) => {
+  if (!reachedEnd) {
+    return { preview_offset: String(range.offset + handled), preview_scan_start: range.scanStart > 0 ? String(range.scanStart) : undefined };
+  }
+  if (range.until === undefined && range.scanStart > 0) {
+    return { preview_offset: '0', preview_scan_start: String(range.scanStart) };
+  }
+  return { preview_offset: undefined, preview_scan_start: undefined };
 };
 
 /**
@@ -1110,17 +1152,20 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   });
   const trendingRefs = new Set(decodeHubItems(salt, digest.trending.items).map(({ item, key }) => `${item.object_type}|${key}`));
   const updatedAt = new Date();
-  // A pass handles up to PREVIEW_MAX_ENTITIES objects; the next one goes on after them with the same digest day and
-  // starts over once the scope is covered, so that every object in scope is matched on a large platform.
-  const offset = pulsePreviewPassOffset(state, digest.day);
-  if (offset === 0 && state.preview_offset !== undefined) {
-    logApp.info('[THREAT PULSE] A new digest day started before the preview scan covered the scope, the scan starts over', { from: state.preview_digest_day, to: digest.day });
+  // A pass handles up to PREVIEW_MAX_ENTITIES objects; the next one goes on after them and starts over once the scope
+  // is covered, so that every object in scope is matched on a large platform.
+  const range = pulsePreviewPassRange(state, digest.day);
+  const { offset, until } = range;
+  if (state.preview_offset !== undefined && state.preview_digest_day !== digest.day) {
+    logApp.info('[THREAT PULSE] A new digest day started before the preview scan covered the scope, the scan goes on with it', { from: state.preview_digest_day, to: digest.day, offset });
   }
   let scanned = 0;
   let handled = 0;
   let matched = 0;
   // Set once an object past the cap was seen, as in the nightly refresh.
   let remaining = false;
+  // Set once a pass that started before the scan start of the digest day got there.
+  let reachedUntil = false;
   let stopped = false;
   await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
     noFiltersChecking: true,
@@ -1130,11 +1175,12 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
         return false;
       }
       const start = Math.max(0, offset - scanned);
-      const room = PREVIEW_MAX_ENTITIES - handled;
+      const room = Math.min(PREVIEW_MAX_ENTITIES - handled, until === undefined ? Infinity : Math.max(0, until - offset - handled));
       scanned += entities.length;
       remaining = entities.length > start + room;
       const batch = entities.slice(start, start + room);
       handled += batch.length;
+      reachedUntil = until !== undefined && offset + handled >= until;
       const updates: PulseDocumentUpdate[] = batch.flatMap((entity) => {
         const objectType = PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type];
         const keys = computeStableKeys(entity);
@@ -1155,14 +1201,15 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
         return Object.keys(keysDoc).length > 0 ? [{ entity, doc: keysDoc }] : [];
       });
       await writePulseDocuments(context, updates);
-      return !remaining;
+      return !remaining && !reachedUntil;
     }),
   });
   if (stopped) {
     logApp.info('[THREAT PULSE] Configuration or access changed during the preview pass, the next pass reads under the new one');
     return matched;
   }
-  const covered = !remaining;
+  const scan = pulsePreviewNextScan(range, handled, !remaining || reachedUntil);
+  const covered = scan.preview_offset === undefined;
   // Every object the preview signal is on, whichever pass wrote it.
   const matchedTotal = await elCount(context, PULSE_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: values.scopes,
@@ -1171,7 +1218,7 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   });
   await redisSetPulseState({
     preview_refresh_at: updatedAt.toISOString(),
-    preview_offset: covered ? undefined : String(offset + handled),
+    ...scan,
     preview_digest_day: digest.day,
     preview_digest_items: String(digest.items.length),
     preview_matched: String(matchedTotal),

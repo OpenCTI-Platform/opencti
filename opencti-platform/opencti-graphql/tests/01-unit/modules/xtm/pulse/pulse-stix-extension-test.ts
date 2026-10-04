@@ -5,10 +5,13 @@ import { PULSE_ENTITY_ATTRIBUTES, PULSE_SCOPE_ENTITY_TYPES } from '../../../../.
 import { INTERNAL_ATTRIBUTES } from '../../../../../src/domain/attribute-utils';
 import { schemaAttributesDefinition } from '../../../../../src/schema/schema-attributes';
 import { validateUpdatableAttribute } from '../../../../../src/schema/schema-validator';
-import { PulsePrevalence, PulseTrend } from '../../../../../src/generated/graphql';
+import { PulseAccess, PulsePrevalence, PulseTrend } from '../../../../../src/generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from '../../../../../src/modules/indicator/indicator-types';
+import { type PulseStixPolicy, setPulseStixPolicy } from '../../../../../src/modules/xtm/pulse/pulse-stix-policy';
 import type { StoreObject } from '../../../../../src/types/store';
 import '../../../../../src/modules/index';
+
+const FULL: PulseStixPolicy = { access: PulseAccess.Full, scopes: [ENTITY_TYPE_INDICATOR], cleanupPending: false };
 
 const indicator = (pulse: Record<string, unknown>) => ({
   _index: 'opencti_stix_domain_objects-000001',
@@ -34,6 +37,7 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
       sector_trend: PulseTrend.Rising,
       sector_platforms_bucket: '5-9',
     }]);
+    setPulseStixPolicy(FULL);
     const document = buildPulseDocument(['00112233445566778899aabbccddeeff'], information, new Date('2026-10-03T00:00:00.000Z'));
     const extension = buildOCTIExtensions(indicator(document));
     expect(extension.pulse_prevalence).toBe('common');
@@ -45,6 +49,7 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
   });
 
   it('should mark the coarse preview signal for stream consumers', () => {
+    setPulseStixPolicy({ ...FULL, access: PulseAccess.Preview });
     const document = buildPulsePreviewDocument(['00112233445566778899aabbccddeeff'], { prevalence: PulsePrevalence.Widespread, trend: PulseTrend.Rising }, new Date());
     const extension = buildOCTIExtensions(indicator(document)) as unknown as Record<string, unknown>;
     expect(extension).toMatchObject({ pulse_prevalence: 'widespread', pulse_trend: 'rising', pulse_preview: true });
@@ -61,8 +66,35 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
   });
 
   it('should leave the extension unchanged for objects without Threat Pulse information', () => {
+    setPulseStixPolicy(FULL);
     const extension = buildOCTIExtensions(indicator({})) as unknown as Record<string, unknown>;
     expect(Object.keys(extension).filter((key) => key.startsWith('pulse_'))).toEqual([]);
+  });
+
+  it('should carry only what the current mode, scope and cleanups let the platform show', () => {
+    const network = indicator(buildPulseDocument(['00112233445566778899aabbccddeeff'], combinePulseLookups([{
+      hash: 'a',
+      published: true,
+      prevalence_bucket: PulsePrevalence.Common,
+      platforms_bucket: '25-49',
+      first_seen_network: '2026-08-14',
+      last_seen_network: '2026-10-02',
+      trend: PulseTrend.Rising,
+      trend_series: [1, 2, 8],
+      sector_trend: PulseTrend.Rising,
+      sector_platforms_bucket: '5-9',
+    }]), new Date()));
+    const preview = indicator(buildPulsePreviewDocument(['00112233445566778899aabbccddeeff'], { prevalence: PulsePrevalence.Widespread, trend: PulseTrend.Rising }, new Date()));
+    const carried = (instance: StoreObject) => Object.keys(buildOCTIExtensions(instance)).some((key) => key.startsWith('pulse_'));
+    setPulseStixPolicy(FULL);
+    expect([carried(network), carried(preview)]).toEqual([true, false]);
+    setPulseStixPolicy({ ...FULL, access: PulseAccess.Preview });
+    expect([carried(network), carried(preview)]).toEqual([false, true]);
+    // Turned off, out of scope, waiting for a cleanup, or not read yet on this node: nothing.
+    [{ ...FULL, access: PulseAccess.Off }, { ...FULL, scopes: [] }, { ...FULL, cleanupPending: true }, null].forEach((policy) => {
+      setPulseStixPolicy(policy);
+      expect([carried(network), carried(preview)]).toEqual([false, false]);
+    });
   });
 });
 

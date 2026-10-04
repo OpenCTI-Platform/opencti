@@ -293,6 +293,9 @@ export interface PulseOperationalState {
   preview_refresh_at?: string;
   // How many objects in scope the next preview pass skips: the ones the previous passes covered.
   preview_offset?: string;
+  // Where the scan under the current digest day started when that day began mid-scan: once the end of the scope is
+  // reached, the scan goes on from the start up to there.
+  preview_scan_start?: string;
   preview_digest_day?: string;
   preview_digest_items?: string;
   preview_matched?: string;
