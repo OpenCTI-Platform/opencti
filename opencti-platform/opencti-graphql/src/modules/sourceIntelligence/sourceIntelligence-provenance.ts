@@ -71,6 +71,15 @@ export const buildSourceResolver = (sources: BasicStoreEntitySource[], aliases: 
   return { byRef, byUser, byAuthor };
 };
 
+/**
+ * The source writing with a user, when it is the only one: a user shared by several connectors or feeds does not tell
+ * which of them wrote, so it credits none of them rather than all of them (no artificial corroboration or overlap).
+ */
+export const userSource = (resolver: SourceResolver, userId: string): string | undefined => {
+  const sources = resolver.byUser.get(userId) ?? [];
+  return sources.length === 1 ? sources[0] : undefined;
+};
+
 export interface ProvenanceDocument {
   internal_id: string;
   created_at?: string;
@@ -145,9 +154,10 @@ export const resolveDocumentAssertions = (doc: ProvenanceDocument, resolver: Sou
     });
   } else {
     asArray(doc.creator_id).forEach((userId, index) => {
-      (resolver.byUser.get(userId) ?? []).forEach((sourceId) => {
+      const sourceId = userSource(resolver, userId);
+      if (sourceId) {
         mergeAssertion(resolved, { sourceId, firstAt: index === 0 ? createdAt : null, lastAt: updatedAt });
-      });
+      }
     });
   }
   asArray(doc['rel_created-by.internal_id']).forEach((authorId) => {
@@ -176,7 +186,10 @@ export const resolveEventSources = (
     });
   } else {
     const users = new Set([...(input.originUserId ? [input.originUserId] : []), ...(input.creatorIds ?? [])]);
-    users.forEach((userId) => (resolver.byUser.get(userId) ?? []).forEach((sourceId) => sources.add(sourceId)));
+    users.forEach((userId) => {
+      const sourceId = userSource(resolver, userId);
+      if (sourceId) sources.add(sourceId);
+    });
   }
   if (input.createdByRefId) {
     const authorSource = resolver.byAuthor.get(input.createdByRefId);

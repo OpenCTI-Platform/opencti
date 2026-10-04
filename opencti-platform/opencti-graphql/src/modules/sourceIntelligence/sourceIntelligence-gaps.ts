@@ -63,7 +63,7 @@ import {
   RECOMMENDATION_STATUS_REVERTING,
 } from './sourceIntelligence-types';
 import { buildResolverFromSources } from './sourceIntelligence-domain';
-import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, type SourceResolver, sourceRefKey } from './sourceIntelligence-provenance';
+import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, type SourceResolver, sourceRefKey, userSource } from './sourceIntelligence-provenance';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 import { round } from './sourceIntelligence-scoring';
 import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
@@ -259,7 +259,7 @@ export const countCoveringRelationshipsPerSource = (resolver: SourceResolver, co
     if (sourceId && count > 0) perSource.set(sourceId, (perSource.get(sourceId) ?? 0) + count);
   };
   counts.assertions.forEach((count, assertedId) => add(byAssertedId.get(assertedId), count));
-  counts.creators.forEach((count, userId) => (resolver.byUser.get(userId) ?? []).forEach((sourceId) => add(sourceId, count)));
+  counts.creators.forEach((count, userId) => add(userSource(resolver, userId), count));
   counts.authors.forEach((count, authorId) => {
     const sourceId = resolver.byAuthor.get(authorId);
     const alreadyAsserted = sourceId && byAssertedId.get(authorId) === sourceId ? (counts.authorAssertions.get(authorId) ?? 0) : 0;

@@ -153,6 +153,24 @@ describe('Source intelligence collection gaps', () => {
     expect(Object.fromEntries(perSource)).toEqual({ 'source-author': 10, 'source-connector': 7 });
   });
 
+  it('should credit no source with the relationships of a user shared by several connectors', () => {
+    const source = (internalId: string, refId: string, userIds: string[]) => ({
+      internal_id: internalId, source_kind: SOURCE_KIND_CONNECTOR, ref_id: refId, source_user_ids: userIds,
+    }) as unknown as BasicStoreEntitySource;
+    const resolver = buildSourceResolver([
+      source('source-connector-a', 'connector-a', ['user-shared']),
+      source('source-connector-b', 'connector-b', ['user-shared']),
+      source('source-connector-c', 'connector-c', ['user-c']),
+    ]);
+    const perSource = countCoveringRelationshipsPerSource(resolver, {
+      assertions: new Map([['connector-a', 3]]),
+      creators: new Map([['user-shared', 5], ['user-c', 2]]),
+      authors: new Map(),
+      authorAssertions: new Map(),
+    });
+    expect(Object.fromEntries(perSource)).toEqual({ 'source-connector-a': 3, 'source-connector-c': 2 });
+  });
+
   it('should keep the author fallback when the author is not tracked through its assertions', () => {
     const resolver = buildSourceResolver([
       { internal_id: 'source-author', source_kind: SOURCE_KIND_AUTHOR, ref_id: 'identity-1', source_user_ids: [] } as unknown as BasicStoreEntitySource,
