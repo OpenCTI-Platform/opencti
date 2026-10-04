@@ -29,7 +29,7 @@ vi.mock('../../../src/manager/telemetryManager', async (importOriginal) => ({
   addChangeDigestSentCount: () => addChangeDigestSentCountMock(),
 }));
 
-import { handleChangeDigestNotifications } from '../../../src/manager/notificationManager';
+import { changeDigestQueue, handleChangeDigestNotifications } from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
@@ -98,6 +98,7 @@ describe('handleChangeDigestNotifications', () => {
     primeCache([changeDigest]);
     buildChangeDigestDataMock.mockImplementation(async (_ctx: AuthContext, recipient: AuthUser) => (recipient.id === analyst.id ? [digestLine] : []));
     await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
     expect(buildChangeDigestDataMock.mock.calls.map((call) => (call[1] as AuthUser).id).sort()).toEqual([analyst.id, manager.id]);
     buildChangeDigestDataMock.mock.calls.forEach(([, , trigger, from, to]) => {
@@ -124,6 +125,7 @@ describe('handleChangeDigestNotifications', () => {
       .mockRejectedValueOnce(new Error('stream unavailable'))
       .mockResolvedValueOnce(undefined as unknown as Awaited<ReturnType<typeof storeNotificationEvent>>);
     await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
     expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(2);
     expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
@@ -131,6 +133,7 @@ describe('handleChangeDigestNotifications', () => {
   it('ignores the change digests that are not due and the regular digests', async () => {
     primeCache([{ ...changeDigest, trigger_time: '2-09:00:00.000Z' } as unknown as BasicStoreEntityTrigger, regularDigest]);
     await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).not.toHaveBeenCalled();
     expect(vi.mocked(storeNotificationEvent)).not.toHaveBeenCalled();
   });
@@ -142,9 +145,33 @@ describe('handleChangeDigestNotifications', () => {
       return [digestLine];
     });
     await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
     const events = storedEvents();
     expect(events).toHaveLength(1);
     expect(events[0].target.user_id).toBe(manager.id);
     expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns to the scheduler before the digests are computed and never queues a digest twice', async () => {
+    primeCache([changeDigest]);
+    let release: () => void = () => {};
+    const computing = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    buildChangeDigestDataMock.mockImplementation(async () => {
+      await computing;
+      return [digestLine];
+    });
+    // The scheduler is not held by the computations of the recipients
+    await handleChangeDigestNotifications({} as AuthContext);
+    expect(storedEvents()).toHaveLength(0);
+    expect(changeDigestQueue.size()).toBe(2);
+    // The same minute processed again does not queue the same digests again
+    await handleChangeDigestNotifications({} as AuthContext);
+    expect(changeDigestQueue.size()).toBe(2);
+    release();
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
+    expect(storedEvents()).toHaveLength(2);
   });
 });

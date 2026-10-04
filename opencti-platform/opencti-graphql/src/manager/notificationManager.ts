@@ -41,6 +41,7 @@ import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics
 import { InterruptibleTimer } from './interruptible-timer';
 import { memoize } from '../utils/memoize';
 import { buildChangeDigestData, type ChangeDigestTrigger, TRIGGER_TYPE_CHANGE_DIGEST } from '../modules/timeMachine/timeMachine-changeDigest';
+import { createBoundedJobQueue } from '../modules/timeMachine/timeMachine-jobQueue';
 import { resolveChangeDigestLocale } from '../modules/timeMachine/timeMachine-changeDigest-messages';
 import { addChangeDigestSentCount } from './telemetryManager';
 
@@ -741,6 +742,12 @@ export const isChangeDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
   return n.trigger.trigger_type === TRIGGER_TYPE_CHANGE_DIGEST;
 };
 
+const CHANGE_DIGEST_CONCURRENCY = 2;
+const CHANGE_DIGEST_MAX_PENDING = 1000;
+// A change digest computes a landscape diff per recipient: the computations run apart from the scheduler loop, a few at
+// a time, so a long one never makes another digest miss its scheduled minute
+export const changeDigestQueue = createBoundedJobQueue('Change digest', CHANGE_DIGEST_CONCURRENCY, CHANGE_DIGEST_MAX_PENDING);
+
 // Change digests send, for each recipient, the landscape diff of the trigger filter set over the digest period
 export const handleChangeDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
@@ -750,24 +757,27 @@ export const handleChangeDigestNotifications = async (context: AuthContext) => {
     return;
   }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const toDate = baseDate.toISOString();
   for (let index = 0; index < changeDigests.length; index += 1) {
     const { trigger, users } = changeDigests[index];
     const fromDate = baseDate.clone().subtract(1, trigger.period).toISOString();
     for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
       const user = users[userIndex];
-      const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-      try {
-        const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
-        const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, fromDate, baseDate.toISOString(), locale);
-        if (data.length > 0) {
-          const target = convertToNotificationUser(user, trigger.notifiers);
-          const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
-          await storeNotificationEvent(context, digestEvent);
-          addChangeDigestSentCount();
+      changeDigestQueue.enqueue(`${trigger.internal_id}:${user.internal_id}:${toDate}`, async () => {
+        const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
+        try {
+          const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
+          const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, fromDate, toDate, locale);
+          if (data.length > 0) {
+            const target = convertToNotificationUser(user, trigger.notifiers);
+            const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
+            await storeNotificationEvent(context, digestEvent);
+            addChangeDigestSentCount();
+          }
+        } catch (err) {
+          logApp.error('[OPENCTI-MODULE] Change digest generation error', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: trigger.internal_id });
         }
-      } catch (err) {
-        logApp.error('[OPENCTI-MODULE] Change digest generation error', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: trigger.internal_id });
-      }
+      });
     }
   }
 };
