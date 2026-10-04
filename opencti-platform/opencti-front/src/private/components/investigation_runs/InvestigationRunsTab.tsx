@@ -87,7 +87,8 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
       withRequested: !!requestedRunId,
       requestedFilters: requestedRunId ? { mode: 'and', filters: [{ key: ['ids'], values: [requestedRunId] }], filterGroups: [] } : null,
     },
-    { fetchPolicy: 'store-and-network', fetchKey: `${requestedRunId ?? ''}-${fetchKey}` },
+    // The variables already change with the requested run; the key refreshes after a launch or a deletion.
+    { fetchPolicy: 'store-and-network', fetchKey },
   );
   const latestRuns = (data.investigationRuns?.edges ?? []).map((edge) => edge.node);
   const requestedRun = requestedRunId ? (data.requestedRun?.edges ?? []).map((edge) => edge.node).find((run) => run.id === requestedRunId) : undefined;
