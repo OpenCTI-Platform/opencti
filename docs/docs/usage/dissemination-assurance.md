@@ -75,6 +75,9 @@ A deployment, its hits sighting and its validation results carry the markings of
 security platform, so only the users who can read both can read them. The counters stored on an indicator are
 visible to every reader of the indicator: they only count the deployments that carry no marking beyond the
 indicator's own, and never reveal the deployments of a security platform more restricted than the indicator.
+On a platform with organization segregation, these relationships are shared like every relationship a connector
+creates: with the organizations of the connector account. Give the account of an integration only the organizations
+allowed to see the security platforms it reports on.
 
 ## Viewing deployments
 
