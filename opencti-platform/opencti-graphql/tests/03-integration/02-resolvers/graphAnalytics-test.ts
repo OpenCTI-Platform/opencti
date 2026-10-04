@@ -616,12 +616,12 @@ describe('Graph analytics resolvers', () => {
     try {
       await startFullPass();
       const first = await runFullPassStep(context, user, capped, 60000);
-      expect(first).toEqual({ processed: 2, completed: true });
+      expect(first).toEqual({ processed: 2, outcome: 'capped' });
       const firstCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
       expect(firstCursor).toBeTruthy();
       await startFullPass();
       const second = await runFullPassStep(context, user, capped, 60000);
-      expect(second).toEqual({ processed: 2, completed: true });
+      expect(second).toEqual({ processed: 2, outcome: 'capped' });
       const secondCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
       expect(secondCursor).toBeTruthy();
       expect(secondCursor).not.toEqual(firstCursor);
