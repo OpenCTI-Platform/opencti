@@ -1,4 +1,7 @@
 import type { Resolvers, TimelineEventSource, TimelinePrecision } from '../../generated/graphql';
+import type { AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreators } from '../../database/members';
@@ -51,7 +54,9 @@ const timelineResolvers: Resolvers = {
       if (event.event_source !== 'manual') return false;
       // Incidents and cases share the Stix-Domain-Object parent type
       const container = await context.batch.idsBatchLoader.load({ id: event.container_id, type: ABSTRACT_STIX_DOMAIN_OBJECT });
-      return canContributeToTimeline(context, context.user, container);
+      // Same rule as the mutations: the container can be updated and the confidence of the event is reached
+      return canContributeToTimeline(context, context.user, container)
+        && controlUserConfidenceAgainstElement(context.user as AuthUser, event as unknown as BasicStoreEntity, true);
     },
     element: (event, _, context) => {
       // Only STIX elements belong to the element union: internal soft-check sources (hunt or investigation

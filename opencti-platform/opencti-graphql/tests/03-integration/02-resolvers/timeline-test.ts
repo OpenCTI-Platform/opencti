@@ -97,6 +97,7 @@ const TIMELINE_EVENT_FIELDS = `
   pinned
   hidden
   annotation
+  confidence
   ordering_hint
   external_id
   analyst_fields
@@ -827,8 +828,10 @@ describe('Incident and case timeline', () => {
       }, ENTITY_TYPE_CONTAINER_CASE_RFI);
       const added = await queryAsAdminWithSuccess({
         query: TIMELINE_EVENT_ADD,
-        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T17:00:00.000Z', title: 'Restricted request answered', element_id: restrictedCase.id } },
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T17:00:00.000Z', title: 'Restricted request answered', element_id: restrictedCase.id, confidence: 60 } },
       });
+      // Within the max confidence of the user, the confidence is kept as given
+      expect(added.data.timelineEventAdd.confidence).toEqual(60);
       const result = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
       const extension = JSON.parse(result.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE];
       // Its title and description speak about the element: the event stays local, not only its reference

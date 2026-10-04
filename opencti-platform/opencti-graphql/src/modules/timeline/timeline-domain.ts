@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
-import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
+import { controlCreateInputWithUserConfidence, controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -289,14 +289,21 @@ export const findTimelineEvent = async (context: AuthContext, user: AuthUser, id
   return items[0] ?? null;
 };
 
-/** An event can only be changed by a user who can read it (event and element) and edit its container. */
+/** An event can only be changed by a user who can read it (event and element), edit its container and reach its confidence. */
 const loadEditableTimelineEvent = async (context: AuthContext, user: AuthUser, eventId: string) => {
   const event = await findTimelineEvent(context, user, eventId);
   if (!event) {
     throw FunctionalError('Timeline event cannot be found', { id: eventId });
   }
   const container = await loadEditableTimelineContainer(context, user, event.container_id);
+  controlUserConfidenceAgainstElement(user, event as unknown as BasicStoreEntity);
   return { event, container };
+};
+
+/** Confidence written on an event: capped by the effective max confidence of the user, like any entity input; none stays none. */
+const cappedTimelineConfidence = (user: AuthUser, confidence: number | null | undefined): number | null => {
+  if (confidence === null || confidence === undefined) return null;
+  return controlCreateInputWithUserConfidence(user, { id: '', entity_type: ENTITY_TYPE_TIMELINE_EVENT, confidence }, ENTITY_TYPE_TIMELINE_EVENT).confidenceLevelToApply;
 };
 
 export const findTimelineAnchors = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineAnchors | null> => {
@@ -603,7 +610,7 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     pinned: input.pinned ?? previous?.pinned ?? false,
     hidden: previous?.hidden ?? false,
     annotation: input.annotation ?? previous?.annotation ?? null,
-    confidence: input.confidence ?? null,
+    confidence: cappedTimelineConfidence(user, input.confidence),
     ordering_hint: input.ordering_hint ?? null,
     analyst_fields: [],
     external_id: input.external_id ?? null,
@@ -674,7 +681,7 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
   if (input.kind) patch.kind = input.kind;
   if (input.title !== undefined && input.title !== null) patch.name = input.title.trim();
   if (input.description !== undefined) patch.description = input.description;
-  if (input.confidence !== undefined) patch.confidence = input.confidence;
+  if (input.confidence !== undefined) patch.confidence = cappedTimelineConfidence(user, input.confidence);
   if (input.ordering_hint !== undefined) patch.ordering_hint = input.ordering_hint;
   if (input.annotation !== undefined) patch.annotation = input.annotation;
   // An event is never less marked than the element it points to, nor than its container
@@ -850,7 +857,7 @@ const writeImportedContributions = async (
       pinned: event.pinned ?? false,
       hidden: event.hidden ?? false,
       annotation: event.annotation ?? null,
-      confidence: event.confidence ?? null,
+      confidence: cappedTimelineConfidence(user, event.confidence),
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
       external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
