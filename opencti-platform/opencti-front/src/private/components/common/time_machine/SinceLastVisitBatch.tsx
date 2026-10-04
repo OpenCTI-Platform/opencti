@@ -116,7 +116,7 @@ export const SinceLastVisitRowBadge = ({ id, entityType }: { id: string; entityT
     result.updates > 0 ? countLabel('updates', result.updates, t_i18n) : null,
     result.new_container_objects > 0 ? countLabel('new_container_objects', result.new_container_objects, t_i18n) : null,
   ].filter((part): part is string => !!part);
-  const description = t_i18n('New since your last visit: {changes}', { values: { changes: intl.formatList(parts, { type: 'conjunction' }) } });
+  const description = t_i18n('New since your last visit, by other users: {changes}', { values: { changes: intl.formatList(parts, { type: 'conjunction' }) } });
   return (
     <Tooltip>
       <TooltipTrigger asChild>

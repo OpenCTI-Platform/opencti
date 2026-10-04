@@ -89,6 +89,7 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
         </TooltipTrigger>
         <TooltipContent onEscapeKeyDown={() => setBreakdownOpen(false)}>
           <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }} data-testid="since-last-visit-breakdown">
+            {hasChanges && <span>{t_i18n('By other users')}</span>}
             {breakdown.map((line) => <span key={line}>{line}</span>)}
             <span>{lastVisit}</span>
           </Box>
