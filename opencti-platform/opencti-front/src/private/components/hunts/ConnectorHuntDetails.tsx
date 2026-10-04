@@ -89,8 +89,14 @@ const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
               </span>
               <Text variant="content-caption">{`${fldt(run.created_at)} - ${t_i18n(huntRunTriggerLabel(run.hunt_run_trigger))}`}</Text>
             </span>
-            <Text variant="content-compact">{t_i18n('{count} hits', { values: { count: n(run.hits_count ?? 0) } })}</Text>
-            {run.hunt_run_mode === 'preview' ? <Text variant="content-caption">{t_i18n('Preview')}</Text> : <HuntVerdictChip value={run.verdict} />}
+            {run.hunt_run_mode === 'preview' ? (
+              <Text variant="content-caption">{t_i18n('Translation preview')}</Text>
+            ) : (
+              <>
+                <Text variant="content-compact">{t_i18n('{count} hits', { values: { count: n(run.hits_count ?? 0) } })}</Text>
+                <HuntVerdictChip value={run.verdict} />
+              </>
+            )}
           </Link>
         </li>
       ))}

@@ -504,7 +504,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
             </Formik>
           </Security>
         )}
-        <RunTriage run={run} />
+        {(canTriageHuntRun(run) || !!run.verdict_proposal) && <RunTriage run={run} />}
       </Card>
     </div>
   );
@@ -547,7 +547,7 @@ const RunTriage = ({ run }: { run: Run }) => {
         {unavailableReason && <Text variant="content-compact">{unavailableReason}</Text>}
         {!unavailableReason && !hasProposal && (
           <Text variant="content-compact">
-            {canTriage ? t_i18n('Ask an agent to propose a verdict for this run; the proposal is never applied without you') : t_i18n('Only completed runs can be triaged')}
+            {t_i18n('Ask an agent to propose a verdict for this run; the proposal is never applied without you')}
           </Text>
         )}
         {hasProposal && (
