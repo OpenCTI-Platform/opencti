@@ -308,7 +308,8 @@ describe('Knowledge curation', () => {
       if (existing) await deleteElementById(testContext, ADMIN_USER, id, type);
     }
     await deleteAllOfType(ENTITY_TYPE_CURATION_PROPOSAL);
-    await deleteAllOfType(ENTITY_TYPE_MERGE_RECORD);
+    // Merge records stay: every platform records the merges it runs or replays (those of the other suites included),
+    // and the synchronization tests compare the relationships, merge record markings included, of both platforms.
     await deleteAllOfType(ENTITY_TYPE_CURATION_POLICY);
     await deleteAllOfType(ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT);
   });
