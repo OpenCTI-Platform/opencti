@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { v4 as uuid } from 'uuid';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { ConnectorType } from '../../../../src/generated/graphql';
+import { decideInvestigationApprovals } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
@@ -161,6 +165,38 @@ const RUN_READ = gql`
       report_id
       budget { max_iterations used_iterations }
     }
+  }
+`;
+const RUN_RECORDS = gql`
+  query RunRecords($id: ID!) {
+    investigationRun(id: $id) {
+      id
+      can_continue
+      approvals { id kind status entity_id recommendation_id }
+      enrichment_requests { id entity_id connector_id status }
+      enrichment_entities { id entity_type name }
+      policy { id }
+      draft { id }
+      runAs { id }
+      acceptance { hypotheses_accepted rate }
+      report_sections { report }
+    }
+  }
+`;
+const RUN_APPLY = gql`
+  mutation RunApply($id: ID!, $recommendationId: String!, $mode: InvestigationRecommendationApplyMode!) {
+    investigationRunRecommendationApply(id: $id, recommendationId: $recommendationId, mode: $mode) { id recommendations { id status task_id } }
+  }
+`;
+const RUN_CONTINUE = gql`mutation RunContinue($id: ID!) { investigationRunContinue(id: $id) { id run_status } }`;
+const RUN_ENRICH = gql`
+  mutation RunEnrich($id: ID!, $input: InvestigationRunEnrichmentRequestInput!) {
+    investigationRunEnrichmentRequest(id: $id, input: $input) { wave_id accepted { entity_id connector_id status } rejected { entity_id connector_id reason } }
+  }
+`;
+const RUN_WAVE = gql`
+  query RunWave($id: ID!, $waveId: ID!) {
+    investigationRunEnrichmentWave(id: $id, waveId: $waveId) { id status jobs { entity_id connector_id status } delta { id } }
   }
 `;
 const CASE_LATEST_RUN = gql`
@@ -341,6 +377,96 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(withoutEdition.data.stixObjectOrStixRelationship).toBeNull();
     } finally {
       edition.mockResolvedValue(true);
+    }
+  });
+
+  it('reads the records of a run and the objects they reference', async () => {
+    const runId = createdRuns[0].id;
+    const { data } = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+    const record = data.investigationRun;
+    expect(record.approvals.map((approval: { kind: string }) => approval.kind).sort()).toEqual(['draft_validation', 'recommendation']);
+    expect(record.approvals.find((approval: { kind: string }) => approval.kind === 'recommendation')).toMatchObject({ recommendation_id: 'r2', status: 'pending' });
+    expect(record.enrichment_requests).toEqual([]);
+    // The sensitive recommendation names the case it changes.
+    expect(record.enrichment_entities).toEqual([expect.objectContaining({ id: fixture.caseId, entity_type: 'Case-Incident' })]);
+    expect(record.policy.id).toBeTruthy();
+    expect(record.draft.id).toBeTruthy();
+    expect(record.runAs.id).toBeTruthy();
+    expect(record.can_continue).toBe(true);
+    expect(record.acceptance.hypotheses_accepted).toBe(1);
+    expect(record.report_sections.report).toContain('[2]');
+  });
+
+  it('applies a proposed recommendation as a task, once', async () => {
+    const runId = createdRuns[0].id;
+    const { data } = await queryAsAdminWithSuccess({ query: RUN_APPLY, variables: { id: runId, recommendationId: 'r1', mode: 'task' } });
+    const applied = data.investigationRunRecommendationApply.recommendations.find((recommendation: { id: string }) => recommendation.id === 'r1');
+    expect(applied.status).not.toBe('proposed');
+    expect(applied.task_id).toBeTruthy();
+    const again = await queryAsAdmin({ query: RUN_APPLY, variables: { id: runId, recommendationId: 'r1', mode: 'task' } });
+    expect(again.errors?.[0]?.message).toContain('already handled');
+  });
+
+  it('continues an investigation whose draft waits, and writes its outputs again', async () => {
+    const runId = createdRuns[0].id;
+    const before = await readRun(runId);
+    const { data } = await queryAsAdminWithSuccess({ query: RUN_CONTINUE, variables: { id: runId } });
+    expect(data.investigationRunContinue.id).toBe(runId);
+    await tickUntil(runId, (current) => current.run_phase === 'investigating');
+    expect(startBody).toMatchObject({ continues_investigation_id: ENGINE_ID });
+    engineStage = 'completed';
+    const run = await tickUntil(runId, (current) => current.run_status === 'awaiting_approval');
+    expect(run.run_status).toBe('awaiting_approval');
+    expect(run.report_id).toBe(before.report_id);
+    expect(run.hypotheses[0].candidate_id).toBe(fixture.intrusionSetId);
+  });
+
+  it('decides the approvals of a run: a sensitive recommendation, then the draft', async () => {
+    const runId = createdRuns[0].id;
+    const { data } = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+    const pending = data.investigationRun.approvals.filter((approval: { status: string }) => approval.status === 'pending');
+    const recommendation = pending.find((approval: { kind: string }) => approval.kind === 'recommendation');
+    const draft = pending.find((approval: { kind: string }) => approval.kind === 'draft_validation');
+    const first = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: recommendation.id, decision: 'approve', rejection_reason: null }]);
+    expect(first.decided).toBe(1);
+    const second = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draft.id, decision: 'reject', rejection_reason: 'Not enough evidence yet' }]);
+    expect(second.decided).toBe(1);
+    const after = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+    const statuses = Object.fromEntries(after.data.investigationRun.approvals.map((approval: { id: string; status: string }) => [approval.id, approval.status]));
+    expect(statuses[recommendation.id]).toBe('approved');
+    expect(statuses[draft.id]).toBe('rejected');
+    const replay = await decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draft.id, decision: 'approve', rejection_reason: null }]);
+    expect(replay.decided).toBe(0);
+  });
+
+  it('enriches only what the investigation is about, through the connectors of its policy', async () => {
+    const connectorId = uuid();
+    await registerConnector(testContext, ADMIN_USER, {
+      id: connectorId, name: 'Case Autopilot e2e enrichment', type: ConnectorType.InternalEnrichment, scope: ['IPv4-Addr'], auto: false,
+    });
+    try {
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: otherCase.id } });
+      const runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      const request = await queryAsAdminWithSuccess({
+        query: RUN_ENRICH,
+        variables: { id: runId, input: { entity_ids: [fixture.ipId, fixture.intrusionSetId], connector_ids: [connectorId, 'unknown-connector'], reason: 'Check the address' } },
+      });
+      const result = request.data.investigationRunEnrichmentRequest;
+      expect(result.accepted).toEqual([{ entity_id: fixture.ipId, connector_id: connectorId, status: 'queued' }]);
+      expect(result.rejected).toEqual(expect.arrayContaining([
+        { entity_id: fixture.intrusionSetId, connector_id: connectorId, reason: 'entity_not_in_scope' },
+        { entity_id: fixture.ipId, connector_id: 'unknown-connector', reason: 'connector_not_allowed' },
+      ]));
+      const wave = await queryAsAdminWithSuccess({ query: RUN_WAVE, variables: { id: runId, waveId: result.wave_id } });
+      expect(wave.data.investigationRunEnrichmentWave.jobs).toEqual([expect.objectContaining({ entity_id: fixture.ipId, connector_id: connectorId })]);
+      const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+      expect(records.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ entity_id: fixture.ipId })]);
+      expect(records.data.investigationRun.enrichment_entities).toEqual([expect.objectContaining({ id: fixture.ipId, entity_type: 'IPv4-Addr' })]);
+      await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
+    } finally {
+      await connectorDelete(testContext, ADMIN_USER, connectorId);
     }
   });
 
