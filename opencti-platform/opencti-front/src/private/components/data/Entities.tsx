@@ -19,12 +19,24 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 const LOCAL_STORAGE_KEY = 'entities';
 
+// A platform keeps the stored provenance when provenance is disabled: the column only shows while it is enabled
+export const entitiesDataColumns = (isRuntimeSort: boolean, withProvenance: boolean): DataTableProps['dataColumns'] => ({
+  entity_type: { percentWidth: 13 },
+  name: withProvenance ? { percentWidth: 20 } : {},
+  createdBy: { isSortable: isRuntimeSort },
+  creator: { isSortable: isRuntimeSort },
+  objectLabel: withProvenance ? { percentWidth: 10 } : {},
+  ...(withProvenance ? { corroboration_count: { percentWidth: 11 } } : {}),
+  created_at: withProvenance ? { percentWidth: 14 } : {},
+  objectMarking: { isSortable: isRuntimeSort },
+});
+
 const Entities = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Entities | Data'));
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable, isProvenanceEnabled },
   } = useAuth();
 
   const initialValues = {
@@ -53,17 +65,7 @@ const Entities = () => {
   );
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-
-  const dataColumns: DataTableProps['dataColumns'] = {
-    entity_type: { percentWidth: 13 },
-    name: {},
-    createdBy: { isSortable: isRuntimeSort },
-    creator: { isSortable: isRuntimeSort },
-    objectLabel: {},
-    corroboration_count: { percentWidth: 9 },
-    created_at: {},
-    objectMarking: { isSortable: isRuntimeSort },
-  };
+  const dataColumns = entitiesDataColumns(isRuntimeSort, isProvenanceEnabled());
 
   const preloadedPaginationProps = {
     linesQuery: entitiesStixDomainObjectsLinesQuery,

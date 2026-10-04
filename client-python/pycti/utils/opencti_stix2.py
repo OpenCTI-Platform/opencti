@@ -82,10 +82,14 @@ STIX_EXT_OCTI_PROVENANCE: str = (
     "extension-definition--283daa2f-7739-5345-a110-19d73676f670"
 )
 
-#: Provenance fields computed by the platform, never sent back as STIX properties
+#: Provenance fields computed by the platform, never sent back as STIX properties:
+#: every field of its provenance side channel, plus the computed freshness_days
 PROVENANCE_READ_ONLY_FIELDS = [
     "x_opencti_assertions",
+    "assertion_source_ids",
+    "assertion_source_kinds",
     "x_opencti_conflicts",
+    "conflict_fields",
     "corroboration_count",
     "last_asserted_at",
     "freshness_days",
@@ -93,6 +97,7 @@ PROVENANCE_READ_ONLY_FIELDS = [
     "has_conflicts",
     "freshness_stale",
     "freshness_stale_at",
+    "freshness_rule_id",
     "procedures",
 ]
 PROCESSING_COUNT: int = 4

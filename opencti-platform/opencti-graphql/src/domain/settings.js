@@ -35,6 +35,7 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -151,6 +152,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_provenance_enabled: PROVENANCE_ENABLED,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -245,8 +247,6 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'enterprise_license',
   'platform_trash_enabled',
   'platform_reference_attachment',
-  'platform_procedures_preservation',
-  'platform_procedures_description_policy',
 ];
 
 const SETTINGS_SET_CUSTOMIZATION_KEYS = [

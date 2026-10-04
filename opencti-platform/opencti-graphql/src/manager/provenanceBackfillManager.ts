@@ -1,10 +1,11 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext } from '../utils/access';
-import { runProvenanceBackfillBatch } from '../modules/provenance/provenance-backfill';
+import { PROVENANCE_BACKFILL_LOCK_KEY, runProvenanceBackfillBatch } from '../modules/provenance/provenance-backfill';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 
-const PROVENANCE_BACKFILL_MANAGER_ENABLED = booleanConf('provenance_backfill_manager:enabled', true);
-const PROVENANCE_BACKFILL_MANAGER_KEY = conf.get('provenance_backfill_manager:lock_key') || 'provenance_backfill_manager_lock';
+// The backfill rewrites every element of the knowledge: it never runs while provenance is disabled
+const PROVENANCE_BACKFILL_MANAGER_ENABLED = booleanConf('provenance_backfill_manager:enabled', true) && PROVENANCE_ENABLED;
 const SCHEDULE_TIME = conf.get('provenance_backfill_manager:interval') || 30000;
 const BATCH_SIZE = conf.get('provenance_backfill_manager:batch_size') || 500;
 
@@ -29,7 +30,7 @@ const PROVENANCE_BACKFILL_MANAGER_DEFINITION: ManagerDefinition = {
   cronSchedulerHandler: {
     handler: provenanceBackfillHandler,
     interval: SCHEDULE_TIME,
-    lockKey: PROVENANCE_BACKFILL_MANAGER_KEY,
+    lockKey: PROVENANCE_BACKFILL_LOCK_KEY,
   },
   enabledByConfig: PROVENANCE_BACKFILL_MANAGER_ENABLED,
   enabledToStart(): boolean {

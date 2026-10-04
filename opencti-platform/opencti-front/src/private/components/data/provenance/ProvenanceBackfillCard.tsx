@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Chip, type ChipSeverity, ProgressBar, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
@@ -46,14 +46,14 @@ const provenanceBackfillRestartMutation = graphql`
 
 const REFRESH_INTERVAL_MS = 10000;
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pending',
-  running: 'In progress',
-  completed: 'Completed',
+const STATUSES: Record<string, { label: string; severity: ChipSeverity }> = {
+  pending: { label: 'Pending', severity: 'neutral' },
+  running: { label: 'Running', severity: 'info' },
+  completed: { label: 'Completed', severity: 'low' },
 };
 
 const ProvenanceBackfillContent = ({ fetchKey, onRefresh }: { fetchKey: number; onRefresh: () => void }) => {
-  const { t_i18n, n, fldt } = useFormatter();
+  const { t_i18n, n, fldt, rd } = useFormatter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   // store-and-network keeps the current progress displayed while it refreshes
   const data = useLazyLoadQuery<ProvenanceBackfillCardQuery>(provenanceBackfillCardQuery, {}, { fetchPolicy: 'store-and-network', fetchKey });
@@ -61,6 +61,7 @@ const ProvenanceBackfillContent = ({ fetchKey, onRefresh }: { fetchKey: number; 
   const backfill = data.provenanceBackfill;
   const progress = backfill.expected > 0 ? Math.min(100, Math.round((backfill.processed / backfill.expected) * 100)) : 0;
   const isCompleted = backfill.status === 'completed';
+  const status = STATUSES[backfill.status] ?? STATUSES.pending;
   useEffect(() => {
     if (isCompleted) return undefined;
     const interval = setInterval(onRefresh, REFRESH_INTERVAL_MS);
@@ -82,28 +83,39 @@ const ProvenanceBackfillContent = ({ fetchKey, onRefresh }: { fetchKey: number; 
       <Typography variant="body2">
         {t_i18n('The provenance of the knowledge created before provenance tracking is rebuilt in the background from the history and the works.')}
       </Typography>
-      <Stack direction="row" alignItems="center" gap={2}>
-        <Typography variant="h4" data-testid="provenance-backfill-status">{t_i18n(STATUS_LABELS[backfill.status] ?? backfill.status)}</Typography>
-        <LinearProgress
-          variant="determinate"
+      <Stack direction="row" alignItems="center" gap={2} data-testid="provenance-backfill-header">
+        <Chip label={t_i18n(status.label)} severity={status.severity} data-testid="provenance-backfill-status" />
+        <ProgressBar
           value={isCompleted ? 100 : progress}
-          sx={{ flex: 1, height: 8, borderRadius: 4 }}
+          size="lg"
+          tone={isCompleted ? 'success' : 'default'}
           aria-label={t_i18n('Provenance backfill progress')}
+          style={{ flex: 1 }}
         />
-        <Typography variant="body2">{isCompleted ? '100%' : `${progress}%`}</Typography>
+        {isCompleted && backfill.completed_at ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Typography variant="body2" tabIndex={0}>{t_i18n('Completed {date}', { values: { date: rd(backfill.completed_at) } })}</Typography>
+            </TooltipTrigger>
+            <TooltipContent>{fldt(backfill.completed_at)}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Typography variant="body2">
+            {t_i18n('{done} of {total} elements', { values: { done: n(backfill.processed), total: n(backfill.expected) } })}
+          </Typography>
+        )}
       </Stack>
       <Typography variant="caption">
         {t_i18n('{processed} of {expected} elements processed, {updated} updated, {errors} errors', {
           values: { processed: n(backfill.processed), expected: n(backfill.expected), updated: n(backfill.updated), errors: n(backfill.errors) },
         })}
-        {backfill.completed_at ? ` - ${t_i18n('Completed on {date}', { values: { date: fldt(backfill.completed_at) } })}` : ''}
       </Typography>
       <div>
         <Button
           variant="secondary"
           size="small"
           startIcon={<RestartAltOutlined />}
-          disabled={restartInFlight || backfill.status === 'running'}
+          disabled={restartInFlight}
           onClick={() => setConfirmOpen(true)}
         >
           {t_i18n('Restart the backfill')}

@@ -16,6 +16,7 @@ import {
   ThreatActorIndividual_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 export const threatActorIndividualFragment = graphql`
   fragment ThreatActorIndividual_ThreatActorIndividual on ThreatActorIndividual {
@@ -226,6 +227,12 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={threatActorIndividual.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={threatActorIndividual.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

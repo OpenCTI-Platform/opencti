@@ -9,6 +9,7 @@ import {
   type StoreAssertion,
   type StoreConflict,
 } from './provenance-types';
+import { PROVENANCE_ENABLED } from './provenance-config';
 
 type ProvenanceSource = {
   entity_type: string;
@@ -23,6 +24,8 @@ const toStixDate = (date: string | undefined) => (date ? new Date(date).toISOStr
 /**
  * Provenance travelling through streams, bundles and exports: counts, dates and flags only.
  * Source names and identifiers stay inside the platform.
+ * corroboration_count and single_sourced count every source; assertions_count and sources_by_kind are computed
+ * from the sources whose details are kept (MAX_ASSERTIONS_PER_ELEMENT per element).
  */
 export const buildProvenanceStixExtension = (instance: ProvenanceSource): StixProvenanceExtension | undefined => {
   const assertions = instance[ATTRIBUTE_ASSERTIONS] ?? [];
@@ -67,6 +70,9 @@ export const buildProvenanceStixExtension = (instance: ProvenanceSource): StixPr
 };
 
 export const withProvenanceStixExtension = <T extends { extensions: Record<string, unknown> }>(instance: ProvenanceSource, stix: T): T => {
+  if (!PROVENANCE_ENABLED) {
+    return stix;
+  }
   const extension = buildProvenanceStixExtension(instance);
   if (!extension) {
     return stix;

@@ -53,10 +53,25 @@ const INDICATOR_DECAY_FIELDS = ['decay_lifetime', 'decay_pound', 'decay_points',
 export const KNOWLEDGE_DECAY_FIELDS = ['target_types', 'freshness_policy', 'stale_after_days', 'freshness_confidence_step'];
 // Edit values are received as strings
 const NUMERIC_KNOWLEDGE_DECAY_FIELDS = ['order', 'stale_after_days', 'freshness_confidence_step'];
-// Changing one of these fields can make flagged knowledge fresh again under the new configuration.
-const FRESHNESS_RESET_FIELDS = ['active', 'target_types', 'decay_filters', 'stale_after_days'];
+// Changing one of these fields releases the knowledge the rule flagged: the freshness manager skips flagged
+// knowledge, so only a release lets it be evaluated again under the new configuration (fresh again, new policy,
+// or taken over by an overlapping rule that now has a higher priority).
+const FRESHNESS_RESET_FIELDS = ['active', 'order', 'target_types', 'decay_filters', 'stale_after_days', 'freshness_policy', 'freshness_confidence_step'];
 // Edits that can make a rule take over elements targeted by lower priority rules
 export const KNOWLEDGE_PRIORITY_FIELDS = ['active', 'order', 'target_types', 'decay_filters'];
+
+// Held by a change of a knowledge decay rule until its flags are released, and by the freshness manager around each
+// policy it applies with the rule: a policy is applied either before the release or with the new configuration
+export const knowledgeDecayRuleLockKey = (ruleId: string) => `knowledge_decay_rule_lock_${ruleId}`;
+
+// Whether a stored rule still has the configuration a freshness run loaded (a deleted rule has none)
+export const hasSameFreshnessConfiguration = (loaded: object, stored: object | undefined | null) => {
+  if (!stored) {
+    return false;
+  }
+  const valueOf = (rule: object, field: string) => JSON.stringify((rule as Record<string, unknown>)[field] ?? null);
+  return FRESHNESS_RESET_FIELDS.every((field) => valueOf(loaded, field) === valueOf(stored, field));
+};
 
 export interface KnowledgeDecayRuleDefinition {
   name: string;
@@ -245,25 +260,37 @@ export const clearFreshnessFlagsOfElements = async (ids: string[]) => {
 /**
  * Number of elements flagged as stale by each rule, counted in a single aggregation for a page of rules.
  */
+// One bucket per rule: the rules are counted by groups that fit in the bucket limit of an aggregation
+const STALE_COUNT_RULES_PER_AGGREGATION = 100;
+
 export const batchStaleElementsCounts = async (context: AuthContext, user: AuthUser, decayRules: BasicStoreEntityDecayRule[]) => {
   const knowledgeRuleIds = decayRules.filter((rule) => isKnowledgeDecayRule(rule)).map((rule) => rule.id);
-  if (knowledgeRuleIds.length === 0) {
-    return decayRules.map(() => 0);
+  const countsByRule = new Map<string, number>();
+  for (let start = 0; start < knowledgeRuleIds.length; start += STALE_COUNT_RULES_PER_AGGREGATION) {
+    const buckets = await elAggregationCount(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+      field: ATTRIBUTE_FRESHNESS_RULE_ID,
+      normalizeLabel: false,
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          { key: [ATTRIBUTE_FRESHNESS_STALE], values: ['true'] },
+          { key: [ATTRIBUTE_FRESHNESS_RULE_ID], values: knowledgeRuleIds.slice(start, start + STALE_COUNT_RULES_PER_AGGREGATION) },
+        ],
+        filterGroups: [],
+      },
+    });
+    buckets.forEach((bucket: { label: string; count: number }) => countsByRule.set(bucket.label, bucket.count));
   }
-  const buckets = await elAggregationCount(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
-    field: ATTRIBUTE_FRESHNESS_RULE_ID,
-    normalizeLabel: false,
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: [ATTRIBUTE_FRESHNESS_STALE], values: ['true'] },
-        { key: [ATTRIBUTE_FRESHNESS_RULE_ID], values: knowledgeRuleIds },
-      ],
-      filterGroups: [],
-    },
-  });
-  const countsByRule = new Map(buckets.map((bucket) => [bucket.label, bucket.count]));
   return decayRules.map((rule) => (isKnowledgeDecayRule(rule) ? countsByRule.get(rule.id) ?? 0 : 0));
+};
+
+/**
+ * Number of knowledge decay rules, among every rule of the platform, that flag knowledge the user can access.
+ */
+export const countKnowledgeDecayRulesInvolved = async (context: AuthContext, user: AuthUser) => {
+  const rules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
+  const counts = await batchStaleElementsCounts(context, user, rules);
+  return counts.filter((count) => count > 0).length;
 };
 
 /**

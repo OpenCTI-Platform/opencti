@@ -14,7 +14,7 @@ import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from '../../../../utils/widget/widget';
 import { FRESHNESS_BUCKET_LABELS } from './provenanceUtils';
-import { buildProvenanceWidgetVariables } from './provenanceWidgetUtils';
+import { buildProvenanceWidgetVariables, PROVENANCE_WIDGET_NO_DATA } from './provenanceWidgetUtils';
 import { ProvenanceFreshnessWidgetQuery } from './__generated__/ProvenanceFreshnessWidgetQuery.graphql';
 
 const provenanceFreshnessWidgetQuery = graphql`
@@ -31,7 +31,7 @@ const ProvenanceFreshnessWidgetComponent = ({ queryRef }: { queryRef: PreloadedQ
   const { t_i18n } = useFormatter();
   const { provenanceFreshnessDistribution } = usePreloadedQuery(provenanceFreshnessWidgetQuery, queryRef);
   if (provenanceFreshnessDistribution.every((entry) => entry.value === 0)) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n(PROVENANCE_WIDGET_NO_DATA)} />;
   }
   return (
     <div data-testid="provenance-freshness-widget" style={{ height: '100%' }}>
@@ -89,7 +89,7 @@ const ProvenanceFreshnessWidget = ({
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters?.title ?? t_i18n('Freshness distribution')}
+      title={parameters?.title ?? t_i18n('Knowledge freshness - days since the last assertion')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}

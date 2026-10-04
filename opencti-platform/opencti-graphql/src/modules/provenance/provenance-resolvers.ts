@@ -17,7 +17,12 @@ import {
 } from './provenance-domain';
 import type { StoreAssertion, StoreConflict } from './provenance-types';
 
-type ProvenanceHolder = { last_asserted_at?: string | null; x_opencti_assertions?: StoreAssertion[] | null; x_opencti_conflicts?: StoreConflict[] | null };
+type ProvenanceHolder = {
+  entity_type?: string;
+  last_asserted_at?: string | null;
+  x_opencti_assertions?: StoreAssertion[] | null;
+  x_opencti_conflicts?: StoreConflict[] | null;
+};
 
 const provenanceFieldsResolvers = {
   freshness_days: (element: ProvenanceHolder) => computeFreshnessDays(element.last_asserted_at),
@@ -25,7 +30,7 @@ const provenanceFieldsResolvers = {
     return resolveAssertionsForUser(context, context.user as AuthUser, element.x_opencti_assertions);
   },
   x_opencti_conflicts: (element: ProvenanceHolder, _: unknown, context: AuthContext) => {
-    return resolveConflictsForUser(context, context.user as AuthUser, element.x_opencti_conflicts);
+    return resolveConflictsForUser(context, context.user as AuthUser, element.x_opencti_conflicts, element.entity_type);
   },
 };
 

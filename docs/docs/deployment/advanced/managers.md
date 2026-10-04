@@ -83,7 +83,7 @@ More information can be found:
 
 ## Knowledge freshness manager
 
-The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators.
+The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators. Each run handles a bounded number of elements per rule and the next run continues where it stopped, so every element a rule targets is eventually reached, however large the knowledge base. Every active rule gets an equal share of each run before the rest goes to the rules that still have elements to handle, so a rule with a large backlog never holds back the others. A run stops applying a rule that is changed or deleted while it runs: what the rule flagged under its previous configuration is released, and the next run applies the new configuration. It does not run when provenance is disabled (`provenance:enabled`).
 
 More information can be found:
 - [Knowledge decay rules](../../administration/decay-rules.md#knowledge-decay-rules).
@@ -91,7 +91,7 @@ More information can be found:
 
 ## Provenance backfill manager
 
-The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it.
+The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Every past writer of an element becomes one of its sources, however many there are. When several connectors share one user, each write of that user goes to the connector whose work was running at that moment; a write that no single connector can explain stays attributed to the user. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it: a restart waits for the batch in progress to finish, so it is never lost. It does not run when provenance is disabled (`provenance:enabled`).
 
 More information can be found [here](../../usage/provenance.md).
 

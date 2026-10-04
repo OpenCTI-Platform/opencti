@@ -17,6 +17,7 @@ import {
 } from '../ingestion/ingestion-types';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
 import { logApp } from '../../config/conf';
+import { DatabaseError } from '../../config/errors';
 import {
   type AssertionSource,
   SOURCE_KIND_AUTHOR,
@@ -87,19 +88,86 @@ const loadFeedIndex = async (context: AuthContext) => {
   feedIndex.loadedAt = Date.now();
 };
 
-const refreshFeedIndex = async (context: AuthContext, isMiss: boolean) => {
-  const age = Date.now() - feedIndex.loadedAt;
-  if (age > FEED_INDEX_TTL_MS || (isMiss && age > FEED_INDEX_MISS_REFRESH_MS)) {
-    try {
-      await loadFeedIndex(context);
-    } catch (err) {
+// Keys a load did not find, with the time of that load: they are looked up again only after FEED_INDEX_MISS_REFRESH_MS
+const confirmedMisses = new Map<string, number>();
+// One load at a time: a load only starts when none is in flight, and not before FEED_INDEX_MISS_REFRESH_MS after a failure
+let feedIndexLoad: Promise<boolean> | undefined;
+let feedIndexFailedAt = 0;
+
+const startFeedIndexLoad = (context: AuthContext): Promise<boolean> => {
+  const load: Promise<boolean> = loadFeedIndex(context)
+    .then(() => true)
+    .catch((err) => {
+      feedIndexFailedAt = Date.now();
       logApp.warn('[PROVENANCE] Unable to refresh the ingestion feeds index', { cause: err });
-    }
+      return false;
+    })
+    .finally(() => {
+      if (feedIndexLoad === load) {
+        feedIndexLoad = undefined;
+      }
+    });
+  feedIndexLoad = load;
+  return load;
+};
+
+// Whether a load ran and succeeded: the load in flight, otherwise a new one
+const runFeedIndexLoad = (context: AuthContext): Promise<boolean> => {
+  if (feedIndexLoad) {
+    return feedIndexLoad;
   }
+  return Date.now() - feedIndexFailedAt > FEED_INDEX_MISS_REFRESH_MS ? startFeedIndexLoad(context) : Promise.resolve(false);
+};
+
+/**
+ * An expired index is refreshed by any load, the one in flight included. A key missing from the index is looked up in
+ * a load started after the request: resolving a feed or a synchronizer created since the last load to another source
+ * until the next refresh would count the same source twice. A key that such a load did not find either is not looked
+ * up again before FEED_INDEX_MISS_REFRESH_MS.
+ * Concurrent callers share the load in flight, and the callers it did not satisfy share the next one.
+ * Returns false when the key is missing and no load could confirm it, the index being unavailable.
+ */
+const refreshFeedIndex = async (context: AuthContext, key: string, isIndexed: () => boolean): Promise<boolean> => {
+  const expired = Date.now() - feedIndex.loadedAt > FEED_INDEX_TTL_MS;
+  // Outcome of a load started after the request, undefined until one ran
+  let loadedSinceRequest: boolean | undefined;
+  if (feedIndexLoad && (expired || !isIndexed())) {
+    // The load in flight refreshes an expired index and may already hold a missing key, but it started before the request
+    await feedIndexLoad;
+  } else if (expired) {
+    loadedSinceRequest = await runFeedIndexLoad(context);
+  }
+  if (isIndexed()) {
+    confirmedMisses.delete(key);
+    return true;
+  }
+  const missedAt = confirmedMisses.get(key);
+  if (missedAt !== undefined && Date.now() - missedAt <= FEED_INDEX_MISS_REFRESH_MS) {
+    return true;
+  }
+  if (loadedSinceRequest === undefined) {
+    // Any load in flight now started after the one awaited above ended, so after the request: it is shared
+    loadedSinceRequest = await runFeedIndexLoad(context);
+  }
+  if (isIndexed()) {
+    confirmedMisses.delete(key);
+    return true;
+  }
+  if (loadedSinceRequest) {
+    confirmedMisses.set(key, Date.now());
+  }
+  return loadedSinceRequest;
+};
+
+// A source keeps one identity: while the index cannot tell, the write gets no source rather than a temporary one
+const throwFeedIndexUnavailable = (data: Record<string, string>): never => {
+  throw DatabaseError('Ingestion feeds index unavailable, the source of this write cannot be resolved', data);
 };
 
 const resolveFeedOfConnector = async (context: AuthContext, connectorId: string): Promise<FeedReference | undefined> => {
-  await refreshFeedIndex(context, !feedIndex.byConnectorId.has(connectorId));
+  if (!(await refreshFeedIndex(context, `connector:${connectorId}`, () => feedIndex.byConnectorId.has(connectorId)))) {
+    throwFeedIndexUnavailable({ connector_id: connectorId });
+  }
   return feedIndex.byConnectorId.get(connectorId);
 };
 
@@ -107,7 +175,9 @@ const resolveFeedOfConnector = async (context: AuthContext, connectorId: string)
  * Synchronizer behind a synchronized write, when its user is not shared with another synchronizer.
  */
 const resolveSynchronizerOfUser = async (context: AuthContext, userId: string): Promise<FeedReference | undefined> => {
-  await refreshFeedIndex(context, !feedIndex.synchronizersByUser.has(userId));
+  if (!(await refreshFeedIndex(context, `user:${userId}`, () => feedIndex.synchronizersByUser.has(userId)))) {
+    throwFeedIndexUnavailable({ user_id: userId });
+  }
   const synchronizers = feedIndex.synchronizersByUser.get(userId) ?? [];
   return synchronizers.length === 1 ? synchronizers[0] : undefined;
 };

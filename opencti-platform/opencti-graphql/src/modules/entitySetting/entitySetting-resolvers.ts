@@ -10,12 +10,14 @@ import {
   queryMandatoryAttributesForSetting,
   queryScaleAttributesForSetting,
 } from './entitySetting-domain';
-import type { Resolvers } from '../../generated/graphql';
+import type { ProceduresDescriptionPolicy, Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { getRequestAccessConfiguration } from '../requestAccess/requestAccess-domain';
+import { isProvenanceTrackingEnabled, listProvenanceUntrackedTypesOfSetting } from '../provenance/provenance-tracking';
+import { getProceduresDescriptionPolicy, isProceduresPreservationEnabled } from '../provenance/provenance-procedures';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -29,6 +31,10 @@ const entitySettingResolvers: Resolvers = {
     scaleAttributes: (entitySetting, _, context) => queryScaleAttributesForSetting(context, context.user, entitySetting),
     defaultValuesAttributes: (entitySetting, _, context) => queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
+    provenance_tracking: (entitySetting, _, __) => isProvenanceTrackingEnabled(entitySetting),
+    provenance_untracked_types: (entitySetting, _, context) => listProvenanceUntrackedTypesOfSetting(context, entitySetting),
+    procedures_preservation: (entitySetting, _, __) => isProceduresPreservationEnabled(entitySetting),
+    procedures_description_policy: (entitySetting, _, __) => getProceduresDescriptionPolicy(entitySetting) as ProceduresDescriptionPolicy,
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
     fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
     requestAccessConfiguration: (entitySetting, _, context) => getRequestAccessConfiguration(context, context.user, entitySetting),

@@ -92,9 +92,9 @@ describe('Provenance procedures', () => {
 
   it('should be enabled with the longest policy by default', () => {
     expect(isProceduresPreservationEnabled(undefined)).toEqual(true);
-    expect(isProceduresPreservationEnabled({ platform_procedures_preservation: false })).toEqual(false);
+    expect(isProceduresPreservationEnabled({ procedures_preservation: false })).toEqual(false);
     expect(getProceduresDescriptionPolicy(undefined)).toEqual('longest');
-    expect(getProceduresDescriptionPolicy({ platform_procedures_description_policy: 'most_recent' })).toEqual('most_recent');
+    expect(getProceduresDescriptionPolicy({ procedures_description_policy: 'most_recent' })).toEqual('most_recent');
   });
 
   it('should preserve a new procedure and keep the longest description', () => {

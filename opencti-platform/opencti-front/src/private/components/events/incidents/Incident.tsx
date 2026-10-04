@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -146,6 +147,12 @@ const Incident: React.FC<IncidentProps> = ({
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={incident.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={incident.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

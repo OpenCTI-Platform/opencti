@@ -9212,6 +9212,10 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  procedures_description_policy: ProceduresDescriptionPolicy;
+  procedures_preservation: Scalars['Boolean']['output'];
+  provenance_tracking: Scalars['Boolean']['output'];
+  provenance_untracked_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
@@ -25683,6 +25687,8 @@ export type Query = {
   jsonMappers?: Maybe<JsonMapperConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
+  /** Number of knowledge decay rules that flag knowledge the user can access */
+  knowledgeDecayRulesInvolvedCount: Scalars['Int']['output'];
   label?: Maybe<Label>;
   labels?: Maybe<LabelConnection>;
   language?: Maybe<Language>;
@@ -32075,9 +32081,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
-  platform_procedures_description_policy: ProceduresDescriptionPolicy;
-  platform_procedures_preservation: Scalars['Boolean']['output'];
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
+  platform_provenance_enabled: Scalars['Boolean']['output'];
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
   platform_session_idle_timeout?: Maybe<Scalars['Int']['output']>;
@@ -32476,6 +32481,7 @@ export type SoftwareEdge = {
 export type SourceConflict = {
   __typename?: 'SourceConflict';
   field: Scalars['String']['output'];
+  field_label: Scalars['String']['output'];
   values: Array<SourceConflictValue>;
 };
 
@@ -47179,6 +47185,10 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
+  procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  provenance_tracking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  provenance_untracked_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
@@ -52533,6 +52543,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   jsonMappers?: Resolver<Maybe<ResolversTypes['JsonMapperConnection']>, ParentType, ContextType, Partial<QueryJsonMappersArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType, Partial<QueryKillChainPhasesArgs>>;
+  knowledgeDecayRulesInvolvedCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<QueryLabelArgs, 'id'>>;
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;
@@ -53805,9 +53816,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  platform_procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
-  platform_procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
+  platform_provenance_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -53960,6 +53970,7 @@ export type SoftwareEdgeResolvers<ContextType = any, ParentType extends Resolver
 
 export type SourceConflictResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceConflict'] = ResolversParentTypes['SourceConflict']> = ResolversObject<{
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  field_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   values?: Resolver<Array<ResolversTypes['SourceConflictValue']>, ParentType, ContextType>;
 }>;
 

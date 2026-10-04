@@ -3935,17 +3935,20 @@ export const elUpdate = async (
   documentId: string,
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
-  opts: { refresh?: boolean } = {},
+  opts: { refresh?: boolean; sourceIncludes?: string[]; ifSeqNo?: number; ifPrimaryTerm?: number } = {},
 ) => {
   const updateOperation = async () => {
     const entityType = documentBody.entity_type ? documentBody.entity_type : '';
+    // A write conditioned on the version the caller read is never retried by the engine: the caller re-reads
+    const isConditional = opts.ifSeqNo !== undefined && opts.ifPrimaryTerm !== undefined;
     const updateRequest = {
       id: documentId,
       index: indexName,
-      retry_on_conflict: retry,
+      ...(isConditional ? { if_seq_no: opts.ifSeqNo, if_primary_term: opts.ifPrimaryTerm } : { retry_on_conflict: retry }),
       timeout: BULK_TIMEOUT,
       refresh: opts.refresh ?? true,
       body: documentBody,
+      ...(opts.sourceIncludes ? { _source: opts.sourceIncludes } : {}),
     };
     try {
       return await elExecuteWithAbortSignal(

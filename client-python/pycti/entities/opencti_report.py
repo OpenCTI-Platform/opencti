@@ -38,6 +38,8 @@ class Report:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             status {
                 id
@@ -259,6 +261,8 @@ class Report:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             status {
                 id

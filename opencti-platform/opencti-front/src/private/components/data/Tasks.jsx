@@ -36,7 +36,7 @@ const Tasks = () => {
     includeAuthorities: true,
   };
   // The provenance backfill runs in its own manager, independently of the task manager
-  const provenanceBackfill = (
+  const provenanceBackfill = platformModuleHelpers.isProvenanceEnabled() && (
     <Security needs={[SETTINGS_SETPARAMETERS]}>
       <div style={{ marginBottom: 20 }}>
         <ProvenanceBackfillCard />

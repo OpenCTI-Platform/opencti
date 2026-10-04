@@ -121,7 +121,7 @@ class StixCyberObservableOverview extends Component {
       otherStixIds,
     );
     return (
-      <ProvenanceOverviewColumn id={stixCyberObservable.id}>
+      <ProvenanceOverviewColumn id={stixCyberObservable.id} entityType={stixCyberObservable.entity_type} inheritedType="Stix-Cyber-Observable">
         <Card title={t('Basic information')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={6}>

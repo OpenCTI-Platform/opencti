@@ -32,6 +32,8 @@ class StixCoreObject:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             objectOrganization {
                 id
@@ -736,6 +738,8 @@ class StixCoreObject:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             objectOrganization {
                 id

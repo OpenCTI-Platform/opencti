@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PLATFORM_ADMIN } from '../../../utils/testQuery';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { elUpdate } from '../../../../src/database/engine';
 import { createEntity } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
@@ -10,13 +10,18 @@ import { resetCacheForEntity } from '../../../../src/database/cache';
 import { DECAY_MANAGER_USER } from '../../../../src/utils/access';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { applyKnowledgeDecayRules } from '../../../../src/modules/provenance/provenance-freshness';
-import { runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
+import { PROVENANCE_BACKFILL_LOCK_KEY, restartProvenanceBackfill, runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
+import { lockResources } from '../../../../src/lock/master-lock';
+import { wait } from '../../../../src/database/utils';
 import { notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
-import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT } from '../../../../src/modules/provenance/provenance-write';
+import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
+import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
+import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
+import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
 
 const MALWARE_NAME = 'Provenance malware';
 
@@ -95,6 +100,12 @@ const DECAY_RULE = gql`
   }
 `;
 
+const KNOWLEDGE_DECAY_RULES_INVOLVED = gql`
+  query KnowledgeDecayRulesInvolved {
+    knowledgeDecayRulesInvolvedCount
+  }
+`;
+
 const DECAY_RULES = gql`
   query DecayRules($filters: FilterGroup) {
     decayRules(filters: $filters, first: 50) { edges { node { id name built_in active target_scope } } }
@@ -139,6 +150,7 @@ describe('Provenance: every fact knows who said it', () => {
   let ruleId = '';
   let takeoverRuleId = '';
   let triggerId = '';
+  const retentionMalwareIds: string[] = [];
 
   afterAll(async () => {
     if (ruleId) {
@@ -159,6 +171,9 @@ describe('Provenance: every fact knows who said it', () => {
     }
     if (attackPatternId) {
       await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: attackPatternId } });
+    }
+    for (let index = 0; index < retentionMalwareIds.length; index += 1) {
+      await queryAsAdminWithSuccess({ query: deleteQuery, variables: { id: retentionMalwareIds[index] } });
     }
   });
 
@@ -288,6 +303,73 @@ describe('Provenance: every fact knows who said it', () => {
     expect(dismissed.x_opencti_conflicts ?? []).toEqual([]);
   });
 
+  it('should keep the attribution of every source proposing the same conflicting value', async () => {
+    const created = await createEntity(testContext, ADMIN_USER, { name: `${MALWARE_NAME} shared proposal`, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);
+    retentionMalwareIds.push(created.id);
+    const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, created.id);
+    const proposal = (sourceId: string, at: string): StoreConflictValue => ({
+      value_hash: 'shared-hash', display: 'Shared description', value: '"Shared description"', source_id: sourceId, source_kind: SOURCE_KIND_FEED, source_name: `Feed ${sourceId}`, confidence: 50, last_asserted_at: at,
+    });
+    const params = buildProvenanceScriptParams({
+      conflictsAdd: [
+        { field: 'description', value: proposal('feed-a', '2026-09-01T00:00:00.000Z') },
+        { field: 'description', value: proposal('feed-b', '2026-09-02T00:00:00.000Z') },
+        { field: 'description', value: proposal('feed-a', '2026-09-03T00:00:00.000Z') },
+      ],
+    });
+    await elUpdate(testContext, element._index, element.internal_id, { script: { source: PROVENANCE_UPDATE_SCRIPT, lang: 'painless', params } });
+    const malware = await loadMalware(created.id);
+    const conflict = malware.x_opencti_conflicts.find((entry: { field: string }) => entry.field === 'description');
+    // One proposal per source: the repeated proposal of feed-a refreshes its own record
+    expect(conflict.values.map((value: { value_hash: string; source_id: string }) => `${value.value_hash}:${value.source_id}`).sort()).toEqual([
+      'shared-hash:feed-a',
+      'shared-hash:feed-b',
+    ]);
+    // Retained provenance is not curated while the type is no longer tracked
+    const setting = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { id } }` });
+    const TRACKING_PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id } }`;
+    const setTracking = async (value: string) => {
+      await queryAsAdminWithSuccess({ query: TRACKING_PATCH, variables: { ids: [setting.data?.entitySettingByType.id], input: [{ key: 'provenance_tracking', value: [value] }] } });
+      resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+    };
+    await setTracking('false');
+    try {
+      await queryAsAdminWithError(
+        { query: CONFLICT_DISMISS, variables: { id: created.id, field: 'description', hash: 'shared-hash' } },
+        'Provenance is not tracked for this element',
+      );
+    } finally {
+      await setTracking('true');
+    }
+    // Dismissing the value removes the proposal of every source
+    await queryAsAdminWithSuccess({ query: CONFLICT_DISMISS, variables: { id: created.id, field: 'description', hash: 'shared-hash' } });
+    const dismissed = await loadMalware(created.id);
+    expect(dismissed.has_conflicts).toEqual(false);
+  });
+
+  it('should only count the conflicts older than the retention date in the retention preview', async () => {
+    const withConflict = async (name: string, lastAssertedAt: string) => {
+      const created = await createEntity(testContext, ADMIN_USER, { name, confidence: 50, is_family: false }, ENTITY_TYPE_MALWARE);
+      const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, created.id);
+      const conflicts = [{
+        field: 'description',
+        values: [{ value_hash: `hash-${name}`, display: 'Other description', value: '"Other description"', source_id: 'feed-retention', source_kind: SOURCE_KIND_FEED, source_name: 'Feed retention', confidence: 50, last_asserted_at: lastAssertedAt }],
+      }];
+      await elUpdate(testContext, element._index, element.internal_id, {
+        script: { source: 'ctx._source.x_opencti_conflicts = params.conflicts; ctx._source.has_conflicts = true;', lang: 'painless', params: { conflicts } },
+      });
+      retentionMalwareIds.push(created.id);
+      return created.id;
+    };
+    const freshId = await withConflict(`${MALWARE_NAME} fresh conflict`, new Date().toISOString());
+    const outdatedId = await withConflict(`${MALWARE_NAME} outdated conflict`, '2020-01-01T00:00:00.000Z');
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['internal_id'], values: [freshId, outdatedId] }], filterGroups: [] });
+    const count = await checkRetentionRule(testContext, {
+      name: 'Outdated conflicts', filters, max_retention: 30, retention_unit: RetentionUnit.Days, scope: RetentionRuleScope.Conflicts,
+    });
+    expect(count).toEqual(1);
+  });
+
   it('should preserve distinct procedures on uses relationships', async () => {
     const attackPattern = await queryAsAdminWithSuccess({
       query: gql`mutation AttackPatternAdd($input: AttackPatternAddInput!) { attackPatternAdd(input: $input) { id } }`,
@@ -312,6 +394,17 @@ describe('Provenance: every fact knows who said it', () => {
     ]);
     // Default policy keeps the longest procedure as description
     expect(relation.description).toEqual('Spearphishing link to a credential harvesting page');
+    // The same procedure asserted by another source keeps the attribution of both sources
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: addUses,
+      variables: { input: { fromId: malwareId, toId: attackPatternId, relationship_type: 'uses', description: 'Spearphishing attachment', confidence: 90 } },
+    });
+    const attributed = await loadRelation(usesId);
+    const attachmentSources = attributed.procedures
+      .filter((procedure: { text: string }) => procedure.text === 'Spearphishing attachment')
+      .map((procedure: { source_id: string }) => procedure.source_id);
+    expect(attachmentSources).toHaveLength(2);
+    expect(attachmentSources).toContain(ADMIN_USER.id);
   });
 
   it('should flag stale knowledge with knowledge decay rules and reset it on re-assertion', async () => {
@@ -331,6 +424,9 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
     const rule = await queryAsAdminWithSuccess({ query: DECAY_RULE, variables: { id: ruleId } });
     expect(rule.data?.decayRule.staleElementsCount).toEqual(1);
+    // Counted for any user with knowledge access, without the customization capability that lists the rules
+    const involved = await queryAsUserWithSuccess(USER_EDITOR, { query: KNOWLEDGE_DECAY_RULES_INVOLVED });
+    expect(involved.data?.knowledgeDecayRulesInvolvedCount).toBeGreaterThanOrEqual(1);
     // A longer delay makes the knowledge fresh again under the new configuration
     await queryAsAdminWithSuccess({ query: DECAY_RULE_PATCH, variables: { id: ruleId, input: [{ key: 'stale_after_days', value: ['90'] }] } });
     expect((await loadRelation(usesId)).freshness_stale).toEqual(false);
@@ -366,6 +462,15 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
     expect(await staleCount(takeoverRuleId)).toEqual(1);
     expect(await staleCount(ruleId)).toEqual(0);
+    // Moved below the first rule, the rule releases what it flagged and the first rule takes it back
+    await queryAsAdminWithSuccess({ query: DECAY_RULE_PATCH, variables: { id: takeoverRuleId, input: [{ key: 'order', value: ['50'] }] } });
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(false);
+    expect(await staleCount(takeoverRuleId)).toEqual(0);
+    resetCacheForEntity(ENTITY_TYPE_DECAY_RULE);
+    await applyKnowledgeDecayRules(testContext, DECAY_MANAGER_USER, { batchSize: 100 });
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
+    expect(await staleCount(ruleId)).toEqual(1);
+    expect(await staleCount(takeoverRuleId)).toEqual(0);
     await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
   });
 
@@ -385,6 +490,35 @@ describe('Provenance: every fact knows who said it', () => {
       { query: DECAY_RULE_PATCH, variables: { id, input: [{ key: 'stale_after_days', value: ['1'] }] } },
       `Built-in knowledge decay rule ${id} can only be activated or deactivated`,
     );
+  });
+
+  it('should keep the provenance entity settings to the customization capability', async () => {
+    const setting = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { id } }` });
+    const PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id provenance_tracking } }`;
+    const keys = ['provenance_tracking', 'procedures_preservation', 'procedures_description_policy'];
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+      await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, {
+        query: PATCH,
+        variables: { ids: [setting.data?.entitySettingByType.id], input: [{ key, value: [key === 'procedures_description_policy' ? 'longest' : 'false'] }] },
+      });
+    }
+    const unchanged = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { provenance_tracking } }` });
+    expect(unchanged.data?.entitySettingByType.provenance_tracking).toEqual(true);
+  });
+
+  it('should restart the backfill only once the batch in progress released its lock', async () => {
+    const batchLock = await lockResources([PROVENANCE_BACKFILL_LOCK_KEY], { retryCount: 0 });
+    let restartedAt = 0;
+    const restart = restartProvenanceBackfill(testContext).then((state) => {
+      restartedAt = Date.now();
+      return state;
+    });
+    await wait(1000);
+    const releasedAt = Date.now();
+    await batchLock.unlock();
+    expect((await restart).status).toEqual('pending');
+    expect(restartedAt).toBeGreaterThanOrEqual(releasedAt);
   });
 
   it('should rebuild the provenance of existing knowledge with the backfill', async () => {
@@ -407,6 +541,28 @@ describe('Provenance: every fact knows who said it', () => {
     const status = await queryAsAdminWithSuccess({ query: gql`query { provenanceBackfill { status processed expected errors } }` });
     expect(status.data?.provenanceBackfill).toMatchObject({ status: 'completed', errors: 0 });
     expect(status.data?.provenanceBackfill.processed).toBeGreaterThan(0);
+  });
+
+  it('should report a conflict value as new only to the write that created it, even from a stale element', async () => {
+    const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, malwareId);
+    const value: StoreConflictValue = {
+      value_hash: 'provenance-test-concurrent-hash',
+      display: 'Concurrent description',
+      value: JSON.stringify('Concurrent description'),
+      source_id: 'provenance-test-concurrent-source',
+      source_kind: SOURCE_KIND_FEED,
+      source_name: 'Concurrent source',
+      confidence: 50,
+      last_asserted_at: new Date().toISOString(),
+    };
+    const update = { conflictsAdd: [{ field: 'description', value }] };
+    const first = await writeProvenanceUpdate(testContext, element, update, { withCurrent: true });
+    const second = await writeProvenanceUpdate(testContext, element, update, { withCurrent: true });
+    expect(first.newConflicts).toHaveLength(1);
+    expect(second.newConflicts).toHaveLength(0);
+    const stored = (second.current?.x_opencti_conflicts ?? []).find((conflict) => conflict.field === 'description');
+    expect(stored?.values.filter((entry) => entry.value_hash === value.value_hash)).toHaveLength(1);
+    await writeProvenanceUpdate(testContext, element, { conflictsRemove: [{ field: 'description', value_hash: value.value_hash }] }, { refresh: true });
   });
 
   it('should notify corroboration triggers when the threshold is reached', async () => {

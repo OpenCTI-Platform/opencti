@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { type BackfillSourceResolver, computeBackfillAssertions, findRunningWorkConnector, readBackfillState } from '../../../../src/modules/provenance/provenance-backfill';
+import {
+  type BackfillSourceResolver,
+  computeBackfillAssertions,
+  createRunningWorkIndex,
+  findRunningWorkConnector,
+  groupSharedUserWrites,
+  readBackfillState,
+} from '../../../../src/modules/provenance/provenance-backfill';
 import type { AssertionSource } from '../../../../src/modules/provenance/provenance-types';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
 
@@ -40,7 +47,7 @@ describe('Provenance backfill', () => {
     expect(assertions.find((a) => a.source_id === 'A')).toMatchObject({ source_kind: 'connector', assert_count: 4 });
   });
 
-  it('should split the writes of a shared user between the connectors running at their dates', async () => {
+  it('should assert each group of writes of a shared user by the connector running at their dates', async () => {
     const assertions = await computeBackfillAssertions({
       internal_id: 'rel-1',
       entity_type: 'uses',
@@ -48,13 +55,74 @@ describe('Provenance backfill', () => {
       creator_id: ['connector-user'],
       created_at: '2026-01-10T00:00:00.000Z',
       updated_at: '2026-04-01T00:00:00.000Z',
-    } as any, [
-      { user_id: 'connector-user', first: '2026-01-10T00:00:00.000Z', last: '2026-04-01T00:00:00.000Z', count: 5 },
-    ], resolver);
+    } as any, [{
+      user_id: 'connector-user',
+      first: '2026-01-10T00:00:00.000Z',
+      last: '2026-04-01T00:00:00.000Z',
+      count: 5,
+      segments: [
+        { first: '2026-01-10T00:00:00.000Z', last: '2026-02-20T00:00:00.000Z', count: 3 },
+        { first: '2026-03-05T00:00:00.000Z', last: '2026-04-01T00:00:00.000Z', count: 2 },
+      ],
+    }], resolver);
     expect(assertions.map((a) => [a.source_id, a.assert_count, a.first_asserted_at, a.last_asserted_at])).toEqual([
-      ['A', 1, '2026-01-10T00:00:00.000Z', '2026-01-10T00:00:00.000Z'],
-      ['B', 4, '2026-04-01T00:00:00.000Z', '2026-04-01T00:00:00.000Z'],
+      ['A', 3, '2026-01-10T00:00:00.000Z', '2026-02-20T00:00:00.000Z'],
+      ['B', 2, '2026-03-05T00:00:00.000Z', '2026-04-01T00:00:00.000Z'],
     ]);
+  });
+
+  it('should keep every writer of an element, whatever their number', async () => {
+    const history = Array.from({ length: 120 }, (_, index) => ({
+      user_id: `analyst-${index}`,
+      first: '2026-01-01T00:00:00.000Z',
+      last: '2026-01-02T00:00:00.000Z',
+      count: 1,
+    }));
+    const assertions = await computeBackfillAssertions({
+      internal_id: 'indicator-1',
+      entity_type: 'Indicator',
+      _index: 'opencti_stix_domain_objects',
+      creator_id: ['analyst-0'],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-02T00:00:00.000Z',
+    } as any, history, resolver);
+    expect(assertions).toHaveLength(120);
+  });
+
+  it('should group the writes of a shared user by running connector, even when connectors alternate', () => {
+    const works = [
+      { id: 'work-a1', connector_id: 'A', start: '2026-01-01T00:00:00.000Z', end: '2026-01-01T01:00:00.000Z' },
+      { id: 'work-b1', connector_id: 'B', start: '2026-01-01T02:00:00.000Z', end: '2026-01-01T03:00:00.000Z' },
+      { id: 'work-a2', connector_id: 'A', start: '2026-01-01T04:00:00.000Z', end: '2026-01-01T05:00:00.000Z' },
+      { id: 'work-c1', connector_id: 'C', start: '2026-01-01T04:00:00.000Z', end: '2026-01-01T08:00:00.000Z' },
+    ];
+    const writes = [
+      { element_id: 'e1', user_id: 'shared', at: '2026-01-01T04:30:00.000Z' }, // A (C is not a connector of this user)
+      { element_id: 'e1', user_id: 'shared', at: '2026-01-01T00:30:00.000Z' }, // A
+      { element_id: 'e1', user_id: 'shared', at: '2026-01-01T02:30:00.000Z' }, // B
+      { element_id: 'e1', user_id: 'shared', at: '2026-01-01T06:00:00.000Z' }, // no running work: stays the user's
+      { element_id: 'e2', user_id: 'shared', at: '2026-01-01T02:15:00.000Z' }, // B
+    ];
+    const segments = groupSharedUserWrites(writes, works, new Map([['shared', ['A', 'B']]]));
+    expect(segments.get('e1')?.get('shared')).toEqual([
+      { first: '2026-01-01T00:30:00.000Z', last: '2026-01-01T04:30:00.000Z', count: 2 },
+      { first: '2026-01-01T02:30:00.000Z', last: '2026-01-01T02:30:00.000Z', count: 1 },
+      { first: '2026-01-01T06:00:00.000Z', last: '2026-01-01T06:00:00.000Z', count: 1 },
+    ]);
+    expect(segments.get('e2')?.get('shared')).toEqual([{ first: '2026-01-01T02:15:00.000Z', last: '2026-01-01T02:15:00.000Z', count: 1 }]);
+  });
+
+  it('should answer like a full scan when dates are read in order, and after a date earlier than the previous one', () => {
+    const works = [
+      { id: 'work-a', connector_id: 'A', start: '2026-01-01T00:00:00.000Z', end: '2026-01-01T02:00:00.000Z' },
+      { id: 'work-b', connector_id: 'B', start: '2026-01-01T01:00:00.000Z', end: '2026-01-01T03:00:00.000Z' },
+      { id: 'work-a2', connector_id: 'A', start: '2026-01-01T05:00:00.000Z', end: '2026-01-01T06:00:00.000Z' },
+    ];
+    const runningAt = createRunningWorkIndex(works);
+    const dates = ['2026-01-01T00:30:00.000Z', '2026-01-01T01:30:00.000Z', '2026-01-01T02:30:00.000Z', '2026-01-01T05:30:00.000Z', '2026-01-01T00:15:00.000Z'];
+    dates.forEach((at) => {
+      expect(runningAt(['A', 'B'], at)).toEqual(findRunningWorkConnector(works, ['A', 'B'], at));
+    });
   });
 
   it('should keep creators whose history was purged and attribute human creations to the author', async () => {

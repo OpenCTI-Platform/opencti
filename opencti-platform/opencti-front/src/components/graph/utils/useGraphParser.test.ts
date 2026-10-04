@@ -4,6 +4,8 @@ import { renderHook } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 import type { GraphNode, GraphLink, OctiGraphPositions } from '../graph.types';
+import { UserContext, type UserContextType } from '../../../utils/hooks/useAuth';
+import { createMockUserContext } from '../../../utils/tests/test-render';
 
 /**
  * Helper to build a minimal ObjectToParse for tests.
@@ -279,5 +281,31 @@ describe('useGraphParser', () => {
 
       expect(result).toBeUndefined();
     });
+  });
+});
+
+describe('useGraphParser corroboration', () => {
+  const parserWithProvenance = (enabled: boolean) => {
+    const userContext = { ...createMockUserContext(), platformModuleHelpers: { isProvenanceEnabled: () => enabled } } as unknown as UserContextType;
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      React.createElement(
+        IntlProvider,
+        { locale: 'en', messages: {}, onError: () => {} },
+        React.createElement(UserContext.Provider, { value: userContext }, children),
+      )
+    );
+    return renderHook(() => useGraphParser(), { wrapper }).result.current;
+  };
+
+  it('should give nodes and links their number of sources while provenance is enabled', () => {
+    const parser = parserWithProvenance(true);
+    expect(parser.buildNode(constructEntity({ corroboration_count: 3 }), emptyPositions).corroborationCount).toBe(3);
+    expect(parser.buildLink(constructRelationship({ corroboration_count: 2 })).corroborationCount).toBe(2);
+  });
+
+  it('should never draw the provenance a platform kept after provenance was disabled', () => {
+    const parser = parserWithProvenance(false);
+    expect(parser.buildNode(constructEntity({ corroboration_count: 3 }), emptyPositions).corroborationCount).toBeUndefined();
+    expect(parser.buildLink(constructRelationship({ corroboration_count: 2 })).corroborationCount).toBeUndefined();
   });
 });

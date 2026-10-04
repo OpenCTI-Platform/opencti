@@ -10,6 +10,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 export const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
@@ -123,6 +124,12 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={observedData.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={observedData.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

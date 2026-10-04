@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import { buildProvenanceStixExtension, withProvenanceStixExtension } from '../../../../src/modules/provenance/provenance-stix';
 import { adaptFilterToFreshnessDaysFilterKey, buildFreshnessDaysSorting } from '../../../../src/modules/provenance/provenance-filters';
-import { computeFreshnessDays, describeProposalSource } from '../../../../src/modules/provenance/provenance-domain';
+import { computeFreshnessDays, describeProposalSource, describeProposalSources } from '../../../../src/modules/provenance/provenance-domain';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import type { StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
 
@@ -112,5 +112,13 @@ describe('Provenance freshness', () => {
     expect(describeProposalSource({ source_kind: 'user', source_name: 'Jane Analyst', source_id: 'user-id' })).toEqual('a user source');
     expect(describeProposalSource({ source_kind: 'author', source_name: 'ACME', source_id: 'identity-id' })).toEqual('an author source');
     expect(describeProposalSource({ source_kind: 'feed', source_name: 'Abuse feed', source_id: 'feed-id' })).toEqual('`Abuse feed`');
+  });
+
+  it('should name every source that proposed a conflicting value, users and authors still anonymous', () => {
+    expect(describeProposalSources([
+      { source_kind: 'feed', source_name: 'Abuse feed', source_id: 'feed-id' },
+      { source_kind: 'user', source_name: 'Jane Analyst', source_id: 'user-1' },
+      { source_kind: 'user', source_name: 'John Analyst', source_id: 'user-2' },
+    ])).toEqual('`Abuse feed`, a user source');
   });
 });

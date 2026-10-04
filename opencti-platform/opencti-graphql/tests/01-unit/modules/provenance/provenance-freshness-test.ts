@@ -5,6 +5,7 @@ import {
   BUILT_IN_KNOWLEDGE_DECAY_RULES,
   checkDecayRulePatch,
   getDecayRuleScope,
+  hasSameFreshnessConfiguration,
   isKnowledgeDecayRule,
   type KnowledgeDecayRuleDefinition,
   resolveKnowledgeDecayRuleTypes,
@@ -13,7 +14,14 @@ import {
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_CORE_RELATIONSHIPS } from '../../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff, isFreshAfterMerge } from '../../../../src/modules/provenance/provenance-freshness';
+import {
+  buildStaleCandidatesFilters,
+  computeRuleShadowing,
+  computeStaleCutoff,
+  isFreshAfterMerge,
+  resumeAfterScan,
+  runWithFairShares,
+} from '../../../../src/modules/provenance/provenance-freshness';
 
 const relationshipRule = (overrides: Partial<KnowledgeDecayRuleDefinition> = {}): KnowledgeDecayRuleDefinition => ({
   name: 'Stale C2',
@@ -97,10 +105,33 @@ describe('Knowledge decay rules', () => {
     expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['0'] }])).toThrow();
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['400'] }])).toEqual(true);
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'name', value: ['Renamed'] }])).toEqual(false);
+    // The knowledge flagged under the previous policy is evaluated again under the new one
+    expect(checkDecayRulePatch(knowledgeRule, [{ key: 'freshness_policy', value: ['flag'] }])).toEqual(true);
+    // A lowered priority lets an overlapping rule take over the knowledge the rule flagged
+    expect(checkDecayRulePatch(knowledgeRule, [{ key: 'order', value: ['0'] }])).toEqual(true);
+    // A new confidence step applies to the knowledge the rule already lowered
+    const lowering = storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 });
+    expect(checkDecayRulePatch(lowering, [{ key: 'freshness_confidence_step', value: ['20'] }])).toEqual(true);
     // Built-in knowledge rules ship disabled and can only be (de)activated
     const builtIn = storedRule({ built_in: true, active: false });
     expect(checkDecayRulePatch(builtIn, [{ key: 'active', value: ['true'] }])).toEqual(true);
     expect(() => checkDecayRulePatch(builtIn, [{ key: 'stale_after_days', value: ['10'] }])).toThrow();
+  });
+
+  it('should let a freshness run apply a rule only while the rule keeps the configuration the run loaded', () => {
+    const loaded = storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 });
+    expect(hasSameFreshnessConfiguration(loaded, storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 }))).toEqual(true);
+    // A new name or description does not change what the run applies
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, name: 'Renamed', description: 'New description' })).toEqual(true);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, stale_after_days: 30 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, freshness_policy: 'revoke' })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, freshness_confidence_step: 20 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, active: false })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, order: 2 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, target_types: ['uses', 'targets'] })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, decay_filters: '{"mode":"and","filters":[],"filterGroups":[]}' })).toEqual(false);
+    // A deleted rule applies to nothing
+    expect(hasSameFreshnessConfiguration(loaded, undefined)).toEqual(false);
   });
 });
 
@@ -160,5 +191,34 @@ describe('Knowledge freshness manager', () => {
     // Rules of other scopes never shadow
     expect(computeRuleShadowing(entities, [allRelationships]).types).toEqual(['Infrastructure']);
     expect(computeRuleShadowing(uses, [prepared(storedRule({ id: 'other', target_types: ['uses'] }))]).types).toEqual([]);
+  });
+
+  it('should resume the scan of a rule after the last candidate it examined, and start over once the end is reached', () => {
+    const lastExamined = ['indicator--examined'];
+    // Stopped by the budget
+    expect(resumeAfterScan({ applied: 10, scanned: 40, lastExamined }, 10, 100)).toEqual(lastExamined);
+    // Stopped by the scan bound: candidates the run could not act on never hold back the ones after them
+    expect(resumeAfterScan({ applied: 0, scanned: 100, lastExamined }, 10, 100)).toEqual(lastExamined);
+    // The last candidate was reached
+    expect(resumeAfterScan({ applied: 3, scanned: 40, lastExamined }, 10, 100)).toBeUndefined();
+    expect(resumeAfterScan({ applied: 0, scanned: 0 }, 10, 100)).toBeUndefined();
+  });
+
+  it('should give every knowledge decay rule its share of a run before the backlog of a higher priority rule', async () => {
+    // Rule 0 has a large backlog, rule 1 has 10 stale elements, rule 2 has 2
+    const backlogs = [1000, 10, 2];
+    const calls: Array<[number, number]> = [];
+    const apply = async (index: number, budget: number) => {
+      calls.push([index, budget]);
+      const applied = Math.min(budget, backlogs[index]);
+      backlogs[index] -= applied;
+      return applied;
+    };
+    const left = await runWithFairShares(3, 90, apply, (index) => backlogs[index] > 0);
+    // 30 each first, then what rules 1 and 2 left goes to rule 0, the only one with candidates left
+    expect(calls).toEqual([[0, 30], [1, 30], [2, 30], [0, 48]]);
+    expect(backlogs).toEqual([922, 0, 0]);
+    expect(left).toEqual(0);
+    expect(await runWithFairShares(0, 90, apply, () => true)).toEqual(90);
   });
 });

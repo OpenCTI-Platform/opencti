@@ -41,7 +41,6 @@ import SettingsManagers from './settings_managers/SettingsManagers';
 import SettingsDependencies from './settings_platform/SettingsDependencies';
 import SettingsInfoRow from './settings_platform/SettingsInfoRow';
 import SettingsPlatformSummary from './settings_platform/SettingsPlatformSummary';
-import SettingsProcedures from './settings_procedures/SettingsProcedures';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const twoColumnsSx = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 3 };
@@ -616,8 +615,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Box>
 
         <SettingsDependencies dependencies={dependencies} />
-
-        <SettingsProcedures />
 
         <SettingsManagers
           modules={modules ?? []}

@@ -38,6 +38,8 @@ export interface ProvenanceConflictValue {
 
 export interface ProvenanceConflict {
   readonly field: string;
+  // Schema label of the field, translated by the caller (t_i18n)
+  readonly field_label?: string | null;
   readonly values: ReadonlyArray<ProvenanceConflictValue>;
 }
 
@@ -109,11 +111,11 @@ export const corroborationColor = (theme: Theme, count: number | null | undefine
 
 // Freshness buckets, in days since the last assertion of any source
 export const FRESHNESS_BUCKET_LABELS: Record<string, string> = {
-  '0-30': 'Less than a month',
-  '31-90': '1 to 3 months',
-  '91-180': '3 to 6 months',
-  '181-365': '6 months to a year',
-  '366+': 'More than a year',
+  '0-30': '0-30 days',
+  '31-90': '31-90 days',
+  '91-180': '91-180 days',
+  '181-365': '181-365 days',
+  '366+': 'Over 365 days',
   unknown: 'Never asserted',
 };
 
@@ -130,26 +132,86 @@ export const freshnessColor = (theme: Theme, days: number | null | undefined, st
   return days <= 365 ? warningColor(theme) : theme.palette.error.main;
 };
 
+// Compared on the instants, never on the formatted dates: two assertions months apart can both read "3 months ago".
+export const isAssertedOnce = (assertion: Pick<ProvenanceAssertion, 'first_asserted_at' | 'last_asserted_at'>) => {
+  return new Date(assertion.first_asserted_at).getTime() === new Date(assertion.last_asserted_at).getTime();
+};
+
 export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined) => {
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
+};
+
+export interface ConflictValueGroup {
+  readonly value_hash: string;
+  readonly display: string;
+  readonly adoptable: boolean;
+  readonly proposals: ProvenanceConflictValue[];
+}
+
+/**
+ * Conflicting values are kept per source: the same value proposed by several sources is shown once, with every
+ * proposal (source, date, confidence). Adopting or dismissing the value acts on all of them.
+ */
+export const groupConflictValues = (values: ReadonlyArray<ProvenanceConflictValue>): ConflictValueGroup[] => {
+  const groups = new Map<string, { value_hash: string; display: string; adoptable: boolean; proposals: ProvenanceConflictValue[] }>();
+  values.forEach((value) => {
+    const group = groups.get(value.value_hash) ?? { value_hash: value.value_hash, display: value.display, adoptable: false, proposals: [] };
+    group.adoptable = group.adoptable || value.adoptable;
+    group.proposals.push(value);
+    groups.set(value.value_hash, group);
+  });
+  return [...groups.values()];
+};
+
+export interface ProcedureGroup {
+  readonly text: string;
+  readonly sourceNames: string[];
+  readonly lastAssertedAt: string | null;
+}
+
+/**
+ * Procedures are kept per source: the same text asserted by several sources is shown once, with the name of every
+ * source that asserted it (sources beyond the bounded details have no name and are not listed).
+ */
+export const groupProceduresByText = (
+  procedures: ReadonlyArray<ProvenanceProcedure>,
+  assertions: ReadonlyArray<Pick<ProvenanceAssertion, 'source_id' | 'source_name'>>,
+): ProcedureGroup[] => {
+  const sourceNames = new Map(assertions.map((assertion) => [assertion.source_id, assertion.source_name]));
+  const groups = new Map<string, { text: string; sourceNames: string[]; lastAssertedAt: string | null }>();
+  procedures.forEach((procedure) => {
+    const key = procedure.text.trim().toLowerCase();
+    const group = groups.get(key) ?? { text: procedure.text, sourceNames: [], lastAssertedAt: null };
+    const name = procedure.source_id ? sourceNames.get(procedure.source_id) : undefined;
+    if (name && !group.sourceNames.includes(name)) {
+      group.sourceNames.push(name);
+    }
+    if (procedure.last_asserted_at && (!group.lastAssertedAt || procedure.last_asserted_at > group.lastAssertedAt)) {
+      group.lastAssertedAt = procedure.last_asserted_at;
+    }
+    groups.set(key, group);
+  });
+  return [...groups.values()];
 };
 
 export const SOURCES_CARD_MAX_SOURCES = 5;
 
 export interface SourcesCardModel {
   readonly sources: ProvenanceAssertion[];
+  // Every source of the element, including the ones beyond the bounded details
+  readonly totalSourcesCount: number;
   readonly hiddenSourcesCount: number;
   readonly conflictingFields: string[];
 }
 
 /**
- * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the fields
- * on which sources disagree. The corroboration counts every source, including the ones whose detail is no longer
- * kept. Null when no source asserted the element, so that the card is not rendered.
+ * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the labels
+ * of the fields on which sources disagree. The corroboration counts every source, including the ones whose detail is
+ * no longer kept. Null when no source asserted the element, so that the card is not rendered.
  */
 export const buildSourcesCardModel = (
   assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined,
-  conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
+  conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field' | 'field_label'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
   corroborationCount?: number | null,
   maxSources = SOURCES_CARD_MAX_SOURCES,
 ): SourcesCardModel | null => {
@@ -158,9 +220,11 @@ export const buildSourcesCardModel = (
     return null;
   }
   const sources = sorted.slice(0, maxSources);
+  const totalSourcesCount = Math.max(sorted.length, corroborationCount ?? 0);
   return {
     sources,
-    hiddenSourcesCount: Math.max(sorted.length, corroborationCount ?? 0) - sources.length,
-    conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field),
+    totalSourcesCount,
+    hiddenSourcesCount: totalSourcesCount - sources.length,
+    conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field_label ?? conflict.field),
   };
 };

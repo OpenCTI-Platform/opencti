@@ -9,6 +9,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import { Note_note$key } from './__generated__/Note_note.graphql';
 import NoteDetails from './NoteDetails';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const NoteComponentFragment = graphql`
   fragment Note_note on Note {
@@ -120,6 +121,12 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={note.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={note.id} showEmpty />
                   </Grid>
                 );
               default:

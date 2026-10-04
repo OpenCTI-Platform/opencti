@@ -530,15 +530,20 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   freshness_days: {
     id: 'freshness_days',
-    label: 'Freshness (days)',
+    label: 'Freshness',
     percentWidth: 9,
     isSortable: true,
     render: ({ freshness_days, freshness_stale }, { t_i18n }) => {
       if (freshness_days === null || freshness_days === undefined) {
         return defaultRender(null);
       }
-      const value = freshness_stale ? `${freshness_days} (${t_i18n('stale')})` : `${freshness_days}`;
-      return defaultRender(value);
+      const state = t_i18n(freshness_stale ? 'Stale' : 'Fresh');
+      const age = t_i18n('{days, plural, =0 {Last asserted today} one {Last asserted # day ago} other {Last asserted # days ago}}', { values: { days: freshness_days } });
+      return (
+        <Tooltip title={`${state} - ${age}`}>
+          <span data-testid="freshness-state"><Truncate>{state}</Truncate></span>
+        </Tooltip>
+      );
     },
   },
   fromName: {
@@ -763,7 +768,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last assertion',
     percentWidth: 12,
     isSortable: true,
-    render: ({ last_asserted_at }, { nsdt }) => nsdt(last_asserted_at),
+    render: ({ last_asserted_at }, { rd, smhd }) => {
+      if (!last_asserted_at) {
+        return defaultRender(null);
+      }
+      return (
+        <Tooltip title={smhd(last_asserted_at)}>
+          <span><Truncate>{rd(last_asserted_at)}</Truncate></span>
+        </Tooltip>
+      );
+    },
   },
   last_observed: {
     id: 'last_observed',

@@ -11,8 +11,10 @@ import {
   initKnowledgeDecayRules,
   isKnowledgeDecayRule,
   KNOWLEDGE_PRIORITY_FIELDS,
+  knowledgeDecayRuleLockKey,
 } from './decayRule-knowledge';
 import { releaseFlagsTakenOverByRule } from '../provenance/provenance-freshness';
+import { lockResources } from '../../lock/master-lock';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -151,13 +153,19 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     }
   }
 
-  const { element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
-  if (mustClearFreshnessFlags) {
-    // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
-    await clearFreshnessFlagsOfRule(id);
-  }
-  if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
-    await releaseFlagsTakenOverByRule(context, user, element);
+  const lock = isKnowledgeDecayRule(decayRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
+  let element: StoreEntityDecayRule;
+  try {
+    ({ element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput));
+    if (mustClearFreshnessFlags) {
+      // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
+      await clearFreshnessFlagsOfRule(id);
+    }
+    if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
+      await releaseFlagsTakenOverByRule(context, user, element);
+    }
+  } finally {
+    await lock?.unlock();
   }
   await publishUserAction({
     user,
@@ -178,9 +186,15 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   if (decayRule.built_in) {
     throw FunctionalError(`Cannot delete built-in decay rule ${id}`);
   }
-  const deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
-  if (isKnowledgeDecayRule(decayRule)) {
-    await clearFreshnessFlagsOfRule(id);
+  const lock = isKnowledgeDecayRule(decayRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
+  let deleted: StoreEntityDecayRule;
+  try {
+    deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
+    if (isKnowledgeDecayRule(decayRule)) {
+      await clearFreshnessFlagsOfRule(id);
+    }
+  } finally {
+    await lock?.unlock();
   }
   await publishUserAction({
     user,

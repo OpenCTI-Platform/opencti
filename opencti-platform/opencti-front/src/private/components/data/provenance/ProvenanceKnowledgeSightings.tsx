@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -30,6 +31,7 @@ const provenanceKnowledgeSightingsLineFragment = graphql`
     has_conflicts
     x_opencti_conflicts {
       field
+      field_label
     }
     draftVersion {
       draft_id
@@ -136,9 +138,12 @@ interface ProvenanceKnowledgeSightingsProps {
   // Fixed provenance filter of the view (stale knowledge, conflicts), not editable by the user
   fixedFilters: FilterGroup;
   withConflicts?: boolean;
+  // Shown when nothing matches the fixed filter (no conflict, no stale knowledge)
+  emptyMessage: string;
 }
 
-const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts = false }: ProvenanceKnowledgeSightingsProps) => {
+const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts = false, emptyMessage }: ProvenanceKnowledgeSightingsProps) => {
+  const { t_i18n } = useFormatter();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -150,6 +155,7 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
     storageKey,
     initialValues,
   );
+  const hasUserFilters = isFilterGroupNotEmpty(viewStorage.filters) || !!viewStorage.searchTerm;
   const userFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [fixedFilters, userFilters as FilterGroup] };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeSightingsLinesPaginationQuery$variables;
@@ -160,16 +166,16 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    fromType: { percentWidth: 9 },
-    fromName: { percentWidth: withConflicts ? 15 : 19 },
-    toType: { percentWidth: 9 },
-    toName: { percentWidth: withConflicts ? 15 : 19 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
-    attribute_count: { percentWidth: 7 },
-    corroboration_count: { percentWidth: 9 },
-    freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: 11 },
-    objectMarking: { percentWidth: 9, isSortable: false },
+    fromType: { percentWidth: 8 },
+    fromName: { percentWidth: withConflicts ? 11 : 16 },
+    toType: { percentWidth: 8 },
+    toName: { percentWidth: withConflicts ? 11 : 15 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
+    attribute_count: { percentWidth: 6 },
+    corroboration_count: { percentWidth: 11 },
+    freshness_days: { percentWidth: 9 },
+    last_asserted_at: { percentWidth: withConflicts ? 10 : 11 },
+    objectMarking: { percentWidth: withConflicts ? 8 : 9, isSortable: false },
   };
 
   const preloadedPaginationProps = {
@@ -189,6 +195,7 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
       contextFilters={contextFilters}
       lineFragment={provenanceKnowledgeSightingsLineFragment}
       preloadedPaginationProps={preloadedPaginationProps}
+      emptyStateMessage={hasUserFilters ? t_i18n('No result for these filters') : emptyMessage}
       exportContext={{ entity_type: 'stix-sighting-relationship' }}
       availableEntityTypes={['stix-sighting-relationship']}
       actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} onChange={refresh} />}

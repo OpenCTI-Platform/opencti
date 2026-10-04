@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { computeListeningTriggers, describeProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { computeProvenanceChange } from '../../../../src/modules/provenance/provenance-write';
+import { computeProvenanceChange, keptConflictAdditions, newConflictAdditions } from '../../../../src/modules/provenance/provenance-write';
 import { resolveCorroborationThreshold } from '../../../../src/modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger } from '../../../../src/modules/notification/notification-types';
 import type { StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
@@ -57,6 +57,8 @@ describe('Provenance triggers', () => {
     expect(computeListeningTriggers(triggers, { conflictFields: ['description'] }).get('conflict')).toEqual(['conflict']);
     expect(computeListeningTriggers(triggers, { conflictFields: ['description'], corroboration: { from: 1, to: 2 } }).get('conflict')).toEqual(['corroboration', 'conflict']);
     expect(describeProvenanceChange('conflict', { conflictFields: ['name', 'description'] })).toEqual('has conflicting values from sources on name, description');
+    expect(describeProvenanceChange('conflict', { conflictFields: ['primary_motivation', 'unknown_field'] }, 'Intrusion-Set'))
+      .toEqual('has conflicting values from sources on Primary motivation, unknown_field');
     expect(describeProvenanceChange('corroboration', { corroboration: { from: 1, to: 2 } })).toEqual('is now corroborated by 2 sources');
   });
 
@@ -67,13 +69,33 @@ describe('Provenance triggers', () => {
     };
     expect(computeProvenanceChange(element, ['a'])).toEqual({ corroboration: undefined, conflictFields: [], newConflictValues: 0 });
     expect(computeProvenanceChange(element, ['b']).corroboration).toEqual({ from: 1, to: 2 });
-    const conflicts = computeProvenanceChange(element, ['a'], [
+    const newConflicts = newConflictAdditions(element, [
       { field: 'description', value: conflictValue('known') },
       { field: 'description', value: conflictValue('new') },
       { field: 'name', value: conflictValue('other') },
     ]);
+    expect(newConflicts.map((addition) => addition.value.value_hash)).toEqual([conflictValue('new').value_hash, conflictValue('other').value_hash]);
+    const conflicts = computeProvenanceChange(element, ['a'], newConflicts);
     expect(conflicts.conflictFields).toEqual(['description', 'name']);
     expect(conflicts.newConflictValues).toEqual(2);
+  });
+
+  it('should only report the conflict values a write kept, never the ones dropped by the caps', () => {
+    const additions = [
+      { field: 'description', value: conflictValue('kept') },
+      { field: 'description', value: conflictValue('evicted') },
+      { field: 'name', value: conflictValue('over-the-fields-cap') },
+    ];
+    const stored = (conflicts: { field: string; values: ReturnType<typeof conflictValue>[] }[]) => ({
+      result: 'updated',
+      get: { _source: { x_opencti_conflicts: conflicts } },
+    });
+    const kept = keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept'), conflictValue('older')] }]), additions);
+    expect(kept.map((addition) => addition.value.value_hash)).toEqual([conflictValue('kept').value_hash]);
+    // Proposed again, a dropped value is still not stored, so it is still not a new conflict
+    expect(keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept')] }]), [additions[1]])).toEqual([]);
+    expect(keptConflictAdditions({ result: 'noop' }, additions)).toEqual([]);
+    expect(keptConflictAdditions(stored([]), [])).toEqual([]);
   });
 
   it('should count every source, including the ones no longer detailed in the bounded assertions', () => {

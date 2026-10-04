@@ -9,7 +9,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from '../../../../utils/widget/widget';
-import { buildProvenanceWidgetVariables } from './provenanceWidgetUtils';
+import { buildProvenanceWidgetVariables, PROVENANCE_WIDGET_NO_DATA } from './provenanceWidgetUtils';
 import { ProvenanceSingleSourcedWidgetQuery } from './__generated__/ProvenanceSingleSourcedWidgetQuery.graphql';
 
 const provenanceSingleSourcedWidgetQuery = graphql`
@@ -30,7 +30,7 @@ const ProvenanceSingleSourcedWidgetComponent = ({ queryRef, limit }: { queryRef:
   const { provenanceSingleSourcedByType } = usePreloadedQuery(provenanceSingleSourcedWidgetQuery, queryRef);
   const byType = provenanceSingleSourcedByType.slice(0, limit);
   if (byType.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n(PROVENANCE_WIDGET_NO_DATA)} />;
   }
   return (
     <div data-testid="provenance-single-sourced-widget" style={{ height: '100%' }}>
@@ -87,7 +87,7 @@ const ProvenanceSingleSourcedWidget = ({
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters?.title ?? t_i18n('Single sourced share by type')}
+      title={parameters?.title ?? t_i18n('Single-sourced share by entity type')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}

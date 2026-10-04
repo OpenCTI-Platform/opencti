@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -30,6 +31,7 @@ const provenanceKnowledgeRelationshipsLineFragment = graphql`
     has_conflicts
     x_opencti_conflicts {
       field
+      field_label
     }
     draftVersion {
       draft_id
@@ -143,9 +145,12 @@ interface ProvenanceKnowledgeRelationshipsProps {
   // Fixed provenance filter of the view (stale knowledge, conflicts), not editable by the user
   fixedFilters: FilterGroup;
   withConflicts?: boolean;
+  // Shown when nothing matches the fixed filter (no conflict, no stale knowledge)
+  emptyMessage: string;
 }
 
-const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConflicts = false }: ProvenanceKnowledgeRelationshipsProps) => {
+const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConflicts = false, emptyMessage }: ProvenanceKnowledgeRelationshipsProps) => {
+  const { t_i18n } = useFormatter();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -157,6 +162,7 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
     storageKey,
     initialValues,
   );
+  const hasUserFilters = isFilterGroupNotEmpty(viewStorage.filters) || !!viewStorage.searchTerm;
   const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [fixedFilters, userFilters as FilterGroup] };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeRelationshipsLinesPaginationQuery$variables;
@@ -167,16 +173,16 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    fromType: { percentWidth: 9 },
-    fromName: { percentWidth: withConflicts ? 13 : 16 },
-    relationship_type: { percentWidth: 10 },
-    toType: { percentWidth: 9 },
-    toName: { percentWidth: withConflicts ? 13 : 16 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
-    corroboration_count: { percentWidth: 10 },
-    freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: 11 },
-    objectMarking: { percentWidth: 9, isSortable: false },
+    fromType: { percentWidth: 8 },
+    fromName: { percentWidth: withConflicts ? 10 : 14 },
+    relationship_type: { percentWidth: 9 },
+    toType: { percentWidth: 8 },
+    toName: { percentWidth: withConflicts ? 10 : 14 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
+    corroboration_count: { percentWidth: 11 },
+    freshness_days: { percentWidth: 9 },
+    last_asserted_at: { percentWidth: withConflicts ? 10 : 11 },
+    objectMarking: { percentWidth: withConflicts ? 7 : 9, isSortable: false },
   };
 
   const preloadedPaginationProps = {
@@ -196,6 +202,7 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
       contextFilters={contextFilters}
       lineFragment={provenanceKnowledgeRelationshipsLineFragment}
       preloadedPaginationProps={preloadedPaginationProps}
+      emptyStateMessage={hasUserFilters ? t_i18n('No result for these filters') : emptyMessage}
       exportContext={{ entity_type: 'stix-core-relationship' }}
       availableEntityTypes={['stix-core-relationship']}
       actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} onChange={refresh} />}

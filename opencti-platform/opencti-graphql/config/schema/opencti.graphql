@@ -1375,6 +1375,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_provenance_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   is_authentication_by_env: Boolean
@@ -1418,9 +1419,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_available_news_feed_types: [String!]
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
-  # Provenance
-  platform_procedures_preservation: Boolean!
-  platform_procedures_description_policy: ProceduresDescriptionPolicy!
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String

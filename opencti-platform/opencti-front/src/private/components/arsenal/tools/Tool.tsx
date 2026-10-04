@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -129,6 +130,12 @@ const Tool: React.FC<ToolProps> = ({
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={tool.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={tool.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

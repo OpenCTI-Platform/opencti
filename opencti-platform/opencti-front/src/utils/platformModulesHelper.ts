@@ -32,6 +32,7 @@ export interface ModuleHelper {
   isIndicatorDecayManagerEnable: () => boolean;
   isTelemetryManagerEnable: () => boolean;
   isTrashEnable: () => boolean;
+  isProvenanceEnabled: () => boolean;
   isPlaygroundEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
   isRequestAccessEnabled: () => boolean;
@@ -83,6 +84,7 @@ const platformModuleHelper = (
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
   isTrashEnable: () => settings.platform_trash_enabled,
+  isProvenanceEnabled: () => settings.platform_provenance_enabled,
   isPlaygroundEnable: () => settings.playground_enabled,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
   isRequestAccessEnabled: () => settings.request_access_enabled,

@@ -58,6 +58,13 @@ export const isConflictTrackedAttribute = (attribute: AttributeDefinition) => {
   return !NON_CONFLICTING_PREFIXES.some((prefix) => attribute.name.startsWith(prefix));
 };
 
+/**
+ * Label of a conflicting field as defined by the schema of the element type, the field name when unknown.
+ */
+export const conflictFieldLabel = (entityType: string | null | undefined, field: string) => {
+  return (entityType ? schemaAttributesDefinition.getAttribute(entityType, field)?.label : undefined) ?? field;
+};
+
 const isEmptyConflictValue = (value: unknown) => {
   if (value === null || value === undefined) {
     return true;

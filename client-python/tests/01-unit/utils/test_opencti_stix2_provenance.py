@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from pycti import OpenCTIApiClient
@@ -40,6 +42,26 @@ def test_get_provenance_extension_without_extension():
     )
 
 
+def test_read_only_provenance_fields_cover_the_platform_side_channel():
+    # PROVENANCE_SIDE_CHANNEL_FIELDS of the platform, which no client input may set
+    side_channel = {
+        "x_opencti_assertions",
+        "assertion_source_ids",
+        "assertion_source_kinds",
+        "conflict_fields",
+        "corroboration_count",
+        "last_asserted_at",
+        "single_sourced",
+        "has_conflicts",
+        "x_opencti_conflicts",
+        "procedures",
+        "freshness_stale",
+        "freshness_stale_at",
+        "freshness_rule_id",
+    }
+    assert side_channel <= set(PROVENANCE_READ_ONLY_FIELDS)
+
+
 def test_generate_export_drops_read_only_provenance_fields(api_client_no_server):
     entity = {
         "id": "internal-id",
@@ -48,13 +70,10 @@ def test_generate_export_drops_read_only_provenance_fields(api_client_no_server)
         "parent_types": ["Stix-Domain-Object"],
         "name": "Emotet",
         "is_family": True,
-        "corroboration_count": 2,
-        "last_asserted_at": "2026-10-01T00:00:00.000Z",
-        "freshness_days": 2,
-        "has_conflicts": True,
-        "freshness_stale": False,
-        "x_opencti_assertions": [{"source_id": "connector-id"}],
     }
+    # A custom projection can return any of them, each with a non-empty value
+    for field in PROVENANCE_READ_ONLY_FIELDS:
+        entity[field] = [f"{field}-value"]
     stix = OpenCTIStix2(api_client_no_server).generate_export(entity)
     for field in PROVENANCE_READ_ONLY_FIELDS:
         assert field not in stix
@@ -76,3 +95,20 @@ def test_provenance_properties_cover_objects_and_relationships(
         assert fragment in properties
     assert properties.count("x_opencti_assertions") == 3
     assert "procedures" in properties
+
+
+def test_default_properties_carry_the_whole_provenance_summary(api_client_no_server):
+    for entity in (
+        api_client_no_server.opencti_stix_object_or_stix_relationship,
+        api_client_no_server.malware,
+        api_client_no_server.stix_core_relationship,
+        api_client_no_server.stix_sighting_relationship,
+    ):
+        properties = entity.properties
+        summaries = properties.count("corroboration_count")
+        assert summaries > 0
+        for field in ("single_sourced", "freshness_stale_at", "freshness_stale"):
+            assert properties.count(field) >= summaries
+        # Each field of the summary is selected once per summary, never twice
+        for field in ("single_sourced", "freshness_stale_at", "has_conflicts"):
+            assert len(re.findall(rf"\b{field}\b", properties)) == summaries

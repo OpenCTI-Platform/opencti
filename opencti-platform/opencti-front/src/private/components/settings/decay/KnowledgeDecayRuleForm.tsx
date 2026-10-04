@@ -61,6 +61,33 @@ export const KNOWLEDGE_FRESHNESS_POLICY_LABELS: Record<KnowledgeFreshnessPolicy,
   revoke: 'Revoke',
 };
 
+// One sentence built from the fields of the rule: what it targets, after how long and what happens
+export const KNOWLEDGE_DECAY_RULE_EFFECT = '{targets} not re-asserted within {days, plural, one {# day} other {# days}} '
+  + '{policy, select, revoke {are flagged as stale and revoked} lower_confidence {are flagged as stale and their confidence is lowered} other {are flagged as stale}}.';
+
+interface KnowledgeDecayRuleEffectInput {
+  readonly target_scope?: string | null;
+  readonly target_types?: ReadonlyArray<string> | null;
+  readonly stale_after_days?: number | null;
+  readonly freshness_policy?: string | null;
+}
+
+export const knowledgeDecayRuleEffect = (t_i18n: (message: string, opts?: { values: Record<string, unknown> }) => string, rule: KnowledgeDecayRuleEffectInput) => {
+  const isRelationship = rule.target_scope === 'relationship';
+  const types = (rule.target_types ?? []).map((type) => t_i18n(isRelationship ? `relationship_${type}` : `entity_${type}`));
+  let targets = isRelationship ? t_i18n('All relationships') : t_i18n('Entities');
+  if (types.length > 0) {
+    // Relationship types are verbs ("uses"): the sentence names them as relationships
+    targets = isRelationship ? t_i18n('{types} relationships', { values: { types: types.join(', ') } }) : types.join(', ');
+  }
+  const sentence = t_i18n(KNOWLEDGE_DECAY_RULE_EFFECT, {
+    values: { targets, days: rule.stale_after_days ?? 0, policy: rule.freshness_policy ?? 'flag' },
+  });
+  return sentence.charAt(0).toLocaleUpperCase() + sentence.slice(1);
+};
+
+const KNOWLEDGE_DECAY_RULES_DOCUMENTATION = 'https://docs.opencti.io/latest/administration/decay-rules/#knowledge-decay-rules';
+
 // Indicators keep their own score decay
 const EXCLUDED_ENTITY_TYPES = ['Indicator'];
 
@@ -137,6 +164,11 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
         const searchEntityTypes = values.target_scope === 'relationship' ? ['stix-core-relationship'] : ['Stix-Core-Object'];
         return (
           <Form data-testid="knowledge-decay-rule-form">
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: theme.spacing(1) }}>
+              <Button variant="tertiary" size="small" href={KNOWLEDGE_DECAY_RULES_DOCUMENTATION} target="_blank" rel="noreferrer">
+                {t_i18n('Learn more about knowledge decay rules')}
+              </Button>
+            </Box>
             <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth />
             <Field
               component={MarkdownField}
@@ -151,6 +183,7 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
               component={SelectFieldFds}
               name="target_scope"
               label={t_i18n('Target scope')}
+              helpertext={t_i18n('The knowledge the rule ages: relationships, for example uses, or entities, for example infrastructures. Indicators keep their own decay rules.')}
               disabled={isEdition}
               fullWidth
               containerstyle={fieldSpacingContainerStyle}
@@ -168,6 +201,9 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
               multiple={true}
               style={fieldSpacingContainerStyle}
               label={values.target_scope === 'relationship' ? t_i18n('Relationship types (all if empty)') : t_i18n('Entity types')}
+              helperText={values.target_scope === 'relationship'
+                ? t_i18n('Leave empty to apply the rule to every relationship and sighting.')
+                : t_i18n('At least one entity type, for example Infrastructure.')}
               options={values.target_scope === 'relationship' ? relationshipOptions : entityOptions}
             />
             <Box sx={{ paddingTop: '20px', display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
@@ -183,6 +219,7 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
               variant="outlined"
               name="stale_after_days"
               label={t_i18n('Stale after (days without assertion)')}
+              helperText={t_i18n('Days without any assertion after which the knowledge is stale, for example 180. A source creating or updating the knowledge again is an assertion.')}
               fullWidth
               type="number"
               style={fieldSpacingContainerStyle}
@@ -191,6 +228,7 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
               component={SelectFieldFds}
               name="freshness_policy"
               label={t_i18n('Policy for stale knowledge')}
+              helpertext={t_i18n('Flag as stale only marks the knowledge. Lower the confidence also lowers its confidence by the confidence step. Revoke also revokes it, for the types that can be revoked.')}
               fullWidth
               containerstyle={fieldSpacingContainerStyle}
             >
@@ -204,13 +242,30 @@ const KnowledgeDecayRuleForm = ({ initialValues, initialFilters, isEdition = fal
                 variant="outlined"
                 name="freshness_confidence_step"
                 label={t_i18n('Confidence step')}
+                helperText={t_i18n('Points removed from the confidence, from 1 to 100, once each time the knowledge becomes stale.')}
                 fullWidth
                 type="number"
                 style={fieldSpacingContainerStyle}
               />
             )}
-            <Field component={TextField} variant="outlined" name="order" label={t_i18n('Order')} fullWidth type="number" style={fieldSpacingContainerStyle} />
-            <Field component={SwitchField} type="checkbox" name="active" label={t_i18n('Active')} containerstyle={fieldSpacingContainerStyle} />
+            <Field
+              component={TextField}
+              variant="outlined"
+              name="order"
+              label={t_i18n('Order')}
+              helperText={t_i18n('When rules overlap, the rule with the highest order applies to the knowledge they share; the others leave it alone.')}
+              fullWidth
+              type="number"
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="active"
+              label={t_i18n('Active')}
+              helpertext={t_i18n('An inactive rule ages nothing, and the knowledge it flagged is no longer stale.')}
+              containerstyle={fieldSpacingContainerStyle}
+            />
             <FormButtonContainer>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={isSubmitting} data-testid="knowledge-decay-rule-submit">

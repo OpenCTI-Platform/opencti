@@ -17,8 +17,11 @@ import StixRelationshipsMap from '../../private/components/common/stix_relations
 import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
 import ProvenanceFreshnessWidget from '@components/common/provenance/ProvenanceFreshnessWidget';
 import ProvenanceSingleSourcedWidget from '@components/common/provenance/ProvenanceSingleSourcedWidget';
+import ProvenanceWidgetDisabled from '@components/common/provenance/ProvenanceWidgetDisabled';
+import { isProvenanceWidget } from '@components/common/provenance/provenanceWidgetUtils';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
+import useHelper from '../../utils/hooks/useHelper';
 import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardRelationshipsVizProps {
@@ -36,6 +39,11 @@ const DashboardRelationshipsViz = ({
   host,
   refreshRate,
 }: DashboardRelationshipsVizProps) => {
+  const { isProvenanceEnabled } = useHelper();
+
+  if (isProvenanceWidget(widget.type) && !isProvenanceEnabled()) {
+    return <ProvenanceWidgetDisabled widget={widget} popover={popover} />;
+  }
   switch (widget.type) {
     case 'number':
       return (

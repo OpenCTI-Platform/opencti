@@ -7,6 +7,7 @@ import {
 } from '../../private/components/settings/sub_types/entity_setting/__generated__/EntitySettingsFragment_entitySetting.graphql';
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
+import useHelper from './useHelper';
 import { useFormatter } from '../../components/i18n';
 
 export type EntitySetting = EntitySettingsFragment_entitySetting$data;
@@ -42,6 +43,24 @@ export const useIsEnforceReference = (id: string): boolean => {
   return useEntitySettings(id).some(
     (node) => node.enforce_reference !== null && node.enforce_reference,
   );
+};
+
+/**
+ * Provenance tracking of an element type, inherited from the setting of its abstract type when it has none
+ * (relationships, sightings, observables): the platform resolves which inheriting types are tracked.
+ */
+export const useIsProvenanceTracked = (entityType: string, inheritedType?: string): boolean => {
+  const { isProvenanceEnabled } = useHelper();
+  const settings = useEntitySettings(inheritedType ? [entityType, inheritedType] : entityType);
+  if (!isProvenanceEnabled()) {
+    return false;
+  }
+  const own = settings.find((node) => node.target_type === entityType);
+  if (own) {
+    return own.provenance_tracking;
+  }
+  const inherited = settings.find((node) => node.target_type === inheritedType);
+  return !!inherited && inherited.availableSettings.includes('provenance_tracking') && !inherited.provenance_untracked_types.includes(entityType);
 };
 
 export const useIsMandatoryAttribute = (id: string) => {

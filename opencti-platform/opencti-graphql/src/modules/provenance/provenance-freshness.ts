@@ -1,5 +1,8 @@
+import * as R from 'ramda';
 import { elList, elLoadById, elPaginate } from '../../database/engine';
+import { offsetToCursor } from '../../database/utils';
 import { patchAttribute } from '../../database/middleware';
+import { lockResources } from '../../lock/master-lock';
 import { logApp } from '../../config/conf';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -9,19 +12,24 @@ import {
   clearFreshnessFlagsOfElements,
   getActiveKnowledgeDecayRules,
   getDecayRuleScope,
+  hasSameFreshnessConfiguration,
   KNOWLEDGE_FRESHNESS_INDICES,
+  knowledgeDecayRuleLockKey,
   parseKnowledgeDecayFilters,
   resolveKnowledgeDecayRuleTypes,
 } from '../decayRule/decayRule-knowledge';
 import {
   type BasicStoreEntityDecayRule,
   DEFAULT_FRESHNESS_CONFIDENCE_STEP,
+  ENTITY_TYPE_DECAY_RULE,
   FRESHNESS_POLICY_FLAG,
   FRESHNESS_POLICY_LOWER_CONFIDENCE,
   FRESHNESS_POLICY_REVOKE,
 } from '../decayRule/decayRule-types';
+import { SYSTEM_USER } from '../../utils/access';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
 import { applyProvenanceUpdate, isNoopUpdate } from './provenance-write';
+import { listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const FRESHNESS_SCAN_PAGE_SIZE = 500;
@@ -152,27 +160,31 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   if (isFlagOnly) {
     return true;
   }
-  // A re-assertion that landed after the flag cleared it: the policy no longer applies
-  const reloaded = await elLoadById<BasicStoreBase & { freshness_stale?: boolean; freshness_rule_id?: string }>(context, user, element.internal_id, {
-    type: element.entity_type,
-    baseData: true,
-    baseFields: [ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_RULE_ID],
-  });
-  if (reloaded?.freshness_stale !== true || reloaded.freshness_rule_id !== rule.id) {
-    result.flagged -= 1;
-    return false;
-  }
+  // Re-assertions write under the lock of the element (upsert, analyst confirmation): holding it from the check to the
+  // policy write guarantees that a re-assertion either clears the flag before the check or lands after the write
+  const lockIds = R.uniq([element.internal_id, element.standard_id].filter((lockId) => !!lockId));
+  let lock: { unlock: () => Promise<void> } | undefined;
   try {
+    lock = await lockResources(lockIds);
+    const reloaded = await elLoadById<FreshnessCandidate & { freshness_stale?: boolean; freshness_rule_id?: string }>(context, user, element.internal_id, {
+      type: element.entity_type,
+      baseData: true,
+      baseFields: [ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_RULE_ID, 'confidence', 'revoked'],
+    });
+    if (reloaded?.freshness_stale !== true || reloaded.freshness_rule_id !== rule.id) {
+      result.flagged -= 1;
+      return false;
+    }
     if (policy === FRESHNESS_POLICY_LOWER_CONFIDENCE) {
-      const current = element.confidence ?? 0;
+      const current = reloaded.confidence ?? 0;
       const lowered = Math.max(0, current - (rule.freshness_confidence_step ?? DEFAULT_FRESHNESS_CONFIDENCE_STEP));
       if (lowered !== current) {
-        await patchAttribute(context, user, element.internal_id, element.entity_type, { confidence: lowered });
+        await patchAttribute(context, user, element.internal_id, element.entity_type, { confidence: lowered }, { locks: lockIds });
         result.lowered += 1;
       }
     }
-    if (policy === FRESHNESS_POLICY_REVOKE && element.revoked !== true) {
-      await patchAttribute(context, user, element.internal_id, element.entity_type, { revoked: true });
+    if (policy === FRESHNESS_POLICY_REVOKE && reloaded.revoked !== true) {
+      await patchAttribute(context, user, element.internal_id, element.entity_type, { revoked: true }, { locks: lockIds });
       result.revoked += 1;
     }
   } catch (err) {
@@ -180,8 +192,108 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
     await applyProvenanceUpdate(context, element, { resetFreshness: true });
     result.flagged -= 1;
     throw err;
+  } finally {
+    await lock?.unlock();
   }
   return true;
+};
+
+/**
+ * Apply the policy of a rule under the lock its changes hold (see knowledgeDecayRuleLockKey), with the configuration
+ * the run loaded only if the rule still has it. Returns null when the rule changed, was deleted or is being changed:
+ * the run stops applying it and the next run loads it again.
+ */
+const applyFreshnessPolicyOfCurrentRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: BasicStoreEntityDecayRule,
+  element: FreshnessCandidate,
+  result: KnowledgeFreshnessRunResult,
+): Promise<boolean | null> => {
+  let lock: { unlock: () => Promise<void> };
+  try {
+    lock = await lockResources([knowledgeDecayRuleLockKey(rule.id)]);
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Knowledge decay rule being changed, its policy is applied by the next run', { cause: err, rule_id: rule.id });
+    return null;
+  }
+  try {
+    const stored = await elLoadById<BasicStoreEntityDecayRule>(context, SYSTEM_USER, rule.id, { type: ENTITY_TYPE_DECAY_RULE });
+    if (!hasSameFreshnessConfiguration(rule, stored)) {
+      return null;
+    }
+    return await applyFreshnessPolicy(context, user, rule, element, result);
+  } finally {
+    await lock.unlock();
+  }
+};
+
+export interface RuleScan {
+  applied: number;
+  scanned: number;
+  lastExamined?: BasicStoreBase['sort'];
+  // The rule changed since the run loaded it: the scan stopped
+  ruleChanged?: boolean;
+}
+
+// Where the scan of each rule resumes on the next run (kept in memory: a restart scans from the first candidate)
+const scanCursors = new Map<string, string>();
+
+/**
+ * Candidates are listed in a stable order. A scan stopped by the budget or by the scan bound resumes after the last
+ * candidate it examined, so the candidates a run cannot act on (shadowed by a higher priority rule, failing) never
+ * hold back the ones after them; a scan that reached the last candidate starts over from the first one.
+ */
+export const resumeAfterScan = (scan: RuleScan, budget: number, maxScanned: number) => {
+  return scan.applied >= budget || scan.scanned >= maxScanned ? scan.lastExamined : undefined;
+};
+
+const scanRuleCandidates = async (
+  context: AuthContext,
+  user: AuthUser,
+  current: PreparedRule,
+  filteredHigherRules: PreparedRule[],
+  scope: { budget: number; maxScanned: number; after?: string },
+  result: KnowledgeFreshnessRunResult,
+): Promise<RuleScan> => {
+  const { rule } = current;
+  const scan: RuleScan = { applied: 0, scanned: 0 };
+  await elList<FreshnessCandidate>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+    types: current.types,
+    filters: buildStaleCandidatesFilters(computeStaleCutoff(rule.stale_after_days ?? 0), current.filters),
+    baseData: true,
+    baseFields: ['confidence', 'revoked', ATTRIBUTE_LAST_ASSERTED_AT],
+    first: FRESHNESS_SCAN_PAGE_SIZE,
+    maxSize: scope.maxScanned,
+    after: scope.after,
+    callback: async (candidates) => {
+      scan.scanned += candidates.length;
+      const shadowed = filteredHigherRules.length > 0
+        ? await findIdsMatchingRules(context, user, candidates.map((candidate) => candidate.internal_id), filteredHigherRules)
+        : new Set<string>();
+      for (let index = 0; index < candidates.length && scan.applied < scope.budget && !scan.ruleChanged; index += 1) {
+        const candidate = candidates[index];
+        if (!shadowed.has(candidate.internal_id)) {
+          try {
+            const applied = await applyFreshnessPolicyOfCurrentRule(context, user, rule, candidate, result);
+            if (applied === null) {
+              scan.ruleChanged = true;
+            } else if (applied) {
+              scan.applied += 1;
+            }
+          } catch (err) {
+            result.errors += 1;
+            logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
+          }
+        }
+        if (!scan.ruleChanged) {
+          scan.lastExamined = candidate.sort;
+        }
+      }
+      return scan.applied < scope.budget && !scan.ruleChanged;
+    },
+  });
+  return scan;
 };
 
 const applyKnowledgeDecayRule = async (
@@ -196,40 +308,34 @@ const applyKnowledgeDecayRule = async (
   if (types.length === 0 || budget <= 0) {
     return 0;
   }
-  const { rule } = current;
-  const cutoff = computeStaleCutoff(rule.stale_after_days ?? 0);
-  let applied = 0;
-  await elList<FreshnessCandidate>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
-    types,
-    filters: buildStaleCandidatesFilters(cutoff, current.filters),
-    baseData: true,
-    baseFields: ['confidence', 'revoked', ATTRIBUTE_LAST_ASSERTED_AT],
-    first: FRESHNESS_SCAN_PAGE_SIZE,
-    maxSize: budget * FRESHNESS_SCAN_FACTOR,
-    callback: async (candidates) => {
-      const shadowed = filteredHigherRules.length > 0
-        ? await findIdsMatchingRules(context, user, candidates.map((candidate) => candidate.internal_id), filteredHigherRules)
-        : new Set<string>();
-      for (let index = 0; index < candidates.length && applied < budget; index += 1) {
-        const candidate = candidates[index];
-        if (!shadowed.has(candidate.internal_id)) {
-          try {
-            if (await applyFreshnessPolicy(context, user, rule, candidate, result)) {
-              applied += 1;
-            }
-          } catch (err) {
-            result.errors += 1;
-            logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
-          }
-        }
-      }
-      return applied < budget;
-    },
-  });
+  const ruleId = current.rule.id;
+  const maxScanned = budget * FRESHNESS_SCAN_FACTOR;
+  const resumed = scanCursors.get(ruleId);
+  const scan = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, { budget, maxScanned, after: resumed }, result);
+  let { applied } = scan;
+  if (scan.ruleChanged) {
+    // The next run scans the rule from its first candidate, with its new configuration
+    scanCursors.delete(ruleId);
+    return applied;
+  }
+  let lastExamined = resumeAfterScan(scan, budget, maxScanned);
+  if (!lastExamined && resumed) {
+    // The last candidate was reached from where the previous run stopped: the rest of the run starts over
+    const scope = { budget: budget - applied, maxScanned: maxScanned - scan.scanned };
+    const wrapped = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, scope, result);
+    applied += wrapped.applied;
+    lastExamined = wrapped.ruleChanged ? undefined : resumeAfterScan(wrapped, scope.budget, scope.maxScanned);
+  }
+  if (lastExamined) {
+    scanCursors.set(ruleId, offsetToCursor(lastExamined));
+  } else {
+    scanCursors.delete(ruleId);
+  }
   return applied;
 };
 
-const prepareRules = (rules: BasicStoreEntityDecayRule[]): PreparedRule[] => {
+// A rule only applies to the types whose provenance is tracked: an untracked type keeps no freshness
+const prepareRules = (rules: BasicStoreEntityDecayRule[], trackedTypes: string[]): PreparedRule[] => {
   const prepared: PreparedRule[] = [];
   for (let index = 0; index < rules.length; index += 1) {
     const rule = rules[index];
@@ -238,7 +344,8 @@ const prepareRules = (rules: BasicStoreEntityDecayRule[]): PreparedRule[] => {
       continue;
     }
     try {
-      prepared.push({ rule, types: resolveKnowledgeDecayRuleTypes(rule), filters: parseKnowledgeDecayFilters(rule.decay_filters) });
+      const types = restrictToTrackedTypes(resolveKnowledgeDecayRuleTypes(rule), trackedTypes);
+      prepared.push({ rule, types, filters: parseKnowledgeDecayFilters(rule.decay_filters) });
     } catch (err) {
       logApp.error('[PROVENANCE] Knowledge decay rule skipped, invalid configuration', { cause: err, rule_id: rule.id });
     }
@@ -255,7 +362,7 @@ const hasLowerPriority = (rule: BasicStoreEntityDecayRule, reference: BasicStore
  * lower priority rules of the same scope: their flags are released so that the next run applies its policy.
  */
 export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: AuthUser, rule: BasicStoreEntityDecayRule) => {
-  const [current] = rule.active ? prepareRules([rule]) : [];
+  const [current] = rule.active ? prepareRules([rule], await listProvenanceTrackedTypes(context)) : [];
   if (!current || current.types.length === 0) {
     return 0;
   }
@@ -290,15 +397,45 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
 };
 
 /**
- * Apply the active knowledge decay rules, highest priority first, to at most batchSize elements.
- * Re-assertion by any source resets the freshness of an element (see recordUpsertProvenance).
+ * Every rule first gets an equal share of the run, highest priority first; the rest of the budget then goes, in the
+ * same order, to the rules whose scan stopped before their last candidate. A rule with a large backlog therefore never
+ * starves the lower priority ones.
+ */
+export const runWithFairShares = async (
+  ruleCount: number,
+  batchSize: number,
+  apply: (index: number, budget: number) => Promise<number>,
+  hasMoreCandidates: (index: number) => boolean,
+) => {
+  let budget = batchSize;
+  if (ruleCount === 0 || budget <= 0) {
+    return budget;
+  }
+  const share = Math.max(1, Math.floor(batchSize / ruleCount));
+  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
+    budget -= await apply(index, Math.min(share, budget));
+  }
+  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
+    if (hasMoreCandidates(index)) {
+      budget -= await apply(index, budget);
+    }
+  }
+  return budget;
+};
+
+/**
+ * Apply the active knowledge decay rules to at most batchSize elements, each rule acting on the elements that no
+ * higher priority rule targets. Re-assertion by any source resets the freshness of an element (see recordUpsertProvenance).
  */
 export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthUser, opts: { batchSize: number }): Promise<KnowledgeFreshnessRunResult> => {
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
-  const rules = prepareRules(await getActiveKnowledgeDecayRules(context));
-  let budget = opts.batchSize;
-  for (let index = 0; index < rules.length && budget > 0; index += 1) {
-    budget -= await applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result);
-  }
+  const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
+  [...scanCursors.keys()].filter((ruleId) => !rules.some(({ rule }) => rule.id === ruleId)).forEach((ruleId) => scanCursors.delete(ruleId));
+  await runWithFairShares(
+    rules.length,
+    opts.batchSize,
+    (index, budget) => applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result),
+    (index) => scanCursors.has(rules[index].rule.id),
+  );
   return result;
 };

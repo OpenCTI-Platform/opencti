@@ -11,21 +11,27 @@ test('Navigate the provenance tabs of the curation hub', { tag: ['@ce'] }, async
   await page.goto('/dashboard/data/curation/conflicts');
   await leftBarPage.expectBreadcrumb('Data', 'Curation', 'Conflicts');
   await expect(page.getByTestId('provenance-conflicts-page')).toBeVisible();
-  await page.getByRole('tab', { name: 'Relationships' }).click();
-  await expect(page.getByRole('tab', { name: 'Relationships' })).toHaveAttribute('aria-selected', 'true');
+  // The counters by kind of knowledge are toggles selecting the list below
+  await expect(page.getByTestId('provenance-kpi-entities')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('provenance-kpi-relationships').click();
+  await expect(page.getByTestId('provenance-kpi-relationships')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('provenance-kpi-entities')).toHaveAttribute('aria-pressed', 'false');
 
   await page.getByTestId('curation-tab-stale-knowledge').click();
   await leftBarPage.expectBreadcrumb('Data', 'Curation', 'Stale knowledge');
   await expect(page.getByTestId('provenance-stale-page')).toBeVisible();
+  await expect(page.getByTestId('provenance-kpi-strip')).toBeVisible();
+  await expect(page.getByTestId('provenance-stale-rules')).toBeVisible();
 });
 
-test('Follow the provenance backfill and the procedures parameters', { tag: ['@ce'] }, async ({ page }) => {
+test('Follow the provenance backfill and the provenance settings of relationships', { tag: ['@ce'] }, async ({ page }) => {
   await page.goto('/dashboard/data/processing/tasks');
   await expect(page.getByTestId('provenance-backfill')).toBeVisible();
   await expect(page.getByTestId('provenance-backfill-status')).toBeVisible();
 
-  await page.goto('/dashboard/settings');
-  await expect(page.getByTestId('settings-procedures')).toBeVisible();
+  await page.goto('/dashboard/settings/customization/entity_types/stix-core-relationship');
+  await expect(page.getByTestId('entity-setting-provenance')).toBeVisible();
+  await expect(page.getByTestId('entity-setting-procedures')).toBeVisible();
 });
 
 test('Display the sources of a created entity and confirm it', { tag: ['@ce'] }, async ({ page }) => {
@@ -45,6 +51,7 @@ test('Display the sources of a created entity and confirm it', { tag: ['@ce'] },
   const sourcesCard = page.getByTestId('provenance-sources-card');
   await expect(sourcesCard).toBeVisible();
   await expect(sourcesCard.getByTestId('provenance-source-item')).toHaveCount(1);
+  await expect(page.getByTestId('provenance-open-sources')).toHaveText('View all 1 source');
   await page.getByTestId('provenance-open-sources').click();
   const panel = page.getByTestId('provenance-sources-panel');
   await expect(panel).toBeVisible();
@@ -78,5 +85,6 @@ test('Create a knowledge decay rule', { tag: ['@ce'] }, async ({ page }) => {
 
   await page.getByText(ruleName).click();
   await expect(page.getByTestId('knowledge-decay-rule-view')).toBeVisible();
+  await expect(page.getByTestId('knowledge-decay-rule-effect')).toContainText('are flagged as stale');
   await expect(page.getByTestId('knowledge-decay-rule-stale-count')).toBeVisible();
 });

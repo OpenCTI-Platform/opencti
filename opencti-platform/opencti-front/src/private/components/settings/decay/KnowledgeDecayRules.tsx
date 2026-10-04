@@ -8,10 +8,11 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import KnowledgeDecayRuleCreation from './KnowledgeDecayRuleCreation';
-import { KNOWLEDGE_FRESHNESS_POLICY_LABELS, type KnowledgeFreshnessPolicy } from './KnowledgeDecayRuleForm';
+import { knowledgeDecayRuleEffect } from './KnowledgeDecayRuleForm';
 import { KnowledgeDecayRulesLinesPaginationQuery, KnowledgeDecayRulesLinesPaginationQuery$variables } from './__generated__/KnowledgeDecayRulesLinesPaginationQuery.graphql';
 import { KnowledgeDecayRulesLine_node$data } from './__generated__/KnowledgeDecayRulesLine_node.graphql';
 
@@ -103,33 +104,13 @@ const KnowledgeDecayRules = () => {
   } as UsePreloadedPaginationFragment<KnowledgeDecayRulesLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: { id: 'name', label: t_i18n('Name'), isSortable: false, percentWidth: 24 },
-    target_scope: {
-      id: 'target_scope',
-      label: t_i18n('Target'),
+    name: { id: 'name', label: t_i18n('Name'), isSortable: false, percentWidth: 21 },
+    effect: {
+      id: 'effect',
+      label: t_i18n('Effect'),
       isSortable: false,
-      percentWidth: 22,
-      render: (node: KnowledgeDecayRulesLine_node$data) => {
-        const types = (node.target_types ?? []).map((type) => t_i18n(node.target_scope === 'relationship' ? `relationship_${type}` : `entity_${type}`));
-        if (types.length === 0) {
-          return node.target_scope === 'relationship' ? t_i18n('All relationships') : '-';
-        }
-        return types.join(', ');
-      },
-    },
-    stale_after_days: {
-      id: 'stale_after_days',
-      label: t_i18n('Stale after (days)'),
-      isSortable: false,
-      percentWidth: 12,
-      render: (node: KnowledgeDecayRulesLine_node$data) => node.stale_after_days,
-    },
-    freshness_policy: {
-      id: 'freshness_policy',
-      label: t_i18n('Policy'),
-      isSortable: false,
-      percentWidth: 14,
-      render: (node: KnowledgeDecayRulesLine_node$data) => t_i18n(KNOWLEDGE_FRESHNESS_POLICY_LABELS[(node.freshness_policy ?? 'flag') as KnowledgeFreshnessPolicy]),
+      percentWidth: 51,
+      render: (node: KnowledgeDecayRulesLine_node$data) => defaultRender(knowledgeDecayRuleEffect(t_i18n, node)),
     },
     staleElementsCount: {
       id: 'staleElementsCount',

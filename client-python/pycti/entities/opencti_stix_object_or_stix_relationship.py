@@ -33,6 +33,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixCoreRelationship {
                 corroboration_count
@@ -40,6 +42,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixSightingRelationship {
                 corroboration_count
@@ -47,6 +51,8 @@ class StixObjectOrStixRelationship:
                 freshness_days
                 has_conflicts
                 freshness_stale
+                single_sourced
+                freshness_stale_at
             }
             ... on StixDomainObject {
             creators {
@@ -809,6 +815,8 @@ class StixObjectOrStixRelationship:
                     }
                 }
         """
+        # The default selection (self.properties) carries the provenance summary;
+        # read_provenance() reads the assertions, conflicts and procedures as well
         self.provenance_properties = (
             """
             ... on StixObject {
