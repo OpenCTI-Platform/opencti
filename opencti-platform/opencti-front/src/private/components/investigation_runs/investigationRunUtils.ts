@@ -99,6 +99,7 @@ export const ENGINE_REASON_LABELS: Record<string, string> = {
   engine_unavailable: 'The connected XTM One does not provide the investigation engine. Upgrade XTM One to run Case Autopilot.',
   engine_no_agent: 'No agent of the connected XTM One answers the autonomous investigation intent.',
   engine_unreachable: 'The XTM One investigation engine cannot be reached.',
+  'run.time_budget_spent': 'The time budget of the investigation was spent before it completed.',
 };
 
 export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);

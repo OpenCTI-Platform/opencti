@@ -67,6 +67,7 @@ const ENGINE_REASON_NEXT: Record<string, StepNextAction> = {
   engine_unavailable: 'ask_administrator',
   engine_no_agent: 'ask_administrator',
   engine_unreachable: 'run_again',
+  'run.time_budget_spent': 'policy_budget',
 };
 
 /** The next action a run's own reason calls for, if any. */
@@ -142,6 +143,7 @@ interface StepOutcomeRule {
 const STEP_OUTCOME_RULES: Record<string, StepOutcomeRule> = {
   'run.all_sources_queried': { message: 'Every source of the pack was queried.' },
   'run.budget_spent': { message: 'Stopped before this step: the budget of {budget} iterations was used.', next: 'continue', also: 'policy_budget' },
+  'run.time_budget_spent': { message: 'Stopped before this step: the time budget of {duration} was spent.', next: 'run_again', also: 'policy_budget' },
   'run.no_covering_source': { message: 'No source of the pack covers this kind of subject.', next: 'policy_pack' },
   'run.cancelled': { message: 'Stopped before this step: the investigation was cancelled.', next: 'run_again' },
   'run.interrupted': { message: 'The investigation was interrupted before this step.', next: 'run_again' },
@@ -182,13 +184,24 @@ const STEP_OUTCOME_RULES: Record<string, StepOutcomeRule> = {
     next: 'connectors_status',
   },
   'source.enrichment_wave_capped': { message: '{created} entities created and {updated} updated in the draft; the first {cited} are cited, the others stay in the draft.' },
+  'source.enrichment_wave_expired': {
+    message: 'The enrichment wave reached its deadline: {done} of {jobs} jobs finished, {created} entities created, {updated} updated in the draft.',
+    next: 'connectors_status',
+  },
+  'source.enrichment_wave_rejected': {
+    message: 'The enrichment wave was rejected: {done} of {jobs} jobs finished, {created} entities created, {updated} updated in the draft.',
+    next: 'open_policies',
+  },
+  'source.enrichment_no_entities': { message: 'The case holds no observable to enrich.', next: 'add_observables' },
+  'source.enrichment_no_connector': { message: 'No enrichment connector of the policy accepts {types}.', next: 'policy_connectors' },
+  // Sent by earlier versions of the engine, before the two codes above.
   'source.enrichment_nothing_to_enrich': { message: 'No enrichment connector of the policy accepts {types}.', next: 'policy_connectors' },
   'source.enrichment_awaiting_approval': {
     message: '{count, plural, one {# enrichment job is waiting for your approval.} other {# enrichment jobs are waiting for your approval.}}',
     next: 'review_approvals',
   },
   'source.enrichment_refused': { message: 'The policy refused {count} enrichment jobs.', next: 'open_policies' },
-  'source.enrichment_timed_out': { message: 'The enrichment jobs did not end within {seconds} s.', next: 'connectors_status' },
+  'source.enrichment_timed_out': { message: 'The enrichment jobs did not end within {duration}.', next: 'connectors_status' },
   'source.conclusion_written': { message: 'Written: {hypotheses} hypotheses and {recommendations} recommendations.' },
   'source.conclusion_trimmed': { message: 'Written: {hypotheses} hypotheses and {recommendations} recommendations; {dropped} set aside because they cited nothing the investigation found.' },
   'source.conclusion_unavailable': { message: 'No conclusion: no language model of XTM One could weigh the hypotheses.', next: 'xtm_one' },
@@ -253,12 +266,18 @@ const contextualRule = (code: string | null | undefined, values: Record<string, 
 export const stepOutcome = (status: string, code: string | null | undefined, params: unknown, t: Translate, context: StepOutcomeContext): StepOutcome | null => {
   const engineValues = paramValues(params);
   const details = code ? [code, ...Object.entries(engineValues).map(([key, value]) => `${key}=${value}`)].join(' ') : null;
+  // The engine names entity types by their key: they are read in the reader's language.
+  const engineTypes = typeof engineValues.types === 'string'
+    ? engineValues.types.split(',').map((type) => type.trim()).filter((type) => type.length > 0).map((type) => t(`entity_${type}`))
+    : [];
   const values: Record<string, string | number> = {
     ...engineValues,
     source: context.source,
     failed: context.failedSteps,
     total: context.totalSteps,
-    types: context.observableTypes.join(', '),
+    types: (engineTypes.length > 0 ? engineTypes : context.observableTypes).join(', '),
+    // Durations the engine sends in seconds.
+    ...(typeof engineValues.seconds === 'number' ? { duration: formatDuration(engineValues.seconds * 1000, t) } : {}),
   };
   const rule = contextualRule(code, engineValues, context) ?? (code ? STEP_OUTCOME_RULES[code] : undefined) ?? STATE_FALLBACKS[status as InvestigationStepStatusValue];
   if (!rule) return null;

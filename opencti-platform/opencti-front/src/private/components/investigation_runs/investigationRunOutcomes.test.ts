@@ -17,7 +17,7 @@ const context = { source: 'Web research', failedSteps: 0, totalSteps: 4, observa
 // Every detail code of the investigation engine contract (XTM One `DETAIL_CODES`,
 // listed in `dev-docs/investigations.md`): each one must be rendered in words.
 const ENGINE_DETAIL_CODES = [
-  'run.all_sources_queried', 'run.budget_spent', 'run.no_covering_source', 'run.cancelled', 'run.interrupted',
+  'run.all_sources_queried', 'run.budget_spent', 'run.time_budget_spent', 'run.no_covering_source', 'run.cancelled', 'run.interrupted',
   'source.timed_out', 'source.http_status', 'source.free_http_refused', 'source.free_http_capped', 'source.truncated',
   'source.thin_response', 'source.querier_error', 'source.kb_provider_unreachable', 'source.kb_search_failed', 'source.kb_capped',
   'source.kb_unavailable', 'source.kb_below_floor', 'source.mcp_bad_server_id', 'source.mcp_server_missing', 'source.mcp_server_disabled',
@@ -25,7 +25,7 @@ const ENGINE_DETAIL_CODES = [
   'source.vt_unavailable', 'source.passive_dns_filtered', 'source.passive_dns_filtered_more', 'source.passive_dns_more', 'source.passive_dns_seeds',
   'source.passive_dns_seeds_set_aside', 'source.opencti_unavailable', 'source.opencti_known', 'source.opencti_none_known', 'source.case_context',
   'source.case_context_empty', 'source.case_run_missing', 'source.enrichment_wave', 'source.enrichment_wave_gaps', 'source.enrichment_wave_capped',
-  'source.enrichment_nothing_to_enrich',
+  'source.enrichment_wave_expired', 'source.enrichment_wave_rejected', 'source.enrichment_no_entities', 'source.enrichment_no_connector',
   'source.enrichment_awaiting_approval', 'source.enrichment_refused', 'source.enrichment_timed_out', 'source.conclusion_written',
   'source.conclusion_trimmed', 'source.conclusion_unavailable',
 ];
@@ -73,6 +73,16 @@ describe('Case Autopilot step outcomes', () => {
     });
     expect(stepOutcome('degraded', 'source.enrichment_wave_capped', { created: 60, updated: 4, cited: 50 }, t, context)?.text)
       .toBe('60 entities created and 4 updated in the draft; the first 50 are cited, the others stay in the draft.');
+    // The engine names types by their key and sends durations in seconds.
+    const translate: Translate = (message, options) => (message.startsWith('entity_') ? message.replace('entity_', '').replace('-', ' ') : t(message, options));
+    expect(stepOutcome('empty', 'source.enrichment_no_connector', { types: 'Domain-Name, IPv4-Addr' }, translate, context)).toMatchObject({
+      text: 'No enrichment connector of the policy accepts Domain Name, IPv4 Addr.', next: 'policy_connectors',
+    });
+    expect(stepOutcome('empty', 'source.enrichment_no_entities', {}, t, context)).toMatchObject({ text: 'The case holds no observable to enrich.', next: 'add_observables' });
+    expect(stepOutcome('error', 'source.enrichment_timed_out', { seconds: 600 }, t, context)?.text).toBe('The enrichment jobs did not end within 10 min.');
+    expect(stepOutcome('skipped', 'run.time_budget_spent', { seconds: 1800 }, t, context)).toMatchObject({
+      text: 'Stopped before this step: the time budget of 30 min was spent.', next: 'run_again', also: 'policy_budget',
+    });
   });
 
   it('explains a missing conclusion by the failed steps when there are some', () => {
