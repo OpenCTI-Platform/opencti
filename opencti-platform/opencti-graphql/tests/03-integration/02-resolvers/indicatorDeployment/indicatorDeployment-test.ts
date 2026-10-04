@@ -473,14 +473,22 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
 
   it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
     const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
-    const created = await queryAsAdminWithSuccess({
-      query: INDICATOR_ADD,
-      variables: { input: { name: 'reporters.evil.example', pattern: "[domain-name:value = 'reporters.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
-    });
-    const reportedIndicatorId = created.data?.indicatorAdd.id;
-    // Shared like the indicator of the other tests, so the connector account reads the deployment the same way
-    await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let reportedIndicatorId: string | undefined;
     try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'reporters.evil.example', pattern: "[domain-name:value = 'reporters.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      reportedIndicatorId = created.data?.indicatorAdd.id as string;
+      // Shared like the indicator of the other tests, so the connector account reads the deployment the same way
+      await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
       const imported = await queryAsAdminWithSuccess({
         query: RELATION_ADD,
         variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'deployed' } },
@@ -500,7 +508,10 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       expect(afterReport.filter((id) => id === connectorUserId)).toHaveLength(1);
       expect(afterReport).toContain(ADMIN_USER.id);
     } finally {
-      await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
+      if (reportedIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
     }
   });
 
