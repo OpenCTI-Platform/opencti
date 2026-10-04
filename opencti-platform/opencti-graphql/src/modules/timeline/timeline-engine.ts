@@ -30,6 +30,7 @@ import {
   TIMELINE_CONTAINER_TYPES,
   TIMELINE_DEFAULT_SETTINGS,
   type TimelineAnalystField,
+  type TimelineAnchorBounds,
   type TimelineAnchorKey,
   type TimelineAnchors,
   type TimelinePendingAnnotation,
@@ -56,7 +57,7 @@ import {
   SOFT_TYPE_INVESTIGATION_RUN,
   timelineRefIds,
 } from './timeline-loader';
-import { computeTimelineAnchors, diffTimelineAnchors } from './timeline-anchors';
+import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors } from './timeline-anchors';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { notifyTimelineAnchorsChanged } from './timeline-notification';
 import { addTimelineDerivedEventCount } from '../../manager/telemetryManager';
@@ -127,6 +128,7 @@ const TIMELINE_INITIAL_STATE: TimelineSettingsState = {
   ...TIMELINE_DEFAULT_SETTINGS,
   pending_annotations: [],
   derivation_truncated: false,
+  capped_anchor_bounds: null,
   generated_at: null,
 };
 
@@ -137,6 +139,7 @@ const stateOf = (settings: Partial<TimelineSettingsState> | null | undefined): T
   hidden_kinds: settings?.hidden_kinds ?? TIMELINE_INITIAL_STATE.hidden_kinds,
   pending_annotations: settings?.pending_annotations ?? [],
   derivation_truncated: settings?.derivation_truncated ?? false,
+  capped_anchor_bounds: settings?.capped_anchor_bounds ?? null,
   generated_at: settings?.generated_at ?? null,
 });
 
@@ -486,6 +489,8 @@ const buildExchange = async (
 export interface TimelineContributionsResult {
   anchors: TimelineAnchors;
   changedAnchors: TimelineAnchorKey[];
+  // Anchor values of the anchor events passed beyond the stored ones, null when none were passed
+  cappedAnchorBounds: TimelineAnchorBounds | null;
 }
 
 /**
@@ -498,21 +503,26 @@ export const refreshTimelineContributions = async (
   context: AuthContext,
   container: AnyStoreElement,
   // anchorEvents: the events the anchors are computed from when they are more than the stored ones (a regeneration
-  // beyond the cap of the case passes every derived event, so that the cap never moves an anchor)
-  opts: { events?: StoredTimelineEvent[]; anchorEvents?: StoredTimelineEvent[]; notifyAnchors?: boolean } = {},
+  // beyond the cap of the case passes every derived event, so that the cap never moves an anchor).
+  // anchorBounds: the anchor values of the derived events beyond the cap, read from the settings when not given; a
+  // change between two regenerations (milestone, pin, hide) computes the anchors from the stored events and these bounds
+  opts: { events?: StoredTimelineEvent[]; anchorEvents?: StoredTimelineEvent[]; anchorBounds?: TimelineAnchorBounds | null; notifyAnchors?: boolean } = {},
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
   const anchorEvents = opts.anchorEvents ?? events;
+  const anchorBounds = opts.anchorEvents || opts.anchorBounds !== undefined
+    ? opts.anchorBounds ?? null
+    : (await loadTimelineSettings(context, container.internal_id))?.capped_anchor_bounds ?? null;
   const isClosed = await isContainerClosed(context, container);
   const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
   const scope = await resolveContainerVisibilityScope(context, container, anchorEvents);
-  const anchors = computeTimelineAnchors(anchorEvents.filter(scope.isEventAsVisibleAsContainer).map((e) => ({
-    lane: e.lane,
-    kind: e.kind,
-    rule_id: e.rule_id,
-    event_time: e.event_time,
-    hidden: e.hidden,
-  })), { isClosed, computedAt: now(), previous: previousAnchors });
+  const anchorInput = anchorEvents.filter(scope.isEventAsVisibleAsContainer);
+  const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
+  const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt: now(), previous: previousAnchors, bounds: anchorBounds });
+  const storedIds = new Set(events.map((e) => e.internal_id));
+  const cappedAnchorBounds = opts.anchorEvents
+    ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent))
+    : null;
   const exchange = await buildExchange(context, container, events, scope);
   const changedAnchors = diffTimelineAnchors(previousAnchors, anchors);
   await elUpdate(context, container._index, container.internal_id, {
@@ -527,7 +537,7 @@ export const refreshTimelineContributions = async (
         .catch((error) => logApp.error('[TIMELINE] Unable to notify anchor changes', { cause: error, containerId: container.internal_id }));
     }
   }
-  return { anchors, changedAnchors };
+  return { anchors, changedAnchors, cappedAnchorBounds };
 };
 // endregion
 
@@ -691,7 +701,12 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   await deleteTimelineDocuments(staleIds);
   // Consume the imported annotations that found their event and record the generation
   const remaining = (settings?.pending_annotations ?? []).filter((a) => !docsById.has(a.event_id));
-  await upsertTimelineSettings(context, container, { pending_annotations: remaining, derivation_truncated: truncated, generated_at: now() }, settings ?? null);
+  const generatedSettings = await upsertTimelineSettings(context, container, {
+    pending_annotations: remaining,
+    derivation_truncated: truncated,
+    generated_at: now(),
+    ...(capped ? {} : { capped_anchor_bounds: null }),
+  }, settings ?? null);
   if (createdCount > 0) {
     addTimelineDerivedEventCount(createdCount);
   }
@@ -700,7 +715,11 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const anchorEvents = capped
     ? [...derivedDocsById.values(), ...docs.filter((doc) => doc.event_source === 'manual')] as unknown as StoredTimelineEvent[]
     : undefined;
-  const { anchors } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents });
+  const { anchors, cappedAnchorBounds } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents, anchorBounds: null });
+  if (capped) {
+    // The changes made until the next regeneration recompute the anchors from the stored events and these bounds
+    await upsertTimelineSettings(context, container, { capped_anchor_bounds: cappedAnchorBounds }, generatedSettings);
+  }
   if (changedDocs.length > 0 || staleEvents.length > 0) {
     await publishTimelineUpdate({
       container_id: containerId,

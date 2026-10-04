@@ -694,11 +694,16 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
   validateWindow(input.event_time, input.event_end_time);
   const markingIds = await resolveMarkingIds(context, input.objectMarking ?? []);
   validateMarkings(user, markingIds);
-  const element = await resolveElement(context, user, input.element_id);
+  // Checked before waiting for the lock, read again under it for its markings
+  await resolveElement(context, user, input.element_id);
   const author = await resolveAuthor(context, user, input.createdBy);
   const internalId = input.external_id ? computeManualEventId(container.internal_id, input.external_id) : uuidv4();
   const kind = input.kind ?? 'milestone';
-  const buildManualEventDoc = (previous: StoredTimelineEvent | null, access: ReturnType<typeof containerAccessFields>) => buildTimelineEventDoc({
+  const buildManualEventDoc = (
+    previous: StoredTimelineEvent | null,
+    access: ReturnType<typeof containerAccessFields>,
+    element: AnyStoreElement | null,
+  ) => buildTimelineEventDoc({
     internal_id: internalId,
     container_id: container.internal_id,
     name: input.title.trim(),
@@ -726,8 +731,10 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     restricted_members: access.restricted_members,
   }, previous);
   const { stored, existing } = await withTimelineLock(container.internal_id, async () => {
-    // Read again under the lock: a change of the access to the container made while this write waited applies to it
+    // Read again under the lock: a change of the access to the container, or of the markings of the element, made while
+    // this write waited applies to it
     const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
+    const element = await resolveElement(context, user, input.element_id);
     const current = input.external_id
       ? await elLoadById<StoredTimelineEvent>(context, SYSTEM_USER, internalId, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent
       : null;
@@ -740,7 +747,7 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
-    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current, containerAccessFields(locked))]);
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildManualEventDoc(current, containerAccessFields(locked), element)]);
     await afterTimelineChange(context, user, locked, 'manual', [internalId]);
     return { stored: await reloadEvent(context, user, internalId), existing: current };
   });

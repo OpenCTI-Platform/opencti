@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeTimelineAnchors, diffTimelineAnchors } from '../../../../src/modules/timeline/timeline-anchors';
+import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors } from '../../../../src/modules/timeline/timeline-anchors';
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 
 const computedAt = '2026-04-01T00:00:00.000Z';
@@ -53,6 +53,33 @@ describe('Timeline anchors', () => {
     const anchors = computeTimelineAnchors([], { isClosed: false, computedAt });
     expect(anchors.first_adversary_activity).toBeNull();
     expect(anchors.containment).toBeNull();
+  });
+
+  it('should keep counting the derived events beyond the cap of a case between two regenerations', () => {
+    // Derived events the cap of the case leaves out of the stored timeline, recorded by the regeneration
+    const bounds = computeTimelineAnchorBounds([
+      { lane: 'adversary', kind: 'technique_used', event_time: '2026-02-15T00:00:00.000Z' },
+      { lane: 'detection', kind: 'sighting', event_time: '2026-03-07T00:00:00.000Z' },
+      { lane: 'detection', kind: 'sighting', event_time: '2026-02-20T00:00:00.000Z', hidden: true },
+      { lane: 'response', kind: 'status_changed', rule_id: RULE_WORKFLOW_CLOSURE, event_time: '2026-03-12T00:00:00.000Z' },
+    ]);
+    expect(bounds).toEqual({
+      first_adversary_activity: '2026-02-15T00:00:00.000Z',
+      first_detection: '2026-03-07T00:00:00.000Z',
+      first_response: '2026-03-12T00:00:00.000Z',
+      containment: null,
+      closure: '2026-03-12T00:00:00.000Z',
+    });
+    // An analyst hides the only stored detection afterwards: the anchors still read the events beyond the cap
+    const stored = events.map((event) => (event.lane === 'detection' ? { ...event, hidden: true } : event));
+    expect(computeTimelineAnchors(stored, { isClosed: true, computedAt, bounds })).toMatchObject({
+      first_adversary_activity: '2026-02-15T00:00:00.000Z',
+      first_detection: '2026-03-07T00:00:00.000Z',
+      first_response: '2026-03-04T00:00:00.000Z',
+      containment: '2026-03-05T00:00:00.000Z',
+      closure: '2026-03-12T00:00:00.000Z',
+    });
+    expect(computeTimelineAnchors(stored, { isClosed: false, computedAt, bounds }).closure).toBeNull();
   });
 
   it('should list the anchors that changed', () => {

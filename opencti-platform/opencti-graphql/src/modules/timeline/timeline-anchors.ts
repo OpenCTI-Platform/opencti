@@ -1,5 +1,5 @@
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE, toTimelineTime } from './timeline-rules';
-import type { TimelineAnchorKey, TimelineAnchors, TimelineKindValue, TimelineLaneValue } from './timeline-types';
+import type { TimelineAnchorBounds, TimelineAnchorKey, TimelineAnchors, TimelineKindValue, TimelineLaneValue } from './timeline-types';
 import { TIMELINE_ANCHOR_KEYS } from './timeline-types';
 
 export interface AnchorEventLike {
@@ -16,10 +16,12 @@ export interface AnchorComputationContext {
   computedAt: string;
   // anchors stored by the previous computation, changed_at is kept when no anchor value moved
   previous?: Partial<TimelineAnchors> | null;
+  // anchor values of the derived events a capped timeline does not store: they count like events
+  bounds?: Partial<TimelineAnchorBounds> | null;
 }
 
-const minTime = (events: AnchorEventLike[]): string | null => {
-  let min: number | null = null;
+const minTime = (events: AnchorEventLike[], bound?: string | null): string | null => {
+  let min: number | null = bound ? toTimelineTime(bound) : null;
   events.forEach((event) => {
     const time = toTimelineTime(event.event_time);
     if (time !== null && (min === null || time < min)) min = time;
@@ -27,8 +29,8 @@ const minTime = (events: AnchorEventLike[]): string | null => {
   return min !== null ? new Date(min).toISOString() : null;
 };
 
-const maxTime = (events: AnchorEventLike[]): string | null => {
-  let max: number | null = null;
+const maxTime = (events: AnchorEventLike[], bound?: string | null): string | null => {
+  let max: number | null = bound ? toTimelineTime(bound) : null;
   events.forEach((event) => {
     const time = toTimelineTime(event.event_time);
     if (time !== null && (max === null || time > max)) max = time;
@@ -58,14 +60,27 @@ export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | 
  */
 export const computeTimelineAnchors = (events: AnchorEventLike[], context: AnchorComputationContext): TimelineAnchors => {
   const visible = events.filter((event) => !event.hidden);
+  const bounds = context.bounds ?? {};
   const values = {
-    first_adversary_activity: minTime(visible.filter((e) => e.lane === 'adversary')),
-    first_detection: minTime(visible.filter((e) => e.lane === 'detection')),
-    first_response: minTime(visible.filter((e) => e.lane === 'response')),
-    containment: minTime(visible.filter((e) => e.kind === 'containment' || e.rule_id === RULE_TASK_CONTAINMENT)),
-    closure: context.isClosed ? maxTime(visible.filter((e) => e.rule_id === RULE_WORKFLOW_CLOSURE)) : null,
+    first_adversary_activity: minTime(visible.filter((e) => e.lane === 'adversary'), bounds.first_adversary_activity),
+    first_detection: minTime(visible.filter((e) => e.lane === 'detection'), bounds.first_detection),
+    first_response: minTime(visible.filter((e) => e.lane === 'response'), bounds.first_response),
+    containment: minTime(visible.filter((e) => e.kind === 'containment' || e.rule_id === RULE_TASK_CONTAINMENT), bounds.containment),
+    closure: context.isClosed ? maxTime(visible.filter((e) => e.rule_id === RULE_WORKFLOW_CLOSURE), bounds.closure) : null,
   };
   const previousChangedAt = context.previous?.changed_at;
   const changedAt = previousChangedAt && diffTimelineAnchors(context.previous, values).length === 0 ? previousChangedAt : context.computedAt;
   return { ...values, computed_at: context.computedAt, changed_at: changedAt };
+};
+
+/** Anchor values of events whatever the status of their container (the closure applies only while it is closed). */
+export const computeTimelineAnchorBounds = (events: AnchorEventLike[]): TimelineAnchorBounds => {
+  const anchors = computeTimelineAnchors(events, { isClosed: true, computedAt: new Date(0).toISOString() });
+  return {
+    first_adversary_activity: anchors.first_adversary_activity,
+    first_detection: anchors.first_detection,
+    first_response: anchors.first_response,
+    containment: anchors.containment,
+    closure: anchors.closure,
+  };
 };

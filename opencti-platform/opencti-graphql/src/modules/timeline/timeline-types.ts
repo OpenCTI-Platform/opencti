@@ -95,6 +95,9 @@ export interface TimelineAnchors {
   changed_at: string;
 }
 
+/** Anchor values of the derived events a capped timeline does not store, recorded by its regeneration. */
+export type TimelineAnchorBounds = Pick<TimelineAnchors, TimelineAnchorKey>;
+
 // region store
 // The event title is stored in `name` so that the generic representative and
 // full text search apply. description, confidence and external_id are
@@ -152,6 +155,7 @@ export interface TimelineSettingsState {
   hidden_kinds: TimelineKindValue[];
   pending_annotations?: TimelinePendingAnnotation[];
   derivation_truncated?: boolean;
+  capped_anchor_bounds?: TimelineAnchorBounds | null;
   generated_at?: string | null;
 }
 
