@@ -41,6 +41,14 @@ export interface DefenseCoverageChange {
   attack_pattern_id: string;
   previous: DefenseCoverage;
   coverage: DefenseCoverage;
+  // Triggers already handled for this change by a delivery that failed on a later trigger
+  delivered_trigger_ids?: string[];
+}
+
+// How far a delivery went: the changes fully handled, and the triggers handled for the next one
+export interface DefenseDeliveryProgress {
+  done: number;
+  triggerIds: string[];
 }
 
 // A level change as one recipient sees it
@@ -93,10 +101,11 @@ export const buildDefenseLevelMessage = (stix: StixObject, change: DefenseLevelC
  * the previous computation counts with the markings it had, as kept in the trash). They must also be able to access
  * the technique and match the trigger filters, exactly as for knowledge events; digests built on these triggers collect
  * them like any live notification.
- * Returns the number of notified recipients; `progress.done` counts the changes fully delivered, so a caller can keep
- * the remaining ones when a delivery fails.
+ * Returns the number of notified recipients. `progress` tells how far the delivery went, trigger by trigger, so a caller
+ * keeps exactly what was not handled when a delivery fails; the triggers listed in `delivered_trigger_ids` of a change
+ * are skipped.
  */
-export const notifyDefenseLevelChanges = async (context: AuthContext, changes: DefenseCoverageChange[], progress?: { done: number }) => {
+export const notifyDefenseLevelChanges = async (context: AuthContext, changes: DefenseCoverageChange[], progress?: DefenseDeliveryProgress) => {
   if (changes.length === 0) return 0;
   const liveNotifications = await getLiveNotifications(context);
   const listening = liveNotifications.filter(({ trigger }) => {
@@ -122,6 +131,8 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
   for (let changeIndex = 0; changeIndex < changes.length; changeIndex += 1) {
     await doYield();
     const change = changes[changeIndex];
+    const handledTriggerIds = [...(change.delivered_trigger_ids ?? [])];
+    if (progress) progress.triggerIds = handledTriggerIds;
     // The technique is loaded once, and only when a recipient has a change to be told
     const technique: { loaded: boolean; stix?: StixObject } = { loaded: false };
     const loadStix = async () => {
@@ -133,43 +144,61 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
     };
     for (let index = 0; index < listening.length; index += 1) {
       const { users, trigger } = listening[index];
-      const eventTypes = trigger.event_types ?? [];
-      const filters = trigger.filters ? JSON.parse(trigger.filters) : trigger.raw_filters;
-      const targets: KnowledgeNotificationEvent['targets'] = [];
-      for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
-        const user: AuthUser = users[userIndex];
-        const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-        const levelChange = readerLevelChange(change, await predicateOf(userContext, user));
-        const eventType = levelChange ? defenseLevelEventType(levelChange) : undefined;
-        if (levelChange && eventType && eventTypes.includes(eventType)) {
-          const instance = await loadStix();
-          if (instance && await isUserCanAccessStixElement(userContext, user, instance) && await isStixMatchFilterGroup(userContext, user, instance, filters)) {
-            targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message: buildDefenseLevelMessage(instance, levelChange) });
+      if (!handledTriggerIds.includes(trigger.internal_id)) {
+        const eventTypes = trigger.event_types ?? [];
+        const filters = trigger.filters ? JSON.parse(trigger.filters) : trigger.raw_filters;
+        const targets: KnowledgeNotificationEvent['targets'] = [];
+        for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+          const user: AuthUser = users[userIndex];
+          const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
+          const levelChange = readerLevelChange(change, await predicateOf(userContext, user));
+          const eventType = levelChange ? defenseLevelEventType(levelChange) : undefined;
+          if (levelChange && eventType && eventTypes.includes(eventType)) {
+            const instance = await loadStix();
+            if (instance && await isUserCanAccessStixElement(userContext, user, instance) && await isStixMatchFilterGroup(userContext, user, instance, filters)) {
+              targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message: buildDefenseLevelMessage(instance, levelChange) });
+            }
           }
         }
-      }
-      if (technique.stix && targets.length > 0) {
-        const notificationEvent: KnowledgeNotificationEvent = {
-          version: EVENT_NOTIFICATION_VERSION,
-          notification_id: trigger.internal_id,
-          type: 'live',
-          targets,
-          data: technique.stix,
-          origin: { user_id: SYSTEM_USER.id },
-        };
-        await storeNotificationEvent(context, notificationEvent);
-        delivered += targets.length;
+        if (technique.stix && targets.length > 0) {
+          const notificationEvent: KnowledgeNotificationEvent = {
+            version: EVENT_NOTIFICATION_VERSION,
+            notification_id: trigger.internal_id,
+            type: 'live',
+            targets,
+            data: technique.stix,
+            origin: { user_id: SYSTEM_USER.id },
+          };
+          await storeNotificationEvent(context, notificationEvent);
+          delivered += targets.length;
+        }
+        handledTriggerIds.push(trigger.internal_id);
       }
     }
-    if (progress) progress.done = changeIndex + 1;
+    if (progress) {
+      progress.done = changeIndex + 1;
+      progress.triggerIds = [];
+    }
   }
   logApp.debug('[DEFENSE-COVERAGE] Defense level changes notified', { changes: changes.length, delivered });
   return delivered;
 };
 
 /**
+ * The queued changes a failed delivery did not handle: the changes after the last fully handled one, the first of them
+ * remembering the triggers already handled, so a retry never stores a notification twice.
+ */
+export const remainingDefenseLevelChanges = (changes: DefenseCoverageChange[], progress: DefenseDeliveryProgress): DefenseCoverageChange[] => {
+  const remaining = changes.slice(progress.done);
+  if (remaining.length > 0 && progress.triggerIds.length > 0) {
+    remaining[0] = { ...remaining[0], delivered_trigger_ids: progress.triggerIds };
+  }
+  return remaining;
+};
+
+/**
  * Deliver the queued level changes, oldest computation first. A batch leaves the queue once delivered; when a delivery
- * fails, the changes not delivered yet stay queued, the next batches wait behind them, and the next run retries.
+ * fails, what it did not handle stays queued, the next batches wait behind it, and the next run retries.
  * Returns the number of notified recipients.
  */
 export const deliverPendingDefenseLevelChanges = async (context: AuthContext, notify = notifyDefenseLevelChanges) => {
@@ -181,12 +210,13 @@ export const deliverPendingDefenseLevelChanges = async (context: AuthContext, no
       logApp.error('[DEFENSE-COVERAGE] Unreadable queued defense level changes dropped', { batch: id });
       await clearPendingLevelChanges(id);
     } else {
-      const progress = { done: 0 };
+      const progress: DefenseDeliveryProgress = { done: 0, triggerIds: [] };
       try {
         delivered += await notify(context, changes, progress);
       } catch (error) {
-        if (progress.done > 0) await replacePendingLevelChanges(id, changes.slice(progress.done));
-        logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: changes.length - progress.done });
+        const remaining = remainingDefenseLevelChanges(changes, progress);
+        if (progress.done > 0 || progress.triggerIds.length > 0) await replacePendingLevelChanges(id, remaining);
+        logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: remaining.length });
         return delivered;
       }
       await clearPendingLevelChanges(id);

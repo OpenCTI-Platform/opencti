@@ -1043,6 +1043,12 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (unknownPlatforms.length > 0) {
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
+  // A Security Coverage is only enriched by the OpenAEV connectors active when it is created: without one, the request
+  // would wait forever
+  const validationConnectors = await connectorsForEnrichment(context, user, ENTITY_TYPE_SECURITY_COVERAGE, true);
+  if (validationConnectors.length === 0) {
+    throw FunctionalError('No active OpenAEV connector can validate techniques: connect OpenAEV to this platform first');
+  }
   const requestedAt = now();
   const name = requestedName || `Defense validation - ${threat?.name ?? `${attackPatterns.length} techniques`} - ${requestedAt.substring(0, 10)}`;
   // An external reference is shared by every element with the same URL: it is resolved first and never removed

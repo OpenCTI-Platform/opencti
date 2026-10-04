@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
@@ -13,6 +13,8 @@ import { redisSetDefensePendingValidationTracking } from '../../../../src/databa
 import { fullEntitiesList, internalFindByIds } from '../../../../src/database/middleware-loader';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import * as securityCoverageDomain from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import * as repository from '../../../../src/database/repository';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import { FunctionalError } from '../../../../src/config/errors';
 import type { BasicStoreEntity } from '../../../../src/types/store';
@@ -228,8 +230,16 @@ describe('Threat-informed defense matrix', () => {
     return result.data?.stixCoreRelationshipAdd.id as string;
   };
   const scope = (threatIds: string[]) => ({ mode: 'SELECTED', threatIds });
+  // Validation requests need an active OpenAEV connector: the suite stands one in without registering a connector
+  const connectorsForEnrichment = repository.connectorsForEnrichment;
+  let validationConnectors: MockInstance<typeof repository.connectorsForEnrichment> | undefined;
 
   beforeAll(async () => {
+    validationConnectors = vi.spyOn(repository, 'connectorsForEnrichment').mockImplementation(async (context, user, connectorScope, ...rest) => {
+      return connectorScope === ENTITY_TYPE_SECURITY_COVERAGE
+        ? [{ id: 'defense-matrix-test-openaev', active: true }]
+        : connectorsForEnrichment(context, user, connectorScope, ...rest);
+    });
     const attackPattern = await queryAsAdminWithSuccess({
       query: ATTACK_PATTERN_ADD,
       variables: { input: { name: 'Defense matrix test technique', x_mitre_id: MITRE_ID, description: 'Defense matrix integration test' } },
@@ -281,6 +291,7 @@ describe('Threat-informed defense matrix', () => {
   });
 
   afterAll(async () => {
+    validationConnectors?.mockRestore();
     if (securityCoverageId) await queryAsAdminWithSuccess({ query: SECURITY_COVERAGE_DELETE, variables: { id: securityCoverageId } });
     if (externalReferenceId) await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: externalReferenceId } });
     if (groupingId) await queryAsAdminWithSuccess({ query: GROUPING_DELETE, variables: { id: groupingId } });
@@ -395,6 +406,9 @@ describe('Threat-informed defense matrix', () => {
       name: 'Defense matrix test validation',
       external_reference_url: ' https://risk.example.com/scenarios/defense-matrix-test ',
     };
+    // Without an active OpenAEV connector the request is refused before anything is created
+    validationConnectors?.mockResolvedValueOnce([]);
+    await queryAsAdminWithError({ query: DEFENSE_VALIDATE, variables: { input } }, 'No active OpenAEV connector can validate techniques: connect OpenAEV to this platform first');
     const result = await queryAsAdminWithSuccess({ query: DEFENSE_VALIDATE, variables: { input } });
     const validation = result.data?.defenseGapsValidate;
     securityCoverageId = validation.securityCoverage.id;
@@ -572,6 +586,9 @@ describe('Threat-informed defense matrix', () => {
     try {
       const rule = [{ id: created.indicator, rel: created.indicates }];
       expect(await notifyDefenseLevelChanges(testContext, [coverageChange(coverageWithRules(rule), coverageWithRules([]))])).toEqual(1);
+      // A retried change skips the triggers its failed delivery already handled
+      const retried = { ...coverageChange(coverageWithRules(rule), coverageWithRules([])), delivered_trigger_ids: [trigger.id] };
+      expect(await notifyDefenseLevelChanges(testContext, [retried])).toEqual(0);
       // The trigger listens to decreases only
       expect(await notifyDefenseLevelChanges(testContext, [coverageChange(coverageWithRules([]), coverageWithRules(rule))])).toEqual(0);
       // A recomputation without any change notifies nobody
