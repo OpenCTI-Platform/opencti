@@ -28,6 +28,16 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
   return [...new Set([...(indicator[RELATION_OBJECT_MARKING] ?? []), ...(platform[RELATION_OBJECT_MARKING] ?? [])])];
 };
 
+/**
+ * Whether every reader of the indicator can read the deployment: it carries no marking the indicator does not carry.
+ * The counters stored on the indicator only count such deployments, so they never reveal the deployments, hits or
+ * results of a security platform more restricted than the indicator.
+ */
+export const isReadableWithIndicator = (deployment: MarkedElement, indicator: MarkedElement) => {
+  const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
+  return (deployment[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking));
+};
+
 const OPTIONAL_DEPLOYED_ON_KEYS = [
   'external_id',
   'deployed_at',

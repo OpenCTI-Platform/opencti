@@ -371,8 +371,23 @@ const patchRequest = async (context: AuthContext, user: AuthUser, id: string, pa
  * The OpenCTI worker relays the message to the OpenAEV callback, exactly as for security coverage.
  * When the connector is not alive the request stays pending and the manager retries.
  * A request bound to a connector is never rerouted: connectors can target different OpenAEV tenants.
+ * The creation and the maintenance can both see the same pending request: the dispatch is claimed under its own lock,
+ * and only a caller finding the request still pending and without work creates the work and pushes the scenario.
  */
 export const dispatchIocValidationRequest = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
+  const lock = await lockResources([`ioc-validation-dispatch-${request.internal_id}`]);
+  try {
+    const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) as unknown as StoreEntityIocValidationRequest | undefined;
+    if (!current || current.status !== REQUEST_STATUS_PENDING || isNotEmptyField(current.work_id)) {
+      return current ?? request;
+    }
+    return await dispatchClaimedIocValidationRequest(context, current);
+  } finally {
+    await lock.unlock();
+  }
+};
+
+const dispatchClaimedIocValidationRequest = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
   const connectors = await findIocValidationConnectors(context, SYSTEM_USER, true);
   const connector = request.connector_id
     ? connectors.find((c: BasicStoreBase) => c.internal_id === request.connector_id)
