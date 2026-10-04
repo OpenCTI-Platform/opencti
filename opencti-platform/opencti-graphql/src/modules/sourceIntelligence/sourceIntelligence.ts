@@ -199,6 +199,8 @@ const SOURCE_SCORECARD_DEFINITION: ModuleDefinition<any, any> = {
     bool('is_live', 'Live scorecard', true),
     { name: 'provenance_mode', label: 'Provenance mode', type: 'string', format: 'enum', values: ['assertions', 'creators'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     date('source_last_asserted_at', 'Last assertion'),
+    // Last stream event applied to a live scorecard: replaying a batch never counts it twice
+    shortText('live_stream_event_id', 'Last applied stream event'),
     shortText('cost_currency', 'Cost currency'),
     ...SCORECARD_NUMERIC_ATTRIBUTES,
     {

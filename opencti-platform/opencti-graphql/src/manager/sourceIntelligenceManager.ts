@@ -388,6 +388,36 @@ export const computeEventIncrements = async (
   return { increments, periodIncrements };
 };
 
+/**
+ * One update per source and period for a stream batch: the increments of every period and those of a single period
+ * are merged, so each live scorecard is written once under the batch marker. Disabled sources are not scored.
+ */
+export const mergeBatchIncrements = (
+  increments: Map<string, LiveIncrement>,
+  periodIncrements: PeriodIncrements,
+  disabledSourceIds: Set<string>,
+): PeriodIncrements => {
+  const merged: PeriodIncrements = new Map();
+  SCORECARD_PERIODS.forEach((period) => {
+    const patches = new Map<string, LiveIncrement>();
+    increments.forEach((patch, sourceId) => addIncrement(patches, [sourceId], patch));
+    (periodIncrements.get(period) ?? new Map<string, LiveIncrement>()).forEach((patch, sourceId) => addIncrement(patches, [sourceId], patch));
+    disabledSourceIds.forEach((sourceId) => patches.delete(sourceId));
+    if (patches.size > 0) {
+      merged.set(period, patches);
+    }
+  });
+  return merged;
+};
+
+/** Events of a replayed batch: the ones up to its recorded end, never the later ones fetched with them. */
+export const eventsUpTo = <T extends { id: string }>(events: T[], end: string) => {
+  return events.filter((event) => laterStreamEventId(event.id, end) === end);
+};
+
+// End of the batch being applied, recorded before its first write and cleared once the cursor passed it
+const SOURCE_INTELLIGENCE_PENDING_BATCH = `${SOURCE_INTELLIGENCE_MANAGER_CONTEXT}_pending_batch`;
+
 const processStreamIncrements = async (context: AuthContext) => {
   const storedEventId = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
   let lastEventId = storedEventId ?? `${Date.now()}-0`;
@@ -395,6 +425,10 @@ const processStreamIncrements = async (context: AuthContext) => {
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, lastEventId);
     return;
   }
+  // A batch interrupted after its first writes is replayed alone, under the same marker: its scorecards already
+  // written skip it, the others apply it. A pending end the cursor already passed (full computation) is stale.
+  const storedPending = await redisGetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH);
+  let pendingEnd = storedPending && laterStreamEventId(lastEventId, storedPending) !== lastEventId ? storedPending : undefined;
   const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
   if (sources.length === 0) {
     return;
@@ -413,22 +447,20 @@ const processStreamIncrements = async (context: AuthContext) => {
       },
       { streamBatchSize: STREAM_BATCH_SIZE, withInternal: true },
     );
-    if (events.length > 0) {
-      const { increments, periodIncrements } = await computeEventIncrements(context, events, resolver, { enterprise, huntRunType });
-      disabledSourceIds.forEach((sourceId) => increments.delete(sourceId));
-      await applyLiveIncrements(context, increments, SCORECARD_PERIODS);
-      const byPeriod = Array.from(periodIncrements.entries());
-      for (let i = 0; i < byPeriod.length; i += 1) {
-        const [period, patches] = byPeriod[i];
-        disabledSourceIds.forEach((sourceId) => patches.delete(sourceId));
-        await applyLiveIncrements(context, patches, [period]);
-      }
-    }
-    if (nextEventId === lastEventId) {
+    const batchEnd = pendingEnd ?? nextEventId;
+    const batchEvents = pendingEnd ? eventsUpTo(events, pendingEnd) : events;
+    pendingEnd = undefined;
+    if (batchEnd === lastEventId) {
       break;
     }
-    lastEventId = nextEventId;
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, batchEnd);
+    if (batchEvents.length > 0) {
+      const { increments, periodIncrements } = await computeEventIncrements(context, batchEvents, resolver, { enterprise, huntRunType });
+      await applyLiveIncrements(context, mergeBatchIncrements(increments, periodIncrements, disabledSourceIds), batchEnd);
+    }
+    lastEventId = batchEnd;
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, lastEventId);
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, '');
   }
 };
 // endregion
