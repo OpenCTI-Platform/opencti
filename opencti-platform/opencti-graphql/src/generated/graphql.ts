@@ -25246,7 +25246,11 @@ export type Query = {
   graphCluster?: Maybe<GraphCluster>;
   graphClusters?: Maybe<GraphClusterConnection>;
   graphClustersSizeTimeSeries: Array<GraphClusterTimeSeries>;
-  /** Pairwise similarity of explicit entities, or of the most connected entities matching types and filters */
+  /**
+   * Pairwise similarity of explicit entities, or of the most connected entities matching types and filters.
+   * For a user who cannot read every relationship, the selection is made among the 500 most recently created matches,
+   * ranked by the relationships this user can see (both ends accessible); ranking every match would disclose hidden relationships.
+   */
   graphSimilarityMatrix?: Maybe<GraphSimilarityMatrix>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;

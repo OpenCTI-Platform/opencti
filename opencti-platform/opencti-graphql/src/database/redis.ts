@@ -853,6 +853,9 @@ export const redisGraphAnalyticsMarkPriority = async (ids: string[]) => {
   if (ids.length === 0) return;
   const now = Date.now();
   const members = ids.flatMap((id) => [now, id]);
+  // moved, not duplicated: the priority entry replaces the debounced one. Removed first, so a change marked meanwhile
+  // stays queued (at worst one more recompute, never a lost one)
+  await getClientBase().zrem(GRAPH_ANALYTICS_DIRTY_KEY, ...ids);
   // NX keeps the original request time, so repeated requests do not delay each other
   await getClientBase().zadd(GRAPH_ANALYTICS_PRIORITY_KEY, 'NX', ...members);
 };

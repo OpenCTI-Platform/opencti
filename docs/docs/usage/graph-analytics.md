@@ -144,11 +144,11 @@ The metrics computed in the background count every relationship of the platform.
 
 For every other user, nothing derived from relationships they cannot read is disclosed:
 
-- **Graph degree** and its split by relationship type are counted from the relationships the user can read.
+- **Graph degree** and its split by relationship type are counted from the relationships the user can read and whose other end the user can access. An entity with more than 10,000 such relationships shows no graph degree for these users rather than a partial count.
 - **Graph cluster size** is the number of cluster members the user can read.
 - **Approximate betweenness** is not displayed, as it cannot be derived from a partial view of the graph.
 - The **Graph degree** filter and the sorting options based on graph metrics are not offered. A list widget ranked by a graph metric explains why it is empty, and the API rejects such filters and sorts.
-- Clusters are ranked by the number of members the user can read, and the similarity matrix of a data selection ranks the 500 most recently created matching entities by the number of relationships the user can read.
+- Clusters are ranked by the number of members the user can read, and the similarity matrix of a data selection ranks the 500 most recently created matching entities by the number of relationships the user can see.
 
 ## Dashboards
 

@@ -140,24 +140,20 @@ export const computeDegreeMetrics = async (context: AuthContext, user: AuthUser,
   return result;
 };
 
-// Bounds the relationships listed for one batch of a restricted reader; beyond it, the degree counts what was listed
-const VISIBLE_DEGREE_MAX_RELATIONSHIPS = 20000;
+// Relationships listed at once for restricted readers, and the most an entity may have to be counted for them
+const VISIBLE_DEGREE_BATCH_RELATIONSHIPS = 20000;
+export const VISIBLE_DEGREE_MAX_PER_ENTITY = 10000;
 
-/**
- * Degree as a restricted reader may know it: a relationship only counts when the reader can read it and can also
- * access the entity at its other end, like the neighborhood summary. The measured entities are the reader's own.
- */
-export const computeVisibleDegreeMetrics = async (context: AuthContext, user: AuthUser, ids: string[]): Promise<Map<string, DegreeMetrics>> => {
-  const result = new Map<string, DegreeMetrics>();
-  ids.forEach((id) => result.set(id, { degree: 0, degree_by_type: [] }));
-  if (ids.length === 0) return result;
+// Exact count for a batch whose relationships all fit in one listing
+const countVisibleRelationships = async (context: AuthContext, user: AuthUser, ids: string[], result: Map<string, DegreeMetrics | null>) => {
   const measured = new Set(ids);
   const indices = computeQueryIndices(undefined, DEGREE_RELATIONSHIP_TYPES, false) as string[];
   const relations = await elList<BasicStoreRelation>(context, user, indices, {
     ...buildRelationsFilter(DEGREE_RELATIONSHIP_TYPES, { fromOrToId: ids }),
     baseData: true,
     first: 5000,
-    maxSize: VISIBLE_DEGREE_MAX_RELATIONSHIPS,
+    // headroom for the relationships created between the count of the batch and this listing
+    maxSize: 2 * VISIBLE_DEGREE_BATCH_RELATIONSHIPS,
   });
   const otherEnds = Array.from(new Set(relations.flatMap((relation) => [relation.fromId, relation.toId]).filter((id) => !measured.has(id))));
   const accessible = otherEnds.length > 0
@@ -175,12 +171,49 @@ export const computeVisibleDegreeMetrics = async (context: AuthContext, user: Au
     if (measured.has(relation.fromId)) count(relation.fromId, relation.relationship_type);
     if (measured.has(relation.toId) && relation.toId !== relation.fromId) count(relation.toId, relation.relationship_type);
   });
-  counts.forEach((byType, id) => {
-    const degreeByType = Array.from(byType.entries())
+  ids.forEach((id) => {
+    const degreeByType = Array.from((counts.get(id) ?? new Map<string, number>()).entries())
       .map(([relationship_type, value]) => ({ relationship_type, count: value }))
       .sort((a, b) => (b.count - a.count) || a.relationship_type.localeCompare(b.relationship_type));
     result.set(id, { degree: degreeByType.reduce((sum, entry) => sum + entry.count, 0), degree_by_type: degreeByType });
   });
+};
+
+/**
+ * Degree as a restricted reader may know it: a relationship only counts when the reader can read it and can also
+ * access the entity at its other end, like the neighborhood summary. The measured entities are the reader's own.
+ * The relationships the reader can read are first counted per entity: entities are then grouped in batches listed in
+ * full, and an entity with more than VISIBLE_DEGREE_MAX_PER_ENTITY of them gets no degree (null) instead of a partial one.
+ */
+export const computeVisibleDegreeMetrics = async (context: AuthContext, user: AuthUser, ids: string[]): Promise<Map<string, DegreeMetrics | null>> => {
+  const result = new Map<string, DegreeMetrics | null>();
+  if (ids.length === 0) return result;
+  const readable = await computeDegreeMetrics(context, user, ids);
+  const batches: string[][] = [];
+  let batch: string[] = [];
+  let batchRelationships = 0;
+  ids.forEach((id) => {
+    const count = readable.get(id)?.degree ?? 0;
+    if (count === 0) {
+      result.set(id, { degree: 0, degree_by_type: [] });
+      return;
+    }
+    if (count > VISIBLE_DEGREE_MAX_PER_ENTITY) {
+      result.set(id, null);
+      return;
+    }
+    if (batch.length > 0 && batchRelationships + count > VISIBLE_DEGREE_BATCH_RELATIONSHIPS) {
+      batches.push(batch);
+      batch = [];
+      batchRelationships = 0;
+    }
+    batch.push(id);
+    batchRelationships += count;
+  });
+  if (batch.length > 0) batches.push(batch);
+  for (let i = 0; i < batches.length; i += 1) {
+    await countVisibleRelationships(context, user, batches[i], result);
+  }
   return result;
 };
 // endregion

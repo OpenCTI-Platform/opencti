@@ -260,7 +260,11 @@ type Query {
         entityTypes: [String!]
         onlyWithSecurityCoverage: Boolean
     ): GraphSimilarEntityConnection @auth(for: [KNOWLEDGE])
-    "Pairwise similarity of explicit entities, or of the most connected entities matching types and filters"
+    """
+    Pairwise similarity of explicit entities, or of the most connected entities matching types and filters.
+    For a user who cannot read every relationship, the selection is made among the 500 most recently created matches,
+    ranked by the relationships this user can see (both ends accessible); ranking every match would disclose hidden relationships.
+    """
     graphSimilarityMatrix(ids: [String!], types: [String!], filters: FilterGroup, first: Int): GraphSimilarityMatrix @auth(for: [KNOWLEDGE, EXPLORE])
     graphCluster(id: String!): GraphCluster @auth(for: [KNOWLEDGE])
     graphClusters(
