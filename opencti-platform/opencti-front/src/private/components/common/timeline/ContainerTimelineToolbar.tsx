@@ -268,18 +268,25 @@ const ContainerTimelineToolbar = ({
           </MenuTrigger>
           <MenuContent align="start" style={{ maxHeight: 360, overflowY: 'auto' }}>
             <MenuLabel>{t_i18n('Event kinds')}</MenuLabel>
-            {TIMELINE_KINDS.map((kind) => (
-              <MenuItem
-                key={kind}
-                onSelect={(event) => {
-                  // Keep the menu open while several kinds are picked
-                  event.preventDefault();
-                  toggleKind(kind);
-                }}
-              >
-                <Checkbox checked={state.kinds.includes(kind)} presentational label={t_i18n(TIMELINE_KIND_LABELS[kind])} />
-              </MenuItem>
-            ))}
+            {TIMELINE_KINDS.map((kind) => {
+              const checked = state.kinds.includes(kind);
+              // A presentational box renders no label: the row carries the text and the checked state
+              return (
+                <MenuItem
+                  key={kind}
+                  role="menuitemcheckbox"
+                  aria-checked={checked}
+                  startIcon={<Checkbox checked={checked} presentational />}
+                  onSelect={(event) => {
+                    // Keep the menu open while several kinds are picked
+                    event.preventDefault();
+                    toggleKind(kind);
+                  }}
+                >
+                  {t_i18n(TIMELINE_KIND_LABELS[kind])}
+                </MenuItem>
+              );
+            })}
             {state.kinds.length > 0 && (
               <>
                 <MenuSeparator />

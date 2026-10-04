@@ -81,8 +81,11 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     const evidenceLane = page.getByTestId('timeline-lane-evidence');
     await evidenceLane.click();
     await expect(evidenceLane).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     await page.getByRole('button', { name: 'All kinds' }).click();
     await expect(page.getByText('Event kinds', { exact: true })).toBeVisible();
+    // Every kind is a named, checkable row
+    await expect(page.getByRole('menuitemcheckbox', { name: 'Malware seen', exact: true })).toHaveAttribute('aria-checked', 'false');
     await capture('filters');
     await page.keyboard.press('Escape');
     await evidenceLane.click();
