@@ -35,7 +35,8 @@ describe('LassoSelection', () => {
   it('selects what the path encloses when the button is released outside the canvas, then lets go', () => {
     const { setSelectedNodes, canvas } = renderLasso();
     fireEvent.mouseDown(canvas, at(10, 10));
-    [at(10, 10), at(100, 10), at(100, 100), at(10, 100)].forEach((point) => fireEvent.mouseMove(document, point));
+    // No move is reported at the press point: the path starts there all the same.
+    [at(100, 10), at(100, 100), at(10, 100)].forEach((point) => fireEvent.mouseMove(document, point));
     fireEvent.mouseUp(document.body, at(10, 100));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
     expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([inside]);
@@ -50,7 +51,7 @@ describe('LassoSelection', () => {
     try {
       const { setSelectedNodes, canvas } = renderLasso();
       fireEvent.mouseDown(canvas, at(10, 10));
-      [at(10, 10), at(100, 10), at(100, 100), at(10, 100)].forEach((point) => fireEvent.mouseMove(document, point));
+      [at(100, 10), at(100, 100), at(10, 100)].forEach((point) => fireEvent.mouseMove(document, point));
       fireEvent.mouseUp(canvas, at(10, 100));
       expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([inside]);
     } finally {
@@ -84,7 +85,8 @@ describe('RelationSelection', () => {
   it('links the first and last nodes of a right-button drag released outside the canvas', () => {
     const { setSelectedNodes, canvas } = renderRelation();
     fireEvent.mouseDown(canvas, at(10, 10, 2));
-    [at(10, 10, 2), at(100, 10, 2)].forEach((point) => fireEvent.mouseMove(document, point));
+    // The first move already lands on the target: the source is the node under the press.
+    fireEvent.mouseMove(document, at(100, 10, 2));
     fireEvent.mouseUp(document.body, at(150, 10, 2));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
     expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([from, to]);

@@ -64,17 +64,23 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
     const isGraphCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement
       && !!lineRef.current?.parentElement?.contains(target);
 
-    const onMove = (event: MouseEvent) => {
-      const ctx = lineContext();
-      if (!gesture.current.freeHand || !graph.current || !ctx) return;
-      const coord = reposition(event);
-      ctx.lineTo(coord.x, coord.y);
+    /** Adds the nodes under the pointer to the ones the drag passed over. */
+    const pickNodesAt = (coord: { x: number; y: number }) => {
+      if (!graph.current) return;
       const coords = graph.current.screen2GraphCoords(coord.x, coord.y);
       latest.current.graphDataNodes.forEach((node) => {
         if (Math.hypot(node.x - coords.x, node.y - coords.y) < DISTANCE) {
           gesture.current.selectedNodes.add(node);
         }
       });
+    };
+
+    const onMove = (event: MouseEvent) => {
+      const ctx = lineContext();
+      if (!gesture.current.freeHand || !graph.current || !ctx) return;
+      const coord = reposition(event);
+      ctx.lineTo(coord.x, coord.y);
+      pickNodesAt(coord);
       ctx.stroke();
     };
 
@@ -94,6 +100,8 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       gesture.current.freeHand = true;
       gesture.current.selectedNodes.clear();
       const coord = reposition(event);
+      // The node under the press starts the relationship, however far the first move lands.
+      pickNodesAt(coord);
       ctx.moveTo(coord.x, coord.y);
       ctx.lineWidth = 1;
       ctx.setLineDash([1, 3]);

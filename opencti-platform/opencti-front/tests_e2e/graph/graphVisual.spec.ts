@@ -2,7 +2,7 @@ import { Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
 import { createGraphFixture, deleteGraphFixture, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
-import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
+import { acquirePlatformThemeLock, getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
 
 /**
  * Visual regression of the graph surfaces, on constant data and deterministic layouts so that
@@ -13,13 +13,20 @@ import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/
 test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
   test.describe.configure({ mode: 'serial' });
   let fixture: GraphFixture;
+  let releasePlatformTheme: (() => Promise<void>) | undefined;
 
+  // Every baseline is drawn in a platform theme: no other file may change it meanwhile.
   test.beforeAll(async ({ playwright }) => {
+    releasePlatformTheme = await acquirePlatformThemeLock();
     fixture = await withApiRequest(playwright, (request) => createGraphFixture(request, 'visual'));
   });
 
   test.afterAll(async ({ playwright }) => {
-    await withApiRequest(playwright, (request) => deleteGraphFixture(request, fixture));
+    try {
+      if (fixture) await withApiRequest(playwright, (request) => deleteGraphFixture(request, fixture));
+    } finally {
+      await releasePlatformTheme?.();
+    }
   });
 
   const expectGraphScreenshot = async (page: Page, target: Locator, name: string, mask: Locator[] = []) => {

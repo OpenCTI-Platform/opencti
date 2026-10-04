@@ -1,3 +1,6 @@
+import { mkdir, rm, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { APIRequestContext } from '@playwright/test';
 import { graphqlQuery } from './query-utils';
 
@@ -74,4 +77,33 @@ export const getThemeIdByName = async (request: APIRequestContext, name: string)
     throw new Error(`Cannot find theme named ${name}: ${JSON.stringify(data.errors ?? data)}`);
   }
   return theme.id;
+};
+
+const PLATFORM_THEME_LOCK = join(tmpdir(), 'opencti-e2e-platform-theme.lock');
+// Longer than any holder needs: a lock this old was left by a run that was killed.
+const PLATFORM_THEME_LOCK_STALE_MS = 5 * 60 * 1000;
+const PLATFORM_THEME_LOCK_RETRY_MS = 250;
+
+/**
+ * Waits until no other test file holds the platform theme, takes it, and returns the function
+ * that gives it back. The platform theme colours every page of every test: a file that changes
+ * it, or that compares screenshots, holds it so that local runs, which execute several files at
+ * once, never overlap them. The lock is a directory, created atomically by one worker only.
+ */
+export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
+  try {
+    await mkdir(PLATFORM_THEME_LOCK);
+  } catch (error) {
+    if ((error as { code?: string }).code !== 'EEXIST') throw error;
+    const age = await stat(PLATFORM_THEME_LOCK).then((info) => Date.now() - info.mtimeMs, () => 0);
+    if (age > PLATFORM_THEME_LOCK_STALE_MS) {
+      await rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
+    } else {
+      await new Promise((resolve) => {
+        setTimeout(resolve, PLATFORM_THEME_LOCK_RETRY_MS);
+      });
+    }
+    return acquirePlatformThemeLock();
+  }
+  return () => rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
 };

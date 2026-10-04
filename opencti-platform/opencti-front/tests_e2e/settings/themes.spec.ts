@@ -1,8 +1,19 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
+import { acquirePlatformThemeLock, getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
 import { awaitUntilCondition } from 'tests_e2e/utils';
+
+// The platform theme colours every page of every test: no other file changes it, or compares
+// screenshots drawn in it, while these tests run.
+let releasePlatformTheme: (() => Promise<void>) | undefined;
+test.beforeEach(async () => {
+  releasePlatformTheme = await acquirePlatformThemeLock();
+});
+test.afterEach(async () => {
+  await releasePlatformTheme?.();
+  releasePlatformTheme = undefined;
+});
 
 const openThemeEditMenu = async (themeName: string, page: Page) => {
   await page

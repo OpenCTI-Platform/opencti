@@ -82,8 +82,10 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
       }
       document.addEventListener('mousemove', onMove);
       gesture.current.freeHand = true;
-      gesture.current.path = [];
       const coord = reposition(event);
+      // The path starts where the button is pressed, not at the first move reported after it.
+      const origin = graph.current?.screen2GraphCoords(coord.x, coord.y);
+      gesture.current.path = origin ? [[origin.x, origin.y]] : [];
       ctx.moveTo(coord.x, coord.y);
       ctx.lineWidth = 1;
       ctx.setLineDash([1, 3]);
