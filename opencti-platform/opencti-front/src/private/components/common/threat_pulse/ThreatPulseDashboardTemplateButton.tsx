@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { createContext, ReactNode, Suspense, useCallback, useContext, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
@@ -36,17 +36,21 @@ const threatPulseDashboardTemplateButtonMutation = graphql`
   }
 `;
 
-const ThreatPulseDashboardTemplateButtonComponent = () => {
+const useTemplateAccess = () => {
+  const { pulseStatus } = useLazyLoadQuery<ThreatPulseDashboardTemplateButtonQuery>(threatPulseDashboardTemplateButtonQuery, {}, { fetchPolicy: 'store-and-network' });
+  return pulseStatus.access === 'preview' || pulseStatus.access === 'full' ? pulseStatus.access : null;
+};
+
+const ThreatPulseDashboardTemplateDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const { pulseStatus } = useLazyLoadQuery<ThreatPulseDashboardTemplateButtonQuery>(threatPulseDashboardTemplateButtonQuery, {}, { fetchPolicy: 'store-and-network' });
+  const access = useTemplateAccess();
   const [commit, creating] = useApiMutation<ThreatPulseDashboardTemplateButtonMutation>(threatPulseDashboardTemplateButtonMutation);
-  if (pulseStatus.access !== 'preview' && pulseStatus.access !== 'full') {
+  if (!access) {
     return null;
   }
-  const preview = pulseStatus.access === 'preview';
+  const preview = access === 'preview';
   const manifest = buildSectorBenchmarkDashboard(t_i18n, { preview });
   const widgetTitles = Object.values(manifest.widgets).map((widget) => widget.parameters?.title ?? '');
   const lockedTitles = preview ? lockedSectorBenchmarkWidgets(t_i18n) : [];
@@ -67,57 +71,87 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
           MESSAGING$.notifyError(t_i18n('The dashboard could not be created from the template. Try again later.'));
           return;
         }
-        setOpen(false);
+        onClose();
         navigate(`${resolveLink('Dashboard')}/${dashboardId}`);
       },
     });
   };
   return (
-    <>
-      <Button
-        variant="secondary"
-        onClick={() => setOpen(true)}
-        startIcon={<ScaleBalance fontSize="small" />}
-        data-testid="threat-pulse-dashboard-template"
-      >
-        {t_i18n('Sector benchmark template')}
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title={t_i18n('Dashboard template')} size="medium">
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }} data-testid="threat-pulse-template-card">
-          <Thumbnail><ScaleBalance /></Thumbnail>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
-            <Text variant="title-sm">{t_i18n('Sector benchmark')}</Text>
-            <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{purpose}</Text>
-            <Text variant="content-compact-bold">
-              {t_i18n('{count, plural, one {# widget} other {# widgets}}', { values: { count: widgetTitles.length } })}
-            </Text>
-            <Box component="ul" sx={{ margin: 0, paddingLeft: 2.5, display: 'flex', flexDirection: 'column', gap: 0.25 }} data-testid="threat-pulse-template-widgets">
-              {widgetTitles.map((title) => <li key={title}><Text variant="content-compact">{title}</Text></li>)}
-            </Box>
-            {lockedTitles.length > 0 && (
-              <Box data-testid="threat-pulse-template-locked">
-                {lockedTitles.map((title) => <ThreatPulseLockedRow key={title} label={title} />)}
-              </Box>
-            )}
-            {preview && (
-              <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="threat-pulse-template-preview-note">
-                {t_i18n('In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.')}
-              </Text>
-            )}
+    <Dialog open={open} onClose={onClose} title={t_i18n('Dashboard template')} size="medium">
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }} data-testid="threat-pulse-template-card">
+        <Thumbnail><ScaleBalance /></Thumbnail>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+          <Text variant="title-sm">{t_i18n('Sector benchmark')}</Text>
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{purpose}</Text>
+          <Text variant="content-compact-bold">
+            {t_i18n('{count, plural, one {# widget} other {# widgets}}', { values: { count: widgetTitles.length } })}
+          </Text>
+          <Box component="ul" sx={{ margin: 0, paddingLeft: 2.5, display: 'flex', flexDirection: 'column', gap: 0.25 }} data-testid="threat-pulse-template-widgets">
+            {widgetTitles.map((title) => <li key={title}><Text variant="content-compact">{title}</Text></li>)}
           </Box>
+          {lockedTitles.length > 0 && (
+            <Box data-testid="threat-pulse-template-locked">
+              {lockedTitles.map((title) => <ThreatPulseLockedRow key={title} label={title} />)}
+            </Box>
+          )}
+          {preview && (
+            <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="threat-pulse-template-preview-note">
+              {t_i18n('In preview, the sector benchmark names what it would show, and the widgets of the full experience are added by a dashboard created once this platform contributes.')}
+            </Text>
+          )}
         </Box>
-        <DialogActions>
-          <Button variant="secondary" onClick={() => setOpen(false)}>{t_i18n('Cancel')}</Button>
-          <Button onClick={create} disabled={creating} data-testid="threat-pulse-template-create">
-            {t_i18n('Create a dashboard from this template')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+      </Box>
+      <DialogActions>
+        <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+        <Button onClick={create} disabled={creating} data-testid="threat-pulse-template-create">
+          {t_i18n('Create a dashboard from this template')}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-// The "Sector benchmark" template, offered in preview too: its tiles then name what contributing unlocks.
+const ThreatPulseDashboardTemplateContext = createContext<(() => void) | null>(null);
+
+/**
+ * Holds the "Sector benchmark" template dialog and whether it is open, above the header that renders the button: the
+ * header of the dashboards list mounts its buttons again whenever the list renders, which must not close the dialog.
+ */
+export const ThreatPulseDashboardTemplateProvider = ({ children }: { children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+  const openTemplate = useCallback(() => setOpen(true), []);
+  const closeTemplate = useCallback(() => setOpen(false), []);
+  return (
+    <ThreatPulseDashboardTemplateContext.Provider value={openTemplate}>
+      {children}
+      <Suspense fallback={null}>
+        <ThreatPulseDashboardTemplateDialog open={open} onClose={closeTemplate} />
+      </Suspense>
+    </ThreatPulseDashboardTemplateContext.Provider>
+  );
+};
+
+const ThreatPulseDashboardTemplateButtonComponent = () => {
+  const { t_i18n } = useFormatter();
+  const openTemplate = useContext(ThreatPulseDashboardTemplateContext);
+  const access = useTemplateAccess();
+  if (!openTemplate || !access) {
+    return null;
+  }
+  return (
+    <Button
+      variant="secondary"
+      onClick={openTemplate}
+      startIcon={<ScaleBalance fontSize="small" />}
+      data-testid="threat-pulse-dashboard-template"
+    >
+      {t_i18n('Sector benchmark template')}
+    </Button>
+  );
+};
+
+// The "Sector benchmark" template, offered in preview too: its tiles then name what contributing unlocks. Rendered
+// under a ThreatPulseDashboardTemplateProvider, which holds the dialog.
 const ThreatPulseDashboardTemplateButton = () => (
   <Suspense fallback={null}>
     <ThreatPulseDashboardTemplateButtonComponent />
