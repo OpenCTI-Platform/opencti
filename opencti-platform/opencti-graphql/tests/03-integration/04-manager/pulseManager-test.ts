@@ -422,6 +422,20 @@ describe('Threat Pulse manager and API', () => {
     expect(sightedCount()).toBe(before + 3 * malwareKeys.length);
   });
 
+  it('should leave the increase of a sighting the next run has still to collect to the count it reads', async () => {
+    const today = utcDay();
+    const malwareKeys = computeStableKeys(await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE));
+    const sightedCount = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && row.eventKind === 'sighted' && row.day === today && malwareKeys.includes(row.key))
+      .reduce((total, row) => total + row.count, 0);
+    await runPulseContribution(testContext);
+    const before = sightedCount();
+    // Created after the last contribution and already raised: the next run reads the raised count with the sighting
+    await recordPulseSightingIncrease(testContext, { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization', created_at: new Date() }, 2);
+    await runPulseContribution(testContext);
+    expect(sightedCount()).toBe(before);
+  });
+
   it('should keep the pending batches until XTM Hub accepts them, even after a run stopped once it claimed them', async () => {
     const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: OUTBOX_IP, pattern: `[ipv4-addr:value = '${OUTBOX_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
     const outboxIndicatorId = created.data?.indicatorAdd.id;

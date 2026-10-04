@@ -1153,23 +1153,31 @@ const getLookupLoader = (platform: PulseHubPlatform, day: string, salt: string, 
   return loader;
 };
 
-export const getPulseEntityInformation = async (context: AuthContext, user: AuthUser, id: string) => {
-  const { values, platform, access } = await loadPulseContext(context);
-  const entity = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const base = { id, access, sector_bucket: values.sectorBucket ?? null, information: null };
-  if (!entity || !PULSE_SCOPE_ENTITY_TYPES.includes(entity.entity_type) || !values.scopes.includes(entity.entity_type)) {
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope };
+interface PulseEntityAnswer {
+  readable: boolean;
+  unavailable_reason: PulseUnavailableReason | null;
+  information: ReturnType<typeof toPulseInformationOutput>;
+}
+
+// What the stored state of an object answers under one configuration, or the platform to ask XTM Hub through.
+const answerPulseEntityFromStore = async (
+  context: AuthContext,
+  entity: BasicStorePulseEntity,
+  { values, platform, access }: Awaited<ReturnType<typeof loadPulseContext>>,
+): Promise<PulseEntityAnswer | { lookup: PulseHubPlatform }> => {
+  if (!PULSE_SCOPE_ENTITY_TYPES.includes(entity.entity_type) || !values.scopes.includes(entity.entity_type)) {
+    return { readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope, information: null };
   }
   if (access === PulseAccess.NotConnected || !platform) {
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.NotRegistered };
+    return { readable: false, unavailable_reason: PulseUnavailableReason.NotRegistered, information: null };
   }
   if (access === PulseAccess.Off) {
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.NotEnabled };
+    return { readable: false, unavailable_reason: PulseUnavailableReason.NotEnabled, information: null };
   }
   if (access === PulseAccess.Preview) {
     // The preview signal written by the last digest pass, if the object is among the most prevalent of the community.
     const information = isPulsePreviewDocument(entity) ? toPulseInformationOutput(entity) : null;
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.ContributionRequired, information };
+    return { readable: false, unavailable_reason: PulseUnavailableReason.ContributionRequired, information };
   }
   const policy = await buildPulseMarkingPolicy(context, values);
   if (!isPulseContributable(entity, policy, values.scopes)) {
@@ -1177,32 +1185,58 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
     if (hasPulseNetworkData(entity)) {
       await writePulseDocuments(context, [{ entity, doc: PULSE_PREVIEW_CLEARED_DOCUMENT }]);
     }
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.Excluded };
+    return { readable: false, unavailable_reason: PulseUnavailableReason.Excluded, information: null };
   }
   const keys = computeStableKeys(entity);
   // The marker only vouches for the values looked up last: a pattern, name or alias changed since then is looked up again.
   if (entity.pulse_information?.updated_at && sameKeys(entity.pulse_keys, keys) && await redisGetPulseEntityLookup(entity.internal_id)) {
-    return { ...base, readable: true, unavailable_reason: null, information: toPulseInformationOutput(entity) };
+    return { readable: true, unavailable_reason: null, information: toPulseInformationOutput(entity) };
   }
   if (keys.length === 0) {
-    return { ...base, readable: true, unavailable_reason: null };
+    return { readable: true, unavailable_reason: null, information: null };
+  }
+  return { lookup: platform };
+};
+
+export const getPulseEntityInformation = async (context: AuthContext, user: AuthUser, id: string) => {
+  const pulse = await loadPulseContext(context);
+  const entity = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const base = { id, access: pulse.access, sector_bucket: pulse.values.sectorBucket ?? null };
+  if (!entity) {
+    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope, information: null };
+  }
+  const stored = await answerPulseEntityFromStore(context, entity, pulse);
+  if (!('lookup' in stored)) {
+    return { ...base, ...stored };
   }
   try {
-    const day = utcDay();
-    const salt = await getPulseSalt(platform, day);
-    const loader = getLookupLoader(platform, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type]);
-    const results = await Promise.all(keys.map((key) => loader.load(key)));
-    const information = combinePulseLookups(results.filter((result): result is PulseHubLookupResult => !!result));
-    const doc = buildPulseDocument(keys, information, new Date());
-    await writePulseDocuments(context, [{ entity, doc }]);
-    await redisSetPulseEntityLookup(entity.internal_id, LOOKUP_CACHE_TTL_SECONDS);
-    return { ...base, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...entity, ...doc } as BasicStorePulseEntity) };
+    // Under the lock of the configuration changes and of the cleanups, against the configuration stored now, like the
+    // manager passes: a lookup never sends the hash of an object a newer policy excludes, nor writes its statistics
+    // after the cleanup of that policy.
+    return await withPulsePushLock(async () => {
+      const current = await loadPulseContext(context, { fresh: true });
+      const currentBase = { ...base, access: current.access, sector_bucket: current.values.sectorBucket ?? null };
+      const answer = await answerPulseEntityFromStore(context, entity, current);
+      if (!('lookup' in answer)) {
+        return { ...currentBase, ...answer };
+      }
+      const keys = computeStableKeys(entity);
+      const day = utcDay();
+      const salt = await getPulseSalt(answer.lookup, day);
+      const loader = getLookupLoader(answer.lookup, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type]);
+      const results = await Promise.all(keys.map((key) => loader.load(key)));
+      const information = combinePulseLookups(results.filter((result): result is PulseHubLookupResult => !!result));
+      const doc = buildPulseDocument(keys, information, new Date());
+      await writePulseDocuments(context, [{ entity, doc }]);
+      await redisSetPulseEntityLookup(entity.internal_id, LOOKUP_CACHE_TTL_SECONDS);
+      return { ...currentBase, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...entity, ...doc } as BasicStorePulseEntity) };
+    });
   } catch (error) {
     logApp.warn('[THREAT PULSE] Entity lookup failed', { cause: error, entityId: entity.internal_id });
-    await handlePulseReadError(values, error);
+    await handlePulseReadError(pulse.values, error);
     const reason = toPulseUnavailableReason(error);
     if (reason === PulseUnavailableReason.ContributionRequired) {
-      return { ...base, access: PulseAccess.Preview, readable: false, unavailable_reason: reason };
+      return { ...base, access: PulseAccess.Preview, readable: false, unavailable_reason: reason, information: null };
     }
     return { ...base, readable: true, unavailable_reason: reason, information: toPulseInformationOutput(entity) };
   }
