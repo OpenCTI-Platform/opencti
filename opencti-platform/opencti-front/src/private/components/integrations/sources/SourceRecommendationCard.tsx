@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Collapse, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Alert, Chip, type ChipSeverity, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, type ChipSeverity, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { CheckOutlined, CloseOutlined, ExpandLessOutlined, ExpandMoreOutlined, UndoOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
@@ -11,6 +11,7 @@ import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
 import { useSourceMetricFormat } from './SourceMetricValue';
+import SourceIntelligenceAlert from './SourceIntelligenceAlert';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
@@ -309,7 +310,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           )}
           {recommendation.status === 'applying' && (
             <Box sx={{ marginTop: 1 }}>
-              <Alert
+              <SourceIntelligenceAlert
                 severity="info"
                 title={t_i18n('The change is being applied')}
                 description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.')}
@@ -319,7 +320,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           )}
           {recommendation.status === 'failed' && (
             <Box sx={{ marginTop: 1 }}>
-              <Alert
+              <SourceIntelligenceAlert
                 severity="error"
                 title={t_i18n('The recommendation could not be applied')}
                 description={failedConnectorId

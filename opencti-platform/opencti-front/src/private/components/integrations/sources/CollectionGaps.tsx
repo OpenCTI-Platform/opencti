@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { Alert, Chip, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Tag from '@common/tag/Tag';
@@ -16,6 +16,7 @@ import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../..
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { ValueScoreBar } from './SourcesLeaderboard';
+import SourceIntelligenceAlert from './SourceIntelligenceAlert';
 import { useSourceMetricFormat } from './SourceMetricValue';
 import { buildHubCoverageSearchUrl, criterionPriority } from './sourceIntelligenceUtils';
 import notifyMutationOutcome from './notifyMutationOutcome';
@@ -124,7 +125,7 @@ const DeployFailure = ({ cause, onRetry, retrying }: { cause: string | null; onR
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <Box>
-      <Alert
+      <SourceIntelligenceAlert
         severity="error"
         title={t_i18n('The recommendation could not be applied')}
         description={t_i18n('Nothing was changed. Retry, or read the details to fix the cause first.')}
@@ -319,7 +320,7 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
               <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>{t_i18n('Recommended integrations')}</Typography>
               {gap.hub_status && HUB_STATUS_ALERTS[gap.hub_status] && (
                 <Box sx={{ marginBottom: 1 }}>
-                  <Alert
+                  <SourceIntelligenceAlert
                     severity="warning"
                     title={t_i18n(HUB_STATUS_ALERTS[gap.hub_status].title)}
                     description={t_i18n(HUB_STATUS_ALERTS[gap.hub_status].description)}
