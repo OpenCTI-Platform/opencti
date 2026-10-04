@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 21;
+testCreatedCounter['attack-pattern'] = 22;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 7;
 testCreatedCounter['case-rfi'] = 9;
@@ -122,7 +122,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 16;
+testDeletedCounter['attack-pattern'] = 17;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
 testDeletedCounter['case-rfi'] = 9;
