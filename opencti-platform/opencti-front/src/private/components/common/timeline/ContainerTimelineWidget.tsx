@@ -63,6 +63,9 @@ export const containerTimelineWidgetQuery = graphql`
 const containerTimelineWidgetEventsQuery = graphql`
   query ContainerTimelineWidgetEventsQuery($id: String!, $lanes: [TimelineLane!], $count: Int!) {
     containerTimeline(id: $id, lanes: $lanes, first: $count, orderMode: desc) {
+      pageInfo {
+        globalCount
+      }
       edges {
         node {
           id
@@ -97,7 +100,8 @@ interface ContainerTimelineWidgetEventsProps {
 }
 
 const ContainerTimelineWidgetEvents = ({ containerId, containerName, timelinePath, lanes, enabledLanes, zoomWindow, grouping, anchors }: ContainerTimelineWidgetEventsProps) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
+  const theme = useTheme();
   const navigate = useNavigate();
   const apiLanes = effectiveLanes([...lanes], enabledLanes);
   const { containerTimeline } = useLazyLoadQuery<ContainerTimelineWidgetEventsQuery>(
@@ -111,16 +115,25 @@ const ContainerTimelineWidgetEvents = ({ containerId, containerName, timelinePat
   }
   const shownLanes = (apiLanes ?? TIMELINE_LANES).filter((lane) => events.some((e) => e.lane === lane));
   const extent = computeTimelineExtent(events, TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]));
+  // A long timeline is drawn from its latest events: the count says so, the full timeline is one click away
+  const total = containerTimeline?.pageInfo.globalCount ?? events.length;
   return (
-    <ContainerTimelineLanes
-      events={events}
-      lanes={shownLanes}
-      domain={computeVisibleDomain(extent, zoomWindow)}
-      grouping={grouping}
-      anchors={anchors}
-      onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
-      ariaLabel={t_i18n('Timeline of {name}', { values: { name: containerName } })}
-    />
+    <>
+      <ContainerTimelineLanes
+        events={events}
+        lanes={shownLanes}
+        domain={computeVisibleDomain(extent, zoomWindow)}
+        grouping={grouping}
+        anchors={anchors}
+        onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
+        ariaLabel={t_i18n('Timeline of {name}', { values: { name: containerName } })}
+      />
+      {total > events.length && (
+        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }} data-testid="timeline-widget-truncated">
+          {t_i18n('{shown} of {total} events', { values: { shown: n(events.length), total: n(total) } })}
+        </Text>
+      )}
+    </>
   );
 };
 
@@ -147,6 +160,12 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
     { values: { name: container.representative.main, window: zoomWindow } },
   );
   const timelinePath = `${resolveLink(container.entity_type)}/${container.id}/timeline`;
+  // Lanes chosen in the widget stay within the lanes enabled in the timeline settings of the case
+  const enabledLanes = TIMELINE_LANES.filter((lane) => summary.settings.enabled_lanes.includes(lane));
+  const widgetLanes = lanes.filter((lane) => enabledLanes.includes(lane));
+  if (lanes.length > 0 && widgetLanes.length === 0) {
+    return renderWidget(null, <WidgetNoData message={t_i18n('No event in this period')} />);
+  }
   return renderWidget(null, (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <Text variant="content-caption" as="div" style={{ marginBottom: theme.spacing(1), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={caption}>
@@ -157,7 +176,7 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
           containerId={container.id}
           containerName={container.representative.main}
           timelinePath={timelinePath}
-          lanes={lanes}
+          lanes={widgetLanes}
           enabledLanes={summary.settings.enabled_lanes}
           zoomWindow={zoomWindow}
           grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
