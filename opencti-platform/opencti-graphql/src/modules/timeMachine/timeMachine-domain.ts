@@ -782,7 +782,7 @@ export const computeRelationshipChanges = async (
     if (info.restricted) {
       Object.assign(change, { target_id: null, target_type: null, target_name: RESTRICTED_VALUE, target_restricted: true });
     } else if (info.deleted) {
-      Object.assign(change, { target_deleted: true, target_name: change.target_name || DELETED_VALUE });
+      Object.assign(change, { target_deleted: true, target_name: info.name });
     } else {
       Object.assign(change, { target_name: info.name, target_type: info.entity_type ?? change.target_type });
     }
