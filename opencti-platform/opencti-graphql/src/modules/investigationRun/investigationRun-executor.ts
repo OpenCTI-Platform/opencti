@@ -795,7 +795,12 @@ const investigate = async (exec: RunExecution) => {
   // the investigation concludes with what the engine found.
   let budgetCancelled = run.budget_cancelled;
   if (!budgetCancelled && isBudgetExhausted(run, now)) {
-    await cancelInvestigation(jwtUserOf(runUser), investigationId);
+    const cancelled = await cancelInvestigation(jwtUserOf(runUser), investigationId);
+    if (!cancelled.ok) {
+      // The engine run is not stopped yet: retried on the next tick, bounded like any engine failure.
+      await handleEngineFailure({ ...exec, run }, cancelled);
+      return;
+    }
     budgetCancelled = true;
     await updateInvestigationRun(exec.liveContext, run.internal_id, () => ({
       budget_cancelled: true,
