@@ -837,6 +837,49 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - source intelligence manager run state
+// Hash shared cluster wide (last full computation, backfill cursor, recomputation requests), one JSON value per field:
+// a patch writes its fields only, so concurrent writers (manager run, recomputation request) never erase each other.
+const SOURCE_INTELLIGENCE_STATE_KEY = 'source_intelligence_state_fields';
+// Single JSON document of the first versions, converted on first read
+const SOURCE_INTELLIGENCE_LEGACY_STATE_KEY = 'source_intelligence_state';
+const toStateHash = (patch: Record<string, unknown>) => Object.fromEntries(
+  Object.entries(patch).filter(([, value]) => value !== undefined).map(([key, value]) => [key, JSON.stringify(value)]),
+);
+export const redisPatchSourceIntelligenceState = async (patch: Record<string, unknown>) => {
+  const fields = toStateHash(patch);
+  if (Object.keys(fields).length > 0) {
+    await getClientBase().hset(SOURCE_INTELLIGENCE_STATE_KEY, fields);
+  }
+};
+export const redisGetSourceIntelligenceState = async (): Promise<Record<string, unknown> | null> => {
+  let fields = await getClientBase().hgetall(SOURCE_INTELLIGENCE_STATE_KEY);
+  if (Object.keys(fields).length === 0) {
+    const legacy = await getClientBase().get(SOURCE_INTELLIGENCE_LEGACY_STATE_KEY);
+    if (!legacy) {
+      return null;
+    }
+    try {
+      await redisPatchSourceIntelligenceState(JSON.parse(legacy));
+      await getClientBase().del(SOURCE_INTELLIGENCE_LEGACY_STATE_KEY);
+    } catch {
+      logApp.error('[OPENCTI-MODULE] Source intelligence legacy state in Redis could not be parsed', { raw: legacy });
+      return null;
+    }
+    fields = await getClientBase().hgetall(SOURCE_INTELLIGENCE_STATE_KEY);
+  }
+  const state: Record<string, unknown> = {};
+  Object.entries(fields).forEach(([key, value]) => {
+    try {
+      state[key] = JSON.parse(value);
+    } catch {
+      logApp.error('[OPENCTI-MODULE] Source intelligence state field in Redis could not be parsed', { key, value });
+    }
+  });
+  return state;
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

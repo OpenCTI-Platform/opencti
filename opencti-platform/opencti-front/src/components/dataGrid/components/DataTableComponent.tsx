@@ -156,7 +156,7 @@ const DataTableComponent = ({
           ...column,
           // Override column config with what we have in local storage
           order: useLocalStorage && currentColumn?.index !== undefined ? currentColumn?.index : index,
-          visible: useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : true,
+          visible: useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : (column.visible ?? true),
           percentWidth: useLocalStorage && currentColumn?.percentWidth !== undefined ? currentColumn?.percentWidth : percentWidth,
         });
       }),

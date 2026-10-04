@@ -2,11 +2,22 @@ import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Loader from '../../../components/Loader';
+import Security from '../../../utils/Security';
+import { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
 
 const Integrations = lazy(() => import('./Integrations'));
 const RootConnector = lazy(() => import('@components/data/connectors/Root'));
 const IngestionCatalogConnector = lazy(() => import('./catalog/IngestionCatalogConnector'));
 const FeedDetail = lazy(() => import('./feeds/FeedDetail'));
+const SourceIntelligence = lazy(() => import('./sources/SourceIntelligence'));
+const SourceDetail = lazy(() => import('./sources/SourceDetail'));
+const SourceRefRedirect = lazy(() => import('./sources/SourceRefRedirect'));
+
+const sourcesGuard = (element: React.ReactElement) => (
+  <Security needs={[MODULES, INGESTION]} placeholder={<Navigate to="/dashboard/integrations" replace={true} />}>
+    {element}
+  </Security>
+);
 
 const Root = () => {
   return (
@@ -37,6 +48,22 @@ const Root = () => {
         <Route
           path="/feeds/:feedKind/:feedId"
           element={boundaryWrapper(FeedDetail)}
+        />
+        <Route
+          path="/sources"
+          element={sourcesGuard(boundaryWrapper(SourceIntelligence))}
+        />
+        <Route
+          path="/sources/source/ref/:kind/:refId"
+          element={boundaryWrapper(SourceRefRedirect)}
+        />
+        <Route
+          path="/sources/source/:sourceId"
+          element={sourcesGuard(boundaryWrapper(SourceDetail))}
+        />
+        <Route
+          path="/sources/:view"
+          element={sourcesGuard(boundaryWrapper(SourceIntelligence))}
         />
         <Route
           path="/:tab"
